@@ -116,6 +116,29 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         return "8";
     }
 
+    static MbStyleStylesheet parseFile(File stylesheet, URICustomizer uriCustomizer) throws IOException {
+        final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
+
+        // prepare Jackson mapper for deserialization
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new Jdk8Module());
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        MbStyleStylesheet parsedContent;
+        try {
+            // parse input
+            parsedContent = mapper.readValue(content, MbStyleStylesheet.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Stylesheet in the styles store is invalid. Path: " + stylesheet.getAbsolutePath() + ".", e);
+        }
+
+        return replaceParameters(parsedContent, uriCustomizer);
+    }
+
+    @Override
+    public String getTitle(String styleId, File stylesheet, ApiRequestContext requestContext) throws IOException {
+        return parseFile(stylesheet, requestContext.getUriCustomizer().copy()).getName().orElse(styleId);
+    }
+
     @Override
     public Response getStyleResponse(String styleId, File stylesheet, List<Link> links, OgcApi api, ApiRequestContext requestContext) throws IOException {
 
@@ -134,13 +157,13 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         }
 
         return Response.ok()
-                .entity(replaceParameters(parsedContent, requestContext.getUriCustomizer().copy()))
+                .entity(parseFile(stylesheet, requestContext.getUriCustomizer().copy()))
                 .type(MEDIA_TYPE.type())
                 .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
                 .build();
     }
 
-    private MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, URICustomizer uriCustomizer) {
+    private static MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, URICustomizer uriCustomizer) {
 
         // any template parameters in links?
         boolean templated = stylesheet.getSprite()

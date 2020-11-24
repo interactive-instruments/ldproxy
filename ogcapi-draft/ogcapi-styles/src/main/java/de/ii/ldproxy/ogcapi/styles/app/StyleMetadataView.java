@@ -42,6 +42,7 @@ public class StyleMetadataView extends OgcApiView {
     public String falseTitle;
     public String layersTitle;
     public String idTitle;
+    public String titleTitle;
     public String keywordsTitle;
     public String additionalLinksTitle;
     public String layerTypeTitle;
@@ -74,6 +75,7 @@ public class StyleMetadataView extends OgcApiView {
 
         this.metadataTitle = i18n.get ("metadataTitle", language);
         this.idTitle = i18n.get ("idTitle", language);
+        this.titleTitle = i18n.get ("titleTitle", language);
         this.keywordsTitle = i18n.get ("keywordsTitle", language);
         this.versionTitle = i18n.get ("versionTitle", language);
         this.pointOfContactTitle = i18n.get ("pointOfContactTitle", language);

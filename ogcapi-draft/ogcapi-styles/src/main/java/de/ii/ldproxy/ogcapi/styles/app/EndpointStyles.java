@@ -138,30 +138,30 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
         Optional<StylesConfiguration> stylesExtension = api.getData().getExtension(StylesConfiguration.class);
         Styles styles = ImmutableStyles.builder()
                                        .styles(
-                        Arrays.stream(apiDir.listFiles())
-                              .filter(file -> !file.isHidden())
-                              .filter(file -> Files.getFileExtension(file.getName()).matches(styleFormatRegex))
-                              .map(file -> Files.getNameWithoutExtension(file.getName()))
-                              .distinct()
-                              .sorted()
-                              .map(stylename -> ImmutableStyleEntry.builder()
-                                    .id(stylename)
-                                    .title(getTitle(stylename, requestContext).orElse(stylename))
-                                    .links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
-                                                                         stylename,
-                                                                         getStylesheetMediaTypes(api.getData(),
-                                                                                 apiDir,
-                                                                                 stylename),
-                                                                         i18n,
-                                                                         requestContext.getLanguage()))
-                                    .build())
-                            .collect(Collectors.toList()))
+                                               Arrays.stream(apiDir.listFiles())
+                                                     .filter(file -> !file.isHidden())
+                                                     .filter(file -> Files.getFileExtension(file.getName()).matches(styleFormatRegex))
+                                                     .map(file -> Files.getNameWithoutExtension(file.getName()))
+                                                     .distinct()
+                                                     .sorted()
+                                                     .map(styleId -> ImmutableStyleEntry.builder()
+                                                                                        .id(styleId)
+                                                                                        .title(getTitle(api.getData(), apiDir, styleId, requestContext).orElse(styleId))
+                                                                                        .links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
+                                                                                                                                      styleId,
+                                                                                                                                      getStylesheetMediaTypes(api.getData(),
+                                                                                                                                                              apiDir,
+                                                                                                                                                              styleId),
+                                                                                                                                      i18n,
+                                                                                                                                      requestContext.getLanguage()))
+                                                                                        .build())
+                                                     .collect(Collectors.toList()))
                                        .links(new DefaultLinksGenerator()
-                        .generateLinks(requestContext.getUriCustomizer(),
-                                requestContext.getMediaType(),
-                                requestContext.getAlternateMediaTypes(),
-                                i18n,
-                                requestContext.getLanguage()))
+                                                      .generateLinks(requestContext.getUriCustomizer(),
+                                                                     requestContext.getMediaType(),
+                                                                     requestContext.getAlternateMediaTypes(),
+                                                                     i18n,
+                                                                     requestContext.getLanguage()))
                                        .build();
 
         return getFormats().stream()
@@ -172,12 +172,24 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
                 .getStylesResponse(styles, api, requestContext);
     }
 
-    private Optional<String> getTitle(String styleId, ApiRequestContext requestContext) {
+    private Optional<String> getTitle(OgcApiDataV2 apiData, File apiDir, String styleId, ApiRequestContext requestContext) {
         String apiId = requestContext.getApi().getId();
         File metadataFile = new File( stylesStore + File.separator + apiId + File.separator + styleId + ".metadata");
 
         if (!metadataFile.exists()) {
-            return Optional.empty();
+            return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
+                                    .stream()
+                                    .sorted(Comparator.comparing(StyleFormatExtension::getFileExtension))
+                                    .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData))
+                                    .map(styleFormat -> {
+                                        try {
+                                            return styleFormat.getTitle(styleId, new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()), requestContext);
+                                        } catch (IOException ioException) {
+                                        }
+                                        return styleId;
+                                    })
+                                    .filter(title -> !title.equals(styleId))
+                                    .findAny();
         }
 
         try {

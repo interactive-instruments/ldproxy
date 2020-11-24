@@ -13,23 +13,37 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.services.domain.GenericView;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class StyleView extends GenericView {
-    public String styleUrl;
-    public String apiId;
-    public String styleId;
-    public boolean popup = true;
-    public Map<String, String> bbox;
-    private OgcApiDataV2 apiData;
+    public final String styleUrl;
+    public final String apiId;
+    public final String styleId;
+    public final boolean popup;
+    public final boolean layerSwitcher;
+    public final String layerIds;
+    public final Map<String, String> bbox;
+    private final OgcApiDataV2 apiData;
 
-    public StyleView(String styleUrl, OgcApi api, String styleId) {
+    public StyleView(String styleUrl, OgcApi api, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap) {
         super("/templates/style", null);
         this.styleUrl = styleUrl;
-        this.apiId = apiId;
+        this.apiId = api.getId();
         this.styleId = styleId;
         this.apiData = api.getData();
+        this.popup = popup;
+        this.layerSwitcher = layerControl;
+        this.layerIds = "{" +
+                String.join(", ", layerMap.entrySet()
+                                          .stream()
+                                          .sorted(Comparator.comparing(Map.Entry::getKey))
+                                          .map(entry -> "\""+entry.getKey()+"\": [ \"" + String.join("\", \"", entry.getValue()) + "\" ]")
+                                          .collect(Collectors.toList())) +
+                "}";
 
         Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
         this.bbox = spatialExtent.isEmpty() ? null : ImmutableMap.of(

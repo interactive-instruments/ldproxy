@@ -17,6 +17,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import java.io.IOException;
+import java.util.Objects;
 
 @Component
 @Provides
@@ -32,13 +33,14 @@ public class CORSFilter implements ContainerResponseFilter {
         if (!requestContext.getUriInfo()
                            .getPath()
                            .startsWith("admin") &&
-            !(requestContext.getHeaderString("Origin")==null) &&
             // OPTIONS requests have their own endpoint
             !requestContext.getMethod()
                            .equalsIgnoreCase("OPTIONS")) {
 
+            String secFetchMode = requestContext.getHeaderString("Sec-Fetch-Mode");
             String origin = requestContext.getHeaderString("Origin");
-            if (origin!=null && !origin.isEmpty()) {
+            if (!Objects.requireNonNullElse(origin, "").isEmpty() ||
+                Objects.requireNonNullElse(secFetchMode, "").equalsIgnoreCase("cors")) {
                 responseContext.getHeaders()
                         .add("Access-Control-Allow-Origin", "*");
                 responseContext.getHeaders()
