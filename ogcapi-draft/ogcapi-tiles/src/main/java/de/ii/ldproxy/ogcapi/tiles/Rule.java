@@ -10,13 +10,17 @@ package de.ii.ldproxy.ogcapi.tiles;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = ImmutablePredefinedFilter.Builder.class)
-interface PredefinedFilter {
+@JsonDeserialize(builder = ImmutableRule.Builder.class)
+interface Rule {
     int getMin();
     int getMax();
-    Optional<String> getFilter();
+    Optional<Boolean> getMerge();
+    Optional<Boolean> getReduceInClusters();
+    List<String> getGroupBy();
+    List<String> getProperties();
 }

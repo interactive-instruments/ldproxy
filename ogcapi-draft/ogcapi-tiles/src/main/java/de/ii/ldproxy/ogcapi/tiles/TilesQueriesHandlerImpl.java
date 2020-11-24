@@ -310,8 +310,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .limit(query.getLimit())
                     .offset(0)
                     .i18n(i18n);
-        } catch (IOException e) {
-            throw new RuntimeException("Error accessing the tile cache.", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Error building the tile transformation context.", e);
         }
 
         if (queryInput.getOutputStream().isPresent()) {
@@ -467,8 +467,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                         .i18n(i18n)
                         .outputStream(singleLayerOutputStream)
                         .build();
-            } catch (IOException e) {
-                throw new RuntimeException("Error accessing the tile cache.", e);
+            } catch (Exception e) {
+                throw new RuntimeException("Error building the tile transformation context.", e);
             }
 
             if (outputFormat.canTransformFeatures()) {

@@ -24,6 +24,9 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 |`resourcesEnabled` |boolean |`false` |Steuert, ob die API auch beliebige File-Ressourcen, z.B. für Symbole oder Sprites, unterstützen soll. Siehe die Konformitätsklasse "Resources".
 |`resourceManagerEnabled` |boolean |`false` |Steuert, ob die Ressourcen über PUT und DELETE über die API erzeugt und gelöscht werden können sollen. Siehe die Konformitätsklasse "Manage resources".
 |`defaultStyle` |string |`null` |Ist ein Style angegeben, dann wird auf die HTML-Repräsentierung (Webkarte) von der Landing-Page verlinkt. Der Style sollte alle Daten im Datensatz abdecken.
+|`webmapWithPopup` |boolean |`true` |Steuert, ob bei Webkarten zu Styles im Format Mapbox Style ein Popup mit den Attributen zum obersten Objekt angezeigt werden soll.
+|`webmapWithLayerControl` |boolean |`false` |Steuert, ob bei Webkarten zu Styles im Format Mapbox Style die Layer ein- und ausgeschaltet werden können. Ein- und ausgeschaltet werden können jeweils gebündelt alle Layer zu einer Feature Collection.
+|`layerControlAllLayers` |boolean |`false` |Nur wirksam bei `webmapWithLayerControl: true`. Steuert, ob auch Kartenlayer, die nicht aus den Vector Tiles dieser API, z.B. eine Hintergrundkarte, ein- und ausgeschaltet werden können.
 
 Die Stylesheets, die Style-Metadaten und die Style-Informationen liegen als Dateien im ldproxy-Datenverzeichnis:
 
