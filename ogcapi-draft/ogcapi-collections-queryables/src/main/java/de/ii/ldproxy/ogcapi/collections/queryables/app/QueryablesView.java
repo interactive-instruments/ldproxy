@@ -50,18 +50,8 @@ public class QueryablesView extends OgcApiView {
                 i18n.get("queryablesTitle", language),
                 i18n.get("queryablesDescription", language));
 
-        Map<String, Object> geojsonFeatureProperties = ((Map<String, Object>) schemaQueryables.get("properties"));
-        Map<String, String> geometry = (Map<String, String>) geojsonFeatureProperties.get("geometry");
-        Map<String, Object> properties = ((Map<String, Object>) geojsonFeatureProperties.get("properties"));
+        Map<String, Object> properties = ((Map<String, Object>) schemaQueryables.get("properties"));
         ImmutableList.Builder<Queryable> builder = ImmutableList.builder();
-        if (Objects.nonNull(geometry) && geometry.containsKey("$ref")) {
-            builder.add(ImmutableQueryable.builder()
-                                                        .id("geometry")
-                                                        .type(geometry.get("$ref")
-                                                                      .replace("https://geojson.org/schema/", "")
-                                                                      .replace(".json", ""))
-                                                        .build());
-        }
         properties.forEach((key, value) -> {
             Map<String, Object> values = (Map<String, Object>) value;
             ImmutableQueryable.Builder builder2 = ImmutableQueryable.builder()
@@ -70,7 +60,12 @@ public class QueryablesView extends OgcApiView {
                 builder2.title((String) values.get("title"));
             if (values.containsKey("description"))
                 builder2.description((String) values.get("description"));
-            if (!values.containsKey("type")) {
+            if (values.containsKey("$ref")) {
+                builder2.type(((String)values.get("$ref"))
+                                      .replace("https://geojson.org/schema/", "")
+                                      .replace(".json", ""));
+                builder2.isArray(false);
+            } else if (!values.containsKey("type")) {
                 builder2.type("string");
                 builder2.isArray(false);
             } else {

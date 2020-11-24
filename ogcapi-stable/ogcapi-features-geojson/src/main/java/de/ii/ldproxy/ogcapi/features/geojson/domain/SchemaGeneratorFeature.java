@@ -553,10 +553,7 @@ public class SchemaGeneratorFeature {
                                                      .put("properties", featureContext.properties)
                                                      .build() :
                                         ImmutableMap.builder()
-                                                    .put("properties", ImmutableMap.builder()
-                                                                                   .putAll(featureContext.properties)
-                                                                                   .put("geometry", featureContext.geometry)
-                                                                                   .build())
+                                                    .putAll(featureContext.properties)
                                                     .build())
                                  .put(DEFINITIONS_TOKEN, definitionsMapBuilder.build())
                                  .build());
@@ -743,7 +740,7 @@ public class SchemaGeneratorFeature {
                               break;
                       }
 
-                      if (isFeature && geometry) {
+                      if (isFeature && geometry && type != SCHEMA_TYPE.QUERYABLES) {
                           // only one geometry per feature, last one wins
                           context.geometry = pSchemaBuilder.build();
                       } else if (!flatten) {
