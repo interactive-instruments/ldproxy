@@ -227,6 +227,7 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
         Map<String,Object> jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
                                                                                                          .filter(link -> link.getRel().equals("self"))
                                                                                                          .map(link -> link.getHref())
+                                                                                                         .map(link -> link.indexOf("?") == -1 ? link : link.substring(0, link.indexOf("?")))
                                                                                                          .findAny(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES);
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
