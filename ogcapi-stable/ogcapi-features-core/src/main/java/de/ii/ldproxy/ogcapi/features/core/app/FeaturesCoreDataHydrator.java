@@ -15,8 +15,11 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables;
@@ -33,8 +36,10 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.threeten.extra.Interval;
 
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -76,6 +81,14 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
                     .collections(computeMissingBboxes(data))
+                    .build();
+        }
+
+
+        if (!data.isAutoPersist() && hasMissingIntervals(data.getCollections())) {
+            data = new ImmutableOgcApiDataV2.Builder()
+                    .from(data)
+                    .collections(computeMissingIntervals(data))
                     .build();
         }
 
@@ -240,5 +253,85 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                           return entry;
                       })
                       .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    private boolean hasMissingIntervals(Map<String, FeatureTypeConfigurationOgcApi> featureTypes) {
+        return featureTypes
+                .entrySet()
+                .stream()
+                .anyMatch(entry -> entry.getValue()
+                        .getExtent()
+                        .isPresent() &&
+                        entry.getValue()
+                                .getExtent()
+                                .get()
+                                .getTemporalComputed());
+    }
+
+    private ImmutableMap<String, FeatureTypeConfigurationOgcApi> computeMissingIntervals(OgcApiDataV2 apiData) {
+        return apiData.getCollections()
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, entry.getValue());
+
+                    if (entry.getValue()
+                            .getExtent()
+                            .isPresent() &&
+                            entry.getValue()
+                                    .getExtent()
+                                    .get()
+                                    .getTemporalComputed() &&
+                            featureProvider.supportsExtents()) {
+
+                        List<String> temporalQueryables = entry.getValue()
+                                .getExtension(FeaturesCoreConfiguration.class)
+                                .flatMap(FeaturesCoreConfiguration::getQueryables)
+                                .map(FeaturesCollectionQueryables::getTemporal)
+                                .orElse(ImmutableList.of());
+
+                        if (!temporalQueryables.isEmpty()) {
+                            Optional<Interval> interval;
+                            if (temporalQueryables.size() == 2) {
+                                interval = featureProvider.extents()
+                                        .getTemporalExtent(entry.getValue().getId(), temporalQueryables.get(0), temporalQueryables.get(1));
+                            } else {
+                                interval = featureProvider.extents()
+                                        .getTemporalExtent(entry.getValue().getId(), temporalQueryables.get(0));
+                            }
+
+                            if (!interval.isPresent()) {
+                                return entry;
+                            }
+
+                            TemporalExtent temporalExtent = new ImmutableTemporalExtent.Builder()
+                                    .start(interval.get().getStart().toEpochMilli())
+                                    .end(interval.get().getEnd().toEpochMilli())
+                                    .build();
+                            ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration;
+                            if (entry.getValue().getExtent().isPresent()) {
+                                featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                        .from(entry.getValue())
+                                        .extent(new ImmutableCollectionExtent.Builder()
+                                                .from(entry.getValue()
+                                                        .getExtent()
+                                                        .get())
+                                                .temporal(temporalExtent)
+                                                .build())
+                                        .build();
+                            } else {
+                                featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                        .from(entry.getValue())
+                                        .extent(new ImmutableCollectionExtent.Builder()
+                                                .temporal(temporalExtent)
+                                                .build())
+                                        .build();
+                            }
+                            return new AbstractMap.SimpleEntry<>(entry.getKey(), featureTypeConfiguration);
+                        }
+                    }
+                    return entry;
+                })
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

@@ -19,4 +19,10 @@ public interface CollectionExtent {
         return false;
     }
 
+    @Value.Default
+    default boolean getTemporalComputed() {
+        return false;
+    }
+
+
 }
