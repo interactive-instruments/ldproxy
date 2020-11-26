@@ -306,7 +306,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
                             TemporalExtent temporalExtent = new ImmutableTemporalExtent.Builder()
                                     .start(interval.get().getStart().toEpochMilli())
-                                    .end(interval.get().getEnd().toEpochMilli())
+                                    .end(interval.get().isUnboundedEnd() ? null : interval.get().getEnd().toEpochMilli())
                                     .build();
                             ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration;
                             if (entry.getValue().getExtent().isPresent()) {
