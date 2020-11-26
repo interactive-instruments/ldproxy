@@ -292,7 +292,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
                         if (!temporalQueryables.isEmpty()) {
                             Optional<Interval> interval;
-                            if (temporalQueryables.size() == 2) {
+                            if (temporalQueryables.size() >= 2) {
                                 interval = featureProvider.extents()
                                         .getTemporalExtent(entry.getValue().getId(), temporalQueryables.get(0), temporalQueryables.get(1));
                             } else {
