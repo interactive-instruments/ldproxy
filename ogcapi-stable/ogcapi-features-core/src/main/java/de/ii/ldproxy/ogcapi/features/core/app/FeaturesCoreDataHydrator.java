@@ -78,8 +78,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                     .build();
         }
 
-        boolean defaultValue = data.getDefaultExtent().isPresent() ? data.getDefaultExtent().get().getSpatialComputed().orElse(false) : false;
-        if (!data.isAutoPersist() && (defaultValue || hasMissingBboxes(data.getCollections()))) {
+        if (!data.isAutoPersist() && hasMissingBboxes(data.getCollections())) {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
                     .collections(computeMissingBboxes(data))
@@ -87,8 +86,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
         }
 
 
-        defaultValue = data.getDefaultExtent().isPresent() ? data.getDefaultExtent().get().getTemporalComputed().orElse(false) : false;
-        if (!data.isAutoPersist() && (defaultValue || hasMissingIntervals(data.getCollections()))) {
+        if (!data.isAutoPersist() && hasMissingIntervals(data.getCollections())) {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
                     .collections(computeMissingIntervals(data))
@@ -173,23 +171,20 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
     }
 
     private boolean hasMissingBboxes(Map<String, FeatureTypeConfigurationOgcApi> featureTypes) {
-        return featureTypes
-                .entrySet()
-                .stream()
-                .anyMatch(entry -> entry.getValue()
-                                        .getExtent()
-                                        .isPresent() &&
-                        entry.getValue()
-                             .getExtent()
-                             .get()
-                             .getSpatialComputed()
-                             .orElse(false));
+        return featureTypes.values()
+                           .stream()
+                           .anyMatch(this::hasMissingBbox);
+    }
+
+    private boolean hasMissingBbox(FeatureTypeConfigurationOgcApi featureType) {
+        return featureType.getExtent()
+                          .flatMap(CollectionExtent::getSpatialComputed)
+                          .orElse(false);
     }
 
     private ImmutableMap<String, FeatureTypeConfigurationOgcApi> computeMissingBboxes(
             OgcApiDataV2 apiData) throws IllegalStateException {
 
-        boolean defaultValue = apiData.getDefaultExtent().isPresent() ? apiData.getDefaultExtent().get().getSpatialComputed().orElse(false) : false;
 
         return apiData.getCollections()
                       .entrySet()
@@ -198,13 +193,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
                           FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, entry.getValue());
 
-                          Optional<CollectionExtent> extent = entry.getValue()
-                                                                   .getExtent();
-                          if (((!extent.isPresent() && defaultValue) ||
-                               (extent.isPresent() && extent.get()
-                                                            .getSpatialComputed()
-                                                            .orElse(defaultValue))) &&
-                                  featureProvider.supportsExtents()) {
+                          if (hasMissingBbox(entry.getValue()) && featureProvider.supportsExtents()) {
                               Optional<BoundingBox> spatialExtent = featureProvider.extents()
                                                                                    .getSpatialExtent(entry.getValue()
                                                                                                           .getId());
@@ -261,34 +250,25 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
     private boolean hasMissingIntervals(Map<String, FeatureTypeConfigurationOgcApi> featureTypes) {
         return featureTypes
-                .entrySet()
+                .values()
                 .stream()
-                .anyMatch(entry -> entry.getValue()
-                                        .getExtent()
-                                        .isPresent() &&
-                        entry.getValue()
-                             .getExtent()
-                             .get()
-                             .getTemporalComputed().orElse(false));
+                .anyMatch(this::hasMissingInterval);
+    }
+
+    private boolean hasMissingInterval(FeatureTypeConfigurationOgcApi featureType) {
+        return featureType.getExtent()
+                          .flatMap(CollectionExtent::getTemporalComputed)
+                          .orElse(false);
     }
 
     private ImmutableMap<String, FeatureTypeConfigurationOgcApi> computeMissingIntervals(OgcApiDataV2 apiData) {
-
-        boolean defaultValue = apiData.getDefaultExtent().isPresent() ? apiData.getDefaultExtent().get().getTemporalComputed().orElse(false) : false;
-
         return apiData.getCollections()
                 .entrySet()
                 .stream()
                 .map(entry -> {
                     FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, entry.getValue());
 
-                    Optional<CollectionExtent> extent = entry.getValue()
-                                                             .getExtent();
-                    if (((!extent.isPresent() && defaultValue) ||
-                            (extent.isPresent() && extent.get()
-                                                         .getTemporalComputed()
-                                                         .orElse(defaultValue))) &&
-                            featureProvider.supportsExtents()) {
+                    if (hasMissingInterval(entry.getValue()) && featureProvider.supportsExtents()) {
 
                         List<String> temporalQueryables = entry.getValue()
                                 .getExtension(FeaturesCoreConfiguration.class)
