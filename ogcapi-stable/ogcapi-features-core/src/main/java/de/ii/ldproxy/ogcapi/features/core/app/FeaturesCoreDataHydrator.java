@@ -156,6 +156,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                                   .label(type.getName())
                                                   .extent(new ImmutableCollectionExtent.Builder()
                                                           .spatialComputed(true)
+                                                          .temporalComputed(true)
                                                           .build())
                                                   .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder()
                                                           .enabled(true)
