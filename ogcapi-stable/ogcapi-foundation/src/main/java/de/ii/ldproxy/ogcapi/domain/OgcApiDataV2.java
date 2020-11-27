@@ -122,24 +122,44 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     @Value.Check
-    public OgcApiDataV2 mergeBuildingBlocks() {
+    public OgcApiDataV2 mergeCollectionDefaults() {
+        boolean collectionsHaveMissingExtents = getDefaultExtent().isPresent() && getCollections().values()
+                                                                                                  .stream()
+                                                                                                  .anyMatch(collection -> collection.getExtent().isEmpty());
+
         boolean collectionsHaveMissingParentExtensions = getCollections().values()
                                                                          .stream()
                                                                          .anyMatch(collection -> collection.getParentExtensions()
                                                                                                            .size() < getExtensions().size());
 
-        if (collectionsHaveMissingParentExtensions) {
-            Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>();
+        if (collectionsHaveMissingExtents || collectionsHaveMissingParentExtensions) {
+            Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>(getCollections());
 
-            getCollections().values()
-                            .forEach(featureTypeConfigurationOgcApi -> mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.getBuilder()
-                                                                                                                                                                   .parentExtensions(getExtensions())
-                                                                                                                                                                   .build()));
+            if (collectionsHaveMissingExtents) {
+                mergedCollections.values()
+                    .stream()
+                    .filter(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getExtent().isEmpty())
+                    .forEach(featureTypeConfigurationOgcApi -> mergedCollections
+                        .put(featureTypeConfigurationOgcApi.getId(),
+                            featureTypeConfigurationOgcApi.getBuilder()
+                                .extent(getDefaultExtent().get())
+                                .build()));
+            }
+
+            if (collectionsHaveMissingParentExtensions) {
+                mergedCollections.values()
+                    .forEach(featureTypeConfigurationOgcApi -> mergedCollections
+                        .put(featureTypeConfigurationOgcApi.getId(),
+                            featureTypeConfigurationOgcApi.getBuilder()
+                                .parentExtensions(getExtensions())
+                                .build()));
+            }
 
             return new ImmutableOgcApiDataV2.Builder().from(this)
                                                       .collections(mergedCollections)
                                                       .build();
         }
+
 
         return this;
     }
