@@ -165,7 +165,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
             if (collectionsHaveMissingExtents) {
                 mergedCollections.values()
                     .stream()
-                    .filter(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getExtent().isEmpty())
+                    .filter(featureTypeConfigurationOgcApi -> isToBeMerged(getDefaultExtent().get(), featureTypeConfigurationOgcApi.getExtent()))
                     .forEach(featureTypeConfigurationOgcApi -> mergedCollections
                         .put(featureTypeConfigurationOgcApi.getId(),
                             featureTypeConfigurationOgcApi.getBuilder()
