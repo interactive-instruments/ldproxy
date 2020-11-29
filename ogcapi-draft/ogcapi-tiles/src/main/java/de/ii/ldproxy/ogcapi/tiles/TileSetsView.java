@@ -35,6 +35,9 @@ public class TileSetsView extends OgcApiView {
     public String mapTitle;
     public String metadataTitle;
     public String tileMatrixSetTitle;
+    public String tilesetDescription;
+    public String templateTitle;
+    public String howToUse;
     public String none;
     public boolean withOlMap;
     public boolean spatialSearch;
@@ -118,8 +121,11 @@ public class TileSetsView extends OgcApiView {
                 .orElse(null);
 
         this.mapTitle = i18n.get("mapTitle", language);
+        this.templateTitle = i18n.get("templateTitle", language);
+        this.howToUse = i18n.get("howToUseTitle", language);
         this.metadataTitle = i18n.get("metadataTitle", language);
         this.tileMatrixSetTitle = i18n.get("tileMatrixSetTitle", language);
+        this.tilesetDescription = i18n.get("tilesetDescriptionTitle", language);
         this.none = i18n.get ("none", language);
 
         this.withOlMap = true;
