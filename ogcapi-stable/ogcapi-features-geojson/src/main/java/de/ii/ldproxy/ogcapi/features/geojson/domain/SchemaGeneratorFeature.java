@@ -418,7 +418,7 @@ public class SchemaGeneratorFeature {
                 if (property.isId()) {
                     context.id = pSchema;
                     List<String> requiredProperties = context.properties.getRequired();
-                    if (requiredProperties.contains(property.getName())) {
+                    if (Objects.nonNull(requiredProperties) && requiredProperties.contains(property.getName())) {
                         context.properties.required(requiredProperties.stream()
                                                                       .filter(p -> !p.equals(property.getName()))
                                                                       .collect(Collectors.toList()));
@@ -436,7 +436,7 @@ public class SchemaGeneratorFeature {
                 if (property.isId()) {
                     context.id = pSchema;
                     List<String> requiredProperties = context.properties.getRequired();
-                    if (requiredProperties.contains(property.getName())) {
+                    if (Objects.nonNull(requiredProperties) && requiredProperties.contains(property.getName())) {
                         context.properties.required(requiredProperties.stream()
                                                                       .filter(p -> !p.equals(property.getName()))
                                                                       .collect(Collectors.toList()));
