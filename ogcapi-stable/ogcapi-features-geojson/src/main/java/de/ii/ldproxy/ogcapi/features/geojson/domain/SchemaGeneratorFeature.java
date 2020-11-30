@@ -130,12 +130,12 @@ public class SchemaGeneratorFeature {
             Schema schema = new ObjectSchema().title(collectionData.getLabel())
                                               .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
                                               .addProperties("properties", featureContext.properties);
+
             if (type==SCHEMA_TYPE.RETURNABLES) {
-                boolean integerId = featureType.getProperties().stream().anyMatch(prop -> prop.isId() && prop.getType()== SchemaBase.Type.INTEGER);
                 schema.required(ImmutableList.of("type", "geometry", "properties"))
                       .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
                       .addProperties("geometry", featureContext.geometry)
-                      .addProperties("id", integerId ? new IntegerSchema() : new StringSchema())
+                      .addProperties("id", featureContext.id)
                       .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")));
             }
             schemaMapOpenApi.get(apiHashCode)
@@ -220,6 +220,7 @@ public class SchemaGeneratorFeature {
     }
 
     private class ContextOpenApi {
+        Schema id = new Schema();
         Schema properties = new ObjectSchema();
         Schema geometry = new Schema().nullable(true);
     }
@@ -414,7 +415,17 @@ public class SchemaGeneratorFeature {
                     }
                 }
 
-                context.properties.addProperties(propertyName, pSchema);
+                if (property.isId()) {
+                    context.id = pSchema;
+                    List<String> requiredProperties = context.properties.getRequired();
+                    if (requiredProperties.contains(property.getName())) {
+                        context.properties.required(requiredProperties.stream()
+                                                                      .filter(p -> !p.equals(property.getName()))
+                                                                      .collect(Collectors.toList()));
+                    }
+                } else {
+                    context.properties.addProperties(propertyName, pSchema);
+                }
             } else if (flatten && pSchema != null) {
                 // we have a leaf property in flattening mode
                 pSchema.title(nameTitleMap.get(propertyPath));
@@ -422,7 +433,17 @@ public class SchemaGeneratorFeature {
                     pSchema.description(property.getDescription().get());
                 processConstraintsOpenApi(property, context, pSchema);
 
-                context.properties.addProperties(propertyName, pSchema);
+                if (property.isId()) {
+                    context.id = pSchema;
+                    List<String> requiredProperties = context.properties.getRequired();
+                    if (requiredProperties.contains(property.getName())) {
+                        context.properties.required(requiredProperties.stream()
+                                                                      .filter(p -> !p.equals(property.getName()))
+                                                                      .collect(Collectors.toList()));
+                    }
+                } else {
+                    context.properties.addProperties(propertyName, pSchema);
+                }
             }
         });
 
@@ -444,6 +465,7 @@ public class SchemaGeneratorFeature {
     private class ContextJsonSchema {
         String objectKey = null;
         List<String> required = new Vector<>();
+        Map<String, Object> id = new TreeMap<>();
         Map<String, Object> properties = new TreeMap<>();
         Map<String, Object> geometry = ImmutableMap.of("type", "null");
         Set<FeatureSchema> definitions = new HashSet<>();
@@ -522,7 +544,6 @@ public class SchemaGeneratorFeature {
                 current = next;
             }
 
-            String idType = featureType.getProperties().stream().anyMatch(prop -> prop.isId() && prop.getType()== SchemaBase.Type.INTEGER) ? "integer" : "string";
             schemaMapJson.get(apiHashCode)
                          .get(collectionId)
                          .put(type, ImmutableMap.<String, Object>builder()
@@ -531,26 +552,30 @@ public class SchemaGeneratorFeature {
                                  .put("type", "object")
                                  .put("title", collectionData.getLabel())
                                  .put("description", collectionData.getDescription().orElse(featureType.getDescription().orElse("")))
+                                 .put("required", ImmutableList.builder()
+                                                               .add("type", "geometry", "properties")
+                                                               .build())
                                  .put("properties", type==SCHEMA_TYPE.RETURNABLES ?
                                          ImmutableMap.builder()
-                                                     .put("required", ImmutableList.builder()
-                                                                                   .add("type", "geometry", "properties")
-                                                                                   .build())
                                                      .put("type", ImmutableMap.builder()
                                                                               .put("type", "string")
                                                                               .put("enum", ImmutableList.builder()
                                                                                                         .add("Feature")
                                                                                                         .build())
                                                                               .build())
-                                                     .put("id", ImmutableMap.builder()
-                                                                            .put("type", idType)
-                                                                            .build())
+                                                     .put("id", featureContext.id)
                                                      .put("links", ImmutableMap.builder()
                                                                                .put("type", "array")
                                                                                .put("items", ImmutableMap.builder().put("$ref", "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link").build())
                                                                                .build())
                                                      .put("geometry", featureContext.geometry)
-                                                     .put("properties", featureContext.properties)
+                                                     .put("properties", ImmutableMap.builder()
+                                                                                    .put("type", "object")
+                                                                                    .put("required", ImmutableList.builder()
+                                                                                                                  .addAll(featureContext.required)
+                                                                                                                  .build())
+                                                                                    .put("properties", featureContext.properties)
+                                                                                    .build())
                                                      .build() :
                                         ImmutableMap.builder()
                                                     .putAll(featureContext.properties)
@@ -581,9 +606,9 @@ public class SchemaGeneratorFeature {
         return "type_"+Integer.toHexString(property.hashCode());
     }
 
-    private void processConstrainsJsonSchema(FeatureSchema property,
-                                             ContextJsonSchema context,
-                                             ImmutableMap.Builder<String, Object> pSchemaBuilder) {
+    private void processConstraintsJsonSchema(FeatureSchema property,
+                                              ContextJsonSchema context,
+                                              ImmutableMap.Builder<String, Object> pSchemaBuilder) {
         if (property.getConstraints().isPresent()) {
             SchemaConstraints constraints = property.getConstraints().get();
             if (constraints.getRequired().isPresent() && constraints.getRequired().get())
@@ -749,7 +774,7 @@ public class SchemaGeneratorFeature {
                               schemaBuilder.put("title", property.getLabel().get());
                           if (property.getDescription().isPresent())
                               schemaBuilder.put("description", property.getDescription().get());
-                          processConstrainsJsonSchema(property, context, pSchemaBuilder);
+                          processConstraintsJsonSchema(property, context, pSchemaBuilder);
 
                           if (property.isArray()) {
                               schemaBuilder.put("type", "array")
@@ -765,10 +790,15 @@ public class SchemaGeneratorFeature {
                               schemaBuilder.putAll(pSchemaBuilder.build());
                           }
 
-                          context.properties.put(propertyName, schemaBuilder.build());
+                          if (property.isId()) {
+                              context.id = schemaBuilder.build();
+                              context.required.remove(property.getName());
+                          } else {
+                              context.properties.put(propertyName, schemaBuilder.build());
+                          }
                       } else if (flatten) {
                           // we have a leaf property in flattening mode
-                          processConstrainsJsonSchema(property, context, pSchemaBuilder);
+                          processConstraintsJsonSchema(property, context, pSchemaBuilder);
                           ImmutableMap<String, Object> pSchema = pSchemaBuilder.build();
                           if (!pSchema.isEmpty()) {
                               ImmutableMap.Builder<String, Object> schemaBuilder = ImmutableMap.<String, Object>builder();
@@ -777,7 +807,12 @@ public class SchemaGeneratorFeature {
                                   schemaBuilder.put("description", property.getDescription().get());
                               schemaBuilder.putAll(pSchema);
 
-                              context.properties.put(propertyName, schemaBuilder.build());
+                              if (property.isId()) {
+                                  context.id = schemaBuilder.build();
+                                  context.required.remove(property.getName());
+                              } else {
+                                  context.properties.put(propertyName, schemaBuilder.build());
+                              }
                           }
                       }
                   });
