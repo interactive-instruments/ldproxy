@@ -20,7 +20,9 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -50,7 +52,7 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
     }
 
     @Requires
-    SchemaGeneratorFeature schemaGeneratorFeature;
+    SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
 
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
@@ -224,11 +226,11 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
         queryables.links(links);
          */
 
-        Map<String,Object> jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
-                                                                                                         .filter(link -> link.getRel().equals("self"))
-                                                                                                         .map(link -> link.getHref())
-                                                                                                         .map(link -> link.indexOf("?") == -1 ? link : link.substring(0, link.indexOf("?")))
-                                                                                                         .findAny(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES);
+        JsonSchemaObject jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
+                                                                                                       .filter(link -> link.getRel().equals("self"))
+                                                                                                       .map(link -> link.getHref())
+                                                                                                       .map(link -> link.indexOf("?") == -1 ? link : link.substring(0, link.indexOf("?")))
+                                                                                                       .findAny(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES);
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
                 .entity(outputFormat.getEntity(jsonSchema, links, collectionId, api, requestContext))

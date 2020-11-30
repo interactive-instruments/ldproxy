@@ -15,6 +15,8 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
@@ -36,7 +38,7 @@ public class QueryablesView extends OgcApiView {
     public Integer descCols = 9;
 
     public QueryablesView(OgcApiDataV2 apiData,
-                          Map<String, Object> schemaQueryables,
+                          JsonSchemaObject schemaQueryables,
                           List<Link> links,
                           List<NavigationDTO> breadCrumbs,
                           String staticUrlPrefix,
@@ -50,7 +52,7 @@ public class QueryablesView extends OgcApiView {
                 i18n.get("queryablesTitle", language),
                 i18n.get("queryablesDescription", language));
 
-        Map<String, Object> properties = ((Map<String, Object>) schemaQueryables.get("properties"));
+        Map<String, JsonSchema> properties = schemaQueryables.getProperties();
         ImmutableList.Builder<Queryable> builder = ImmutableList.builder();
         properties.forEach((key, value) -> {
             Map<String, Object> values = (Map<String, Object>) value;
