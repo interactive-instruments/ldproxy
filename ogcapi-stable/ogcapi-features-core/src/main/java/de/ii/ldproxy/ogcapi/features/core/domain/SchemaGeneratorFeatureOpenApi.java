@@ -102,7 +102,7 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
                       .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
                       .addProperties("geometry", featureContext.geometry)
                       .addProperties("id", featureContext.id)
-                      .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")));
+                      .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")));
             }
             schemaMapOpenApi.get(apiHashCode)
                             .get(collectionId)
@@ -244,7 +244,7 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
                     if (type==SCHEMA_TYPE.RETURNABLES) {
                         // ignore intermediate objects in flattening mode, only process leaf properties
                         if (property.getObjectType().orElse("").equals("Link")) {
-                            pSchema = new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link");
+                            pSchema = new Schema().$ref("#/components/schemas/Link");
                             break;
                         }
                         pSchema = processPropertiesOpenApi(property, type, false, null).properties;
@@ -328,7 +328,7 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
                 } else {
                     context.properties.addProperties(propertyName, pSchema);
                 }
-            } else if (flatten && pSchema != null) {
+            } else if (flatten && Objects.nonNull(pSchema)) {
                 // we have a leaf property in flattening mode
                 pSchema.title(nameTitleMap.get(propertyPath));
                 if (property.getDescription().isPresent())

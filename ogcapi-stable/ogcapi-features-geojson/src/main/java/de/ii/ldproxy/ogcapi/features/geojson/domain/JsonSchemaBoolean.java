@@ -15,6 +15,6 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableJsonSchemaBoolean.class)
 public abstract class JsonSchemaBoolean extends JsonSchema {
 
-    public final String getType() { return "boolea"; }
+    public final String getType() { return "boolean"; }
 
 }

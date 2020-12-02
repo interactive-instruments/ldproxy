@@ -23,7 +23,7 @@ public class SchemaGeneratorFeatureCollectionOpenApi {
             .required(ImmutableList.of("type","features"))
             .addProperties("type", new StringSchema()._enum(ImmutableList.of("FeatureCollection")))
             .addProperties("features", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/featureGeoJSON")))
-            .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")))
+            .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")))
             .addProperties("timeStamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timeStamp"))
             .addProperties("numberMatched", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberMatched"))
             .addProperties("numberReturned", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberReturned"));
@@ -41,7 +41,7 @@ public class SchemaGeneratorFeatureCollectionOpenApi {
                 .required(ImmutableList.of("type","features"))
                 .addProperties("type", new StringSchema()._enum(ImmutableList.of("FeatureCollection")))
                 .addProperties("features", new ArraySchema().items(new Schema().$ref(schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type))))
-                .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")))
+                .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")))
                 .addProperties("timeStamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timeStamp"))
                 .addProperties("numberMatched", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberMatched"))
                 .addProperties("numberReturned", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberReturned"));
@@ -54,7 +54,7 @@ public class SchemaGeneratorFeatureCollectionOpenApi {
                 .required(ImmutableList.of("type","features"))
                 .addProperties("type", new StringSchema()._enum(ImmutableList.of("FeatureCollection")))
                 .addProperties("features", new ArraySchema().items(new Schema().$ref(schemaGeneratorFeature.getSchemaReferenceOpenApi(name, type)))
-                .addProperties("links", new ArraySchema().items(new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")))
+                .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")))
                 .addProperties("timeStamp", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/timeStamp")))
                 .addProperties("numberMatched", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberMatched"))
                 .addProperties("numberReturned", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberReturned"));

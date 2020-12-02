@@ -39,7 +39,17 @@ import java.util.stream.Collectors;
 @Instantiate
 public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
 
-    final static String DEFINITIONS_TOKEN = "definitions";
+    final static String DEFINITIONS_TOKEN = "$defs";
+
+    final static JsonSchemaObject LINK_JSON = ImmutableJsonSchemaObject.builder()
+                                                                       .putProperties("href", ImmutableJsonSchemaString.builder()
+                                                                                                                       .format("uri-reference")
+                                                                                                                       .build())
+                                                                       .putProperties("rel", ImmutableJsonSchemaString.builder().build())
+                                                                       .putProperties("type", ImmutableJsonSchemaString.builder().build())
+                                                                       .putProperties("title", ImmutableJsonSchemaString.builder().build())
+                                                                       .addRequired("href")
+                                                                       .build();
 
     private final ConcurrentMap<Integer, ConcurrentMap<String, ConcurrentMap<SCHEMA_TYPE, JsonSchemaObject>>> schemaMapJson = new ConcurrentHashMap<>();
 
@@ -57,13 +67,10 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
         List<String> required = new Vector<>();
         JsonSchema id = null;
         Map<String, JsonSchema> properties = new TreeMap<>();
+        Map<String, JsonSchema> patternProperties = new TreeMap<>();
         JsonSchema geometry = ImmutableJsonSchemaNull.builder()
                                                      .build();
         Set<FeatureSchema> definitions = new HashSet<>();
-    }
-
-    public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri) {
-        return getSchemaJson(apiData, collectionId, schemaUri, SCHEMA_TYPE.RETURNABLES);
     }
 
     public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SCHEMA_TYPE type) {
@@ -98,37 +105,48 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                     queryables = featuresCoreConfiguration.get().getQueryables();
                 }
                 List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
-                featureContext = processPropertiesJsonSchema(featureType, type, true, true, allQueryables);
+                featureContext = processPropertiesJsonSchema(featureType, type, true, allQueryables);
             } else {
                 // the returnables schema
                 // flattening depends on the GeoJSON configuration
-                Optional<GeoJsonConfiguration> geoJsonConfiguration = collectionData.getExtension(GeoJsonConfiguration.class);
-                flatten = geoJsonConfiguration.filter(geoJsonConfig -> geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
-                        geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                      .isPresent();
+                flatten = type==SCHEMA_TYPE.RETURNABLES_FLAT;
 
-                featureContext = processPropertiesJsonSchema(featureType, type,true, flatten, null);
+                featureContext = processPropertiesJsonSchema(featureType, type,true, null);
             }
 
             ImmutableMap.Builder<String, JsonSchema> definitionsMapBuilder = ImmutableMap.builder();
             Set<FeatureSchema> processed = new HashSet<>();
             Set<FeatureSchema> current = featureContext.definitions;
 
+            final boolean[] linkAdded = {false};
+            if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
+                // we know, we will reference links
+                definitionsMapBuilder.put("Link", LINK_JSON);
+                linkAdded[0] = true;
+            }
+
             while (!flatten && !current.isEmpty()) {
                 Set<FeatureSchema> next = new HashSet<>();
                 current.stream()
                         .filter(defObject -> !processed.contains(defObject))
                         .forEach(defObject -> {
-                            ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, type,false, false, null);
-                            definitionsMapBuilder.put(definitionContext.objectKey, ImmutableJsonSchemaObject.builder()
-                                    .title(defObject.getLabel())
-                                    .description(defObject.getDescription())
-                                    .required(ImmutableList.<String>builder()
-                                                      .addAll(definitionContext.required)
-                                                      .build())
-                                    .properties(definitionContext.properties)
-                                    .build());
-                            next.addAll(definitionContext.definitions);
+                            if (defObject.getObjectType().isPresent() && defObject.getObjectType().get().equals("Link")) {
+                                if (!linkAdded[0]) {
+                                    definitionsMapBuilder.put("Link", LINK_JSON);
+                                    linkAdded[0] = true;
+                                }
+                            } else {
+                                ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, type, false, null);
+                                definitionsMapBuilder.put(definitionContext.objectKey, ImmutableJsonSchemaObject.builder()
+                                                                                                                .title(defObject.getLabel())
+                                                                                                                .description(defObject.getDescription())
+                                                                                                                .required(ImmutableList.<String>builder()
+                                                                                                                                  .addAll(definitionContext.required)
+                                                                                                                                  .build())
+                                                                                                                .properties(definitionContext.properties)
+                                                                                                                .build());
+                                next.addAll(definitionContext.definitions);
+                            }
                             processed.add(defObject);
                         });
                 current = next;
@@ -141,10 +159,12 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                                                              .id(schemaUri)
                                                              .title(collectionData.getLabel())
                                                              .description(collectionData.getDescription().orElse(featureType.getDescription().orElse("")))
-                                                             .required(ImmutableList.<String>builder()
+                                                             .required(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
+                                                                               ImmutableList.<String>builder()
                                                                                     .add("type", "geometry", "properties")
-                                                                                    .build())
-                                                             .properties( type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
+                                                                                    .build() :
+                                                                               ImmutableList.of())
+                                                             .properties(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
                                                                  ImmutableMap.<String,JsonSchema>builder()
                                                                              .put("type", ImmutableJsonSchemaString.builder()
                                                                                                                    .enums(ImmutableList.<String>builder()
@@ -153,15 +173,18 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                                                                                                                    .build())
                                                                              .put("id", featureContext.id)
                                                                              .put("links", ImmutableJsonSchemaArray.builder()
-                                                                                                                   .items(ImmutableJsonSchemaRef.builder().ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link").build())
+                                                                                                                   .items(ImmutableJsonSchemaRef.builder()
+                                                                                                                                                .ref("#/"+DEFINITIONS_TOKEN+"/Link")
+                                                                                                                                                .build())
                                                                                                                    .build())
                                                                              .put("geometry", featureContext.geometry)
                                                                              .put("properties", ImmutableJsonSchemaObject.builder()
-                                                                                                            .required(ImmutableList.<String>builder()
-                                                                                                                              .addAll(featureContext.required)
-                                                                                                                              .build())
-                                                                                                            .properties(featureContext.properties)
-                                                                                                            .build())
+                                                                                                                         .required(ImmutableList.<String>builder()
+                                                                                                                                           .addAll(featureContext.required)
+                                                                                                                                           .build())
+                                                                                                                         .properties(featureContext.properties)
+                                                                                                                         .patternProperties(featureContext.patternProperties)
+                                                                                                                         .build())
                                                                              .build() :
                                                                 ImmutableMap.<String,JsonSchema>builder()
                                                                             .putAll(featureContext.properties)
@@ -189,12 +212,16 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                                                  .title(label)
                                                  .description(description)
                                                  .build();
+
+            // TODO state either date or date-time, but we need a way to determine what it is
+            //      validators will ignore this informaton as it isn't a well-known format value
             case DATETIME:
                 return ImmutableJsonSchemaString.builder()
+                                                .format("date-time,date")
                                                 .title(label)
                                                 .description(description)
-                                                .format("date-time")
                                                 .build();
+
             case STRING:
                 return ImmutableJsonSchemaString.builder()
                                                 .title(label)
@@ -213,11 +240,12 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
 
     private JsonSchema processConstraintsJsonSchema(FeatureSchema property,
                                                     ContextJsonSchema context,
-                                                    JsonSchema jsonSchema) {
+                                                    JsonSchema jsonSchema,
+                                                    boolean setRequired) {
         JsonSchema result = jsonSchema;
         if (property.getConstraints().isPresent()) {
             SchemaConstraints constraints = property.getConstraints().get();
-            if (constraints.getRequired().isPresent() && constraints.getRequired().get())
+            if (setRequired && constraints.getRequired().isPresent() && constraints.getRequired().get())
                 context.required.add(property.getName());
             if (!constraints.getEnumValues().isEmpty()) {
                 // if enum is specified in the configuration, it wins over codelist
@@ -290,8 +318,9 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
         return result;
     }
 
-    private ContextJsonSchema processPropertiesJsonSchema(FeatureSchema schema, SCHEMA_TYPE type, boolean isFeature, boolean flatten, List<String> propertySubset) {
+    private ContextJsonSchema processPropertiesJsonSchema(FeatureSchema schema, SCHEMA_TYPE type, boolean isFeature, List<String> propertySubset) {
 
+        boolean flatten = (type==SCHEMA_TYPE.RETURNABLES_FLAT || type==SCHEMA_TYPE.QUERYABLES);
         ContextJsonSchema context = new ContextJsonSchema();
         context.objectKey = schema.getObjectType().orElse(getFallbackTypeName(schema));
 
@@ -316,24 +345,27 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                 properties = ImmutableList.of();
                 break;
 
+            case RETURNABLES_FLAT:
+                properties = schema.getAllNestedProperties();
+                break;
+
             case RETURNABLES:
             default:
-                properties = flatten ? schema.getAllNestedProperties() : schema.getProperties();
+                properties = schema.getProperties();
                 break;
         }
 
         properties.stream()
                   .forEachOrdered(property -> {
                       boolean geometry = false;
-                      // TODO ImmutableMap.Builder<String, Object> pSchemaBuilder = ImmutableMap.builder();
                       JsonSchema jsonSchema = null;
                       SchemaBase.Type propType = property.getType();
                       String propertyPath = String.join(".", property.getFullPath());
                       String propertyName = !flatten || property.isObject() ? property.getName() : propertyNameMap.get(propertyPath);
                       if (Objects.nonNull(propertyName)) {
-                          if (type== SCHEMA_TYPE.RETURNABLES)
-                              propertyName = propertyName.replace("[]",".1");
-                          else if (type== SCHEMA_TYPE.QUERYABLES)
+                          if (type==SCHEMA_TYPE.RETURNABLES_FLAT)
+                              propertyName = propertyName.replace("[]","\\.\\d+");
+                          else if (type==SCHEMA_TYPE.QUERYABLES)
                               propertyName = propertyName.replace("[]","");
                       }
                       Optional<String> label = flatten ? Optional.of(nameTitleMap.get(propertyPath)) : property.getLabel();
@@ -351,14 +383,8 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                               break;
                           case OBJECT:
                           case OBJECT_ARRAY:
-                              if (type== SCHEMA_TYPE.RETURNABLES && !flatten) {
-                                  // ignore intermediate objects in flattening mode, only process leaf properties
-                                  if (property.getObjectType().orElse("").equals("Link")) {
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link")
-                                                                         .build();
-                                      break;
-                                  }
+                              // ignore intermediate objects in flattening mode, only process leaf properties
+                              if (type==SCHEMA_TYPE.RETURNABLES) {
                                   jsonSchema = ImmutableJsonSchemaRef.builder()
                                                                      .ref("#/"+DEFINITIONS_TOKEN+"/"+property.getObjectType().orElse(getFallbackTypeName(property)))
                                                                      .build();
@@ -432,7 +458,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                           // only one geometry per feature, last one wins
                           context.geometry = jsonSchema;
                       } else if (!flatten) {
-                          jsonSchema = processConstraintsJsonSchema(property, context, jsonSchema);
+                          jsonSchema = processConstraintsJsonSchema(property, context, jsonSchema, true);
                           if (property.isArray()) {
                               ImmutableJsonSchemaArray.Builder builder = ImmutableJsonSchemaArray.builder()
                                                                                                  .items(jsonSchema);
@@ -444,18 +470,22 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                               jsonSchema = builder.build();
                           }
 
-                          if (property.isId() && (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT)) {
+                          if (property.isId() && type==SCHEMA_TYPE.RETURNABLES) {
                               context.id = jsonSchema;
                               context.required.remove(property.getName());
                           } else {
                               context.properties.put(propertyName, jsonSchema);
                           }
-                      } else if (flatten) {
+                      } else if (flatten && Objects.nonNull(jsonSchema)) {
                           // we have a leaf property in flattening mode
-                          jsonSchema = processConstraintsJsonSchema(property, context, jsonSchema);
-                          if (property.isId() && (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT)) {
+                          // leaf properties can only be required, if all nodes in the path are required; since we
+                          // do not have this information at hand, required properties are not set
+                          jsonSchema = processConstraintsJsonSchema(property, context, jsonSchema, false);
+                          if (property.isId() && type==SCHEMA_TYPE.RETURNABLES_FLAT) {
                               context.id = jsonSchema;
                               context.required.remove(property.getName());
+                          } else if (propertyName.contains("\\.\\d+") && type==SCHEMA_TYPE.RETURNABLES_FLAT) {
+                              context.patternProperties.put("^"+propertyName+"$", jsonSchema);
                           } else {
                               context.properties.put(propertyName, jsonSchema);
                           }

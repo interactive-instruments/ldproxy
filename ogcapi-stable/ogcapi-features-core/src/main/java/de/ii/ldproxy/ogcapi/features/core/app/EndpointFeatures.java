@@ -199,10 +199,13 @@ public class EndpointFeatures extends EndpointSubCollection {
             // TODO
         }
 
+        String typeName = coreConfiguration.flatMap(config -> config.getFeatureType())
+                                           .orElse(collectionId);
+
         List<FeatureSchema> featureProperties = providers.getFeatureProvider(apiData, featureType)
                                                          .getData()
                                                          .getTypes()
-                                                         .get(collectionId)
+                                                         .get(typeName)
                                                          .getProperties();
 
         if (definitionPath.equals("/collections/{collectionId}/items"))

@@ -233,7 +233,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
             case BOOLEAN:
                 return "boolean";
             case DATETIME:
-                return "string, format=date-time";
+                return "string, format=date or date-time";
             case STRING:
                 return "string";
         }
