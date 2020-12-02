@@ -478,9 +478,10 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                           }
                       } else if (flatten && Objects.nonNull(jsonSchema)) {
                           // we have a leaf property in flattening mode
-                          // leaf properties can only be required, if all nodes in the path are required; since we
-                          // do not have this information at hand, required properties are not set
-                          jsonSchema = processConstraintsJsonSchema(property, context, jsonSchema, false);
+                          // leaf properties can only be required, if all nodes in the path are required; in general,
+                          // we do not have this information at hand, so required properties are not set, unless the
+                          // leaf is on level 1
+                          jsonSchema = processConstraintsJsonSchema(property, context, jsonSchema, property.getParentPath().isEmpty());
                           if (property.isId() && type==SCHEMA_TYPE.RETURNABLES_FLAT) {
                               context.id = jsonSchema;
                               context.required.remove(property.getName());
