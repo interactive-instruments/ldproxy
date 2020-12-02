@@ -54,7 +54,11 @@ public class SchemaGeneratorImpl implements SchemaGenerator {
             case "Boolean":
                 return new BooleanSchema();
             case "Link":
-                return new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/link");
+                return new ObjectSchema().addProperties("href", new StringSchema().format("uri-reference"))
+                                         .addProperties("rel", new StringSchema())
+                                         .addProperties("type", new StringSchema())
+                                         .addProperties("title", new StringSchema())
+                                         .addRequiredItem("href");
         }
 
         if (!schemaMap.containsKey(clazz.getName()))

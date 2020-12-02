@@ -8,10 +8,22 @@
 package de.ii.ldproxy.ogcapi.collections.schema;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryHandler;
+import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -41,7 +53,7 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
     }
 
     @Requires
-    SchemaGeneratorFeature schemaGeneratorFeature;
+    SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
 
     private final I18n i18n;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
@@ -85,10 +97,18 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
         List<Link> links =
                 new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
-        Map<String,Object> jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
-                                                                                                         .filter(link -> link.getRel().equals("self"))
-                                                                                                         .map(link -> link.getHref())
-                                                                                                         .findAny());
+        Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
+                                                                     .get(collectionId)
+                                                                     .getExtension(GeoJsonConfiguration.class);
+        boolean flatten = geoJsonConfiguration.filter(geoJsonConfig -> geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
+                                                                       geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                              .isPresent();
+        SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
+
+        JsonSchemaObject jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
+                                                                                                       .filter(link -> link.getRel().equals("self"))
+                                                                                                       .map(link -> link.getHref())
+                                                                                                       .findAny(), type);
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
                 .entity(outputFormat.getEntity(jsonSchema, collectionId, api, requestContext))

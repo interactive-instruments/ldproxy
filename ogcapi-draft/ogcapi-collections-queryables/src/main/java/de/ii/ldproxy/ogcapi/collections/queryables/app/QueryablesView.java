@@ -15,6 +15,14 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaArray;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaBoolean;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaInteger;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaNumber;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaRef;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaString;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
@@ -24,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class QueryablesView extends OgcApiView {
     public List<Queryable> queryables;
@@ -36,7 +45,7 @@ public class QueryablesView extends OgcApiView {
     public Integer descCols = 9;
 
     public QueryablesView(OgcApiDataV2 apiData,
-                          Map<String, Object> schemaQueryables,
+                          JsonSchemaObject schemaQueryables,
                           List<Link> links,
                           List<NavigationDTO> breadCrumbs,
                           String staticUrlPrefix,
@@ -50,49 +59,41 @@ public class QueryablesView extends OgcApiView {
                 i18n.get("queryablesTitle", language),
                 i18n.get("queryablesDescription", language));
 
-        Map<String, Object> properties = ((Map<String, Object>) schemaQueryables.get("properties"));
+        Map<String, JsonSchema> properties = schemaQueryables.getProperties();
         ImmutableList.Builder<Queryable> builder = ImmutableList.builder();
         properties.forEach((key, value) -> {
-            Map<String, Object> values = (Map<String, Object>) value;
             ImmutableQueryable.Builder builder2 = ImmutableQueryable.builder()
                                                                     .id(key);
-            if (values.containsKey("title"))
-                builder2.title((String) values.get("title"));
-            if (values.containsKey("description"))
-                builder2.description((String) values.get("description"));
-            if (values.containsKey("$ref")) {
-                builder2.type(((String)values.get("$ref"))
-                                      .replace("https://geojson.org/schema/", "")
-                                      .replace(".json", ""));
-                builder2.isArray(false);
-            } else if (!values.containsKey("type")) {
-                builder2.type("string");
-                builder2.isArray(false);
+            builder2.title(value.getTitle())
+                    .description(value.getDescription());
+
+            if (value instanceof JsonSchemaArray) {
+                builder2.isArray(true);
+                value = ((JsonSchemaArray) value).getItems();
             } else {
-                String type = (String) values.get("type");
-                if (type.equals("array")) {
-                    builder2.isArray(true);
-                    if (values.containsKey("items")) {
-                        Map<String, String> items = (Map<String, String>) values.get("items");
-                        type = items.getOrDefault("type", "string");
-                    } else {
-                        type = "string";
-                    }
-                } else {
-                    builder2.isArray(false);
-                }
-                if (values.containsKey("format")) {
-                    if (values.get("format").equals("date-time"))
-                        type = "date-time";
-                }
-                builder2.type(type);
+                builder2.isArray(false);
             }
-            if (values.containsKey("enum")) {
-                ImmutableList.Builder<String> enumBuilder = ImmutableList.builder();
-                for (Object anEnum : ((Iterable) values.get("enum"))) {
-                    enumBuilder.add(String.valueOf(anEnum));
-                }
-                builder2.values(enumBuilder.build());
+
+            if (value instanceof JsonSchemaString) {
+                Optional<String> format = ((JsonSchemaString) value).getFormat();
+                if (format.isPresent() && format.get().equals("date-time,date"))
+                    builder2.type("date-time/date");
+                else
+                    builder2.type("string");
+                builder2.values(((JsonSchemaString) value).getEnums());
+            } else if (value instanceof JsonSchemaNumber) {
+                builder2.type("number");
+            } else if (value instanceof JsonSchemaInteger) {
+                builder2.type("integer");
+                builder2.values(((JsonSchemaInteger) value).getEnums().stream().map(val -> String.valueOf(val)).collect(Collectors.toList()));
+            } else if (value instanceof JsonSchemaBoolean) {
+                builder2.type("boolean");
+            } else if (value instanceof JsonSchemaRef) {
+                builder2.type(((JsonSchemaRef) value).getRef()
+                                                     .replace("https://geojson.org/schema/", "")
+                                                     .replace(".json", ""));
+            } else {
+                builder2.type("string");
             }
             builder.add(builder2.build());
         });

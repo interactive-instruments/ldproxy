@@ -21,12 +21,13 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureCollection;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureCollectionOpenApi;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -64,10 +65,10 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
             .build();
 
     @Requires
-    SchemaGeneratorFeature schemaGeneratorFeature;
+    SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
 
     @Requires
-    SchemaGeneratorFeatureCollection schemaGeneratorFeatureCollection;
+    SchemaGeneratorFeatureCollectionOpenApi schemaGeneratorFeatureCollection;
 
     @Requires
     GeoJsonWriterRegistry geoJsonWriterRegistry;
@@ -97,12 +98,18 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
         String schemaRef = "#/components/schemas/anyObject";
         Schema schema = new ObjectSchema();
         String collectionId = path.split("/", 4)[2];
+        Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
+                                                                     .get(collectionId)
+                                                                     .getExtension(GeoJsonConfiguration.class);
+        boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                              .isPresent();
+        SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
         if (path.matches("/collections/[^//]+/items/?")) {
-            schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId);
-            schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId);
+            schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId, type);
+            schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId, type);
         } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-            schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId);
-            schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId);
+            schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
+            schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
         }
         // TODO example
         return new ImmutableApiMediaTypeContent.Builder()
@@ -117,9 +124,17 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
         String collectionId = path.split("/", 4)[2];
         if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method== HttpMethods.PUT) ||
             (path.matches("/collections/[^//]+/items/?") && method== HttpMethods.POST)) {
+
+            // TODO change to MUTABLES
+            Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
+                                                                         .get(collectionId)
+                                                                         .getExtension(GeoJsonConfiguration.class);
+            boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                                  .isPresent();
+            SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId))
-                    .schemaRef(schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId))
+                    .schema(schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type))
+                    .schemaRef(schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type))
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
         }

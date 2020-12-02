@@ -7,7 +7,7 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 public class QueryParameterProperties implements OgcApiQueryParameter {
 
     @Requires
-    SchemaGeneratorFeature schemaGeneratorFeature;
+    SchemaInfo schemaInfo;
 
     @Override
     public String getId(String collectionId) {
@@ -63,7 +63,7 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
             schemaMap.get(apiHashCode)
-                     .put(collectionId, new ArraySchema().items(new StringSchema()._enum(schemaGeneratorFeature.getPropertyNames(apiData, collectionId))));
+                     .put(collectionId, new ArraySchema().items(new StringSchema()._enum(schemaInfo.getPropertyNames(apiData, collectionId))));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
     }

@@ -17,6 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -27,7 +28,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @Provides
@@ -68,7 +68,7 @@ public class QueryablesFormatHtml implements QueryablesFormatExtension {
     }
 
     @Override
-    public Object getEntity(Map<String, Object> schemaQueryables,
+    public Object getEntity(JsonSchemaObject schemaQueryables,
                             List<Link> links,
                             String collectionId,
                             OgcApi api,

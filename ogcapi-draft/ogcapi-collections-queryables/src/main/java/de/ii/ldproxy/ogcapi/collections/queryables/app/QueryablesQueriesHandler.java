@@ -20,7 +20,9 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -50,7 +52,7 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
     }
 
     @Requires
-    SchemaGeneratorFeature schemaGeneratorFeature;
+    SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
 
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
@@ -98,137 +100,11 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
         List<Link> links =
                 new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
-        /*
-        ImmutableQueryables.Builder queryables = ImmutableQueryables.builder();
-
-        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
-                .get(collectionId);
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
-        Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
-
-        List<String> featureTypeIds = featuresCoreConfiguration.get().getFeatureTypes();
-        if (featureTypeIds.isEmpty())
-            featureTypeIds = ImmutableList.of(collectionId);
-
-        List<String> otherQueryables = featuresCoreConfiguration
-                .flatMap(FeaturesCoreConfiguration::getQueryables)
-                .map(FeaturesCollectionQueryables::getOther)
-                .orElse(ImmutableList.of());
-
-        List<String> temporalQueryables = featuresCoreConfiguration
-                .flatMap(FeaturesCoreConfiguration::getQueryables)
-                .map(FeaturesCollectionQueryables::getTemporal)
-                .orElse(ImmutableList.of());
-
-        List<String> spatialQueryables = featuresCoreConfiguration
-                .flatMap(FeaturesCoreConfiguration::getQueryables)
-                .map(FeaturesCollectionQueryables::getSpatial)
-                .orElse(ImmutableList.of());
-
-        List<String> visitedProperties = new ArrayList<>();
-
-        featureTypeIds.forEach(featureTypeId -> {
-            FeatureSchema featureType = featureProvider.getData()
-                                                       .getTypes()
-                                                       .get(featureTypeId);
-
-            Optional<Locale> language = featureProvider.getData().getDefaultLanguage().isPresent() ?
-                    Optional.of(Locale.forLanguageTag(featureProvider.getData().getDefaultLanguage().get())) :
-                    Optional.empty();
-
-            if (Objects.nonNull(featureType)) {
-                featureType.getAllNestedProperties()
-                           .forEach(featureProperty -> {
-                               if (featureProperty.isObject()) {
-                                   return;
-                               }
-
-                               String nameInFilters = String.join(".", featureProperty.getFullPath());
-
-                               if (visitedProperties.contains(nameInFilters)) {
-                                   return;
-                               }
-
-                               Optional<Boolean> required = featureProperty.getConstraints().isPresent() ?
-                                       featureProperty.getConstraints().get().getRequired() : Optional.empty();
-
-                               Optional<String> pattern = featureProperty.getConstraints().isPresent() ?
-                                       featureProperty.getConstraints().get().getRegex() : Optional.empty();
-                               Optional<Double> min = featureProperty.getConstraints().isPresent() ?
-                                       featureProperty.getConstraints().get().getMin() : Optional.empty();
-                               Optional<Double> max = featureProperty.getConstraints().isPresent() ?
-                                       featureProperty.getConstraints().get().getMax() : Optional.empty();
-                               List<String> values = featureProperty.getConstraints().isPresent() ?
-                                       featureProperty.getConstraints().get().getEnumValues() : ImmutableList.of();
-
-
-                               // TODO: add more information to the configuration and include it in the Queryable values
-
-                               if (otherQueryables.contains(nameInFilters)) {
-                                   String type;
-                                   switch (featureProperty.getType()) {
-                                       case INTEGER:
-                                           type = "integer";
-                                    break;
-                                       case FLOAT:
-                                           type = "number";
-                                    break;
-                                       case STRING:
-                                           type = "string";
-                                    break;
-                                       case BOOLEAN:
-                                           type = "boolean";
-                                    break;
-                                       default:
-                                           return;
-                                   }
-
-                                   queryables.addQueryables(ImmutableQueryable.builder()
-                                                                              .id(nameInFilters)
-                                                                              .type(type)
-                                                                              .title(featureProperty.getLabel())
-                                                                              .description(featureProperty.getDescription())
-                                                                              .values(values)
-                                                                              .pattern(pattern)
-                                                                              .min(min)
-                                                                              .max(max)
-                                                                              .required(required)
-                                                                              .language(language)
-                                                                              .build());
-                                   visitedProperties.add(nameInFilters);
-                               } else if (temporalQueryables.contains(nameInFilters)) {
-                                   queryables.addQueryables(ImmutableQueryable.builder()
-                                                                              .id(nameInFilters)
-                                                                              .type("dateTime")
-                                                                              .title(featureProperty.getLabel())
-                                                                              .description(featureProperty.getDescription())
-                                                                              .required(required)
-                                                                              .language(language)
-                                                                              .build());
-                                   visitedProperties.add(nameInFilters);
-                               } else if (spatialQueryables.contains(nameInFilters)) {
-                                   queryables.addQueryables(ImmutableQueryable.builder()
-                                                                              .id(nameInFilters)
-                                                                              .type("geometry")
-                                                                              .title(featureProperty.getLabel())
-                                                                              .description(featureProperty.getDescription())
-                                                                              .required(required)
-                                                                              .language(language)
-                                                                              .build());
-                                   visitedProperties.add(nameInFilters);
-                               }
-                           });
-            }
-        });
-
-        queryables.links(links);
-         */
-
-        Map<String,Object> jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
-                                                                                                         .filter(link -> link.getRel().equals("self"))
-                                                                                                         .map(link -> link.getHref())
-                                                                                                         .map(link -> link.indexOf("?") == -1 ? link : link.substring(0, link.indexOf("?")))
-                                                                                                         .findAny(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES);
+        JsonSchemaObject jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
+                                                                                                       .filter(link -> link.getRel().equals("self"))
+                                                                                                       .map(link -> link.getHref())
+                                                                                                       .map(link -> link.indexOf("?") == -1 ? link : link.substring(0, link.indexOf("?")))
+                                                                                                       .findAny(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES);
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
                 .entity(outputFormat.getEntity(jsonSchema, links, collectionId, api, requestContext))
