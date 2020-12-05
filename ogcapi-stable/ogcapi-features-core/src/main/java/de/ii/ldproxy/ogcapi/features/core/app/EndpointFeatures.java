@@ -38,7 +38,6 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -198,15 +197,6 @@ public class EndpointFeatures extends EndpointSubCollection {
             transformations = coreConfiguration.get().getTransformations();
             // TODO
         }
-
-        String typeName = coreConfiguration.flatMap(config -> config.getFeatureType())
-                                           .orElse(collectionId);
-
-        List<FeatureSchema> featureProperties = providers.getFeatureProvider(apiData, featureType)
-                                                         .getData()
-                                                         .getTypes()
-                                                         .get(typeName)
-                                                         .getProperties();
 
         if (definitionPath.equals("/collections/{collectionId}/items"))
             return ImmutableList.<OgcApiQueryParameter>builder()
