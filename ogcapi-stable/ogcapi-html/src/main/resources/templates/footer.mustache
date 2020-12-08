@@ -81,6 +81,9 @@
 		var info = document.getElementById('info');
 		map.on('pointermove', showInfo);
 
+		var xyzTemplate = document.getElementById('xyzTemplate');
+		var howToUse = document.getElementById('howToUse');
+
       {{#tileCollections}}
         var tilesUrl{{tileMatrixSet}} = template.replace("{tileMatrixSetId}","{{tileMatrixSet}}").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
 
@@ -189,8 +192,14 @@
 			map.getView().setZoom(zoom{{tileMatrixSet}});
 			// map.getView().fit(extent{{tileMatrixSet}}, map.getSize());
             tilejson.href = tileJsonUrl{{tileMatrixSet}};
+            xyzTemplate.innerText = tilesUrl{{tileMatrixSet}};
 		  }
     {{/tileCollections}}
+          if (val === "WebMercatorQuad") {
+            howToUse.style.display = "block";
+          } else {
+            howToUse.style.display = "none";
+          };
 		  info.innerText = '';
 		  info.style.opacity = 0;
 		}

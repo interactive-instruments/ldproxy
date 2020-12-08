@@ -8,8 +8,16 @@
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -60,10 +68,11 @@ public class QueryablesFormatHtml implements QueryablesFormatExtension {
     }
 
     @Override
-    public Object getEntity(Queryables queryables,
-                                String collectionId,
-                                OgcApi api,
-                                ApiRequestContext requestContext) {
+    public Object getEntity(JsonSchemaObject schemaQueryables,
+                            List<Link> links,
+                            String collectionId,
+                            OgcApi api,
+                            ApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
         String queryablesTitle = i18n.get("queryablesTitle", requestContext.getLanguage());
@@ -93,7 +102,7 @@ public class QueryablesFormatHtml implements QueryablesFormatExtension {
                                                  .getExtension(HtmlConfiguration.class)
                                                  .orElse(null);
 
-        return new QueryablesView(api.getData(), queryables, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        return new QueryablesView(api.getData(), schemaQueryables, links, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 
 }

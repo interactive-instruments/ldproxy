@@ -10,8 +10,7 @@ package de.ii.ldproxy.ogcapi.collections.schema;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
-
-import java.util.Map;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 
 public interface SchemaFormatExtension extends FormatExtension {
 
@@ -19,5 +18,5 @@ public interface SchemaFormatExtension extends FormatExtension {
         return "^\\/?collections\\/[^\\/]+\\/schema/?$";
     }
 
-    Object getEntity(Map<String,Object> schema, String collectionId, OgcApi api, ApiRequestContext requestContext);
+    Object getEntity(JsonSchemaObject schema, String collectionId, OgcApi api, ApiRequestContext requestContext);
 }

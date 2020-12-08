@@ -10,6 +10,25 @@
     "parameters": {
     },
     "schemas": {
+      "Link": {
+        "type" : "object",
+        "required" : [ "href" ],
+        "properties" : {
+          "href" : {
+            "type" : "string",
+            "format" : "uri-reference"
+          },
+          "rel" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "title" : {
+            "type" : "string"
+          }
+        }
+      }
     }
   }
 }
