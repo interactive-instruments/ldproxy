@@ -1,5 +1,24 @@
 # Changelog
 
+## v2.4.0 (10/12/2020)
+
+#### Implemented enhancements
+
+-  support temporal extent computation [#174](https://github.com/interactive-instruments/ldproxy/issues/174)
+
+#### Improvements
+
+-  Tiles: explain use of tiles in HTML [#339](https://github.com/interactive-instruments/ldproxy/issues/339)
+-  JSON Schema: use 2019-09 instead of draft-07 [#336](https://github.com/interactive-instruments/ldproxy/issues/336)
+-  queryables resource as a JSON Schema [#333](https://github.com/interactive-instruments/ldproxy/issues/333)
+
+#### Fixed bugs
+
+-  GeoJSON: id in properties object [#337](https://github.com/interactive-instruments/ldproxy/issues/337)
+-  errors in feature schema (returnables) [#334](https://github.com/interactive-instruments/ldproxy/issues/334)
+
+---
+
 ## v2.3.0 (24/11/2020)
 
 #### Implemented enhancements
@@ -32,7 +51,6 @@
 #### Dependency updates
 
 -  bump postgresql driver from 42.2.16 to 42.2.18 [#306](https://github.com/interactive-instruments/ldproxy/issues/306)
--  bump swagger-ui from 3.17.6 to 3.36.0 [#288](https://github.com/interactive-instruments/ldproxy/issues/288)
 
 ---
 
