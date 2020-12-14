@@ -121,11 +121,38 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         return false;
     }
 
+    private Optional<CollectionExtent> merge(Optional<CollectionExtent> defaultExtent, Optional<CollectionExtent> collectionExtent) {
+        if (defaultExtent.isEmpty())
+            return collectionExtent;
+        else if (collectionExtent.isEmpty())
+            return defaultExtent;
+
+        return Optional.of(new ImmutableCollectionExtent.Builder()
+                                   .from(defaultExtent.get())
+                                   .from(collectionExtent.get())
+                                   .build());
+    }
+
+    private boolean isToBeMerged(CollectionExtent defaultExtent, Optional<CollectionExtent> collectionExtent) {
+        if (collectionExtent.isEmpty())
+            return true;
+
+        boolean spatial = collectionExtent.get().getSpatial().isPresent() || collectionExtent.get().getSpatialComputed().isPresent();
+        if (!spatial && (defaultExtent.getSpatialComputed().isPresent() || defaultExtent.getSpatial().isPresent()))
+            return true;
+
+        boolean temporal = collectionExtent.get().getTemporal().isPresent() || collectionExtent.get().getTemporalComputed().isPresent();
+        if (!temporal && (defaultExtent.getTemporalComputed().isPresent() || defaultExtent.getTemporal().isPresent()))
+            return true;
+
+        return false;
+    }
+
     @Value.Check
     public OgcApiDataV2 mergeCollectionDefaults() {
         boolean collectionsHaveMissingExtents = getDefaultExtent().isPresent() && getCollections().values()
                                                                                                   .stream()
-                                                                                                  .anyMatch(collection -> collection.getExtent().isEmpty());
+                                                                                                  .anyMatch(collection -> isToBeMerged(getDefaultExtent().get(), collection.getExtent()));
 
         boolean collectionsHaveMissingParentExtensions = getCollections().values()
                                                                          .stream()
@@ -138,11 +165,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
             if (collectionsHaveMissingExtents) {
                 mergedCollections.values()
                     .stream()
-                    .filter(featureTypeConfigurationOgcApi -> featureTypeConfigurationOgcApi.getExtent().isEmpty())
+                    .filter(featureTypeConfigurationOgcApi -> isToBeMerged(getDefaultExtent().get(), featureTypeConfigurationOgcApi.getExtent()))
                     .forEach(featureTypeConfigurationOgcApi -> mergedCollections
                         .put(featureTypeConfigurationOgcApi.getId(),
                             featureTypeConfigurationOgcApi.getBuilder()
-                                .extent(getDefaultExtent().get())
+                                .extent(merge(getDefaultExtent(), featureTypeConfigurationOgcApi.getExtent()))
                                 .build()));
             }
 

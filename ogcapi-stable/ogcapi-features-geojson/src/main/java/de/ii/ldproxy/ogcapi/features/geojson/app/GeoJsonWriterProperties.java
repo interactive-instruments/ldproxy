@@ -89,7 +89,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
+    public void onPropertiesEnd(FeatureTransformationContextGeoJson transformationContext,
                              Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
 
         writePropertyName(transformationContext.getJson(), "", ImmutableList.of(), transformationContext.getGeoJsonConfig()

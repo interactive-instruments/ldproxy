@@ -13,6 +13,9 @@
             <ul class="list-unstyled">
                 {{#title}}<li>{{.}}{{#description}}: {{{.}}}{{/description}}</li>{{/title}}</li>
                 <li>{{typeTitle}}: {{type}}</li>
+                {{#valueList}}
+                    <li>{{enumTitle}}: {{.}}</li>
+                {{/valueList}}
             </ul>
         </div>
     </div>

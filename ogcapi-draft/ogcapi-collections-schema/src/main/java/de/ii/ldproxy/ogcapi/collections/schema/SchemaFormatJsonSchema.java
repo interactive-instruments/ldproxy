@@ -7,15 +7,22 @@
  */
 package de.ii.ldproxy.ogcapi.collections.schema;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
-import java.util.Map;
 
 @Component
 @Provides
@@ -43,12 +50,13 @@ public class SchemaFormatJsonSchema implements SchemaFormatExtension {
         return new ImmutableApiMediaTypeContent.Builder()
                 .schema(new ObjectSchema())
                 .schemaRef("#/components/schemas/anyObject")
+                // TODO with OpenAPI 3.1 change to a link to a propert schema .schemaRef("https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema")
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
     }
 
     @Override
-    public Object getEntity(Map<String,Object> schema, String collectionId, OgcApi api, ApiRequestContext requestContext) {
+    public Object getEntity(JsonSchemaObject schema, String collectionId, OgcApi api, ApiRequestContext requestContext) {
         return schema;
     }
 }

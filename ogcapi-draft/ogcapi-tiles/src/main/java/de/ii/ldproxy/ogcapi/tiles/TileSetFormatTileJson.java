@@ -18,12 +18,12 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeature;
-import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -54,7 +54,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     SchemaGenerator schemaGenerator;
 
     @Requires
-    SchemaGeneratorFeature schemaGeneratorFeature;
+    SchemaInfo schemaInfo;
 
     @Requires
     FeaturesCoreProviders providers;
@@ -146,9 +146,9 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                     List<FeatureSchema> properties = flatten ? featureType.getAllNestedProperties() : featureType.getProperties();
                     // maps from the dotted path name to the path name with array brackets
                     Map<String,String> propertyNameMap = !flatten ? ImmutableMap.of() :
-                            schemaGeneratorFeature.getPropertyNames(apiData, featureTypeApi.getId(),false, true).stream()
-                                    .map(name -> new AbstractMap.SimpleImmutableEntry<String,String>(name.replace("[]",""), name))
-                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+                            schemaInfo.getPropertyNames(apiData, featureTypeApi.getId(), false, true).stream()
+                                      .map(name -> new AbstractMap.SimpleImmutableEntry<String,String>(name.replace("[]",""), name))
+                                      .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
                     ImmutableFields.Builder fieldsBuilder = new ImmutableFields.Builder();
                     AtomicReference<String> geometryType = new AtomicReference<>("unknown");
                     properties.stream()
@@ -233,7 +233,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
             case BOOLEAN:
                 return "boolean";
             case DATETIME:
-                return "string, format=date-time";
+                return "string, format=date or date-time";
             case STRING:
                 return "string";
         }
