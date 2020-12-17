@@ -102,7 +102,8 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
                                      .writeStringField("type", currentGeometryType.toString());
                 transformationContext.getJson()
                                      .writeFieldName("coordinates");
-                if (currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POINT) {
+                if (currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POINT &&
+                    currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.MULTI_POINT) {
                     transformationContext.getJson()
                                          .writeStartArray();
                 }
@@ -187,7 +188,8 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
         }*/
 
             //close coordinates
-            if (currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POINT) {
+            if (currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POINT &&
+                currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.MULTI_POINT) {
                 transformationContext.getJson()
                                      .writeEndArray();
             }
