@@ -745,15 +745,13 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         currentProperty = processedFeatureProperty;
         currentPropertyName = currentProperty.getName();
-        multiplicities.forEach(index -> currentPropertyName = currentPropertyName.replaceFirst("\\[[^\\]]*\\]", "."+index));
 
-        if (!allProperties) {
-            int idx = currentPropertyName.indexOf(".");
-            if (idx!=-1 && !properties.contains(currentPropertyName.substring(0,idx)))
-                currentProperty = null;
-            else if (idx==-1 && !properties.contains(currentPropertyName))
-                currentProperty = null;
+        if (!allProperties && !properties.contains(currentPropertyName.replace("[]", ""))) {
+            currentProperty = null;
         }
+
+        if (Objects.nonNull(currentProperty))
+            multiplicities.forEach(index -> currentPropertyName = currentPropertyName.replaceFirst("\\[[^\\]]*\\]", "."+index));
     }
 
     @Override
