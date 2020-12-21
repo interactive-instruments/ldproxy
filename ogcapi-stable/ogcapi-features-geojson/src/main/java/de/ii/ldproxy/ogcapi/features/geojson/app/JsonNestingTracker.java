@@ -203,9 +203,9 @@ public class JsonNestingTracker {
                 if (!Objects.equals(nextMultiplicityLevels.get(multiplicityKey), previousMultiplicityLevels.get(multiplicityKey))) {
                     return currentIndex;
                 }
-
-                currentIndex++;
             }
+            // the index in the path array (not the index in the multiplicities array), so increase for each path step
+            currentIndex++;
         }
 
         return -1;
