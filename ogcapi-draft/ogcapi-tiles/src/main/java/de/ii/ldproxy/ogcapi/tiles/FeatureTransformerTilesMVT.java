@@ -746,7 +746,8 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         currentProperty = processedFeatureProperty;
         currentPropertyName = currentProperty.getName();
 
-        if (!allProperties && !properties.contains(currentPropertyName.replace("[]", ""))) {
+        if (!allProperties && !(properties.contains(currentPropertyName) ||
+                                properties.contains(currentPropertyName.replace("[]", "")))) {
             currentProperty = null;
         }
 
