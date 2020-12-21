@@ -58,7 +58,6 @@ You can also create a distribution by running `./gradlew distTar` or `./gradlew 
 Additional information will be documented in a developer and design documentation (work-in-progress).
 
 <!--
-
 ## Community extensions
 
 For additional extensions to ldproxy that are not part of the releases, see [(TODO)](https://github.com/interactive-instruments/ldproxy-community).
