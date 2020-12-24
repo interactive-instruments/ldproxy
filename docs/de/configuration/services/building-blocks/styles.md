@@ -13,6 +13,8 @@ Das Modul basiert auf den Vorgaben der Konformatitätsklassen "Core", "Manage st
 |Resource |`/{apiId}/resources/{resourceId}` |GET<br>PUT<br>DELETE |\*<br>\*<br>n/a
 |Collection |`/{apiId}/collections/{collectionId}` |PATCH |JSON
 
+Erlaubte Zeichen für `{styleId}` und `{resourceId}` sind alle Zeichen bis auf den Querstrich ("/").
+
 In der Konfiguration können die folgenden Optionen gewählt werden:
 
 |Option |Datentyp |Default |Beschreibung
