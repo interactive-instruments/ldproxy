@@ -111,9 +111,16 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
         return schemaMapOpenApi.get(apiHashCode).get(collectionId).get(type);
     }
 
-    public Schema getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, String propertyName) {
+    public Optional<Schema> getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, String propertyName) {
         Schema featureSchema = getSchemaOpenApi(apiData, collectionId, SCHEMA_TYPE.QUERYABLES);
-        return (Schema) featureSchema.getProperties().getOrDefault(propertyName, new StringSchema());
+        if (Objects.isNull(featureSchema))
+            return Optional.empty();
+        if (Objects.isNull(featureSchema.getProperties()))
+            return Optional.empty();
+        if (!featureSchema.getProperties().containsKey(propertyName))
+            return Optional.empty();
+
+        return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
     }
 
     private class ContextOpenApi {

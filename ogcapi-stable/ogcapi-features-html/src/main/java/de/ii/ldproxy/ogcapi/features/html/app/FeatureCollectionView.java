@@ -7,9 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.app;
 
-import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
@@ -21,12 +19,16 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -109,25 +111,16 @@ public class FeatureCollectionView extends DatasetView {
         return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
     }
 
-    private String urlencode(String segment) {
-        try {
-            return URLEncoder.encode(segment, Charsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.warn(String.format("Exception while encoding feature id '%s' for use in a URI. Trying with the unencoded id.",segment));
-            return segment;
-        }
-    }
-
     public Function<String, String> getCurrentUrlWithSegment() {
         return segment -> uriBuilderWithFOnly.copy()
-                                    .ensureLastPathSegment(urlencode(segment))
+                                    .ensureLastPathSegment(segment)
                                     .ensureNoTrailingSlash()
                                     .toString();
     }
 
     public Function<String, String> getCurrentUrlWithSegmentClearParams() {
         return segment -> uriBuilder.copy()
-                                    .ensureLastPathSegment(urlencode(segment))
+                                    .ensureLastPathSegment(segment)
                                     .ensureNoTrailingSlash()
                                     .clearParameters()
                                     .toString();

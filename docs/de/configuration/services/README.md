@@ -6,7 +6,7 @@ Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/REA
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`id` |string | |Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Feature-Providers.
+|`id` |string | |Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Feature-Providers. Erlaubt sind Buchstaben (A-Z, a-z), Ziffern (0-9), der Unterstrich ("_") und der Bindestrich ("-").
 |`apiVersion` |integer |`null` |Ist ein Wert angegeben, dann wird eine Version im Pfad der API-URIs ergänzt. Ohne Angabe ist der Pfad zur Landing Page `/{id}`, wobei `{id}` der Identifikator der API ist. Ist der Wert angegeben, dann ist der Pfad zur Landing Page `/{id}/v{apiVersion}`, also z.B. `/{id}/v1` beim Wert 1.
 |`createdAt` |integer | |Zeitpunkt in Millisekunden seit dem 1.1.1970, an dem die Datei erzeugt wurde. Der Wert wird automatisch vom Manager bei der Erzeugung gesetzt und besitzt nur informativen Charakter.
 |`lastModified` |integer | |Zeitpunkt in Millisekunden seit dem 1.1.1970, an dem die Datei zuletzt geändert wurde. Der Wert wird automatisch vom Manager bei jeder Änderung gesetzt und besitzt nur informativen Charakter.
@@ -33,7 +33,7 @@ Jedes Collection-Objekt beschreibt eine Objektart (derzeit werden nur Feature Co
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`id` |string | |Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Feature-Providers.
+|`id` |string | |Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Types im Feature-Provider. Erlaubt sind Buchstaben (A-Z, a-z), Ziffern (0-9), der Unterstrich ("_") und der Bindestrich ("-").
 |`label` |string |der Wert von `id` |Eine Bezeichnung der API, z.B. für die Präsentation zu Nutzern.
 |`description` |string |`null` |Eine Beschreibung des Schemaobjekts, z.B. für die Präsentation zu Nutzern.
 |`persistentUriTemplate` |string |`null` |Über die Feature-Ressource hat jedes Feature zwar eine feste URI, die für Links verwendet werden kann, allerdings ist die URI nur so lange stabil, wie die API stabil bleibt. Um von Veränderungen in der URI unabhängig zu sein, kann es sinnvoll oder gewünscht sein, API-unabhängige URIs für die Features zu definieren und von diesen URIs auf die jeweils gültige API-URI weiterzuleiten. Diese kananosche URI kann auch in ldproxy Konfiguriert und bei den Features kodiert werden. Hierfür ist ein Muster der Feature-URI anzugeben, wobei `{{value}}` als Ersetzungspunkt für den lokalen Identifikator des Features in der API angegeben werden kann.
