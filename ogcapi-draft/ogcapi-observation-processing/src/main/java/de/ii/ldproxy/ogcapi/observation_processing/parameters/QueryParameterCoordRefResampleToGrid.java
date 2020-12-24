@@ -52,18 +52,18 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
     }
 
     @Override
-    public String getId() { return "coordRef-resample-to-grid"; }
+    public String getId() { return "coordsRef-grid"; }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"resample-to-grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
     }
 
     @Override
     public String getName() {
-        return "coordRef";
+        return "coordsRef";
     }
 
     @Override
@@ -95,9 +95,9 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
                                                    OgcApiDataV2 apiData) {
-        if (parameters.containsKey("coord")) {
+        if (parameters.containsKey("coords")) {
             if (parameters.containsKey(getName())) {
-                throw new IllegalArgumentException("Only one of the parameters 'coord' and 'coordRef' may be provided.");
+                throw new IllegalArgumentException("Only one of the parameters 'coords' and 'coordsRef' may be provided.");
             }
         }
 
@@ -139,7 +139,7 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
             // not a valid reference
         }
         if (geometry==null || geometry.isEmpty()) {
-            throw new IllegalArgumentException("The value of the parameter 'coordRef' (" + coordRef + ") is not a URI that resolves to a GeoJSON feature.");
+            throw new IllegalArgumentException("The value of the parameter 'coordsRef' (" + coordRef + ") is not a URI that resolves to a GeoJSON feature.");
         }
 
         if (geometry instanceof Polygon || geometry instanceof MultiPolygon)

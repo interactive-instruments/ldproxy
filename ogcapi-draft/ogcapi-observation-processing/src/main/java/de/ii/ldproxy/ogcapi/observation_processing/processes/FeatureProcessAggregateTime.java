@@ -35,7 +35,7 @@ public class FeatureProcessAggregateTime implements ObservationProcess {
     @Override
     public List<FeatureProcess> getSupportedProcesses(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(FeatureProcess.class).stream()
-                .filter(param -> param.getOutputType()== ObservationCollectionPointTimeSeries.class || param.getOutputType()== ObservationCollectionPointTimeSeriesList.class)
+                .filter(proc -> (proc.getOutputType()== ObservationCollectionPointTimeSeries.class || proc.getOutputType()== ObservationCollectionPointTimeSeriesList.class) && !proc.isAlwaysTerminal())
                 .collect(Collectors.toList());
     }
 

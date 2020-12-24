@@ -34,7 +34,7 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
 
     @Override
     public String getId() {
-        return "coordArea";
+        return "coordsArea";
     }
 
     @Override
@@ -46,7 +46,7 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
 
     @Override
     public String getName() {
-        return "coord";
+        return "coords";
     }
 
     @Override
@@ -78,15 +78,15 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
                                                    OgcApiDataV2 apiData) {
-        if (parameters.containsKey("coordRef") || parameters.getOrDefault("filter", "").contains("INTERSECTS")) {
-            // ignore coord, if coordRef is provided; the parameter may be processed already, so check filter, too
+        if (parameters.containsKey("coordsRef") || parameters.getOrDefault("filter", "").contains("INTERSECTS")) {
+            // ignore coord, if coordsRef is provided; the parameter may be processed already, so check filter, too
             parameters.remove(getName());
 
         } else if (parameters.containsKey(getName())) {
             // TODO support other CRS
             String coord = parameters.get(getName());
             if (!coord.matches(geometryHelper.getMultiPolygonRegex()) && !coord.matches(geometryHelper.getPolygonRegex())) {
-                throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "coord", coord));
+                throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "coords", coord));
             }
 
             String spatialPropertyName = getSpatialProperty(apiData, featureType.getId());
@@ -117,7 +117,7 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
                                                 Map<String, Object> context,
                                                 Map<String, String> parameters,
                                                 OgcApiDataV2 serviceData) {
-        if (parameters.containsKey("coordRef"))
+        if (parameters.containsKey("coordsRef"))
             // ignore coord
             return context;
 

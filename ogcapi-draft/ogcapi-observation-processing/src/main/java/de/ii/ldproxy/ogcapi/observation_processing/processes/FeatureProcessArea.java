@@ -1,8 +1,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.processes;
 
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
 import de.ii.ldproxy.ogcapi.observation_processing.data.GeometryMultiPolygon;
@@ -82,7 +81,7 @@ public class FeatureProcessArea implements ObservationProcess {
     @Override
     public Optional<String> getDescription() {
         return Optional.of("TODO" +
-                "A point observation feature with a point geometry at the selected location (`coord`) " +
+                "A point observation feature with a point geometry at the selected location (`coords`) " +
                 "at the selected time or for each time step in the selected time interval (`datetime`). " +
                 "The feature contains a property for each selected variable (`variables`) for which " +
                 "a value can be interpolated. " +
@@ -92,5 +91,10 @@ public class FeatureProcessArea implements ObservationProcess {
     @Override
     public Class<?> getOutputType() {
         return ObservationCollectionPointTimeSeriesList.class;
+    }
+
+    @Override
+    public boolean isNeverTerminal() {
+        return true;
     }
 }

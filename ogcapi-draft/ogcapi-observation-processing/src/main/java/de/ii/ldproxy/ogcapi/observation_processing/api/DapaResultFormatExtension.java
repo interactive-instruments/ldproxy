@@ -34,7 +34,7 @@ import java.util.Optional;
 
 public interface DapaResultFormatExtension extends FormatExtension {
 
-    final static String DAPA_PATH_ELEMENT = "dapa";
+    final static String DAPA_PATH_ELEMENT = "processes";
 
     @Override
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
@@ -58,9 +58,9 @@ public interface DapaResultFormatExtension extends FormatExtension {
     }
 
     default String getPathPattern() {
-        return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/position(?:\\:aggregate-time)?/?$)|" +
-                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/area(?:\\:aggregate-(space|time|space-time))?/?$)|" +
-                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/resample-to-grid(?:\\:aggregate-time)?/?$)";
+        return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/position(?:\\:(?:retrieve|aggregate-time))?/?$)|" +
+                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/area(?:\\:(?:retrieve|aggregate-(space|time|space-time)))?/?$)|" +
+                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/grid(?:\\:(?:retrieve|aggregate-time))?/?$)";
     }
 
     default boolean canTransformFeatures() {

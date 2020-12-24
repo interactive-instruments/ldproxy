@@ -74,4 +74,13 @@ public interface FeatureProcess extends ProcessExtension {
      */
     Class<?> getOutputType();
 
+    /**
+     * @return {@code true}, if the process is always the final process in a process chain
+     */
+    default boolean isAlwaysTerminal() { return false; }
+
+    /**
+     * @return {@code true}, if the process is never the final process in a process chain
+     */
+    default boolean isNeverTerminal() { return false; }
 }

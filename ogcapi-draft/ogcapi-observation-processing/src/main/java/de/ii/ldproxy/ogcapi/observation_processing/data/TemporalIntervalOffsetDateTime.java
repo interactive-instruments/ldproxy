@@ -43,7 +43,7 @@ public class TemporalIntervalOffsetDateTime implements TemporalInterval {
 
     @Override
     public Temporal getTime(String value) {
-        return OffsetDateTime.from(DateTimeFormatter.ISO_DATE.parse(value));
+        return OffsetDateTime.from(DateTimeFormatter.ISO_DATE.parse(value.substring(0,10)));
     }
 
     public class OffsetDateTimeIterator implements Iterator {

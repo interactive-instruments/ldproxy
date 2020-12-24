@@ -21,7 +21,7 @@ import java.util.Optional;
  */
 public class ObservationProcessingLinksGenerator extends DefaultLinksGenerator {
 
-    private static final String DAPA_PATH_ELEMENT = "dapa";
+    private static final String DAPA_PATH_ELEMENT = "processes";
 
     /**
      * generates the links on the page /{apiId}/collections/{collectionId}
@@ -42,17 +42,17 @@ public class ObservationProcessingLinksGenerator extends DefaultLinksGenerator {
                                 .removeParameters("f")
                                 .toString()
                         )
-                        .rel("ogc-dapa")
+                        .rel("ogc-dapa-processes")
                         .title(i18n.get("dapaEndpointsLink", language).replace("{{collection}}", featureType.getLabel()))
                         .build())
                 .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                 .ensureNoTrailingSlash()
-                                .ensureLastPathSegments(DAPA_PATH_ELEMENT, "variables")
+                                .ensureLastPathSegments("variables")
                                 .removeParameters("f")
                                 .toString()
                         )
-                        .rel("ogc-variables")
+                        .rel("ogc-dapa-variables")
                         .title(i18n.get("variablesLink", language))
                         .build())
                 .build();
@@ -74,12 +74,13 @@ public class ObservationProcessingLinksGenerator extends DefaultLinksGenerator {
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language))
                 .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
-                                .ensureNoTrailingSlash()
-                                .ensureLastPathSegment("variables")
-                                .removeParameters("f")
-                                .toString()
+                                        .removeLastPathSegments(1)
+                                        .ensureNoTrailingSlash()
+                                        .ensureLastPathSegment("variables")
+                                        .removeParameters("f")
+                                        .toString()
                         )
-                        .rel("ogc-variables")
+                        .rel("ogc-dapa-variables")
                         .title(i18n.get("variablesLink", language))
                         .build())
                 .build();
@@ -104,7 +105,7 @@ public class ObservationProcessingLinksGenerator extends DefaultLinksGenerator {
                                 .removeParameters("f")
                                 .toString()
                         )
-                        .rel("ogc-dapa")
+                        .rel("ogc-dapa-processes")
                         .title(i18n.get("dapaEndpointsLink", language).replace("{{collection}}", featureType.getLabel()))
                         .build())
                 .build();
