@@ -9,7 +9,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
-import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles
 
+import de.ii.ldproxy.ogcapi.tiles.app.EndpointTileSetsSingleCollection
 import spock.lang.Specification
 
 import javax.ws.rs.NotFoundException

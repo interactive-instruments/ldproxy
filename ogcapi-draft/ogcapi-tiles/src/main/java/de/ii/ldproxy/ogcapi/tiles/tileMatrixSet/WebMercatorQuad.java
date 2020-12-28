@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;

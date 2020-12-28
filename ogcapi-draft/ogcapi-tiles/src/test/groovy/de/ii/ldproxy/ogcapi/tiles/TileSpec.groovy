@@ -13,6 +13,9 @@ import de.ii.ldproxy.ogcapi.application.I18nDefault
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
 import de.ii.ldproxy.ogcapi.domain.OgcApi
 import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension
+import de.ii.ldproxy.ogcapi.tiles.app.TilesCacheImpl
+import de.ii.ldproxy.ogcapi.tiles.domain.MinMax
+import de.ii.ldproxy.ogcapi.tiles.domain.Tile
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.WebMercatorQuad
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory
 import spock.lang.Specification
@@ -153,7 +156,7 @@ class TileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TilesCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
+        def result= Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TilesCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
 
         then: "it should return the zoom levels of the tiling scheme"
 
@@ -234,7 +237,7 @@ class TileSpec extends Specification{
         def collectionId='collection'
         def tilingSchemeId= 'WebMercatorQuad'
         def zoomLevelsMap =  ImmutableMap.of(
-                "collection", (Map<String,MinMax>)ImmutableMap.of("WebMercatorQuad", (MinMax)new ImmutableMinMax.Builder().max(25).min(0).build()))
+                "collection", (Map<String, MinMax>)ImmutableMap.of("WebMercatorQuad", (MinMax)new ImmutableMinMax.Builder().max(25).min(0).build()))
         def i18n = new I18nDefault();
 
         when: "checkZoomLevel is called"

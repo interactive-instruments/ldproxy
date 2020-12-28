@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
-import de.ii.ldproxy.ogcapi.tiles.VectorTilesLinkGenerator;
+import de.ii.ldproxy.ogcapi.tiles.app.VectorTilesLinkGenerator;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ContentExtension;
-import de.ii.ldproxy.ogcapi.tiles.MinMax;
+import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;

@@ -1,7 +1,7 @@
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.tiles.MinMax;
+import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 
 import java.util.List;

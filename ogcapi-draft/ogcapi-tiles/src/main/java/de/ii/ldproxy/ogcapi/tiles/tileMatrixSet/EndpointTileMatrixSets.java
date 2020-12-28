@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.tiles.TilesConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
