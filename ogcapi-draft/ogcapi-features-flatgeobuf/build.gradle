@@ -1,0 +1,19 @@
+dependencies {
+    embedded (group: 'com.google.flatbuffers', name: 'flatbuffers-java', version: '1.12.0')
+    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.17.1')
+    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.17.1')
+
+    /*
+        embedded (group: 'org.wololo', name: 'flatgeobuf', version: '3.4.0') {
+        exclude group: 'javax.media', module: 'jai_core'
+        exclude module: 'jts-core'
+        exclude module: 'gt-main'
+        exclude module: 'gt-geojson'
+        exclude module: 'gt-epsg-hsql'
+    }
+    embedded (group: 'org.geotools', name: 'gt-main', version: '24.1') {
+        exclude module: 'jts-core'
+        exclude group: 'javax.media', module: 'jai_core'
+    }
+    */
+}
