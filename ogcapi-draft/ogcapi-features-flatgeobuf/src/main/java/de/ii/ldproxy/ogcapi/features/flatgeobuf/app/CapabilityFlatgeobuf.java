@@ -26,7 +26,7 @@ public class CapabilityFlatgeobuf implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableFlatgeobufConfiguration.Builder().enabled(true)
+        return new ImmutableFlatgeobufConfiguration.Builder().enabled(false)
                                                              .maxMultiplicity(3)
                                                              .build();
     }
