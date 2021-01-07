@@ -53,7 +53,7 @@ public class FeatureTransformerFlatgeobuf extends FeatureTransformerSimpleFeatur
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerFlatgeobuf.class);
 
-    private final Map<String,Class> properties;
+    private final Map<String,Class> featureType;
     private HeaderMeta headerMeta;
 
     public FeatureTransformerFlatgeobuf(ImmutableFeatureTransformationContextFlatgeobuf transformationContext) {
@@ -63,7 +63,10 @@ public class FeatureTransformerFlatgeobuf extends FeatureTransformerSimpleFeatur
               transformationContext.isFeatureCollection(), transformationContext.getOutputStream(),
               transformationContext.getCrsTransformer().orElse(null), transformationContext.shouldSwapCoordinates(),
               transformationContext.getFields(), ImmutableMap.of());
-        this.properties = transformationContext.getSimpleFeatureType();
+        // TODO flatgeobuf expects a SimpleFeatureType and SimpleFeature features from Geotools 24.1, but we use an old
+        //      version of Geotools, so cannot easily use it directly and need to update module or all dependencies first.
+        //      The current code is a stopgap until we get can use the pre-defined flatgeobuf functions
+        this.featureType = transformationContext.getSimpleFeatureType();
     }
 
     @Override
@@ -73,7 +76,8 @@ public class FeatureTransformerFlatgeobuf extends FeatureTransformerSimpleFeatur
 
     @Override
     public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) throws IOException {
-        this.headerMeta = serialize(collectionId, properties, numberReturned.getAsLong(), outputStream);
+        this.headerMeta = serialize(collectionId, featureType, numberReturned.getAsLong(), outputStream);
+        // FeatureTypeConversions.serialize(featureType, numberReturned.getAsLong(), outputStream);
     }
 
     public static HeaderMeta serialize(String typeName, Map<String,Class> properties, long featuresCount, OutputStream outputStream)
@@ -155,7 +159,10 @@ public class FeatureTransformerFlatgeobuf extends FeatureTransformerSimpleFeatur
 
     @Override
     public void onFeatureEnd() throws IOException {
+        // SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+        // TODO build SimpleFeature
         byte[] featureBuffer = serializeFeature(currentGeometry, currentId, currentProperties, headerMeta);
+                // FeatureConversions.serialize(builder.buildFeature(currentId), headerMeta);
         outputStream.write(featureBuffer);
     }
 
