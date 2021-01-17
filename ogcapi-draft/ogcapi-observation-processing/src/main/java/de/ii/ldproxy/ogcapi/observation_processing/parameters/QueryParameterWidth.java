@@ -42,7 +42,7 @@ public class QueryParameterWidth implements OgcApiQueryParameter {
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"resample-to-grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
     }
 
     @Override

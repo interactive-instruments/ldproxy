@@ -36,7 +36,7 @@ public class QueryParameterCoordPosition implements OgcApiQueryParameter {
     }
 
     @Override
-    public String getId() { return "coordPosition"; }
+    public String getId() { return "coordsPosition"; }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
@@ -47,7 +47,7 @@ public class QueryParameterCoordPosition implements OgcApiQueryParameter {
 
     @Override
     public String getName() {
-        return "coord";
+        return "coords";
     }
 
     @Override
@@ -106,19 +106,19 @@ public class QueryParameterCoordPosition implements OgcApiQueryParameter {
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
                                                    OgcApiDataV2 apiData) {
-        if (parameters.containsKey("coordRef") || parameters.containsKey("bbox")) {
-            // ignore coord, if coordRef is provided; the parameter may be processed already, so check bbox, too
+        if (parameters.containsKey("coordsRef") || parameters.containsKey("bbox")) {
+            // ignore coord, if coordsRef is provided; the parameter may be processed already, so check bbox, too
             parameters.remove(getName());
 
         } else {
             String coord = parameters.get(getName());
             if (coord == null) {
-                if (parameters.get("coordRef") != null)
+                if (parameters.get("coordsRef") != null)
                     return parameters;
 
                 coord = getDefault(apiData, Optional.of(featureType.getId())).orElse(null);
-                if (coord == null && parameters.get("coordRef") == null)
-                    throw new IllegalArgumentException("One of the 'coord' or 'coordRef' has to be provided.");
+                if (coord == null && parameters.get("coordsRef") == null)
+                    throw new IllegalArgumentException("One of the 'coords' or 'coordsRef' has to be provided.");
             }
 
             // TODO support other CRS
@@ -140,7 +140,7 @@ public class QueryParameterCoordPosition implements OgcApiQueryParameter {
                                                 Map<String, Object> context,
                                                 Map<String, String> parameters,
                                                 OgcApiDataV2 apiData) {
-        if (parameters.containsKey("coordRef"))
+        if (parameters.containsKey("coordsRef"))
             // ignore coord
             return context;
 

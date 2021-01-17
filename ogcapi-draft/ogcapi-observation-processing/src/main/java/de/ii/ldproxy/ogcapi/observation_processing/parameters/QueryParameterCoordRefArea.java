@@ -52,7 +52,7 @@ public class QueryParameterCoordRefArea implements OgcApiQueryParameter {
     }
 
     @Override
-    public String getId() { return "coordRef-area"; }
+    public String getId() { return "coordsRef-area"; }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
@@ -63,7 +63,7 @@ public class QueryParameterCoordRefArea implements OgcApiQueryParameter {
 
     @Override
     public String getName() {
-        return "coordRef";
+        return "coordsRef";
     }
 
     @Override
@@ -95,9 +95,9 @@ public class QueryParameterCoordRefArea implements OgcApiQueryParameter {
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
                                                    OgcApiDataV2 apiData) {
-        if (parameters.containsKey("coord")) {
+        if (parameters.containsKey("coords")) {
             if (parameters.containsKey(getName())) {
-                throw new IllegalArgumentException("Only one of the parameters 'coord' and 'coordRef' may be provided.");
+                throw new IllegalArgumentException("Only one of the parameters 'coords' and 'coordsRef' may be provided.");
             }
         }
 
@@ -139,7 +139,7 @@ public class QueryParameterCoordRefArea implements OgcApiQueryParameter {
             // not a valid reference
         }
         if (geometry==null || geometry.isEmpty()) {
-            throw new IllegalArgumentException("The value of the parameter 'coordRef' (" + coordRef + ") is not a URI that resolves to a GeoJSON feature.");
+            throw new IllegalArgumentException("The value of the parameter 'coordsRef' (" + coordRef + ") is not a URI that resolves to a GeoJSON feature.");
         }
 
         if (geometry instanceof Polygon || geometry instanceof MultiPolygon)

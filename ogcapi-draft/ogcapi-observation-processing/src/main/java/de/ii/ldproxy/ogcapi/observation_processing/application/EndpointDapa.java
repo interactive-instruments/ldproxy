@@ -66,7 +66,7 @@ import java.util.stream.Collectors;
 public class EndpointDapa extends EndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDapa.class);
-    private static final String DAPA_PATH_ELEMENT = "dapa";
+    private static final String DAPA_PATH_ELEMENT = "processes";
     private static final List<String> TAGS = ImmutableList.of("DAPA");
 
     @Requires

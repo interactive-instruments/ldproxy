@@ -61,7 +61,7 @@ public class ResultFormatExtensionGeoTiff implements DapaResultFormatExtension {
 
     @Override
     public String getPathPattern() {
-        return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/resample-to-grid(?:\\:aggregate-time)?/?$)";
+        return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/grid(?:\\:aggregate-time)?/?$)";
     }
 
     @Override
@@ -73,16 +73,16 @@ public class ResultFormatExtensionGeoTiff implements DapaResultFormatExtension {
     public Object initializeResult(FeatureProcessChain processes, Map<String, Object> processingParameters, List<Variable> variables, OutputStream outputStream, OgcApiDataV2 apiData) throws IOException {
         Result result = new Result(processes.getSubSubPath(), processingParameters, variables, outputStream);
         switch (result.processName.substring(DAPA_PATH_ELEMENT.length()+2)) {
-            case "resample-to-grid":
+            case "grid:retrieve":
                 TemporalInterval interval = (TemporalInterval) processingParameters.get("interval");
                 Comparable<Temporal> c1 = (Comparable<Temporal>) interval.getBegin();
                 if (c1.compareTo(interval.getEnd())!=0)
-                    throw new FormatNotSupportedException("GeoTIFF is only supported for 'resample-to-grid', if 'datetime' is an instant, but an interval was provided.");
+                    throw new FormatNotSupportedException("GeoTIFF is only supported for 'grid', if 'datetime' is an instant, but an interval was provided.");
                 break;
-            case "resample-to-grid:aggregate-time":
+            case "grid:aggregate-time":
                 break;
             case "default":
-                throw new FormatNotSupportedException("GeoTIFF is only supported for 'resample-to-grid:aggregate-time'.");
+                throw new FormatNotSupportedException("GeoTIFF is only supported for 'grid:aggregate-time'.");
         }
         return result;
     }
@@ -154,7 +154,7 @@ public class ResultFormatExtensionGeoTiff implements DapaResultFormatExtension {
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         String processId = path.substring(path.lastIndexOf("/")+1);
-        if (!processId.startsWith("resample-to-grid"))
+        if (!processId.startsWith("grid"))
             return null;
 
         return new ImmutableApiMediaTypeContent.Builder()

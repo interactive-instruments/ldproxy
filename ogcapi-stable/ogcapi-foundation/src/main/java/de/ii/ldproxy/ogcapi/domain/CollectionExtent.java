@@ -14,9 +14,7 @@ public interface CollectionExtent {
 
     Optional<BoundingBox> getSpatial();
 
-    @Value.Default
-    default boolean getSpatialComputed() {
-        return false;
-    }
+    Optional<Boolean> getSpatialComputed();
 
+    Optional<Boolean> getTemporalComputed();
 }

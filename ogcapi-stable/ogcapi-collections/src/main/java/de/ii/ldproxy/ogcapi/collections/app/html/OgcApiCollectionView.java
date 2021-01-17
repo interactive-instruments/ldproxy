@@ -158,7 +158,7 @@ public class OgcApiCollectionView extends OgcApiView {
     public List<Link> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|describedby|license|enclosure|ogc-dapa)$"))
+                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|describedby|license|enclosure|ogc-dapa-processes)$"))
                 .collect(Collectors.toList());
     }
 
@@ -205,7 +205,7 @@ public class OgcApiCollectionView extends OgcApiView {
     public Optional<Link> getDapa() {
         return links
                 .stream()
-                .filter(link -> Objects.equals(link.getRel(), "ogc-dapa"))
+                .filter(link -> Objects.equals(link.getRel(), "ogc-dapa-processes"))
                 .findFirst();
     }
 

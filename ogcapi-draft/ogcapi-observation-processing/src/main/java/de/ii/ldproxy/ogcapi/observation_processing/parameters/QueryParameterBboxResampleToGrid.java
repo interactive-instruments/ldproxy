@@ -43,12 +43,12 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
 
     @Override
     public String getId() {
-        return "bbox-resample-to-grid";
+        return "bbox-grid";
     }
 
     @Override
     public String getId(String collectionId) {
-        return "bbox-resample-to-grid_"+collectionId;
+        return "bbox-grid_"+collectionId;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return isEnabledForApi(apiData) &&
                method== HttpMethods.GET &&
-               featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"resample-to-grid");
+               featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
     }
 
     @Override
@@ -140,7 +140,7 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
 
     @Override
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiDataV2 apiData) {
-        if (parameters.containsKey("coordRef"))
+        if (parameters.containsKey("coordsRef"))
             // ignore bbox
             return context;
 

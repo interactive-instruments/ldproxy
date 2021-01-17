@@ -35,10 +35,11 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -56,6 +57,7 @@ import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,6 +69,9 @@ public class EndpointFeatures extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFeatures.class);
     private static final List<String> TAGS = ImmutableList.of("Access data");
+
+    @Requires
+    SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
 
     private final FeaturesCoreProviders providers;
     private final FeaturesQuery ogcApiFeaturesQuery;
@@ -199,13 +204,21 @@ public class EndpointFeatures extends EndpointSubCollection {
             return ImmutableList.<OgcApiQueryParameter>builder()
                     .addAll(generalList)
                     .addAll(filterableFields.keySet().stream()
-                        .map(field -> new ImmutableQueryParameterTemplateQueryable.Builder()
+                        .map(field -> {
+                            Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, field);
+                            if (schema2.isEmpty()) {
+                                LOGGER.warn("Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.", field, collectionId);
+                                return null;
+                            }
+                            return new ImmutableQueryParameterTemplateQueryable.Builder()
                                     .apiId(apiData.getId())
                                     .collectionId(collectionId)
                                     .name(field)
                                     .description("Filter the collection by property '" + field + "'")
-                                    .schema(new StringSchema())
-                                    .build())
+                                    .schema(schema2.get())
+                                    .build();
+                        })
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                     .build();
 

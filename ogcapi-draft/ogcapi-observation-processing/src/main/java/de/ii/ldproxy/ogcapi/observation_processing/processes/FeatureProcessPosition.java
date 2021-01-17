@@ -89,7 +89,7 @@ public class FeatureProcessPosition implements ObservationProcess {
 
     @Override
     public Optional<String> getDescription() {
-        return Optional.of("A point observation feature with a point geometry at the selected location (`coord`) " +
+        return Optional.of("A point observation feature with a point geometry at the selected location (`coords`) " +
                 "at the selected time or for each time step in the selected time interval (`datetime`). " +
                 "The feature contains a property for each selected variable (`variables`) for which " +
                 "a value can be interpolated. " +
@@ -99,5 +99,10 @@ public class FeatureProcessPosition implements ObservationProcess {
     @Override
     public Class<?> getOutputType() {
         return ObservationCollectionPointTimeSeries.class;
+    }
+
+    @Override
+    public boolean isNeverTerminal() {
+        return true;
     }
 }

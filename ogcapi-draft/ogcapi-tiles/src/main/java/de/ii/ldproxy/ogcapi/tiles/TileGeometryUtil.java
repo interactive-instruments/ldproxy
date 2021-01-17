@@ -218,15 +218,18 @@ public class TileGeometryUtil {
     }
 
     static Geometry reduce(Geometry geom, GeometryPrecisionReducer reducer, PrecisionModel precisionModel, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair) {
-        Geometry newGeom = reducer.reduce(geom);
-        if (geom instanceof Polygon || geom instanceof MultiPolygon) {
-            double areaChange = Math.abs(newGeom.getArea() - geom.getArea()) / geom.getArea();
-            if (areaChange > maxRelativeAreaChangeInPolygonRepair &&
-                Math.abs(newGeom.getArea() - geom.getArea()) > maxAbsoluteAreaChangeInPolygonRepair)
-                newGeom = GeometryPrecisionReducer.reducePointwise(geom, precisionModel);
+        try {
+            Geometry newGeom = reducer.reduce(geom);
+            if (geom instanceof Polygon || geom instanceof MultiPolygon) {
+                double areaChange = Math.abs(newGeom.getArea() - geom.getArea()) / geom.getArea();
+                if (areaChange > maxRelativeAreaChangeInPolygonRepair &&
+                        Math.abs(newGeom.getArea() - geom.getArea()) > maxAbsoluteAreaChangeInPolygonRepair)
+                    newGeom = GeometryPrecisionReducer.reducePointwise(geom, precisionModel);
+            }
+            return newGeom;
+        } catch (Exception e) {
+            return GeometryPrecisionReducer.reducePointwise(geom, precisionModel);
         }
-
-        return newGeom;
     }
 }
 

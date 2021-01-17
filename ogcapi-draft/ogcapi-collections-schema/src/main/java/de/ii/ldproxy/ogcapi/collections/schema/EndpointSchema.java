@@ -130,7 +130,7 @@ public class EndpointSchema extends EndpointSubCollection {
                 .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        QueriesHandlerSchema.QueryInputQueryables queryInput = new ImmutableQueryInputQueryables.Builder()
+        QueriesHandlerSchema.QueryInputSchema queryInput = new ImmutableQueryInputSchema.Builder()
                 .collectionId(collectionId)
                 .includeLinkHeader(includeLinkHeader)
                 .build();

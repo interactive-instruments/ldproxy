@@ -14,8 +14,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class QueryParameterFVariables extends QueryParameterF {
 
-    private static final String DAPA_PATH_ELEMENT = "dapa";
-
     protected QueryParameterFVariables(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
@@ -28,7 +26,7 @@ public class QueryParameterFVariables extends QueryParameterF {
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return super.isApplicable(apiData, definitionPath, method) &&
-                definitionPath.equals("/collections/{collectionId}/"+DAPA_PATH_ELEMENT+"/variables");
+                definitionPath.equals("/collections/{collectionId}/variables");
     }
 
     @Override

@@ -14,7 +14,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class QueryParameterFProcessing extends QueryParameterF {
 
-    private static final String DAPA_PATH_ELEMENT = "dapa";
+    private static final String DAPA_PATH_ELEMENT = "processes";
 
     protected QueryParameterFProcessing(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);

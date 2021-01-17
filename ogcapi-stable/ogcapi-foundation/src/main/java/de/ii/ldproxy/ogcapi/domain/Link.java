@@ -77,6 +77,10 @@ public abstract class Link {
             return "GML";
         else if (mediaType.toLowerCase().split(";")[0].equals("application/geo+json"))
             return "GeoJSON";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/ld+json"))
+            return "JSON-LD";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/schema+json"))
+            return "JSON";
         else if (mediaType.toLowerCase().split(";")[0].equals("application/json"))
             return "JSON";
         else if (mediaType.toLowerCase().split(";")[0].equals("application/xml"))
@@ -85,7 +89,7 @@ public abstract class Link {
             return "HTML";
         else if (mediaType.toLowerCase().split(";")[0].endsWith("+xml"))
             return "XML";
-        else if (mediaType.toLowerCase().split(";")[0].startsWith("+json"))
+        else if (mediaType.toLowerCase().split(";")[0].endsWith("+json"))
             return "JSON";
 
         return mediaType;

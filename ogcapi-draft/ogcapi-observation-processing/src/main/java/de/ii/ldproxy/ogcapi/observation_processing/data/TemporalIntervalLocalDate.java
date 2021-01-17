@@ -39,7 +39,7 @@ public class TemporalIntervalLocalDate implements TemporalInterval {
 
     @Override
     public Temporal getTime(String value) {
-        return LocalDate.from(DateTimeFormatter.ISO_DATE.parse(value));
+        return LocalDate.from(DateTimeFormatter.ISO_DATE.parse(value.substring(0,10)));
     }
 
     @Override

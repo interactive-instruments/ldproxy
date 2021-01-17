@@ -5,6 +5,10 @@
     <span>{{{description}}}</span>
     <br/>
     <br/>
+    <span>{{{tilesetDescription}}}</span>
+    <br/>
+    <br/>
+    <span id="howToUse">{{{howToUse}}}</span>
 
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{tileMatrixSetTitle}}</div>
@@ -13,6 +17,11 @@
                 {{#tileCollections}}<option value="{{tileMatrixSet}}">{{tileMatrixSet}}</option>{{/tileCollections}}
             </select>
         </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{templateTitle}}</div>
+        <div class="col-md-10" id="xyzTemplate"></div>
     </div>
 
     <div class="row my-3">

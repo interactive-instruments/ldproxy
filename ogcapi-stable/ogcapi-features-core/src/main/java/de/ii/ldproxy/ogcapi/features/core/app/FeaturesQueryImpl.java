@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -16,9 +15,9 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
@@ -49,8 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -90,15 +87,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         this.cql = cql;
     }
 
-    private String urldecode(String segment) {
-        try {
-            return URLDecoder.decode(segment, Charsets.UTF_8.toString());
-        } catch (UnsupportedEncodingException e) {
-            LOGGER.error(String.format("Exception while decoding feature id '%s' for querying. Trying with the undecoded id.", segment));
-            return segment;
-        }
-    }
-
     @Override
     public FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
                                               FeaturesCoreConfiguration coreConfiguration,
@@ -109,7 +97,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             parameters = parameter.transformParameters(collectionData, parameters, apiData);
         }
 
-        final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(urldecode(featureId))));
+        final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(featureId)));
 
         final String collectionId = collectionData.getId();
         final String featureTypeId = apiData.getCollections()

@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.processing.Processing;
 public interface DapaOverviewFormatExtension extends GenericFormatExtension {
 
     default String getPathPattern() {
-        String DAPA_PATH_ELEMENT = "dapa";
+        String DAPA_PATH_ELEMENT = "processes";
         return "^/collections/[\\w\\-]+/"+ DAPA_PATH_ELEMENT+"/?$";
     }
 

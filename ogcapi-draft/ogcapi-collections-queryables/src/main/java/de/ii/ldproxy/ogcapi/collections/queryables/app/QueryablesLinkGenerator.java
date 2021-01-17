@@ -40,7 +40,7 @@ public class QueryablesLinkGenerator {
                                 .removeParameters("f")
                                 .toString()
                         )
-                        .rel("queryables")
+                        .rel("http://www.opengis.net/def/rel/ogc/1.0/queryables")
                         .title(i18n.get("queryablesLink", language))
                         .build())
                 .build();

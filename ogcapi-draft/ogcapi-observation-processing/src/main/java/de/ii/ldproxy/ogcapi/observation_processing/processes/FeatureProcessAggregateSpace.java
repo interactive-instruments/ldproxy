@@ -33,7 +33,7 @@ public class FeatureProcessAggregateSpace implements ObservationProcess {
     @Override
     public List<FeatureProcess> getSupportedProcesses(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(FeatureProcess.class).stream()
-                .filter(param -> param.getOutputType()== ObservationCollectionPointTimeSeriesList.class)
+                .filter(proc -> proc.getOutputType()==ObservationCollectionPointTimeSeriesList.class && !proc.isAlwaysTerminal())
                 .collect(Collectors.toList());
     }
 

@@ -70,7 +70,7 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointObservationProcessing.class);
     private static final List<String> TAGS = ImmutableList.of("DAPA"); // TODO make configurable
-    private static final String DAPA_PATH_ELEMENT = "dapa";
+    private static final String DAPA_PATH_ELEMENT = "processes";
 
     final FeaturesCoreProviders providers;
     final FeaturesQuery ogcApiFeaturesQuery;
@@ -148,13 +148,13 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
                                     List<String> tags;
                                     String processId = subSubPath.substring(DAPA_PATH_ELEMENT.length()+2);
                                     switch (processId) {
-                                        case "position":
+                                        case "position:retrieve":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
                                                     "retrieve a time series for a position";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns a time series at the selected location (parameter `coord` or `coordRef`) " +
+                                                    Optional.of("Returns a time series at the selected location (parameter `coords` or `coordRefs`) " +
                                                             "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
                                                             "The time series contains values for each selected variable (parameter `variables`) for which " +
                                                             "a value can be interpolated.\n\n" +
@@ -167,20 +167,20 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
                                                     "retrieve aggregated observation values for a position, aggregated over time";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns observation values at the selected location (parameter `coord` or `coordRef`) " +
+                                                    Optional.of("Returns observation values at the selected location (parameter `coords` or `coordsRef`) " +
                                                             "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
                                                             "All values in the time interval for each requested variable (parameter `variables`) are aggregated " +
                                                             "and each of the requested statistical functions (parameter `functions`) is applied to " +
                                                             "the aggregated values.");
                                             break;
 
-                                        case "area":
+                                        case "area:retrieve":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
                                                     "retrieve a time series for each station in an area";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns a time series for each station in an area (parameter `box`, `coord` or `coordRef`) " +
+                                                    Optional.of("Returns a time series for each station in an area (parameter `box`, `coords` or `coordsRef`) " +
                                                             "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
                                                             "Each time series contains values for each selected variable (parameter `variables`) for which " +
                                                             "a value has been observed at the station during the time interval.\n\n" +
@@ -193,7 +193,7 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
                                                     "retrieve aggregated observation values for each station in an area, aggregated over time";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns observation values for each station in an area (parameter `box`, `coord` or `coordRef`) " +
+                                                    Optional.of("Returns observation values for each station in an area (parameter `box`, `coords` or `coordsRef`) " +
                                                             "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
                                                             "All values of each station in the time interval for each requested variable (parameter `variables`) are aggregated " +
                                                             "and each of the requested statistical functions (parameter `functions`) is applied to " +
@@ -206,7 +206,7 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
                                                     "retrieve a time series for an area, aggregated over all stations in the area";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns a time series for an area (parameter `bbox`, `coord` or `coordRef`) " +
+                                                    Optional.of("Returns a time series for an area (parameter `bbox`, `coords` or `coordsRef`) " +
                                                             "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
                                                             "All values in the area for each requested variable (parameter `variables`) are aggregated " +
                                                             "for each time step and each of the requested statistical functions (parameter `functions`) " +
@@ -219,21 +219,21 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
                                                     "retrieve aggregated observation values for an area, aggregated over space and time";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns observation values for an area (parameter `bbox`, `coord` or `coordRef`) " +
+                                                    Optional.of("Returns observation values for an area (parameter `bbox`, `coords` or `coordsRef`) " +
                                                             "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
                                                             "All values for each requested variable (parameter `variables`) are aggregated " +
                                                             "and each of the requested statistical functions (parameter `functions`) is applied to " +
                                                             "the aggregated values.");
                                             break;
 
-                                        case "resample-to-grid":
+                                        case "grid:retrieve":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
                                                     "retrieve observations in a spatio-temporal cube";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
                                                     Optional.of("Retrieves observation values for each cell in a spatio-temporal cube consisting of a rectangular " +
-                                                            "spatial grid (parameter `box` or `coordRef`) and the time steps in a time interval (parameter `datetime`). " +
+                                                            "spatial grid (parameter `box` or `coordsRef`) and the time steps in a time interval (parameter `datetime`). " +
                                                             "The time steps are determined from the information in the original data.\n\n" +
                                                             "The cells of the spatial grid are determined by the parameters `width` and `height`. If only `width` " +
                                                             "is provided, the value of `height` is derived from the area.\n\n" +
@@ -241,13 +241,13 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
                                                             "a value could be interpolated from the observations.");
                                             break;
 
-                                        case "resample-to-grid:aggregate-time":
+                                        case "grid:aggregate-time":
                                             operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
                                                     configDoc.get(processId).getSummary().get() :
                                                     "retrieve aggregated observations in a spatial grid, aggregated over time";
                                             operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
                                                     configDoc.get(processId).getDescription() :
-                                                    Optional.of("Retrieves observation values for each cell in a rectangular spatial grid (parameter `box` or `coordRef`) " +
+                                                    Optional.of("Retrieves observation values for each cell in a rectangular spatial grid (parameter `box` or `coordsRef`) " +
                                                             "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
                                                             "The cells of the spatial grid are determined by the parameters `width` and `height`. If only `width` " +
                                                             "is provided, the value of `height` is derived from the area.\n\n" +

@@ -52,7 +52,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         public EntityDataBuilder<OgcApiDataV2> fillRequiredFieldsWithPlaceholders() {
             String placeholder = "__DEFAULT__";
             return this.id(placeholder)
-                       .serviceType(placeholder);
+                .serviceType(placeholder);
         }
 
     }
@@ -91,7 +91,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
         builder.add(getId());
         if (getApiVersion().isPresent())
-            builder.add("v" + getApiVersion().get());
+            builder.add("v"+getApiVersion().get());
         return builder.build();
     }
 
@@ -118,8 +118,35 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         return false;
     }
 
+    private Optional<CollectionExtent> merge(Optional<CollectionExtent> defaultExtent, Optional<CollectionExtent> collectionExtent) {
+        if (defaultExtent.isEmpty())
+            return collectionExtent;
+        else if (collectionExtent.isEmpty())
+            return defaultExtent;
+
+        return Optional.of(new ImmutableCollectionExtent.Builder()
+                                   .from(defaultExtent.get())
+                                   .from(collectionExtent.get())
+                                   .build());
+    }
+
+    private boolean isToBeMerged(CollectionExtent defaultExtent, Optional<CollectionExtent> collectionExtent) {
+        if (collectionExtent.isEmpty())
+            return true;
+
+        boolean spatial = collectionExtent.get().getSpatial().isPresent() || collectionExtent.get().getSpatialComputed().isPresent();
+        if (!spatial && (defaultExtent.getSpatialComputed().isPresent() || defaultExtent.getSpatial().isPresent()))
+            return true;
+
+        boolean temporal = collectionExtent.get().getTemporal().isPresent() || collectionExtent.get().getTemporalComputed().isPresent();
+        if (!temporal && (defaultExtent.getTemporalComputed().isPresent() || defaultExtent.getTemporal().isPresent()))
+            return true;
+
+        return false;
+    }
+
     @Value.Check
-    public OgcApiDataV2 mergeBuildingBlocks() {
+    public OgcApiDataV2 mergeCollectionDefaults() {
         List<ExtensionConfiguration> distinctExtensions = getExtensions().stream()
                                                                          .distinct()
                                                                          .collect(Collectors.toList());
@@ -131,23 +158,43 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
                                                       .build();
         }
 
+        boolean collectionsHaveMissingExtents = getDefaultExtent().isPresent() && getCollections().values()
+                                                                                                  .stream()
+                                                                                                  .anyMatch(collection -> isToBeMerged(getDefaultExtent().get(), collection.getExtent()));
+
         boolean collectionsHaveMissingParentExtensions = getCollections().values()
                                                                          .stream()
                                                                          .anyMatch(collection -> collection.getParentExtensions()
                                                                                                            .size() < getMergedExtensions().size());
 
-        if (collectionsHaveMissingParentExtensions) {
-            Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>();
+        if (collectionsHaveMissingExtents || collectionsHaveMissingParentExtensions) {
+            Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>(getCollections());
 
-            getCollections().values()
-                            .forEach(featureTypeConfigurationOgcApi -> mergedCollections.put(featureTypeConfigurationOgcApi.getId(), featureTypeConfigurationOgcApi.getBuilder()
+            if (collectionsHaveMissingExtents) {
+                mergedCollections.values()
+                    .stream()
+                    .filter(featureTypeConfigurationOgcApi -> isToBeMerged(getDefaultExtent().get(), featureTypeConfigurationOgcApi.getExtent()))
+                    .forEach(featureTypeConfigurationOgcApi -> mergedCollections
+                        .put(featureTypeConfigurationOgcApi.getId(),
+                            featureTypeConfigurationOgcApi.getBuilder()
+                                .extent(merge(getDefaultExtent(), featureTypeConfigurationOgcApi.getExtent()))
+                                .build()));
+            }
+
+        if (collectionsHaveMissingParentExtensions) {
+                mergedCollections.values()
+                    .forEach(featureTypeConfigurationOgcApi -> mergedCollections
+                        .put(featureTypeConfigurationOgcApi.getId(),
+                            featureTypeConfigurationOgcApi.getBuilder()
                                                                                                                                                                    .parentExtensions(getMergedExtensions())
                                                                                                                                                                    .build()));
+            }
 
             return new ImmutableOgcApiDataV2.Builder().from(this)
-                                               .collections(mergedCollections)
-                                               .build();
+                                                      .collections(mergedCollections)
+                                                      .build();
         }
+
 
         return this;
     }

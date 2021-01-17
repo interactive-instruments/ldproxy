@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class FeatureProcessChain {
-    private static final String DAPA_PATH_ELEMENT = "dapa";
+    private static final String DAPA_PATH_ELEMENT = "processes";
     private final List<FeatureProcess> processes;
 
     public FeatureProcessChain(List<FeatureProcess> processes) {

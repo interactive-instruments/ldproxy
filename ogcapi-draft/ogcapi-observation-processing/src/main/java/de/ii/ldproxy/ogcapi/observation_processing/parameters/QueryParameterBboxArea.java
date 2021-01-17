@@ -112,8 +112,8 @@ public class QueryParameterBboxArea implements OgcApiQueryParameter {
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
                                                    Map<String, String> parameters,
                                                    OgcApiDataV2 apiData) {
-        if (parameters.containsKey("coord") || parameters.containsKey("coordRef") || parameters.getOrDefault("filter", "").contains("INTERSECTS")) {
-            // ignore bbox, if coord or coordRef are provided; these parameters may already been processed, so check filter, too
+        if (parameters.containsKey("coords") || parameters.containsKey("coordsRef") || parameters.getOrDefault("filter", "").contains("INTERSECTS")) {
+            // ignore bbox, if coords or coordsRef are provided; these parameters may already been processed, so check filter, too
             parameters.remove(getName());
 
         } else if (!parameters.containsKey(getName())) {
@@ -127,7 +127,7 @@ public class QueryParameterBboxArea implements OgcApiQueryParameter {
 
     @Override
     public Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType, Map<String, Object> context, Map<String, String> parameters, OgcApiDataV2 apiData) {
-        if (parameters.containsKey("coord") || parameters.containsKey("coordRef"))
+        if (parameters.containsKey("coords") || parameters.containsKey("coordsRef"))
             // ignore bbox
             return context;
 

@@ -31,6 +31,8 @@ public interface FeatureWriterGeoJson<T extends FeatureTransformationContext> {
                 onFeatureStart(transformationContext, next);
                 break;
             case FEATURE_END:
+                // first close the properties object and then the feature object
+                onPropertiesEnd(transformationContext, next);
                 onFeatureEnd(transformationContext, next);
                 break;
             case PROPERTY:
@@ -50,6 +52,8 @@ public interface FeatureWriterGeoJson<T extends FeatureTransformationContext> {
     default void onEnd(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
 
     default void onFeatureStart(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+
+    default void onPropertiesEnd(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
 
     default void onFeatureEnd(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
 
