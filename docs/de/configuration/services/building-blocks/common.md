@@ -1,8 +1,8 @@
 # Modul "Common Core" (COMMON)
 
-Das Modul "Common Core" ist für jede über ldproxy bereitgestellte API aktiv. Es stellt die Ressourcen "Landing Page", "Conformance Declaration" und "API Definition" bereit.
+Das Modul *Common Core* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt die Ressourcen *Landing Page*, *Conformance Declaration* und *API Definition* bereit.
 
-"Common Core" implementiert alle Vorgaben der Konformatitätsklasse "Core" von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für die drei genannten Ressourcen.
+*Common Core* implementiert alle Vorgaben der Konformatitätsklasse *Core* von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für die drei genannten Ressourcen.
 
 Hinweis: Die Konformatitätsklasse wurde in ldproxy auf drei Module aufgeteilt, da vorgesehen ist, die jeweiligen Anforderungen für die Nutzung in anderen OGC API Standards als zwei Teile von OGC API Common zu veröffentlichen. Die Module "Common Core" und "Feature Collections" bilden dies ab.
 

@@ -12,7 +12,7 @@ Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/REA
 |`lastModified` |integer | |Zeitpunkt in Millisekunden seit dem 1.1.1970, an dem die Datei zuletzt geändert wurde. Der Wert wird automatisch vom Manager bei jeder Änderung gesetzt und besitzt nur informativen Charakter.
 |`entityStorageVersion` |integer | |Bezeichnet die Version des API-Definition-Konfigurationsdatei-Schemas. Diese Dokumentation bezieht sich auf die Version 2 und alle Dateien nach diesem Schema müssen den Wert 2 haben. Konfigurationen zu Version 1 werden automatisch auf Version 2 aktualisiert.
 |`label` |string |der Wert von `id` |Eine Bezeichnung der API, z.B. für die Präsentation zu Nutzern.
-|`description` |string |`null` |Eine Beschreibung des Schemaobjekts, z.B. für die Präsentation zu Nutzern.
+|`description` |string |`null` |Eine Beschreibung der API, z.B. für die Präsentation zu Nutzern.
 |`serviceType` |enum | |Stets `OGC_API`.
 |`enabled` |boolean |`true` |Steuert, ob die API mit dem Start von ldproxy aktiviert wird.
 |`shouldStart` |boolean |`true` |*Deprecated* Siehe `enabled`
