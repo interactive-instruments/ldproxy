@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import {
   AutoForm,
@@ -79,6 +80,8 @@ const Tiles = ({
   };
   const fieldsDefault = getFieldsDefault(fields, defaults);
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -91,51 +94,63 @@ const Tiles = ({
     >
       <ToggleField
         name="singleCollectionEnabled"
-        label="Single collection enabled"
-        help="TODO"
+        label={t("building_blocks:TILES.singleCollectionEnabled._label")}
+        help={t("building_blocks:TILES.singleCollectionEnabled._description")}
       />
       <ToggleField
         name="multiCollectionEnabled"
-        label="Multi collection enabled"
-        help="TODO"
+        label={t("building_blocks:TILES.multiCollectionEnabled._label")}
+        help={t("building_blocks:TILES.multiCollectionEnabled._description")}
       />
       <TextField
         name="centerLon"
-        label="Center longitude"
-        help="TODO"
+        label={t("building_blocks:TILES.center._label", {
+          part: t("building_blocks:TILES.center.longitude"),
+        })}
+        help={t("building_blocks:TILES.center._description")}
         type="number"
       />
       <TextField
         name="centerLat"
-        label="Center latitude"
-        help="TODO"
+        label={t("building_blocks:TILES.center._label", {
+          part: t("building_blocks:TILES.center.latitude"),
+        })}
+        help={t("building_blocks:TILES.center._description")}
         type="number"
       />
       <TextField
         name="zoomLevelsMin"
-        label="Minimum zoom level"
-        help="TODO"
+        label={t("building_blocks:TILES.zoomLevels._label", {
+          part: t("building_blocks:TILES.zoomLevels.min"),
+        })}
+        help={t("building_blocks:TILES.zoomLevels._description")}
         type="number"
         min="0"
       />
       <TextField
         name="zoomLevelsMax"
-        label="Maximum zoom level"
-        help="TODO"
+        label={t("building_blocks:TILES.zoomLevels._label", {
+          part: t("building_blocks:TILES.zoomLevels.max"),
+        })}
+        help={t("building_blocks:TILES.zoomLevels._description")}
         type="number"
         min="0"
       />
       <TextField
         name="seedingMin"
-        label="Minimum seeding level"
-        help="TODO"
+        label={t("building_blocks:TILES.seeding._label", {
+          part: t("building_blocks:TILES.zoomLevels.min"),
+        })}
+        help={t("building_blocks:TILES.seeding._description")}
         type="number"
         min="0"
       />
       <TextField
         name="seedingMax"
-        label="Maximum seeding level"
-        help="TODO"
+        label={t("building_blocks:TILES.seeding._label", {
+          part: t("building_blocks:TILES.zoomLevels.max"),
+        })}
+        help={t("building_blocks:TILES.seeding._description")}
         type="number"
         min="0"
       />

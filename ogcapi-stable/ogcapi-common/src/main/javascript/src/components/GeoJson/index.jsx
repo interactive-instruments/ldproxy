@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import {
   AutoForm,
@@ -25,6 +26,8 @@ const GeoJson = ({
 
   const [state, setState] = useState(mergedFields(fields, fieldsDefault));
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -38,14 +41,14 @@ const GeoJson = ({
     >
       <SelectField
         name="nestedObjectStrategy"
-        label="Nested object strategy"
-        help="TODO"
+        label={t("building_blocks:GEO_JSON.nestedObjectStrategy._label")}
+        help={t("building_blocks:GEO_JSON.nestedObjectStrategy._description")}
         options={["NEST", "FLATTEN"]}
       />
       <SelectField
         name="multiplicityStrategy"
-        label="Multiplicity strategy"
-        help="TODO"
+        label={t("building_blocks:GEO_JSON.multiplicityStrategy._label")}
+        help={t("building_blocks:GEO_JSON.multiplicityStrategy._description")}
         options={["ARRAY", "SUFFIX"]}
         value={state.nestedObjectStrategy === "NEST" ? "ARRAY" : "SUFFIX"}
         disabled

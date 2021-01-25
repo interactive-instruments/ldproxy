@@ -46,20 +46,24 @@ const ApiSection = ({
 
   const [state, setState] = useState(mergedFields(fields, fieldsDefault));
 
+  const { t } = useTranslation();
+
   const hasDetails = state.enabled && Form !== null;
   const color = state.enabled ? (isActive ? "brand" : null) : "dark-4";
 
   const rejectToggle = state.enabled && (noDisable || dependents.length > 0);
   const rejectReason = noDisable
-    ? "it provides essential functionality."
-    : `required by: ${dependents.map((d) => d.label).join(", ")}`;
+    ? t("services/ogc_api:api.buildingBlocks.essential")
+    : t("services/ogc_api:api.buildingBlocks.requiredBy", {
+        buildingBlocks: dependents.map((d) => d.label).join(", "),
+      });
   const toggleTooltip = state.enabled
     ? rejectToggle
-      ? `Building block cannot be disabled, ${rejectReason}`
-      : "Disable building block"
-    : "Enable building block";
-
-  const { t } = useTranslation();
+      ? t("services/ogc_api:api.buildingBlocks.required", {
+          reason: rejectReason,
+        })
+      : t("services/ogc_api:api.buildingBlocks.disable")
+    : t("services/ogc_api:api.buildingBlocks.enable");
 
   return (
     <AccordionPanel
@@ -110,7 +114,13 @@ const ApiSection = ({
             />
           </Box>
           {hasDetails && (
-            <Box title={isActive ? "Hide details" : "Show details"}>
+            <Box
+              title={
+                isActive
+                  ? t("services/ogc_api:api.buildingBlocks.hideDetails")
+                  : t("services/ogc_api:api.buildingBlocks.showDetails")
+              }
+            >
               {isActive ? (
                 <FormSubtract color="brand" />
               ) : (

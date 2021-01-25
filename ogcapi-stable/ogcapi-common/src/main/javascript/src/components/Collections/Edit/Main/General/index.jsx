@@ -30,21 +30,21 @@ const CollectionEditGeneral = ({
       >
         <TextField
           name="id"
-          label="Id"
-          help={t("services/ogc_api:id")}
+          label={t("services/ogc_api:collections.id._label")}
+          help={t("services/ogc_api:collections.id._description")}
           value={id}
           readOnly
         />
         <TextField
           name="label"
-          label="Label"
-          help={t("services/ogc_api:label")}
+          label={t("services/ogc_api:label._label")}
+          help={t("services/ogc_api:label._description")}
         />
         <TextField
           area
           name="description"
-          label="Description"
-          help={t("services/ogc_api:description")}
+          label={t("services/ogc_api:description._label")}
+          help={t("services/ogc_api:description._description")}
         />
       </AutoForm>
     </Box>

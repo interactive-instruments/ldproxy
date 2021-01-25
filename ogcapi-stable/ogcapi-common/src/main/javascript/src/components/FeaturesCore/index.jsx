@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import { AutoForm, TextField, getFieldsDefault } from "@xtraplatform/core";
 
@@ -20,6 +21,8 @@ const FeaturesCore = ({
   };
   const fieldsDefault = getFieldsDefault(fields, defaults);
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -31,22 +34,22 @@ const FeaturesCore = ({
     >
       <TextField
         name="defaultPageSize"
-        label="Default page size"
-        help="TODO"
+        label={t("building_blocks:FEATURES_CORE.defaultPageSize._label")}
+        help={t("building_blocks:FEATURES_CORE.defaultPageSize._description")}
         type="number"
         min="0"
       />
       <TextField
         name="minimumPageSize"
-        label="Minimum page size"
-        help="TODO"
+        label={t("building_blocks:FEATURES_CORE.minimumPageSize._label")}
+        help={t("building_blocks:FEATURES_CORE.minimumPageSize._description")}
         type="number"
         min="0"
       />
       <TextField
         name="maximumPageSize"
-        label="Maximum page size"
-        help="TODO"
+        label={t("building_blocks:FEATURES_CORE.maximumPageSize._label")}
+        help={t("building_blocks:FEATURES_CORE.maximumPageSize._description")}
         type="number"
         min="0"
       />

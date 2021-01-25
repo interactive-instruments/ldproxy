@@ -43,26 +43,28 @@ const Foundation = ({
       {isDefaults && (
         <TextField
           name="apiCatalogLabel"
-          label="API catalog label"
-          help={t("building_blocks:FOUNDATION.apiCatalogLabel")}
+          label={t("building_blocks:FOUNDATION.apiCatalogLabel._label")}
+          help={t("building_blocks:FOUNDATION.apiCatalogLabel._description")}
         />
       )}
       {isDefaults && (
         <TextField
           name="apiCatalogDescription"
-          label="API catalog description"
-          help={t("building_blocks:FOUNDATION.apiCatalogDescription")}
+          label={t("building_blocks:FOUNDATION.apiCatalogDescription._label")}
+          help={t(
+            "building_blocks:FOUNDATION.apiCatalogDescription._description"
+          )}
         />
       )}
       <ToggleField
         name="useLangParameter"
-        label="Use 'lang' parameter"
-        help={t("building_blocks:FOUNDATION.useLangParameter")}
+        label={t("building_blocks:FOUNDATION.useLangParameter._label")}
+        help={t("building_blocks:FOUNDATION.useLangParameter._description")}
       />
       <ToggleField
         name="includeLinkHeader"
-        label="Include 'link' header"
-        help={t("building_blocks:FOUNDATION.includeLinkHeader")}
+        label={t("building_blocks:FOUNDATION.includeLinkHeader._label")}
+        help={t("building_blocks:FOUNDATION.includeLinkHeader._description")}
       />
     </AutoForm>
   );

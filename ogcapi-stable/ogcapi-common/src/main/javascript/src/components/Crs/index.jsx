@@ -47,8 +47,8 @@ const Crs = ({
     >
       <SelectField
         name="additionalCrs"
-        label="Additional coordinate reference systems"
-        help={t("services/ogc_api:api.CRS.additionalCrs")}
+        label={t("building_blocks:CRS.additionalCrs._label")}
+        help={t("building_blocks:CRS.additionalCrs._description")}
         multiple
         placeholder="Select"
         options={[

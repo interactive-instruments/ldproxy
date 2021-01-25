@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import { AutoForm, ToggleField, getFieldsDefault } from "@xtraplatform/core";
 
@@ -16,6 +17,8 @@ const Styles = ({
   };
   const fieldsDefault = getFieldsDefault(fields, defaults);
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -27,8 +30,8 @@ const Styles = ({
     >
       <ToggleField
         name="resourcesEnabled"
-        label="Resources enabled"
-        help="TODO"
+        label={t("building_blocks:STYLES.resourcesEnabled._label")}
+        help={t("building_blocks:STYLES.resourcesEnabled._description")}
       />
     </AutoForm>
   );

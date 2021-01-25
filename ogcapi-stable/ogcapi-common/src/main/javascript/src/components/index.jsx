@@ -166,19 +166,19 @@ export default createFeature({
       ],
       [collectionEditTabs("general")]: {
         id: "general",
-        label: "General",
+        label: "services/ogc_api:services.general._label",
         sortPriority: 10,
         component: CollectionEditGeneral,
       },
       [collectionEditTabs("extent")]: {
         id: "extent",
-        label: "Extent",
+        label: "services/ogc_api:extent._label",
         sortPriority: 20,
         component: Extent,
       },
       [collectionEditTabs("schema")]: {
         id: "schema",
-        label: "Data",
+        label: "services/ogc_api:collections.data._label",
         sortPriority: 30,
         component: CollectionTabSchema,
       },

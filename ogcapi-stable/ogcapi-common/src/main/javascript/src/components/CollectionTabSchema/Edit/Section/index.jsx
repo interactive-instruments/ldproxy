@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import { Box } from "grommet";
 import {
@@ -23,7 +24,6 @@ const fieldsTransformation = {
 
 const DataEditSection = ({
   id,
-  label,
   path,
   name,
   data: {
@@ -69,6 +69,8 @@ const DataEditSection = ({
     codelists && Array.isArray(codelists) && codelists.map((c) => c.id);
   const [options, setOptions] = useState(cl);
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -80,35 +82,42 @@ const DataEditSection = ({
       onChange={onChange}
     >
       <Box pad="small" margin={{ bottom: "small" }} border="bottom">
-        <InfoLabel label={label} help="TODO" mono={false} iconSize="list" />
+        <InfoLabel
+          label={t(`services/ogc_api:collections.data.${id}._label`)}
+          help={t(`services/ogc_api:collections.data.${id}._description`)}
+          mono={false}
+          iconSize="list"
+        />
       </Box>
       <ToggleField
         name="enabled"
-        label="Enabled"
-        help="TODO"
+        label={t("services/ogc_api:collections.data.enabled._label")}
+        help={t("services/ogc_api:collections.data.enabled._description")}
         disabled={isDisabled}
       />
       {!isDisabled && isCore && (
         <ToggleField
           name="queryable"
-          label="Queryable"
-          help="TODO"
+          label={t("services/ogc_api:collections.data.queryable._label")}
+          help={t("services/ogc_api:collections.data.queryable._description")}
           disabled={!state.enabled}
         />
       )}
       {!isDisabled && (
         <ToggleField
           name="enabledOverview"
-          label="Show in collections"
-          help="TODO"
+          label={t("services/ogc_api:collections.data.enabledOverview._label")}
+          help={t(
+            "services/ogc_api:collections.data.enabledOverview._description"
+          )}
           disabled={!state.enabled}
         />
       )}
       {!isDisabled && (
         <TextField
           name="rename"
-          label="Rename"
-          help="TODO"
+          label={t("services/ogc_api:collections.data.rename._label")}
+          help={t("services/ogc_api:collections.data.rename._description")}
           placeholder={name}
           disabled={!state.enabled}
         />
@@ -116,16 +125,25 @@ const DataEditSection = ({
       {!isDisabled && (isDate || isString) && (
         <TextField
           name="format"
-          label={`${isDate ? "Date" : "String"} format`}
-          help="TODO"
+          label={t(
+            `services/ogc_api:collections.data.format.${
+              isDate ? "date" : "string"
+            }._label`
+          )}
+          help={t(
+            `services/ogc_api:collections.data.format.${
+              isDate ? "date" : "string"
+            }._description`,
+            { skipInterpolation: true }
+          )}
           disabled={!state.enabled}
         />
       )}
       {!isDisabled && (isNumber || isString) && (
         <SelectField
           name="codelist"
-          label="Codelist"
-          help="TODO"
+          label={t("services/ogc_api:collections.data.codelist._label")}
+          help={t("services/ogc_api:collections.data.codelist._description")}
           disabled={!state.enabled}
           options={options}
           placeholder="None"
@@ -146,8 +164,8 @@ const DataEditSection = ({
       {!isDisabled && !isGeometry && (
         <TextField
           name="nullify"
-          label="Nullify"
-          help="TODO"
+          label={t("services/ogc_api:collections.data.nullify._label")}
+          help={t("services/ogc_api:collections.data.nullify._description")}
           disabled={!state.enabled}
         />
       )}

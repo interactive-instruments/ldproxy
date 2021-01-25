@@ -6,7 +6,7 @@
 	      "_description": ""
 	    },
 	    "back": {
-	      "_label": "Back to ",
+	      "_label": "Back to {{label}}",
 	      "_description": ""
 	    }
     },
@@ -19,11 +19,62 @@
 	    },
 	    "add": {
 	      "_label": "Add new service",
-	      "_description": ""
+	      "_short": "Add",
+	      "_description": "",
+	      "id": {
+	      	"_label": "Id",
+	      	"_description": "The unique identifier of the new service"
+	      },
+	      "type": {
+	      	"_label": "Data Source Type",
+	      	"_description": ""
+	      },
+	      "host": {
+	      	"_label": "Host",
+	      	"_description": "The database host. To use a non-default port, add it to the host separated by `:`, e.g. `db:30305`."
+	      },
+	      "database": {
+	      	"_label": "Database",
+	      	"_description": "The name of the database"
+	      },
+	      "user": {
+	      	"_label": "User",
+	      	"_description": "The user name"
+	      },
+	      "password": {
+	      	"_label": "Password",
+	      	"_description": "The base64 encoded password of the user"
+	      },
+	      "schemas": {
+	      	"_label": "Additional Schemas",
+	      	"_description": "The names of database schemas that should be used in addition to `public`."
+	      },
+	      "url": {
+	      	"_label": "WFS URL",
+	      	"_description": "The GetCapabilities endpoint of the existing service"
+	      },
+	      "isBasicAuth": {
+	      	"_label": "Basic Auth",
+	      	"_description": "Is the WFS secured with HTTP Basic Authentication?"
+	      },
+	      "basicAuthUser": {
+	      	"_label": "Password",
+	      	"_description": "The HTTP Basic Authentication user"
+	      },
+	      "basicAuthPassword": {
+	      	"_label": "Password",
+	      	"_description": "The HTTP Basic Authentication password"
+	      }
 	    },
 	    "delete": {
 	      "_label": "Remove service",
-	      "_description": ""
+	      "_description": "",
+	      "confirm": {
+	      	"_label": "Confirmation",
+	      	"_description": "Are you sure you want to remove the service with id **{{id}}**? This action cannot be undone.",
+	      	"proceed": "Yes, remove it",
+	      	"cancel": "Cancel"
+	      }
 	    },
 	    "start": {
 	      "_label": "Stop service",
@@ -148,11 +199,76 @@
     },
     "api": {
       "_label": "Api",
-      "_description": ""
+      "_description": "",
+      "buildingBlocks": {
+      	"enable": "Enable building block",
+      	"disable": "Disable building block",
+      	"required": "Building block cannot be disabled, {{reason}}",
+      	"essential": "it provides essential functionality.",
+      	"requiredBy": "required by: {{buildingBlocks}}",
+      	"showDetails": "Show details",
+      	"hideDetails": "Hide details"
+      }
     },
     "collections": {
       "_label": "Collections",
-      "_description": ""
+      "_description": "",
+      "data": {
+      	"_label": "Data",
+      	"_description": "",
+      	"FEATURES_CORE": {
+	      "_label": "Features Core",
+	      "_description": "Settings for all encodings"
+	    },
+      	"GEO_JSON": {
+	      "_label": "Features GeoJSON",
+	      "_description": "Settings for the GeoJSON encoding"
+	    },
+      	"FEATURES_HTML": {
+	      "_label": "Features HTML",
+	      "_description": "Settings for the HTML encoding"
+	    },
+      	"enabled": {
+	      "_label": "Enabled",
+	      "_description": "Include property in responses."
+	    },
+      	"queryable": {
+	      "_label": "Queryable",
+	      "_description": "Allow usage in queries."
+	    },
+      	"enabledOverview": {
+	      "_label": "Show in collections",
+	      "_description": "Include property in responses for the *Features* resource."
+	    },
+      	"rename": {
+	      "_label": "Rename",
+	      "_description": "Rename the property."
+	    },
+      	"format": {
+	      "_label": "{{type}} format",
+	      "_description": "Include in encoding.",
+	      "string": {
+		      "_label": "String format",
+		      "_description": "Format a value, where `{{value}}` is replaced with the actual value and `{{serviceUrl}}` is replaced with the API landing page URI. Additonal operations can be applied to `{{value}}` by chaining them with `|`, see the examples below."
+	      },
+	      "date": {
+		      "_label": "Date format",
+		      "_description": "Format date(-time) values with the given [pattern](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns), e.g. `dd.MM.yyyy` for German notation. "
+	      }
+	    },
+      	"codelist": {
+	      "_label": "Codelist",
+	      "_description": "Maps the value according to the given [codelist](../../codelists/README.md). If the value is not found in the codelist or the codelist does not exist, the original value is passed through.  Falls der Wert nicht in der Codelist enthalten ist oder die Codelist nicht gefunden wird, bleibt der Wert unverändert. Not applicable for properties containing objects."
+	    },
+      	"nullify": {
+	      "_label": "Nullify",
+	      "_description": "Maps all values matching the regular expression to `null`. Not applicable for properties containing objects."
+	    }
+      },
+      "id": {
+	      "_label": "Id",
+	      "_description": "Collection identifier. Allowed characters are (A-Z, a-z), numbers (0-9), underscore and hyphen. Normally the feature type and collection ids are the same."
+	    }
     },
     "Collection": {
       "id": {
@@ -184,7 +300,7 @@
 	      "_description": ""
 	    },
 	    "back": {
-	      "_label": "Zurück zu ",
+	      "_label": "Zurück zu {{label}}",
 	      "_description": ""
 	    }
     },
@@ -197,11 +313,62 @@
 	    },
 	    "add": {
 	      "_label": "Neuen Dienst hinzufügen",
-	      "_description": ""
+	      "_short": "Hinzufügen",
+	      "_description": "",
+	      "id": {
+	      	"_label": "Id",
+	      	"_description": "Der eindeutige Identifikator des neuen Dienstes"
+	      },
+	      "type": {
+	      	"_label": "Typ der Datenquelle",
+	      	"_description": ""
+	      },
+	      "host": {
+	      	"_label": "Host",
+	      	"_description": "Der Datenbankhost. Wird ein anderer Port als der Standardport verwendet, ist dieser durch einen Doppelpunkt getrennt anzugeben, z.B. `db:30305`."
+	      },
+	      "database": {
+	      	"_label": "Datenbank",
+	      	"_description": "Der Name der Datenbank"
+	      },
+	      "user": {
+	      	"_label": "Benutzer",
+	      	"_description": "Der Benutzername"
+	      },
+	      "password": {
+	      	"_label": "Passwort",
+	      	"_description": "Das mit base64 kodierte Passwort des Benutzers"
+	      },
+	      "schemas": {
+	      	"_label": "Zusätzliche Schemas",
+	      	"_description": "Die Namen der Schemas in der Datenbank, auf die zugegriffen werden soll (zusätzlich zu `public`)."
+	      },
+	      "url": {
+	      	"_label": "WFS URL",
+	      	"_description": "Der GetCapabilities-Endpoint des WFS-Dienstes"
+	      },
+	      "isBasicAuth": {
+	      	"_label": "Basic Auth",
+	      	"_description": "Ist der WFS mit HTTP Basic Authentication abgesichert?"
+	      },
+	      "basicAuthUser": {
+	      	"_label": "Benutzer",
+	      	"_description": "Der HTTP Basic Authentication Benutzer"
+	      },
+	      "basicAuthPassword": {
+	      	"_label": "Passwort",
+	      	"_description": "Das HTTP Basic Authentication Passwort"
+	      }
 	    },
 	    "delete": {
 	      "_label": "Dienst löschen",
-	      "_description": ""
+	      "_description": "",
+	      "confirm": {
+	      	"_label": "Bestätigung",
+	      	"_description": "Sind Sie sicher, dass sie den Dienst mit der Id **{{id}}** löschen wollen? Diese Aktion kann nicht rückgängig gemacht werden.",
+	      	"proceed": "Ja, Dienst löschen",
+	      	"cancel": "Abbrechen"
+	      }
 	    },
 	    "start": {
 	      "_label": "Dienst starten",
@@ -315,22 +482,85 @@
         "_label": "Zeitlich",
         "_description": "Standardwert für die zeitliche Ausdehnung einer Collection. Kann in der Konfiguration der Collection überschrieben werden. Hinweis: Es handelt sich hierbei nicht um die Ausdehnung des Datensatzes insgesamt, dieser wird stets automatisch aus den Ausdehnungen der einzelnen Collections ermittelt.",
 	      "start": {
-	        "_label": "Start des Intervalls",
+	        "_label": "Startzeit",
 	        "_description": "Start des Intervalls. Beliebige Datums und Zeit Notation."
 	      },
 	      "end": {
-	        "_label": "Ende des Intervalls",
+	        "_label": "Endzeit",
 	        "_description": "Ende des Intervalls. Beliebige Datums und Zeit Notation. Ein leerer Wert bedeutet ein offenes Intervall."
 	      }
       }
     },
     "api": {
     	"_label": "Api",
-      "_description": ""
+      "_description": "",
+      "buildingBlocks": {
+      	"enable": "Modul aktivieren",
+      	"disable": "Modul deaktivieren",
+      	"required": "Modul kann nicht deaktiviert werden, {{reason}}",
+      	"essential": "es stellt essentielle Funktionalität bereit.",
+      	"requiredBy": "es wird benötigt von: {{buildingBlocks}}",
+      	"showDetails": "Details anzeigen",
+      	"hideDetails": "Details verbergen"
+      }
     },
     "collections": {
       "_label": "Collections",
-      "_description": ""
+      "_description": "",
+      "data": {
+      	"_label": "Daten",
+      	"_description": "",
+      	"FEATURES_CORE": {
+	      "_label": "Features Core",
+	      "_description": "Einstellungen für alle Ausgabeformate"
+	    },
+      	"GEO_JSON": {
+	      "_label": "Features GeoJSON",
+	      "_description": "Einstellungen für das GeoJSON Ausgabeformat"
+	    },
+      	"FEATURES_HTML": {
+	      "_label": "Features HTML",
+	      "_description": "Einstellungen für das HTML Ausgabeformat"
+	    },
+      	"enabled": {
+	      "_label": "Aktiviert",
+	      "_description": "Property in der Ausgabe einschließen."
+	    },
+      	"queryable": {
+	      "_label": "In Queries erlauben",
+	      "_description": "Verwendung in Queries erlauben."
+	    },
+      	"enabledOverview": {
+	      "_label": "In Collections anzeigen",
+	      "_description": "Property in der Ausgabe für die *Features*-Ressource einschließen."
+	    },
+      	"rename": {
+	      "_label": "Umbenennen",
+	      "_description": "Property umbenennen."
+	    },
+      	"format": {
+	      "string": {
+		      "_label": "Text-Formatierung",
+		      "_description": "Der Wert wird in den angegebenen neuen Wert transformiert. `{{value}}` wird dabei durch den aktuellen Wert und `{{serviceUr}}` durch die Landing-Page-URI der API ersetzt. Bei `{{value}}` können noch weitere Filter ausgeführt werden, diese werden durch `|` getrennt. Diese Transformation ist nur bei STRING-wertigen Eigenschaften anwendbar. Ist der transformierte Wert für die HTML-Ausgabe gedacht, dann kann auch Markdown-Markup verwendet werden, dieser wird bei der HTML-Ausgabe aufbereitet."
+	      },
+	      "date": {
+		      "_label": "Datums-Formatierung",
+		      "_description": "Der Wert wird unter Anwendung des angegebenen [Patterns](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns) transformiert. `dd.MM.yyyy` bildet den Wert zum Beispiel auf ein Datum nach deutscher Schreibweise ab. Diese Transformation ist nur bei DATETIME-wertigen Eigenschaften anwendbar."
+	      }
+	    },
+      	"codelist": {
+	      "_label": "Codelist",
+	      "_description": "Bildet den Wert anhand der genannten [Codelist](../../codelists/README.md) ab. Falls der Wert nicht in der Codelist enthalten ist oder die Codelist nicht gefunden wird, bleibt der Wert unverändert. Diese Transformation ist nicht bei objektwertigen Eigenschaften anwendbar."
+	    },
+      	"nullify": {
+	      "_label": "Auf 'null' abbilden",
+	      "_description": "Bildet alle Werte, die dem regulären Ausdruck entsprechen, auf `null` ab. Diese Transformation ist nicht bei objektwertigen Eigenschaften anwendbar."
+	    }
+      },
+      "id": {
+	      "_label": "Id",
+	      "_description": "Eindeutiger Identifikator der Collection. Typischerweise identisch mit dem Identifikator des Types im Feature-Provider. Erlaubt sind Buchstaben (A-Z, a-z), Ziffern (0-9), der Unterstrich und der Bindestrich."
+	    }
     },
     "Collection": {
       "id": {

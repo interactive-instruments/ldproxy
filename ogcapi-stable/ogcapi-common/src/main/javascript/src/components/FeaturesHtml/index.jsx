@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import { AutoForm, SelectField, getFieldsDefault } from "@xtraplatform/core";
 
@@ -16,6 +17,8 @@ const FeaturesHtml = ({
   };
   const fieldsDefault = getFieldsDefault(fields, defaults);
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -27,8 +30,8 @@ const FeaturesHtml = ({
     >
       <SelectField
         name="layout"
-        label="Layout"
-        help="TODO"
+        label={t("building_blocks:FEATURES_HTML.layout._label")}
+        help={t("building_blocks:FEATURES_HTML.layout._description")}
         options={["COMPLEX_OBJECTS", "CLASSIC"]}
       />
     </AutoForm>
