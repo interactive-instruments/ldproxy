@@ -58,6 +58,19 @@ const ServiceEditApi = ({
   const buildingBlocks = useFassets(apiBuildingBlocks());
   //console.log("BB", buildingBlocks);
 
+  const dependents = {};
+  buildingBlocks.forEach((bb) => {
+    const deps = buildingBlocks.filter(
+      (bb2) =>
+        bb2.dependencies &&
+        bb2.dependencies.includes(bb.id.toLowerCase()) &&
+        mergedBuildingBlocksDefault[bb2.id].enabled &&
+        (!mergedBuildingBlocks[bb2.id] ||
+          mergedBuildingBlocks[bb2.id].enabled !== false)
+    );
+    dependents[bb.id] = deps;
+  });
+
   const [activeIndex, setActiveIndex] = useState([]);
 
   const onBuildingBlockChange = (bbid) =>
@@ -85,6 +98,7 @@ const ServiceEditApi = ({
               defaults={mergedBuildingBlocksDefault[bb.id]}
               inheritedLabel={inheritedLabel}
               debounce={debounce}
+              dependents={dependents[bb.id]}
               onPending={onPending}
               onChange={onBuildingBlockChange(bb.id)}
             />

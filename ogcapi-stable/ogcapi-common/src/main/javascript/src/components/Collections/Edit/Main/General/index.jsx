@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import { Box } from "grommet";
 import { AutoForm, TextField } from "@xtraplatform/core";
@@ -17,6 +18,8 @@ const CollectionEditGeneral = ({
     description,
   };
 
+  const { t } = useTranslation();
+
   return (
     <Box pad={{ horizontal: "small", vertical: "medium" }} fill="horizontal">
       <AutoForm
@@ -25,9 +28,24 @@ const CollectionEditGeneral = ({
         onPending={onPending}
         onChange={onChange}
       >
-        <TextField name="id" label="Id" help="TODO" value={id} readOnly />
-        <TextField name="label" label="Label" help="TODO" />
-        <TextField area name="description" label="Description" help="TODO" />
+        <TextField
+          name="id"
+          label="Id"
+          help={t("services/ogc_api:id")}
+          value={id}
+          readOnly
+        />
+        <TextField
+          name="label"
+          label="Label"
+          help={t("services/ogc_api:label")}
+        />
+        <TextField
+          area
+          name="description"
+          label="Description"
+          help={t("services/ogc_api:description")}
+        />
       </AutoForm>
     </Box>
   );

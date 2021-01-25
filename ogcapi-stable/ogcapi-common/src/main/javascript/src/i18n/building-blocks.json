@@ -1,0 +1,254 @@
+{
+	"en": {
+		"FOUNDATION": {
+			"_label": "Foundation",
+			"_description": "Adds an API catalog with all published APIs. <br/>Provides base functionality for all other modules and therefore cannot be disabled.",
+			"includeLinkHeader": {
+				"_label": "Styles",
+				"_description": "Return links contained in API responses also as HTTP header."
+		    },
+			"useLangParameter": {
+				"_label": "Styles",
+				"_description": "Support query parameter `lang` to set the desired response language."
+		    },
+			"apiCatalogLabel": {
+				"_label": "Styles",
+				"_description": "Title for resource *API Catalog*."
+		    },
+			"apiCatalogDescription": {
+				"_label": "Styles",
+				"_description": "Description for resource *API Catalog*. May contain HTML elements."
+		    }
+		},
+		"COMMON": {
+			"_label": "Common Core",
+			"_description": "The module *Common Core* is always enabled. It provides the resources *Landing Page*, *Conformance Declaration* and *API Definition*. <br/>*Common Core* implements all requirements of conformance class *Core* of [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for the three mentioned resources."
+		},
+		"JSON": {
+			"_label": "JSON",
+			"_description": "Provides *JSON* encoding for every supported resource that does not have more specific rules (like [Features](geojson.md))."
+		},
+		"HTML": {
+			"_label": "HTML",
+			"_description": "Provides HTML encoding for every supported resource that does not have more specific rules (like [Features](features-html.md)).",
+			"noIndexEnabled": {
+				"_label": "Enable search engine indexing",
+				"_description": "Set `noIndex` for all sites to prevent search engines from indexing."
+		    },
+			"schemaOrgEnabled": {
+				"_label": "Enable schema.org annotations",
+				"_description": "Enable [schema.org](https://schema.org) annotations for all sites, which are used e.g. by search engines. The annotations are embedded as JSON-LD."
+		    },
+			"collectionDescriptionsInOverview": {
+				"_label": "Show descriptions in collections overview",
+				"_description": "Show collection descriptions in *Feature Collections* resource for HTML."
+		    },
+			"legalName": {
+				"_label": "Legal notice label",
+				"_description": "Label for optional legal notice link on every site."
+		    },
+			"legalUrl": {
+				"_label": "Legal notice URL",
+				"_description": "URL for optional legal notice link on every site."
+		    },
+			"privacyName": {
+				"_label": "Privacy notice label",
+				"_description": "Label for optional privacy notice link on every site."
+		    },
+			"privacyUrl": {
+				"_label": "Privacy notice URL",
+				"_description": "URL for optional privacy notice link on every site."
+		    },
+			"leafletUrl": {
+				"_label": "Leaflet background map URL template",
+				"_description": "URL template for Leaflet background map tiles."
+		    },
+			"leafletAttribution": {
+				"_label": "Leaflet source attribution",
+				"_description": "Source attribution for Leaflet background map."
+		    },
+			"openLayersUrl": {
+				"_label": "OpenLayers background map URL template",
+				"_description": "URL template for OpenLayers background map tiles."
+		    },
+			"openLayersAttribution": {
+				"_label": "OpenLayers source attribution",
+				"_description": "Source attribution for OpenLayers background map."
+		    },
+			"footerText": {
+				"_label": "Footer text",
+				"_description": "Additional text shown in footer of every site."
+		    }
+		},
+		"OAS30": {
+			"_label": "OpenAPI 3.0",
+			"_description": "This module provides the resource *API Definition*.<br/>It implements all requirements of conformance class *OpenAPI 3.0* from [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30) for the mentioned resource."
+		},
+		"COLLECTIONS": {
+			"_label": "Feature Collections",
+			"_description": "Provides the resources *Feature Collections* and *Feature Collection*."
+		},
+		"FEATURES_CORE": {
+			"_label": "Features Core",
+			"_description": ""
+		},
+		"GEO_JSON": {
+			"_label": "Features GeoJSON",
+			"_description": ""
+		},
+		"FEATURES_HTML": {
+			"_label": "Features HTML",
+			"_description": ""
+		},
+		"QUERYABLES": {
+			"_label": "Queryables",
+			"_description": "This module provides the sub-resource *Queryables* for the resource *Feature Collection* that publishes the feature properties that may be used in queries. <br/>*Collections Queryables* implements all requirements of conformance class *Queryables* from the draft of [OGC API - Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html#rc_queryables). The resource will change in the future due to the harmonization with the requirements for *Queryables* from the draft of [OGC API - Features - Part 3: Common Query Language](http://docs.opengeospatial.org/DRAFTS/19-079.html#filter-queryables)."
+		},
+		"SCHEMA": {
+			"_label": "Schema",
+			"_description": "This module provides a sub-resource *Schema* for the resource *Feature Collection* that publishes the JSON Schema (Draft 07) of the features. The schema is automatically derived from the type definitions in the feature provider."
+		},
+		"FILTER": {
+			"_label": "Filter (CQL)",
+			"_description": "Adds support for CQL filter expressions in queries to select [Features](features-core.md) or [Vector Tiles](tiles.md)."
+		},
+		"CRS": {
+			"_label": "Coordinate Reference Systems",
+			"_description": ""
+		},
+		"TILES": {
+			"_label": "Vector Tiles",
+			"_description": ""
+		},
+		"STYLES": {
+			"_label": "Styles",
+			"_description": ""
+		}
+	},
+	"de": {
+		"FOUNDATION": {
+			"_label": "Foundation",
+			"_description": "Stellt einen API Katalog mit allen veröffentlichten APIs bereit. <br/>Stellt Basis-Funktionalität für alle anderen Module bereit und kann daher nicht deaktiviert werden.",
+			"includeLinkHeader": {
+				"_label": "Styles",
+				"_description": "Steuert, ob die in Antworten der API enthaltenen Links auch als HTTP-Header zurückgegeben werden."
+		    },
+			"useLangParameter": {
+				"_label": "Styles",
+				"_description": "Steuert, ob die Sprache der Antwort bei allen GET-Operationen nur über den `Accept-Lang`-Header oder auch über einen Parameter `lang` ausgewählt werden kann."
+		    },
+			"apiCatalogLabel": {
+				"_label": "Styles",
+				"_description": "Titel für die API-Catalog-Ressource."
+		    },
+			"apiCatalogDescription": {
+				"_label": "Styles",
+				"_description": "Beschreibung für die API-Catalog-Ressource. Darf HTML-Elemente enthalten."
+		    }
+		},
+		"COMMON": {
+			"_label": "Common Core",
+			"_description": "Das Modul *Common Core* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt die Ressourcen *Landing Page*, *Conformance Declaration* und *API Definition* bereit.<br/>*Common Core* implementiert alle Vorgaben der Konformitätsklasse *Core* von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für die drei genannten Ressourcen."
+		},
+		"JSON": {
+			"_label": "JSON",
+			"_description": "Stellt das Ausgabeformat *JSON* für alle unterstützten Ressource bereit, die keine speziellen Regelungen für Ausgabeformate haben (wie z.B. [Features](geojson.md))."
+		},
+		"HTML": {
+			"_label": "HTML",
+			"_description": "Stellt das HTML Ausgabeformat für jede unterstützte Ressource bereit, für die keine speziellen Regelungen gelten (wie z.B. [Features](features-html.md)).",
+			"noIndexEnabled": {
+				"_label": "Indexierung durch Suchmaschinen aktivieren",
+				"_description": "Steuert, ob für alle Seiten `noIndex` gesetzt wird und damit Suchmaschinen angezeigt wird, dass sie die Seiten nicht indizieren sollen."
+		    },
+			"schemaOrgEnabled": {
+				"_label": "schema.org Annotationen aktivieren",
+				"_description": "Steuert, ob in die HTML-Ausgabe schema.org-Annotationen, z.B. für Suchmaschinen, eingebettet sein sollen, sofern . Die Annotationen werden im Format JSON-LD eingebettet."
+		    },
+			"collectionDescriptionsInOverview": {
+				"_label": "Beschreibung in Collection-Übersicht anzeigen",
+				"_description": "Steuert, ob in der HTML-Ausgabe der Feature-Collections-Ressource für jede Collection die Beschreibung ausgegeben werden soll."
+		    },
+			"legalName": {
+				"_label": "Impressum Link-Text",
+				"_description": "Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einem Impressum angezeigt werden. Diese Eigenschaft spezfiziert den anzuzeigenden Text."
+		    },
+			"legalUrl": {
+				"_label": "Impressum Link-URL",
+				"_description": "Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einem Impressum angezeigt werden. Diese Eigenschaft spezfiziert die URL des Links."
+		    },
+			"privacyName": {
+				"_label": "Datenschutzerklärung Link-Text",
+				"_description": "Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einer Datenschutzerklärung angezeigt werden. Diese Eigenschaft spezfiziert den anzuzeigenden Text."
+		    },
+			"privacyUrl": {
+				"_label": "Datenschutzerklärung Link-URL",
+				"_description": "Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einer Datenschutzerklärung angezeigt werden. Diese Eigenschaft spezfiziert die URL des Links."
+		    },
+			"leafletUrl": {
+				"_label": "Leaflet Hintergrundkarte URL-Template",
+				"_description": "Das URL-Template für die Kacheln einer Hintergrundkarte in Leaflet-Karten."
+		    },
+			"leafletAttribution": {
+				"_label": "Leaflet Hintergrundkarte Quellenangabe",
+				"_description": "Der Quellenangabe in Leaflet für die Hintergrundkarte."
+		    },
+			"openLayersUrl": {
+				"_label": "OpenLayers Hintergrundkarte URL-Template",
+				"_description": "Das URL-Template für die Kacheln einer Hintergrundkarte in OpenLayers-Karten."
+		    },
+			"openLayersAttribution": {
+				"_label": "OpenLayers Hintergrundkarte Quellenangabe",
+				"_description": "Der Quellenangabe in OpenLayers für die Hintergrundkarte."
+		    },
+			"footerText": {
+				"_label": "Footer Text",
+				"_description": "Zusätzlicher Text, der auf jeder HTML-Seite im Footer angezeigt wird."
+		    }
+		},
+		"OAS30": {
+			"_label": "OpenAPI 3.0",
+			"_description": "Dieses Modul stellt die Ressource *API Definition* bereit.<br/> Es implementiert alle Vorgaben der gleichnamigen Konformatitätsklasse von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30)."
+		},
+		"COLLECTIONS": {
+			"_label": "Feature Collections",
+			"_description": "Stellt die Ressourcen *Feature Collections* und *Feature Collection* bereit."
+		},
+		"FEATURES_CORE": {
+			"_label": "Features Core",
+			"_description": ""
+		},
+		"GEO_JSON": {
+			"_label": "Features GeoJSON",
+			"_description": ""
+		},
+		"FEATURES_HTML": {
+			"_label": "Features HTML",
+			"_description": ""
+		},
+		"QUERYABLES": {
+			"_label": "Queryables",
+			"_description": "Dieses Modul ergänzt eine Ressource als Sub-Ressource zu jeder Feature Collection, die die Objekteigenschaften, die zur Selektion in Queries verwendet werden können, in der API veröffentlicht.<br/>Das Modul basiert auf den Vorgaben der Konformatitätsklasse *Queryables* aus dem [Entwurf von OGC API - Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html#rc_queryables). Die Ressource wird sich zukünftig im Zuge der Harmonisierung mit den Vorgaben zu *Queryables* aus dem [Entwurf von OGC API - Features - Part 3: Common Query Language](http://docs.opengeospatial.org/DRAFTS/19-079.html#filter-queryables) noch ändern."
+		},
+		"SCHEMA": {
+			"_label": "Schema",
+			"_description": "Dieses Modul ergänzt eine Ressource als Sub-Ressource zu jeder Feature Collection, die das Schema der Features, in der API veröffentlicht. Das Schema wird aus den Schemainformationen im Feature-Provider abgeleitet. Aktuell wird JSON Schema (Draft 07) für die GeoJSON-Ausgabe unterstützt."
+		},
+		"FILTER": {
+			"_label": "Filter (CQL)",
+			"_description": "Dieses Modul stellt Unterstützung für CQL Filter-Ausdrücke in Queries bereit, um [Features](features-core.md) oder [Vector Tiles](tiles.md) zu selektieren."
+		},
+		"CRS": {
+			"_label": "Coordinate Reference Systems",
+			"_description": ""
+		},
+		"TILES": {
+			"_label": "Vector Tiles",
+			"_description": ""
+		},
+		"STYLES": {
+			"_label": "Styles",
+			"_description": ""
+		}
+	}
+}

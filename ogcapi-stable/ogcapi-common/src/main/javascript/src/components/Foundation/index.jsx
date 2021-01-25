@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import {
   AutoForm,
@@ -28,6 +29,8 @@ const Foundation = ({
   };
   const fieldsDefault = getFieldsDefault(fields, defaults);
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -41,25 +44,25 @@ const Foundation = ({
         <TextField
           name="apiCatalogLabel"
           label="API catalog label"
-          help="TODO"
+          help={t("building_blocks:FOUNDATION.apiCatalogLabel")}
         />
       )}
       {isDefaults && (
         <TextField
           name="apiCatalogDescription"
           label="API catalog description"
-          help="TODO"
+          help={t("building_blocks:FOUNDATION.apiCatalogDescription")}
         />
       )}
       <ToggleField
         name="useLangParameter"
         label="Use 'lang' parameter"
-        help="TODO"
+        help={t("building_blocks:FOUNDATION.useLangParameter")}
       />
       <ToggleField
         name="includeLinkHeader"
         label="Include 'link' header"
-        help="TODO"
+        help={t("building_blocks:FOUNDATION.includeLinkHeader")}
       />
     </AutoForm>
   );

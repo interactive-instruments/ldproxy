@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import {
   AutoForm,
@@ -50,6 +51,8 @@ const Html = ({
   };
   const fieldsDefault = getFieldsDefault(fields, defaults);
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -62,57 +65,74 @@ const Html = ({
     >
       <ToggleField
         name="noIndexEnabled"
-        label="Enable search engine indexing"
-        help="TODO"
+        label={t(`building_blocks:HTML.noIndexEnabled._label`)}
+        help={t(`building_blocks:HTML.noIndexEnabled._description`)}
       />
       <ToggleField
         name="schemaOrgEnabled"
-        label="Enable schema.org annotations"
-        help="TODO"
+        label={t(`building_blocks:HTML.schemaOrgEnabled._label`)}
+        help={t(`building_blocks:HTML.schemaOrgEnabled._description`)}
       />
       <ToggleField
         name="collectionDescriptionsInOverview"
-        label="Show descriptions in collections overview"
-        help="TODO"
+        label={t(
+          `building_blocks:HTML.collectionDescriptionsInOverview._label`
+        )}
+        help={t(
+          `building_blocks:HTML.collectionDescriptionsInOverview._description`
+        )}
       />
-      <TextField area name="footerText" label="Footer text" help="TODO" />
-      <TextField name="legalName" label="Legal notice label" help="TODO" />
+      <TextField
+        area
+        name="footerText"
+        label={t(`building_blocks:HTML.footerText._label`)}
+        help={t(`building_blocks:HTML.footerText._description`)}
+      />
+      <TextField
+        name="legalName"
+        label={t(`building_blocks:HTML.legalName._label`)}
+        help={t(`building_blocks:HTML.legalName._description`)}
+      />
       <TextField
         name="legalUrl"
-        label="Legal notice URL"
-        help="TODO"
+        label={t(`building_blocks:HTML.legalUrl._label`)}
+        help={t(`building_blocks:HTML.legalUrl._description`)}
         type="url"
       />
-      <TextField name="privacyName" label="Privacy notice label" help="TODO" />
+      <TextField
+        name="privacyName"
+        label={t(`building_blocks:HTML.privacyName._label`)}
+        help={t(`building_blocks:HTML.privacyName._description`)}
+      />
       <TextField
         name="privacyUrl"
-        label="Privacy notice URL"
-        help="TODO"
+        label={t(`building_blocks:HTML.privacyUrl._label`)}
+        help={t(`building_blocks:HTML.privacyUrl._description`)}
         type="url"
       />
       <TextField
         name="leafletUrl"
-        label="Leaflet background map URL template"
-        help="TODO"
+        label={t(`building_blocks:HTML.leafletUrl._label`)}
+        help={t(`building_blocks:HTML.leafletUrl._description`)}
         type="url"
       />
       <TextField
         area
         name="leafletAttribution"
-        label="Leaflet source attribution"
-        help="TODO"
+        label={t(`building_blocks:HTML.leafletAttribution._label`)}
+        help={t(`building_blocks:HTML.leafletAttribution._description`)}
       />
       <TextField
         name="openLayersUrl"
-        label="OpenLayers background map URL template"
-        help="TODO"
+        label={t(`building_blocks:HTML.openLayersUrl._label`)}
+        help={t(`building_blocks:HTML.openLayersUrl._description`)}
         type="url"
       />
       <TextField
         area
         name="openLayersAttribution"
-        label="OpenLayers source attribution"
-        help="TODO"
+        label={t(`building_blocks:HTML.openLayersAttribution._label`)}
+        help={t(`building_blocks:HTML.openLayersAttribution._description`)}
       />
     </AutoForm>
   );

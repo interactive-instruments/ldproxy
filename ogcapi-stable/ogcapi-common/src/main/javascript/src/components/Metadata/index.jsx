@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import { Box } from "grommet";
 import { AutoForm, TextField, getFieldsDefault } from "@xtraplatform/core";
@@ -35,6 +36,8 @@ const Metadata = ({ metadata, defaults, debounce, onPending, onChange }) => {
     []
   );
 
+  const { t } = useTranslation();
+
   return (
     <Box pad={{ horizontal: "small", vertical: "medium" }} fill="horizontal">
       <AutoForm
@@ -46,29 +49,50 @@ const Metadata = ({ metadata, defaults, debounce, onPending, onChange }) => {
         onPending={onPending}
         onChange={onMetadataChange}
       >
-        <TextField name="contactName" label="Contact Name" help="TODO" />
+        <TextField
+          name="contactName"
+          label={t("services/ogc_api:Metadata.contactName._label")}
+          help={t("services/ogc_api:Metadata.contactName._description")}
+        />
         <TextField
           name="contactUrl"
-          label="Contact URL"
-          help="TODO"
+          label={t("services/ogc_api:Metadata.contactUrl._label")}
+          help={t("services/ogc_api:Metadata.contactUrl._description")}
           type="url"
         />
         <TextField
           name="contactEmail"
-          label="Contact Email"
-          help="TODO"
+          label={t("services/ogc_api:Metadata.contactEmail._label")}
+          help={t("services/ogc_api:Metadata.contactEmail._description")}
           type="email"
         />
-        <TextField name="contactPhone" label="Contact Phone" help="TODO" />
-        <TextField name="licenseName" label="License Name" help="TODO" />
+        <TextField
+          name="contactPhone"
+          label={t("services/ogc_api:Metadata.contactPhone._label")}
+          help={t("services/ogc_api:Metadata.contactPhone._description")}
+        />
+        <TextField
+          name="licenseName"
+          label={t("services/ogc_api:Metadata.licenseName._label")}
+          help={t("services/ogc_api:Metadata.licenseName._description")}
+        />
         <TextField
           name="licenseUrl"
-          label="License URL"
-          help="TODO"
+          label={t("services/ogc_api:Metadata.licenseUrl._label")}
+          help={t("services/ogc_api:Metadata.licenseUrl._description")}
           type="url"
         />
-        <TextField area name="keywords" label="Keywords" help="TODO" />
-        <TextField name="version" label="Version" help="TODO" />
+        <TextField
+          area
+          name="keywords"
+          label={t("services/ogc_api:Metadata.keywords._label")}
+          help={t("services/ogc_api:Metadata.keywords._description")}
+        />
+        <TextField
+          name="version"
+          label={t("services/ogc_api:Metadata.version._label")}
+          help={t("services/ogc_api:Metadata.version._description")}
+        />
       </AutoForm>
     </Box>
   );

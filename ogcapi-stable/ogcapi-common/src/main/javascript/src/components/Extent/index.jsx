@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from "react";
 import PropTypes from "prop-types";
 import moment from "moment";
+import { useTranslation } from "react-i18next";
 
 import { Box } from "grommet";
 import {
@@ -161,6 +162,8 @@ const Extent = ({
     [isCollection, onChange, state]
   );
 
+  const { t } = useTranslation();
+
   return (
     <Box pad={{ horizontal: "small", vertical: "medium" }} fill="horizontal">
       <AutoForm
@@ -181,38 +184,38 @@ const Extent = ({
           border="bottom"
         >
           <InfoLabel
-            label="Spatial extent"
-            help="TODO"
+            label={t("services/ogc_api:Extent.spatial._label")}
+            help={t("services/ogc_api:Extent.spatial._description")}
             mono={false}
             iconSize="list"
           />
         </Box>
-        <ToggleField name="spatialComputed" label="Compute" help="TODO" />
+        <ToggleField
+          name="spatialComputed"
+          label={t("services/ogc_api:Extent.spatialComputed._label")}
+          help={t("services/ogc_api:Extent.spatialComputed._description")}
+        />
         <TextField
           name="xmin"
-          label="X coordinate lower left corner"
-          help="TODO"
+          label={t("services/ogc_api:Extent.spatial.xmin._label")}
           disabled={state.spatialComputed}
           type="number"
         />
         <TextField
           name="ymin"
-          label="Y coordinate lower left corner"
-          help="TODO"
+          label={t("services/ogc_api:Extent.spatial.ymin._label")}
           disabled={state.spatialComputed}
           type="number"
         />
         <TextField
           name="xmax"
-          label="X coordinate upper right corner"
-          help="TODO"
+          label={t("services/ogc_api:Extent.spatial.xmax._label")}
           disabled={state.spatialComputed}
           type="number"
         />
         <TextField
           name="ymax"
-          label="Y coordinate upper right corner"
-          help="TODO"
+          label={t("services/ogc_api:Extent.spatial.ymax._label")}
           disabled={state.spatialComputed}
           type="number"
         />
@@ -222,23 +225,27 @@ const Extent = ({
           border="bottom"
         >
           <InfoLabel
-            label="Temporal extent"
-            help="TODO"
+            label={t("services/ogc_api:Extent.temporal._label")}
+            help={t("services/ogc_api:Extent.temporal._description")}
             mono={false}
             iconSize="list"
           />
         </Box>
-        <ToggleField name="temporalComputed" label="Compute" help="TODO" />
+        <ToggleField
+          name="temporalComputed"
+          label={t("services/ogc_api:Extent.temporalComputed._label")}
+          help={t("services/ogc_api:Extent.temporalComputed._description")}
+        />
         <TextField
           name="start"
-          label="Start time"
-          help="TODO"
+          label={t("services/ogc_api:Extent.temporal.start._label")}
+          help={t("services/ogc_api:Extent.temporal.start._description")}
           disabled={state.temporalComputed}
         />
         <TextField
           name="end"
-          label="End time"
-          help="TODO"
+          label={t("services/ogc_api:Extent.temporal.end._label")}
+          help={t("services/ogc_api:Extent.temporal.end._description")}
           disabled={state.temporalComputed}
         />
       </AutoForm>

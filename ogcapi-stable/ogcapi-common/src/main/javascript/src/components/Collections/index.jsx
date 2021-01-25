@@ -25,10 +25,10 @@ const ServiceEditCollections = ({
       search: search,
     });
   };
-  console.log("COLL", collections);
+  //console.log("COLL", collections);
 
   const tabs = useFassets(collectionEditTabs());
-  console.log("COLLTABS", tabs);
+  //console.log("COLLTABS", tabs);
 
   return (
     <Index

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import styled from "styled-components";
+import { useTranslation } from "react-i18next";
 
 import { Box, CheckBox, AccordionPanel } from "grommet";
 import { FormAdd, FormSubtract } from "grommet-icons";
@@ -24,6 +25,7 @@ const StyledBox = styled(Box)`
 `;
 
 const ApiSection = ({
+  id,
   label,
   component: Form,
   data,
@@ -32,6 +34,8 @@ const ApiSection = ({
   isDefaults,
   inheritedLabel,
   debounce,
+  noDisable,
+  dependents,
   onPending,
   onChange,
 }) => {
@@ -44,6 +48,18 @@ const ApiSection = ({
 
   const hasDetails = state.enabled && Form !== null;
   const color = state.enabled ? (isActive ? "brand" : null) : "dark-4";
+
+  const rejectToggle = state.enabled && (noDisable || dependents.length > 0);
+  const rejectReason = noDisable
+    ? "it provides essential functionality."
+    : `required by: ${dependents.map((d) => d.label).join(", ")}`;
+  const toggleTooltip = state.enabled
+    ? rejectToggle
+      ? `Building block cannot be disabled, ${rejectReason}`
+      : "Disable building block"
+    : "Enable building block";
+
+  const { t } = useTranslation();
 
   return (
     <AccordionPanel
@@ -64,13 +80,7 @@ const ApiSection = ({
           hoverColor={hasDetails ? "brand" : null}
         >
           <Box direction="row" pad="none" gap="medium" align="center">
-            <Box
-              title={
-                state.enabled
-                  ? "Disable building block"
-                  : "Enable building block"
-              }
-            >
+            <Box title={toggleTooltip}>
               <AutoForm
                 fields={fields}
                 fieldsDefault={fieldsDefault}
@@ -84,6 +94,7 @@ const ApiSection = ({
                 <CheckBox
                   toggle
                   name="enabled"
+                  disabled={rejectToggle}
                   onClick={(e) => {
                     e.stopPropagation();
                     e.target.blur();
@@ -91,7 +102,12 @@ const ApiSection = ({
                 />
               </AutoForm>
             </Box>
-            <InfoLabel label={label} help="TODO" mono={false} iconSize="list" />
+            <InfoLabel
+              label={t(`building_blocks:${id}._label`)}
+              help={t(`building_blocks:${id}._description`)}
+              mono={false}
+              iconSize="list"
+            />
           </Box>
           {hasDetails && (
             <Box title={isActive ? "Hide details" : "Show details"}>

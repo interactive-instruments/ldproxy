@@ -1,5 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import { AutoForm, SelectField, getFieldsDefault } from "@xtraplatform/core";
 
@@ -32,6 +33,8 @@ const Crs = ({
   };
   const fieldsDefault = getFieldsDefault(fields, defaults);
 
+  const { t } = useTranslation();
+
   return (
     <AutoForm
       fields={fields}
@@ -45,7 +48,7 @@ const Crs = ({
       <SelectField
         name="additionalCrs"
         label="Additional coordinate reference systems"
-        help="TODO"
+        help={t("services/ogc_api:api.CRS.additionalCrs")}
         multiple
         placeholder="Select"
         options={[

@@ -1,0 +1,356 @@
+{
+  "en": {
+    "manager": {
+	    "menu": {
+	      "_label": "Show menu",
+	      "_description": ""
+	    },
+	    "back": {
+	      "_label": "Back to ",
+	      "_description": ""
+	    }
+    },
+    "services": {
+      "_label": "Services",
+      "_description": "",
+	    "general": {
+	      "_label": "General",
+	      "_description": ""
+	    },
+	    "add": {
+	      "_label": "Add new service",
+	      "_description": ""
+	    },
+	    "delete": {
+	      "_label": "Remove service",
+	      "_description": ""
+	    },
+	    "start": {
+	      "_label": "Stop service",
+	      "_description": ""
+	    },
+	    "stop": {
+	      "_label": "Start service",
+	      "_description": ""
+	    },
+	    "show": {
+	      "_label": "Show landing page",
+	      "_description": ""
+	    },
+	    "defaults": {
+	      "_label": "Show service defaults",
+	      "_description": ""
+	    }
+    },
+    "id": {
+      "_label": "Id",
+      "_description": "API identifier. Allowed characters are (A-Z, a-z), numbers (0-9), underscore and hyphen."
+    },
+    "apiVersion": {
+      "_label": "API Version",
+      "_description": "Optional version used in the API URI. If not set, the landing page URI is `/{id}`. If set, the landing page URI is `/{id}/v{apiVersion}`, e.g. `/{id}/v1` for `1`."
+    },
+    "label": {
+      "_label": "Label",
+      "_description": "Human readable label."
+    },
+    "description": {
+      "_label": "Description",
+      "_description": "Human readable description."
+    },
+    "enabled": {
+      "_label": "Enable",
+      "_description": "Publish the API on startup?"
+    },
+    "metadata": {
+        "_label": "Metadata",
+        "_description": ""
+      },
+    "Metadata": {
+      "version": {
+        "_label": "Version",
+        "_description": "???"
+      },
+      "contactName": {
+        "_label": "Contact Name",
+        "_description": "Name of the contact organization and/or person."
+      },
+      "contactUrl": {
+        "_label": "Contact URL",
+        "_description": "Web site of the contact organization."
+      },
+      "contactEmail": {
+        "_label": "Contact Email",
+        "_description": "Email address of the contact organization and/or person."
+      },
+      "contactPhone": {
+        "_label": "Contact Phone",
+        "_description": "Phone number of the contact organization and/or person."
+      },
+      "licenseName": {
+        "_label": "License Name",
+        "_description": "License name or description for the published dataset."
+      },
+      "licenseUrl": {
+        "_label": "License URL",
+        "_description": "License URL for the published dataset."
+      },
+      "keywords": {
+        "_label": "Keywords",
+        "_description": "Comma separated list of keywords."
+      }
+    },
+    "extent": {
+      "_label": "Extent",
+      "_description": ""
+    },
+    "Extent": {
+      "spatialComputed": {
+        "_label": "Compute",
+        "_description": "Compute the spatial extent on startup from the data source. For big datasets this will slow down the startup."
+      },
+      "spatial": {
+        "_label": "Spatial",
+        "_description": "Default value for the spatial extent for each collection. Can be overriden in the collection configuration. Note: This is not the extent for the whole dataset, that will always be derived from the collection extents.",
+        "xmin": {
+	        "_label": "X coordinate lower left corner",
+	        "_description": ""
+	      },
+	      "xmax": {
+	        "_label": "X coordinate upper right corner",
+	        "_description": ""
+	      },
+	      "ymin": {
+	        "_label": "Y coordinate lower left corner",
+	        "_description": ""
+	      },
+	      "ymax": {
+	        "_label": "Y coordinate upper right corner",
+	        "_description": ""
+	      }
+      },
+      "temporalComputed": {
+        "_label": "Compute",
+        "_description": "Compute the temporal extent on startup from the data source. For big datasets this will slow down the startup."
+      },
+      "temporal": {
+        "_label": "Temporal",
+        "_description": "Default value for the temporal extent for each collection. Can be overriden in the collection configuration. Note: This is not the extent for the whole dataset, that will always be derived from the collection extents.",
+	      "start": {
+	        "_label": "Start time",
+	        "_description": "Start of the interval. Arbitrary date or datetime notation."
+	      },
+	      "end": {
+	        "_label": "End time",
+	        "_description": "End of the interval. Arbitrary date or datetime notation. Empty means an open-ended interval."
+	      }
+      }
+    },
+    "api": {
+      "_label": "Api",
+      "_description": ""
+    },
+    "collections": {
+      "_label": "Collections",
+      "_description": ""
+    },
+    "Collection": {
+      "id": {
+        "_label": "Foundation",
+        "_description": "API identifier. Allowed characters are (A-Z, a-z), numbers (0-9), underscore and hyphen."
+      },
+      "label": {
+        "_label": "Foundation",
+        "_description": ""
+      },
+      "description": {
+        "_label": "Foundation",
+        "_description": ""
+      },
+      "persistentUriTemplate": {
+        "_label": "Foundation",
+        "_description": ""
+      },
+      "extent": {},
+      "api": {
+        "_": ""
+      }
+    }
+  },
+  "de": {
+    "manager": {
+	    "menu": {
+	      "_label": "Menü anzeigen",
+	      "_description": ""
+	    },
+	    "back": {
+	      "_label": "Zurück zu ",
+	      "_description": ""
+	    }
+    },
+    "services": {
+      "_label": "Dienste",
+      "_description": "",
+	    "general": {
+	      "_label": "Allgemein",
+	      "_description": ""
+	    },
+	    "add": {
+	      "_label": "Neuen Dienst hinzufügen",
+	      "_description": ""
+	    },
+	    "delete": {
+	      "_label": "Dienst löschen",
+	      "_description": ""
+	    },
+	    "start": {
+	      "_label": "Dienst starten",
+	      "_description": ""
+	    },
+	    "stop": {
+	      "_label": "Dienst stoppen",
+	      "_description": ""
+	    },
+	    "show": {
+	      "_label": "Startseite des Dienstes öffnen",
+	      "_description": ""
+	    },
+	    "defaults": {
+	      "_label": "Defaults für alle Dienste bearbeiten",
+	      "_description": ""
+	    }
+    },
+    "id": {
+      "_label": "Id",
+      "_description": "Eindeutiger Identifikator der API. Erlaubt sind Buchstaben (A-Z, a-z), Ziffern (0-9), Unterstrichund Bindestrich."
+    },
+    "apiVersion": {
+      "_label": "API Version",
+      "_description": "Ist ein Wert angegeben, dann wird eine Version im Pfad der API-URIs ergänzt. Ohne Angabe ist der Pfad zur Landing Page `/{id}`, wobei `{id}` der Identifikator der API ist. Ist der Wert angegeben, dann ist der Pfad zur Landing Page `/{id}/v{apiVersion}`, also z.B. `/{id}/v1` beim Wert 1."
+    },
+    "label": {
+      "_label": "Bezeichnung",
+      "_description": "Eine Bezeichnung der API, z.B. für die Präsentation zu Nutzern."
+    },
+    "description": {
+      "_label": "Beschreibung",
+      "_description": "Eine Beschreibung der API, z.B. für die Präsentation zu Nutzern."
+    },
+    "enabled": {
+      "_label": "Aktivieren",
+      "_description": "Die API beim Start veröffentlichen?"
+    },
+    "metadata": {
+        "_label": "Metadaten",
+        "_description": ""
+      },
+    "Metadata": {
+      "version": {
+        "_label": "Version",
+        "_description": "???"
+      },
+      "contactName": {
+        "_label": "Kontakt Name",
+        "_description": "Name der Kontakt-Organisation und/oder Kontakt-Person."
+      },
+      "contactUrl": {
+        "_label": "Kontakt URL",
+        "_description": "Webseite der Kontakt-Organisation."
+      },
+      "contactEmail": {
+        "_label": "Kontakt Email",
+        "_description": "Email-Adresse der Kontakt-Organisation und/oder Kontakt-Person."
+      },
+      "contactPhone": {
+        "_label": "Kontakt Telefon",
+        "_description": "Telefonnummer der Kontakt-Organisation und/oder Kontakt-Person."
+      },
+      "licenseName": {
+        "_label": "Lizenz Name",
+        "_description": "Lizenz Name und/oder Beschreibung des veröffentlichten Datensatzes."
+      },
+      "licenseUrl": {
+        "_label": "Lizenz URL",
+        "_description": "Lizenz URL des veröffentlichten Datensatzes."
+      },
+      "keywords": {
+        "_label": "Schlüsselwörter",
+        "_description": "Komma-separierte Liste von Schlüsselwörtern."
+      }
+    },
+    "extent": {
+      "_label": "Ausdehnung",
+      "_description": ""
+    },
+    "Extent": {
+      "spatialComputed": {
+        "_label": "Berechnen",
+        "_description": "Die räumliche Ausdehnung automatisch beim Start aus der Datenquelle berechnen. Bei großen Datenmengen verzögert dies den Start."
+      },
+      "spatial": {
+        "_label": "Räumlich",
+        "_description": "Standardwert für die räumliche Ausdehnung einer Collection. Kann in der Konfiguration der Collection überschrieben werden. Hinweis: Es handelt sich hierbei nicht um die Ausdehnung des Datensatzes insgesamt, dieser wird stets automatisch aus den Ausdehnungen der einzelnen Collections ermittelt.",
+        "xmin": {
+	        "_label": "X-Koordinate unten links",
+	        "_description": ""
+	      },
+	      "xmax": {
+	        "_label": "X-Koordinate oben rechts",
+	        "_description": ""
+	      },
+	      "ymin": {
+	        "_label": "Y-Koordinate unten links",
+	        "_description": ""
+	      },
+	      "ymax": {
+	        "_label": "Y-Koordinate oben rechts",
+	        "_description": ""
+	      }
+      },
+      "temporalComputed": {
+        "_label": "Berechnen",
+        "_description": "Die zeitliche Ausdehnung automatisch beim Start aus der Datenquelle berechnen. Bei großen Datenmengen verzögert dies den Start."
+      },
+      "temporal": {
+        "_label": "Zeitlich",
+        "_description": "Standardwert für die zeitliche Ausdehnung einer Collection. Kann in der Konfiguration der Collection überschrieben werden. Hinweis: Es handelt sich hierbei nicht um die Ausdehnung des Datensatzes insgesamt, dieser wird stets automatisch aus den Ausdehnungen der einzelnen Collections ermittelt.",
+	      "start": {
+	        "_label": "Start des Intervalls",
+	        "_description": "Start des Intervalls. Beliebige Datums und Zeit Notation."
+	      },
+	      "end": {
+	        "_label": "Ende des Intervalls",
+	        "_description": "Ende des Intervalls. Beliebige Datums und Zeit Notation. Ein leerer Wert bedeutet ein offenes Intervall."
+	      }
+      }
+    },
+    "api": {
+    	"_label": "Api",
+      "_description": ""
+    },
+    "collections": {
+      "_label": "Collections",
+      "_description": ""
+    },
+    "Collection": {
+      "id": {
+        "_label": "Foundation",
+        "_description": "API identifier. Allowed characters are (A-Z, a-z), numbers (0-9), underscore and hyphen."
+      },
+      "label": {
+        "_label": "Foundation",
+        "_description": ""
+      },
+      "description": {
+        "_label": "Foundation",
+        "_description": ""
+      },
+      "persistentUriTemplate": {
+        "_label": "Foundation",
+        "_description": ""
+      },
+      "extent": {},
+      "api": {}
+    }
+  }
+}
