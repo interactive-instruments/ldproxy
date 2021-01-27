@@ -17,10 +17,12 @@ const ServiceEditApi = ({
   onPending,
   onChange,
 }) => {
+  const api2 = api || []; //TODO: why do neither the props nor the deconstruct defaults work?
+
   // TODO: now only needed for defaults, get merged values from backend
   const mergedBuildingBlocks = {};
 
-  api.forEach((ext) => {
+  api2.forEach((ext) => {
     const bb = ext.buildingBlock;
     if (mergedBuildingBlocks[bb]) {
       mergedBuildingBlocks[bb] = merge(mergedBuildingBlocks[bb], ext);
@@ -45,7 +47,7 @@ const ServiceEditApi = ({
       }
     });
   }
-  api.forEach((ext) => {
+  api2.forEach((ext) => {
     const bb = ext.buildingBlock;
     if (!mergedBuildingBlocksDefault[bb]) {
       mergedBuildingBlocksDefault[bb] = {};

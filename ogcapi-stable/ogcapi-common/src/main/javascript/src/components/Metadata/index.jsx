@@ -18,16 +18,24 @@ const fieldsTransformation = {
   },
 };
 
-const Metadata = ({ metadata, defaults, debounce, onPending, onChange }) => {
+const Metadata = ({
+  metadata = {},
+  defaults,
+  debounce,
+  onPending,
+  onChange,
+}) => {
+  const metadata2 = metadata || {}; //TODO: why do neither the props nor the deconstruct defaults work?
+
   const fields = {
-    contactName: metadata.contactName,
-    contactUrl: metadata.contactUrl,
-    contactEmail: metadata.contactEmail,
-    contactPhone: metadata.contactPhone,
-    licenseName: metadata.licenseName,
-    licenseUrl: metadata.licenseUrl,
-    keywords: metadata.keywords || [],
-    version: metadata.version,
+    contactName: metadata2.contactName,
+    contactUrl: metadata2.contactUrl,
+    contactEmail: metadata2.contactEmail,
+    contactPhone: metadata2.contactPhone,
+    licenseName: metadata2.licenseName,
+    licenseUrl: metadata2.licenseUrl,
+    keywords: metadata2.keywords || [],
+    version: metadata2.version,
   };
   const fieldsDefault = getFieldsDefault(fields, defaults.metadata);
 
@@ -44,7 +52,7 @@ const Metadata = ({ metadata, defaults, debounce, onPending, onChange }) => {
         fields={fields}
         fieldsDefault={fieldsDefault}
         fieldsTransformation={fieldsTransformation}
-        inheritedLabel="Service Defaults"
+        inheritedLabel={t("services/ogc_api:services.defaults._label")}
         debounce={debounce}
         onPending={onPending}
         onChange={onMetadataChange}
@@ -112,7 +120,11 @@ Metadata.defaultProps = {
   metadata: {
     keywords: [],
   },
-  defaults: {},
+  defaults: {
+    metadata: {
+      keywords: [],
+    },
+  },
 };
 
 export default Metadata;

@@ -55,6 +55,7 @@ const CollectionEdit = () => {
             <Main
               serviceId={service.id}
               collection={collection}
+              defaults={{ ...service.defaultExtent }}
               debounce={patchDebounce}
               onPending={onPending}
               onChange={onChange}

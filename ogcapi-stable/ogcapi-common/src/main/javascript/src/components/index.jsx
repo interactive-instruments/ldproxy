@@ -61,6 +61,7 @@ export default createFeature({
       [serviceEditTabs("collections")]: {
         id: "collections",
         label: "services/ogc_api:collections._label",
+        sortPriority: 50,
         component: Collections,
         noDefaults: true,
       },

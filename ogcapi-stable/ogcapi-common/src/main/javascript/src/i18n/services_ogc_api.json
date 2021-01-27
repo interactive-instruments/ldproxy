@@ -8,6 +8,10 @@
 	    "back": {
 	      "_label": "Back to {{label}}",
 	      "_description": ""
+	    },
+	    "inheritedFrom": {
+	      "_label": "Inherited from: **{{parent}}**",
+	      "_description": ""
 	    }
     },
     "services": {
@@ -88,9 +92,28 @@
 	      "_label": "Show landing page",
 	      "_description": ""
 	    },
-	    "defaults": {
-	      "_label": "Show service defaults",
+	    "editDefaults": {
+	      "_label": "Edit service default",
 	      "_description": ""
+	    },
+	    "defaults": {
+	      "_label": "Service Defaults",
+	      "_description": ""
+	    },
+	    "withId": {
+	      "_label": "Service {{id}}",
+	      "_description": ""
+	    },
+	    "datasource": {
+	      "_label": "Data Source",
+	      "_description": "",
+	      "type": "Type",
+	      "host": "Host",
+	      "database": "Database",
+	      "user": "User",
+	      "schemas": "Schemas",
+	      "nativeCrs": "Native CRS",
+	      "url": "URL"
 	    }
     },
     "id": {
@@ -302,6 +325,10 @@
 	    "back": {
 	      "_label": "Zurück zu {{label}}",
 	      "_description": ""
+	    },
+	    "inheritedFrom": {
+	      "_label": "Geerbt von: **{{parent}}**",
+	      "_description": ""
 	    }
     },
     "services": {
@@ -382,9 +409,28 @@
 	      "_label": "Startseite des Dienstes öffnen",
 	      "_description": ""
 	    },
-	    "defaults": {
+	    "editDefaults": {
 	      "_label": "Defaults für alle Dienste bearbeiten",
 	      "_description": ""
+	    },
+	    "defaults": {
+	      "_label": "Defaults für alle Dienste",
+	      "_description": ""
+	    },
+	    "withId": {
+	      "_label": "Dienst {{id}}",
+	      "_description": ""
+	    },
+	    "datasource": {
+	      "_label": "Datenquelle",
+	      "_description": "",
+	      "type": "Typ",
+	      "host": "Host",
+	      "database": "Datenbank",
+	      "user": "Benutzer",
+	      "schemas": "Schemas",
+	      "nativeCrs": "Natives CRS",
+	      "url": "URL"
 	    }
     },
     "id": {

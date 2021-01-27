@@ -140,7 +140,6 @@ const Extent = ({
     temporal: {},
     ...(isCollection ? extent : defaultExtent),
   };
-
   const fields = {
     spatialComputed,
     temporalComputed,
