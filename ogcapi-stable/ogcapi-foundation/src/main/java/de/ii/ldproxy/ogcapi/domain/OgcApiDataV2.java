@@ -52,7 +52,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         public EntityDataBuilder<OgcApiDataV2> fillRequiredFieldsWithPlaceholders() {
             String placeholder = "__DEFAULT__";
             return this.id(placeholder)
-                .serviceType(placeholder);
+                       .serviceType(placeholder);
         }
 
     }
@@ -91,7 +91,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
         builder.add(getId());
         if (getApiVersion().isPresent())
-            builder.add("v"+getApiVersion().get());
+            builder.add("v" + getApiVersion().get());
         return builder.build();
     }
 
@@ -146,10 +146,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     @Value.Check
-    public OgcApiDataV2 mergeCollectionDefaults() {
-        List<ExtensionConfiguration> distinctExtensions = getExtensions().stream()
-                                                                         .distinct()
-                                                                         .collect(Collectors.toList());
+    public OgcApiDataV2 mergeBuildingBlocks() {
+        List<ExtensionConfiguration> distinctExtensions = getMergedExtensions();
 
         // remove duplicates
         if (getExtensions().size() > distinctExtensions.size()) {
@@ -191,8 +189,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
             }
 
             return new ImmutableOgcApiDataV2.Builder().from(this)
-                                                      .collections(mergedCollections)
-                                                      .build();
+                                               .collections(mergedCollections)
+                                               .build();
         }
 
 

@@ -2,13 +2,19 @@ package de.ii.ldproxy.ogcapi.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.xtraplatform.store.domain.entities.handler.Entity;
-import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
-import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.store.domain.KeyPathAlias;
+import de.ii.xtraplatform.store.domain.KeyPathAliasUnwrap;
+import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
+import de.ii.xtraplatform.store.domain.entities.handler.Entity;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -42,9 +48,9 @@ public class OgcApiDataV2Defaults implements EntityDataDefaults<OgcApiDataV2> {
     @Override
     public final EntityDataBuilder<OgcApiDataV2> getBuilderWithDefaults() {
         return new ImmutableOgcApiDataV2.Builder().enabled(true)
-                                                     .secured(false)
-                                                     .metadata(getMetadata())
-                                                     .extensions(getBuildingBlocks());
+                                                  .secured(false)
+                                                  .metadata(getMetadata())
+                                                  .extensions(getBuildingBlocks());
     }
 
     @Override
@@ -58,6 +64,12 @@ public class OgcApiDataV2Defaults implements EntityDataDefaults<OgcApiDataV2> {
                                                                                                                                                                                                            .putAll(value)
                                                                                                                                                                                                            .build()))))
                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public Map<String, KeyPathAliasUnwrap> getReverseAliases() {
+        return ImmutableMap.of("api", value -> ((List<Map<String, Object>>) value).stream()
+                                                                                  .map(buildingBlock -> new AbstractMap.SimpleImmutableEntry<String, Object>(((String) buildingBlock.get("buildingBlock")).toLowerCase(), buildingBlock))
+                                                                                  .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)));
     }
 
     protected Metadata getMetadata() {
