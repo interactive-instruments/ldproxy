@@ -69,11 +69,20 @@ const transformTo = (changes, path, schema) => {
     if (!data.transformations) data.transformations = {};
     if (!data.transformations[path]) data.transformations[path] = {};
     data.transformations[path].remove = "OVERVIEW";
+  } else if (changes.enabledOverview === true) {
+    if (!data.transformations) data.transformations = {};
+    if (!data.transformations[path]) data.transformations[path] = {};
+    data.transformations[path].remove = "NEVER";
   }
+
   if (changes.enabled === false) {
     if (!data.transformations) data.transformations = {};
     if (!data.transformations[path]) data.transformations[path] = {};
     data.transformations[path].remove = "ALWAYS";
+  } else if (changes.enabled === true) {
+    if (!data.transformations) data.transformations = {};
+    if (!data.transformations[path]) data.transformations[path] = {};
+    data.transformations[path].remove = "NEVER";
   }
 
   if (changes.rename) {
