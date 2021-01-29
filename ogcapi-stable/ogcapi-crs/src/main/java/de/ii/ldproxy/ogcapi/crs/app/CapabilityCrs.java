@@ -21,11 +21,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityCrs implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableCrsConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableCrsConfiguration.Builder().enabled(true)
                                                       .build();

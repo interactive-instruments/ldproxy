@@ -22,11 +22,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityTransactional implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableTransactionalConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableTransactionalConfiguration.Builder().enabled(false)
                                                                 .build();

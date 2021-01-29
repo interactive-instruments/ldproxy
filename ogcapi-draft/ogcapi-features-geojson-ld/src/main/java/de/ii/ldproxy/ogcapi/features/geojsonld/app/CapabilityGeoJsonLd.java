@@ -21,11 +21,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityGeoJsonLd implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableGeoJsonLdConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableGeoJsonLdConfiguration.Builder().enabled(false)
                                                             .build();

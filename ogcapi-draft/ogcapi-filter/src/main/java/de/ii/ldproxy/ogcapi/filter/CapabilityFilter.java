@@ -19,11 +19,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityFilter implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableFilterConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFilterConfiguration.Builder().enabled(false)
                                                          .build();

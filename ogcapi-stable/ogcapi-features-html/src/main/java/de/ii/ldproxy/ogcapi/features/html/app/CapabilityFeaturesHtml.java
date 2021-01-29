@@ -24,11 +24,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityFeaturesHtml implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableFeaturesHtmlConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFeaturesHtmlConfiguration.Builder().enabled(true)
                                                        .schemaOrgEnabled(true)

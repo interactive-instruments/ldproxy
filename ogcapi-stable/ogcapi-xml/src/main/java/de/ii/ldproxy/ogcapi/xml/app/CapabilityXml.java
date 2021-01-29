@@ -23,11 +23,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityXml implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableXmlConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableXmlConfiguration.Builder().enabled(false)
                                                       .build();

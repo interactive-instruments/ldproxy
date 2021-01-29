@@ -79,9 +79,7 @@ public class OgcApiDataV2Defaults implements EntityDataDefaults<OgcApiDataV2> {
     protected List<ExtensionConfiguration> getBuildingBlocks() {
         return extensionRegistry.getExtensionsForType(ApiBuildingBlock.class)
                                 .stream()
-                                .map(ogcApiBuildingBlock -> ogcApiBuildingBlock.getConfigurationBuilder()
-                                                                               .defaultValues(ogcApiBuildingBlock.getDefaultConfiguration())
-                                                                               .build())
+                                .map(ApiBuildingBlock::getDefaultConfiguration)
                                 .collect(Collectors.toList());
     }
 }

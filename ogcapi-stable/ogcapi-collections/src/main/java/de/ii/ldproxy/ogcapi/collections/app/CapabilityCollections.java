@@ -13,11 +13,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityCollections implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableCollectionsConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableCollectionsConfiguration.Builder().enabled(true)
                                                               .build();

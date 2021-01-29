@@ -23,11 +23,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityHtml implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableHtmlConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableHtmlConfiguration.Builder().enabled(true)
                                                        .noIndexEnabled(true)

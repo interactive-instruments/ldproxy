@@ -20,11 +20,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityQueryables implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableQueryablesConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableQueryablesConfiguration.Builder().enabled(false)
                                                              .build();

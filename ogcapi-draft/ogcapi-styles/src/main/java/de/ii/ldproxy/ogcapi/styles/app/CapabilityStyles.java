@@ -28,11 +28,6 @@ public class CapabilityStyles implements ApiBuildingBlock {
     ExtensionRegistry extensionRegistry;
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableStylesConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableStylesConfiguration.Builder().enabled(false)
                                                          .styleInfosOnCollection(false)

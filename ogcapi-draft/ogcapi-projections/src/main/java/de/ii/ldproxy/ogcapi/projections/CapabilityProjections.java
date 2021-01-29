@@ -22,11 +22,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityProjections implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableProjectionsConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableProjectionsConfiguration.Builder().enabled(false)
                                                               .build();

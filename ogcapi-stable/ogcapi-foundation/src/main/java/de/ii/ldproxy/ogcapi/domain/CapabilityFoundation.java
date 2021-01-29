@@ -17,11 +17,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityFoundation implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableFoundationConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFoundationConfiguration.Builder().enabled(true)
                                                              .includeLinkHeader(true)

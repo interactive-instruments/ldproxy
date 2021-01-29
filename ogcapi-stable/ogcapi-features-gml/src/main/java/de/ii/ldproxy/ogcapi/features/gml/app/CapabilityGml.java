@@ -22,11 +22,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityGml implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableGmlConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableGmlConfiguration.Builder().enabled(false)
                                                       .build();

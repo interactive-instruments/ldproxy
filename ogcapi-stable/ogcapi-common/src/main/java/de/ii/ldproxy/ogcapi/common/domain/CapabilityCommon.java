@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
@@ -23,11 +22,6 @@ public class CapabilityCommon implements ApiBuildingBlock {
 
     @Requires
     ExtensionRegistry extensionRegistry;
-
-    @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableCommonConfiguration.Builder();
-    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {

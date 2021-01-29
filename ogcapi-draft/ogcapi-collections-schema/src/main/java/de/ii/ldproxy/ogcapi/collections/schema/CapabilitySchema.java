@@ -20,11 +20,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilitySchema implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableSchemaConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableSchemaConfiguration.Builder().enabled(false)
                                                          .build();

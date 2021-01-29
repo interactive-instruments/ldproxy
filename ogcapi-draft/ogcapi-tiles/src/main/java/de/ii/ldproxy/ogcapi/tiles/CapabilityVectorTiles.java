@@ -32,11 +32,6 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
     ExtensionRegistry extensionRegistry;
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableTilesConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
 
         return new ImmutableTilesConfiguration.Builder().enabled(false)

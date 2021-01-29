@@ -25,11 +25,6 @@ import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguratio
 public class CapabilityFeaturesCore implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableFeaturesCoreConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFeaturesCoreConfiguration.Builder().enabled(true)
                                                                .defaultCrs(FeaturesCoreConfiguration.DefaultCrs.CRS84)

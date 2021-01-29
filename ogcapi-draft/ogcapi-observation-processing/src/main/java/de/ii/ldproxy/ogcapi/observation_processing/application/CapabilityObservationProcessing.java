@@ -28,11 +28,6 @@ public class CapabilityObservationProcessing implements ApiBuildingBlock {
     ExtensionRegistry extensionRegistry;
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableObservationProcessingConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableObservationProcessingConfiguration.Builder().enabled(false)
                                                                         .resultEncodings(extensionRegistry.getExtensionsForType(DapaResultFormatExtension.class)

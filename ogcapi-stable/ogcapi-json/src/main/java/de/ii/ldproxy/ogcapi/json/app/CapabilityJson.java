@@ -20,11 +20,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityJson implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableJsonConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableJsonConfiguration.Builder().enabled(true)
                                                        .useFormattedJsonOutput(false)

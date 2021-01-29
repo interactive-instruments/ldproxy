@@ -24,11 +24,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityGeoJson implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableGeoJsonConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableGeoJsonConfiguration.Builder().enabled(true)
                                                           .nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST)

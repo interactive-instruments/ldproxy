@@ -22,11 +22,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class CapabilityGeometrySimplification implements ApiBuildingBlock {
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableGeometrySimplificationConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableGeometrySimplificationConfiguration.Builder().enabled(false)
                                                                          .build();

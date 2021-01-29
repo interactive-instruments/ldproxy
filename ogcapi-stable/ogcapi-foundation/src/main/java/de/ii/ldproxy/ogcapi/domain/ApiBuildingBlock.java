@@ -14,7 +14,5 @@ public interface ApiBuildingBlock extends ApiExtension {
         return true;
     }
 
-    ExtensionConfiguration.Builder getConfigurationBuilder();
-
     ExtensionConfiguration getDefaultConfiguration();
 }
