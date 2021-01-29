@@ -19,6 +19,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
@@ -50,9 +51,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
         @Override
         public EntityDataBuilder<OgcApiDataV2> fillRequiredFieldsWithPlaceholders() {
-            String placeholder = "__DEFAULT__";
-            return this.id(placeholder)
-                       .serviceType(placeholder);
+            return this.id(EntityDataDefaults.PLACEHOLDER)
+                       .serviceType(EntityDataDefaults.PLACEHOLDER);
         }
 
     }

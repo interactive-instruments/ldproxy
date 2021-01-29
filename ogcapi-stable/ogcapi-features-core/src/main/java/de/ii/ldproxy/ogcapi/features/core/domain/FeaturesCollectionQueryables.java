@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
@@ -24,7 +25,9 @@ public interface FeaturesCollectionQueryables {
 
     List<String> getOther();
 
+    @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     default List<String> getAll() {
         return ImmutableList.<String>builder()
                 .addAll(getSpatial())

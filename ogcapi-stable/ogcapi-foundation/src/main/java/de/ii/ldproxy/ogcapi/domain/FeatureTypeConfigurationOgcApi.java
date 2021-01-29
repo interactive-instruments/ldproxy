@@ -18,7 +18,9 @@ import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Value.Immutable
@@ -66,6 +68,20 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     @Override
     default List<ExtensionConfiguration> getMergedExtensions() {
         return getMergedExtensions(Lists.newArrayList(Iterables.concat(getParentExtensions(), getExtensions())));
+    }
+
+    @Value.Check
+    default FeatureTypeConfigurationOgcApi mergeBuildingBlocks() {
+        List<ExtensionConfiguration> distinctExtensions = getMergedExtensions(getExtensions());
+
+        // remove duplicates
+        if (getExtensions().size() > distinctExtensions.size()) {
+            return new ImmutableFeatureTypeConfigurationOgcApi.Builder().from(this)
+                                                      .extensions(distinctExtensions)
+                                                      .build();
+        }
+
+        return this;
     }
 }
 

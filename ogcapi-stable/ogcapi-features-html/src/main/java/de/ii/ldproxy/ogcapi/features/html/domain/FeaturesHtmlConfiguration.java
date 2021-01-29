@@ -1,6 +1,6 @@
 /**
  * Copyright 2020 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.html.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
@@ -91,5 +92,24 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Featu
     @Override
     default Builder getBuilder() {
         return new ImmutableFeaturesHtmlConfiguration.Builder();
+    }
+
+    // workaround for ImmutableMap.Builder restriction: Multiple entries with same key
+    @Override
+    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+        ImmutableFeaturesHtmlConfiguration.Builder builder = new ImmutableFeaturesHtmlConfiguration.Builder().from(source)
+                                                                                                             .enabled(getEnabled())
+                                                                                                             .layout(getLayout())
+                                                                                                             .schemaOrgEnabled(getSchemaOrgEnabled())
+                                                                                                             .itemLabelFormat(getItemLabelFormat());
+
+        Map<String, FeatureTypeMapping2> transformations = Maps.newLinkedHashMap(((FeaturesHtmlConfiguration) source).getTransformations());
+
+        transformations.putAll(getTransformations());
+
+        builder.transformations(transformations);
+
+
+        return builder.build();
     }
 }
