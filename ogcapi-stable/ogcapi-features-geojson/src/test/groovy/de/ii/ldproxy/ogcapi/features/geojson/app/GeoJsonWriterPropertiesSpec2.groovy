@@ -1,16 +1,9 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
-import de.ii.ldproxy.ogcapi.domain.OgcApi
-import de.ii.ldproxy.ogcapi.domain.URICustomizer
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ModifiableStateGeoJson
+import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.features.geojson.app.GeoJsonWriterProperties
+import de.ii.ldproxy.ogcapi.features.geojson.domain.*
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs

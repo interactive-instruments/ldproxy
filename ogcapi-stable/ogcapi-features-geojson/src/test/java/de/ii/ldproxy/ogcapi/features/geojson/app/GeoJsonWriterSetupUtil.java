@@ -11,6 +11,9 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ModifiableStateGeoJson;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 
 import java.io.ByteArrayOutputStream;
