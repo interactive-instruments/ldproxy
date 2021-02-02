@@ -19,11 +19,11 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.wfs3.core.Wfs3Core;
 import de.ii.xtraplatform.auth.api.User;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.feature.provider.api.FeatureQuery;
 import de.ii.xtraplatform.feature.provider.api.FeatureStream;
 import de.ii.xtraplatform.feature.provider.api.ImmutableFeatureQuery;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformer;
-import de.ii.xtraplatform.server.CoreServerConfig;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -59,7 +59,7 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
     );
 
     @Requires
-    private CoreServerConfig coreServerConfig;
+    private XtraPlatform xtraPlatform;
 
     @Requires
     private Wfs3Core wfs3Core;
@@ -88,11 +88,11 @@ public class Wfs3EndpointSitemap implements OgcApiEndpointExtension {
 
         List<Site> sites = new ArrayList<>();
 
-        String baseUrlItems = String.format("%s/%s/collections/%s/items?f=html", coreServerConfig.getExternalUrl(), service.getId(), id);
+        String baseUrlItems = String.format("%s/%s/collections/%s/items?f=html", xtraPlatform.getServicesUri(), service.getId(), id);
         List<Site> itemsSites = SitemapComputation.getSites(baseUrlItems, from, to);
         sites.addAll(itemsSites);
 
-        String baseUrlItem = String.format("%s/%s/collections/%s/items", coreServerConfig.getExternalUrl(), service.getId(), id);
+        String baseUrlItem = String.format("%s/%s/collections/%s/items", xtraPlatform.getServicesUri(), service.getId(), id);
         ItemSitesReader itemSitesReader = new ItemSitesReader(baseUrlItem);
         FeatureQuery featureQuery = ImmutableFeatureQuery.builder()
                                                          .type(id)

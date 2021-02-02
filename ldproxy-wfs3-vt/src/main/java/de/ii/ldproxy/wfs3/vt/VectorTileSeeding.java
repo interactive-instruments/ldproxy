@@ -20,8 +20,8 @@ import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
-import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -66,7 +66,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
     private CrsTransformation crsTransformation;
 
     @Requires
-    private CoreServerConfig coreServerConfig;
+    private XtraPlatform xtraPlatform;
 
     @Requires
     private OgcApiExtensionRegistry extensionRegistry;
@@ -136,7 +136,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
 
 
                 if (tilesDatasetEnabled && seedingDatasetEnabled) {
-                    seedingDataset(collectionIdsDataset, datasetData, crsTransformation, cache, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson.get());
+                    seedingDataset(collectionIdsDataset, datasetData, crsTransformation, cache, featureProvider, xtraPlatform, wfs3OutputFormatGeoJson.get());
                 }
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
@@ -179,12 +179,12 @@ public class VectorTileSeeding implements Wfs3StartupTask {
      * @param crsTransformation    the coordinate reference system transformation object to transform coordinates
      * @param cache                the vector tile cache
      * @param featureProvider      the feature Provider
-     * @param coreServerConfig     the core server config with the external url
+     * @param xtraPlatform     the core server config with the external url
      * @throws FileNotFoundException
      */
     private void seedingDataset(Set<String> collectionIdsDataset, OgcApiDatasetData datasetData,
                                 CrsTransformation crsTransformation, VectorTilesCache cache,
-                                TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
+                                TransformingFeatureProvider featureProvider, XtraPlatform xtraPlatform,
                                 Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) throws FileNotFoundException {
 
         /*Computation of the minimum and maximum values for x and y from the minimum/maximum spatial extent
@@ -299,7 +299,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                                     int collectionMin = seeding.get(tilingSchemeId)
                                                                .getMin();
                                     if (collectionMin <= z && z <= collectionMax) {
-                                        File tileFileMvtCollection = generateMVT(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                                        File tileFileMvtCollection = generateMVT(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, xtraPlatform, wfs3OutputFormatGeoJson);
                                         layers.put(collectionId, tileFileMvtCollection);
                                     }
                                 }
@@ -323,7 +323,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
                                     int collectionMin = seeding.get(tilingSchemeId)
                                                                .getMin();
                                     if (collectionMin <= z && z <= collectionMax) {
-                                        generateJSON(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                                        generateJSON(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, xtraPlatform, wfs3OutputFormatGeoJson);
                                     }
                                 }
                             }
@@ -346,12 +346,12 @@ public class VectorTileSeeding implements Wfs3StartupTask {
      * @param cache             the vector tile cache
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @param featureProvider   the feature Provider
-     * @param coreServerConfig  the core server config with the external url
+     * @param xtraPlatform  the core server config with the external url
      * @return the Json File. If the mvt already exists, return null
      */
     private File generateMVT(OgcApiDatasetData datasetData, String collectionId, String tilingSchemeId, int z, int x,
                              int y, VectorTilesCache cache, CrsTransformation crsTransformation,
-                             TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
+                             TransformingFeatureProvider featureProvider, XtraPlatform xtraPlatform,
                              Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) {
 
         try {
@@ -359,7 +359,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
             VectorTile tile = new VectorTile(collectionId, tilingSchemeId, Integer.toString(z), Integer.toString(x), Integer.toString(y), datasetData, false, cache, featureProvider, wfs3OutputFormatGeoJson);
             File tileFileMvt = tile.getFile(cache, "pbf");
             if (!tileFileMvt.exists()) {
-                File tileFileJson = generateJSON(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, coreServerConfig, wfs3OutputFormatGeoJson);
+                File tileFileJson = generateJSON(datasetData, collectionId, tilingSchemeId, z, x, y, cache, crsTransformation, featureProvider, xtraPlatform, wfs3OutputFormatGeoJson);
                 Map<String, File> layers = new HashMap<>();
                 layers.put(collectionId, tileFileJson);
                 boolean success = TileGeneratorMvt.generateTileMvt(tileFileMvt, layers, null, crsTransformation, tile);
@@ -388,12 +388,12 @@ public class VectorTileSeeding implements Wfs3StartupTask {
      * @param cache             the vector tile cache
      * @param crsTransformation the coordinate reference system transformation object to transform coordinates
      * @param featureProvider   the feature Provider
-     * @param coreServerConfig  the core server config with the external url
+     * @param xtraPlatform  the core server config with the external url
      * @return the json File, if it already exists return null
      */
     private File generateJSON(OgcApiDatasetData datasetData, String collectionId, String tilingSchemeId, int z, int x,
                               int y, VectorTilesCache cache, CrsTransformation crsTransformation,
-                              TransformingFeatureProvider featureProvider, CoreServerConfig coreServerConfig,
+                              TransformingFeatureProvider featureProvider, XtraPlatform xtraPlatform,
                               Wfs3OutputFormatExtension wfs3OutputFormatGeoJson) {
 
         try {
@@ -401,7 +401,7 @@ public class VectorTileSeeding implements Wfs3StartupTask {
             File tileFileJson = tile.getFile(cache, "json");
 
             if (!tileFileJson.exists()) {
-                String prefix = coreServerConfig.getExternalUrl();
+                String prefix = xtraPlatform.getServicesUri().toString();
                 String uriString = prefix + "/" + datasetData.getId() + "/" + "collections" + "/"
                         + collectionId + "/tiles/" + tilingSchemeId + "/" + z + "/" + y + "/" + x;
 

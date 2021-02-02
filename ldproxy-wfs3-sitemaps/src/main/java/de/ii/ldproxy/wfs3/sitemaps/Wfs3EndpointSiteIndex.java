@@ -17,7 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -55,7 +55,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
     );
 
     @Requires
-    private CoreServerConfig coreServerConfig;
+    private XtraPlatform xtraPlatform;
 
     @Override
     public OgcApiContext getApiContext() {
@@ -93,7 +93,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
         }
 
         List<Site> sitemaps = new ArrayList<>();
-        String landingPageUrl = String.format("%s/%s/sitemap_landingPage.xml", coreServerConfig.getExternalUrl(), service.getId(), service.getId());
+        String landingPageUrl = String.format("%s/%s/sitemap_landingPage.xml", xtraPlatform.getServicesUri(), service.getId(), service.getId());
         sitemaps.add(new Site(landingPageUrl));
 
         //TODO duration with big blocks is too long, therefore the block length is dynamically generated
@@ -103,7 +103,7 @@ public class Wfs3EndpointSiteIndex implements OgcApiEndpointExtension {
 
         SitemapComputation.getCollectionIdStream(service.getData())
                           .forEach(collectionId -> {
-                              String baseUrl = String.format("%s/%s/collections/%s", coreServerConfig.getExternalUrl(), service.getId(), collectionId);
+                              String baseUrl = String.format("%s/%s/collections/%s", xtraPlatform.getServicesUri(), service.getId(), collectionId);
 
                               List<Site> sitemapsBlock = SitemapComputation.getSitemaps(baseUrl, featureCounts.get(collectionId), blockLengths.get(collectionId));
 

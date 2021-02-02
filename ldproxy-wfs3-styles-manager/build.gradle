@@ -1,6 +1,4 @@
 
-version = '1.4.4'
-
 dependencies {
     provided project(":ldproxy-wfs3")
     provided project(":ldproxy-wfs3-api")

@@ -12,7 +12,8 @@ import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.auth.api.AuthConfig;
+import de.ii.xtraplatform.dropwizard.api.AuthConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -63,11 +64,11 @@ public class ExtendableOpenApiDefinition {
     private Set<Wfs3OpenApiExtension> openApiExtensions;
 
     public ExtendableOpenApiDefinition(/*@Requires Jackson jackson, @Requires Dropwizard dropwizard,*/
-            @Requires AuthConfig authConfig) {
+            @Requires XtraPlatform xtraPlatform) {
         super();
         //this.objectMapper = jackson.getDefaultObjectMapper();
         //this.externalUrl = dropwizard.getExternalUrl();
-        this.authConfig = authConfig;
+        this.authConfig = xtraPlatform.getConfiguration().auth;
         //this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(Wfs3OpenApiExtension::getSortPriority));
     }
 

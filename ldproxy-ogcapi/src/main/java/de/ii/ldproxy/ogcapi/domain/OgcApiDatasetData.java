@@ -7,18 +7,21 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.test.ImmutableTest;
 import de.ii.ldproxy.ogcapi.domain.test.Test;
+import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.entity.api.maptobuilder.ValueBuilderMap;
 import de.ii.xtraplatform.event.store.EntityDataBuilder;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTransformerServiceData;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
+import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,7 @@ import static de.ii.xtraplatform.feature.provider.api.TargetMapping.BASE_TYPE;
 @JsonDeserialize(builder = ImmutableOgcApiDatasetData.Builder.class)
 public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<FeatureTypeConfigurationOgcApi> implements ExtendableConfiguration {
 
+    public static final String SERVICE_TYPE = "WFS3";
     public static final String DEFAULT_CRS_URI = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
     public static final EpsgCrs DEFAULT_CRS = new EpsgCrs(4326, true);
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiDatasetData.class);
@@ -71,6 +75,23 @@ public abstract class OgcApiDatasetData extends FeatureTransformerServiceData<Fe
     //TODO: Optional does not work with nested builders
     @Nullable
     public abstract Metadata getMetadata();
+
+    // workaround for changed hydration in xtraplatform upgrade while not upgrading ldproxy
+    @JsonIgnore
+    @Nullable
+    public abstract TransformingFeatureProvider getTransformingFeatureProvider();
+    @JsonIgnore
+    @Nullable
+    public abstract CrsTransformer getDefaultTransformer();
+    @JsonIgnore
+    @Nullable
+    public abstract CrsTransformer getDefaultReverseTransformer();
+    @JsonIgnore
+    @Nullable
+    public abstract Map<String, CrsTransformer> getAdditionalTransformers();
+    @JsonIgnore
+    @Nullable
+    public abstract Map<String, CrsTransformer> getAdditionalReverseTransformers();
 
     @Override
     @Value.Derived

@@ -9,7 +9,7 @@ package de.ii.ldproxy.target.html;
 
 import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.service.api.Service;
 import de.ii.xtraplatform.service.api.ServiceData;
 import de.ii.xtraplatform.service.api.ServiceListingProvider;
@@ -59,15 +59,8 @@ public class Wfs3ServiceListingProvider implements ServiceListingProvider {
     private Optional<URI> externalUri = Optional.empty();
 
     @Bind
-    void setCore(CoreServerConfig coreServerConfig) {
-        URI externalUri = null;
-        try {
-            externalUri = new URI(coreServerConfig.getExternalUrl());
-        } catch (URISyntaxException e) {
-            // ignore
-        }
-
-        this.externalUri = Optional.ofNullable(externalUri);
+    void setCore(XtraPlatform xtraPlatform) {
+        this.externalUri = Optional.ofNullable(xtraPlatform.getServicesUri());
     }
 
     @Override

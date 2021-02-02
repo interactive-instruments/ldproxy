@@ -1,6 +1,4 @@
 
-version = '1.4.4'
-
 repositories {
     maven {
         url "https://github.com/ElectronicChartCentre/ecc-mvn-repo/raw/master/releases"
@@ -16,7 +14,6 @@ dependencies {
     provided project(":ldproxy-wfs3-core")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-openapi'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-server'
 

@@ -1,6 +1,4 @@
 
-version = '1.4.5'
-
 dependencies {
     provided project(":ldproxy-codelists")
     provided project(":ldproxy-wfs3-api")
@@ -11,7 +9,6 @@ dependencies {
     provided project(":ldproxy-wfs3-oas30")
 
     provided group: 'de.interactive_instruments', name: 'xtraplatform-akka-http'
-    provided group: 'de.interactive_instruments', name: 'xtraplatform-config-store-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-provider-wfs'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-feature-transformer-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-kvstore-api'

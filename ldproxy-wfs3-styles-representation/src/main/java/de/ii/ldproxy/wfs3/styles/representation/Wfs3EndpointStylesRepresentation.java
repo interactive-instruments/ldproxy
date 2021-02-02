@@ -17,8 +17,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.wfs3.styles.StylesConfiguration;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
-import de.ii.xtraplatform.server.CoreServerConfig;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -52,7 +52,7 @@ public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension
     @Requires
     private KeyValueStore keyValueStore;
     @Requires
-    private CoreServerConfig coreServerConfig;
+    private XtraPlatform xtraPlatform;
 
     @Override
     public OgcApiContext getApiContext() {
@@ -101,7 +101,7 @@ public class Wfs3EndpointStylesRepresentation implements OgcApiEndpointExtension
         List<String> styles = stylesStore.getKeys();
         // TODO EndpointStyles.getStyleDocument(stylesStore, styleId, "mbs");
 
-        String prefix = coreServerConfig.getExternalUrl();
+        String prefix = xtraPlatform.getServicesUri().toString();
 
         String styleUri = prefix + "/" + service.getData()
                                                 .getId() + "/" + "styles" + "/" + styleId;

@@ -1,6 +1,4 @@
 
-version = '1.4.4'
-
 dependencies {
     provided project(":ldproxy-wfs3")
     provided project(":ldproxy-wfs3-api")
@@ -8,7 +6,6 @@ dependencies {
     provided project(":ldproxy-wfs3-core")
     provided project(":ldproxy-wfs3-styles")
 
-    provided 'de.interactive_instruments:xtraplatform-config-store-api'
     provided 'de.interactive_instruments:xtraplatform-kvstore-api'
     provided 'de.interactive_instruments:xtraplatform-rest'
     provided 'de.interactive_instruments:xtraplatform-server'

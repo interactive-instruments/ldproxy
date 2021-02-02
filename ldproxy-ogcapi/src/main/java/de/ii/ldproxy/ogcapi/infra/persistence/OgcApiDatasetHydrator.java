@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,10 +18,12 @@ import de.ii.xtraplatform.crs.api.CrsTransformation;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
 import de.ii.xtraplatform.crs.api.CrsTransformer;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
+import de.ii.xtraplatform.entity.api.handler.Entity;
 import de.ii.xtraplatform.event.store.EntityHydrator;
 import de.ii.xtraplatform.feature.provider.api.FeatureProvider;
 import de.ii.xtraplatform.feature.provider.api.FeatureProviderRegistry;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
+import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -38,8 +40,8 @@ import java.util.concurrent.CompletionException;
 
 @Component
 @Provides(properties = {
-        //TODO: how to connect to entity
-        @StaticServiceProperty(name = "entityType", type = "java.lang.String", value = "services")
+        @StaticServiceProperty(name = Entity.TYPE_KEY, type = "java.lang.String", value = Service.TYPE),
+        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiDatasetData.SERVICE_TYPE)
 })
 @Instantiate
 public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> {
@@ -52,9 +54,8 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
     @Requires
     private CrsTransformation crsTransformerFactory;
 
-
     @Override
-    public Map<String, Object> getInstanceConfiguration(OgcApiDatasetData data) {
+    public OgcApiDatasetData hydrateData(OgcApiDatasetData data) {
         try {
             TransformingFeatureProvider featureProvider = (TransformingFeatureProvider) featureProviderFactory.createFeatureProvider(data.getFeatureProvider());
 
@@ -72,26 +73,21 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDatasetData> 
                         additionalReverseTransformers.put(crs.getAsUri(), crsTransformerFactory.getTransformer(crs, sourceCrs));
                     });
 
-                OgcApiDatasetData newData = data;
+                ImmutableOgcApiDatasetData.Builder newData = new ImmutableOgcApiDatasetData.Builder().from(data)
+                                                                                                     .transformingFeatureProvider(featureProvider)
+                                                                                                     .defaultTransformer(defaultTransformer)
+                                                                                                     .defaultReverseTransformer(defaultReverseTransformer)
+                                                                                                     .additionalTransformers(additionalTransformers)
+                                                                                                     .additionalReverseTransformers(additionalReverseTransformers);
                 if (hasMissingBboxes(data.getFeatureTypes())) {
                     ImmutableMap<String, FeatureTypeConfigurationOgcApi> featureTypesWithComputedBboxes = computeMissingBboxes(data.getFeatureTypes(), featureProvider, defaultTransformer);
 
-                    newData = new ImmutableOgcApiDatasetData.Builder()
-                            .from(data)
-                            .featureTypes(featureTypesWithComputedBboxes)
-                            .build();
+                    newData.featureTypes(featureTypesWithComputedBboxes);
                 }
 
                 LOGGER.debug("TRANSFORMER {} {} -> {} {}", sourceCrs.getCode(), sourceCrs.isForceLongitudeFirst() ? "lonlat" : "latlon", OgcApiDatasetData.DEFAULT_CRS.getCode(), OgcApiDatasetData.DEFAULT_CRS.isForceLongitudeFirst() ? "lonlat" : "latlon");
 
-                return ImmutableMap.<String, Object>builder()
-                        .put("data", newData)
-                        .put("featureProvider", featureProvider)
-                        .put("defaultTransformer", defaultTransformer)
-                        .put("defaultReverseTransformer", defaultReverseTransformer)
-                        .put("additionalTransformers", additionalTransformers)
-                        .put("additionalReverseTransformers", additionalReverseTransformers)
-                        .build();
+                return newData.build();
 
             } catch (Throwable e) {
                 LOGGER.error("CRS transformer could not be created"/*, e*/);

@@ -14,7 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import de.ii.xtraplatform.service.api.ServiceResource;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -33,7 +33,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -55,15 +54,15 @@ public class OgcApiRequestDispatcher implements ServiceResource {
 
     private final OgcApiExtensionRegistry extensionRegistry;
     private final Wfs3RequestInjectableContext ogcApiInjectableContext;
-    private final CoreServerConfig coreServerConfig;
+    private final XtraPlatform xtraPlatform;
     private final OgcApiContentNegotiation ogcApiContentNegotiation;
 
     OgcApiRequestDispatcher(@Requires OgcApiExtensionRegistry extensionRegistry,
                             @Requires Wfs3RequestInjectableContext ogcApiInjectableContext,
-                            @Requires CoreServerConfig coreServerConfig) {
+                            @Requires XtraPlatform xtraPlatform) {
         this.extensionRegistry = extensionRegistry;
         this.ogcApiInjectableContext = ogcApiInjectableContext;
-        this.coreServerConfig = coreServerConfig;
+        this.xtraPlatform = xtraPlatform;
         this.ogcApiContentNegotiation = new OgcApiContentNegotiation();
     }
 
@@ -128,13 +127,6 @@ public class OgcApiRequestDispatcher implements ServiceResource {
     }
 
     private Optional<URI> getExternalUri() {
-        URI externalUri = null;
-        try {
-            externalUri = new URI(coreServerConfig.getExternalUrl());
-        } catch (URISyntaxException e) {
-            // ignore
-        }
-
-        return Optional.ofNullable(externalUri);
+        return Optional.ofNullable(xtraPlatform.getServicesUri());
     }
 }

@@ -13,7 +13,6 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.Wfs3GenericMapping;
 import de.ii.ldproxy.target.geojson.GeoJsonGeometryMapping;
@@ -27,8 +26,8 @@ import de.ii.ldproxy.target.html.MicrodataPropertyMapping;
 import de.ii.ldproxy.wfs3.jsonld.Gml2JsonLdMappingProvider;
 import de.ii.xtraplatform.crs.api.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
+import de.ii.xtraplatform.entities.domain.legacy.EntityRepositoryForType;
 import de.ii.xtraplatform.entity.api.EntityRepository;
-import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
 import de.ii.xtraplatform.feature.provider.api.TargetMapping;
 import de.ii.xtraplatform.feature.provider.wfs.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.provider.wfs.ImmutableConnectionInfoWfsHttp;
@@ -39,6 +38,7 @@ import de.ii.xtraplatform.feature.transformer.api.ImmutableSourcePathMapping;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
 import de.ii.xtraplatform.kvstore.api.KeyNotFoundException;
 import de.ii.xtraplatform.kvstore.api.KeyValueStore;
+import de.ii.xtraplatform.service.api.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Requires;
@@ -46,7 +46,6 @@ import org.apache.felix.ipojo.annotations.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.AbstractMap;
@@ -83,7 +82,7 @@ public class Wfs3ServiceMigrate {
     private void onStart() {
         KeyValueStore serviceStore = rootConfigStore.getChildStore(PATH);
 
-        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, OgcApiDataset.ENTITY_TYPE);
+        EntityRepositoryForType serviceRepository = new EntityRepositoryForType(entityRepository, Service.TYPE);
 
         executorService.schedule(() -> {
 

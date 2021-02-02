@@ -8,16 +8,12 @@
 package de.ii.ldproxy.target.geojson;
 
 import com.google.common.base.Strings;
-import de.ii.xtraplatform.cfgstore.api.BundleConfigDefault;
-import de.ii.xtraplatform.cfgstore.api.ConfigPropertyDescriptor;
-import de.ii.xtraplatform.cfgstore.api.handler.LocalBundleConfig;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import static de.ii.ldproxy.target.geojson.GeoJsonConfigImpl.ENABLED;
-import static de.ii.ldproxy.target.geojson.GeoJsonConfigImpl.MULTIPLICITY;
-import static de.ii.ldproxy.target.geojson.GeoJsonConfigImpl.NESTED_OBJECTS;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author zahnen
@@ -25,16 +21,18 @@ import static de.ii.ldproxy.target.geojson.GeoJsonConfigImpl.NESTED_OBJECTS;
 @Component
 @Provides
 @Instantiate
-@LocalBundleConfig(bundleId = "ldproxy-target-geojson", category = "GeoJson Output Format", properties = {
+/*@LocalBundleConfig(bundleId = "ldproxy-target-geojson", category = "GeoJson Output Format", properties = {
         @ConfigPropertyDescriptor(name = ENABLED, label = "Enable GeoJson output format?", defaultValue = "true", uiType = ConfigPropertyDescriptor.UI_TYPE.CHECKBOX),
         @ConfigPropertyDescriptor(name = NESTED_OBJECTS, label = "How to format nested objects?", defaultValue = "NEST", uiType = ConfigPropertyDescriptor.UI_TYPE.SELECT, allowedValues = "{NEST: 'Nest', FLATTEN: 'Flatten'}"),
         @ConfigPropertyDescriptor(name = MULTIPLICITY, label = "How to format multiple values?", defaultValue = "ARRAY", uiType = ConfigPropertyDescriptor.UI_TYPE.SELECT, allowedValues = "{ARRAY: 'Array', SUFFIX: 'Suffix'}")
-})
-public class GeoJsonConfigImpl extends BundleConfigDefault implements GeoJsonConfig {
+})*/
+public class GeoJsonConfigImpl /*extends BundleConfigDefault*/ implements GeoJsonConfig {
 
     static final String ENABLED = "enabled";
     static final String NESTED_OBJECTS = "nestedObjects";
     static final String MULTIPLICITY = "multiplicity";
+
+    Map<String, String> properties = new HashMap<>();
 
     @Override
     public boolean isEnabled() {

@@ -24,7 +24,7 @@ import java.util.Optional;
  */
 
 @EntityComponent
-@Entity(entityType = Codelist.class, dataType = CodelistData.class)
+@Entity(type = Codelist.ENTITY_TYPE, dataClass = CodelistData.class)
 public class CodelistEntity extends AbstractPersistentEntity<CodelistData> implements Codelist {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CodelistEntity.class);

@@ -14,9 +14,9 @@ import de.ii.xtraplatform.api.MediaTypeCharset;
 import de.ii.xtraplatform.api.exceptions.BadRequest;
 import de.ii.xtraplatform.api.permission.AuthenticatedUser;
 import de.ii.xtraplatform.dropwizard.api.Jackson;
+import de.ii.xtraplatform.entities.domain.legacy.EntityRepositoryForType;
 import de.ii.xtraplatform.entity.api.EntityRegistry;
 import de.ii.xtraplatform.entity.api.EntityRepository;
-import de.ii.xtraplatform.entity.api.EntityRepositoryForType;
 import de.ii.xtraplatform.scheduler.api.TaskStatus;
 import de.ii.xtraplatform.service.api.AbstractAdminServiceResource;
 import de.ii.xtraplatform.service.api.ImmutableServiceStatus;
@@ -76,7 +76,7 @@ public class Wfs3AdminServiceResource extends AbstractAdminServiceResource {
 
     @Validate
     void onStart() {
-        init(jackson.getDefaultObjectMapper(), new EntityRepositoryForType(entityRepository, Service.ENTITY_TYPE), null);
+        init(jackson.getDefaultObjectMapper(), new EntityRepositoryForType(entityRepository, Service.TYPE), null);
     }
 
 

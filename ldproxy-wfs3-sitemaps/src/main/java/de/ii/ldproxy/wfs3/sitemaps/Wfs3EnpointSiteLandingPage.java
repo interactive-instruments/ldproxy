@@ -17,7 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiEndpointExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.xtraplatform.auth.api.User;
-import de.ii.xtraplatform.server.CoreServerConfig;
+import de.ii.xtraplatform.dropwizard.api.XtraPlatform;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -50,7 +50,7 @@ public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
     );
 
     @Requires
-    private CoreServerConfig coreServerConfig;
+    private XtraPlatform xtraPlatform;
 
     @Override
     public OgcApiContext getApiContext() {
@@ -72,7 +72,7 @@ public class Wfs3EnpointSiteLandingPage implements OgcApiEndpointExtension {
                                           @Context OgcApiRequestContext wfs3Request) {
 
         List<Site> sites = new ArrayList<>();
-        sites.add(new Site(String.format("%s/%s?f=html", coreServerConfig.getExternalUrl(), service.getId())));
+        sites.add(new Site(String.format("%s/%s?f=html", xtraPlatform.getServicesUri(), service.getId())));
         Sitemap sitemap = new Sitemap(sites);
 
         return Response.ok()

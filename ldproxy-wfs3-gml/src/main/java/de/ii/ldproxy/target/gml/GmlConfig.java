@@ -8,14 +8,12 @@
 package de.ii.ldproxy.target.gml;
 
 import com.google.common.base.Strings;
-import de.ii.xtraplatform.cfgstore.api.BundleConfigDefault;
-import de.ii.xtraplatform.cfgstore.api.ConfigPropertyDescriptor;
-import de.ii.xtraplatform.cfgstore.api.handler.LocalBundleConfig;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import static de.ii.ldproxy.target.gml.GmlConfig.ENABLED;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author zahnen
@@ -23,12 +21,14 @@ import static de.ii.ldproxy.target.gml.GmlConfig.ENABLED;
 @Component
 @Provides(specifications = {GmlConfig.class})
 @Instantiate
-@LocalBundleConfig(bundleId = "ldproxy-target-gml", category = "GML Output Format", properties = {
+/*@LocalBundleConfig(bundleId = "ldproxy-target-gml", category = "GML Output Format", properties = {
         @ConfigPropertyDescriptor(name = ENABLED, label = "Enable GML/XML output format?", defaultValue = "true",uiType = ConfigPropertyDescriptor.UI_TYPE.CHECKBOX)
-})
-public class GmlConfig extends BundleConfigDefault {
+})*/
+public class GmlConfig /*extends BundleConfigDefault*/ {
 
     static final String ENABLED = "enabled";
+
+    Map<String, String> properties = new HashMap<>();
 
     public boolean isEnabled() {
         return Strings.nullToEmpty(properties.get(ENABLED)).toLowerCase().equals("true");

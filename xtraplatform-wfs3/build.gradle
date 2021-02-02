@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-feature' version "2.1.0"
+    id 'de.interactive_instruments.xtraplatform-feature' version "2.4.0"
     id "com.jfrog.bintray" version "1.8.4" apply false
 }
 
@@ -7,15 +7,16 @@ allprojects {
     group = 'de.interactive_instruments'
 }
 
-version = '1.4.5'
+version = '1.4.6'
 
 dependencies {
     // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.0.6'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.0.14'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.0.10'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.0.8'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-sdi-tools', version: '2.2.11'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-base', version: '2.4.0'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-store', version: '2.4.0'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-web', version: '2.4.0'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-admin', version: '2.4.0'
+
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '2.4.0'
 
     // bundles to include in this application
     bundle subprojects
@@ -24,10 +25,10 @@ dependencies {
 allprojects {
     repositories {
         maven {
-            url "https://repo.boundlessgeo.com/main/"
+            url "https://repo.osgeo.org/repository/release"
         }
         maven {
-            url "http://maven.geomajas.org"
+            url "https://maven.ecc.no/releases"
         }
     }
 }

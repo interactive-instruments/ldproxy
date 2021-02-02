@@ -1,6 +1,6 @@
 /**
  * Copyright 2019 interactive instruments GmbH
- *
+ * <p>
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -16,11 +16,11 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataset;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDatasetData;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.OutputFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.Wfs3DatasetMetadataExtension;
 import de.ii.ldproxy.ogcapi.domain.Wfs3Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.Wfs3StartupTask;
 import de.ii.xtraplatform.crs.api.BoundingBox;
 import de.ii.xtraplatform.crs.api.CrsTransformationException;
@@ -32,7 +32,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.feature.transformer.api.TransformingFeatureProvider;
 import de.ii.xtraplatform.service.api.AbstractService;
 import de.ii.xtraplatform.service.api.Service;
-import org.apache.felix.ipojo.annotations.Property;
+import de.ii.xtraplatform.service.api.ServiceData;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,35 +62,16 @@ import java.util.stream.Collectors;
  */
 
 @EntityComponent
-@Entity(entityType = Service.class, dataType = OgcApiDatasetData.class)
+@Entity(type = Service.TYPE, subType = OgcApiDatasetData.SERVICE_TYPE, dataClass = ServiceData.class, dataSubClass = OgcApiDatasetData.class)
 public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> implements OgcApiDataset {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiDatasetEntity.class);
     private static final ExecutorService startupTaskExecutor = MoreExecutors.getExitingExecutorService((ThreadPoolExecutor) Executors.newFixedThreadPool(1));
 
     private final OgcApiExtensionRegistry extensionRegistry;
-    //TODO: only needed for wfs3, no?
-    private TransformingFeatureProvider featureProvider;
-    //TODO: encapsulate
-    private CrsTransformer defaultTransformer;
-    private CrsTransformer defaultReverseTransformer;
-    private final Map<String, CrsTransformer> additionalTransformers;
-    private final Map<String, CrsTransformer> additionalReverseTransformers;
 
-    public OgcApiDatasetEntity(@Requires OgcApiExtensionRegistry extensionRegistry,
-                               @Property TransformingFeatureProvider featureProvider,
-                               @Property CrsTransformer defaultTransformer,
-                               @Property CrsTransformer defaultReverseTransformer,
-                               @Property Map<String, CrsTransformer> additionalTransformers,
-                               @Property Map<String, CrsTransformer> additionalReverseTransformers) {
+    public OgcApiDatasetEntity(@Requires OgcApiExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
-        this.featureProvider = featureProvider;
-        this.defaultTransformer = defaultTransformer;
-        this.defaultReverseTransformer = defaultReverseTransformer;
-        this.additionalTransformers = additionalTransformers;
-        this.additionalReverseTransformers = additionalReverseTransformers;
-
-        LOGGER.debug("OgcApiDataset: {} {} {}", featureProvider, defaultTransformer, defaultReverseTransformer);
     }
 
     //TODO
@@ -116,7 +97,7 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
             }
         }
 
-        wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(getData(), featureProvider)));
+        wfs3StartupTasks.forEach(wfs3StartupTask -> startupTaskExecutor.submit(wfs3StartupTask.getTask(getData(), getData().getTransformingFeatureProvider())));
 
     }
 
@@ -126,7 +107,10 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
     }
 
     private List<Wfs3DatasetMetadataExtension> getDatasetExtenders() {
-        return extensionRegistry.getExtensionsForType(Wfs3DatasetMetadataExtension.class).stream().sorted(Comparator.comparingInt(OgcApiExtension::getSortPriority)).collect(Collectors.toList());
+        return extensionRegistry.getExtensionsForType(Wfs3DatasetMetadataExtension.class)
+                                .stream()
+                                .sorted(Comparator.comparingInt(OgcApiExtension::getSortPriority))
+                                .collect(Collectors.toList());
     }
 
     private List<ConformanceClass> getConformanceClasses() {
@@ -147,7 +131,7 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
     private OutputFormatExtension getOutputFormatForService(OgcApiMediaType mediaType) {
 
         if (!getOutputFormats().get(mediaType)
-                              .isEnabledForDataset(getData())) {
+                               .isEnabledForDataset(getData())) {
             throw new NotAcceptableException();
         }
         return getOutputFormats().get(mediaType);
@@ -185,28 +169,29 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
         //TODO: to crs extension
         ImmutableList<String> crs = ImmutableList.<String>builder()
                 .add(getData().getFeatureProvider()
-                                .getNativeCrs()
-                                .getAsUri())
+                              .getNativeCrs()
+                              .getAsUri())
                 .add(OgcApiDatasetData.DEFAULT_CRS_URI)
                 .addAll(getData().getAdditionalCrs()
-                                   .stream()
-                                   .map(EpsgCrs::getAsUri)
-                                   .collect(Collectors.toList()))
+                                 .stream()
+                                 .map(EpsgCrs::getAsUri)
+                                 .collect(Collectors.toList()))
                 .build();
 
 
-        List<Wfs3Link> wfs3Links = linksGenerator.generateDatasetLinks(wfs3Request.getUriCustomizer().copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, wfs3Request.getMediaType(), wfs3Request.getAlternativeMediaTypes());
+        List<Wfs3Link> wfs3Links = linksGenerator.generateDatasetLinks(wfs3Request.getUriCustomizer()
+                                                                                  .copy(), Optional.empty()/*new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()*/, wfs3Request.getMediaType(), wfs3Request.getAlternativeMediaTypes());
 
 
         ImmutableDataset.Builder dataset = new ImmutableDataset.Builder()
-                                                           //.collections(collections)
-                                                           .crs(crs)
-                                                           .links(wfs3Links);
+                //.collections(collections)
+                .crs(crs)
+                .links(wfs3Links);
 
 
-
-        for (Wfs3DatasetMetadataExtension wfs3DatasetMetadataExtension: getDatasetExtenders()) {
-            dataset = wfs3DatasetMetadataExtension.process(dataset, getData(), wfs3Request.getUriCustomizer().copy(), wfs3Request.getMediaType(), wfs3Request.getAlternativeMediaTypes());
+        for (Wfs3DatasetMetadataExtension wfs3DatasetMetadataExtension : getDatasetExtenders()) {
+            dataset = wfs3DatasetMetadataExtension.process(dataset, getData(), wfs3Request.getUriCustomizer()
+                                                                                          .copy(), wfs3Request.getMediaType(), wfs3Request.getAlternativeMediaTypes());
         }
 
         return getOutputFormatForService(wfs3Request.getMediaType())
@@ -233,18 +218,18 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
     */
     private OgcApiMediaType[] getAlternativeMediaTypes(OgcApiMediaType mediaType) {
         return getOutputFormats().keySet()
-                                .stream()
-                                .filter(wfs3MediaType -> !wfs3MediaType.equals(mediaType))
-                                .filter(this::isAlternativeMediaTypeEnabled)
-                                .toArray(OgcApiMediaType[]::new);
+                                 .stream()
+                                 .filter(wfs3MediaType -> !wfs3MediaType.equals(mediaType))
+                                 .filter(this::isAlternativeMediaTypeEnabled)
+                                 .toArray(OgcApiMediaType[]::new);
     }
 
     private OgcApiMediaType checkMediaType(MediaType mediaType) {
         return getOutputFormats().keySet()
-                                .stream()
-                                .filter(wfs3MediaType -> wfs3MediaType.matches(mediaType))
-                                .findFirst()
-                                .orElseThrow(NotAcceptableException::new);
+                                 .stream()
+                                 .filter(wfs3MediaType -> wfs3MediaType.matches(mediaType))
+                                 .findFirst()
+                                 .orElseThrow(NotAcceptableException::new);
     }
 
     private void checkCollectionName(String collectionName) {
@@ -255,11 +240,13 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
 
     @Override
     public Optional<CrsTransformer> getCrsTransformer(EpsgCrs crs) {
-        if (featureProvider.supportsCrs(crs)) {
+        if (getData().getTransformingFeatureProvider()
+                     .supportsCrs(crs)) {
             return Optional.empty();
         }
 
-        CrsTransformer crsTransformer = crs != null ? additionalTransformers.get(crs.getAsUri()) : defaultTransformer;
+        CrsTransformer crsTransformer = crs != null ? getData().getAdditionalTransformers()
+                                                               .get(crs.getAsUri()) : getData().getDefaultTransformer();
 
         if (crsTransformer == null) {
             throw new BadRequestException("Invalid CRS");
@@ -270,7 +257,8 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
 
     @Override
     public CrsTransformer getCrsReverseTransformer(EpsgCrs crs) {
-        CrsTransformer crsTransformer = crs != null ? additionalReverseTransformers.get(crs.getAsUri()) : defaultReverseTransformer;
+        CrsTransformer crsTransformer = crs != null ? getData().getAdditionalReverseTransformers()
+                                                               .get(crs.getAsUri()) : getData().getDefaultReverseTransformer();
 
         if (crsTransformer == null) {
             throw new BadRequestException("Invalid CRS");
@@ -287,24 +275,28 @@ public class OgcApiDatasetEntity extends AbstractService<OgcApiDatasetData> impl
 
     @Override
     public TransformingFeatureProvider getFeatureProvider() {
-        return featureProvider;
+        return getData().getTransformingFeatureProvider();
     }
 
     @Override
     public BoundingBox transformBoundingBox(BoundingBox bbox) throws CrsTransformationException {
         if (Objects.equals(bbox.getEpsgCrs(), OgcApiDatasetData.DEFAULT_CRS)) {
-            return defaultReverseTransformer.transformBoundingBox(bbox);
+            return getData().getDefaultReverseTransformer()
+                            .transformBoundingBox(bbox);
         }
 
-        return additionalReverseTransformers.get(bbox.getEpsgCrs()
-                                                     .getAsUri())
-                                            .transformBoundingBox(bbox);
+        return getData().getAdditionalReverseTransformers()
+                        .get(bbox.getEpsgCrs()
+                                 .getAsUri())
+                        .transformBoundingBox(bbox);
     }
 
     @Override
     public List<List<Double>> transformCoordinates(List<List<Double>> coordinates,
                                                    EpsgCrs crs) throws CrsTransformationException {
-        CrsTransformer transformer = Objects.equals(crs, OgcApiDatasetData.DEFAULT_CRS) ? this.defaultReverseTransformer : additionalReverseTransformers.get(crs.getAsUri());
+        CrsTransformer transformer = Objects.equals(crs, OgcApiDatasetData.DEFAULT_CRS) ? this.getData()
+                                                                                              .getDefaultReverseTransformer() : getData().getAdditionalReverseTransformers()
+                                                                                                                                         .get(crs.getAsUri());
         if (Objects.nonNull(transformer)) {
             double[] transformed = transformer.transform(coordinates.stream()
                                                                     .flatMap(Collection::stream)

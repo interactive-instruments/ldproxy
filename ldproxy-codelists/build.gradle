@@ -1,6 +1,4 @@
 
-version = '1.4.4'
-
 dependencies {
     provided group: 'de.interactive_instruments', name: 'xtraplatform-entity-api'
     provided group: 'de.interactive_instruments', name: 'xtraplatform-event-store'
