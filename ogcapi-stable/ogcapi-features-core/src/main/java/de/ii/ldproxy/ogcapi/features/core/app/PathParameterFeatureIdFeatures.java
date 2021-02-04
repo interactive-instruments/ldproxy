@@ -26,6 +26,8 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterFeatureIdFeatures.class);
 
+    public static final String FEATURE_ID_PATTERN = "[^/\\ ]+";
+
     final FeaturesCoreProviders providers;
 
     public PathParameterFeatureIdFeatures(@Requires FeaturesCoreProviders providers) {
@@ -34,7 +36,7 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
 
     @Override
     public String getPattern() {
-        return "[^/\\ ]+";
+        return FEATURE_ID_PATTERN;
     }
 
     @Override
