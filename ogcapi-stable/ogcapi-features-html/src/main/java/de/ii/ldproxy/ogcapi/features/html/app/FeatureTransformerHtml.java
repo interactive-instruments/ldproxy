@@ -354,7 +354,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
         property.name = featureProperty.getName();
         property.addValue(value);
 
-        if (currentFeature.name != null) {
+        if (currentFeature.name != null && !property.name.contains("[")) {
             final Pattern valuePattern = Pattern.compile("\\{\\{" + property.name + "( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
             final Matcher m = valuePattern.matcher(currentFeature.name);
             if (m.find()) {
