@@ -456,7 +456,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
             // skip, if the value has been transformed to null
             if (Objects.nonNull(value)) {
-                if (currentFeature.name != null) {
+                if (currentFeature.name != null && !currentProperty.getName().contains("[")) {
                     final Pattern valuePattern = Pattern.compile("\\{\\{" + currentProperty.getName() + "( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
                     final Matcher m = valuePattern.matcher(currentFeature.name);
                     if (m.find()) {
