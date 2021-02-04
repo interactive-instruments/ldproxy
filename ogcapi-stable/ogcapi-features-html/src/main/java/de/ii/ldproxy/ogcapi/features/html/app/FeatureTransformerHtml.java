@@ -366,7 +366,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
         }
 
         String tkey = featureProperty.getName()
-                                     .replaceAll("\\[[^\\]]+?\\]", "[]");
+                                     .replaceAll("\\[[^\\]]*\\]", "");
         if (transformations.containsKey(tkey)) {
 
             Optional<ValueDTO> transformedProperty = property.values.size()>0 ?
@@ -376,11 +376,10 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
 
             if (transformedProperty.isPresent()) {
                 if (transformedProperty.get().property.name.equals(featureProperty.getName()) && featureSchema.isPresent()) {
-                    String propertyName = featureProperty.getName().replace("[]", "");
                     FeatureSchema schema = featureSchema.get()
                                                         .getProperties()
                                                         .stream()
-                                                        .filter(prop -> prop.getName().equals(propertyName))
+                                                        .filter(prop -> prop.getName().equals(tkey))
                                                         .findAny()
                                                         .orElse(null);
                     if (schema!=null) {
@@ -421,9 +420,11 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
             && !nearbyQuery.isActive()
             */) return;
 
-        if (transformations.containsKey(featureProperty.getName())) {
+        String tkey = featureProperty.getName()
+                                     .replaceAll("\\[[^\\]]*\\]", "");
+        if (transformations.containsKey(tkey)) {
 
-            boolean shouldSkipProperty = !transformations.get(featureProperty.getName()).transform(featureProperty).isPresent();
+            boolean shouldSkipProperty = !transformations.get(tkey).transform(featureProperty).isPresent();
 
             if (shouldSkipProperty) {
                 return;

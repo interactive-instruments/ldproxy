@@ -117,10 +117,15 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
             return Optional.empty();
         if (Objects.isNull(featureSchema.getProperties()))
             return Optional.empty();
-        if (!featureSchema.getProperties().containsKey(propertyName))
-            return Optional.empty();
+        if (featureSchema.getProperties().containsKey(propertyName))
+            return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
+        if (propertyName.contains("[")) {
+            String propertyPath = propertyName.replaceAll("\\[[^\\]]*\\]", "");
+            if (featureSchema.getProperties().containsKey(propertyPath))
+                return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyPath));
+        }
 
-        return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
+        return Optional.empty();
     }
 
     private class ContextOpenApi {
@@ -207,7 +212,9 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
                 properties = schema.getAllNestedProperties()
                                    .stream()
                                    .filter(property -> propertySubset.stream()
-                                                                     .anyMatch(queryableProperty -> queryableProperty.equals(propertyNameMap.get(String.join(".", property.getFullPath())))))
+                                                                     // accept both with and without '[]'
+                                                                     .anyMatch(queryableProperty -> queryableProperty.equals(propertyNameMap.get(String.join(".", property.getFullPath()))) ||
+                                                                                                    queryableProperty.equals(String.join(".", property.getFullPath()))))
                                    .collect(Collectors.toList());
                 break;
 

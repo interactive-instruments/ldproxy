@@ -33,16 +33,17 @@ public interface FeatureTransformations {
         Map<String, List<FeaturePropertySchemaTransformer>> transformations = new LinkedHashMap<>();
 
         getTransformations().forEach((property, mapping) -> {
-            transformations.putIfAbsent(property, new ArrayList<>());
+            String propertyNormalized = property.replaceAll("\\[[^\\]]*\\]", "");
+            transformations.putIfAbsent(propertyNormalized, new ArrayList<>());
 
             mapping.getRename()
-                   .ifPresent(rename -> transformations.get(property)
+                   .ifPresent(rename -> transformations.get(propertyNormalized)
                                                        .add(ImmutableFeaturePropertyTransformerRename.builder()
                                                                                                      .parameter(rename)
                                                                                                      .build()));
 
             mapping.getRemove()
-                   .ifPresent(remove -> transformations.get(property)
+                   .ifPresent(remove -> transformations.get(propertyNormalized)
                                                        .add(ImmutableFeaturePropertyTransformerRemove.builder()
                                                                                                      .parameter(remove)
                                                                                                      .isOverview(isOverview)
@@ -59,35 +60,36 @@ public interface FeatureTransformations {
         Map<String, List<FeaturePropertyValueTransformer>> transformations = new LinkedHashMap<>();
 
         getTransformations().forEach((property, mapping) -> {
-            transformations.putIfAbsent(property, new ArrayList<>());
+            String propertyNormalized = property.replaceAll("\\[[^\\]]*\\]", "");
+            transformations.putIfAbsent(propertyNormalized, new ArrayList<>());
 
             mapping.getNull()
-                    .ifPresent(nullValue -> transformations.get(property)
+                    .ifPresent(nullValue -> transformations.get(propertyNormalized)
                                                            .add(new ImmutableFeaturePropertyTransformerNullValue.Builder()
                                                                                                             .propertyName(property)
                                                                                                             .parameter(nullValue)
                                                                                                             .build()));
 
             mapping.getStringFormat()
-                   .ifPresent(stringFormat -> transformations.get(property)
+                   .ifPresent(stringFormat -> transformations.get(propertyNormalized)
                                                              .add(ImmutableFeaturePropertyTransformerStringFormat.builder()
-                                                                                                                 .propertyName(property)
+                                                                                                                 .propertyName(propertyNormalized)
                                                                                                                  .parameter(stringFormat)
                                                                                                                  .serviceUrl(serviceUrl)
                                                                                                                  .build()));
 
             mapping.getDateFormat()
-                   .ifPresent(dateFormat -> transformations.get(property)
+                   .ifPresent(dateFormat -> transformations.get(propertyNormalized)
                                                            .add(ImmutableFeaturePropertyTransformerDateFormat.builder()
-                                                                                                             .propertyName(property)
+                                                                                                             .propertyName(propertyNormalized)
                                                                                                              .parameter(dateFormat)
                                                                                                              .build()));
 
 
             mapping.getCodelist()
-                   .ifPresent(codelist -> transformations.get(property)
+                   .ifPresent(codelist -> transformations.get(propertyNormalized)
                                                          .add(ImmutableFeaturePropertyTransformerCodelist.builder()
-                                                                                                         .propertyName(property)
+                                                                                                         .propertyName(propertyNormalized)
                                                                                                          .parameter(codelist)
                                                                                                          .codelists(codelists)
                                                                                                          .build()));
