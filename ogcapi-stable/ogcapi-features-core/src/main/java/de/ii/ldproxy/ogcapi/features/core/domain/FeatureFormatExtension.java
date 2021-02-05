@@ -15,10 +15,13 @@ import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import java.util.Locale;
 import java.util.Optional;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+import static de.ii.ldproxy.ogcapi.features.core.app.PathParameterFeatureIdFeatures.FEATURE_ID_PATTERN;
+
 public interface FeatureFormatExtension extends FormatExtension {
 
     default String getPathPattern() {
-        return "^\\/?collections\\/[^\\/]+\\/items(?:\\/[^\\/]+)?$";
+        return "^\\/?collections\\/"+COLLECTION_ID_PATTERN+"\\/items(?:\\/"+FEATURE_ID_PATTERN+")?$";
     }
 
     ApiMediaType getCollectionMediaType();

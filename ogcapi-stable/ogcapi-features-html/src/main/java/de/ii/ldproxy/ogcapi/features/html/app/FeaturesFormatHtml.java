@@ -77,11 +77,6 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     }
 
     @Override
-    public String getPathPattern() {
-        return "^/?(?:conformance|collections/[\\w\\-]+/items(?:/[^/\\s]+)?)?$";
-    }
-
-    @Override
     public ApiMediaType getCollectionMediaType() {
         return COLLECTION_MEDIA_TYPE;
     }
