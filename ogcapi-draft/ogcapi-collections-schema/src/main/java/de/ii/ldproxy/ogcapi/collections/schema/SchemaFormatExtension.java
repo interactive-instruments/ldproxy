@@ -17,7 +17,7 @@ import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterColle
 public interface SchemaFormatExtension extends FormatExtension {
 
     default String getPathPattern() {
-        return "^\\/?collections\\/"+COLLECTION_ID_PATTERN+"\\/schema/?$";
+        return "^/?collections/"+COLLECTION_ID_PATTERN+"/schema/?$";
     }
 
     Object getEntity(JsonSchemaObject schema, String collectionId, OgcApi api, ApiRequestContext requestContext);

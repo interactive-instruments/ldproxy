@@ -21,7 +21,7 @@ import static de.ii.ldproxy.ogcapi.features.core.app.PathParameterFeatureIdFeatu
 public interface FeatureFormatExtension extends FormatExtension {
 
     default String getPathPattern() {
-        return "^\\/?collections\\/"+COLLECTION_ID_PATTERN+"\\/items(?:\\/"+FEATURE_ID_PATTERN+")?$";
+        return "^/?collections/"+COLLECTION_ID_PATTERN+"/items(?:/"+FEATURE_ID_PATTERN+")?$";
     }
 
     ApiMediaType getCollectionMediaType();

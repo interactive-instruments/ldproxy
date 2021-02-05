@@ -20,7 +20,7 @@ import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterColle
 public interface QueryablesFormatExtension extends GenericFormatExtension {
 
     default String getPathPattern() {
-        return "^\\/?collections\\/"+COLLECTION_ID_PATTERN+"\\/queryables/?$";
+        return "^/?collections/"+COLLECTION_ID_PATTERN+"/queryables/?$";
     }
 
     Object getEntity(JsonSchemaObject schemaQueryables, List<Link> links, String collectionId, OgcApi api, ApiRequestContext requestContext);
