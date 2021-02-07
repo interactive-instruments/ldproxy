@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -12,6 +13,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,10 @@ public class SchemaInfo {
      * @param withArrayBrackets
      * @return the list of all property names of the feature type
      */
-    public List<String> getPropertyNames(FeatureSchema featureType, boolean withArrayBrackets) {
+    public static List<String> getPropertyNames(FeatureSchema featureType, boolean withArrayBrackets) {
+        if (Objects.isNull(featureType))
+            return ImmutableList.of();
+
         return featureType.getProperties()
                           .stream()
                           .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets))
@@ -36,7 +41,7 @@ public class SchemaInfo {
                           .collect(Collectors.toList());
     }
 
-    private List<String> getPropertyNames(FeatureSchema property, String basePath, boolean withArrayBrackets) {
+    private static List<String> getPropertyNames(FeatureSchema property, String basePath, boolean withArrayBrackets) {
         List<String> propertyNames = new Vector<>();
         if (property.isObject()) {
             property.getProperties()
@@ -48,7 +53,7 @@ public class SchemaInfo {
         return propertyNames;
     }
 
-    private String getPropertyName(FeatureSchema property, String basePath, boolean withArrayBrackets) {
+    private static String getPropertyName(FeatureSchema property, String basePath, boolean withArrayBrackets) {
         return (basePath.isEmpty() ? "" : basePath + ".") + property.getName().trim() + (property.isArray() && withArrayBrackets ? "[]" : "");
     }
 
@@ -57,6 +62,9 @@ public class SchemaInfo {
      * @return a map with an entry for each property and the label/title of the property as the value
      */
     public Map<String, String> getNameTitleMap(FeatureSchema featureType) {
+        if (Objects.isNull(featureType))
+            return ImmutableMap.of();
+
         ImmutableMap.Builder<String, String> nameTitleMapBuilder = new ImmutableMap.Builder<>();
         featureType.getProperties()
                    .stream()

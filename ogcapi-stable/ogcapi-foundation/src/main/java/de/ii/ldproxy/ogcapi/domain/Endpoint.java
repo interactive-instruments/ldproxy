@@ -37,6 +37,12 @@ public abstract class Endpoint implements EndpointExtension {
         this.formats = null;
     }
 
+    @Override
+    public void onStart(OgcApiDataV2 apiData) {
+        // compile and cache the API definition
+        getDefinition(apiData);
+    }
+
     /**
      *
      * @return the list of output format candidates for this endpoint

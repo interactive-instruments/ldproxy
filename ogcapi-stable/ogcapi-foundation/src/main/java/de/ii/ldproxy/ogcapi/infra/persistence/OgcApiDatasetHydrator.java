@@ -7,11 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.infra.persistence;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiExtension;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.store.domain.entities.EntityHydrator;
 import de.ii.xtraplatform.store.domain.entities.handler.Entity;
-import de.ii.xtraplatform.services.domain.Service;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -22,7 +24,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Provides(properties = {
@@ -49,9 +50,17 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDataV2> {
             LOGGER.info("Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
         }
 
-        for (OgcApiDataHydratorExtension hydrator : extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class)) {
+        List<OgcApiDataHydratorExtension> extensions = extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class);
+        extensions.sort(Comparator.comparing(OgcApiDataHydratorExtension::getSortPriority));
+        for (OgcApiDataHydratorExtension hydrator : extensions) {
             if (hydrator.isEnabledForApi(hydrated)) {
                 hydrated = hydrator.getHydratedData(hydrated);
+            }
+        }
+
+        for (ApiExtension extension : extensionRegistry.getExtensions()) {
+            if (extension.isEnabledForApi(hydrated)) {
+                extension.onStart(hydrated);
             }
         }
 

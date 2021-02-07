@@ -30,4 +30,8 @@ public interface ApiExtension {
     default <T extends ExtensionConfiguration> boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
         return extendableConfiguration.getExtension(clazz).filter(ExtensionConfiguration::isEnabled).isPresent();
     }
+
+    default void onStart(OgcApiDataV2 apiData) {
+        // optional start actions
+    }
 }
