@@ -12,18 +12,30 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import static de.ii.xtraplatform.features.domain.SchemaBase.Type.BOOLEAN;
+import static de.ii.xtraplatform.features.domain.SchemaBase.Type.DATETIME;
+import static de.ii.xtraplatform.features.domain.SchemaBase.Type.FLOAT;
+import static de.ii.xtraplatform.features.domain.SchemaBase.Type.GEOMETRY;
+import static de.ii.xtraplatform.features.domain.SchemaBase.Type.INTEGER;
+import static de.ii.xtraplatform.features.domain.SchemaBase.Type.STRING;
+import static de.ii.xtraplatform.features.domain.SchemaBase.Type.VALUE_ARRAY;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -144,16 +156,27 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default List<String> validateProperties(List<String> properties, String collectionId, FeatureSchema schema, String propertyType) {
+    default List<String> validateProperties(List<String> properties, String collectionId, FeatureSchema schema, Set<SchemaBase.Type> validTypes, String propertyType) {
+        final List<String> propertyNames = SchemaInfo.getPropertyNames(schema, false);
+        Map<String, SchemaBase.Type> propertyTypes = SchemaInfo.getPropertyTypes(schema, false);
         return new ImmutableList.Builder<String>()
                 .addAll(properties.stream()
                                   // normalize property names
                                   .map(prop -> prop.replaceAll("\\[[^\\]]*\\]", ""))
                                   .filter(prop -> {
-                                      if (!SchemaInfo.getPropertyNames(schema, false)
-                                                     .stream()
-                                                     .anyMatch(schemaProperty -> schemaProperty.equals(prop))) {
+                                      if (!propertyNames.stream()
+                                                        .anyMatch(schemaProperty -> schemaProperty.equals(prop))) {
                                           LOGGER.warn("The {} '{}' in collection '{}' has been removed, because the property was not found in the schema of feature type '{}'.", propertyType, prop, collectionId, schema.getName());
+                                          return false;
+                                      }
+                                      return true;
+                                  })
+                                  .filter(prop -> {
+                                      SchemaBase.Type type = propertyTypes.get(prop);
+                                      if (Objects.isNull(type))
+                                          return false;
+                                      if (!validTypes.contains(type)) {
+                                          LOGGER.warn("The {} '{}' in collection '{}' has been removed, because the property has type '{}', which is not one of the valid types: {}.", propertyType, prop, collectionId, type.toString(), validTypes.toString());
                                           return false;
                                       }
                                       return true;
@@ -168,9 +191,9 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     default Optional<FeaturesCollectionQueryables> validateQueryables(String collectionId, FeatureSchema schema) {
         Optional<FeaturesCollectionQueryables> queryables = getQueryables();
         if (queryables.isPresent()) {
-            List<String> spatial = validateProperties(queryables.get().getSpatial(), collectionId, schema, "spatial queryable");
-            List<String> temporal = validateProperties(queryables.get().getTemporal(), collectionId, schema, "temporal queryable");
-            List<String> other = validateProperties(queryables.get().getOther(), collectionId, schema, "queryable");
+            List<String> spatial = validateProperties(queryables.get().getSpatial(), collectionId, schema, ImmutableSet.of(GEOMETRY), "spatial queryable");
+            List<String> temporal = validateProperties(queryables.get().getTemporal(), collectionId, schema, ImmutableSet.of(DATETIME), "temporal queryable");
+            List<String> other = validateProperties(queryables.get().getOther(), collectionId, schema, ImmutableSet.of(INTEGER, FLOAT, STRING, BOOLEAN, VALUE_ARRAY), "queryable");
             queryables = Optional.of(new ImmutableFeaturesCollectionQueryables.Builder()
                     .spatial(spatial)
                     .temporal(temporal)
