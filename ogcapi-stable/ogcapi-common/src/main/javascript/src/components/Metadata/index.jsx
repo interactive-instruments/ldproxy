@@ -19,6 +19,7 @@ const fieldsTransformation = {
 };
 
 const Metadata = ({
+  id,
   metadata = {},
   defaults,
   debounce,
@@ -49,6 +50,7 @@ const Metadata = ({
   return (
     <Box pad={{ horizontal: "small", vertical: "medium" }} fill="horizontal">
       <AutoForm
+        key={id}
         fields={fields}
         fieldsDefault={fieldsDefault}
         fieldsTransformation={fieldsTransformation}

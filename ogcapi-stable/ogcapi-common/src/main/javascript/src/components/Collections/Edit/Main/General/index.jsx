@@ -23,6 +23,7 @@ const CollectionEditGeneral = ({
   return (
     <Box pad={{ horizontal: "small", vertical: "medium" }} fill="horizontal">
       <AutoForm
+        key={id}
         fields={fields}
         debounce={debounce}
         onPending={onPending}

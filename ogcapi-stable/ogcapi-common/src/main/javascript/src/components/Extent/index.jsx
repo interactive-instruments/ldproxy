@@ -125,6 +125,7 @@ const postProcess = (change, state) => {
 };
 
 const Extent = ({
+  id,
   extent,
   defaultExtent,
   inheritedLabel,
@@ -166,6 +167,7 @@ const Extent = ({
   return (
     <Box pad={{ horizontal: "small", vertical: "medium" }} fill="horizontal">
       <AutoForm
+        key={id}
         fields={fields}
         fieldsDefault={fieldsDefault}
         fieldsTransformation={fieldsTransformation}

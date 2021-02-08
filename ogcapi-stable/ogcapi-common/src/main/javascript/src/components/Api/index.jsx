@@ -9,6 +9,7 @@ import { apiBuildingBlocks } from "../constants";
 import Section from "./Section";
 
 const ServiceEditApi = ({
+  id,
   api,
   defaults,
   isDefaults,
@@ -93,7 +94,7 @@ const ServiceEditApi = ({
           .map((bb, i) => (
             <Section
               {...bb}
-              key={bb.id}
+              key={id + bb.id}
               isActive={activeIndex.includes(i)}
               isDefaults={isDefaults}
               data={mergedBuildingBlocks[bb.id]}
