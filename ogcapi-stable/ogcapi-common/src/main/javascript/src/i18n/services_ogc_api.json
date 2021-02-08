@@ -12,6 +12,58 @@
       "inheritedFrom": {
         "_label": "Inherited from: **{{parent}}**",
         "_description": ""
+      },
+      "user": {
+        "_label": "User",
+        "_description": ""
+      },
+      "password": {
+        "_label": "Password",
+        "_description": ""
+      },
+      "rememberMe": {
+        "_label": "Remember me",
+        "_description": ""
+      },
+      "sessionTimedOut": {
+        "_label": "Session timed out",
+        "_description": ""
+      },
+      "userOrPasswordInvalid": {
+        "_label": "User or password invalid",
+        "_description": ""
+      },
+      "login": {
+        "_label": "Login",
+        "_description": ""
+      },
+      "logout": {
+        "_label": "Logout",
+        "_description": ""
+      },
+      "changePassword": {
+        "_label": "Change password",
+        "_description": "Change password for '{{user}}'"
+      },
+      "oldPassword": {
+        "_label": "Old password",
+        "_description": ""
+      },
+      "newPassword": {
+        "_label": "New password",
+        "_description": ""
+      },
+      "repeatNewPassword": {
+        "_label": "Repeat new password",
+        "_description": ""
+      },
+      "submit": {
+        "_label": "Submit",
+        "_description": ""
+      },
+      "cancel": {
+        "_label": "Cancel",
+        "_description": ""
       }
     },
     "codelists": {
@@ -331,6 +383,58 @@
       },
       "inheritedFrom": {
         "_label": "Geerbt von: **{{parent}}**",
+        "_description": ""
+      },
+      "user": {
+        "_label": "Benutzer",
+        "_description": ""
+      },
+      "password": {
+        "_label": "Passwort",
+        "_description": ""
+      },
+      "rememberMe": {
+        "_label": "Angemeldet bleiben",
+        "_description": ""
+      },
+      "sessionTimedOut": {
+        "_label": "Sitzung abgelaufen",
+        "_description": ""
+      },
+      "userOrPasswordInvalid": {
+        "_label": "Benutzer oder Passwort ungültig",
+        "_description": ""
+      },
+      "login": {
+        "_label": "Anmelden",
+        "_description": ""
+      },
+      "logout": {
+        "_label": "Abmelden",
+        "_description": ""
+      },
+      "changePassword": {
+        "_label": "Passwort ändern",
+        "_description": "Passwort für '{{user}}' ändern"
+      },
+      "oldPassword": {
+        "_label": "Altes Passwort",
+        "_description": ""
+      },
+      "newPassword": {
+        "_label": "Neues Passwort",
+        "_description": ""
+      },
+      "repeatNewPassword": {
+        "_label": "Neues Passwort wiederholen",
+        "_description": ""
+      },
+      "submit": {
+        "_label": "Speichern",
+        "_description": ""
+      },
+      "cancel": {
+        "_label": "Abbrechen",
         "_description": ""
       }
     },
