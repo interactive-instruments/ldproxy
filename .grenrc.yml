@@ -5,6 +5,7 @@
     - "duplicate"
     - "question"
     - "wontfix"
+    - "nocl"
   onlyMilestones: false
   ignoreTagsWith: 
     - "v1"

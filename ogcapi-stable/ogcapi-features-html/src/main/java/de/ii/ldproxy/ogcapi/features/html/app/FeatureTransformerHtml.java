@@ -25,6 +25,7 @@ import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.streams.domain.HttpClient;
+import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author zahnen
@@ -351,10 +354,14 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
         property.name = featureProperty.getName();
         property.addValue(value);
 
-        if (currentFeature.name != null) {
-            int pos = currentFeature.name.indexOf("{{" + property.name + "}}");
-            if (pos > -1) {
-                currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
+        if (currentFeature.name != null && !property.name.contains("[")) {
+            final Pattern valuePattern = Pattern.compile("\\{\\{" + property.name + "( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
+            final Matcher m = valuePattern.matcher(currentFeature.name);
+            if (m.find()) {
+                final int posStart = m.start(0);
+                final int posEnd = m.end(0);
+                String formattedValue = StringTemplateFilters.applyTemplate(m.group(0), value, isHtml -> {}, property.name);
+                currentFeature.name = currentFeature.name.substring(0, posStart) + formattedValue + currentFeature.name.substring(posEnd);
             }
         }
 
