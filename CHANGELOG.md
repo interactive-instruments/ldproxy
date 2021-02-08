@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.5.1 (08/02/2021)
+
+#### Fixed bugs
+
+-  codelists return empty strings [#359](https://github.com/interactive-instruments/ldproxy/issues/359)
+
+---
+
 ## v2.5.0 (04/02/2021)
 
 #### Implemented enhancements
