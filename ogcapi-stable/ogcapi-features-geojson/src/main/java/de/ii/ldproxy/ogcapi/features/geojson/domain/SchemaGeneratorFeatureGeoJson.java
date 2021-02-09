@@ -336,7 +336,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                 properties = schema.getAllNestedProperties()
                                    .stream()
                                    .filter(property -> propertySubset.stream()
-                                                                     .anyMatch(queryableProperty -> queryableProperty.equals(propertyNameMap.get(String.join(".", property.getFullPath())))))
+                                                                     .anyMatch(queryableProperty -> queryableProperty.equals(String.join(".", property.getFullPath()))))
                                    .collect(Collectors.toList());
                 break;
 
