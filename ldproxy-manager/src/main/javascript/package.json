@@ -21,7 +21,7 @@
     "feature-u": "^3.0.0",
     "graphql": "^15.3.0",
     "graphql-anywhere": "^4.2.7",
-    "grommet": "^2.14.0",
+    "grommet": "^2.16.3",
     "grommet-icons": "^4.5.0",
     "jwt-decode": "^2.2.0",
     "prop-types": "^15",

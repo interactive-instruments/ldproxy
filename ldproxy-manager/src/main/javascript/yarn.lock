@@ -10664,11 +10664,11 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"grommet@npm:^2.14.0":
-  version: 2.14.0
-  resolution: "grommet@npm:2.14.0"
+"grommet@npm:^2.16.3":
+  version: 2.16.3
+  resolution: "grommet@npm:2.16.3"
   dependencies:
-    grommet-icons: ^4.2.0
+    grommet-icons: ^4.5.0
     hoist-non-react-statics: ^3.2.0
     markdown-to-jsx: ^6.11.4
     polished: ^3.4.1
@@ -10677,8 +10677,8 @@ fsevents@^1.2.7:
   peerDependencies:
     react: ">= 16.6.1"
     react-dom: ">= 16.6.1"
-    styled-components: ">= 5.X"
-  checksum: 1746cb71f56ee41790eab96eb0c088defc4973e46f935d932f02237d48aaa3c16070b676a4d0a8b7b222da548689349eadff00adf8a77314d8aba9cf2078a887
+    styled-components: ">= 5.1"
+  checksum: 5a182e8dd27862aa3b25d9df7cb992c5f9ab6be45a78efe49ee772c41ce11ba521d7d5d25ce7e80e6e37dbc8c24d2808b7c3d5f1a1a9c9acb8c60fef07149c4e
   languageName: node
   linkType: hard
 
@@ -12539,7 +12539,7 @@ fsevents@^1.2.7:
     feature-u: ^3.0.0
     graphql: ^15.3.0
     graphql-anywhere: ^4.2.7
-    grommet: ^2.14.0
+    grommet: ^2.16.3
     grommet-icons: ^4.5.0
     jwt-decode: ^2.2.0
     mocha: ^8

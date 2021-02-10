@@ -336,7 +336,10 @@
         },
         "codelist": {
           "_label": "Codelist",
-          "_description": "Maps the value according to the given [codelist](../../codelists/README.md). If the value is not found in the codelist or the codelist does not exist, the original value is passed through.  Falls der Wert nicht in der Codelist enthalten ist oder die Codelist nicht gefunden wird, bleibt der Wert unverändert. Not applicable for properties containing objects."
+          "_description": "Maps the value according to the given [codelist](../../codelists/README.md). If the value is not found in the codelist or the codelist does not exist, the original value is passed through.  Falls der Wert nicht in der Codelist enthalten ist oder die Codelist nicht gefunden wird, bleibt der Wert unverändert. Not applicable for properties containing objects.",
+          "none": {
+            "_label": "None"
+          }
         },
         "nullify": {
           "_label": "Nullify",
@@ -705,8 +708,11 @@
           }
         },
         "codelist": {
-          "_label": "Codelist",
-          "_description": "Bildet den Wert anhand der genannten [Codelist](../../codelists/README.md) ab. Falls der Wert nicht in der Codelist enthalten ist oder die Codelist nicht gefunden wird, bleibt der Wert unverändert. Diese Transformation ist nicht bei objektwertigen Eigenschaften anwendbar."
+          "_label": "Codeliste",
+          "_description": "Bildet den Wert anhand der genannten [Codelist](../../codelists/README.md) ab. Falls der Wert nicht in der Codelist enthalten ist oder die Codelist nicht gefunden wird, bleibt der Wert unverändert. Diese Transformation ist nicht bei objektwertigen Eigenschaften anwendbar.",
+          "none": {
+            "_label": "Keine"
+          }
         },
         "nullify": {
           "_label": "Auf 'null' abbilden",

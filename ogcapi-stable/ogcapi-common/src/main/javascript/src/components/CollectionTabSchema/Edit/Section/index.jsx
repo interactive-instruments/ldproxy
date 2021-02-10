@@ -146,7 +146,13 @@ const DataEditSection = ({
           help={t("services/ogc_api:collections.data.codelist._description")}
           disabled={!state.enabled}
           options={options}
-          placeholder="None"
+          clear={{
+            position: "top",
+            label: t("services/ogc_api:collections.data.codelist.none._label"),
+          }}
+          placeholder={t(
+            "services/ogc_api:collections.data.codelist.none._label"
+          )}
           onClose={() => setOptions(cl)}
           onSearch={(text) => {
             // The line below escapes regular expression special characters:

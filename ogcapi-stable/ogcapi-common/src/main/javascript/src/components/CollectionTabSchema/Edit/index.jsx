@@ -64,6 +64,11 @@ const transformTo = (changes, path, schema) => {
     const type = isGeometry ? "spatial" : isDate ? "temporal" : "other";
     data.queryables = { [type]: [path] };
   }
+  //handle reset
+  else if (changes.queryable === false) {
+    const type = isGeometry ? "spatial" : isDate ? "temporal" : "other";
+    data.queryables = { [type]: { [path]: null } };
+  }
 
   if (changes.enabledOverview === false) {
     if (!data.transformations) data.transformations = {};
@@ -90,11 +95,23 @@ const transformTo = (changes, path, schema) => {
     if (!data.transformations[path]) data.transformations[path] = {};
     data.transformations[path].rename = changes.rename;
   }
+  //handle reset
+  else if (changes.rename === null) {
+    if (!data.transformations) data.transformations = {};
+    if (!data.transformations[path]) data.transformations[path] = {};
+    data.transformations[path].rename = null;
+  }
 
   if (changes.codelist) {
     if (!data.transformations) data.transformations = {};
     if (!data.transformations[path]) data.transformations[path] = {};
     data.transformations[path].codelist = changes.codelist;
+  }
+  //handle reset
+  else if (changes.codelist === null) {
+    if (!data.transformations) data.transformations = {};
+    if (!data.transformations[path]) data.transformations[path] = {};
+    data.transformations[path].codelist = null;
   }
 
   if (changes.format) {
@@ -106,11 +123,27 @@ const transformTo = (changes, path, schema) => {
       data.transformations[path].stringFormat = changes.format;
     }
   }
+  //handle reset
+  else if (changes.format === null) {
+    if (!data.transformations) data.transformations = {};
+    if (!data.transformations[path]) data.transformations[path] = {};
+    if (isDate) {
+      data.transformations[path].dateFormat = null;
+    } else {
+      data.transformations[path].stringFormat = null;
+    }
+  }
 
   if (changes.nullify) {
     if (!data.transformations) data.transformations = {};
     if (!data.transformations[path]) data.transformations[path] = {};
     data.transformations[path].nullify = changes.nullify.split(",");
+  }
+  //handle reset
+  else if (changes.nullify === null) {
+    if (!data.transformations) data.transformations = {};
+    if (!data.transformations[path]) data.transformations[path] = {};
+    data.transformations[path].nullify = null;
   }
 
   return data;
@@ -170,10 +203,17 @@ const CollectionDataEdit = ({
 
   const onBuildingBlockChange = (bbid) =>
     useCallback(
-      (change) =>
+      (change) => {
+        console.log(
+          "BBCHANGE",
+          change,
+          { buildingBlock: bbid, ...change },
+          { buildingBlock: bbid, ...transformTo(change, id, schema) }
+        );
         onChange({
           api: [{ buildingBlock: bbid, ...transformTo(change, id, schema) }],
-        }),
+        });
+      },
       [id, schema, onChange]
     );
 
