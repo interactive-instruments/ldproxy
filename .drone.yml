@@ -40,7 +40,7 @@ pipeline:
     image: plugins/docker
     registry: docker.ci.interactive-instruments.de
     repo: docker.ci.interactive-instruments.de/iide/ldproxy
-    tags: $DRONE_COMMIT_BRANCH
+    tags: ${DRONE_COMMIT_BRANCH}
     force_tag: true
     dockerfile: build/docker/Dockerfile
     context: build/docker
