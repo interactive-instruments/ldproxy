@@ -19,10 +19,10 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV1;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV1;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutablePropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
@@ -155,9 +155,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                 newCoreConfiguration.featureType(collection.getId())
                                                                                                     .queryables(queryables);
 
-                                                                                Map<String, FeatureTypeMapping2> coreTransformations = getCoreTransformations(entityData.getFeatureProvider()
-                                                                                                                                                                        .getMappings()
-                                                                                                                                                                        .get(collection.getId()));
+                                                                                Map<String, PropertyTransformation> coreTransformations = getCoreTransformations(entityData.getFeatureProvider()
+                                                                                                                                                                           .getMappings()
+                                                                                                                                                                           .get(collection.getId()));
 
                                                                                 newCoreConfiguration.transformations(coreTransformations);
 
@@ -185,9 +185,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                 htmlConfiguration.ifPresent(newHtmlConfiguration::from);
 
 
-                                                                                Map<String, FeatureTypeMapping2> htmlTransformations = getHtmlTransformations(entityData.getFeatureProvider()
-                                                                                                                                                                        .getMappings()
-                                                                                                                                                                        .get(collection.getId()));
+                                                                                Map<String, PropertyTransformation> htmlTransformations = getHtmlTransformations(entityData.getFeatureProvider()
+                                                                                                                                                                           .getMappings()
+                                                                                                                                                                           .get(collection.getId()));
 
                                                                                 newHtmlConfiguration.transformations(htmlTransformations);
 
@@ -506,9 +506,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
         return Optional.ofNullable(name[0]);
     }
 
-    private Map<String, FeatureTypeMapping2> getHtmlTransformations(FeatureTypeMapping featureTypeMapping) {
+    private Map<String, PropertyTransformation> getHtmlTransformations(FeatureTypeMapping featureTypeMapping) {
 
-        Map<String, FeatureTypeMapping2> transformations = new LinkedHashMap<>();
+        Map<String, PropertyTransformation> transformations = new LinkedHashMap<>();
 
         featureTypeMapping.getMappings()
                           .values()
@@ -531,7 +531,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                               //TODO: ConnectionInfoV1 with custom deser
                               //TODO: foto[foto].hauptfoto -> foto[].hauptfoto
 
-                              ImmutableFeatureTypeMapping2.Builder builder = new ImmutableFeatureTypeMapping2.Builder();
+                              ImmutablePropertyTransformation.Builder builder = new ImmutablePropertyTransformation.Builder();
                               boolean hasTransformations = false;
 
                               if (Objects.isNull(html.isShowInCollection()) || !html.isShowInCollection()) {
@@ -595,9 +595,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
         return isJsonLd ? Optional.of(builder.build()) : Optional.empty();
     }
 
-    private Map<String, FeatureTypeMapping2> getCoreTransformations(FeatureTypeMapping featureTypeMapping) {
+    private Map<String, PropertyTransformation> getCoreTransformations(FeatureTypeMapping featureTypeMapping) {
 
-        Map<String, FeatureTypeMapping2> transformations = new LinkedHashMap<>();
+        Map<String, PropertyTransformation> transformations = new LinkedHashMap<>();
 
         featureTypeMapping.getMappings()
                           .values()
@@ -608,7 +608,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                           .filter(general -> Objects.nonNull(general.getName()))
                           .forEach(general -> {
 
-                              ImmutableFeatureTypeMapping2.Builder builder = new ImmutableFeatureTypeMapping2.Builder();
+                              ImmutablePropertyTransformation.Builder builder = new ImmutablePropertyTransformation.Builder();
                               boolean hasTransformations = false;
 
                               if (general.getType() != OgcApiFeaturesGenericMapping.GENERIC_TYPE.SPATIAL) {

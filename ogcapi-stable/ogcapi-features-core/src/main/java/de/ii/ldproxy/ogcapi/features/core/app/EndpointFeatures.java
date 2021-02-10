@@ -28,7 +28,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
@@ -194,7 +194,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getOtherFilterParameters)
                 .orElse(ImmutableMap.of());
 
-        Map<String, FeatureTypeMapping2> transformations;
+        Map<String, PropertyTransformation> transformations;
         if (coreConfiguration.isPresent()) {
             transformations = coreConfiguration.get().getTransformations();
             // TODO

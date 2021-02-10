@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.html.app.HtmlPropertyTransformations;
 import de.ii.ldproxy.ogcapi.features.html.app.ImmutableHtmlPropertyTransformations;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -44,7 +44,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Featu
     Optional<String> getItemLabelFormat();
 
     @Override
-    Map<String, FeatureTypeMapping2> getTransformations();
+    Map<String, PropertyTransformation> getTransformations();
 
     default Map<String, HtmlPropertyTransformations> getTransformations(
             Optional<FeatureTransformations> baseTransformations,
@@ -103,7 +103,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Featu
                                                                                                              .schemaOrgEnabled(getSchemaOrgEnabled())
                                                                                                              .itemLabelFormat(getItemLabelFormat());
 
-        Map<String, FeatureTypeMapping2> transformations = Maps.newLinkedHashMap(((FeaturesHtmlConfiguration) source).getTransformations());
+        Map<String, PropertyTransformation> transformations = Maps.newLinkedHashMap(((FeaturesHtmlConfiguration) source).getTransformations());
 
         transformations.putAll(getTransformations());
 

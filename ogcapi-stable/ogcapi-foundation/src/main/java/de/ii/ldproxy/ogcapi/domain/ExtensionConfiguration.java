@@ -23,7 +23,7 @@ import java.util.Optional;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "buildingBlock")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
-public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration> {
+public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration>, Mergeable<ExtensionConfiguration> {
 
     abstract class Builder implements BuildableBuilder<ExtensionConfiguration> {
 
@@ -55,6 +55,7 @@ public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration
     @Value.Auxiliary
     Optional<ExtensionConfiguration> getDefaultValues();
 
+    @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
         return source.getBuilder()
                 .from(source)

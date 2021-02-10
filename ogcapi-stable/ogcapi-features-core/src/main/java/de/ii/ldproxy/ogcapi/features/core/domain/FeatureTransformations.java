@@ -15,7 +15,6 @@ import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransfor
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerDateFormat;
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerRemove;
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerRename;
-import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import de.ii.xtraplatform.stringtemplates.domain.ImmutableFeaturePropertyTransformerStringFormat;
 import org.immutables.value.Value;
 
@@ -26,7 +25,7 @@ import java.util.Map;
 
 public interface FeatureTransformations {
 
-    Map<String, FeatureTypeMapping2> getTransformations();
+    Map<String, PropertyTransformation> getTransformations();
 
     @Value.Derived
     @JsonIgnore

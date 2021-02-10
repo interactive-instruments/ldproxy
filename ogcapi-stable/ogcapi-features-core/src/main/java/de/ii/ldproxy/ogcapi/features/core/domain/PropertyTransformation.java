@@ -10,23 +10,26 @@ package de.ii.ldproxy.ogcapi.features.core.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.Mergeable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Value.Immutable
-@JsonDeserialize(builder = ImmutableFeatureTypeMapping2.Builder.class)
-public interface FeatureTypeMapping2 extends Buildable<FeatureTypeMapping2> {
+@JsonDeserialize(builder = ImmutablePropertyTransformation.Builder.class)
+public interface PropertyTransformation extends Buildable<PropertyTransformation>, Mergeable<PropertyTransformation> {
 
-    abstract class Builder implements BuildableBuilder<FeatureTypeMapping2> {
+    abstract class Builder implements BuildableBuilder<PropertyTransformation> {
     }
 
     @Override
     default Builder getBuilder() {
-        return new ImmutableFeatureTypeMapping2.Builder().from(this);
+        return new ImmutablePropertyTransformation.Builder().from(this);
     }
 
     Optional<String> getRename();
@@ -47,5 +50,16 @@ public interface FeatureTypeMapping2 extends Buildable<FeatureTypeMapping2> {
     default List<String> getNullify() {
         return getNull().map(ImmutableList::of)
                         .orElse(ImmutableList.of());
+    }
+
+    @Override
+    default PropertyTransformation mergeInto(PropertyTransformation source) {
+        return new ImmutablePropertyTransformation.Builder().from(source)
+                                                            .from(this)
+                                                            .nullify(Stream.concat(source.getNullify()
+                                                                                         .stream(), getNullify().stream())
+                                                                           .distinct()
+                                                                           .collect(Collectors.toList()))
+                                                            .build();
     }
 }

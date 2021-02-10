@@ -13,11 +13,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
-import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -70,7 +68,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     Optional<FeaturesCollectionQueryables> getQueryables();
 
     @Override
-    Map<String, FeatureTypeMapping2> getTransformations();
+    Map<String, PropertyTransformation> getTransformations();
 
     @JsonIgnore
     @Value.Derived
@@ -149,18 +147,24 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
         ImmutableFeaturesCoreConfiguration.Builder builder = new ImmutableFeaturesCoreConfiguration.Builder().from(source)
-                                                                                                                      .from(this)
-                                                                                                                      .transformations(((FeaturesCoreConfiguration) source).getTransformations());
+                                                                                                             .from(this);
 
-        /*Map<String, ImmutableFeatureTypeMapping2.Builder> builderMap = builder.getTransformations();
+        Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getTransformations());
 
         getTransformations().forEach((key, transformation) -> {
-            if (builderMap.containsKey(key)) {
-                builderMap.get(key).from(transformation);
+            if (mergedTransformations.containsKey(key)) {
+                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
             } else {
-                builder.putTransformations(key, transformation);
+                mergedTransformations.put(key, transformation);
             }
-        });*/
+        });
+
+        builder.transformations(mergedTransformations);
+
+        if (getQueryables().isPresent() && ((FeaturesCoreConfiguration) source).getQueryables().isPresent()) {
+            builder.queryables(getQueryables().get().mergeInto(((FeaturesCoreConfiguration) source).getQueryables()
+                                                                                                   .get()));
+        }
 
         return builder.build();
     }
