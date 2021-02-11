@@ -1,0 +1,112 @@
+{
+  "type": "object",
+  "title": "Vineyards",
+  "description": "The vineyard register constitutes the authorized list of names of single vineyards, vineyards clusters (Großlagen), sub-regions (Bereiche) and wine-growing regions (Anbaugebiete) for the protected designation of origin for wines in the German state Rhineland-Palatinate. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). <br> The data for each vineyard includes the vineyard register number, the wine-growing region, the sub-region, the vineyard cluster, the name of the single vineyard, the village(s), the cadastral district(s) and the area with vines in hectares. The six-digit vineyard register number contains in the first digit the wine-growing region, in the second digit the sub-region, in the third and fourth digit the vineyard cluster and in the fifth and sixth digit the single vineyard.",
+  "required": [
+    "type",
+    "geometry",
+    "properties"
+  ],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "Feature"
+      ]
+    },
+    "id": {
+      "type": "integer",
+      "title": "Vineyard register number"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Link"
+      }
+    },
+    "geometry": {
+      "$ref": "https://geojson.org/schema/MultiPolygon.json"
+    },
+    "properties": {
+      "type": "object",
+      "properties": {
+        "area_ha": {
+          "type": "string",
+          "title": "Area in hectares"
+        },
+        "cadastraldistrict": {
+          "type": "string",
+          "title": "Cadastral district(s)"
+        },
+        "cluster": {
+          "type": "string",
+          "title": "Vineyard cluster (Großlage)"
+        },
+        "date": {
+          "type": "string",
+          "title": "Validity date",
+          "format": "date-time,date"
+        },
+        "gid": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string",
+          "title": "Vineyard name"
+        },
+        "ogc_fid": {
+          "type": "integer"
+        },
+        "region": {
+          "type": "string",
+          "title": "Wine-growing region"
+        },
+        "searchfield1": {
+          "type": "string",
+          "title": "Search field (option 1)"
+        },
+        "searchfield2": {
+          "type": "string",
+          "title": "Search field (option 2)"
+        },
+        "subregion": {
+          "type": "string",
+          "title": "Sub-region (Bereich)"
+        },
+        "village": {
+          "type": "string",
+          "title": "Village(s)"
+        },
+        "village_info": {
+          "type": "string",
+          "title": "Additional information"
+        }
+      }
+    }
+  },
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "https://demo.ldproxy.net/vineyards/collections/vineyards/schema?f=json",
+  "$defs": {
+    "Link": {
+      "type": "object",
+      "required": [
+        "href"
+      ],
+      "properties": {
+        "href": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "rel": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
