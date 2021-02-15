@@ -1,10 +1,10 @@
-package de.ii.ldproxy.ogcapi.oas30.app;
+package de.ii.ldproxy.ogcapi.common.app;
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -51,17 +51,17 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
 
     @Override
     public String getDescription() {
-        return "The filename of a file used by Swagger UI.";
+        return "The filename of a file referenced from an API definition.";
     }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
-                definitionPath.matches("/api/[^/]+/?");
+                definitionPath.equals("/api/{resource}");
     }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return Oas30Configuration.class;
+        return CommonConfiguration.class;
     }
 }
