@@ -74,41 +74,47 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
                                                        .getTypes()
                                                        .get(featureTypeId);
 
-            // TODO support mutables schema
-            ContextOpenApi featureContext;
-            Schema schema;
-            if (type== SCHEMA_TYPE.QUERYABLES) {
-                // the querables schema is always flattened and we only return the queryables
-                Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
-                Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
-                if (featuresCoreConfiguration.isPresent()) {
-                    queryables = featuresCoreConfiguration.get().getQueryables();
-                }
-                List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
-                featureContext = processPropertiesOpenApi(featureType, type, true, allQueryables);
-                schema = new ObjectSchema().title(collectionData.getLabel())
-                                           .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
-                                           .properties(featureContext.properties.getProperties());
-            } else {
-                // the returnables schema
-                featureContext = processPropertiesOpenApi(featureType, type, true, null);
-                schema = new ObjectSchema().title(collectionData.getLabel())
-                                           .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
-                                           .addProperties("properties", featureContext.properties);
-            }
-
-            if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
-                schema.required(ImmutableList.of("type", "geometry", "properties"))
-                      .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
-                      .addProperties("geometry", featureContext.geometry)
-                      .addProperties("id", featureContext.id)
-                      .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")));
-            }
             schemaMapOpenApi.get(apiHashCode)
                             .get(collectionId)
-                            .put(type, schema);
+                            .put(type, getSchemaOpenApi(featureType, collectionData, type));
         }
         return schemaMapOpenApi.get(apiHashCode).get(collectionId).get(type);
+    }
+
+    public Schema getSchemaOpenApi(FeatureSchema featureType, FeatureTypeConfigurationOgcApi collectionData, SCHEMA_TYPE type) {
+
+        // TODO support mutables schema
+        ContextOpenApi featureContext;
+        Schema schema;
+        if (type== SCHEMA_TYPE.QUERYABLES) {
+            // the querables schema is always flattened and we only return the queryables
+            Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
+            Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
+            if (featuresCoreConfiguration.isPresent()) {
+                queryables = featuresCoreConfiguration.get().getQueryables();
+            }
+            List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
+            featureContext = processPropertiesOpenApi(featureType, type, true, allQueryables);
+            schema = new ObjectSchema().title(collectionData.getLabel())
+                                       .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
+                                       .properties(featureContext.properties.getProperties());
+        } else {
+            // the returnables schema
+            featureContext = processPropertiesOpenApi(featureType, type, true, null);
+            schema = new ObjectSchema().title(collectionData.getLabel())
+                                       .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
+                                       .addProperties("properties", featureContext.properties);
+        }
+
+        if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
+            schema.required(ImmutableList.of("type", "geometry", "properties"))
+                  .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
+                  .addProperties("geometry", featureContext.geometry)
+                  .addProperties("id", featureContext.id)
+                  .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")));
+        }
+
+        return schema;
     }
 
     public Optional<Schema> getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, String propertyName) {
@@ -121,44 +127,6 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
             return Optional.empty();
 
         return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
-    }
-
-    public Schema getSchemaOpenApi(FeatureSchema featureType, int apiHashCode, String collectionId, SCHEMA_TYPE type) {
-        Schema schema;
-        ContextOpenApi featureContext;
-        if (!schemaMapOpenApi.containsKey(apiHashCode))
-            schemaMapOpenApi.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaMapOpenApi.get(apiHashCode).containsKey(collectionId))
-            schemaMapOpenApi.get(apiHashCode).put(collectionId, new ConcurrentHashMap<>());
-        if (!schemaMapOpenApi.get(apiHashCode).get(collectionId).containsKey(type)) {
-            if (type == SCHEMA_TYPE.QUERYABLES) {
-                Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
-                List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
-                featureContext = processPropertiesOpenApi(featureType, type, true, allQueryables);
-                schema = new ObjectSchema().title(featureType.getLabel().orElse(null))
-                        .description(featureType.getDescription().orElse(null))
-                        .properties(featureType.getPropertyMap());
-            } else {
-                featureContext = processPropertiesOpenApi(featureType, type, true, null);
-                schema = new ObjectSchema().title(featureType.getLabel().orElse(null))
-                        .description(featureType.getDescription().orElse(null))
-                        .addProperties("properties", featureContext.properties);
-            }
-            if (type == SCHEMA_TYPE.RETURNABLES || type == SCHEMA_TYPE.RETURNABLES_FLAT) {
-                schema.required(ImmutableList.of("type", "geometry", "properties"))
-                        .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
-                        .addProperties("geometry", featureContext.geometry)
-                        .addProperties("id", featureContext.id)
-                        .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")));
-            }
-            return schemaMapOpenApi.get(apiHashCode)
-                    .get(collectionId)
-                    .put(type, schema);
-        }
-
-        return schemaMapOpenApi.get(apiHashCode)
-                .get(collectionId)
-                .get(type);
     }
 
     private class ContextOpenApi {
