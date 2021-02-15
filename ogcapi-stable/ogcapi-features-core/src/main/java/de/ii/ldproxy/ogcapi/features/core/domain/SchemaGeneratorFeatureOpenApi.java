@@ -123,6 +123,44 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
         return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
     }
 
+    public Schema getSchemaOpenApi(FeatureSchema featureType, int apiHashCode, String collectionId, SCHEMA_TYPE type) {
+        Schema schema;
+        ContextOpenApi featureContext;
+        if (!schemaMapOpenApi.containsKey(apiHashCode))
+            schemaMapOpenApi.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMapOpenApi.get(apiHashCode).containsKey(collectionId))
+            schemaMapOpenApi.get(apiHashCode).put(collectionId, new ConcurrentHashMap<>());
+        if (!schemaMapOpenApi.get(apiHashCode).get(collectionId).containsKey(type)) {
+            if (type == SCHEMA_TYPE.QUERYABLES) {
+                Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
+                List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
+                featureContext = processPropertiesOpenApi(featureType, type, true, allQueryables);
+                schema = new ObjectSchema().title(featureType.getLabel().orElse(null))
+                        .description(featureType.getDescription().orElse(null))
+                        .properties(featureType.getPropertyMap());
+            } else {
+                featureContext = processPropertiesOpenApi(featureType, type, true, null);
+                schema = new ObjectSchema().title(featureType.getLabel().orElse(null))
+                        .description(featureType.getDescription().orElse(null))
+                        .addProperties("properties", featureContext.properties);
+            }
+            if (type == SCHEMA_TYPE.RETURNABLES || type == SCHEMA_TYPE.RETURNABLES_FLAT) {
+                schema.required(ImmutableList.of("type", "geometry", "properties"))
+                        .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
+                        .addProperties("geometry", featureContext.geometry)
+                        .addProperties("id", featureContext.id)
+                        .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")));
+            }
+            return schemaMapOpenApi.get(apiHashCode)
+                    .get(collectionId)
+                    .put(type, schema);
+        }
+
+        return schemaMapOpenApi.get(apiHashCode)
+                .get(collectionId)
+                .get(type);
+    }
+
     private class ContextOpenApi {
         Schema id = new Schema();
         Schema properties = new ObjectSchema();
