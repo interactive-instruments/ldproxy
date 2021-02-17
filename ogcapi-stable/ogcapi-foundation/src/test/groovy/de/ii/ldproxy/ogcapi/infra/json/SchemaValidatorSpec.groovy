@@ -1,5 +1,6 @@
 package de.ii.ldproxy.ogcapi.infra.json
 
+import com.fasterxml.jackson.core.JsonParseException
 import com.networknt.schema.SpecVersion
 import spock.lang.Shared
 import spock.lang.Specification
@@ -50,5 +51,24 @@ class SchemaValidatorSpec extends Specification {
         Optional<String> result = schemaValidator.validate(schema, feature)
         then:
         result.isEmpty()
+    }
+
+    def "Validate and catch errors"() {
+        when:
+        schemaValidator.validate(schema, feature)
+        then:
+        thrown(exception)
+        where:
+        schema                                                | feature                                                | exception
+        // empty feature and empty schema
+        ""                                                    | ""                                                     | NullPointerException
+        // proper feature and empty schema
+        ""                                                    | new File('src/test/resources/feature.json').getText()  | NullPointerException
+        // empty feature and proper schema
+        new File('src/test/resources/schema.json').getText()  | ""                                                     | NullPointerException
+        // proper schema, invalid feature json
+        new File('src/test/resources/schema.json').getText()  | new File('src/test/resources/feature2.json').getText() | JsonParseException
+        // invalid schema json, proper feature
+        new File('src/test/resources/schema2.json').getText() | new File('src/test/resources/feature.json').getText()  | JsonParseException
     }
 }
