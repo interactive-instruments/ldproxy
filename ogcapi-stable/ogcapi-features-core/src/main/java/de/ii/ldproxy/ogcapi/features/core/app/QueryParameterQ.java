@@ -1,9 +1,11 @@
 package de.ii.ldproxy.ogcapi.features.core.app;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -11,6 +13,8 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+
+import java.util.Optional;
 
 @Component
 @Provides
@@ -40,6 +44,27 @@ public class QueryParameterQ implements OgcApiQueryParameter {
         return isEnabledForApi(apiData) &&
                method== HttpMethods.GET &&
                definitionPath.equals("/collections/{collectionId}/items");
+    }
+
+    @Override
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
+        return isEnabledForApi(apiData, collectionId) &&
+                method== HttpMethods.GET &&
+                definitionPath.equals("/collections/{collectionId}/items");
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+        Optional<FeaturesCoreConfiguration> config = collectionData.getExtension(FeaturesCoreConfiguration.class);
+        if (config.isPresent() && config.get().isEnabled()) {
+            return !config.get()
+                          .getQueryables()
+                          .orElse(FeaturesCollectionQueryables.of())
+                          .getQ()
+                          .isEmpty();
+        }
+        return false;
     }
 
     @Override
