@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
@@ -57,7 +56,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -116,10 +114,10 @@ public class EndpointDapa extends EndpointSubCollection implements ConformanceCl
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 collectionIds.stream()
                         .forEach(collectionId -> {
                             String operationSummary = "list the available data retrieval patterns";

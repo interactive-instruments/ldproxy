@@ -48,7 +48,8 @@ public class QueryParameterFilter implements OgcApiQueryParameter, ConformanceCl
                 "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
                 "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/simple-cql",
                 "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/cql-text",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/cql-json");
+                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/cql-json",
+                "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/cql-filter");
     }
 
     @Override

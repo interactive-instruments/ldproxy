@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 public interface DapaResultFormatExtension extends FormatExtension {
 
     final static String DAPA_PATH_ELEMENT = "processes";
@@ -58,9 +60,9 @@ public interface DapaResultFormatExtension extends FormatExtension {
     }
 
     default String getPathPattern() {
-        return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/position(?:\\:(?:retrieve|aggregate-time))?/?$)|" +
-                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/area(?:\\:(?:retrieve|aggregate-(space|time|space-time)))?/?$)|" +
-                "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/grid(?:\\:(?:retrieve|aggregate-time))?/?$)";
+        return "(?:^/collections/"+COLLECTION_ID_PATTERN+"/"+DAPA_PATH_ELEMENT+"/position(?:\\:(?:retrieve|aggregate-time))?/?$)|" +
+                "(?:^/collections/"+COLLECTION_ID_PATTERN+"/"+DAPA_PATH_ELEMENT+"/area(?:\\:(?:retrieve|aggregate-(space|time|space-time)))?/?$)|" +
+                "(?:^/collections/"+COLLECTION_ID_PATTERN+"/"+DAPA_PATH_ELEMENT+"/grid(?:\\:(?:retrieve|aggregate-time))?/?$)";
     }
 
     default boolean canTransformFeatures() {

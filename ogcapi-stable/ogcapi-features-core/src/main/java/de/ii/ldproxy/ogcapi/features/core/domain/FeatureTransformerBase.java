@@ -61,18 +61,18 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
 
     protected List<FeaturePropertyValueTransformer> getValueTransformations(FeatureProperty featureProperty) {
         List<FeaturePropertyValueTransformer> valueTransformations = null;
+        String tkey = featureProperty.getName()
+                                     .replaceAll("\\[[^\\]]*\\]", "");
         if (coreTransformations.isPresent()) {
             valueTransformations = coreTransformations.get()
                                                       .getValueTransformations(codelists, serviceUrl)
-                                                      .get(featureProperty.getName()
-                                                                          .replaceAll("\\[[^\\]]+?\\]", "[]"));
+                                                      .get(tkey);
         }
         if (buildingBlockTransformations.isPresent()) {
             if (Objects.nonNull(valueTransformations)) {
                 List<FeaturePropertyValueTransformer> moreTransformations = buildingBlockTransformations.get()
                                                                                                         .getValueTransformations(codelists, serviceUrl)
-                                                                                                        .get(featureProperty.getName()
-                                                                                                                            .replaceAll("\\[[^\\]]+?\\]", "[]"));
+                                                                                                        .get(tkey);
                 if (Objects.nonNull(moreTransformations)) {
                     valueTransformations = Stream.of(valueTransformations, moreTransformations)
                                                  .flatMap(Collection::stream)
@@ -81,8 +81,7 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
             } else {
                 valueTransformations = buildingBlockTransformations.get()
                                                                    .getValueTransformations(codelists, serviceUrl)
-                                                                   .get(featureProperty.getName()
-                                                                                       .replaceAll("\\[[^\\]]+?\\]", "[]"));
+                                                                   .get(tkey);
             }
         }
 
@@ -91,18 +90,18 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
 
     protected List<FeaturePropertySchemaTransformer> getSchemaTransformations(FeatureProperty featureProperty) {
         List<FeaturePropertySchemaTransformer> schemaTransformations = null;
+        String tkey = featureProperty.getName()
+                                     .replaceAll("\\[[^\\]]*\\]", "");
         if (coreTransformations.isPresent()) {
             schemaTransformations = coreTransformations.get()
                                                        .getSchemaTransformations(isFeatureCollection)
-                                                       .get(featureProperty.getName()
-                                                                           .replaceAll("\\[[^\\]]+?\\]", "[]"));
+                                                       .get(tkey);
         }
         if (buildingBlockTransformations.isPresent()) {
             if (Objects.nonNull(schemaTransformations)) {
                 List<FeaturePropertySchemaTransformer> moreTransformations = buildingBlockTransformations.get()
                                                                                                          .getSchemaTransformations(false)
-                                                                                                         .get(featureProperty.getName()
-                                                                                                                       .replaceAll("\\[[^\\]]+?\\]", "[]"));
+                                                                                                         .get(tkey);
                 if (Objects.nonNull(moreTransformations)) {
                     schemaTransformations = Stream.of(schemaTransformations, moreTransformations)
                                                   .flatMap(Collection::stream)
@@ -111,8 +110,7 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
             } else {
                 schemaTransformations = buildingBlockTransformations.get()
                                                                     .getSchemaTransformations(isFeatureCollection)
-                                                                    .get(featureProperty.getName()
-                                                                                        .replaceAll("\\[[^\\]]+?\\]", "[]"));
+                                                                    .get(tkey);
             }
         }
 

@@ -28,7 +28,7 @@ public class FeaturesCore implements ConformanceClass {
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core", "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/core");
     }
 
     @Override

@@ -43,11 +43,6 @@ public class QueryablesFormatHtml implements QueryablesFormatExtension {
     private I18n i18n;
 
     @Override
-    public String getPathPattern() {
-        return "^/collections/[\\w\\-]+/queryables/?$";
-    }
-
-    @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }

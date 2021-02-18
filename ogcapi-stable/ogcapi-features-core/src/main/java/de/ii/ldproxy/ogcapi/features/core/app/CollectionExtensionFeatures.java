@@ -57,7 +57,9 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                                                      Optional<Locale> language) {
 
         collection.title(featureType.getLabel())
-                  .description(featureType.getDescription());
+                  .description(featureType.getDescription())
+                  .itemType(featureType.getExtension(FeaturesCoreConfiguration.class)
+                                       .flatMap(FeaturesCoreConfiguration::getItemType));
 
         URICustomizer uriBuilder = uriCustomizer
                 .copy()

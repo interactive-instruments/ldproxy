@@ -18,9 +18,15 @@ import java.util.List;
 @JsonDeserialize(builder = ImmutableFeaturesCollectionQueryables.Builder.class)
 public interface FeaturesCollectionQueryables {
 
+    static FeaturesCollectionQueryables of() {
+        return new ImmutableFeaturesCollectionQueryables.Builder().build();
+    }
+
     List<String> getSpatial();
 
     List<String> getTemporal();
+
+    List<String> getQ();
 
     List<String> getOther();
 
@@ -29,6 +35,7 @@ public interface FeaturesCollectionQueryables {
         return ImmutableList.<String>builder()
                 .addAll(getSpatial())
                 .addAll(getTemporal())
+                .addAll(getQ())
                 .addAll(getOther())
                 .build();
     }
