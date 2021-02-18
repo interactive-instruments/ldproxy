@@ -94,19 +94,14 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Featu
         return new ImmutableFeaturesHtmlConfiguration.Builder();
     }
 
-    // workaround for ImmutableMap.Builder restriction: Multiple entries with same key
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
         ImmutableFeaturesHtmlConfiguration.Builder builder = new ImmutableFeaturesHtmlConfiguration.Builder().from(source)
-                                                                                                             .enabled(getEnabled())
-                                                                                                             .layout(getLayout())
-                                                                                                             .schemaOrgEnabled(getSchemaOrgEnabled())
-                                                                                                             .itemLabelFormat(getItemLabelFormat());
+                                                                                                             .from(this);
 
+        // workaround for ImmutableMap.Builder restriction: Multiple entries with same key
         Map<String, PropertyTransformation> transformations = Maps.newLinkedHashMap(((FeaturesHtmlConfiguration) source).getTransformations());
-
         transformations.putAll(getTransformations());
-
         builder.transformations(transformations);
 
 

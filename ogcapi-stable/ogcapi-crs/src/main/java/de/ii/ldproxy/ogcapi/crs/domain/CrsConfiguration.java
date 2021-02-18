@@ -10,10 +10,10 @@ package de.ii.ldproxy.ogcapi.crs.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Set;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -23,8 +23,7 @@ public interface CrsConfiguration extends ExtensionConfiguration {
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    //TODO: migrate
-    List<EpsgCrs> getAdditionalCrs();
+    Set<EpsgCrs> getAdditionalCrs();
 
     @Override
     default Builder getBuilder() {
@@ -33,7 +32,8 @@ public interface CrsConfiguration extends ExtensionConfiguration {
 
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        ImmutableCrsConfiguration.Builder builder = getBuilder().from(source);
+        ImmutableCrsConfiguration.Builder builder = getBuilder().from(source)
+                                                                .from(this);
 
         getAdditionalCrs().forEach(epsgCrs -> {
             if (!((CrsConfiguration) source).getAdditionalCrs()
