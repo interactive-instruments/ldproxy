@@ -284,6 +284,8 @@
         "required": "Building block cannot be disabled, {{reason}}",
         "essential": "it provides essential functionality.",
         "requiredBy": "required by: {{buildingBlocks}}",
+        "unavailable": "Building block cannot be enabled, {{reason}}",
+        "dependsOn": "it requires: {{buildingBlocks}}",
         "showDetails": "Show details",
         "hideDetails": "Hide details"
       }
@@ -659,6 +661,8 @@
         "required": "Modul kann nicht deaktiviert werden, {{reason}}",
         "essential": "es stellt essentielle Funktionalität bereit.",
         "requiredBy": "es wird benötigt von: {{buildingBlocks}}",
+        "unavailable": "Modul kann nicht aktiviert werden, {{reason}}",
+        "dependsOn": "es benötigt: {{buildingBlocks}}",
         "showDetails": "Details anzeigen",
         "hideDetails": "Details verbergen"
       }

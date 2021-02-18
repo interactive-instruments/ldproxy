@@ -73,6 +73,18 @@ const ServiceEditApi = ({
     );
     dependents[bb.id] = deps;
   });
+  const dependees = {};
+  buildingBlocks.forEach((bb) => {
+    const deps = buildingBlocks.filter(
+      (bb2) =>
+        bb.dependencies &&
+        bb.dependencies.includes(bb2.id.toLowerCase()) &&
+        (!mergedBuildingBlocksDefault[bb2.id].enabled ||
+          (mergedBuildingBlocks[bb2.id] &&
+            mergedBuildingBlocks[bb2.id].enabled === false))
+    );
+    dependees[bb.id] = deps;
+  });
 
   const [activeIndex, setActiveIndex] = useState([]);
 
@@ -102,6 +114,7 @@ const ServiceEditApi = ({
               inheritedLabel={inheritedLabel}
               debounce={debounce}
               dependents={dependents[bb.id]}
+              dependees={dependees[bb.id] || []}
               onPending={onPending}
               onChange={onBuildingBlockChange(bb.id)}
             />

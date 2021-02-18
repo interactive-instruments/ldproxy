@@ -36,6 +36,7 @@ const ApiSection = ({
   debounce,
   noDisable,
   dependents,
+  dependees,
   onPending,
   onChange,
 }) => {
@@ -51,11 +52,17 @@ const ApiSection = ({
   const hasDetails = state.enabled && Form !== null;
   const color = state.enabled ? (isActive ? "brand" : null) : "dark-4";
 
-  const rejectToggle = state.enabled && (noDisable || dependents.length > 0);
+  const rejectToggle =
+    (state.enabled && (noDisable || dependents.length > 0)) ||
+    (!state.enabled && dependees.length > 0);
   const rejectReason = noDisable
     ? t("services/ogc_api:api.buildingBlocks.essential")
-    : t("services/ogc_api:api.buildingBlocks.requiredBy", {
+    : state.enabled
+    ? t("services/ogc_api:api.buildingBlocks.requiredBy", {
         buildingBlocks: dependents.map((d) => d.label).join(", "),
+      })
+    : t("services/ogc_api:api.buildingBlocks.dependsOn", {
+        buildingBlocks: dependees.map((d) => d.label).join(", "),
       });
   const toggleTooltip = state.enabled
     ? rejectToggle
@@ -63,8 +70,13 @@ const ApiSection = ({
           reason: rejectReason,
         })
       : t("services/ogc_api:api.buildingBlocks.disable")
+    : rejectToggle
+    ? t("services/ogc_api:api.buildingBlocks.unavailable", {
+        reason: rejectReason,
+      })
     : t("services/ogc_api:api.buildingBlocks.enable");
 
+  console.log(id, dependees, rejectToggle, rejectReason);
   return (
     <AccordionPanel
       onFocus={(e) => {

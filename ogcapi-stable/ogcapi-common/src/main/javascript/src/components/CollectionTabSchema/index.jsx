@@ -150,6 +150,7 @@ const CollectionTabSchema = ({
           overflow={{ vertical: "auto" }}
         >
           <TreeList
+            key={`${serviceId}_${id}`}
             noExpanders
             tree={tree}
             selected={selectedInitial}
@@ -164,6 +165,7 @@ const CollectionTabSchema = ({
         >
           {isValue(schema, selected) && (
             <Edit
+              key={`${serviceId}_${id}_${selected}`}
               id={selected}
               schema={getValue(schema, selected)}
               api={api}
