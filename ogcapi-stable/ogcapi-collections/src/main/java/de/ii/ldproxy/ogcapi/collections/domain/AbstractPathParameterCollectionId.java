@@ -40,7 +40,7 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
             apiExplodeMap.put(apiData.hashCode(), !apiData.getExtension(CollectionsConfiguration.class)
                                                           .get()
                                                           .getCollectionIdAsParameter()
-                                                          .orElse(true));
+                                                          .orElse(false));
         }
 
         return apiExplodeMap.get(apiData.hashCode());
