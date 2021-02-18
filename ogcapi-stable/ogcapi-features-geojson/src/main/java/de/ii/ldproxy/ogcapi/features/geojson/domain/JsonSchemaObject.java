@@ -26,12 +26,14 @@ public abstract class JsonSchemaObject extends JsonSchema {
     public abstract Map<String, JsonSchema> getProperties();
     public abstract Map<String, JsonSchema> getPatternProperties();
 
-    // Only use these three in JSON Schema documents, not in embedded schemas
+    // Only use the following in JSON Schema documents, not in embedded schemas
     @JsonProperty("$schema")
     public abstract Optional<String> getSchema();
     @JsonProperty("$id")
     public abstract Optional<String> getId();
     @JsonProperty("$defs")
     public abstract Optional<Map<String, JsonSchema>> getDefs();
+    @JsonProperty("definitions")
+    public abstract Optional<Map<String, JsonSchema>> getDefinitions();
 
 }

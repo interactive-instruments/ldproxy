@@ -10,32 +10,56 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
-import de.ii.xtraplatform.features.domain.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.Http;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.*;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -84,6 +108,48 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
+    }
+
+    @Override
+    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+
+        // no additional operational checks for now, only validation; we can stop, if no validation is requested
+        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
+            return StartupResult.of();
+
+        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+                .mode(apiValidation);
+
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+
+        // get HTML configurations to process
+        Map<String, FeaturesHtmlConfiguration> htmlConfigurationMap = apiData.getCollections()
+                                                                  .entrySet()
+                                                                  .stream()
+                                                                  .map(entry -> {
+                                                                      final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                                                                      final FeaturesHtmlConfiguration config = collectionData.getExtension(FeaturesHtmlConfiguration.class).orElse(null);
+                                                                      if (Objects.isNull(config))
+                                                                          return null;
+                                                                      return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
+                                                                  })
+                                                                  .filter(Objects::nonNull)
+                                                                  .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Map<String, Collection<String>> keyMap = htmlConfigurationMap.entrySet()
+                                                                      .stream()
+                                                                      .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                                                                .getTransformations()
+                                                                                                                                                .keySet()))
+                                                                      .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()
+                             .stream()
+                             .forEach(entry -> entry.getValue()
+                                                    .stream()
+                                                    .forEach(property -> builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+
+        return builder.build();
     }
 
     @Override

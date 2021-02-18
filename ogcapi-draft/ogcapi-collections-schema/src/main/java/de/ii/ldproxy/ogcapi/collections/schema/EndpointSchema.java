@@ -130,9 +130,12 @@ public class EndpointSchema extends EndpointSubCollection {
                 .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
+        Optional<String> profile = Optional.ofNullable(requestContext.getParameters().get("profile"));
+
         QueriesHandlerSchema.QueryInputSchema queryInput = new ImmutableQueryInputSchema.Builder()
                 .collectionId(collectionId)
                 .includeLinkHeader(includeLinkHeader)
+                .profile(profile)
                 .build();
 
         return queryHandler.handle(QueriesHandlerSchema.Query.SCHEMA, queryInput, requestContext);

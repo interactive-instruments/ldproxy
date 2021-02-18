@@ -15,11 +15,11 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -60,10 +61,67 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
     @Override
     public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
 
-        OgcApiDataV2 data = apiData;
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(data);
+        // any Features HTML hydration actions are not taken in STRICT validation mode;
+        // STRICT: an invalid service definition will not start
+        if (apiData.getApiValidation()==FeatureProviderDataV2.VALIDATION.STRICT)
+            return apiData;
 
-        // process configuration and remove invalid configuration elements
+        OgcApiDataV2 data = apiData;
+
+        // get Features Core configurations to process, normalize property names
+        Map<String, FeaturesHtmlConfiguration> configs = data.getCollections()
+                                                        .entrySet()
+                                                        .stream()
+                                                        .map(entry -> {
+                                                            // * normalize the property references in transformations by removing all parts in square brackets
+
+                                                            final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                                                            FeaturesHtmlConfiguration config = collectionData.getExtension(FeaturesHtmlConfiguration.class).orElse(null);
+                                                            if (Objects.isNull(config))
+                                                                return null;
+
+                                                            final String collectionId = entry.getKey();
+                                                            final String buildingBlock = config.getBuildingBlock();
+
+                                                            if (config.hasDeprecatedTransformationKeys())
+                                                                config = new ImmutableFeaturesHtmlConfiguration.Builder()
+                                                                        .from(config)
+                                                                        .transformations(config.normalizeTransformationKeys(buildingBlock,collectionId))
+                                                                        .build();
+
+                                                            return new AbstractMap.SimpleImmutableEntry<>(collectionId, config);
+                                                        })
+                                                        .filter(Objects::nonNull)
+                                                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        if (data.getApiValidation()==FeatureProviderDataV2.VALIDATION.LAX) {
+            // LAX: process configuration and remove invalid configuration elements
+
+            Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+
+            // 2. remove invalid transformation keys
+            Map<String, Collection<String>> keyMap = configs.entrySet()
+                                                            .stream()
+                                                            .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                                                      .getTransformations()
+                                                                                                                                      .keySet()))
+                                                            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+            final Map<String, Collection<String>> invalidTransformationKeys = FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas);
+            invalidTransformationKeys.entrySet()
+                                     .stream()
+                                     .forEach(entry -> {
+                                         String collectionId = entry.getKey();
+                                         entry.getValue()
+                                              .forEach(property -> LOGGER.warn("A transformation for property '{}' in collection '{}' is invalid, because the property was not found in the provider schema. The transformation has been dropped during hydration.", property, collectionId));
+                                         configs.put(collectionId, new ImmutableFeaturesHtmlConfiguration.Builder()
+                                                 .from(configs.get(collectionId))
+                                                 .transformations(configs.get(collectionId).removeTransformations(invalidTransformationKeys.get(collectionId)))
+                                                 .build());
+                                     });
+        }
+
+        // update data with changes
+        // also update label and description, if we have information in the provider
         data = new ImmutableOgcApiDataV2.Builder()
                 .from(data)
                 .collections(
@@ -71,24 +129,15 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
                             .entrySet()
                             .stream()
                             .map(entry -> {
-                                // * remove unknown transformations from the configuration
-                                // * normalize the property references in transformations by removing all parts in square brackets
-
-                                final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
-                                final FeaturesCoreConfiguration coreConfig = collectionData.getExtension(FeaturesCoreConfiguration.class).orElse(null);
-                                final FeaturesHtmlConfiguration config = collectionData.getExtension(FeaturesHtmlConfiguration.class).orElse(null);
-                                if (Objects.isNull(config))
+                                final String collectionId = entry.getKey();
+                                if (!configs.containsKey(collectionId))
                                     return entry;
 
+                                final FeaturesHtmlConfiguration config = configs.get(collectionId);
                                 final String buildingBlock = config.getBuildingBlock();
-                                final String collectionId = entry.getKey();
-                                final FeatureSchema schema = featureProvider.getData()
-                                                                            .getTypes()
-                                                                            .get(coreConfig.getFeatureType().orElse(collectionId));
 
                                 return new AbstractMap.SimpleImmutableEntry<String, FeatureTypeConfigurationOgcApi>(collectionId, new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                         .from(entry.getValue())
-                                        // validate and update the Features HTML configuration
                                         .extensions(new ImmutableList.Builder<ExtensionConfiguration>()
                                                             // do not touch any other extension
                                                             .addAll(entry.getValue()
@@ -96,11 +145,8 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
                                                                          .stream()
                                                                          .filter(ext -> !ext.getBuildingBlock().equals(buildingBlock))
                                                                          .collect(Collectors.toUnmodifiableList()))
-                                                            // process the Features HTML configuration
-                                                            .add(new ImmutableFeaturesHtmlConfiguration.Builder()
-                                                                         .from(config)
-                                                                         .transformations(config.validateTransformations(buildingBlock,collectionId,schema))
-                                                                         .build())
+                                                            // add the GeoJSON configuration
+                                                            .add(config)
                                                             .build()
                                         )
                                         .build());

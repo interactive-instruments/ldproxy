@@ -7,6 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import org.immutables.value.Value;
+
+import static de.ii.xtraplatform.features.domain.TypeInfoValidator.ValidationResult;
+
 public interface ApiExtension {
 
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
@@ -31,7 +36,28 @@ public interface ApiExtension {
         return extendableConfiguration.getExtension(clazz).filter(ExtensionConfiguration::isEnabled).isPresent();
     }
 
-    default void onStart(OgcApiDataV2 apiData) {
+    default StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
         // optional start actions
+        return StartupResult.of();
+    }
+
+    @Value.Immutable
+    interface StartupResult extends ValidationResult {
+
+        static StartupResult of() {
+            return new ImmutableStartupResult.Builder()
+                    .mode(FeatureProviderDataV2.VALIDATION.NONE)
+                    .build();
+        }
+
+        default StartupResult mergeWith(StartupResult other) {
+            return new ImmutableStartupResult.Builder()
+                    .from(this)
+                    .mode(other.getMode())
+                    .addAllErrors(other.getErrors())
+                    .addAllStrictErrors(other.getStrictErrors())
+                    .addAllWarnings(other.getWarnings())
+                    .build();
+        }
     }
 }

@@ -17,6 +17,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
@@ -78,6 +79,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     public abstract Optional<ExternalDocumentation> getExternalDocs();
 
     public abstract Optional<CollectionExtent> getDefaultExtent();
+
+    @Value.Default
+    public FeatureProviderDataV2.VALIDATION getApiValidation() {
+        return FeatureProviderDataV2.VALIDATION.NONE;
+    }
 
     // TODO: move to ServiceData?
     public abstract List<String> getTags();

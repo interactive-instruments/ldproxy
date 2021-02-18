@@ -1,6 +1,7 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.slf4j.Logger;
@@ -38,9 +39,20 @@ public abstract class Endpoint implements EndpointExtension {
     }
 
     @Override
-    public void onStart(OgcApiDataV2 apiData) {
+    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
         // compile and cache the API definition
-        getDefinition(apiData);
+        try {
+            getDefinition(apiData);
+        } catch (Exception exception) {
+            String message = exception.getMessage();
+            if (Objects.isNull(message))
+                message = exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
+            return new ImmutableStartupResult.Builder()
+                                         .mode(apiValidation)
+                                         .addErrors(message)
+                                         .build();
+        }
+        return StartupResult.of();
     }
 
     /**

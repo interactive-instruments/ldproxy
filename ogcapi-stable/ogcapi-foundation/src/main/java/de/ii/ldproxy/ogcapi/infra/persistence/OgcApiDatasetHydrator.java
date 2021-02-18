@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.infra.persistence;
 
-import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -55,12 +54,6 @@ public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDataV2> {
         for (OgcApiDataHydratorExtension hydrator : extensions) {
             if (hydrator.isEnabledForApi(hydrated)) {
                 hydrated = hydrator.getHydratedData(hydrated);
-            }
-        }
-
-        for (ApiExtension extension : extensionRegistry.getExtensions()) {
-            if (extension.isEnabledForApi(hydrated)) {
-                extension.onStart(hydrated);
             }
         }
 

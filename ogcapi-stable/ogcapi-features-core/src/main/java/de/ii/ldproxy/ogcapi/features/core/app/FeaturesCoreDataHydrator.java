@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -31,6 +32,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.Metadata;
 import org.apache.felix.ipojo.annotations.Component;
@@ -42,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,110 +81,184 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
     @Override
     public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
 
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+        FeatureProviderDataV2.VALIDATION apiValidation = apiData.getApiValidation();
+
+        // The behaviour depends on the requested validation approach
+        // NONE: no validation during hydration
+        // LAX: try to remove invalid options, but start the service with the valid options, if possible
+        // STRICT: no validation during hydration, validation will be done in onStartup() and startup will fail in case of an error
+
         OgcApiDataV2 data = apiData;
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(data);
-
-        // if the feature provider is not available, disable all collections
-        boolean disabled = false;
-        if (Objects.isNull(featureProvider)) {
-            LOGGER.error("The feature provider was not found, all collections are removed from the configuration.");
-            data = new ImmutableOgcApiDataV2.Builder()
-                    .from(data)
-                    .collections(ImmutableMap.of())
-                    .build();
-            disabled = true;
-
-        } else if (data.isAuto() && data.getCollections()
+        if (data.isAuto() && data.getCollections()
                                         .isEmpty()) {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
                     .collections(generateCollections(featureProvider))
                     .build();
 
-        } else {
-            // process configuration and remove invalid configuration elements
-            data = new ImmutableOgcApiDataV2.Builder()
-                    .from(data)
-                    .collections(
-                            data.getCollections()
-                                .entrySet()
-                                .stream()
-                                .filter(collection -> {
-                                    // remove all collections without a feature provider
-                                    String collectionId = collection.getKey();
-                                    Optional<FeaturesCoreConfiguration> config = collection.getValue().getExtension(FeaturesCoreConfiguration.class);
-                                    String typeId = config.map(cfg -> cfg.getFeatureType().orElse(collectionId))
-                                                          .orElse(collectionId);
-                                    FeatureSchema schema = featureProvider.getData().getTypes().get(typeId);
-                                    if (Objects.isNull(schema)) {
-                                        LOGGER.error("Collection '{}' has been removed, because the feature type '{}' was not found.", collectionId, typeId);
-                                        return false;
-                                    }
-                                    return true;
-                                })
-                                .map(entry -> {
-                                    // * remove unknown queryables and transformations from the Features Core configuration
-                                    // * normalize the property references in queryables and transformations by removing all parts in square brackets
-
-                                    final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
-                                    final FeaturesCoreConfiguration config = collectionData.getExtension(FeaturesCoreConfiguration.class).orElse(null);
-                                    if (Objects.isNull(config))
-                                        return entry;
-
-                                    final String buildingBlock = config.getBuildingBlock();
-                                    final String collectionId = entry.getKey();
-                                    final FeatureSchema schema = featureProvider.getData()
-                                                                                .getTypes()
-                                                                                .get(config.getFeatureType().orElse(collectionId));
-
-                                    return new AbstractMap.SimpleImmutableEntry<String, FeatureTypeConfigurationOgcApi>(collectionId, new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                                            .from(entry.getValue())
-
-                                            // use the type label from the provider, if the service configuration has just the default label
-                                            .label(collectionData.getLabel().equals(collectionId) && schema.getLabel().isPresent()
-                                                           ? schema.getLabel().get()
-                                                           : collectionData.getLabel())
-                                            // use the type description from the provider, if the service configuration does not have one
-                                            .description(Optional.ofNullable(collectionData.getDescription()
-                                                                                           .orElse(schema.getDescription()
-                                                                                                         .orElse(null))))
-                                            // validate and update the Features Core configuration
-                                            .extensions(new ImmutableList.Builder<ExtensionConfiguration>()
-                                                    // do not touch any other extension
-                                                    .addAll(entry.getValue()
-                                                                      .getExtensions()
-                                                                      .stream()
-                                                                      .filter(ext -> !ext.getBuildingBlock().equals(buildingBlock))
-                                                                      .collect(Collectors.toUnmodifiableList()))
-                                                    // process the Features Core configuration
-                                                    .add(new ImmutableFeaturesCoreConfiguration.Builder()
-                                                                 .from(config)
-                                                                 .queryables(config.validateQueryables(collectionId, schema))
-                                                                 .transformations(config.validateTransformations(buildingBlock,collectionId,schema))
-                                                                 .build())
-                                                    .build()
-                                            )
-                                            .build());
-                                })
-                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
-                    .build();
         }
 
-        if (!disabled && !data.isAutoPersist() && hasMissingBboxes(data.getCollections())) {
+        if (apiValidation==FeatureProviderDataV2.VALIDATION.LAX) {
+            // LAX: remove invalid configuration elements
+
+            // 1. remove collections without a feature type
+            List<String> invalidCollections = FeaturesCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
+            if (!invalidCollections.isEmpty()) {
+                invalidCollections.stream()
+                                  .forEach(collectionId -> LOGGER.error("Collection '{}' has been removed during hydration, because its feature type was not found in the provider schema.", collectionId));
+
+                data = new ImmutableOgcApiDataV2.Builder()
+                        .from(data)
+                        .collections(
+                                data.getCollections()
+                                    .entrySet()
+                                    .stream()
+                                    .filter(collection -> !invalidCollections.contains(collection.getKey()))
+                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
+                        .build();
+            }
+        }
+
+        // get Features Core configurations to process, normalize property names unless in STRICT mode
+        Map<String, FeaturesCoreConfiguration> coreConfigs = data.getCollections()
+                                                                 .entrySet()
+                                                                 .stream()
+                                                                 .map(entry -> {
+                                                                     // * normalize the property references in queryables and transformations by removing all parts in square brackets
+
+                                                                     final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                                                                     FeaturesCoreConfiguration config = collectionData.getExtension(FeaturesCoreConfiguration.class).orElse(null);
+                                                                     if (Objects.isNull(config))
+                                                                         return null;
+
+                                                                     final String collectionId = entry.getKey();
+                                                                     final String buildingBlock = config.getBuildingBlock();
+
+                                                                     if (apiValidation!=FeatureProviderDataV2.VALIDATION.STRICT && config.hasDeprecatedTransformationKeys())
+                                                                         config = new ImmutableFeaturesCoreConfiguration.Builder()
+                                                                                 .from(config)
+                                                                                 .transformations(config.normalizeTransformationKeys(buildingBlock,collectionId))
+                                                                                 .build();
+
+                                                                     if (apiValidation!=FeatureProviderDataV2.VALIDATION.STRICT && config.hasDeprecatedQueryables())
+                                                                         config = new ImmutableFeaturesCoreConfiguration.Builder()
+                                                                                 .from(config)
+                                                                                 .queryables(config.normalizeQueryables(collectionId))
+                                                                                 .build();
+
+                                                                     return new AbstractMap.SimpleImmutableEntry<>(collectionId, config);
+                                                                 })
+                                                                 .filter(Objects::nonNull)
+                                                                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        if (apiValidation==FeatureProviderDataV2.VALIDATION.LAX) {
+            // LAX: process configuration and remove invalid configuration elements
+
+            // 2. remove invalid transformation keys
+            Map<String, Collection<String>> keyMap = coreConfigs.entrySet()
+                                                                .stream()
+                                                                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                                                          .getTransformations()
+                                                                                                                                          .keySet()))
+                                                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+            final Map<String, Collection<String>> invalidTransformationKeys = FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas);
+            invalidTransformationKeys.entrySet()
+                                     .stream()
+                                     .forEach(entry -> {
+                                         String collectionId = entry.getKey();
+                                         entry.getValue()
+                                              .forEach(property -> LOGGER.warn("A transformation for property '{}' in collection '{}' is invalid, because the property was not found in the provider schema. The transformation has been dropped during hydration.", property, collectionId));
+                                         coreConfigs.put(collectionId, new ImmutableFeaturesCoreConfiguration.Builder()
+                                                 .from(coreConfigs.get(collectionId))
+                                                 .transformations(coreConfigs.get(collectionId).removeTransformations(invalidTransformationKeys.get(collectionId)))
+                                                 .build());
+                                     });
+
+            // 3. remove invalid queryables
+            keyMap = coreConfigs.entrySet()
+                                .stream()
+                                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                          .getQueryables()
+                                                                                                          .orElse(FeaturesCollectionQueryables.of())
+                                                                                                          .getAll()))
+                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+            final Map<String, Collection<String>> invalidKeys = FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas);
+            invalidKeys.entrySet()
+                       .stream()
+                       .forEach(entry -> {
+                           String collectionId = entry.getKey();
+                           entry.getValue()
+                                .forEach(property -> LOGGER.warn("A queryable '{}' in collection '{}' is invalid, because the property was not found in the provider schema. The queryable has been dropped during hydration.", property, collectionId));
+                           coreConfigs.put(collectionId, new ImmutableFeaturesCoreConfiguration.Builder()
+                                   .from(coreConfigs.get(collectionId))
+                                   .queryables(coreConfigs.get(collectionId).removeQueryables(invalidKeys.get(collectionId)))
+                                   .build());
+                       });
+        }
+
+        // update data with changes
+        // also update label and description, if we have information in the provider
+        data = new ImmutableOgcApiDataV2.Builder()
+                .from(data)
+                .collections(
+                        data.getCollections()
+                            .entrySet()
+                            .stream()
+                            .map(entry -> {
+                                final String collectionId = entry.getKey();
+                                if (!coreConfigs.containsKey(collectionId))
+                                    return entry;
+
+                                final FeaturesCoreConfiguration config = coreConfigs.get(collectionId);
+                                final String buildingBlock = config.getBuildingBlock();
+
+                                final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                                final FeatureSchema schema = featureSchemas.get(collectionId);
+
+                                return new AbstractMap.SimpleImmutableEntry<String, FeatureTypeConfigurationOgcApi>(collectionId, new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                        .from(entry.getValue())
+                                        // use the type label from the provider, if the service configuration has just the default label
+                                        .label(collectionData.getLabel().equals(collectionId) && Objects.nonNull(schema) && schema.getLabel().isPresent()
+                                                       ? schema.getLabel().get()
+                                                       : collectionData.getLabel())
+                                        // use the type description from the provider, if the service configuration does not have one
+                                        .description(Optional.ofNullable(collectionData.getDescription()
+                                                                                       .orElse(Objects.nonNull(schema) ? schema.getDescription()
+                                                                                                                               .orElse(null)
+                                                                                                                       : null )))
+                                        .extensions(new ImmutableList.Builder<ExtensionConfiguration>()
+                                                // do not touch any other extension
+                                                .addAll(entry.getValue()
+                                                                  .getExtensions()
+                                                                  .stream()
+                                                                  .filter(ext -> !ext.getBuildingBlock().equals(buildingBlock))
+                                                                  .collect(Collectors.toUnmodifiableList()))
+                                                // add the Features Core configuration
+                                                .add(config)
+                                                .build()
+                                        )
+                                        .build());
+                            })
+                            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
+                .build();
+
+        if (!data.isAutoPersist() && hasMissingBboxes(data.getCollections())) {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
                     .collections(computeMissingBboxes(data))
                     .build();
         }
 
-        if (!disabled && !data.isAutoPersist() && hasMissingIntervals(data.getCollections())) {
+        if (!data.isAutoPersist() && hasMissingIntervals(data.getCollections())) {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
                     .collections(computeMissingIntervals(data))
                     .build();
         }
 
-        if (!disabled && data.isAuto() && data.isAutoPersist()) {
+        if (data.isAuto() && data.isAutoPersist()) {
             data = new ImmutableOgcApiDataV2.Builder()
                 .from(data)
                 .auto(Optional.empty())
@@ -189,7 +266,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                 .build();
         }
 
-        if (!disabled && !data.getMetadata().isPresent() && featureProvider.supportsMetadata()) {
+        if (!data.getMetadata().isPresent() && featureProvider.supportsMetadata()) {
             Optional<Metadata> providerMetadata = featureProvider.metadata()
                                                                  .getMetadata();
             if (providerMetadata.isPresent()) {

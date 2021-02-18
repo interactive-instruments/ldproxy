@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.codelists.domain.ImmutableFeaturePropertyTransformerCodelist;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerDateFormat;
@@ -24,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,20 +106,31 @@ public interface FeatureTransformations {
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default Map<String, FeatureTypeMapping2> validateTransformations(String buildingBlockId, String collectionId, FeatureSchema schema) {
+    default boolean hasDeprecatedTransformationKeys() {
+        return getTransformations().keySet()
+                                   .stream()
+                                   .anyMatch(key -> key.matches(".*\\[[^\\]]*\\].*"));
+    }
+
+    default Map<String, FeatureTypeMapping2> normalizeTransformationKeys(String buildingBlock, String collectionId) {
+        return getTransformations().entrySet()
+                                   .stream()
+                                   // normalize property names
+                                   .map(transformation -> {
+                                       if (transformation.getKey().matches(".*\\[[^\\]]*\\].*"))
+                                           // TODO use info for now, but upgrade to warn after some time
+                                           LOGGER.info("The transformation key '{}' in collection '{}' uses a deprecated style that includes square brackets for arrays. The brackets have been dropped during hydration. Building block: {}.", transformation.getKey(), collectionId, buildingBlock);
+                                       return new AbstractMap.SimpleEntry<>(transformation.getKey().replaceAll("\\[[^\\]]*\\]", ""), transformation.getValue());
+                                   })
+                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    default Map<String, FeatureTypeMapping2> removeTransformations(Collection<String> invalidKeys) {
         return getTransformations().entrySet()
                                    .stream()
                                    // normalize property names
                                    .map(transformation -> new AbstractMap.SimpleEntry<>(transformation.getKey().replaceAll("\\[[^\\]]*\\]", ""), transformation.getValue()))
-                                   .filter(transformation -> {
-                                       if (!SchemaInfo.getPropertyNames(schema, false)
-                                                      .stream()
-                                                      .anyMatch(schemaProperty -> schemaProperty.equals(transformation.getKey()))) {
-                                           LOGGER.warn("{}: A transformation for property '{}' in collection '{}' has been removed, because the property was not found in the schema of feature type '{}'.", buildingBlockId, transformation.getKey(), collectionId, schema.getName());
-                                           return false;
-                                       }
-                                       return true;
-                                   })
+                                   .filter(transformation -> !invalidKeys.contains(transformation.getKey()))
                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

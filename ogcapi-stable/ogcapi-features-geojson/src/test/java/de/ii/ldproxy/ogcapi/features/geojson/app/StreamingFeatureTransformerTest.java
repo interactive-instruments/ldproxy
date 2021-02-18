@@ -376,12 +376,12 @@ public class StreamingFeatureTransformerTest {
         }
 
         //@Override
-        public void onStart() {
+        public void onStartup() {
             if (doLog) logger.info("onGmlStart");
         }
 
         @Override
-        public void onStart(OptionalLong optionalInt, OptionalLong optionalInt1) throws Exception {
+        public void onStartup(OptionalLong optionalInt, OptionalLong optionalInt1) throws Exception {
 
         }
 

@@ -3,7 +3,6 @@ package de.ii.ldproxy.ogcapi.features.core.domain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.apache.felix.ipojo.annotations.Component;
@@ -124,25 +123,19 @@ public class SchemaInfo {
         return new AbstractMap.SimpleImmutableEntry<>(name, title);
     }
 
+    // TODO since the following take apiData as input an not the schema, should these be moved to a CollectionInfo class?
+
     public List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId) {
         return getPropertyNames(apiData, collectionId, false, false);
     }
 
     public List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId, boolean withSpatial, boolean withArrayBrackets) {
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, apiData.getCollections().get(collectionId));
-        String featureTypeId = apiData.getCollections()
-                                      .get(collectionId)
-                                      .getExtension(FeaturesCoreConfiguration.class)
-                                      .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-                                      .orElse(collectionId);
-        return featureProvider.getData()
-                              .getTypes()
-                              .get(featureTypeId)
-                              .getProperties()
-                              .stream()
-                              .filter(featureProperty -> !featureProperty.isSpatial() || withSpatial)
-                              .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets))
-                              .flatMap(List::stream)
-                              .collect(Collectors.toList());
+        FeatureSchema schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
+        return schema.getProperties()
+                     .stream()
+                     .filter(featureProperty -> !featureProperty.isSpatial() || withSpatial)
+                     .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets))
+                     .flatMap(List::stream)
+                     .collect(Collectors.toList());
     }
 }

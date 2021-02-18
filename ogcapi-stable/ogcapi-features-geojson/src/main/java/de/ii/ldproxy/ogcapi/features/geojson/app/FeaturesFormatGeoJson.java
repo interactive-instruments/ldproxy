@@ -8,26 +8,33 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureCollectionOpenApi;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureCollectionOpenApi;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -37,9 +44,13 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
+import java.text.MessageFormat;
+import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -64,6 +75,8 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
             .parameter("json")
             .build();
 
+    private final FeaturesCoreProviders providers;
+
     @Requires
     SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
 
@@ -72,6 +85,10 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
 
     @Requires
     GeoJsonWriterRegistry geoJsonWriterRegistry;
+
+    public FeaturesFormatGeoJson(@Requires FeaturesCoreProviders providers) {
+        this.providers = providers;
+    }
 
     @Override
     public List<String> getConformanceClassUris() {
@@ -91,6 +108,48 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
+    }
+
+    @Override
+    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+
+        // no additional operational checks for now, only validation; we can stop, if no validation is requested
+        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
+            return StartupResult.of();
+
+        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+                .mode(apiValidation);
+
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+
+        // get GeoJSON configurations to process
+        Map<String, GeoJsonConfiguration> geoJsonConfigurationMap = apiData.getCollections()
+                                                                    .entrySet()
+                                                                    .stream()
+                                                                    .map(entry -> {
+                                                                        final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                                                                        final GeoJsonConfiguration config = collectionData.getExtension(GeoJsonConfiguration.class).orElse(null);
+                                                                        if (Objects.isNull(config))
+                                                                            return null;
+                                                                        return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
+                                                                    })
+                                                                    .filter(Objects::nonNull)
+                                                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Map<String, Collection<String>> keyMap = geoJsonConfigurationMap.entrySet()
+                                                          .stream()
+                                                          .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                                                    .getTransformations()
+                                                                                                                                    .keySet()))
+                                                          .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()
+                             .stream()
+                             .forEach(entry -> entry.getValue()
+                                                    .stream()
+                                                    .forEach(property -> builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+
+        return builder.build();
     }
 
     @Override

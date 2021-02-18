@@ -23,21 +23,26 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -55,6 +60,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
+import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -97,6 +104,66 @@ public class EndpointFeatures extends EndpointSubCollection {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
         return formats;
+    }
+
+    @Override
+    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+        StartupResult result = super.onStartup(apiData, apiValidation);
+
+        // no additional operational checks for now, only validation; we can stop, if no validation is requested
+        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
+            return result;
+
+        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+                .from(result)
+                .mode(apiValidation);
+
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+
+        List<String> invalidCollections = FeaturesCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
+        invalidCollections.stream()
+                          .forEach(collectionId -> builder.addStrictErrors(MessageFormat.format("The Collection ''{0}'' is invalid, because its feature type was not found in the provider schema.", collectionId)));
+
+        // get Features Core configurations to process
+        Map<String, FeaturesCoreConfiguration> coreConfigs = apiData.getCollections()
+                                                                 .entrySet()
+                                                                 .stream()
+                                                                 .map(entry -> {
+                                                                     final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                                                                     final FeaturesCoreConfiguration config = collectionData.getExtension(FeaturesCoreConfiguration.class).orElse(null);
+                                                                     if (Objects.isNull(config))
+                                                                         return null;
+                                                                     return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
+                                                                 })
+                                                                 .filter(Objects::nonNull)
+                                                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Map<String, Collection<String>> keys = coreConfigs.entrySet()
+                                                   .stream()
+                                                   .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                                                      .getTransformations()
+                                                                                                                                      .keySet()))
+                                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+        FeaturesCoreValidator.getInvalidPropertyKeys(keys, featureSchemas).entrySet()
+                   .stream()
+                   .forEach(entry -> entry.getValue()
+                                          .stream()
+                                          .forEach(property -> builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+
+        keys = coreConfigs.entrySet()
+                          .stream()
+                          .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                    .getQueryables()
+                                                                                                    .orElse(FeaturesCollectionQueryables.of())
+                                                                                                    .getAll()))
+                          .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+        FeaturesCoreValidator.getInvalidPropertyKeys(keys, featureSchemas).entrySet()
+                   .stream()
+                   .forEach(entry -> entry.getValue()
+                                          .stream()
+                                          .forEach(property -> builder.addStrictErrors(MessageFormat.format("A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+
+        return builder.build();
     }
 
     @Override
