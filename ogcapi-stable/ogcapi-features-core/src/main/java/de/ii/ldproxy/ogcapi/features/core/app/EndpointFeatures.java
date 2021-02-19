@@ -163,7 +163,7 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         Map<String, FeaturesCoreConfiguration> recordCollections = coreConfigs.entrySet()
                                                                               .stream()
-                                                                              .filter(entry -> entry.getValue().getItemType().orElse("feature").equals("record"))
+                                                                              .filter(entry -> entry.getValue().getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)==FeaturesCoreConfiguration.ItemType.record)
                                                                               .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
         recordCollections.entrySet()
                          .stream()
@@ -187,7 +187,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                                        .getAll()
                                        .stream()
                                        .noneMatch(queryable -> queryable.equals("externalid"))) {
-                                 builder.addStrictErrors(MessageFormat.format("The item type of collection ''{0}'' is ''record'', but the collection does not include the mandatory queryable ''type''.", entry.getKey()));
+                                 builder.addStrictErrors(MessageFormat.format("The item type of collection ''{0}'' is ''record'', but the collection does not include the mandatory queryable ''externalid''.", entry.getKey()));
                              }
                              if (config.getQueryables()
                                        .orElse(FeaturesCollectionQueryables.of())

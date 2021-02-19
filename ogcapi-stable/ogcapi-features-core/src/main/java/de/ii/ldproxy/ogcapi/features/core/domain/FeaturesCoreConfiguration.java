@@ -36,6 +36,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     List<String> ITEM_TYPES = ImmutableList.of("feature", "record");
 
     enum DefaultCrs {CRS84, CRS84h}
+    enum ItemType {feature, record}
 
     int MINIMUM_PAGE_SIZE = 1;
     int DEFAULT_PAGE_SIZE = 10;
@@ -70,7 +71,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @Nullable
     Boolean getShowsFeatureSelfLink();
 
-    Optional<String> getItemType();
+    Optional<ItemType> getItemType();
 
     Optional<FeaturesCollectionQueryables> getQueryables();
 

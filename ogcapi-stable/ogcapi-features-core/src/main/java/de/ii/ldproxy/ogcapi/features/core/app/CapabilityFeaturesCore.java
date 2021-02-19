@@ -32,7 +32,7 @@ public class CapabilityFeaturesCore implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFeaturesCoreConfiguration.Builder().enabled(true)
-                                                               .itemType("feature")
+                                                               .itemType(FeaturesCoreConfiguration.ItemType.feature)
                                                                .defaultCrs(FeaturesCoreConfiguration.DefaultCrs.CRS84)
                                                                .minimumPageSize(MINIMUM_PAGE_SIZE)
                                                                .defaultPageSize(DEFAULT_PAGE_SIZE)
