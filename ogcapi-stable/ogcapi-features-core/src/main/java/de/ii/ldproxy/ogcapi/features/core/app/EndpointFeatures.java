@@ -161,6 +161,57 @@ public class EndpointFeatures extends EndpointSubCollection {
                                           .stream()
                                           .forEach(property -> builder.addStrictErrors(MessageFormat.format("A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
 
+        Map<String, FeaturesCoreConfiguration> recordCollections = coreConfigs.entrySet()
+                                                                              .stream()
+                                                                              .filter(entry -> entry.getValue().getItemType().orElse("feature").equals("record"))
+                                                                              .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+        recordCollections.entrySet()
+                         .stream()
+                         .forEach(entry -> {
+                             FeaturesCoreConfiguration config = entry.getValue();
+                             if (config.getQueryables()
+                                       .orElse(FeaturesCollectionQueryables.of())
+                                       .getQ()
+                                       .isEmpty()) {
+                                 builder.addStrictErrors(MessageFormat.format("The item type of collection ''{0}'' is ''record'', but the collection does not include a queryable for the mandatory query parameter ''q''.", entry.getKey()));
+                             }
+                             if (config.getQueryables()
+                                       .orElse(FeaturesCollectionQueryables.of())
+                                       .getAll()
+                                       .stream()
+                                       .noneMatch(queryable -> queryable.equals("type"))) {
+                                 builder.addStrictErrors(MessageFormat.format("The item type of collection ''{0}'' is ''record'', but the collection does not include the mandatory queryable ''type''.", entry.getKey()));
+                             }
+                             if (config.getQueryables()
+                                       .orElse(FeaturesCollectionQueryables.of())
+                                       .getAll()
+                                       .stream()
+                                       .noneMatch(queryable -> queryable.equals("externalid"))) {
+                                 builder.addStrictErrors(MessageFormat.format("The item type of collection ''{0}'' is ''record'', but the collection does not include the mandatory queryable ''type''.", entry.getKey()));
+                             }
+                             if (config.getQueryables()
+                                       .orElse(FeaturesCollectionQueryables.of())
+                                       .getAll()
+                                       .stream()
+                                       .noneMatch(queryable -> queryable.equals("title"))) {
+                                 builder.addWarnings(MessageFormat.format("The item type of collection ''{0}'' is ''record'', but the collection does not include the recommended queryable ''title''.", entry.getKey()));
+                             }
+                             if (config.getQueryables()
+                                       .orElse(FeaturesCollectionQueryables.of())
+                                       .getAll()
+                                       .stream()
+                                       .noneMatch(queryable -> queryable.equals("description"))) {
+                                 builder.addWarnings(MessageFormat.format("The item type of collection ''{0}'' is ''record'', but the collection does not include the recommended queryable ''description''.", entry.getKey()));
+                             }
+                             if (config.getQueryables()
+                                       .orElse(FeaturesCollectionQueryables.of())
+                                       .getAll()
+                                       .stream()
+                                       .noneMatch(queryable -> queryable.equals("keyword"))) {
+                                 builder.addWarnings(MessageFormat.format("The item type of collection ''{0}'' is ''record'', but the collection does not include the recommended queryable ''keyword''.", entry.getKey()));
+                             }
+                         });
+
         return builder.build();
     }
 
