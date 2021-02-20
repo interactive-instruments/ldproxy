@@ -20,7 +20,6 @@ Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann soll
 
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`featureProvider` |string |die API-ID |Identifiziert den verwendeten Feature-Provider. Standardmäßig besitzt der Feature-Provider dieselbe ID wie die API.
 |`singleCollectionEnabled` |boolean |`true` |Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden sollen. Jede Kachel hat einen Layer mit den Features aus der Collection.
 |`multiCollectionEnabled` |boolean |`true` |Steuert, ob Vector Tiles für den Datensatz aktiviert werden sollen. Jede Kachel hat einen Layer pro Collection mit den Features aus der Collection.
 |`ignoreInvalidGeometries` |boolean |`false` |Steuert, ob Objekte mit ungültigen Objektgeometrien ignoriert werden. Bevor Objekte ignoriert werden, wird zuerst versucht, die Geometrie in eine gültige Geometrie zu transformieren. Nur wenn dies nicht gelingt, wird die Geometrie ignoriert. Die Topologie von Geometrien können entweder schon im Provider ungültig sein oder die Geometrie kann in seltenen Fällen als Folge der Quantisierung der Koordinaten zu Integern für die Speicherung in der Kachel ungültig werden.
