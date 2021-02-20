@@ -9,26 +9,11 @@ package de.ii.ldproxy.ogcapi.styles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
-import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiOperation;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.domain.Endpoint;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -108,6 +93,40 @@ public class EndpointStyle extends Endpoint {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(StyleFormatExtension.class);
         return formats;
+    }
+
+    @Override
+    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+        StartupResult result = super.onStartup(apiData, apiValidation);
+
+        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
+            return result;
+
+        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+                .from(result)
+                .mode(apiValidation);
+
+        Optional<StylesConfiguration> config = apiData.getExtension(StylesConfiguration.class);
+        if (config.isPresent()) {
+            List<String> formatLabels = getStyleFormatStream(apiData).map(format -> format.getMediaType().label())
+                                                                     .collect(Collectors.toUnmodifiableList());
+            for (String encoding : config.get().getStyleEncodings()) {
+                if (!formatLabels.contains(encoding)) {
+                    builder.addStrictErrors(MessageFormat.format("The style encoding ''{0}'' is specified in the STYLES module configuration, but the format does not exist.", encoding));
+                }
+            }
+
+            // check that the default style exists
+            String defaultStyle = config.get().getDefaultStyle();
+            if (Objects.nonNull(defaultStyle)) {
+                File stylesheet = new File( stylesStore + File.separator + apiData.getId() + File.separator + defaultStyle + "." + StyleFormatMbStyle.MEDIA_TYPE.parameter());
+                if (!stylesheet.exists()) {
+                    builder.addStrictErrors(MessageFormat.format("The default style ''{0}'' specified in the STYLES module configuration does not exist.", defaultStyle));
+                }
+            }
+        }
+
+        return builder.build();
     }
 
     @Override

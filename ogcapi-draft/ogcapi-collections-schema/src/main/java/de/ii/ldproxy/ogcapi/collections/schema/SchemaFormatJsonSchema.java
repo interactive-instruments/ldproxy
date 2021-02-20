@@ -17,6 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -43,6 +44,30 @@ public class SchemaFormatJsonSchema implements SchemaFormatExtension {
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return GeoJsonConfiguration.class;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return apiData.getExtension(getBuildingBlockConfigurationType())
+                      .map(cfg -> cfg.isEnabled())
+                      .orElse(false) &&
+                apiData.getExtension(GeoJsonConfiguration.class)
+                       .map(cfg -> cfg.isEnabled())
+                       .orElse(true);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return apiData.getCollections()
+                      .get(collectionId)
+                      .getExtension(getBuildingBlockConfigurationType())
+                      .map(cfg -> cfg.isEnabled())
+                      .orElse(false) &&
+                apiData.getCollections()
+                       .get(collectionId)
+                       .getExtension(GeoJsonConfiguration.class)
+                       .map(cfg -> cfg.isEnabled())
+                       .orElse(true);
     }
 
     @Override

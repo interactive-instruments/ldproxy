@@ -16,6 +16,8 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -38,6 +40,30 @@ public class QueryablesFormatJson implements QueryablesFormatExtension {
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return apiData.getExtension(getBuildingBlockConfigurationType())
+                      .map(cfg -> cfg.isEnabled())
+                      .orElse(false) &&
+                apiData.getExtension(JsonConfiguration.class)
+                       .map(cfg -> cfg.isEnabled())
+                       .orElse(true);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return apiData.getCollections()
+                      .get(collectionId)
+                      .getExtension(getBuildingBlockConfigurationType())
+                      .map(cfg -> cfg.isEnabled())
+                      .orElse(false) &&
+                apiData.getCollections()
+                       .get(collectionId)
+                       .getExtension(JsonConfiguration.class)
+                       .map(cfg -> cfg.isEnabled())
+                       .orElse(true);
     }
 
     @Override
