@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,19 +41,25 @@ public abstract class Endpoint implements EndpointExtension {
 
     @Override
     public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
-        // compile and cache the API definition
+        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+                .mode(apiValidation);
+
         try {
+            if (getFormats().isEmpty()) {
+                builder.addStrictErrors(MessageFormat.format("The Endpoint class ''{0}'' does not support any output format.", this.getClass().getSimpleName()));
+            }
+
+            // compile and cache the API definition
             getDefinition(apiData);
+
         } catch (Exception exception) {
             String message = exception.getMessage();
             if (Objects.isNull(message))
                 message = exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
-            return new ImmutableStartupResult.Builder()
-                                         .mode(apiValidation)
-                                         .addErrors(message)
-                                         .build();
+            builder.addErrors(message);
         }
-        return StartupResult.of();
+
+        return builder.build();
     }
 
     /**

@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -26,7 +27,9 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -48,6 +51,25 @@ public class EndpointLandingPage extends Endpoint {
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return CommonConfiguration.class;
+    }
+
+    @Override
+    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+        StartupResult result = super.onStartup(apiData, apiValidation);
+
+        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
+            return result;
+
+        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+                .from(result)
+                .mode(apiValidation);
+
+        Optional<CommonConfiguration> config = apiData.getExtension(CommonConfiguration.class);
+        if (config.isPresent()) {
+            builder = FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/");
+        }
+
+        return builder.build();
     }
 
     @Override

@@ -14,23 +14,10 @@ import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ApiOperation;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -45,10 +32,21 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84;
+import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84_URI;
+import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84h_URI;
 
 @Component
 @Provides
@@ -68,6 +66,65 @@ public class EndpointCollection extends EndpointSubCollection {
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return CollectionsConfiguration.class;
+    }
+
+    @Override
+    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+        StartupResult result = super.onStartup(apiData, apiValidation);
+
+        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
+            return result;
+
+        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+                .from(result)
+                .mode(apiValidation);
+
+        for (FeatureTypeConfigurationOgcApi collectionData : apiData.getCollections().values()) {
+            builder = FoundationValidator.validateLinks(builder, collectionData.getAdditionalLinks(), "/collections/"+collectionData.getId());
+
+            Optional<String> persistentUriTemplate = collectionData.getPersistentUriTemplate();
+            if (persistentUriTemplate.isPresent()) {
+                Pattern valuePattern = Pattern.compile("\\{\\{[\\w\\.]+( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
+                Matcher matcher = valuePattern.matcher(persistentUriTemplate.get());
+                if (!matcher.find()) {
+                    builder.addStrictErrors(MessageFormat.format("Persistent URI template ''{0}'' in collection ''{1}'' does not have a valid value pattern.", persistentUriTemplate.get(), collectionData.getId()));
+                }
+            }
+
+            Optional<CollectionExtent> extent = collectionData.getExtent();
+            if (extent.isPresent()) {
+                Optional<BoundingBox> spatial = extent.get().getSpatial();
+                if (spatial.isPresent()) {
+                    BoundingBox bbox = spatial.get();
+                    if (!ImmutableSet.of(CRS84_URI, CRS84h_URI).contains(bbox.getEpsgCrs().toUriString())) {
+                        builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' must be in CRS84 or CRS84h. Found: ''{1}''.", collectionData.getId(), bbox.getEpsgCrs().toSimpleString()));
+                    }
+                    if (bbox.getXmin()<-180.0 || bbox.getXmin()>180.0) {
+                        builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' has a longitude value that is not between -180 and 180. Found: ''{1}''.", collectionData.getId(), bbox.getXmin()));
+                    }
+                    if (bbox.getXmax()<-180.0 || bbox.getXmax()>180.0) {
+                        builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' has a longitude value that is not between -180 and 180. Found: ''{1}''.", collectionData.getId(), bbox.getXmax()));
+                    }
+                    if (bbox.getYmin()<-90.0 || bbox.getYmin()>90.0) {
+                        builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' has a latitude value that is not between -90 and 90. Found: ''{1}''.", collectionData.getId(), bbox.getYmin()));
+                    }
+                    if (bbox.getYmax()<-90.0 || bbox.getYmax()>90.0) {
+                        builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' has a latitude value that is not between -90 and 90. Found: ''{1}''.", collectionData.getId(), bbox.getYmax()));
+                    }
+                    if (bbox.getYmax()<bbox.getYmin()) {
+                        builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' has a maxmimum latitude value ''{1}'' that is lower than the minimum value ''{2}''.", collectionData.getId(), bbox.getYmax(), bbox.getYmin()));
+                    }
+                }
+                Optional<TemporalExtent> temporal = extent.get().getTemporal();
+                if (spatial.isPresent()) {
+                    if (temporal.get().getEnd() < temporal.get().getStart()) {
+                        builder.addStrictErrors(MessageFormat.format("The temporal extent in collection ''{0}'' has an end ''{1}'' before the start ''{2}''.", collectionData.getId(), Instant.ofEpochMilli(temporal.get().getEnd()).truncatedTo(ChronoUnit.SECONDS).toString(), Instant.ofEpochMilli(temporal.get().getStart()).truncatedTo(ChronoUnit.SECONDS).toString()));
+                    }
+                }
+            }
+        }
+
+        return builder.build();
     }
 
     @Override

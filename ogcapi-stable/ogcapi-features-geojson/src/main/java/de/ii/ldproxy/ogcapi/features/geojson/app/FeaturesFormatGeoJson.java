@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
@@ -135,6 +136,22 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                                                     })
                                                                     .filter(Objects::nonNull)
                                                                     .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
+            String collectionId = entry.getKey();
+            GeoJsonConfiguration config = entry.getValue();
+
+            if (config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() != FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX) {
+                builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
+            } else if (config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.NEST && config.getMultiplicityStrategy() != FeatureTransformerGeoJson.MULTIPLICITY.ARRAY) {
+                builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
+            }
+
+            List<String> separators = ImmutableList.of(".","_");
+            if (!separators.contains(config.getSeparator())) {
+                builder.addStrictErrors(MessageFormat.format("The separator ''{0}'' in collection ''{1}'' is invalid, it must be one of {2}.", config.getSeparator(), collectionId, separators));
+            }
+        }
 
         Map<String, Collection<String>> keyMap = geoJsonConfigurationMap.entrySet()
                                                           .stream()

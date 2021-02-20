@@ -49,9 +49,11 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.geotools.util.MapEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -162,6 +164,23 @@ public class EndpointFeatures extends EndpointSubCollection {
                    .forEach(entry -> entry.getValue()
                                           .stream()
                                           .forEach(property -> builder.addStrictErrors(MessageFormat.format("A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+
+        for (Map.Entry<String,FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
+            String collectionId = entry.getKey();
+            FeaturesCoreConfiguration config = entry.getValue();
+            if (config.getMinimumPageSize()<1) {
+                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be a positive integer.", config.getMinimumPageSize(), collectionId));
+            }
+            if (config.getMinimumPageSize()>config.getMaximumPageSize()) {
+                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be smaller than the maximum page size ''{2}''.", config.getMinimumPageSize(), collectionId, config.getMaximumPageSize()));
+            }
+            if (config.getMinimumPageSize()>config.getDefaultPageSize()) {
+                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be smaller than the default page size ''{2}''.", config.getMinimumPageSize(), collectionId, config.getDefaultPageSize()));
+            }
+            if (config.getMaximumPageSize()<config.getDefaultPageSize()) {
+                builder.addStrictErrors(MessageFormat.format("The maxmimum page size ''{0}'' in collection ''{1}'' is invalid, it must be larger than the default page size ''{2}''.", config.getMaximumPageSize(), collectionId, config.getDefaultPageSize()));
+            }
+        }
 
         return builder.build();
     }
