@@ -36,4 +36,12 @@ public class FoundationValidator {
              });
         return builder;
     }
+
+    public static ImmutableStartupResult.Builder validateUri(ImmutableStartupResult.Builder builder, String uri, String path) {
+         try {
+             new URL(uri).toURI();
+         } catch (URISyntaxException | MalformedURLException e) {
+             builder.addStrictErrors(MessageFormat.format("Link ''{0}'' in resource ''{1}'' is not a valid URI.", uri, path));         }
+        return builder;
+    }
 }
