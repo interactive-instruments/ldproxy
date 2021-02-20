@@ -116,7 +116,7 @@ public class EndpointCollection extends EndpointSubCollection {
                     }
                 }
                 Optional<TemporalExtent> temporal = extent.get().getTemporal();
-                if (spatial.isPresent()) {
+                if (temporal.isPresent()) {
                     if (temporal.get().getEnd() < temporal.get().getStart()) {
                         builder.addStrictErrors(MessageFormat.format("The temporal extent in collection ''{0}'' has an end ''{1}'' before the start ''{2}''.", collectionData.getId(), Instant.ofEpochMilli(temporal.get().getEnd()).truncatedTo(ChronoUnit.SECONDS).toString(), Instant.ofEpochMilli(temporal.get().getStart()).truncatedTo(ChronoUnit.SECONDS).toString()));
                     }
