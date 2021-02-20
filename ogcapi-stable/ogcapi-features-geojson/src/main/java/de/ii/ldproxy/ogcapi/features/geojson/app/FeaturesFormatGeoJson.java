@@ -147,7 +147,7 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                 builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
             }
 
-            List<String> separators = ImmutableList.of(".","_");
+            List<String> separators = ImmutableList.of(".","_",":","/");
             if (!separators.contains(config.getSeparator())) {
                 builder.addStrictErrors(MessageFormat.format("The separator ''{0}'' in collection ''{1}'' is invalid, it must be one of {2}.", config.getSeparator(), collectionId, separators));
             }
