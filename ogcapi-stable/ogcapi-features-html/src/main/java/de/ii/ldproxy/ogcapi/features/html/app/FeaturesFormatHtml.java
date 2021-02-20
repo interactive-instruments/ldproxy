@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
@@ -60,6 +61,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -159,11 +161,23 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                                                                                                                 .keySet()))
                                                                       .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()
-                             .stream()
-                             .forEach(entry -> entry.getValue()
-                                                    .stream()
-                                                    .forEach(property -> builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
+            for (String property : stringCollectionEntry.getValue()) {
+                builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
+            }
+        }
+
+        Set<String> codelists = entityRegistry.getEntitiesForType(Codelist.class)
+                                              .stream()
+                                              .map(Codelist::getId)
+                                              .collect(Collectors.toUnmodifiableSet());
+        for (Map.Entry<String, FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
+            String collectionId = entry.getKey();
+            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+                String property = entry2.getKey();
+                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+            }
+        }
 
         return builder.build();
     }

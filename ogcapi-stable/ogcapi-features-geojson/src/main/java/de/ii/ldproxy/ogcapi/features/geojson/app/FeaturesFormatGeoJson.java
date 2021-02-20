@@ -24,7 +24,8 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
@@ -34,9 +35,11 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -54,6 +57,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -77,6 +82,7 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
             .build();
 
     private final FeaturesCoreProviders providers;
+    private final EntityRegistry entityRegistry;
 
     @Requires
     SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
@@ -87,8 +93,10 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     @Requires
     GeoJsonWriterRegistry geoJsonWriterRegistry;
 
-    public FeaturesFormatGeoJson(@Requires FeaturesCoreProviders providers) {
+    public FeaturesFormatGeoJson(@Requires FeaturesCoreProviders providers,
+                                 @Requires EntityRegistry entityRegistry) {
         this.providers = providers;
+        this.entityRegistry = entityRegistry;
     }
 
     @Override
@@ -160,11 +168,23 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                                                                                                                     .keySet()))
                                                           .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()
-                             .stream()
-                             .forEach(entry -> entry.getValue()
-                                                    .stream()
-                                                    .forEach(property -> builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
+            for (String property : stringCollectionEntry.getValue()) {
+                builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
+            }
+        }
+
+        Set<String> codelists = entityRegistry.getEntitiesForType(Codelist.class)
+                                              .stream()
+                                              .map(Codelist::getId)
+                                              .collect(Collectors.toUnmodifiableSet());
+        for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
+            String collectionId = entry.getKey();
+            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+                String property = entry2.getKey();
+                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+            }
+        }
 
         return builder.build();
     }

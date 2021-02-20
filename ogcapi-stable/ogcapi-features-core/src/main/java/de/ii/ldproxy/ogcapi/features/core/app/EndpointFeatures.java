@@ -40,20 +40,20 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.geotools.util.MapEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -82,15 +82,18 @@ public class EndpointFeatures extends EndpointSubCollection {
     @Requires
     SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
 
+    private final EntityRegistry entityRegistry;
     private final FeaturesCoreProviders providers;
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreQueriesHandler queryHandler;
 
     public EndpointFeatures(@Requires ExtensionRegistry extensionRegistry,
+                            @Requires EntityRegistry entityRegistry,
                             @Requires FeaturesCoreProviders providers,
                             @Requires FeaturesQuery ogcApiFeaturesQuery,
                             @Requires FeaturesCoreQueriesHandler queryHandler) {
         super(extensionRegistry);
+        this.entityRegistry = entityRegistry;
         this.providers = providers;
         this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
         this.queryHandler = queryHandler;
@@ -123,8 +126,9 @@ public class EndpointFeatures extends EndpointSubCollection {
         Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
 
         List<String> invalidCollections = FeaturesCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
-        invalidCollections.stream()
-                          .forEach(collectionId -> builder.addStrictErrors(MessageFormat.format("The Collection ''{0}'' is invalid, because its feature type was not found in the provider schema.", collectionId)));
+        for (String invalidCollection : invalidCollections) {
+            builder.addStrictErrors(MessageFormat.format("The Collection ''{0}'' is invalid, because its feature type was not found in the provider schema.", invalidCollection));
+        }
 
         // get Features Core configurations to process
         Map<String, FeaturesCoreConfiguration> coreConfigs = apiData.getCollections()
@@ -140,30 +144,30 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                                  .filter(Objects::nonNull)
                                                                  .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        Map<String, Collection<String>> keys = coreConfigs.entrySet()
+        Map<String, Collection<String>> transformationKeys = coreConfigs.entrySet()
                                                    .stream()
                                                    .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
                                                                                                                                       .getTransformations()
                                                                                                                                       .keySet()))
                                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-        FeaturesCoreValidator.getInvalidPropertyKeys(keys, featureSchemas).entrySet()
-                   .stream()
-                   .forEach(entry -> entry.getValue()
-                                          .stream()
-                                          .forEach(property -> builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
+            for (String property : stringCollectionEntry.getValue()) {
+                builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
+            }
+        }
 
-        keys = coreConfigs.entrySet()
+        transformationKeys = coreConfigs.entrySet()
                           .stream()
                           .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
                                                                                                     .getQueryables()
                                                                                                     .orElse(FeaturesCollectionQueryables.of())
                                                                                                     .getAll()))
                           .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-        FeaturesCoreValidator.getInvalidPropertyKeys(keys, featureSchemas).entrySet()
-                   .stream()
-                   .forEach(entry -> entry.getValue()
-                                          .stream()
-                                          .forEach(property -> builder.addStrictErrors(MessageFormat.format("A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
+            for (String property : stringCollectionEntry.getValue()) {
+                builder.addStrictErrors(MessageFormat.format("A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
+            }
+        }
 
         for (Map.Entry<String,FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
             String collectionId = entry.getKey();
@@ -179,6 +183,18 @@ public class EndpointFeatures extends EndpointSubCollection {
             }
             if (config.getMaximumPageSize()<config.getDefaultPageSize()) {
                 builder.addStrictErrors(MessageFormat.format("The maxmimum page size ''{0}'' in collection ''{1}'' is invalid, it must be larger than the default page size ''{2}''.", config.getMaximumPageSize(), collectionId, config.getDefaultPageSize()));
+            }
+        }
+
+        Set<String> codelists = entityRegistry.getEntitiesForType(Codelist.class)
+                                              .stream()
+                                              .map(Codelist::getId)
+                                              .collect(Collectors.toUnmodifiableSet());
+        for (Map.Entry<String, FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
+            String collectionId = entry.getKey();
+            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+                String property = entry2.getKey();
+                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
             }
         }
 
