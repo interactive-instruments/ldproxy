@@ -179,27 +179,6 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
         return queryables;
     }
 
-    default List<String> removeQueryables(List<String> queryables, Collection<String> queryablesToRemove) {
-        return queryables.stream()
-                         .filter(queryable -> !queryablesToRemove.contains(queryable))
-                         .collect(Collectors.toUnmodifiableList());
-    }
-
-    default Optional<FeaturesCollectionQueryables> removeQueryables(Collection<String> queryablesToRemove) {
-        Optional<FeaturesCollectionQueryables> queryables = getQueryables();
-        if (queryables.isPresent()) {
-            List<String> spatial = removeQueryables(queryables.get().getSpatial(), queryablesToRemove);
-            List<String> temporal = removeQueryables(queryables.get().getTemporal(), queryablesToRemove);
-            List<String> other = removeQueryables(queryables.get().getOther(), queryablesToRemove);
-            queryables = Optional.of(new ImmutableFeaturesCollectionQueryables.Builder()
-                                             .spatial(spatial)
-                                             .temporal(temporal)
-                                             .other(other)
-                                             .build());
-        }
-        return queryables;
-    }
-
     @Override
     default Builder getBuilder() {
         return new ImmutableFeaturesCoreConfiguration.Builder();

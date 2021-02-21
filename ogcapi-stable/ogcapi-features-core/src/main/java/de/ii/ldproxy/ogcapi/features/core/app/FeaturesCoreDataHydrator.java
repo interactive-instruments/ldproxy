@@ -92,7 +92,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
         OgcApiDataV2 data = apiData;
         if (data.isAuto() && data.getCollections()
-                                        .isEmpty()) {
+                                 .isEmpty()) {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
                     .collections(generateCollections(featureProvider))
@@ -101,9 +101,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
         }
 
         if (apiValidation==FeatureProviderDataV2.VALIDATION.LAX) {
-            // LAX: remove invalid configuration elements
-
-            // 1. remove collections without a feature type
+            // LAX: remove collections without a feature type
             List<String> invalidCollections = FeaturesCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
             if (!invalidCollections.isEmpty()) {
                 invalidCollections.stream()
@@ -126,7 +124,8 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                                                  .entrySet()
                                                                  .stream()
                                                                  .map(entry -> {
-                                                                     // * normalize the property references in queryables and transformations by removing all parts in square brackets
+                                                                     // normalize the property references in queryables and transformations
+                                                                     // by removing all parts in square brackets unless in STRICT mode
 
                                                                      final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
                                                                      FeaturesCoreConfiguration config = collectionData.getExtension(FeaturesCoreConfiguration.class).orElse(null);
@@ -136,13 +135,15 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                                                      final String collectionId = entry.getKey();
                                                                      final String buildingBlock = config.getBuildingBlock();
 
-                                                                     if (apiValidation!=FeatureProviderDataV2.VALIDATION.STRICT && config.hasDeprecatedTransformationKeys())
+                                                                     if (apiValidation!=FeatureProviderDataV2.VALIDATION.STRICT &&
+                                                                         config.hasDeprecatedTransformationKeys())
                                                                          config = new ImmutableFeaturesCoreConfiguration.Builder()
                                                                                  .from(config)
                                                                                  .transformations(config.normalizeTransformationKeys(buildingBlock,collectionId))
                                                                                  .build();
 
-                                                                     if (apiValidation!=FeatureProviderDataV2.VALIDATION.STRICT && config.hasDeprecatedQueryables())
+                                                                     if (apiValidation!=FeatureProviderDataV2.VALIDATION.STRICT &&
+                                                                         config.hasDeprecatedQueryables())
                                                                          config = new ImmutableFeaturesCoreConfiguration.Builder()
                                                                                  .from(config)
                                                                                  .queryables(config.normalizeQueryables(collectionId))
@@ -152,51 +153,6 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                                                  })
                                                                  .filter(Objects::nonNull)
                                                                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.LAX) {
-            // LAX: process configuration and remove invalid configuration elements
-
-            // 2. remove invalid transformation keys
-            Map<String, Collection<String>> keyMap = coreConfigs.entrySet()
-                                                                .stream()
-                                                                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
-                                                                                                                                          .getTransformations()
-                                                                                                                                          .keySet()))
-                                                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-            final Map<String, Collection<String>> invalidTransformationKeys = FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas);
-            invalidTransformationKeys.entrySet()
-                                     .stream()
-                                     .forEach(entry -> {
-                                         String collectionId = entry.getKey();
-                                         entry.getValue()
-                                              .forEach(property -> LOGGER.warn("A transformation for property '{}' in collection '{}' is invalid, because the property was not found in the provider schema. The transformation has been dropped during hydration.", property, collectionId));
-                                         coreConfigs.put(collectionId, new ImmutableFeaturesCoreConfiguration.Builder()
-                                                 .from(coreConfigs.get(collectionId))
-                                                 .transformations(coreConfigs.get(collectionId).removeTransformations(invalidTransformationKeys.get(collectionId)))
-                                                 .build());
-                                     });
-
-            // 3. remove invalid queryables
-            keyMap = coreConfigs.entrySet()
-                                .stream()
-                                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
-                                                                                                          .getQueryables()
-                                                                                                          .orElse(FeaturesCollectionQueryables.of())
-                                                                                                          .getAll()))
-                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-            final Map<String, Collection<String>> invalidKeys = FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas);
-            invalidKeys.entrySet()
-                       .stream()
-                       .forEach(entry -> {
-                           String collectionId = entry.getKey();
-                           entry.getValue()
-                                .forEach(property -> LOGGER.warn("A queryable '{}' in collection '{}' is invalid, because the property was not found in the provider schema. The queryable has been dropped during hydration.", property, collectionId));
-                           coreConfigs.put(collectionId, new ImmutableFeaturesCoreConfiguration.Builder()
-                                   .from(coreConfigs.get(collectionId))
-                                   .queryables(coreConfigs.get(collectionId).removeQueryables(invalidKeys.get(collectionId)))
-                                   .build());
-                       });
-        }
 
         // update data with changes
         // also update label and description, if we have information in the provider

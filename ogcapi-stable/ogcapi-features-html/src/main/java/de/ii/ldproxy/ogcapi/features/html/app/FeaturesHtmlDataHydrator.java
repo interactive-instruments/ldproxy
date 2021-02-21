@@ -41,12 +41,6 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesHtmlDataHydrator.class);
 
-    private final FeaturesCoreProviders providers;
-
-    public FeaturesHtmlDataHydrator(@Requires FeaturesCoreProviders providers) {
-        this.providers = providers;
-    }
-
     @Override
     public int getSortPriority() {
         // this must be processed after the FeaturesCoreDataHydrator
@@ -63,17 +57,18 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
 
         // any Features HTML hydration actions are not taken in STRICT validation mode;
         // STRICT: an invalid service definition will not start
-        if (apiData.getApiValidation()==FeatureProviderDataV2.VALIDATION.STRICT)
+        if (apiData.getApiValidation()!=FeatureProviderDataV2.VALIDATION.STRICT)
             return apiData;
 
         OgcApiDataV2 data = apiData;
 
-        // get Features Core configurations to process, normalize property names
+        // get Features Core configurations to process, normalize property names to exclude all square brackets
         Map<String, FeaturesHtmlConfiguration> configs = data.getCollections()
                                                         .entrySet()
                                                         .stream()
                                                         .map(entry -> {
-                                                            // * normalize the property references in transformations by removing all parts in square brackets
+                                                            // normalize the property references in transformations by removing all
+                                                            // parts in square brackets
 
                                                             final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
                                                             FeaturesHtmlConfiguration config = collectionData.getExtension(FeaturesHtmlConfiguration.class).orElse(null);
@@ -94,34 +89,7 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
                                                         .filter(Objects::nonNull)
                                                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        if (data.getApiValidation()==FeatureProviderDataV2.VALIDATION.LAX) {
-            // LAX: process configuration and remove invalid configuration elements
-
-            Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
-
-            // 2. remove invalid transformation keys
-            Map<String, Collection<String>> keyMap = configs.entrySet()
-                                                            .stream()
-                                                            .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
-                                                                                                                                      .getTransformations()
-                                                                                                                                      .keySet()))
-                                                            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-            final Map<String, Collection<String>> invalidTransformationKeys = FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas);
-            invalidTransformationKeys.entrySet()
-                                     .stream()
-                                     .forEach(entry -> {
-                                         String collectionId = entry.getKey();
-                                         entry.getValue()
-                                              .forEach(property -> LOGGER.warn("A transformation for property '{}' in collection '{}' is invalid, because the property was not found in the provider schema. The transformation has been dropped during hydration.", property, collectionId));
-                                         configs.put(collectionId, new ImmutableFeaturesHtmlConfiguration.Builder()
-                                                 .from(configs.get(collectionId))
-                                                 .transformations(configs.get(collectionId).removeTransformations(invalidTransformationKeys.get(collectionId)))
-                                                 .build());
-                                     });
-        }
-
         // update data with changes
-        // also update label and description, if we have information in the provider
         data = new ImmutableOgcApiDataV2.Builder()
                 .from(data)
                 .collections(

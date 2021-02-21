@@ -124,13 +124,4 @@ public interface FeatureTransformations {
                                    })
                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
-
-    default Map<String, FeatureTypeMapping2> removeTransformations(Collection<String> invalidKeys) {
-        return getTransformations().entrySet()
-                                   .stream()
-                                   // normalize property names
-                                   .map(transformation -> new AbstractMap.SimpleEntry<>(transformation.getKey().replaceAll("\\[[^\\]]*\\]", ""), transformation.getValue()))
-                                   .filter(transformation -> !invalidKeys.contains(transformation.getKey()))
-                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
 }
