@@ -15,3 +15,7 @@ artillery/
 packaging/
 gradle.properties
 .DS_Store
+.project
+.classpath
+.settings/
+bin/
