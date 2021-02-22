@@ -10,27 +10,17 @@ package de.ii.ldproxy.ogcapi.features.core.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
-import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerRemove;
 import org.immutables.value.Value;
 
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -69,7 +59,7 @@ public interface FeatureTypeMapping2 {
         final Optional<String> dateFormat = getDateFormat();
         if (dateFormat.isPresent()) {
             try {
-                DateTimeFormatter.ofPattern(dateFormat.get()).parse("2021-02-20T12:00:00Z");
+                LocalDate.now().format(DateTimeFormatter.ofPattern(dateFormat.get()));
             } catch (Exception e) {
                 builder.addWarnings(MessageFormat.format("The dateFormat transformation in collection ''{0}'' for property ''{1}'' with  value ''{2}'' is invalid, if used with a timestamp: {3}.", collectionId, property, dateFormat.get(), e.getMessage()));
             }

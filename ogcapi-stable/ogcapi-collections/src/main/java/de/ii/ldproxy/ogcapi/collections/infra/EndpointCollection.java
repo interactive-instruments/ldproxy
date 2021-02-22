@@ -17,6 +17,7 @@ import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -94,10 +95,10 @@ public class EndpointCollection extends EndpointSubCollection {
             Optional<CollectionExtent> extent = collectionData.getExtent();
             if (extent.isPresent()) {
                 Optional<BoundingBox> spatial = extent.get().getSpatial();
-                if (spatial.isPresent()) {
+                if (spatial.isPresent() && Objects.nonNull(spatial.get())) {
                     BoundingBox bbox = spatial.get();
-                    if (!ImmutableSet.of(CRS84_URI, CRS84h_URI).contains(bbox.getEpsgCrs().toUriString())) {
-                        builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' must be in CRS84 or CRS84h. Found: ''{1}''.", collectionData.getId(), bbox.getEpsgCrs().toSimpleString()));
+                    if (!ImmutableSet.of(4326, 4979).contains(bbox.getEpsgCrs().getCode()) || bbox.getEpsgCrs().getForceAxisOrder()!=EpsgCrs.Force.LON_LAT) {
+                        builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' must be in CRS84 or CRS84h. Found: ''{1}, {2}''.", collectionData.getId(), bbox.getEpsgCrs().toSimpleString(), bbox.getEpsgCrs().getForceAxisOrder()));
                     }
                     if (bbox.getXmin()<-180.0 || bbox.getXmin()>180.0) {
                         builder.addStrictErrors(MessageFormat.format("The spatial extent in collection ''{0}'' has a longitude value that is not between -180 and 180. Found: ''{1}''.", collectionData.getId(), bbox.getXmin()));
@@ -116,9 +117,11 @@ public class EndpointCollection extends EndpointSubCollection {
                     }
                 }
                 Optional<TemporalExtent> temporal = extent.get().getTemporal();
-                if (temporal.isPresent()) {
-                    if (temporal.get().getEnd() < temporal.get().getStart()) {
-                        builder.addStrictErrors(MessageFormat.format("The temporal extent in collection ''{0}'' has an end ''{1}'' before the start ''{2}''.", collectionData.getId(), Instant.ofEpochMilli(temporal.get().getEnd()).truncatedTo(ChronoUnit.SECONDS).toString(), Instant.ofEpochMilli(temporal.get().getStart()).truncatedTo(ChronoUnit.SECONDS).toString()));
+                if (temporal.isPresent() && Objects.nonNull(temporal.get())) {
+                    long start = Objects.nonNull(temporal.get().getStart()) ? temporal.get().getStart() : Long.MIN_VALUE;
+                    long end = Objects.nonNull(temporal.get().getEnd()) ? temporal.get().getEnd() : Long.MAX_VALUE;
+                    if (end < start) {
+                        builder.addStrictErrors(MessageFormat.format("The temporal extent in collection ''{0}'' has an end ''{1}'' before the start ''{2}''.", collectionData.getId(), Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString(), Instant.ofEpochMilli(start).truncatedTo(ChronoUnit.SECONDS).toString()));
                     }
                 }
             }
