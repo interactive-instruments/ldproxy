@@ -71,7 +71,7 @@ public class FeatureTransformerGeoJsonTest {
     /**
      * Is FeatureWriter.onEvent called with the correct state?
      */
-    @Test(groups = {"default"})
+    @Test
     public void testPipelineState() throws Exception {
         List<Event> actualEvents = new ArrayList<>();
 
@@ -109,6 +109,9 @@ public class FeatureTransformerGeoJsonTest {
                     case PROPERTY:
                     case COORDINATES:
                         transformationContext.getState()
+                            .getCurrentFeatureProperty()
+                            .ifPresent(actualMappings::add);
+                        transformationContext.getState()
                                              .getCurrentValue()
                                              .ifPresent(actualValues::add);
                     case FEATURE_START:
@@ -131,7 +134,7 @@ public class FeatureTransformerGeoJsonTest {
     /**
      * Is every FeatureWriter in the pipeline called in the correct order?
      */
-    @Test(groups = {"default"})
+    @Test //TODO
     public void testPipelineChaining() throws Exception {
         //is every writer called in the correct order
     }
@@ -139,7 +142,7 @@ public class FeatureTransformerGeoJsonTest {
     /**
      * Is currentGeometryNestingChange set correctly?
      */
-    @Test(groups = {"default"})
+    @Test
     public void testGeometryNesting() throws Exception {
 
         List<Integer> expectedNestingChanges = ImmutableList.of(2, 1, 2, 2, 1, 1);
