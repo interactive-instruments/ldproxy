@@ -9,10 +9,9 @@ package de.ii.ldproxy.ogcapi.tiles
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ldproxy.ogcapi.application.I18nDefault
+import de.ii.ldproxy.ogcapi.app.I18nDefault
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
 import de.ii.ldproxy.ogcapi.domain.OgcApi
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.WebMercatorQuad
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory
 import spock.lang.Specification

@@ -8,25 +8,44 @@
 package de.ii.ldproxy.ogcapi.features.core;
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.application.I18nDefault
-import de.ii.ldproxy.ogcapi.application.OgcApiEntity
-import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCollections
-import de.ii.ldproxy.ogcapi.domain.*
-import de.ii.ldproxy.ogcapi.features.core.api.ImmutableFeaturesCollectionQueryables
-import de.ii.ldproxy.ogcapi.features.core.api.FeaturesCoreProviders
-import de.ii.ldproxy.ogcapi.features.core.api.FeatureFormatExtension
-import de.ii.ldproxy.ogcapi.features.core.application.CollectionExtensionFeatures
-import de.ii.ldproxy.ogcapi.features.core.application.CollectionsExtensionFeatures
-import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration
-import de.ii.ldproxy.ogcapi.infra.rest.ImmutableRequestContext
-import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollection
-import de.ii.ldproxy.ogcapi.infra.rest.OgcApiEndpointCollections
+import de.ii.ldproxy.ogcapi.app.I18nDefault
+import de.ii.ldproxy.ogcapi.app.OgcApiEntity
+import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension
+import de.ii.ldproxy.ogcapi.collections.domain.Collections
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsExtension
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection
+import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollection
+import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollections
+import de.ii.ldproxy.ogcapi.domain.ApiExtension
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
+import de.ii.ldproxy.ogcapi.domain.ImmutableRequestContext
+import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent
+import de.ii.ldproxy.ogcapi.domain.OgcApi
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2
+import de.ii.ldproxy.ogcapi.features.core.app.CollectionExtensionFeatures
+import de.ii.ldproxy.ogcapi.features.core.app.CollectionsExtensionFeatures
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
+import de.ii.ldproxy.ogcapi.json.domain.ImmutableJsonConfiguration
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.features.domain.FeatureProvider2
+import io.swagger.v3.oas.models.media.Schema
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Response
 import java.util.stream.Collectors
 
 class OgcApiCoreSpecCollections extends Specification {
@@ -35,9 +54,9 @@ class OgcApiCoreSpecCollections extends Specification {
     static final OgcApiDataV2 datasetData = createDatasetData()
     static final OgcApiEntity ogcApiApiEntity = createOgcApiApiEntity()
     static final ApiRequestContext requestContext = createRequestContext()
-    static OgcApiQueriesHandlerCollections ogcApiQueriesHandlerCollections = new OgcApiQueriesHandlerCollections(registry)
-    static final OgcApiEndpointCollections collectionsEndpoint = createCollectionsEndpoint()
-    static final OgcApiEndpointCollection collectionEndpoint = createCollectionEndpoint()
+    static QueriesHandlerCollections ogcApiQueriesHandlerCollections = new QueriesHandlerCollections(registry)
+    static final EndpointCollections collectionsEndpoint = createCollectionsEndpoint()
+    static final EndpointCollection collectionEndpoint = createCollectionEndpoint()
 
     def setupSpec() {
         ogcApiQueriesHandlerCollections.i18n = new I18nDefault()
@@ -99,7 +118,7 @@ class OgcApiCoreSpecCollections extends Specification {
         Collections result = collectionsEndpoint.getCollections(Optional.empty(), ogcApiApiEntity, requestContext).entity as Collections
 
         then: 'the extent property shall provide bounding boxes that include all spatial geometries and time intervals that include all temporal geometries in this collection'
-        result.collections.any { it.extent.get().getSpatial().bbox[0] == ([-180.0, -90.0, 180.0, 90.0] as double[]) }
+        result.collections.any { it.extent.get().getSpatial().get().bbox[0] == ([-180.0, -90.0, 180.0, 90.0] as double[]) }
     }
 
 
@@ -114,10 +133,10 @@ class OgcApiCoreSpecCollections extends Specification {
         allCollections.getCollections().get(0).id == singleCollection.id
         allCollections.getCollections().get(0).title == singleCollection.title
         allCollections.getCollections().get(0).description == singleCollection.description
-        allCollections.getCollections().get(0).extent.get().getSpatial().bbox == singleCollection.getExtent().get().getSpatial().bbox
-        allCollections.getCollections().get(0).extent.get().getSpatial().crs == singleCollection.extent.get().getSpatial().crs
-        allCollections.getCollections().get(0).extent.get().getTemporal().interval == singleCollection.extent.get().getTemporal().interval
-        allCollections.getCollections().get(0).extent.get().getTemporal().trs == singleCollection.extent.get().getTemporal().trs
+        allCollections.getCollections().get(0).extent.get().getSpatial().get().bbox == singleCollection.getExtent().get().getSpatial().get().bbox
+        allCollections.getCollections().get(0).extent.get().getSpatial().get().crs == singleCollection.extent.get().getSpatial().get().crs
+        allCollections.getCollections().get(0).extent.get().getTemporal().get().interval == singleCollection.extent.get().getTemporal().get().interval
+        allCollections.getCollections().get(0).extent.get().getTemporal().get().trs == singleCollection.extent.get().getTemporal().get().trs
     }
 
 
@@ -142,21 +161,29 @@ class OgcApiCoreSpecCollections extends Specification {
                         }
 
                         @Override
-                        Response getCollectionsResponse(Collections collections, OgcApi api, ApiRequestContext requestContext) {
-                            return Response.ok().entity(collections).build()
+                        ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+                            return new ImmutableApiMediaTypeContent.Builder()
+                                    .schema(new Schema())
+                                    .schemaRef("foobar")
+                                    .ogcApiMediaType(getMediaType())
+                                    .build();
                         }
 
                         @Override
-                        Response getCollectionResponse(OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
-                            return Response.ok().entity(ogcApiCollection).build()
+                        Object getCollectionsEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
+                            return collections
                         }
 
+                        @Override
+                        Object getCollectionEntity(OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
+                            return ogcApiCollection
+                        }
                     })
                 }
-                if (extensionType == OgcApiCollectionsExtension.class) {
+                if (extensionType == CollectionsExtension.class) {
                     return ImmutableList.of((T) new CollectionsExtensionFeatures(registry))
                 }
-                if (extensionType == OgcApiCollectionExtension.class) {
+                if (extensionType == CollectionExtension.class) {
                     FeaturesCoreProviders providers = new FeaturesCoreProviders() {
                         @Override
                         FeatureProvider2 getFeatureProvider(OgcApiDataV2 apiData) {
@@ -180,6 +207,15 @@ class OgcApiCoreSpecCollections extends Specification {
                             return new ImmutableApiMediaType.Builder()
                                     .type(MediaType.APPLICATION_JSON_TYPE)
                                     .build()
+                        }
+
+                        @Override
+                        ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+                            return new ImmutableApiMediaTypeContent.Builder()
+                                    .schema(new Schema())
+                                    .schemaRef("foobar")
+                                    .ogcApiMediaType(getMediaType())
+                                    .build();
                         }
 
                         @Override
@@ -217,7 +253,7 @@ class OgcApiCoreSpecCollections extends Specification {
     static def createDatasetData() {
         return new ImmutableOgcApiDataV2.Builder()
                 .id('test')
-                .serviceType('WFS3')
+                .serviceType('OGC_API')
                 .putCollections('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                         .id('featureType1')
                         .label('FeatureType 1')
@@ -226,14 +262,16 @@ class OgcApiCoreSpecCollections extends Specification {
                                 .spatial(new BoundingBox())
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
-                        .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder()
+                        .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder()
+                                .enabled(true)
                                 .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
                                         .spatial(ImmutableList.of('geometry'))
                                         .temporal(ImmutableList.of('datum_open'))
                                         .build())
                                 .build())
+                        .addExtensions(new ImmutableJsonConfiguration.Builder().enabled(true).build())
                         .build())
-                .addExtensions(new ImmutableOgcApiFeaturesCoreConfiguration.Builder().build())
+                .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder().enabled(true).build())
                 .build()
     }
 
@@ -245,13 +283,13 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
     static def createCollectionsEndpoint() {
-        def endpoint = new OgcApiEndpointCollections(registry)
+        def endpoint = new EndpointCollections(registry)
         endpoint.queryHandler = ogcApiQueriesHandlerCollections
         return endpoint
     }
 
     static def createCollectionEndpoint() {
-        def endpoint = new OgcApiEndpointCollection(registry)
+        def endpoint = new EndpointCollection(registry)
         endpoint.queryHandler = ogcApiQueriesHandlerCollections
         return endpoint
     }

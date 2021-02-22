@@ -346,7 +346,9 @@ class StylesManagerSpec extends Specification{
                 "      \"type\": \"fill\",\n" +
                 "      \"source\": \"default\",\n" +
                 "      \"source-layer\": \"collectionId \",\n" +
-                "      \"layout\": \"string\",\n" +
+                "      \"layout\": {\n" +
+                "        \"foo\": \"bar\"\n" +
+                "      },\n" +
                 "      \"paint\": {\n" +
                 "        \"fill-color\": \"#11083b\"\n" +
                 "      }\n" +
@@ -356,7 +358,9 @@ class StylesManagerSpec extends Specification{
                 "      \"type\": \"fill\",\n" +
                 "      \"source\": \"default\",\n" +
                 "      \"source-layer\": \"collectionId \",\n" +
-                "      \"layout\": \"string\",\n" +
+                "      \"layout\": {\n" +
+                "        \"foo\": \"bar\"\n" +
+                "      },\n" +
                 "      \"paint\": {\n" +
                 "        \"fill-color\": \"#11083b\"\n" +
                 "      }\n" +
