@@ -16,18 +16,6 @@ sourceSets {
   }
 }
 
-jar {
-    manifest {
-        attributes(
-            'X-Web-Resource-Version': '1.1',
-            'X-Web-Resource': '/manager;/manager',
-            'X-Web-Resource-Default-Page': 'index.html',
-            'X-Web-Resource-Root-Redirect': '/'
-        )
-    }
-}
-
-
 yarn_install {
   execOverrides {
     it.workingDir = 'src/main/javascript'
