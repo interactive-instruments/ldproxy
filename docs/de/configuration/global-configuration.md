@@ -8,6 +8,8 @@ Die Konfigurationsdatei `cfg.yml` befindet sich im Daten-Verzeichnis.
 |`server` |object | |Konfiguration des [Webserver](#webserver)
 |`httpClient` |object | |Konfiguration des [HTTP-Client](#http-client)
 |`logging` |object | |Konfiguration des [Logging](#logging)
+|`auth` |object | |Konfiguration der [Autorisierung](#auth)
+|`manager` |object | |Konfiguration des [Manager](#manager)
 
 <a name="store"></a>
 
@@ -290,3 +292,20 @@ logging:
 ```
 
 Weitere mögliche Werte sind `OFF`, `ERROR` und `WARN`.
+
+<a name="auth"></a>
+
+## Autorisierung
+
+|Eigenschaft |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`jwtSigningKey` |string |Generiert beim Start |*HMAC SHA* Schlüssel zu Signierung der *JSON Web Token*. Falls nicht gesetzt wird bei jedem Start ein neuer Schlüssel generiert und alle ausgegebenen Tokens werden ungültig. Der generierte Schlüssel wird im Log als Warnung ausgegeben und kann einfach von dort in die Konfiguration kopiert werden.
+|`allowAnonymousAccess` |boolean |`false` |Anonymen Zugriff auf abgesicherte Ressourcen erlauben?
+
+<a name="manager"></a>
+
+## Manager
+
+|Eigenschaft |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`enabled` |boolean |`true` |Soll die Manager-App zur Verwaltung der Konfiguration aktiviert werden (siehe [Manager](README.md#manager))?
