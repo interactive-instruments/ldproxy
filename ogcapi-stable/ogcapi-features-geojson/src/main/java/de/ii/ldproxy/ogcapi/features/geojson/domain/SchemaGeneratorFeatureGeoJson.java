@@ -93,106 +93,110 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                     .getTypes()
                     .get(featureTypeId);
 
-            // TODO support mutables schema
-            ContextJsonSchema featureContext;
-            boolean flatten = false;
-            if (type== SCHEMA_TYPE.QUERYABLES) {
-                // the querables schema is always flattened and we only return the queryables
-                flatten = true;
-                Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
-                Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
-                if (featuresCoreConfiguration.isPresent()) {
-                    queryables = featuresCoreConfiguration.get().getQueryables();
-                }
-                List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
-                featureContext = processPropertiesJsonSchema(featureType, type, true, allQueryables);
-            } else {
-                // the returnables schema
-                // flattening depends on the GeoJSON configuration
-                flatten = type==SCHEMA_TYPE.RETURNABLES_FLAT;
-
-                featureContext = processPropertiesJsonSchema(featureType, type,true, null);
-            }
-
-            ImmutableMap.Builder<String, JsonSchema> definitionsMapBuilder = ImmutableMap.builder();
-            Set<FeatureSchema> processed = new HashSet<>();
-            Set<FeatureSchema> current = featureContext.definitions;
-
-            final boolean[] linkAdded = {false};
-            if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
-                // we know, we will reference links
-                definitionsMapBuilder.put("Link", LINK_JSON);
-                linkAdded[0] = true;
-            }
-
-            while (!flatten && !current.isEmpty()) {
-                Set<FeatureSchema> next = new HashSet<>();
-                current.stream()
-                        .filter(defObject -> !processed.contains(defObject))
-                        .forEach(defObject -> {
-                            if (defObject.getObjectType().isPresent() && defObject.getObjectType().get().equals("Link")) {
-                                if (!linkAdded[0]) {
-                                    definitionsMapBuilder.put("Link", LINK_JSON);
-                                    linkAdded[0] = true;
-                                }
-                            } else {
-                                ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, type, false, null);
-                                definitionsMapBuilder.put(definitionContext.objectKey, ImmutableJsonSchemaObject.builder()
-                                                                                                                .title(defObject.getLabel())
-                                                                                                                .description(defObject.getDescription())
-                                                                                                                .required(ImmutableList.<String>builder()
-                                                                                                                                  .addAll(definitionContext.required)
-                                                                                                                                  .build())
-                                                                                                                .properties(definitionContext.properties)
-                                                                                                                .build());
-                                next.addAll(definitionContext.definitions);
-                            }
-                            processed.add(defObject);
-                        });
-                current = next;
-            }
-
             schemaMapJson.get(apiHashCode)
                          .get(collectionId)
-                         .put(type, ImmutableJsonSchemaObject.builder()
-                                                             .schema("https://json-schema.org/draft/2019-09/schema")
-                                                             .id(schemaUri)
-                                                             .title(collectionData.getLabel())
-                                                             .description(collectionData.getDescription().orElse(featureType.getDescription().orElse("")))
-                                                             .required(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
-                                                                               ImmutableList.<String>builder()
-                                                                                    .add("type", "geometry", "properties")
-                                                                                    .build() :
-                                                                               ImmutableList.of())
-                                                             .properties(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
-                                                                 ImmutableMap.<String,JsonSchema>builder()
-                                                                             .put("type", ImmutableJsonSchemaString.builder()
-                                                                                                                   .enums(ImmutableList.<String>builder()
-                                                                                                                                  .add("Feature")
-                                                                                                                                  .build())
-                                                                                                                   .build())
-                                                                             .put("id", featureContext.id)
-                                                                             .put("links", ImmutableJsonSchemaArray.builder()
-                                                                                                                   .items(ImmutableJsonSchemaRef.builder()
-                                                                                                                                                .ref("#/"+DEFINITIONS_TOKEN+"/Link")
-                                                                                                                                                .build())
-                                                                                                                   .build())
-                                                                             .put("geometry", featureContext.geometry)
-                                                                             .put("properties", ImmutableJsonSchemaObject.builder()
-                                                                                                                         .required(ImmutableList.<String>builder()
-                                                                                                                                           .addAll(featureContext.required)
-                                                                                                                                           .build())
-                                                                                                                         .properties(featureContext.properties)
-                                                                                                                         .patternProperties(featureContext.patternProperties)
-                                                                                                                         .build())
-                                                                             .build() :
-                                                                ImmutableMap.<String,JsonSchema>builder()
-                                                                            .putAll(featureContext.properties)
-                                                                            .build())
-                                                             .defs(definitionsMapBuilder.build())
-                                                             .build());
+                         .put(type, getSchemaJson(featureType, collectionData, schemaUri, type));
         }
         return schemaMapJson.get(apiHashCode).get(collectionId).get(type);
+    }
+
+    public JsonSchemaObject getSchemaJson(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData, Optional<String> schemaUri, SCHEMA_TYPE type) {
+        // TODO support mutables schema
+        ContextJsonSchema featureContext;
+        boolean flatten = false;
+        if (type== SCHEMA_TYPE.QUERYABLES) {
+            // the querables schema is always flattened and we only return the queryables
+            flatten = true;
+            Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
+            Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
+            if (featuresCoreConfiguration.isPresent()) {
+                queryables = featuresCoreConfiguration.get().getQueryables();
+            }
+            List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
+            featureContext = processPropertiesJsonSchema(featureSchema, type, true, allQueryables);
+        } else {
+            // the returnables schema
+            // flattening depends on the GeoJSON configuration
+            flatten = type==SCHEMA_TYPE.RETURNABLES_FLAT;
+
+            featureContext = processPropertiesJsonSchema(featureSchema, type,true, null);
+        }
+
+        ImmutableMap.Builder<String, JsonSchema> definitionsMapBuilder = ImmutableMap.builder();
+        Set<FeatureSchema> processed = new HashSet<>();
+        Set<FeatureSchema> current = featureContext.definitions;
+
+        final boolean[] linkAdded = {false};
+        if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
+            // we know, we will reference links
+            definitionsMapBuilder.put("Link", LINK_JSON);
+            linkAdded[0] = true;
+        }
+
+        while (!flatten && !current.isEmpty()) {
+            Set<FeatureSchema> next = new HashSet<>();
+            current.stream()
+                    .filter(defObject -> !processed.contains(defObject))
+                    .forEach(defObject -> {
+                        if (defObject.getObjectType().isPresent() && defObject.getObjectType().get().equals("Link")) {
+                            if (!linkAdded[0]) {
+                                definitionsMapBuilder.put("Link", LINK_JSON);
+                                linkAdded[0] = true;
+                            }
+                        } else {
+                            ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, type, false, null);
+                            definitionsMapBuilder.put(definitionContext.objectKey, ImmutableJsonSchemaObject.builder()
+                                    .title(defObject.getLabel())
+                                    .description(defObject.getDescription())
+                                    .required(ImmutableList.<String>builder()
+                                            .addAll(definitionContext.required)
+                                            .build())
+                                    .properties(definitionContext.properties)
+                                    .build());
+                            next.addAll(definitionContext.definitions);
+                        }
+                        processed.add(defObject);
+                    });
+            current = next;
+        }
+
+        return ImmutableJsonSchemaObject.builder()
+                .schema("https://json-schema.org/draft/2019-09/schema")
+                .id(schemaUri)
+                .title(collectionData.getLabel())
+                .description(collectionData.getDescription().orElse(featureSchema.getDescription().orElse("")))
+                .required(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
+                        ImmutableList.<String>builder()
+                                .add("type", "geometry", "properties")
+                                .build() :
+                        ImmutableList.of())
+                .properties(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
+                        ImmutableMap.<String,JsonSchema>builder()
+                                .put("type", ImmutableJsonSchemaString.builder()
+                                        .enums(ImmutableList.<String>builder()
+                                                .add("Feature")
+                                                .build())
+                                        .build())
+                                .put("id", featureContext.id)
+                                .put("links", ImmutableJsonSchemaArray.builder()
+                                        .items(ImmutableJsonSchemaRef.builder()
+                                                .ref("#/"+DEFINITIONS_TOKEN+"/Link")
+                                                .build())
+                                        .build())
+                                .put("geometry", featureContext.geometry)
+                                .put("properties", ImmutableJsonSchemaObject.builder()
+                                        .required(ImmutableList.<String>builder()
+                                                .addAll(featureContext.required)
+                                                .build())
+                                        .properties(featureContext.properties)
+                                        .patternProperties(featureContext.patternProperties)
+                                        .build())
+                                .build() :
+                        ImmutableMap.<String,JsonSchema>builder()
+                                .putAll(featureContext.properties)
+                                .build())
+                .defs(definitionsMapBuilder.build())
+                .build();
     }
 
     private JsonSchema getJsonSchemaForLiteralType(SchemaBase.Type type, Optional<String> label, Optional<String> description) {
