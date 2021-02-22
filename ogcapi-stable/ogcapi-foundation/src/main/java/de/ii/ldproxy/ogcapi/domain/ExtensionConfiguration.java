@@ -46,6 +46,7 @@ public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration
 
     @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     default boolean isEnabled() {
         return Objects.equals(getEnabled(), true);
     }

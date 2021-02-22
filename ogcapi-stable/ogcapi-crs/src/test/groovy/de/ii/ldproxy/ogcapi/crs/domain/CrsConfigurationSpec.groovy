@@ -1,35 +1,61 @@
-/*
- * Copyright 2020 interactive instruments GmbH
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- */
 package de.ii.ldproxy.ogcapi.crs.domain
 
+import com.google.common.collect.ImmutableList
+import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.xtraplatform.crs.domain.EpsgCrs
 
-import spock.lang.Specification
+@SuppressWarnings('ClashingTraitMethods')
+class CrsConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<CrsConfiguration>, MergeMinimal<CrsConfiguration>, MergeSimple<CrsConfiguration>, MergeCollection<CrsConfiguration> {
 
-class CrsConfigurationSpec extends Specification {
-
-    def 'merge differing'() {
-
-        when: "merging a full configuration into another full configuration with differing values"
-        def actual = CrsConfigurationFixtures.FULL_2.mergeInto(CrsConfigurationFixtures.FULL_1);
-
-        then: 'simple values from the source configuration should override target values, maps and arrays should be merged'
-
-        actual == CrsConfigurationFixtures.FULL_2_FULL_1_EXPECTED
+    @Override
+    CrsConfiguration getFull() {
+        return new ImmutableCrsConfiguration.Builder()
+                .enabled(false)
+                .addAdditionalCrs(EpsgCrs.of(4326))
+                .build()
     }
 
-    def 'merge minimal'() {
-
-        when: "merging a minimal configuration into a full configuration"
-        def actual = CrsConfigurationFixtures.ENABLED_ONLY.mergeInto(CrsConfigurationFixtures.FULL_1);
-
-        then: 'null values should not override target values'
-
-        actual == CrsConfigurationFixtures.ENABLED_FULL_1_EXPECTED
+    @Override
+    CrsConfiguration getMinimal() {
+        return new ImmutableCrsConfiguration.Builder()
+                .build()
     }
 
+    @Override
+    CrsConfiguration getMinimalFullMerged() {
+        return getFull()
+    }
+
+    @Override
+    CrsConfiguration getSimple() {
+        return new ImmutableCrsConfiguration.Builder()
+                .enabled(true)
+                .build()
+    }
+
+    @Override
+    CrsConfiguration getSimpleFullMerged() {
+        return new ImmutableCrsConfiguration.Builder()
+                .from(getFull())
+                .enabled(true)
+                .build()
+    }
+
+    @Override
+    CrsConfiguration getCollection() {
+        return new ImmutableCrsConfiguration.Builder()
+                .addAdditionalCrs(EpsgCrs.of(4258))
+                .build()
+    }
+
+    @Override
+    CrsConfiguration getCollectionFullMerged() {
+        return new ImmutableCrsConfiguration.Builder()
+                .from(getFull())
+                .additionalCrs(ImmutableList.of(
+                        EpsgCrs.of(4326),
+                        EpsgCrs.of(4258)
+                ))
+                .build()
+    }
 }

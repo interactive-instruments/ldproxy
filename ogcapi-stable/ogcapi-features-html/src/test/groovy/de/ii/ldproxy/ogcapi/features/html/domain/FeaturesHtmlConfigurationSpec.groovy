@@ -7,29 +7,68 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.domain
 
+import com.google.common.collect.ImmutableMap
+import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutablePropertyTransformation
 
-import spock.lang.Specification
+@SuppressWarnings('ClashingTraitMethods')
+class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<FeaturesHtmlConfiguration>, MergeMinimal<FeaturesHtmlConfiguration>, MergeSimple<FeaturesHtmlConfiguration>, MergeMap<FeaturesHtmlConfiguration> {
 
-class FeaturesHtmlConfigurationSpec extends Specification {
-
-    def 'merge differing'() {
-
-        when: "merging a full configuration into another full configuration with differing values"
-        def actual = FeaturesHtmlConfigurationFixtures.FULL_2.mergeInto(FeaturesHtmlConfigurationFixtures.FULL_1);
-
-        then: 'simple values from the source configuration should override target values, maps should be merged'
-
-        actual == FeaturesHtmlConfigurationFixtures.FULL_2_FULL_1_EXPECTED
+    @Override
+    FeaturesHtmlConfiguration getFull() {
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+                .enabled(true)
+                .layout(FeaturesHtmlConfiguration.LAYOUT.CLASSIC)
+                .schemaOrgEnabled(true)
+                .itemLabelFormat("foo")
+                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().rename("bar").build())
+                .build()
     }
 
-    def 'merge nullables'() {
-
-        when: "merging a configuration with null values into a full configuration"
-        def actual = FeaturesHtmlConfigurationFixtures.ENABLED_ONLY.mergeInto(FeaturesHtmlConfigurationFixtures.FULL_1);
-
-        then: 'null values should not override target values'
-
-        actual == FeaturesHtmlConfigurationFixtures.ENABLED_FULL_1_EXPECTED
+    @Override
+    FeaturesHtmlConfiguration getMinimal() {
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+                .build()
     }
 
+    @Override
+    FeaturesHtmlConfiguration getMinimalFullMerged() {
+        return getFull()
+    }
+
+    @Override
+    FeaturesHtmlConfiguration getSimple() {
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+                .enabled(false)
+                .layout(FeaturesHtmlConfiguration.LAYOUT.COMPLEX_OBJECTS)
+                .schemaOrgEnabled(false)
+                .itemLabelFormat("bar")
+                .build()
+    }
+
+    @Override
+    FeaturesHtmlConfiguration getSimpleFullMerged() {
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+                .from(getFull())
+                .from(getSimple())
+                .build()
+    }
+
+    @Override
+    FeaturesHtmlConfiguration getMap() {
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+                .putTransformations("bar", new ImmutablePropertyTransformation.Builder().rename("foo").build())
+                .build()
+    }
+
+    @Override
+    FeaturesHtmlConfiguration getMapFullMerged() {
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+                .from(getFull())
+                .transformations(ImmutableMap.of(
+                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").build(),
+                        "bar", new ImmutablePropertyTransformation.Builder().rename("foo").build()
+                ))
+                .build()
+    }
 }
