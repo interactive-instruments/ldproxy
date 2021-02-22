@@ -1,25 +1,28 @@
-package de.ii.ldproxy.ogcapi.features.core.domain
+package de.ii.ldproxy.ogcapi.features.geojson.domain
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi
 import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo
 import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
 import de.ii.xtraplatform.features.domain.SchemaBase
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry
-import io.swagger.v3.oas.models.media.Schema
 import spock.lang.Shared
 import spock.lang.Specification
 
-class SchemaGeneratorFeatureOpenApiSpec extends Specification {
+class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
 
-    @Shared SchemaGeneratorFeatureOpenApi schemaGenerator
+    @Shared SchemaGeneratorFeatureGeoJson schemaGenerator
 
     def setupSpec() {
-        schemaGenerator = new SchemaGeneratorFeatureOpenApi()
+        schemaGenerator = new SchemaGeneratorFeatureGeoJson()
         schemaGenerator.schemaInfo = new SchemaInfo()
     }
 
-    def 'Test Open API schema generation for QUERYABLES type'() {
+    def 'Test GeoJSON schema generation for the QUERYABLES type'() {
         given:
         FeatureSchema featureSchema = new ImmutableFeatureSchema.Builder()
                 .name("test-name")
@@ -40,26 +43,26 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
                         .build())
                 .build()
         when:
-        Schema schema = schemaGenerator.getSchemaOpenApi(featureSchema, collectionData, SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES)
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES)
         then:
-        Objects.nonNull(schema)
-        schema.getTitle() == "test-label"
-        schema.getDescription() == "foobar"
-        schema.getType() == "object"
-        schema.getProperties().get("date").getType() == "string"
-        schema.getProperties().get("date").getFormat() == "date-time"
+        Objects.nonNull(jsonSchemaObject)
+        jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
+        jsonSchemaObject.getTitle().get() == "test-label"
+        jsonSchemaObject.getDescription().get() == "foobar"
+        JsonSchemaString date = jsonSchemaObject.getProperties().get("date") as JsonSchemaString
+        date.getFormat().get() == "date-time,date"
     }
 
-    def 'Test Open API schema generation for the RETURNABLES type'() {
+    def 'Test GeoJSON schema generation for the RETURNABLES type'() {
         given:
         FeatureSchema featureSchema = new ImmutableFeatureSchema.Builder()
                 .name("test-name")
                 .description("foobar")
                 .putPropertyMap("property1", new ImmutableFeatureSchema.Builder()
                         .name("property1")
+                        .type(SchemaBase.Type.OBJECT)
                         .putPropertyMap("nested1",new ImmutableFeatureSchema.Builder().name("nested1").type(SchemaBase.Type.STRING).build())
                         .putPropertyMap("nested2", new ImmutableFeatureSchema.Builder().name("nested2").type(SchemaBase.Type.FLOAT).build())
-                        .type(SchemaBase.Type.OBJECT)
                         .build())
                 .putPropertyMap("property2", new ImmutableFeatureSchema.Builder()
                         .name("geometry")
@@ -78,18 +81,20 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
                 .label("test-label")
                 .build()
         when:
-        Schema schema = schemaGenerator.getSchemaOpenApi(featureSchema, collectionData, SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES)
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES)
         then:
-        Objects.nonNull(schema)
-        schema.getRequired() == ["type", "geometry", "properties"]
-        schema.getProperties().get("properties").getProperties().get("property1").getProperties().get("nested1").getType() == "string"
-        schema.getProperties().get("properties").getProperties().get("property1").getProperties().get("nested2").getType() == "number"
-        schema.getProperties().get("type").getType() == "string"
-        schema.getProperties().get("id").getType() == "string"
-        schema.getProperties().get("links").getType() == "array"
+        Objects.nonNull(jsonSchemaObject)
+        jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
+        jsonSchemaObject.getTitle().get() == "test-label"
+        jsonSchemaObject.getDescription().get() == "foobar"
+        jsonSchemaObject.getRequired() == ["type", "geometry", "properties"]
+        Objects.nonNull(jsonSchemaObject.getProperties().get("id"))
+        JsonSchemaRef geometry = jsonSchemaObject.getProperties().get("geometry") as JsonSchemaRef
+        geometry.getRef() == "https://geojson.org/schema/Point.json"
+        Objects.nonNull(jsonSchemaObject.getProperties().get("properties").getProperties().get("property1"))
     }
 
-    def 'Test Open API schema generation for the RETURNABLES_FLAT type'() {
+    def 'Test GeoJSON schema generation for the RETURNABLES_FLAT type'() {
         FeatureSchema featureSchema = new ImmutableFeatureSchema.Builder()
                 .name("test-name")
                 .description("foobar")
@@ -116,15 +121,20 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
                 .label("test-label")
                 .build()
         when:
-        Schema schema = schemaGenerator.getSchemaOpenApi(featureSchema, collectionData, SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT)
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT)
         then:
-        Objects.nonNull(schema)
-        schema.getRequired() == ["type", "geometry", "properties"]
-        schema.getProperties().get("properties").getProperties().get("property1.nested1").getType() == "string"
-        schema.getProperties().get("properties").getProperties().get("property1.nested2").getType() == "number"
-        schema.getProperties().get("type").getType() == "string"
-        schema.getProperties().get("id").getType() == "string"
-        schema.getProperties().get("links").getType() == "array"
+        Objects.nonNull(jsonSchemaObject)
+        jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
+        jsonSchemaObject.getTitle().get() == "test-label"
+        jsonSchemaObject.getDescription().get() == "foobar"
+        jsonSchemaObject.getRequired() == ["type", "geometry", "properties"]
+        jsonSchemaObject.getProperties().get("id").getTitle().get() == "id"
+        JsonSchemaRef geometry = jsonSchemaObject.getProperties().get("geometry") as JsonSchemaRef
+        geometry.getRef() == "https://geojson.org/schema/Point.json"
+        JsonSchemaString nested1 = jsonSchemaObject.getProperties().get("properties").getProperties().get("property1.nested1") as JsonSchemaString
+        nested1.getTitle().get() == "property1 > nested1"
+        JsonSchemaNumber nested2 = jsonSchemaObject.getProperties().get("properties").getProperties().get("property1.nested2") as JsonSchemaNumber
+        nested2.getTitle().get() == "property1 > nested2"
     }
 
 }
