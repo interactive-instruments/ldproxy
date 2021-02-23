@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,7 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
-class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<FeaturesHtmlConfiguration>, MergeMinimal<FeaturesHtmlConfiguration>, MergeSimple<FeaturesHtmlConfiguration>, MergeMap<FeaturesHtmlConfiguration> {
+class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<FeaturesHtmlConfiguration>, MergeMinimal<FeaturesHtmlConfiguration>, MergeSimple<FeaturesHtmlConfiguration>, MergeMap<FeaturesHtmlConfiguration>, MergeNested<FeaturesHtmlConfiguration> {
 
     @Override
     FeaturesHtmlConfiguration getFull() {
@@ -68,6 +68,23 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
                 .transformations(ImmutableMap.of(
                         "foo", new ImmutablePropertyTransformation.Builder().rename("bar").build(),
                         "bar", new ImmutablePropertyTransformation.Builder().rename("foo").build()
+                ))
+                .build()
+    }
+
+    @Override
+    FeaturesHtmlConfiguration getNested() {
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().codelist("cl").build())
+                .build()
+    }
+
+    @Override
+    FeaturesHtmlConfiguration getNestedFullMerged() {
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+                .from(getFull())
+                .transformations(ImmutableMap.of(
+                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").codelist("cl").build()
                 ))
                 .build()
     }

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -150,7 +151,6 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
                                                                                                              .from(this);
 
         Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getTransformations());
-
         getTransformations().forEach((key, transformation) -> {
             if (mergedTransformations.containsKey(key)) {
                 mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
@@ -158,7 +158,6 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
                 mergedTransformations.put(key, transformation);
             }
         });
-
         builder.transformations(mergedTransformations);
 
         if (getQueryables().isPresent() && ((FeaturesCoreConfiguration) source).getQueryables().isPresent()) {

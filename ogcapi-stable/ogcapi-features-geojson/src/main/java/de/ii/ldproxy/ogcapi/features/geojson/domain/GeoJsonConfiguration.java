@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -38,5 +41,25 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureTra
     @Override
     default Builder getBuilder() {
         return new ImmutableGeoJsonConfiguration.Builder();
+    }
+
+    @Override
+    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+        ImmutableGeoJsonConfiguration.Builder builder = new ImmutableGeoJsonConfiguration.Builder()
+            .from(source)
+            .from(this);
+
+        Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(
+            ((GeoJsonConfiguration) source).getTransformations());
+        getTransformations().forEach((key, transformation) -> {
+            if (mergedTransformations.containsKey(key)) {
+                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
+            } else {
+                mergedTransformations.put(key, transformation);
+            }
+        });
+        builder.transformations(mergedTransformations);
+
+        return builder.build();
     }
 }

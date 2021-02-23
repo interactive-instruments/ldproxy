@@ -10,40 +10,43 @@ package de.ii.ldproxy.ogcapi.common.domain;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Lists;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.Link;
-import org.immutables.value.Value;
-
 import java.util.List;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableCommonConfiguration.Builder.class)
 public interface CommonConfiguration extends ExtensionConfiguration {
 
-    abstract class Builder extends ExtensionConfiguration.Builder {
-    }
+  abstract class Builder extends ExtensionConfiguration.Builder {
 
-    @JsonMerge(OptBoolean.FALSE)
-    List<Link> getAdditionalLinks();
+  }
 
-    @Override
-    default Builder getBuilder() {
-        return new ImmutableCommonConfiguration.Builder();
-    }
+  @JsonMerge(OptBoolean.FALSE)
+  List<Link> getAdditionalLinks();
 
-    @Override
-    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        ImmutableCommonConfiguration.Builder builder = new ImmutableCommonConfiguration.Builder().from(source)
-                                                                                                 .enabled(getEnabled());
+  @Override
+  default Builder getBuilder() {
+    return new ImmutableCommonConfiguration.Builder();
+  }
 
-        getAdditionalLinks().forEach(link -> {
-            if (!((CommonConfiguration) source).getAdditionalLinks()
-                                               .contains(link)) {
-                builder.addAdditionalLinks(link);
-            }
-        });
+  @Override
+  default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+    ImmutableCommonConfiguration.Builder builder = new ImmutableCommonConfiguration.Builder()
+        .from(source)
+        .from(this);
 
-        return builder.build();
-    }
+    List<Link> links = Lists.newArrayList(((CommonConfiguration) source).getAdditionalLinks());
+    getAdditionalLinks().forEach(link -> {
+      if (!links.contains(link)) {
+        links.add(link);
+      }
+    });
+    builder.additionalLinks(links);
+
+    return builder.build();
+  }
 }
