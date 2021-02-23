@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Lists;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
@@ -83,9 +84,13 @@ public interface StylesConfiguration extends ExtensionConfiguration {
                 .from(source)
                 .from(this);
 
-        //TODO: this is a work-around for default from behaviour (list is not reset, which leads to duplicates in the list of encodings)
-        if (!getStyleEncodings().isEmpty())
-            builder.styleEncodings(getStyleEncodings());
+        List<String> styleEncodings = Lists.newArrayList(((StylesConfiguration) source).getStyleEncodings());
+        getStyleEncodings().forEach(styleEncoding -> {
+            if (!styleEncodings.contains(styleEncoding)) {
+                styleEncodings.add(styleEncoding);
+            }
+        });
+        builder.styleEncodings(styleEncodings);
 
         return builder.build();
     }

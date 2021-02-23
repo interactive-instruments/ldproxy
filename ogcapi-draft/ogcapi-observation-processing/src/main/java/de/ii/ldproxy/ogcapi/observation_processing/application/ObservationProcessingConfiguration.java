@@ -7,10 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.application;
 
+import com.fasterxml.jackson.annotation.JsonMerge;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Lists;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.ProcessDocumentation;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -24,8 +31,10 @@ public interface ObservationProcessingConfiguration extends ExtensionConfigurati
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    @JsonMerge(OptBoolean.FALSE)
     List<Variable> getVariables();
 
+    @JsonMerge(OptBoolean.FALSE)
     List<Double> getDefaultBbox();
 
     Optional<String> getDefaultCoordPosition();
@@ -38,6 +47,7 @@ public interface ObservationProcessingConfiguration extends ExtensionConfigurati
 
     Map<String, ProcessDocumentation> getDocumentation();
 
+    @JsonMerge(OptBoolean.FALSE)
     List<String> getResultEncodings();
 
     @Nullable
@@ -60,12 +70,41 @@ public interface ObservationProcessingConfiguration extends ExtensionConfigurati
                 .from(source)
                 .from(this);
 
-        //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
-        // try to find a better solution that also enables deep merges
-        if (getDocumentation()!=null)
-            builder.documentation(getDocumentation());
-        if (!getResultEncodings().isEmpty())
-            builder.resultEncodings(getResultEncodings());
+        Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(
+                ((ObservationProcessingConfiguration) source).getTransformations());
+        getTransformations().forEach((key, transformation) -> {
+            if (mergedTransformations.containsKey(key)) {
+                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
+            } else {
+                mergedTransformations.put(key, transformation);
+            }
+        });
+        builder.transformations(mergedTransformations);
+
+        Map<String, ProcessDocumentation> mergedDocumentation = new LinkedHashMap<>(
+                ((ObservationProcessingConfiguration) source).getDocumentation());
+        getDocumentation().forEach(mergedDocumentation::putIfAbsent);
+        builder.documentation(mergedDocumentation);
+
+        if (!getDefaultBbox().isEmpty()) {
+            builder.defaultBbox(getDefaultBbox());
+        }
+
+        List<Variable> variables = Lists.newArrayList(((ObservationProcessingConfiguration) source).getVariables());
+        getVariables().forEach(variable -> {
+            if (!variables.contains(variable)) {
+                variables.add(variable);
+            }
+        });
+        builder.variables(variables);
+
+        List<String> resultEncodings = Lists.newArrayList(((ObservationProcessingConfiguration) source).getResultEncodings());
+        getResultEncodings().forEach(resultEncoding -> {
+            if (!resultEncodings.contains(resultEncoding)) {
+                resultEncodings.add(resultEncoding);
+            }
+        });
+        builder.resultEncodings(resultEncodings);
 
         return builder.build();
     }
