@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -63,5 +64,10 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
     public Response getApiDefinitionResponse(OgcApiDataV2 apiData,
                                              ApiRequestContext apiRequestContext) {
         return openApiDefinition.getOpenApi("json", apiRequestContext.getUriCustomizer().copy(), apiData);
+    }
+
+    @Override
+    public Optional<String> getRel() {
+        return Optional.of("service-desc");
     }
 }
