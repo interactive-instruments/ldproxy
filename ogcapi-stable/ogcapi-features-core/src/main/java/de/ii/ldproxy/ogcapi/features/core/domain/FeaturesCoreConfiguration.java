@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -20,23 +19,31 @@ import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Value.Immutable
+@Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCoreConfiguration.Builder.class)
 public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    List<String> ITEM_TYPES = ImmutableList.of("feature", "record");
+
     enum DefaultCrs {CRS84, CRS84h}
+
+    enum ItemType {feature, record}
 
     int MINIMUM_PAGE_SIZE = 1;
     int DEFAULT_PAGE_SIZE = 10;
     int MAX_PAGE_SIZE = 10000;
+    String PARAMETER_Q = "q";
     String PARAMETER_BBOX = "bbox";
     String PARAMETER_DATETIME = "datetime";
     String DATETIME_INTERVAL_SEPARATOR = "/";
@@ -65,6 +72,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
 
     @Nullable
     Boolean getShowsFeatureSelfLink();
+
+    Optional<ItemType> getItemType();
 
     Optional<FeaturesCollectionQueryables> getQueryables();
 
@@ -108,11 +117,13 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
             }
 
             queryables.getSpatial()
-                      .forEach(spatial -> builder.put(spatial, spatial));
+                      .forEach(property -> builder.put(property, property));
             queryables.getTemporal()
-                      .forEach(temporal -> builder.put(temporal, temporal));
+                      .forEach(property -> builder.put(property, property));
+            queryables.getQ()
+                      .forEach(property -> builder.put(property, property));
             queryables.getOther()
-                      .forEach(other -> builder.put(other, other));
+                      .forEach(property -> builder.put(property, property));
 
             return builder.build();
         }
@@ -131,13 +142,95 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
             FeaturesCollectionQueryables queryables = getQueryables().get();
             ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
 
+            queryables.getQ()
+                      .forEach(property -> builder.put(property, property));
             queryables.getOther()
-                      .forEach(other -> builder.put(other, other));
+                      .forEach(property -> builder.put(property, property));
 
             return builder.build();
         }
 
         return ImmutableMap.of();
+    }
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default List<String> getQProperties() {
+        if (getQueryables().isPresent()) {
+            return getQueryables().get()
+                                  .getQ();
+        }
+
+        return ImmutableList.of();
+    }
+
+    default boolean hasDeprecatedQueryables() {
+        return getQueryables().orElse(FeaturesCollectionQueryables.of())
+                              .getAll()
+                              .stream()
+                              .anyMatch(key -> key.matches(".*\\[[^\\]]*\\].*"));
+    }
+
+    default List<String> normalizeQueryables(List<String> queryables, String collectionId) {
+        return queryables.stream()
+                         .map(queryable -> {
+                             if (queryable.matches(".*\\[[^\\]]*\\].*")) {
+                                 // TODO use info for now, but upgrade to warn after some time
+                                 LOGGER.info("The queryable '{}' in collection '{}' uses a deprecated style that includes square brackets for arrays. The brackets have been dropped during hydration.", queryable, collectionId);
+                                 return queryable.replaceAll("\\[[^\\]]*\\]", "");
+                             }
+                             return queryable;
+                         })
+                         .collect(Collectors.toUnmodifiableList());
+    }
+
+    default Optional<FeaturesCollectionQueryables> normalizeQueryables(String collectionId) {
+        Optional<FeaturesCollectionQueryables> queryables = getQueryables();
+        if (queryables.isPresent()) {
+            List<String> spatial = normalizeQueryables(queryables.get()
+                                                                 .getSpatial(), collectionId);
+            List<String> temporal = normalizeQueryables(queryables.get()
+                                                                  .getTemporal(), collectionId);
+            List<String> q = normalizeQueryables(queryables.get()
+                                                           .getQ(), collectionId);
+            List<String> other = normalizeQueryables(queryables.get()
+                                                               .getOther(), collectionId);
+            queryables = Optional.of(new ImmutableFeaturesCollectionQueryables.Builder()
+                    .spatial(spatial)
+                    .temporal(temporal)
+                    .q(q)
+                    .other(other)
+                    .build());
+        }
+        return queryables;
+    }
+
+    default List<String> removeQueryables(List<String> queryables, Collection<String> queryablesToRemove) {
+        return queryables.stream()
+                         .filter(queryable -> !queryablesToRemove.contains(queryable))
+                         .collect(Collectors.toUnmodifiableList());
+    }
+
+    default Optional<FeaturesCollectionQueryables> removeQueryables(Collection<String> queryablesToRemove) {
+        Optional<FeaturesCollectionQueryables> queryables = getQueryables();
+        if (queryables.isPresent()) {
+            List<String> spatial = removeQueryables(queryables.get()
+                                                              .getSpatial(), queryablesToRemove);
+            List<String> temporal = removeQueryables(queryables.get()
+                                                               .getTemporal(), queryablesToRemove);
+            List<String> q = removeQueryables(queryables.get()
+                                                        .getQ(), queryablesToRemove);
+            List<String> other = removeQueryables(queryables.get()
+                                                            .getOther(), queryablesToRemove);
+            queryables = Optional.of(new ImmutableFeaturesCollectionQueryables.Builder()
+                    .spatial(spatial)
+                    .temporal(temporal)
+                    .q(q)
+                    .other(other)
+                    .build());
+        }
+        return queryables;
     }
 
     @Override
@@ -160,11 +253,14 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
         });
         builder.transformations(mergedTransformations);
 
-        if (getQueryables().isPresent() && ((FeaturesCoreConfiguration) source).getQueryables().isPresent()) {
-            builder.queryables(getQueryables().get().mergeInto(((FeaturesCoreConfiguration) source).getQueryables()
-                                                                                                   .get()));
+        if (getQueryables().isPresent() && ((FeaturesCoreConfiguration) source).getQueryables()
+                                                                               .isPresent()) {
+            builder.queryables(getQueryables().get()
+                                              .mergeInto(((FeaturesCoreConfiguration) source).getQueryables()
+                                                                                             .get()));
         }
 
         return builder.build();
     }
+
 }

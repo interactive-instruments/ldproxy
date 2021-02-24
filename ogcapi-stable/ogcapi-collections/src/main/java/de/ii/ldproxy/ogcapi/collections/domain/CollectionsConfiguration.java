@@ -16,21 +16,28 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import java.util.List;
 import org.immutables.value.Value;
 
+import java.util.List;
+import java.util.Optional;
+
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableCollectionsConfiguration.Builder.class)
 public interface CollectionsConfiguration extends ExtensionConfiguration {
 
-  abstract class Builder extends ExtensionConfiguration.Builder {
+    abstract class Builder extends ExtensionConfiguration.Builder {
 
-  }
+    }
 
   @JsonMerge(OptBoolean.FALSE)
-  List<Link> getAdditionalLinks();
+    List<Link> getAdditionalLinks();
 
-  @Override
-  default Builder getBuilder() {
-    return new ImmutableCollectionsConfiguration.Builder();
+    Optional<Boolean> getCollectionIdAsParameter();
+
+    Optional<Boolean> getCollectionDefinitionsAreIdentical();
+
+    @Override
+    default Builder getBuilder() {
+        return new ImmutableCollectionsConfiguration.Builder();
   }
 
   @Override
@@ -48,5 +55,5 @@ public interface CollectionsConfiguration extends ExtensionConfiguration {
     builder.additionalLinks(links);
 
     return builder.build();
-  }
+    }
 }

@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -29,23 +32,9 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -56,9 +45,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * fetch the stylesheet of a style
@@ -108,6 +110,40 @@ public class EndpointStyle extends Endpoint {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(StyleFormatExtension.class);
         return formats;
+    }
+
+    @Override
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ValidationResult result = super.onStartup(apiData, apiValidation);
+
+        if (apiValidation== MODE.NONE)
+            return result;
+
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+                .from(result)
+                .mode(apiValidation);
+
+        Optional<StylesConfiguration> config = apiData.getExtension(StylesConfiguration.class);
+        if (config.isPresent()) {
+            List<String> formatLabels = getStyleFormatStream(apiData).map(format -> format.getMediaType().label())
+                                                                     .collect(Collectors.toUnmodifiableList());
+            for (String encoding : config.get().getStyleEncodings()) {
+                if (!formatLabels.contains(encoding)) {
+                    builder.addStrictErrors(MessageFormat.format("The style encoding ''{0}'' is specified in the STYLES module configuration, but the format does not exist.", encoding));
+                }
+            }
+
+            // check that the default style exists
+            String defaultStyle = config.get().getDefaultStyle();
+            if (Objects.nonNull(defaultStyle)) {
+                File stylesheet = new File( stylesStore + File.separator + apiData.getId() + File.separator + defaultStyle + "." + StyleFormatMbStyle.MEDIA_TYPE.parameter());
+                if (!stylesheet.exists()) {
+                    builder.addStrictErrors(MessageFormat.format("The default style ''{0}'' specified in the STYLES module configuration does not exist.", defaultStyle));
+                }
+            }
+        }
+
+        return builder.build();
     }
 
     @Override

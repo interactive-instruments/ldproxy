@@ -11,11 +11,13 @@ import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 public interface CollectionsFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^/collections(?:/[\\w\\-]+)?/?$";
+        return "^/collections(?:/"+COLLECTION_ID_PATTERN+")?/?$";
     }
 
     Object getCollectionsEntity(Collections collections,

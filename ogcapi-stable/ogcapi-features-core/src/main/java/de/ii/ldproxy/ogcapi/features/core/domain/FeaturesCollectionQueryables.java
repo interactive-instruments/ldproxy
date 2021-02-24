@@ -32,9 +32,15 @@ public interface FeaturesCollectionQueryables extends Buildable<FeaturesCollecti
         return new ImmutableFeaturesCollectionQueryables.Builder().from(this);
     }
 
+    static FeaturesCollectionQueryables of() {
+        return new ImmutableFeaturesCollectionQueryables.Builder().build();
+    }
+
     List<String> getSpatial();
 
     List<String> getTemporal();
+
+    List<String> getQ();
 
     List<String> getOther();
 
@@ -45,6 +51,7 @@ public interface FeaturesCollectionQueryables extends Buildable<FeaturesCollecti
         return ImmutableList.<String>builder()
                 .addAll(getSpatial())
                 .addAll(getTemporal())
+                .addAll(getQ())
                 .addAll(getOther())
                 .build();
     }

@@ -145,7 +145,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
                 throwNotAllowedOrNotFound(getMethods(service.getData(),entrypoint,subPath));
             }
 
-            Optional<String> collectionId = resource.getCollectionId();
+            Optional<String> collectionId = resource.getCollectionId(service.getData());
 
             // validate query parameters
             requestContext.getUriInfo()

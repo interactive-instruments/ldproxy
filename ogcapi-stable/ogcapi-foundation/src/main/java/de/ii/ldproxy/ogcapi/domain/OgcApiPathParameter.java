@@ -7,12 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 public interface OgcApiPathParameter extends ParameterExtension {
-    default boolean getExplodeInOpenApi() { return false; }
-    Set<String> getValues(OgcApiDataV2 apiData);
+    default boolean getExplodeInOpenApi(OgcApiDataV2 apiData) { return false; }
+    List<String> getValues(OgcApiDataV2 apiData);
     String getPattern();
 
     boolean isApplicable(OgcApiDataV2 apiData, String definitionPath);

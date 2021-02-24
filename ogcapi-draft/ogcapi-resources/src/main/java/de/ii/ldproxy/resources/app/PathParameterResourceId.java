@@ -8,7 +8,7 @@
 package de.ii.ldproxy.resources.app;
 
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
@@ -21,8 +21,8 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 
 @Component
@@ -38,8 +38,8 @@ public class PathParameterResourceId implements OgcApiPathParameter {
     }
 
     @Override
-    public Set<String> getValues(OgcApiDataV2 apiData) {
-        return ImmutableSet.of();
+    public List<String> getValues(OgcApiDataV2 apiData) {
+        return ImmutableList.of();
     }
 
     @Override

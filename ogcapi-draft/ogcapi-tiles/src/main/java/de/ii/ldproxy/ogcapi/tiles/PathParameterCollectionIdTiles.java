@@ -18,7 +18,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.text.MessageFormat;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -27,14 +27,14 @@ import java.util.stream.Collectors;
 public class PathParameterCollectionIdTiles extends AbstractPathParameterCollectionId {
 
     @Override
-    public Set<String> getValues(OgcApiDataV2 apiData) {
+    public List<String> getValues(OgcApiDataV2 apiData) {
         if (!apiCollectionMap.containsKey(apiData.hashCode())) {
             apiCollectionMap.put(apiData.hashCode(), apiData.getCollections().values()
-                    .stream()
-                    .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                    .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
-                    .map(FeatureTypeConfiguration::getId)
-                    .collect(Collectors.toSet()));
+                                                            .stream()
+                                                            .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+                                                            .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
+                                                            .map(FeatureTypeConfiguration::getId)
+                                                            .collect(Collectors.toUnmodifiableList()));
         }
 
         return apiCollectionMap.get(apiData.hashCode());

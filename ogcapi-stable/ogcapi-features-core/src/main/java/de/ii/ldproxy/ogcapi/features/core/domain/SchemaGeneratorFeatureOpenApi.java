@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
@@ -80,6 +81,12 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
             FeatureSchema featureType = featureProvider.getData()
                                                        .getTypes()
                                                        .get(featureTypeId);
+            if (Objects.isNull(featureType))
+                // Use an empty object schema as fallback, if we cannot get one from the provider
+                featureType = new ImmutableFeatureSchema.Builder()
+                                                        .name(featureTypeId)
+                                                        .type(SchemaBase.Type.OBJECT)
+                                                        .build();
 
             // TODO support mutables schema
             ContextOpenApi featureContext;
@@ -124,10 +131,15 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
             return Optional.empty();
         if (Objects.isNull(featureSchema.getProperties()))
             return Optional.empty();
-        if (!featureSchema.getProperties().containsKey(propertyName))
-            return Optional.empty();
+        if (featureSchema.getProperties().containsKey(propertyName))
+            return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
+        if (propertyName.contains("[")) {
+            String propertyPath = propertyName.replaceAll("\\[[^\\]]*\\]", "");
+            if (featureSchema.getProperties().containsKey(propertyPath))
+                return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyPath));
+        }
 
-        return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
+        return Optional.empty();
     }
 
     private class ContextOpenApi {
@@ -211,11 +223,14 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
         List<FeatureSchema> properties;
         switch (type) {
             case QUERYABLES:
-                properties = schema.getAllNestedProperties()
-                                   .stream()
-                                   .filter(property -> propertySubset.stream()
-                                                                     .anyMatch(queryableProperty -> queryableProperty.equals(propertyNameMap.get(String.join(".", property.getFullPath())))))
-                                   .collect(Collectors.toList());
+                properties = Objects.nonNull(schema) ?
+                        schema.getAllNestedProperties()
+                              .stream()
+                              .filter(property -> propertySubset.stream()
+                                                                // queryables have been normalized during hydration and there are no square brackets
+                                                                .anyMatch(queryableProperty -> queryableProperty.equals(String.join(".", property.getFullPath()))))
+                              .collect(Collectors.toList()) :
+                        ImmutableList.of();
                 break;
 
             case MUTABLES:

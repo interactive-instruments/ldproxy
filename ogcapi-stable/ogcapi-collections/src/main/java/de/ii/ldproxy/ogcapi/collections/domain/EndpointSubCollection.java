@@ -171,11 +171,32 @@ public abstract class EndpointSubCollection extends Endpoint {
     }
 
     public ImmutableList<OgcApiQueryParameter> getQueryParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
+        if (collectionId.equals("{collectionId}")) {
+            Optional<String> representativeCollectionId = getRepresentativeCollectionId(apiData);
+            if (representativeCollectionId.isEmpty())
+                return getQueryParameters(extensionRegistry, apiData, definitionPath, method);
+
+            collectionId = representativeCollectionId.get();
+        }
+        String finalCollectionId = collectionId;
         return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class)
-                .stream()
-                .filter(param -> param.isApplicable(apiData, definitionPath, collectionId, method))
-                .sorted(Comparator.comparing(ParameterExtension::getName))
-                .collect(ImmutableList.toImmutableList());
+                                .stream()
+                                .filter(param -> param.isApplicable(apiData, definitionPath, finalCollectionId, method))
+                                .sorted(Comparator.comparing(ParameterExtension::getName))
+                                .collect(ImmutableList.toImmutableList());
+    }
+
+    protected Optional<String> getRepresentativeCollectionId(OgcApiDataV2 apiData) {
+        if (apiData.getExtension(CollectionsConfiguration.class)
+                   .filter(config -> config.getCollectionDefinitionsAreIdentical()
+                                           .orElse(false))
+                   .isPresent())
+            return Optional.ofNullable(apiData.getCollections()
+                                              .keySet()
+                                              .iterator()
+                                              .next());
+
+        return Optional.empty();
     }
 
     /* TODO do we need collection-specific path parameters? The API definitions would need to be adapted for this, too

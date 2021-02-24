@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
+import de.ii.ldproxy.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
 import org.apache.felix.ipojo.annotations.Component;

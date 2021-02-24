@@ -22,6 +22,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 public interface TileFormatExtension extends FormatExtension {
 
     @Override
@@ -46,7 +48,7 @@ public interface TileFormatExtension extends FormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^(?:/collections/[\\w\\-]+)?/tiles/\\w+/\\w+/\\w+/\\w+/?$";
+        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/tiles/\\w+/\\w+/\\w+/\\w+/?$";
     }
 
     default boolean canMultiLayer() { return false; }

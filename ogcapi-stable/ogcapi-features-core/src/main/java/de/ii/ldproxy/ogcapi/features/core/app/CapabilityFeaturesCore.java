@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -27,6 +27,7 @@ public class CapabilityFeaturesCore implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFeaturesCoreConfiguration.Builder().enabled(true)
+                                                               .itemType(FeaturesCoreConfiguration.ItemType.feature)
                                                                .defaultCrs(FeaturesCoreConfiguration.DefaultCrs.CRS84)
                                                                .minimumPageSize(MINIMUM_PAGE_SIZE)
                                                                .defaultPageSize(DEFAULT_PAGE_SIZE)

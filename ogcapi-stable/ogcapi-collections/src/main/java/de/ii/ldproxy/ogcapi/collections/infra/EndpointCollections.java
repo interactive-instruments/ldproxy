@@ -15,11 +15,13 @@ import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FoundationValidator;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceSet;
 import de.ii.ldproxy.ogcapi.domain.Link;
@@ -27,7 +29,15 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
+import java.util.List;
+import java.util.Optional;
+import javax.ws.rs.GET;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -35,16 +45,10 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
-
 @Component
 @Provides
 @Instantiate
-public class EndpointCollections extends Endpoint {
+public class EndpointCollections extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollections.class);
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
@@ -57,8 +61,32 @@ public class EndpointCollections extends Endpoint {
     }
 
     @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/collections");
+    }
+
+    @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return CollectionsConfiguration.class;
+    }
+
+    @Override
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ValidationResult result = super.onStartup(apiData, apiValidation);
+
+        if (apiValidation== MODE.NONE)
+            return result;
+
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+                .from(result)
+                .mode(apiValidation);
+
+        Optional<CollectionsConfiguration> config = apiData.getExtension(CollectionsConfiguration.class);
+        if (config.isPresent()) {
+            builder = FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/collections");
+        }
+
+        return builder.build();
     }
 
     @Override

@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.processes;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
 import de.ii.ldproxy.ogcapi.observation_processing.api.TemporalInterval;
 import de.ii.ldproxy.ogcapi.observation_processing.application.ObservationProcessingConfiguration;
@@ -21,6 +21,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -41,8 +42,8 @@ public class FeatureProcessPosition implements ObservationProcess {
     public Set<String> getSupportedCollections(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(PathParameterCollectionIdProcess.class).stream()
                 .map(param -> param.getValues(apiData))
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+                .flatMap(List::stream)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override

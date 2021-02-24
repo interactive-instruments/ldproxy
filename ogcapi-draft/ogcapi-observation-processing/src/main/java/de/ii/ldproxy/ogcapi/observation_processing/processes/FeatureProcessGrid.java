@@ -40,8 +40,8 @@ public class FeatureProcessGrid implements ObservationProcess {
     public Set<String> getSupportedCollections(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(PathParameterCollectionIdProcess.class).stream()
                 .map(param -> param.getValues(apiData))
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+                .flatMap(List::stream)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override

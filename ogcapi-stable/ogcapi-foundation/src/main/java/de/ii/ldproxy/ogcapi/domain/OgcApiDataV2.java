@@ -20,6 +20,7 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
@@ -80,6 +81,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public abstract Optional<CollectionExtent> getDefaultExtent();
 
+    @Value.Default
+    public MODE getApiValidation() {
+        return MODE.NONE;
+    }
+
     // TODO: move to ServiceData?
     public abstract List<String> getTags();
 
@@ -91,7 +97,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
         builder.add(getId());
         if (getApiVersion().isPresent())
-            builder.add("v" + getApiVersion().get());
+            builder.add("v"+getApiVersion().get());
         return builder.build();
     }
 
@@ -179,18 +185,18 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
                                 .build()));
             }
 
-        if (collectionsHaveMissingParentExtensions) {
+            if (collectionsHaveMissingParentExtensions) {
                 mergedCollections.values()
                     .forEach(featureTypeConfigurationOgcApi -> mergedCollections
                         .put(featureTypeConfigurationOgcApi.getId(),
                             featureTypeConfigurationOgcApi.getBuilder()
                                                                                                                                                                    .parentExtensions(getMergedExtensions())
-                                                                                                                                                                   .build()));
+                                .build()));
             }
 
             return new ImmutableOgcApiDataV2.Builder().from(this)
-                                               .collections(mergedCollections)
-                                               .build();
+                                                      .collections(mergedCollections)
+                                                      .build();
         }
 
 

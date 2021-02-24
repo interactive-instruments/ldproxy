@@ -57,7 +57,10 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                                                      Optional<Locale> language) {
 
         collection.title(featureType.getLabel())
-                  .description(featureType.getDescription());
+                  .description(featureType.getDescription())
+                  .itemType(featureType.getExtension(FeaturesCoreConfiguration.class)
+                                       .flatMap(FeaturesCoreConfiguration::getItemType)
+                                       .map(itemType -> itemType.toString()));
 
         URICustomizer uriBuilder = uriCustomizer
                 .copy()
@@ -147,8 +150,6 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                             .getStart(),
                     temporal.get()
                             .getEnd()));
-        } else {
-            collection.extent(new OgcApiExtent());
         }
 
         return collection;

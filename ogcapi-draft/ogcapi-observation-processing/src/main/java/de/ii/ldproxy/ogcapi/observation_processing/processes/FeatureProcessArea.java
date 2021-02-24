@@ -22,6 +22,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -44,8 +45,8 @@ public class FeatureProcessArea implements ObservationProcess {
     public Set<String> getSupportedCollections(OgcApiDataV2 apiData) {
         return extensionRegistry.getExtensionsForType(PathParameterCollectionIdProcess.class).stream()
                 .map(param -> param.getValues(apiData))
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+                .flatMap(List::stream)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     @Override

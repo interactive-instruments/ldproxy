@@ -12,10 +12,12 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.observation_processing.application.Variables;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 public interface DapaVariablesFormatExtension extends GenericFormatExtension {
 
     default String getPathPattern() {
-        return "^/collections/[\\w\\-]+/variables/?$";
+        return "^/collections/"+COLLECTION_ID_PATTERN+"/variables/?$";
     }
 
     Object getEntity(Variables variables, String collectionId, OgcApi api, ApiRequestContext requestContext);

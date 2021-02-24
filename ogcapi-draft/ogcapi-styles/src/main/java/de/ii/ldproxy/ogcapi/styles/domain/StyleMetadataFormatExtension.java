@@ -17,7 +17,7 @@ public interface StyleMetadataFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^/?styles/[^\\/]+/metadata/?$";
+        return "^/?styles/[^/]+/metadata/?$";
     }
 
     Response getStyleMetadataResponse(StyleMetadata metadata,

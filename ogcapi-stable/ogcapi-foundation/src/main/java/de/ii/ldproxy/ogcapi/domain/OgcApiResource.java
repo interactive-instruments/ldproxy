@@ -36,14 +36,14 @@ public interface OgcApiResource {
 
     @Value.Derived
     @Value.Auxiliary
-    default boolean isSubCollectionWithExplicitId() {
-        return getPathParameters().stream().anyMatch(param -> param.getName().equals("collectionId") && param.getExplodeInOpenApi());
+    default boolean isSubCollectionWithExplicitId(OgcApiDataV2 apiData) {
+        return getPathParameters().stream().anyMatch(param -> param.getName().equals("collectionId") && param.getExplodeInOpenApi(apiData));
     }
 
     @Value.Derived
     @Value.Auxiliary
-    default Optional<String> getCollectionId() {
-        return isSubCollectionWithExplicitId()? Optional.ofNullable(Splitter.on("/").limit(3).omitEmptyStrings().splitToList(getPath()).get(1)) :Optional.empty();
+    default Optional<String> getCollectionId(OgcApiDataV2 apiData) {
+        return isSubCollectionWithExplicitId(apiData)? Optional.ofNullable(Splitter.on("/").limit(3).omitEmptyStrings().splitToList(getPath()).get(1)) :Optional.empty();
     }
 
     @Value.Derived

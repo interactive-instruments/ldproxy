@@ -38,7 +38,7 @@ public class QueryParameterValidateStyle implements OgcApiQueryParameter {
     @Override
     public String getDescription() {
         return "'yes' creates or updates a style after successful validation and returns 400," +
-                "if validation fails. ’no' creates or updates the style without validation. 'only' just " +
+                "if validation fails. 'no' creates or updates the style without validation. 'only' just " +
                 "validates the style without creating a new style or updating an existing style " +
                 "and returns 400, if validation fails, otherwise 204.";
     }

@@ -7,8 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.styles.domain;
 
-import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -35,7 +39,7 @@ public interface StyleFormatExtension extends FormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^/?styles/[^\\/]+/?$";
+        return "^/?styles/[^/]+/?$";
     }
 
     /**

@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.features.geojsonld.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
@@ -52,7 +51,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
@@ -129,17 +127,15 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     if (explode && !Files.isRegularFile(getContextPath(apiData.getId(), collectionId)))
                         // skip, if no context is available
                         continue;
-                    final List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
-                            getQueryParameters(extensionRegistry, apiData, path);
+                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
                     final String operationSummary = "retrieve the JSON-LD context for the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.empty();
                     String resourcePath = "/collections/" + collectionId + subSubPath;

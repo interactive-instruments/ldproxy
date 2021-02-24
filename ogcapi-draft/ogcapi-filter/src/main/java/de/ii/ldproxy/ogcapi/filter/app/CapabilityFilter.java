@@ -5,25 +5,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.collections.queryables.app;
+package de.ii.ldproxy.ogcapi.filter.app;
 
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
+import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.filter.domain.ImmutableFilterConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import java.util.Map;
-
 @Component
 @Provides
 @Instantiate
-public class JacksonSubTypeIdsQueryables implements JacksonSubTypeIds {
+public class CapabilityFilter implements ApiBuildingBlock {
+
     @Override
-    public Map<Class<?>, String> getMapping() {
-        return new ImmutableMap.Builder<Class<?>, String>()
-                .put(QueryablesConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(QueryablesConfiguration.class))
-                .build();
+    public ExtensionConfiguration getDefaultConfiguration() {
+        return new ImmutableFilterConfiguration.Builder().enabled(false)
+                                                         .build();
     }
 }

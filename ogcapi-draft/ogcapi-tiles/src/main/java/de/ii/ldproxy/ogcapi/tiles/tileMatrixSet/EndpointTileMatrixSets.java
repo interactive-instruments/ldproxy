@@ -58,7 +58,7 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-2/1.0/conf/tmxs");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-2/0.0/conf/tmxs");
     }
 
     @Override
