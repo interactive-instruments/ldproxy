@@ -13,7 +13,7 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 |`collectionDescriptionsInOverview`  |boolean |`true` |Steuert, ob in der HTML-Ausgabe der Feature-Collections-Ressource für jede Collection die Beschreibung ausgegeben werden soll.
 |`layout` |enum |`CLASSIC` |Steuert, welches HTML-Template für die Ausgabe der Features- und Feature-Ressourcen verwendet werden soll. Verfügbar sind `CLASSIC` (vor allem für einfache Objekte mit einfachen Werten) und `COMPLEX_OBJECTS` (unterstützt auch komplexere Objektstrukturen und längere Werte).
 |`itemLabelFormat` |string |`{{id}}` |Steuert, wie der Titel eines Features in der HTML-Ausgabe gebildet wird. Standardmäßig ist der Titel der Identifikator. In der Angabe können über die Angabe des Attributnamens in doppelt-geschweiften Klammern Ersetzungspunkte für die Attribute des Features verwendet werden. Es können nur Attribute verwendet werden, die nur einmal pro Feature vorkommen können. Neben einer direkten Ersetzung mit dem Attributwert können auch [Filter](general-rules.md#String-Template-Filter) angewendet werden. Ist ein Attribut `null`, dann wird der Ersetzungspunkt durch einen leeren String ersetzt.
-|`transformations` |object |`{}` |Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der HTML-Ausgabe [transformiert](README.MD#transformations) werden.
+|`transformations` |object |`{}` |Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der HTML-Ausgabe [transformiert](general-rules.md#transformations) werden.
 
 Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API:
 

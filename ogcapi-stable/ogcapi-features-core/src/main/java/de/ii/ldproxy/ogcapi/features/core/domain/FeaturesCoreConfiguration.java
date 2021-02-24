@@ -13,16 +13,17 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -138,6 +139,44 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
         }
 
         return ImmutableMap.of();
+    }
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean hasDeprecatedQueryables() {
+        return getQueryables().orElse(FeaturesCollectionQueryables.of())
+                              .getAll()
+                              .stream()
+                              .anyMatch(key -> key.matches(".*\\[[^\\]]*\\].*"));
+    }
+
+    default List<String> normalizeQueryables(List<String> queryables, String collectionId) {
+        return queryables.stream()
+                         .map(queryable -> {
+                             if (queryable.matches(".*\\[[^\\]]*\\].*")) {
+                                 // TODO use info for now, but upgrade to warn after some time
+                                 LOGGER.info("The queryable '{}' in collection '{}' uses a deprecated style that includes square brackets for arrays. The brackets have been dropped during hydration.", queryable, collectionId);
+                                 return queryable.replaceAll("\\[[^\\]]*\\]", "");
+                             }
+                             return queryable;
+                         })
+                         .collect(Collectors.toUnmodifiableList());
+    }
+
+    default Optional<FeaturesCollectionQueryables> normalizeQueryables(String collectionId) {
+        Optional<FeaturesCollectionQueryables> queryables = getQueryables();
+        if (queryables.isPresent()) {
+            List<String> spatial = normalizeQueryables(queryables.get().getSpatial(), collectionId);
+            List<String> temporal = normalizeQueryables(queryables.get().getTemporal(), collectionId);
+            List<String> other = normalizeQueryables(queryables.get().getOther(), collectionId);
+            queryables = Optional.of(new ImmutableFeaturesCollectionQueryables.Builder()
+                                             .spatial(spatial)
+                                             .temporal(temporal)
+                                             .other(other)
+                                             .build());
+        }
+        return queryables;
     }
 
     @Override

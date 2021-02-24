@@ -13,21 +13,37 @@ import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon.Query;
 import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.Endpoint;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FoundationValidator;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
+import java.util.List;
+import java.util.Optional;
+import javax.ws.rs.GET;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
 
 
 @Component
@@ -48,6 +64,25 @@ public class EndpointLandingPage extends Endpoint {
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return CommonConfiguration.class;
+    }
+
+    @Override
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ValidationResult result = super.onStartup(apiData, apiValidation);
+
+        if (apiValidation== MODE.NONE)
+            return result;
+
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+                .from(result)
+                .mode(apiValidation);
+
+        Optional<CommonConfiguration> config = apiData.getExtension(CommonConfiguration.class);
+        if (config.isPresent()) {
+            builder = FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/");
+        }
+
+        return builder.build();
     }
 
     @Override

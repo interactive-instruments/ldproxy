@@ -18,6 +18,8 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPathParameterCollectionId.class);
 
+    public static final String COLLECTION_ID_PATTERN = "[\\w\\-]+";
+
     protected final Map<Integer,Set<String>> apiCollectionMap;
 
     public AbstractPathParameterCollectionId() {
@@ -26,7 +28,7 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
 
     @Override
     public String getPattern() {
-        return "[\\w\\-]+";
+        return COLLECTION_ID_PATTERN;
     }
 
     @Override

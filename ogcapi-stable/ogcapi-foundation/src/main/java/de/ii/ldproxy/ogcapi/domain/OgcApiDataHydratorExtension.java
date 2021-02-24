@@ -9,6 +9,8 @@ package de.ii.ldproxy.ogcapi.domain;
 
 public interface OgcApiDataHydratorExtension extends ApiExtension {
 
+    int getSortPriority();
+
     OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData);
 
 }
