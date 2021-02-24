@@ -21,6 +21,13 @@ trait MergeMinimal<T extends ExtensionConfiguration> {
                 getMinimal(),
                 getFull(),
                 getMinimalFullMerged()
+        ] << [
+                "full into minimal",
+                "merging a full configuration into a minimal configuration",
+                "source values should override target null/empty values",
+                getFull(),
+                getMinimal(),
+                getMinimalFullMerged()
         ]
     }
 

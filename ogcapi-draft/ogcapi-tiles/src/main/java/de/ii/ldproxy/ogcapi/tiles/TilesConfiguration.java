@@ -11,16 +11,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
+import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
-import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -99,7 +96,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
                 .from(source)
                 .from(this);
 
-        List<String> tileEncodings = Lists.newArrayList(((TilesConfiguration) source).getTileEncodings());
+        TilesConfiguration src = (TilesConfiguration) source;
+
+        List<String> tileEncodings = Objects.nonNull(src.getTileEncodings()) ? Lists.newArrayList(src.getTileEncodings()) : Lists.newArrayList();
         getTileEncodings().forEach(tileEncoding -> {
             if (!tileEncodings.contains(tileEncoding)) {
                 tileEncodings.add(tileEncoding);
@@ -107,7 +106,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         });
         builder.tileEncodings(tileEncodings);
 
-        List<String> tileSetEncodings = Lists.newArrayList(((TilesConfiguration) source).getTileSetEncodings());
+        List<String> tileSetEncodings = Objects.nonNull(src.getTileSetEncodings()) ? Lists.newArrayList(src.getTileSetEncodings()) : Lists.newArrayList();
         getTileSetEncodings().forEach(tileSetEncoding -> {
             if (!tileSetEncodings.contains(tileSetEncoding)) {
                 tileSetEncodings.add(tileSetEncoding);
@@ -115,8 +114,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         });
         builder.tileSetEncodings(tileSetEncodings);
 
-        Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(
-                ((TilesConfiguration) source).getTransformations());
+        Map<String, PropertyTransformation> mergedTransformations = Objects.nonNull(src.getTransformations()) ? Maps.newLinkedHashMap(src.getTransformations()) : Maps.newLinkedHashMap();
         getTransformations().forEach((key, transformation) -> {
             if (mergedTransformations.containsKey(key)) {
                 mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
@@ -126,32 +124,27 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         });
         builder.transformations(mergedTransformations);
 
-        Map<String, MinMax> mergedSeeding = new LinkedHashMap<>(
-                ((TilesConfiguration) source).getSeeding());
+        Map<String, MinMax> mergedSeeding = Objects.nonNull(src.getSeeding()) ? Maps.newLinkedHashMap(src.getSeeding()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getSeeding()))
             getSeeding().forEach(mergedSeeding::putIfAbsent);
         builder.seeding(mergedSeeding);
 
-        Map<String, MinMax> mergedZoomLevels = new LinkedHashMap<>(
-                ((TilesConfiguration) source).getZoomLevels());
+        Map<String, MinMax> mergedZoomLevels = Objects.nonNull(src.getZoomLevels()) ? Maps.newLinkedHashMap(src.getZoomLevels()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getZoomLevels()))
             getZoomLevels().forEach(mergedZoomLevels::putIfAbsent);
         builder.zoomLevels(mergedZoomLevels);
 
-        Map<String, MinMax> mergedZoomLevelsCache = new LinkedHashMap<>(
-                ((TilesConfiguration) source).getZoomLevelsCache());
+        Map<String, MinMax> mergedZoomLevelsCache = Objects.nonNull(src.getZoomLevelsCache()) ? Maps.newLinkedHashMap(src.getZoomLevelsCache()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getZoomLevelsCache()))
             getZoomLevelsCache().forEach(mergedZoomLevelsCache::putIfAbsent);
         builder.zoomLevelsCache(mergedZoomLevelsCache);
 
-        Map<String, List<Rule>> mergedRules = new LinkedHashMap<>(
-                ((TilesConfiguration) source).getRules());
+        Map<String, List<Rule>> mergedRules = Objects.nonNull(src.getRules()) ? Maps.newLinkedHashMap(src.getRules()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getRules()))
             getRules().forEach(mergedRules::putIfAbsent);
         builder.rules(mergedRules);
 
-        Map<String, List<PredefinedFilter>> mergedFilters = new LinkedHashMap<>(
-                ((TilesConfiguration) source).getFilters());
+        Map<String, List<PredefinedFilter>> mergedFilters = Objects.nonNull(src.getFilters()) ? Maps.newLinkedHashMap(src.getFilters()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getFilters()))
             getFilters().forEach(mergedFilters::putIfAbsent);
         builder.filters(mergedFilters);
@@ -160,7 +153,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     }
 
     /**
-     *
      * @return seeding map also considering the zoom level configuration (drops zoom levels outside of the range from seeding)
      */
     @JsonIgnore
