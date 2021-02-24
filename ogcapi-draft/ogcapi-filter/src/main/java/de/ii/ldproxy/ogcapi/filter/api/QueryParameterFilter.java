@@ -6,21 +6,21 @@ import de.ii.ldproxy.ogcapi.collections.queryables.domain.QueryablesConfiguratio
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 
 @Component
 @Provides
@@ -38,11 +38,11 @@ public class QueryParameterFilter implements OgcApiQueryParameter, ConformanceCl
     }
 
     @Override
-    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
-            return StartupResult.of();
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        if (apiValidation== MODE.NONE)
+            return ValidationResult.of();
 
-        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
         for (String collectionWithoutQueryables : apiData.getCollections()

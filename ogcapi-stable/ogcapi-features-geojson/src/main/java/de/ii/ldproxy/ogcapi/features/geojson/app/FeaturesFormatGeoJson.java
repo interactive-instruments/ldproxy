@@ -20,12 +20,10 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
@@ -36,18 +34,14 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -59,6 +53,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.MediaType;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 /**
  * @author zahnen
@@ -120,13 +119,13 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     }
 
     @Override
-    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
-            return StartupResult.of();
+        if (apiValidation== MODE.NONE)
+            return ValidationResult.of();
 
-        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
         Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);

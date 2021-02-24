@@ -9,18 +9,16 @@ package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
-import org.immutables.value.Value;
-
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -41,7 +39,7 @@ public interface FeatureTypeMapping2 {
 
     Optional<String> getNull();
 
-    default ImmutableStartupResult.Builder validate(ImmutableStartupResult.Builder builder, String collectionId, String property, Collection<String> codelists) {
+    default ImmutableValidationResult.Builder validate(ImmutableValidationResult.Builder builder, String collectionId, String property, Collection<String> codelists) {
         final Optional<String> remove = getRemove();
         if (remove.isPresent()) {
             if (!REMOVE_VALUES.contains(remove.get())) {

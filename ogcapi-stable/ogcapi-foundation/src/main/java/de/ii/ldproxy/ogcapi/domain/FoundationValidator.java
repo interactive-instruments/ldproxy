@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -16,7 +17,7 @@ import java.util.Objects;
 
 public class FoundationValidator {
 
-    public static ImmutableStartupResult.Builder validateLinks(ImmutableStartupResult.Builder builder, List<Link> links, String path) {
+    public static ImmutableValidationResult.Builder validateLinks(ImmutableValidationResult.Builder builder, List<Link> links, String path) {
         links.stream()
              .filter(link -> {
                  try {
@@ -37,7 +38,7 @@ public class FoundationValidator {
         return builder;
     }
 
-    public static ImmutableStartupResult.Builder validateUri(ImmutableStartupResult.Builder builder, String uri, String path) {
+    public static ImmutableValidationResult.Builder validateUri(ImmutableValidationResult.Builder builder, String uri, String path) {
          try {
              new URL(uri).toURI();
          } catch (URISyntaxException | MalformedURLException e) {

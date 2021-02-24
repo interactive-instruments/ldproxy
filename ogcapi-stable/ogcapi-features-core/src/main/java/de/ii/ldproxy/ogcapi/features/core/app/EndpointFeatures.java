@@ -23,7 +23,6 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
@@ -41,26 +40,14 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -70,6 +57,19 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
@@ -112,14 +112,14 @@ public class EndpointFeatures extends EndpointSubCollection {
     }
 
     @Override
-    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
-        StartupResult result = super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ValidationResult result = super.onStartup(apiData, apiValidation);
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
+        if (apiValidation== MODE.NONE)
             return result;
 
-        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .from(result)
                 .mode(apiValidation);
 

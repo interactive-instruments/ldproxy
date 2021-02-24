@@ -32,9 +32,9 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.Metadata;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -44,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
 import java.util.AbstractMap;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -83,7 +82,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
-        FeatureProviderDataV2.VALIDATION apiValidation = apiData.getApiValidation();
+        MODE apiValidation = apiData.getApiValidation();
 
         // The behaviour depends on the requested validation approach
         // NONE: no validation during hydration
@@ -100,7 +99,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
         }
 
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.LAX) {
+        if (apiValidation== MODE.LAX) {
             // LAX: remove collections without a feature type
             List<String> invalidCollections = FeaturesCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
             if (!invalidCollections.isEmpty()) {
@@ -135,14 +134,14 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                                                      final String collectionId = entry.getKey();
                                                                      final String buildingBlock = config.getBuildingBlock();
 
-                                                                     if (apiValidation!=FeatureProviderDataV2.VALIDATION.STRICT &&
+                                                                     if (apiValidation!= MODE.STRICT &&
                                                                          config.hasDeprecatedTransformationKeys())
                                                                          config = new ImmutableFeaturesCoreConfiguration.Builder()
                                                                                  .from(config)
                                                                                  .transformations(config.normalizeTransformationKeys(buildingBlock,collectionId))
                                                                                  .build();
-
-                                                                     if (apiValidation!=FeatureProviderDataV2.VALIDATION.STRICT &&
+                                                                      //TODO: move to immutable check method???
+                                                                     if (apiValidation!= MODE.STRICT &&
                                                                          config.hasDeprecatedQueryables())
                                                                          config = new ImmutableFeaturesCoreConfiguration.Builder()
                                                                                  .from(config)

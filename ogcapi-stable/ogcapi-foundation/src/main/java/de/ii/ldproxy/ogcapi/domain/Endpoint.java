@@ -1,17 +1,23 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.text.MessageFormat;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Endpoint implements EndpointExtension {
 
@@ -40,8 +46,8 @@ public abstract class Endpoint implements EndpointExtension {
     }
 
     @Override
-    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
-        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
         try {

@@ -16,11 +16,9 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -29,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -63,7 +60,7 @@ public class GeojsonDataHydrator implements OgcApiDataHydratorExtension {
 
         // any Features GeoJSON hydration actions are not taken in STRICT validation mode;
         // STRICT: an invalid service definition will not start
-        if (apiData.getApiValidation()!=FeatureProviderDataV2.VALIDATION.STRICT)
+        if (apiData.getApiValidation()!= MODE.STRICT)
             return apiData;
 
         OgcApiDataV2 data = apiData;

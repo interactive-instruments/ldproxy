@@ -14,27 +14,32 @@ import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.CollectionExtent;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FoundationValidator;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -44,10 +49,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84;
-import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84_URI;
-import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84h_URI;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
@@ -70,13 +83,13 @@ public class EndpointCollection extends EndpointSubCollection {
     }
 
     @Override
-    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
-        StartupResult result = super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ValidationResult result = super.onStartup(apiData, apiValidation);
 
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
+        if (apiValidation== MODE.NONE)
             return result;
 
-        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .from(result)
                 .mode(apiValidation);
 

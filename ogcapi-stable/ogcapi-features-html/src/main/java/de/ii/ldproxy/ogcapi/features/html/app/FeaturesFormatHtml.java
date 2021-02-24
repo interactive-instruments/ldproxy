@@ -18,7 +18,6 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
@@ -39,16 +38,13 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.streams.domain.Http;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -65,6 +61,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.MediaType;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
@@ -115,13 +116,13 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     }
 
     @Override
-    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
-            return StartupResult.of();
+        if (apiValidation== MODE.NONE)
+            return ValidationResult.of();
 
-        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
         Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
