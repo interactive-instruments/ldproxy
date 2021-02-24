@@ -1,7 +1,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Component
 @Provides
@@ -42,7 +41,7 @@ public class PathParameterCollectionIdProcess extends AbstractPathParameterColle
     };
 
     @Override
-    public Set<String> getValues(OgcApiDataV2 apiData) {
+    public List<String> getValues(OgcApiDataV2 apiData) {
         if (!apiCollectionMap.containsKey(apiData.hashCode()))
             apiCollectionMap.put(apiData.hashCode(),returnObservationCollections(apiData));
 
@@ -77,8 +76,8 @@ public class PathParameterCollectionIdProcess extends AbstractPathParameterColle
         return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
-    private Set<String> returnObservationCollections(OgcApiDataV2 apiData) {
-        ImmutableSet.Builder<String> collections = ImmutableSet.builder();
+    private List<String> returnObservationCollections(OgcApiDataV2 apiData) {
+        ImmutableList.Builder<String> collections = ImmutableList.builder();
         apiData.getCollections().entrySet().stream()
                 .forEachOrdered(entry -> {
                     String collectionId = entry.getKey();
@@ -126,6 +125,8 @@ public class PathParameterCollectionIdProcess extends AbstractPathParameterColle
                                 }
                             } else {
                                 if (queryables.get().getOther().stream()
+                                        .noneMatch(queryable -> queryable.equals(requiredProperty)) &&
+                                    queryables.get().getQ().stream()
                                         .noneMatch(queryable -> queryable.equals(requiredProperty))) {
                                     LOGGER.info("Building block OBSERVATION_PROCESSING deactivated for collection '{}'. Features with a queryable '{}' are required.", collectionId, requiredProperty);
                                     return;

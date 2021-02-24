@@ -7,10 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import org.immutables.value.Value;
-
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 
 public interface ApiExtension {
 

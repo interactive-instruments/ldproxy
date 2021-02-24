@@ -10,8 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class AbstractPathParameterCollectionId implements OgcApiPathParameter {
@@ -20,11 +20,14 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
 
     public static final String COLLECTION_ID_PATTERN = "[\\w\\-]+";
 
-    protected final Map<Integer,Set<String>> apiCollectionMap;
+    protected final Map<Integer, Boolean> apiExplodeMap;
+
+    protected final Map<Integer,List<String>> apiCollectionMap;
 
     public AbstractPathParameterCollectionId() {
         this.apiCollectionMap = new HashMap<>();
-    };
+        this.apiExplodeMap = new HashMap<>();
+    }
 
     @Override
     public String getPattern() {
@@ -32,16 +35,23 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
     }
 
     @Override
-    public boolean getExplodeInOpenApi() {
-        return true;
+    public boolean getExplodeInOpenApi(OgcApiDataV2 apiData) {
+        if (!apiExplodeMap.containsKey(apiData.hashCode())) {
+            apiExplodeMap.put(apiData.hashCode(), !apiData.getExtension(CollectionsConfiguration.class)
+                                                          .get()
+                                                          .getCollectionIdAsParameter()
+                                                          .orElse(false));
+        }
+
+        return apiExplodeMap.get(apiData.hashCode());
     }
 
     @Override
-    public Set<String> getValues(OgcApiDataV2 apiData) {
+    public List<String> getValues(OgcApiDataV2 apiData) {
         if (!apiCollectionMap.containsKey(apiData.hashCode())) {
             apiCollectionMap.put(apiData.hashCode(), apiData.getCollections().keySet().stream()
                                                             .filter(collectionId -> apiData.isCollectionEnabled(collectionId))
-                                                            .collect(Collectors.toSet()));
+                                                            .collect(Collectors.toUnmodifiableList()));
         }
 
         return apiCollectionMap.get(apiData.hashCode());

@@ -236,7 +236,7 @@ public abstract class ApiEndpointDefinition {
                     // skip the API definition
                     if (path.startsWith("/api"))
                         return;
-                    Optional<String> collectionId = resource.getCollectionId();
+                    Optional<String> collectionId = resource.getCollectionId(apiData);
                     PathItem pathItem = openAPI.getPaths().get(path);
                     if (pathItem==null)
                         pathItem = new PathItem();
@@ -267,7 +267,7 @@ public abstract class ApiEndpointDefinition {
                         if (operation.getOperationId().isPresent())
                             op.operationId(operation.getOperationId().get());
                         for (OgcApiPathParameter param : resource.getPathParameters()) {
-                            if (param.getExplodeInOpenApi())
+                            if (param.getExplodeInOpenApi(apiData))
                                 continue;
                             Parameter p = openAPI.getComponents().getParameters().get(param.getId(collectionId));
                             if (p == null) {

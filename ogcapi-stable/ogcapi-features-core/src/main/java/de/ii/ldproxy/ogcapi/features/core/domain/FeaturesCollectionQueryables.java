@@ -26,6 +26,8 @@ public interface FeaturesCollectionQueryables {
 
     List<String> getTemporal();
 
+    List<String> getQ();
+
     List<String> getOther();
 
     @Value.Derived
@@ -33,6 +35,7 @@ public interface FeaturesCollectionQueryables {
         return ImmutableList.<String>builder()
                 .addAll(getSpatial())
                 .addAll(getTemporal())
+                .addAll(getQ())
                 .addAll(getOther())
                 .build();
     }

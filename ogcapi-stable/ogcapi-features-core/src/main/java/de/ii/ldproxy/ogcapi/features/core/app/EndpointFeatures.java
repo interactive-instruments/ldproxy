@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
@@ -163,6 +162,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                                                                     .orElse(FeaturesCollectionQueryables.of())
                                                                                                     .getAll()))
                           .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
         for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
             for (String property : stringCollectionEntry.getValue()) {
                 builder.addStrictErrors(MessageFormat.format("A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
@@ -219,14 +219,12 @@ public class EndpointFeatures extends EndpointSubCollection {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
-                            getQueryParameters(extensionRegistry, apiData, path);
+                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
                     final String operationSummary = "retrieve features in the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The response is a document consisting of features in the collection. " +
                             "The features included in the response are determined by the server based on the query parameters of the request. " +
@@ -257,14 +255,12 @@ public class EndpointFeatures extends EndpointSubCollection {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = explode ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = explode ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
-                            getQueryParameters(extensionRegistry, apiData, path);
+                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
                     final String operationSummary = "retrieve a feature in the feature collection '" + collectionId + "'";
                     final Optional<String> operationDescription = Optional.of("Fetch the feature with id `{featureId}`.");
                     String resourcePath = "/collections/" + collectionId + subSubPath;
@@ -286,6 +282,14 @@ public class EndpointFeatures extends EndpointSubCollection {
 
     @Override
     public ImmutableList<OgcApiQueryParameter> getQueryParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, String collectionId) {
+        if (collectionId.equals("{collectionId}")) {
+            Optional<String> representativeCollectionId = getRepresentativeCollectionId(apiData);
+            if (representativeCollectionId.isEmpty())
+                return getQueryParameters(extensionRegistry, apiData, definitionPath);
+
+            collectionId = representativeCollectionId.get();
+        }
+
         ImmutableList<OgcApiQueryParameter> generalList = super.getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId);
 
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
@@ -302,19 +306,20 @@ public class EndpointFeatures extends EndpointSubCollection {
             // TODO
         }
 
-        if (definitionPath.equals("/collections/{collectionId}/items"))
+        if (definitionPath.equals("/collections/{collectionId}/items")) {
+            String finalCollectionId = collectionId;
             return ImmutableList.<OgcApiQueryParameter>builder()
                     .addAll(generalList)
                     .addAll(filterableFields.keySet().stream()
                         .map(field -> {
-                            Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, field);
+                            Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData, finalCollectionId, field);
                             if (schema2.isEmpty()) {
-                                LOGGER.warn("Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.", field, collectionId);
+                                LOGGER.warn("Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.", field, finalCollectionId);
                                 return null;
                             }
                             return new ImmutableQueryParameterTemplateQueryable.Builder()
                                     .apiId(apiData.getId())
-                                    .collectionId(collectionId)
+                                    .collectionId(finalCollectionId)
                                     .name(field)
                                     .description("Filter the collection by property '" + field + "'")
                                     .schema(schema2.get())
@@ -323,6 +328,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                     .build();
+        }
 
         return generalList;
     }

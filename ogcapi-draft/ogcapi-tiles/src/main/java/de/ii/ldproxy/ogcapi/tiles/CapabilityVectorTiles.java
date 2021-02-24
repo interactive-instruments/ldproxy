@@ -124,6 +124,13 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
 
     @Override
     public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        // since building block / capability components are currently always enabled,
+        // we need to test, if the TILES module is enabled for the API and stop, if not
+        if (!apiData.getExtension(TilesConfiguration.class)
+                    .map(cfg -> cfg.getEnabled())
+                    .orElse(false))
+            return ValidationResult.of();
+
         if (apiValidation== MODE.NONE)
             return ValidationResult.of();
 

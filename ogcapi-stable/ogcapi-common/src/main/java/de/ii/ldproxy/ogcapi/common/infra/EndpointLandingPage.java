@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -49,7 +50,7 @@ import org.slf4j.LoggerFactory;
 @Component
 @Provides
 @Instantiate
-public class EndpointLandingPage extends Endpoint {
+public class EndpointLandingPage extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLandingPage.class);
     private static final List<String> TAGS = ImmutableList.of("Capabilities");
@@ -138,5 +139,10 @@ public class EndpointLandingPage extends Endpoint {
                 .build();
 
         return queryHandler.handle(Query.LANDING_PAGE, queryInput, requestContext);
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/core");
     }
 }

@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -47,7 +48,7 @@ import org.slf4j.LoggerFactory;
 @Component
 @Provides
 @Instantiate
-public class EndpointCollections extends Endpoint {
+public class EndpointCollections extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollections.class);
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
@@ -57,6 +58,11 @@ public class EndpointCollections extends Endpoint {
 
     public EndpointCollections(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/collections");
     }
 
     @Override

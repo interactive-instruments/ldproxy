@@ -15,12 +15,14 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,12 @@ import java.util.stream.Collectors;
 public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesHtmlDataHydrator.class);
+
+    private final FeaturesCoreProviders providers;
+
+    public FeaturesHtmlDataHydrator(@Requires FeaturesCoreProviders providers) {
+        this.providers = providers;
+    }
 
     @Override
     public int getSortPriority() {

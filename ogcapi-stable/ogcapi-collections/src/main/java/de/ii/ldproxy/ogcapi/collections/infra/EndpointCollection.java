@@ -168,14 +168,14 @@ public class EndpointCollection extends EndpointSubCollection {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
                     FeatureTypeConfigurationOgcApi featureType = apiData.getCollections()
                             .get(collectionId);
-                    String operationSummary = "feature collection '" + featureType.getLabel() + "'";
+                    String operationSummary = "feature collection '" + (Objects.nonNull(featureType) ? featureType.getLabel() : collectionId) + "'";
                     Optional<String> operationDescription = Optional.of("Information about the feature collection with " +
                             "id '"+collectionId+"'. The response contains a link to the items in the collection " +
                             "(path `/collections/{collectionId}/items`,link relation `items`) as well as key " +

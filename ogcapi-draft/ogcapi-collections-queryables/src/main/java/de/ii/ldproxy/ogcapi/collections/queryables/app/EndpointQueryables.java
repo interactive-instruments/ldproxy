@@ -8,14 +8,12 @@
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
@@ -43,12 +41,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Component
 @Provides
 @Instantiate
-public class EndpointQueryables extends EndpointSubCollection implements ConformanceClass {
+public class EndpointQueryables extends EndpointSubCollection /* implements ConformanceClass */ {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointQueryables.class);
 
@@ -61,10 +58,12 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
         super(extensionRegistry);
     }
 
+    /* TODO wait for updates on Features Part n: Schemas
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/queryables");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-n/0.0/conf/queryables");
     }
+    */
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -96,14 +95,12 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
-                            getQueryParameters(extensionRegistry, apiData, path);
+                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
                     final String operationSummary = "retrieve the queryables of the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.empty(); // TODO once the specification is more stable
                     String resourcePath = "/collections/" + collectionId + subSubPath;

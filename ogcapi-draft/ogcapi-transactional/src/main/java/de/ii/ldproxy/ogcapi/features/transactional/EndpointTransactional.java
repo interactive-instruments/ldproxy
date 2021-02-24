@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.features.transactional;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -49,7 +48,6 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -114,14 +112,12 @@ public class EndpointTransactional extends EndpointSubCollection {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.POST) :
-                            getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
+                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.POST);
                     final String operationSummary = "add a feature in the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The content of the request is a new feature in one of the supported encodings. The URI of the new feature is returned in the header `Location`.");
                     String resourcePath = "/collections/" + collectionId + subSubPath;
@@ -142,14 +138,12 @@ public class EndpointTransactional extends EndpointSubCollection {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = explode ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = explode ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT) :
-                            getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
+                    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT);
                     String operationSummary = "add or update a feature in the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The content of the request is a new feature in one of the supported encodings. The id of the new or updated feature is `{featureId}`.");
                     String resourcePath = "/collections/" + collectionId + subSubPath;
@@ -159,9 +153,7 @@ public class EndpointTransactional extends EndpointSubCollection {
                     ApiOperation operation = addOperation(apiData, HttpMethods.PUT, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
                     if (operation!=null)
                         resourceBuilder.putOperations("PUT", operation);
-                    queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE) :
-                            getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
+                    queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE);
                     operationSummary = "delete a feature in the feature collection '" + collectionId + "'";
                     operationDescription = Optional.of("The feature with id `{featureId}` will be deleted.");
                     operation = addOperation(apiData, HttpMethods.DELETE, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);

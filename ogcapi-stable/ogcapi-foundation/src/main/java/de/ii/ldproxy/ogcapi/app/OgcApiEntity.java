@@ -67,7 +67,7 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
         try {
             for (ApiExtension extension : extensionRegistry.getExtensions()) {
-                if (extension.isEnabledForApi(getData())) {
+                if (extension.isEnabledForApi(apiData)) {
                     ValidationResult result = extension.onStartup(getData(), apiValidation);
                     isSuccess = isSuccess && result.isSuccess();
                     result.getErrors().forEach(LOGGER::error);
