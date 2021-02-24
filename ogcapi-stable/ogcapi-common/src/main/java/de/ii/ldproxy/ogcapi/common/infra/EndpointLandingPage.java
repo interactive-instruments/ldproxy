@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
