@@ -96,7 +96,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
         java.nio.file.Path context = getContextPath(api.getId(), collectionId, format.getMediaType().parameter());
 
         if (!Files.isRegularFile(context)) {
-            throw new NotFoundException(String.format("The {} context was not found.", format.getMediaType().label()));
+            throw new NotFoundException(String.format("The %s context was not found.", format.getMediaType().label()));
         }
 
         // TODO validate, that it is a valid JSON-LD Context document
