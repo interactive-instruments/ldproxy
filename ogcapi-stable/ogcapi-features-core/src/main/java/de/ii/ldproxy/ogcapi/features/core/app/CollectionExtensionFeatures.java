@@ -150,8 +150,6 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                             .getStart(),
                     temporal.get()
                             .getEnd()));
-        } else {
-            collection.extent(new OgcApiExtent());
         }
 
         return collection;

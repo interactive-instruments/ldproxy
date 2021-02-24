@@ -13,11 +13,12 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.services.domain.AbstractService;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityComponent;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.store.domain.entities.handler.Entity;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
@@ -59,18 +60,18 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
         // STRICT: no validation during hydration, validation will be done in onStartup() and startup will fail in case of any error
         boolean isSuccess = true;
         OgcApiDataV2 apiData = getData();
-        FeatureProviderDataV2.VALIDATION apiValidation = apiData.getApiValidation();
+        MODE apiValidation = apiData.getApiValidation();
 
-        if (apiValidation!= FeatureProviderDataV2.VALIDATION.NONE)
+        if (apiValidation!= MODE.NONE)
             LOGGER.info("Validating service '{}'.", apiData.getId());
 
         try {
             for (ApiExtension extension : extensionRegistry.getExtensions()) {
                 if (extension.isEnabledForApi(getData())) {
-                    ApiExtension.StartupResult result = extension.onStartup(getData(), apiValidation);
+                    ValidationResult result = extension.onStartup(getData(), apiValidation);
                     isSuccess = isSuccess && result.isSuccess();
                     result.getErrors().forEach(LOGGER::error);
-                    result.getStrictErrors().forEach(result.getMode() == FeatureProviderDataV2.VALIDATION.STRICT ? LOGGER::error : LOGGER::warn);
+                    result.getStrictErrors().forEach(result.getMode() == MODE.STRICT ? LOGGER::error : LOGGER::warn);
                     result.getWarnings().forEach(LOGGER::warn);
                 }
             }

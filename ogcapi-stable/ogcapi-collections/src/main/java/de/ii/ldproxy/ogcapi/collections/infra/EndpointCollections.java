@@ -21,6 +21,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FoundationValidator;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceSet;
 import de.ii.ldproxy.ogcapi.domain.Link;
@@ -28,19 +29,21 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
+import java.util.List;
+import java.util.Optional;
+import javax.ws.rs.GET;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
 
 @Component
 @Provides
@@ -65,6 +68,25 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return CollectionsConfiguration.class;
+    }
+
+    @Override
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ValidationResult result = super.onStartup(apiData, apiValidation);
+
+        if (apiValidation== MODE.NONE)
+            return result;
+
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+                .from(result)
+                .mode(apiValidation);
+
+        Optional<CollectionsConfiguration> config = apiData.getExtension(CollectionsConfiguration.class);
+        if (config.isPresent()) {
+            builder = FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/collections");
+        }
+
+        return builder.build();
     }
 
     @Override

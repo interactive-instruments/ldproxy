@@ -16,11 +16,9 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -29,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -61,19 +58,20 @@ public class GeojsonDataHydrator implements OgcApiDataHydratorExtension {
     @Override
     public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
 
-        // any GeoJSON hydration actions are not taken in STRICT validation mode;
+        // any Features GeoJSON hydration actions are not taken in STRICT validation mode;
         // STRICT: an invalid service definition will not start
-        if (apiData.getApiValidation()==FeatureProviderDataV2.VALIDATION.STRICT)
+        if (apiData.getApiValidation()!= MODE.STRICT)
             return apiData;
 
         OgcApiDataV2 data = apiData;
 
-        // get Features Core configurations to process, normalize property names
+        // get Features Core configurations to process, normalize property names to exclude all square brackets
         Map<String, GeoJsonConfiguration> configs = data.getCollections()
                                                                  .entrySet()
                                                                  .stream()
                                                                  .map(entry -> {
-                                                                     // * normalize the property references in transformations by removing all parts in square brackets
+                                                                     // normalize the property references in transformations by removing all
+                                                                     // parts in square brackets
 
                                                                      final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
                                                                      GeoJsonConfiguration config = collectionData.getExtension(GeoJsonConfiguration.class).orElse(null);
@@ -94,34 +92,7 @@ public class GeojsonDataHydrator implements OgcApiDataHydratorExtension {
                                                                  .filter(Objects::nonNull)
                                                                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        if (data.getApiValidation()==FeatureProviderDataV2.VALIDATION.LAX) {
-            // LAX: process configuration and remove invalid configuration elements
-
-            Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
-
-            // 2. remove invalid transformation keys
-            Map<String, Collection<String>> keyMap = configs.entrySet()
-                                                                .stream()
-                                                                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
-                                                                                                                                          .getTransformations()
-                                                                                                                                          .keySet()))
-                                                                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-            final Map<String, Collection<String>> invalidTransformationKeys = FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas);
-            invalidTransformationKeys.entrySet()
-                                     .stream()
-                                     .forEach(entry -> {
-                                         String collectionId = entry.getKey();
-                                         entry.getValue()
-                                              .forEach(property -> LOGGER.warn("A transformation for property '{}' in collection '{}' is invalid, because the property was not found in the provider schema. The transformation has been dropped during hydration.", property, collectionId));
-                                         configs.put(collectionId, new ImmutableGeoJsonConfiguration.Builder()
-                                                 .from(configs.get(collectionId))
-                                                 .transformations(configs.get(collectionId).removeTransformations(invalidTransformationKeys.get(collectionId)))
-                                                 .build());
-                                     });
-        }
-
         // update data with changes
-        // also update label and description, if we have information in the provider
         data = new ImmutableOgcApiDataV2.Builder()
                 .from(data)
                 .collections(

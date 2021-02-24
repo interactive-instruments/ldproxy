@@ -18,12 +18,12 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
@@ -38,6 +38,9 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.streams.domain.Http;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
@@ -60,6 +63,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -111,13 +117,13 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     }
 
     @Override
-    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
-            return StartupResult.of();
+        if (apiValidation== MODE.NONE)
+            return ValidationResult.of();
 
-        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
         Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
@@ -136,6 +142,19 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                                   .filter(Objects::nonNull)
                                                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
+        for (Map.Entry<String,FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
+            String collectionId = entry.getKey();
+            FeaturesHtmlConfiguration config = entry.getValue();
+            Optional<String> itemLabelFormat = config.getItemLabelFormat();
+            if (itemLabelFormat.isPresent()) {
+                Pattern valuePattern = Pattern.compile("\\{\\{[\\w\\.]+( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
+                Matcher matcher = valuePattern.matcher(itemLabelFormat.get());
+                if (!matcher.find()) {
+                    builder.addWarnings(MessageFormat.format("The HTML Item Label Format ''{0}'' in collection ''{1}'' does not include a value pattern that can be replaced with a feature-specific value.", itemLabelFormat.get(), collectionId));
+                }
+            }
+        }
+
         Map<String, Collection<String>> keyMap = htmlConfigurationMap.entrySet()
                                                                       .stream()
                                                                       .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
@@ -143,11 +162,23 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                                                                                                                 .keySet()))
                                                                       .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()
-                             .stream()
-                             .forEach(entry -> entry.getValue()
-                                                    .stream()
-                                                    .forEach(property -> builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
+            for (String property : stringCollectionEntry.getValue()) {
+                builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
+            }
+        }
+
+        Set<String> codelists = entityRegistry.getEntitiesForType(Codelist.class)
+                                              .stream()
+                                              .map(Codelist::getId)
+                                              .collect(Collectors.toUnmodifiableSet());
+        for (Map.Entry<String, FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
+            String collectionId = entry.getKey();
+            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+                String property = entry2.getKey();
+                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+            }
+        }
 
         return builder.build();
     }

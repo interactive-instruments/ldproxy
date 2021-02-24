@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.collections.queryables.app;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ldproxy.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;

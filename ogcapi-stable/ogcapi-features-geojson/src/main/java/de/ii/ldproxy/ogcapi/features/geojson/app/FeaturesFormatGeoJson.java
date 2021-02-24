@@ -21,10 +21,10 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableStartupResult;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
@@ -34,9 +34,13 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -54,6 +58,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
@@ -78,6 +84,7 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
             .build();
 
     private final FeaturesCoreProviders providers;
+    private final EntityRegistry entityRegistry;
 
     @Requires
     SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
@@ -88,8 +95,10 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     @Requires
     GeoJsonWriterRegistry geoJsonWriterRegistry;
 
-    public FeaturesFormatGeoJson(@Requires FeaturesCoreProviders providers) {
+    public FeaturesFormatGeoJson(@Requires FeaturesCoreProviders providers,
+                                 @Requires EntityRegistry entityRegistry) {
         this.providers = providers;
+        this.entityRegistry = entityRegistry;
     }
 
     @Override
@@ -113,13 +122,13 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     }
 
     @Override
-    public StartupResult onStartup(OgcApiDataV2 apiData, FeatureProviderDataV2.VALIDATION apiValidation) {
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
-        if (apiValidation==FeatureProviderDataV2.VALIDATION.NONE)
-            return StartupResult.of();
+        if (apiValidation== MODE.NONE)
+            return ValidationResult.of();
 
-        ImmutableStartupResult.Builder builder = new ImmutableStartupResult.Builder()
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
         Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
@@ -138,6 +147,22 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                                                     .filter(Objects::nonNull)
                                                                     .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
+        for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
+            String collectionId = entry.getKey();
+            GeoJsonConfiguration config = entry.getValue();
+
+            if (config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() != FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX) {
+                builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
+            } else if (config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.NEST && config.getMultiplicityStrategy() != FeatureTransformerGeoJson.MULTIPLICITY.ARRAY) {
+                builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
+            }
+
+            List<String> separators = ImmutableList.of(".","_",":","/");
+            if (!separators.contains(config.getSeparator())) {
+                builder.addStrictErrors(MessageFormat.format("The separator ''{0}'' in collection ''{1}'' is invalid, it must be one of {2}.", config.getSeparator(), collectionId, separators));
+            }
+        }
+
         Map<String, Collection<String>> keyMap = geoJsonConfigurationMap.entrySet()
                                                           .stream()
                                                           .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
@@ -145,11 +170,23 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                                                                                                                     .keySet()))
                                                           .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()
-                             .stream()
-                             .forEach(entry -> entry.getValue()
-                                                    .stream()
-                                                    .forEach(property -> builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, entry.getKey()))));
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
+            for (String property : stringCollectionEntry.getValue()) {
+                builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
+            }
+        }
+
+        Set<String> codelists = entityRegistry.getEntitiesForType(Codelist.class)
+                                              .stream()
+                                              .map(Codelist::getId)
+                                              .collect(Collectors.toUnmodifiableSet());
+        for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
+            String collectionId = entry.getKey();
+            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+                String property = entry2.getKey();
+                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+            }
+        }
 
         return builder.build();
     }
