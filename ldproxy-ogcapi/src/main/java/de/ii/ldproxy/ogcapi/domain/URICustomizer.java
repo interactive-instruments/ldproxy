@@ -226,14 +226,14 @@ public class URICustomizer extends URIBuilder {
     }
 
     public URICustomizer ensureTrailingSlash() {
-        if (!this.getPath().endsWith("/")) {
+        if (this.getPath() != null && !this.getPath().endsWith("/")) {
             this.setPath(this.getPath() + "/");
         }
         return this;
     }
 
     public URICustomizer ensureNoTrailingSlash() {
-        if (this.getPath().endsWith("/")) {
+        if (this.getPath() != null && this.getPath().endsWith("/")) {
             this.setPath(this.getPath().substring(0,getPath().length()-1));
         }
         return this;

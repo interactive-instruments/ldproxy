@@ -21,5 +21,7 @@ public interface OgcApiRequestContext {
 
     URICustomizer getUriCustomizer();
 
+    URICustomizer getUriCustomizerPlain();
+
     String getStaticUrlPrefix();
 }

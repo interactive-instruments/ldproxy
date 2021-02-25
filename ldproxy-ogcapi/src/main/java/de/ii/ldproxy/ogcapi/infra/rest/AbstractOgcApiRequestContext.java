@@ -50,17 +50,26 @@ public abstract class AbstractOgcApiRequestContext implements OgcApiRequestConte
 
     @Value.Derived
     @Override
+    public URICustomizer getUriCustomizerPlain() {
+        return new URICustomizer(getRequestUri());
+    }
+
+    @Value.Derived
+    @Override
     public String getStaticUrlPrefix() {
         String staticUrlPrefix = "";
 
         if (getExternalUri().isPresent()) {
-            staticUrlPrefix = new URICustomizer(getRequestUri())
-                    .cutPathAfterSegments("rest", "services")
-                    .replaceInPath("/rest/services", getExternalUri().get()
-                                                                     .getPath())
-                    .ensureTrailingSlash()
-                    .ensureLastPathSegment("___static___")
-                    .getPath();
+            String path = getExternalUri().get()
+                            .getPath();
+            if (path != null) {
+                staticUrlPrefix = new URICustomizer(getRequestUri())
+                        .cutPathAfterSegments("rest", "services")
+                        .replaceInPath("/rest/services", path)
+                        .ensureTrailingSlash()
+                        .ensureLastPathSegment("___static___")
+                        .getPath();
+            }
         }
 
         return staticUrlPrefix;
