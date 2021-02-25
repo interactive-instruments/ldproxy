@@ -47,7 +47,6 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import scala.sys.Prop;
 
 import javax.ws.rs.core.MediaType;
 import java.text.MessageFormat;
@@ -207,19 +206,19 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                   .next();
         }
         if (!collectionId.equals("{collectionId}")) {
-            Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
-                                                                         .get(collectionId)
-                                                                         .getExtension(GeoJsonConfiguration.class);
-            boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                  .isPresent();
-            SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
-            if (path.matches("/collections/[^//]+/items/?")) {
-                schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId, type);
-                schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId, type);
-            } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-                schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
-                schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
-            }
+        Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
+                                                                     .get(collectionId)
+                                                                     .getExtension(GeoJsonConfiguration.class);
+        boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                              .isPresent();
+        SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
+        if (path.matches("/collections/[^//]+/items/?")) {
+            schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId, type);
+            schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId, type);
+        } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
+            schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
+            schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
+        }
         }
         // TODO example
         return new ImmutableApiMediaTypeContent.Builder()
@@ -247,13 +246,13 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                       .next();
             }
             if (!collectionId.equals("{collectionId}")) {
-                // TODO change to MUTABLES
-                Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
-                                                                             .get(collectionId)
-                                                                             .getExtension(GeoJsonConfiguration.class);
-                boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                      .isPresent();
-                SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
+            // TODO change to MUTABLES
+            Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
+                                                                         .get(collectionId)
+                                                                         .getExtension(GeoJsonConfiguration.class);
+            boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                                  .isPresent();
+            SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
                 schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
                 schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
             }
