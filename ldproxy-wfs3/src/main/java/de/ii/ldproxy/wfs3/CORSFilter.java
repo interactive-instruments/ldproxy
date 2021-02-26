@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.wfs3;
 
+import de.ii.ldproxy.ogcapi.domain.OgcApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.OgcApiRequestContext;
+import de.ii.ldproxy.ogcapi.infra.rest.Wfs3RequestContextBinder;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -18,6 +21,8 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author zahnen
@@ -28,24 +33,29 @@ import java.io.IOException;
 public class CORSFilter implements ContainerResponseFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(CORSFilter.class);
 
-    //@Context
-    //private Wfs3RequestContext wfs3Request;
-
     @Override
     public void filter(ContainerRequestContext requestContext,
                        ContainerResponseContext responseContext) throws IOException {
         if (!requestContext.getUriInfo()
                            .getPath()
                            .startsWith("admin")) {
-            //Wfs3MediaType mediaType = wfs3Request.getMediaType();
-            //if (mediaType.matches(MediaType.APPLICATION_JSON_TYPE) || mediaType.matches(new MediaType("application", "vnd.mapbox-vector-tile"))) {
-            //TODO
-            if (requestContext.getAcceptableMediaTypes()
-                              .get(0)
-                              .isCompatible(MediaType.APPLICATION_JSON_TYPE)
-                    || requestContext.getAcceptableMediaTypes()
-                                     .get(0)
-                                     .isCompatible(new MediaType("application", "vnd.mapbox-vector-tile"))) {
+            boolean corsEnabled = false;
+
+            Object ogcApiRequestContext = requestContext.getProperty(Wfs3RequestContextBinder.WFS3_REQUEST_CONTEXT_KEY);
+            if (Objects.nonNull(ogcApiRequestContext) && ogcApiRequestContext instanceof OgcApiRequestContext) {
+                OgcApiRequestContext context = (OgcApiRequestContext) ogcApiRequestContext;
+                corsEnabled = context.getMediaType().matches(MediaType.APPLICATION_JSON_TYPE) || context.getMediaType().matches(new MediaType("application", "vnd.mapbox-vector-tile"));
+
+                if (!corsEnabled && !context.getAlternativeMediaTypes().isEmpty()) {
+                    corsEnabled = context.getAlternativeMediaTypes().stream().anyMatch(mediaType -> mediaType.matches(MediaType.APPLICATION_JSON_TYPE) || mediaType.matches(new MediaType("application", "vnd.mapbox-vector-tile")));
+                }
+            } else {
+                MediaType mediaType = requestContext.getAcceptableMediaTypes()
+                                                    .get(0);
+                corsEnabled = mediaType.isCompatible(MediaType.APPLICATION_JSON_TYPE) || mediaType.isCompatible(new MediaType("application", "vnd.mapbox-vector-tile"));
+            }
+
+            if (corsEnabled) {
                 responseContext.getHeaders()
                                .add(
                                        "Access-Control-Allow-Origin", "*");
