@@ -82,7 +82,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
                                 .replaceInPath("/rest/services", getExternalUri().get()
                                                                                  .getPath())
                                 .ensureLastPathSegment("___static___")
-                                .ensureTrailingSlash()
+                                .ensureNoTrailingSlash()
                                 .getPath();
         }
 
