@@ -59,6 +59,7 @@ public class OgcApiLandingPageView extends OgcApiView {
     public String additionalLinksTitle;
     public String expertInformationTitle;
     public String externalDocsTitle;
+    public String attributionTitle;
     public String none;
     public boolean isLandingPage = true;
 
@@ -123,6 +124,7 @@ public class OgcApiLandingPageView extends OgcApiView {
         this.apiInformationTitle = i18n.get ("apiInformationTitle", language);
         this.mainLinksTitle = i18n.get ("mainLinksTitle", language);
         this.externalDocsTitle = i18n.get ("externalDocsTitle", language);
+        this.attributionTitle = i18n.get ("attributionTitle", language);
         this.none = i18n.get ("none", language);
     }
 

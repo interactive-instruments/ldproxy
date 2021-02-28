@@ -96,7 +96,8 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
 
         ImmutableLandingPage.Builder apiLandingPage = new ImmutableLandingPage.Builder()
                 .title(apiData.getLabel())
-                .description(apiData.getDescription().orElse(""))
+                .description(apiData.getDescription())
+                .attribution(apiData.getMetadata().flatMap(md -> md.getAttribution()))
                 .externalDocs(apiData.getExternalDocs())
                 .extent(Optional.ofNullable(spatialExtent))
                 .links(links)

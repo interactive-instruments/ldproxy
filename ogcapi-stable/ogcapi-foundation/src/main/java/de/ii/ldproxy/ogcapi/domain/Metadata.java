@@ -32,4 +32,6 @@ public interface Metadata {
     List<String> getKeywords();
 
     Optional<String> getVersion();
+
+    Optional<String> getAttribution();
 }
