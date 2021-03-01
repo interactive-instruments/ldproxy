@@ -48,15 +48,11 @@ public class ServiceOverviewView extends OgcApiView {
     public String getDatasetsAsString() {
         return data
                 .stream()
-                .map(api -> "{ \"@type\": \"Dataset\", \"name\": \"" +
-                        api.getTitle().orElse(api.getId()).replace("\"", "\\\"") +
-                        "\", \"description\": \"" +
-                        api.getDescription().orElse("").replace("\"", "\\\"") +
-                        "\", \"url\": \"" +
-                        api.getLandingPageUri() +
-                        "\", \"sameAs\": \"" +
-                        api.getLandingPageUri() +
-                        "\" }\n")
+                .map(api -> "{ \"@type\": \"Dataset\", " +
+                        "\"name\": \"" + api.getTitle().orElse(api.getId()).replace("\"", "\\\"") + "\", " +
+                        "\"description\": \"" + api.getDescription().orElse("").replace("\"", "\\\"") + "\", " +
+                        "\"url\": \"" + api.getLandingPageUri() + "\", " +
+                        "\"sameAs\": \"" + api.getLandingPageUri() + "\" }")
                 .collect(Collectors.joining(", "));
     }
 

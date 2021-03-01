@@ -1,10 +1,7 @@
 package de.ii.ldproxy.ogcapi.common.domain;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.Link;
@@ -16,13 +13,10 @@ import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 
 import javax.annotation.Nullable;
 import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -35,8 +29,6 @@ import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84;
 import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.mayThrow;
 
 public abstract class OgcApiDatasetView extends OgcApiView {
-
-    public static DateFormat YYYY_MM_DD = new SimpleDateFormat("yyyy-MM-dd");
 
     protected final Optional<BoundingBox> bbox;
     protected final Optional<TemporalExtent> temporalExtent;
@@ -146,10 +138,11 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                 (!embedded ? "\"@context\": \"https://schema.org/\", " : "") +
                 "\"@type\": \"Dataset\", " +
                 "\"name\": \"" + collection.map(FeatureTypeConfiguration::getLabel)
-                                           .orElse(apiData.getLabel()) + "\", " +
+                                           .orElse(apiData.getLabel())
+                                           .replace("\"", "\\\"") + "\", " +
                 collection.map(FeatureTypeConfiguration::getDescription)
                           .orElse(apiData.getDescription())
-                          .map(s -> "\"description\": \""+s+"\", ")
+                          .map(s -> "\"description\": \"" + s.replace("\"", "\\\"") + "\", ")
                           .orElse("") +
                 (!embedded ? "\"keywords\": [ " + String.join(",", metadata.getKeywords()
                                                                               .stream()

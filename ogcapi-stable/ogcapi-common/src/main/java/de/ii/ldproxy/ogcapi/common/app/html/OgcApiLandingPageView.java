@@ -10,34 +10,21 @@ package de.ii.ldproxy.ogcapi.common.app.html;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.OgcApiDatasetView;
 import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.mayThrow;
 
 public class OgcApiLandingPageView extends OgcApiDatasetView {
 
