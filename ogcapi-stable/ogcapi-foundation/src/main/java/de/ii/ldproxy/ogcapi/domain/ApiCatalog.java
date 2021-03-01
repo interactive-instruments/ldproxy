@@ -27,9 +27,6 @@ public abstract class ApiCatalog extends PageRepresentation {
     @JsonIgnore
     public abstract String getUrlPrefix();
 
-    @JsonIgnore
-    public abstract String getGoogleSiteVerification();
-
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
 }
