@@ -46,7 +46,7 @@ public class FeatureCollectionView extends DatasetView {
     public boolean hideMap = true; // set to "hide"; change to "false" when we see a geometry
     public PropertyDTO links;
     public Set<Map.Entry<String, String>> filterFields;
-    public Map<String, String> bbox2;
+    public Map<String, String> bbox;
     public TemporalExtent temporalExtent;
     public URICustomizer uriBuilder;
     public URICustomizer uriBuilderWithFOnly;

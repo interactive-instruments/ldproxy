@@ -32,7 +32,6 @@ public class DatasetView extends GenericView {
     public List<String> keywords;
     public String version;
     public String license;
-    public String bbox;
     public String url;
     public String metadataUrl;
     public boolean noIndex;
