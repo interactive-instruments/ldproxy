@@ -1,5 +1,33 @@
 # Changelog
 
+## v2.5.1 (08/02/2021)
+
+#### Fixed bugs
+
+-  codelists return empty strings [#359](https://github.com/interactive-instruments/ldproxy/issues/359)
+
+---
+
+## v2.5.0 (04/02/2021)
+
+#### Implemented enhancements
+
+-  HTML: support string template filters in itemLabelFormat [#351](https://github.com/interactive-instruments/ldproxy/issues/351)
+-  add optional mapping validation on startup [#260](https://github.com/interactive-instruments/ldproxy/issues/260)
+
+#### Improvements
+
+-  handle queryables that are not in the provider schema [#350](https://github.com/interactive-instruments/ldproxy/issues/350)
+-  allow more characters in {featureId} [#349](https://github.com/interactive-instruments/ldproxy/issues/349)
+
+#### Fixed bugs
+
+-  GeoJSON: errors in complex object structures with arrays [#347](https://github.com/interactive-instruments/ldproxy/issues/347)
+-  GeoJSON MultiPoint has extra array level [#344](https://github.com/interactive-instruments/ldproxy/issues/344)
+-  double encode/decode in featureId [#343](https://github.com/interactive-instruments/ldproxy/issues/343)
+
+---
+
 ## v2.4.0 (10/12/2020)
 
 #### Implemented enhancements

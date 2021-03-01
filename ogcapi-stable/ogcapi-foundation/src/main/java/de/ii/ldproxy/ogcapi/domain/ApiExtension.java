@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+
 public interface ApiExtension {
 
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
@@ -29,5 +32,10 @@ public interface ApiExtension {
 
     default <T extends ExtensionConfiguration> boolean isExtensionEnabled(ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
         return extendableConfiguration.getExtension(clazz).filter(ExtensionConfiguration::isEnabled).isPresent();
+    }
+
+    default ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        // optional start actions
+        return ValidationResult.of();
     }
 }

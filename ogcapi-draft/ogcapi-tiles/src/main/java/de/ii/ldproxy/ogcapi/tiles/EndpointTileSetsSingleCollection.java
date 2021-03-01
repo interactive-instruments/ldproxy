@@ -8,9 +8,21 @@
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceSet;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import org.apache.felix.ipojo.annotations.Component;
@@ -28,7 +40,6 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * Handle responses under '/collection/{collectionId}/tiles'.
@@ -103,19 +114,17 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
             final String path = "/collections/{collectionId}" + subSubPath;
             final HttpMethods method = HttpMethods.GET;
             final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
             final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
             if (!optCollectionIdParam.isPresent()) {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    if (explode)
-                        queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
+                    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
                     String operationSummary = "retrieve a list of the available tile sets";
                     Optional<String> operationDescription = Optional.of("This operation fetches the list of tile sets available for this collection.");
                     String resourcePath = path.replace("{collectionId}",collectionId);

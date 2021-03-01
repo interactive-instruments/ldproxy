@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
@@ -29,24 +28,34 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.text.MessageFormat;
+import java.util.AbstractMap;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -54,13 +63,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
@@ -73,15 +81,18 @@ public class EndpointFeatures extends EndpointSubCollection {
     @Requires
     SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
 
+    private final EntityRegistry entityRegistry;
     private final FeaturesCoreProviders providers;
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreQueriesHandler queryHandler;
 
     public EndpointFeatures(@Requires ExtensionRegistry extensionRegistry,
+                            @Requires EntityRegistry entityRegistry,
                             @Requires FeaturesCoreProviders providers,
                             @Requires FeaturesQuery ogcApiFeaturesQuery,
                             @Requires FeaturesCoreQueriesHandler queryHandler) {
         super(extensionRegistry);
+        this.entityRegistry = entityRegistry;
         this.providers = providers;
         this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
         this.queryHandler = queryHandler;
@@ -97,6 +108,97 @@ public class EndpointFeatures extends EndpointSubCollection {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
         return formats;
+    }
+
+    @Override
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ValidationResult result = super.onStartup(apiData, apiValidation);
+
+        // no additional operational checks for now, only validation; we can stop, if no validation is requested
+        if (apiValidation== MODE.NONE)
+            return result;
+
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+                .from(result)
+                .mode(apiValidation);
+
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+
+        List<String> invalidCollections = FeaturesCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
+        for (String invalidCollection : invalidCollections) {
+            builder.addStrictErrors(MessageFormat.format("The Collection ''{0}'' is invalid, because its feature type was not found in the provider schema.", invalidCollection));
+        }
+
+        // get Features Core configurations to process
+        Map<String, FeaturesCoreConfiguration> coreConfigs = apiData.getCollections()
+                                                                 .entrySet()
+                                                                 .stream()
+                                                                 .map(entry -> {
+                                                                     final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                                                                     final FeaturesCoreConfiguration config = collectionData.getExtension(FeaturesCoreConfiguration.class).orElse(null);
+                                                                     if (Objects.isNull(config))
+                                                                         return null;
+                                                                     return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
+                                                                 })
+                                                                 .filter(Objects::nonNull)
+                                                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Map<String, Collection<String>> transformationKeys = coreConfigs.entrySet()
+                                                   .stream()
+                                                   .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                                                      .getTransformations()
+                                                                                                                                      .keySet()))
+                                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
+            for (String property : stringCollectionEntry.getValue()) {
+                builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
+            }
+        }
+
+        transformationKeys = coreConfigs.entrySet()
+                          .stream()
+                          .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
+                                                                                                    .getQueryables()
+                                                                                                    .orElse(FeaturesCollectionQueryables.of())
+                                                                                                    .getAll()))
+                          .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
+            for (String property : stringCollectionEntry.getValue()) {
+                builder.addStrictErrors(MessageFormat.format("A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
+            }
+        }
+
+        for (Map.Entry<String,FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
+            String collectionId = entry.getKey();
+            FeaturesCoreConfiguration config = entry.getValue();
+            if (config.getMinimumPageSize()<1) {
+                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be a positive integer.", config.getMinimumPageSize(), collectionId));
+            }
+            if (config.getMinimumPageSize()>config.getMaximumPageSize()) {
+                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be smaller than the maximum page size ''{2}''.", config.getMinimumPageSize(), collectionId, config.getMaximumPageSize()));
+            }
+            if (config.getMinimumPageSize()>config.getDefaultPageSize()) {
+                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be smaller than the default page size ''{2}''.", config.getMinimumPageSize(), collectionId, config.getDefaultPageSize()));
+            }
+            if (config.getMaximumPageSize()<config.getDefaultPageSize()) {
+                builder.addStrictErrors(MessageFormat.format("The maxmimum page size ''{0}'' in collection ''{1}'' is invalid, it must be larger than the default page size ''{2}''.", config.getMaximumPageSize(), collectionId, config.getDefaultPageSize()));
+            }
+        }
+
+        Set<String> codelists = entityRegistry.getEntitiesForType(Codelist.class)
+                                              .stream()
+                                              .map(Codelist::getId)
+                                              .collect(Collectors.toUnmodifiableSet());
+        for (Map.Entry<String, FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
+            String collectionId = entry.getKey();
+            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+                String property = entry2.getKey();
+                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+            }
+        }
+
+        return builder.build();
     }
 
     @Override
@@ -117,14 +219,12 @@ public class EndpointFeatures extends EndpointSubCollection {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
-                            getQueryParameters(extensionRegistry, apiData, path);
+                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
                     final String operationSummary = "retrieve features in the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The response is a document consisting of features in the collection. " +
                             "The features included in the response are determined by the server based on the query parameters of the request. " +
@@ -155,14 +255,12 @@ public class EndpointFeatures extends EndpointSubCollection {
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = explode ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = explode ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId) :
-                            getQueryParameters(extensionRegistry, apiData, path);
+                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
                     final String operationSummary = "retrieve a feature in the feature collection '" + collectionId + "'";
                     final Optional<String> operationDescription = Optional.of("Fetch the feature with id `{featureId}`.");
                     String resourcePath = "/collections/" + collectionId + subSubPath;
@@ -184,6 +282,14 @@ public class EndpointFeatures extends EndpointSubCollection {
 
     @Override
     public ImmutableList<OgcApiQueryParameter> getQueryParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, String collectionId) {
+        if (collectionId.equals("{collectionId}")) {
+            Optional<String> representativeCollectionId = getRepresentativeCollectionId(apiData);
+            if (representativeCollectionId.isEmpty())
+                return getQueryParameters(extensionRegistry, apiData, definitionPath);
+
+            collectionId = representativeCollectionId.get();
+        }
+
         ImmutableList<OgcApiQueryParameter> generalList = super.getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId);
 
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
@@ -200,19 +306,20 @@ public class EndpointFeatures extends EndpointSubCollection {
             // TODO
         }
 
-        if (definitionPath.equals("/collections/{collectionId}/items"))
+        if (definitionPath.equals("/collections/{collectionId}/items")) {
+            String finalCollectionId = collectionId;
             return ImmutableList.<OgcApiQueryParameter>builder()
                     .addAll(generalList)
                     .addAll(filterableFields.keySet().stream()
                         .map(field -> {
-                            Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, field);
+                            Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData, finalCollectionId, field);
                             if (schema2.isEmpty()) {
-                                LOGGER.warn("Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.", field, collectionId);
+                                LOGGER.warn("Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.", field, finalCollectionId);
                                 return null;
                             }
                             return new ImmutableQueryParameterTemplateQueryable.Builder()
                                     .apiId(apiData.getId())
-                                    .collectionId(collectionId)
+                                    .collectionId(finalCollectionId)
                                     .name(field)
                                     .description("Filter the collection by property '" + field + "'")
                                     .schema(schema2.get())
@@ -221,6 +328,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList()))
                     .build();
+        }
 
         return generalList;
     }

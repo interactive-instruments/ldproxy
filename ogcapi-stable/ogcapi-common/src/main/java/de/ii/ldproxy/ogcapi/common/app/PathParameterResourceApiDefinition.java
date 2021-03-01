@@ -1,10 +1,10 @@
-package de.ii.ldproxy.ogcapi.oas30.app;
+package de.ii.ldproxy.ogcapi.common.app;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,8 +36,8 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
     }
 
     @Override
-    public Set<String> getValues(OgcApiDataV2 apiData) {
-        return ImmutableSet.of();
+    public List<String> getValues(OgcApiDataV2 apiData) {
+        return ImmutableList.of();
     }
 
     @Override
@@ -51,17 +52,17 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
 
     @Override
     public String getDescription() {
-        return "The filename of a file used by Swagger UI.";
+        return "The filename of a file referenced from an API definition.";
     }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
-                definitionPath.matches("/api/[^/]+/?");
+                definitionPath.equals("/api/{resource}");
     }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return Oas30Configuration.class;
+        return CommonConfiguration.class;
     }
 }

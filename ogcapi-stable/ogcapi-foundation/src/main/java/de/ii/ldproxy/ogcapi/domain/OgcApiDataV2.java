@@ -19,6 +19,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
@@ -78,6 +79,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     public abstract Optional<ExternalDocumentation> getExternalDocs();
 
     public abstract Optional<CollectionExtent> getDefaultExtent();
+
+    @Value.Default
+    public MODE getApiValidation() {
+        return MODE.NONE;
+    }
 
     // TODO: move to ServiceData?
     public abstract List<String> getTags();

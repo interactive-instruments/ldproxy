@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.app.json;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage;
@@ -19,14 +20,15 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * @author zahnen
  */
 @Component
-@Provides(specifications = {CommonFormatJson.class, CommonFormatExtension.class, FormatExtension.class, ApiExtension.class})
+@Provides(specifications = {CommonFormatJson.class, CommonFormatExtension.class, FormatExtension.class, ApiExtension.class, ConformanceClass.class})
 @Instantiate
-public class CommonFormatJson implements CommonFormatExtension {
+public class CommonFormatJson implements CommonFormatExtension, ConformanceClass {
 
     @Requires
     SchemaGenerator schemaGenerator;
@@ -45,6 +47,11 @@ public class CommonFormatJson implements CommonFormatExtension {
     public CommonFormatJson() {
         schemaLandingPage = schemaGenerator.getSchema(LandingPage.class);
         schemaConformance = schemaGenerator.getSchema(ConformanceDeclaration.class);
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/json");
     }
 
     @Override
