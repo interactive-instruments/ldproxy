@@ -185,6 +185,9 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
                               })
                               .collect(Collectors.toList()));
 
+        if (Objects.nonNull(config.getGoogleSiteVerification()))
+            builder.googleSiteVerification(config.getGoogleSiteVerification());
+
         for (ApiCatalogExtension extension : extensionRegistry.getExtensionsForType(ApiCatalogExtension.class)) {
             builder = extension.process(builder,
                                         uriCustomizer.copy(),
