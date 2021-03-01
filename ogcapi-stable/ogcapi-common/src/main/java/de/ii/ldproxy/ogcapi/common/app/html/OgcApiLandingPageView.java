@@ -9,12 +9,14 @@ package de.ii.ldproxy.ogcapi.common.app.html;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage;
+import de.ii.ldproxy.ogcapi.common.domain.OgcApiDatasetView;
 import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -22,10 +24,12 @@ import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -35,19 +39,17 @@ import java.util.stream.Collectors;
 
 import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.mayThrow;
 
-public class OgcApiLandingPageView extends OgcApiView {
+public class OgcApiLandingPageView extends OgcApiDatasetView {
+
     private final LandingPage apiLandingPage;
     public final String mainLinksTitle;
     public final String apiInformationTitle;
-    public Optional<String> catalogUrl;
+    public List<Link> distributionLinks;
     public String dataSourceUrl;
     public String keywords;
     public String keywordsWithQuotes;
     public Metadata metadata;
-    public URICustomizer uriCustomizer;
     public boolean spatialSearch;
-    public Map<String, String> bbox2;
-    public TemporalExtent temporalExtent;
     public String dataTitle;
     public String apiDefinitionTitle;
     public String apiDocumentationTitle;
@@ -61,7 +63,7 @@ public class OgcApiLandingPageView extends OgcApiView {
     public String externalDocsTitle;
     public String attributionTitle;
     public String none;
-    public boolean isLandingPage = true;
+    public boolean isDataset = true;
 
     public OgcApiLandingPageView(OgcApiDataV2 apiData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
@@ -71,45 +73,21 @@ public class OgcApiLandingPageView extends OgcApiView {
                 apiLandingPage.getTitle()
                               .orElse(apiData.getId()),
                 apiLandingPage.getDescription()
-                              .orElse(""));
+                              .orElse(null),
+                uriCustomizer,
+                apiLandingPage.getExtent());
         this.apiLandingPage = apiLandingPage;
-        this.uriCustomizer = uriCustomizer;
 
-        BoundingBox spatialExtent = apiData.getSpatialExtent().orElse(null);
-        this.bbox2 = spatialExtent==null ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent.getXmin()),
-                "minLat", Double.toString(spatialExtent.getYmin()),
-                "maxLng", Double.toString(spatialExtent.getXmax()),
-                "maxLat", Double.toString(spatialExtent.getYmax()));
-        this.temporalExtent = apiData.getTemporalExtent().orElse(null);
         this.spatialSearch = false;
 
-        if (apiData.getMetadata().isPresent()) {
-            this.metadata = apiData.getMetadata().get();
-
-            if (!metadata.getKeywords()
-                         .isEmpty()) {
-                this.keywords = Joiner.on(',')
-                                      .skipNulls()
-                                      .join(metadata.getKeywords());
-                this.keywordsWithQuotes = String.join(",", metadata
-                        .getKeywords()
-                        .stream()
-                        .filter(keyword -> Objects.nonNull(keyword) && !keyword.isEmpty())
-                        .map(keyword -> ("\"" + keyword + "\""))
-                        .collect(Collectors.toList()));
-            }
-        }
-
-        catalogUrl = links.stream()
-                          .filter(link -> Objects.equals(link.getRel(), "self"))
-                          .map(Link::getHref)
-                          .map(mayThrow(url -> new URICustomizer(url)
-                                  .clearParameters()
-                                  .removeLastPathSegments(apiData.getSubPathLength())
-                                  .ensureNoTrailingSlash()
-                                  .toString()))
-                          .findFirst();
+        this.keywords = apiData.getMetadata()
+                               .map(Metadata::getKeywords)
+                               .map(v -> Joiner.on(',')
+                                               .skipNulls()
+                                               .join(v))
+                               .orElse(null);
+        distributionLinks = Objects.requireNonNullElse((List<Link>) apiLandingPage.getExtensions()
+                                                                                  .get("datasetDownloadLinks"), ImmutableList.of());
 
         this.dataTitle = i18n.get("dataTitle", language);
         this.apiDefinitionTitle = i18n.get("apiDefinitionTitle", language);
@@ -128,12 +106,9 @@ public class OgcApiLandingPageView extends OgcApiView {
         this.none = i18n.get ("none", language);
     }
 
-    public List<Link> getLinks() {
-        return links
-                .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|data|tiles|styles|service-desc|service-doc|ogc-dapa-processes|ldp-map)$"))
-                .collect(Collectors.toList());
-    }
+    public List<Link> getDistributionLinks() {
+        return distributionLinks;
+    };
 
     public Optional<Link> getData() {
         return links
@@ -184,42 +159,11 @@ public class OgcApiLandingPageView extends OgcApiView {
                 .findFirst();
     }
 
-    public List<Link> getDistributions() {
-        return apiData.getCollections()
-                .values()
-                .stream()
-                .filter(featureType -> apiData.isCollectionEnabled(featureType.getId()))
-                .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                .map(featureType -> new ImmutableLink.Builder()
-                        .title(featureType.getLabel())
-                        .href(uriCustomizer.removeParameters().ensureLastPathSegments("collections",featureType.getId(),"items").toString())
-                        .type("application/geo+json") // TODO: determine from extensions
-                        .rel("start")
-                        .build())
-                .collect(Collectors.toList());
-    }
-
     public Optional<ExternalDocumentation> getExternalDocs() {
         return apiLandingPage.getExternalDocs();
     }
 
-    public String getDistributionsAsString() {
-        return getDistributions()
-                .stream()
-                .map(link -> "{\"@type\":\"DataDownload\",\"name\":\""+link.getTitle()+"\",\"encodingFormat\":\""+link.getType()+"\",\"contentUrl\":\""+link.getHref()+"\"}")
-                .collect(Collectors.joining(","));
-    }
-
-    public String getCanonicalUrl() {
-        return links
-                .stream()
-                .filter(link -> Objects.equals(link.getRel(), "self"))
-                .map(Link::getHref)
-                .map(mayThrow(url -> new URICustomizer(url)
-                        .clearParameters()
-                        .ensureNoTrailingSlash()
-                        .toString()))
-                .findFirst()
-                .orElse(null);
+    public Optional<String> getSchemaOrgDataset() {
+        return Optional.of(getSchemaOrgDataset(apiData, Optional.empty(), uriCustomizer.copy(), false));
     }
 }

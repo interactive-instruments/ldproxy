@@ -7,10 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.Objects;
 
 public class OgcApiExtentTemporal {
+
+    public static DateFormat YYYY_MM_DD = new SimpleDateFormat("yyyy-MM-dd");
+    public static DateFormat YYYY_MM_DD_HH_MM_SS = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
     private String[][] interval;
     private String trs;
 
@@ -29,6 +36,12 @@ public class OgcApiExtentTemporal {
 
     public String[][] getInterval() {
         return interval;
+    }
+
+    public String getFirstIntervalIso8601() {
+        return String.format("%s/%s",
+                             Objects.requireNonNullElse(interval[0][0], ".."),
+                             Objects.requireNonNullElse(interval[0][1], ".."));
     }
 
     public void setInterval(String[][] interval) {

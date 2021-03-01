@@ -97,7 +97,8 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                         .type(mtype.type()
                                    .toString())
                         .title(i18n.get("itemsLink", language)
-                                   .replace("{{collection}}", featureType.getLabel()))
+                                   .replace("{{collection}}", featureType.getLabel())
+                                   .replace("{{type}}", mtype.label()))
                         .build()));
 
         Optional<String> describeFeatureTypeUrl = Optional.empty();

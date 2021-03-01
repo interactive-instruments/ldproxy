@@ -101,27 +101,11 @@
 }
 </script>
 {{/isApiCatalog}}
-{{#isLandingPage}}
+{{#isDataset}}
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org/",
-  "@type": "Dataset",
-  "name": "{{title}}",
-  "description": "{{{description}}}",
-  "url": "{{canonicalUrl}}",
-  {{#catalogUrl}}"includedInDataCatalog": { "@type": "DataCatalog", "url": "{{.}}"},{{/catalogUrl}}
-  {{#metadata}}
-  {{#keywordsWithQuotes}}"keywords": [ {{{.}}} ],{{/keywordsWithQuotes}}
-  "creator": { "@type": "Organization"{{#contactName}}, "name": "{{.}}"{{/contactName}}{{#contactUrl}}, "url": "{{.}}"{{/contactUrl}}, "contactPoint": { "@type": "ContactPoint", "contactType": "technical support"{{#contactEmail}}, "email": "{{.}}"{{/contactEmail}}{{#contactPhone}}, "telephone": "{{.}}"{{/contactPhone}}{{#contactUrl}}, "url": "{{.}}"{{/contactUrl}} } },
-  {{#licenseUrl}}"license":"{{.}}",{{/licenseUrl}}
-  {{/metadata}}
-  {{#dataSourceUrl}}"isBasedOn":"{{.}}",{{/dataSourceUrl}}
-  {{#temporalCoverage}}"temporalCoverage":"{{.}}",{{/temporalCoverage}}
-  {{#spatialCoverage}}"spatialCoverage":{"@type":"Place", "geo":{"@type":"GeoShape","box":"{{.}}"} },{{/spatialCoverage}}
-  "distribution":[{{{distributionsAsString}}}]
-}
+{{{schemaOrgDataset}}}
 </script>
-{{/isLandingPage}}
+{{/isDataset}}
 </head>
 <body>
 

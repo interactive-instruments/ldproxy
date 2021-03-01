@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
@@ -63,6 +64,13 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
                         .rel("data")
                         .title(i18n.get("dataLink",language) + suffix)
                         .build());
+
+        landingPageBuilder.putExtensions("datasetDownloadLinks", apiData.getExtension(CollectionsConfiguration.class)
+                                                                 .map(CollectionsConfiguration::getAdditionalLinks)
+                                                                 .orElse(ImmutableList.of())
+                                                                 .stream()
+                                                                 .filter(link -> link.getRel().equals("enclosure"))
+                                                                 .collect(Collectors.toUnmodifiableList()));
 
         return landingPageBuilder;
     }

@@ -41,7 +41,7 @@ public class TileSetsView extends OgcApiView {
     public String none;
     public boolean withOlMap;
     public boolean spatialSearch;
-    public Map<String, String> bbox2;
+    public Map<String, String> bbox;
     private Map<String, String> center;
     public Map<String, String> temporalExtent;
 
@@ -64,7 +64,7 @@ public class TileSetsView extends OgcApiView {
                      .orElse(""));
 
         Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
-        this.bbox2 = spatialExtent.map(boundingBox -> ImmutableMap.of(
+        this.bbox = spatialExtent.map(boundingBox -> ImmutableMap.of(
                 "minLng", Double.toString(boundingBox.getXmin()),
                 "minLat", Double.toString(boundingBox.getYmin()),
                 "maxLng", Double.toString(boundingBox.getXmax()),
