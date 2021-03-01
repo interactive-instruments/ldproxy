@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets
 
 import static org.mockito.Mockito.mock
 
-class GeoJsonWriterCrsSpec2 extends Specification {
+class GeoJsonWriterCrsSpec extends Specification {
 
     @Shared EpsgCrs DEFAULT_CRS = OgcCrs.CRS84
     @Shared EpsgCrs OTHER_CRS = EpsgCrs.of(4258)

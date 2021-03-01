@@ -18,7 +18,7 @@ import java.util.stream.IntStream
 
 import static org.mockito.Mockito.mock
 
-class GeoJsonWriterPropertiesSpec2 extends Specification {
+class GeoJsonWriterPropertiesSpec extends Specification {
 
     @Shared FeatureProperty propertyMapping = new ImmutableFeatureProperty.Builder().name("p1")
             .path("")

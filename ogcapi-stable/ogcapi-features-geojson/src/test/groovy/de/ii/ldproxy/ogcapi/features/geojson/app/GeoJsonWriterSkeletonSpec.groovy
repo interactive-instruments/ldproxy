@@ -9,7 +9,7 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureType
 import spock.lang.Shared
 import spock.lang.Specification
 
-class GeoJsonWriterSkeletonSpec2 extends Specification {
+class GeoJsonWriterSkeletonSpec extends Specification {
 
     @Shared FeatureType featureMapping = new ImmutableFeatureType.Builder().name("f1")
             .build()

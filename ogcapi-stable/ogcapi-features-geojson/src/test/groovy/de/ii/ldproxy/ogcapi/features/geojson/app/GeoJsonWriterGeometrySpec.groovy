@@ -13,7 +13,7 @@ import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry
 import spock.lang.Shared
 import spock.lang.Specification
 
-class GeoJsonWriterGeometrySpec2 extends Specification {
+class GeoJsonWriterGeometrySpec extends Specification {
 
     @Shared FeatureType featureMapping = new ImmutableFeatureType.Builder().name("f1")
             .properties(ImmutableMap.of())
