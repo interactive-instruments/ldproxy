@@ -156,10 +156,10 @@ class OgcApiCoreSpecCollections extends Specification {
                         }
                     })
                 }
-                if (extensionType == CollectionsExtension.class) {
+                if (extensionType == de.ii.ldproxy.ogcapi.collections.domain.CollectionsExtension.class) {
                     return ImmutableList.of((T) new de.ii.ldproxy.ogcapi.features.core.app.CollectionsExtensionFeatures(registry))
                 }
-                if (extensionType == CollectionExtension.class) {
+                if (extensionType == de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension.class) {
                     FeaturesCoreProviders providers = new FeaturesCoreProviders() {
                         @Override
                         FeatureProvider2 getFeatureProvider(OgcApiDataV2 apiData) {
