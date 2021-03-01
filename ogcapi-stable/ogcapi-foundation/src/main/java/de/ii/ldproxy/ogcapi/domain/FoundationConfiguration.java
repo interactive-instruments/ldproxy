@@ -36,6 +36,9 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
     @Nullable
     String getApiCatalogDescription();
 
+    @Nullable
+    String getGoogleSiteVerification();
+
     @Override
     default Builder getBuilder() {
         return new ImmutableFoundationConfiguration.Builder();
