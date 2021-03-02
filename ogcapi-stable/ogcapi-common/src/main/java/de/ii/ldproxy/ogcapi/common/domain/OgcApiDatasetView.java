@@ -30,6 +30,9 @@ import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.mayThrow;
 
 public abstract class OgcApiDatasetView extends OgcApiView {
 
+    static final String INDENT = "  ";
+    static final String NEW_LINE = "\n" + INDENT;
+
     protected final Optional<BoundingBox> bbox;
     protected final Optional<TemporalExtent> temporalExtent;
     protected final Optional<OgcApiExtentTemporal> temporalExtentIso;
@@ -134,75 +137,82 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                                                                .ensureNoTrailingSlash()
                                                                .toString());
 
-        return "{ " +
-                (!embedded ? "\"@context\": \"https://schema.org/\", " : "") +
-                "\"@type\": \"Dataset\", " +
-                "\"name\": \"" + collection.map(FeatureTypeConfiguration::getLabel)
+        return "{" + NEW_LINE +
+                (!embedded ? "\"@context\": \"https://schema.org/\"," + NEW_LINE : "") +
+                (embedded ? INDENT : "") + "\"@type\": \"Dataset\"," + NEW_LINE +
+                (embedded ? INDENT : "") + "\"name\": \"" + collection.map(FeatureTypeConfiguration::getLabel)
                                            .orElse(apiData.getLabel())
-                                           .replace("\"", "\\\"") + "\", " +
+                                           .replace("\"", "\\\"") + "\"," + NEW_LINE +
                 collection.map(FeatureTypeConfiguration::getDescription)
                           .orElse(apiData.getDescription())
-                          .map(s -> "\"description\": \"" + s.replace("\"", "\\\"") + "\", ")
+                          .map(s -> (embedded ? INDENT : "") + "\"description\": \"" + s.replace("\"", "\\\"") + "\"," + NEW_LINE)
                           .orElse("") +
                 (!embedded ? "\"keywords\": [ " + String.join(",", metadata.getKeywords()
                                                                               .stream()
                                                                               .filter(keyword -> Objects.nonNull(keyword) && !keyword.isEmpty())
                                                                               .map(keyword -> ("\"" + keyword + "\""))
-                                                                              .collect(Collectors.toList())) + " ], " : "") +
-                "\"creator\": { \"@type\": \"Organization\"" +
+                                                                              .collect(Collectors.toList())) + " ]," + NEW_LINE : "") +
+                (embedded ? INDENT : "") + "\"creator\": {" + NEW_LINE +
+                (embedded ? INDENT : "") + INDENT + "\"@type\": \"Organization\"" +
                 metadata.getContactName()
-                        .map(s -> ", \"name\": \""+s+"\"")
+                        .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"name\": \""+s+"\"")
                         .orElse("") +
                 metadata.getContactUrl()
-                        .map(s -> ", \"url\": \""+s+"\"")
+                        .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"url\": \""+s+"\"")
                         .orElse("") +
                 (metadata.getContactEmail().isPresent() || metadata.getContactPhone().isPresent() ||metadata.getContactUrl().isPresent()
-                        ? ", \"contactPoint\": { \"@type\": \"ContactPoint\", \"contactType\": \"technical support\"" +
+                        ? "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"contactPoint\": {" + NEW_LINE +
+                        (embedded ? INDENT : "") + INDENT + INDENT + "\"@type\": \"ContactPoint\"," + NEW_LINE +
+                        (embedded ? INDENT : "") + INDENT + INDENT + "\"contactType\": \"technical support\"" +
                         metadata.getContactEmail()
-                                .map(s -> ", \"email\": \""+s+"\"")
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + INDENT + "\"email\": \""+s+"\"")
                                 .orElse("") +
                         metadata.getContactPhone()
-                                .map(s -> ", \"telephone\": \""+s+"\"")
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + INDENT + "\"telephone\": \""+s+"\"")
                                 .orElse("") +
                         metadata.getContactUrl()
-                                .map(s -> ", \"url\": \""+s+"\"")
-                                .orElse("") + "}"
-                        : "") +
-                "}, " +
-                "\"url\":\"" + url + "\", " +
-                "\"sameAs\":\"" + url + "\"" +
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + INDENT + "\"url\": \""+s+"\"")
+                                .orElse("") + NEW_LINE + (embedded ? INDENT : "") + INDENT + "}"
+                        : "") + NEW_LINE +
+                (embedded ? INDENT : "") +"}," + NEW_LINE +
+                // (embedded ? INDENT : "") +"\"sameAs\":\"" + url + "\"," + NEW_LINE +
+                (embedded ? INDENT : "") +"\"url\":\"" + url + "\"" +
                 (metadata.getLicenseUrl().isPresent() || metadata.getLicenseName().isPresent()
-                        ? ", \"license\": { \"@type\": \"CreativeWork\"" + metadata.getLicenseName()
-                                                                                   .map(s -> ", \"name\": \"" + s + "\"")
-                                                                                   .orElse("") + metadata.getLicenseUrl()
-                                                                                                         .map(s -> ", \"url\": \"" + s + "\"")
-                                                                                                         .orElse("") + " }"
+                        ? "," + NEW_LINE + (embedded ? INDENT : "") + "\"license\": {" + NEW_LINE +
+                        (embedded ? INDENT : "") + INDENT + "\"@type\": \"CreativeWork\"" +
+                        metadata.getLicenseName()
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"name\": \"" + s + "\"")
+                                .orElse("") +
+                        metadata.getLicenseUrl()
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"url\": \"" + s + "\"")
+                                .orElse("") +
+                        NEW_LINE + (embedded ? INDENT : "") + "}"
                         : "") +
                 (!embedded
-                        ? getTemporalCoverage().map(s -> ", \"temporalCoverage\": \"" + s + "\"")
+                        ? getTemporalCoverage().map(s -> "," + NEW_LINE + "\"temporalCoverage\": \"" + s + "\"")
                                                   .orElse("" )
                         : "") +
                 (!embedded
-                        ? getSpatialCoverage().map(s -> ", \"spatialCoverage\": { \"@type\": \"Place\", \"geo\":{ \"@type\": \"GeoShape\", \"box\": \"" + s + "\" } }")
+                        ? getSpatialCoverage().map(s -> "," + NEW_LINE + "\"spatialCoverage\": { \"@type\": \"Place\", \"geo\":{ \"@type\": \"GeoShape\", \"box\": \"" + s + "\" } }")
                                                  .orElse("" )
                         : "") +
                 (!embedded
-                        ? collection.map(s -> ", \"isPartOf\": " + getSchemaOrgDataset(apiData, Optional.empty(), landingPageUriCustomizer.copy(), true))
-                                    .orElse(", \"hasPart\": [ " + String.join(", ", apiData.getCollections()
+                        ? collection.map(s -> "," + NEW_LINE + "\"isPartOf\": " + getSchemaOrgDataset(apiData, Optional.empty(), landingPageUriCustomizer.copy(), true))
+                                    .orElse("," + NEW_LINE + "\"hasPart\": [ " + String.join(", ", apiData.getCollections()
                                                                                            .values()
                                                                                            .stream()
                                                                                            .map(s -> getSchemaOrgDataset(apiData, Optional.of(s), landingPageUriCustomizer.copy(), true))
                                                                                            .collect(Collectors.toUnmodifiableList())) + " ]" +
-                                                    ", \"includedInDataCatalog\": { \"@type\": \"DataCatalog\", \"url\": \"" + landingPageUriCustomizer.copy()
+                                                    "," + NEW_LINE + "\"includedInDataCatalog\": { \"@type\": \"DataCatalog\", \"url\": \"" + landingPageUriCustomizer.copy()
                                                                                                                                                        .removeParameters()
                                                                                                                                                        .ensureNoTrailingSlash()
                                                                                                                                                        .toString()+ "\" }" )
 
                         : "") +
                 (!embedded
-                        ? getDistributionsAsString().map(s -> ", \"distribution\": [ " + s + " ]")
+                        ? getDistributionsAsString().map(s -> "," + NEW_LINE + "\"distribution\": [ " + s + " ]")
                                                     .orElse("")
                         : "") +
-                "}";
+                "\n" + (embedded? INDENT : "") + "}";
     }
 }

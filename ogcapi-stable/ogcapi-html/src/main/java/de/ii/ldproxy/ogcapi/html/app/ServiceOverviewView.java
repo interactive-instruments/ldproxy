@@ -51,8 +51,9 @@ public class ServiceOverviewView extends OgcApiView {
                 .map(api -> "{ \"@type\": \"Dataset\", " +
                         "\"name\": \"" + api.getTitle().orElse(api.getId()).replace("\"", "\\\"") + "\", " +
                         "\"description\": \"" + api.getDescription().orElse("").replace("\"", "\\\"") + "\", " +
-                        "\"url\": \"" + api.getLandingPageUri() + "\", " +
-                        "\"sameAs\": \"" + api.getLandingPageUri() + "\" }")
+                        "\"url\": \"" + api.getLandingPageUri() + "\"" +
+                        // ", \"sameAs\": \"" + api.getLandingPageUri() + "\"" +
+                        " }")
                 .collect(Collectors.joining(", "));
     }
 
