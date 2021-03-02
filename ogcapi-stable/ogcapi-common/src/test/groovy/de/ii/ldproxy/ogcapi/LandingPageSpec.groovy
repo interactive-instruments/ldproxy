@@ -13,8 +13,9 @@ import de.ii.ldproxy.ogcapi.application.OgcApiQueriesHandlerCommon.Query
 import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.ldproxy.ogcapi.features.core.application.ImmutableOgcApiFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.features.core.application.OgcApiFeaturesLandingPageExtension
-import de.ii.ldproxy.ogcapi.infra.rest.ImmutableRequestContext
 import de.ii.xtraplatform.crs.domain.BoundingBox
+import de.ii.xtraplatform.crs.domain.EpsgCrs
+import de.ii.xtraplatform.crs.domain.OgcCrs
 import spock.lang.PendingFeature
 import spock.lang.Specification
 
@@ -116,7 +117,7 @@ class LandingPageSpec extends Specification {
                         .label('FeatureType 1')
                         .description('foo bar')
                         .extent(new ImmutableCollectionExtent.Builder()
-                                .spatial(new BoundingBox())
+                                .spatial(BoundingBox.of(-180.0, -90.0, 180.0, 90.0, OgcCrs.CRS84))
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
                         .build())
