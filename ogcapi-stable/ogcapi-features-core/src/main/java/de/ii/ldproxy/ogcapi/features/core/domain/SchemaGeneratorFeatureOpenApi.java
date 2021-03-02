@@ -173,7 +173,7 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
                         constraints.getEnumValues() :
                         constraints.getEnumValues()
                                    .stream()
-                                   .map(val -> Integer.getInteger(val))
+                                   .map(val -> Integer.parseInt(val))
                                    .collect(Collectors.toList()));
             } else if (constraints.getCodelist().isPresent()) {
                 Optional<Codelist> codelist = entityRegistry.getEntitiesForType(Codelist.class)
