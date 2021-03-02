@@ -201,6 +201,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                                     .orElse("," + NEW_LINE + "\"hasPart\": [ " + String.join(", ", apiData.getCollections()
                                                                                            .values()
                                                                                            .stream()
+                                                                                           .filter(col -> col.getEnabled())
                                                                                            .map(s -> getSchemaOrgDataset(apiData, Optional.of(s), landingPageUriCustomizer.copy(), true))
                                                                                            .collect(Collectors.toUnmodifiableList())) + " ]" +
                                                     "," + NEW_LINE + "\"includedInDataCatalog\": { \"@type\": \"DataCatalog\", \"url\": \"" + landingPageUriCustomizer.copy()
