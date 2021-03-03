@@ -42,7 +42,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
         super(templateName, charset, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix, links, title, description);
         this.bbox = extent.flatMap(OgcApiExtent::getSpatial)
                      .map(OgcApiExtentSpatial::getBbox)
-                     .map(v -> new BoundingBox(v[0][0], v[0][1], v[0][2], v[0][3], CRS84));
+                     .map(v -> BoundingBox.of(v[0][0], v[0][1], v[0][2], v[0][3], CRS84));
         this.temporalExtentIso = extent.flatMap(OgcApiExtent::getTemporal);
         this.temporalExtent = temporalExtentIso.map(v -> v.getInterval()[0])
                                           .map(v -> {
