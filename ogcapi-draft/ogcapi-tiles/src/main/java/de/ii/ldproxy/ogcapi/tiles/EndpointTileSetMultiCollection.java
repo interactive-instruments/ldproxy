@@ -51,7 +51,7 @@ public class EndpointTileSetMultiCollection extends Endpoint {
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         // currently no vector tiles support for WFS backends
-        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+        if (!providers.getFeatureProvider(apiData).supportsHighLoad())
             return false;
 
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);

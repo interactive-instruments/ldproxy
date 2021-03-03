@@ -31,6 +31,7 @@ import java.util.UUID;
  * This class represents a vector tile
  */
 @Value.Immutable
+@Value.Style(builder = "new", deepImmutablesDetection = true)
 public abstract class Tile {
 
     /**
