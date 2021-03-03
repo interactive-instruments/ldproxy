@@ -52,11 +52,6 @@ public class CapabilitySorting implements ApiBuildingBlock {
     }
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableSortingConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableSortingConfiguration.Builder().enabled(false)
                                                           .build();

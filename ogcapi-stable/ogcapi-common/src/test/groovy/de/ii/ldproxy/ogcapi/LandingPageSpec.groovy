@@ -36,6 +36,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2
 import de.ii.ldproxy.ogcapi.domain.URICustomizer
 import de.ii.xtraplatform.crs.domain.BoundingBox
+import de.ii.xtraplatform.crs.domain.OgcCrs
 import io.swagger.v3.oas.models.media.Schema
 import spock.lang.PendingFeature
 import spock.lang.Specification
