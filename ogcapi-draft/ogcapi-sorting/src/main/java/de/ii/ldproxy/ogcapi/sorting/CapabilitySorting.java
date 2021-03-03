@@ -37,6 +37,9 @@ public class CapabilitySorting implements ApiBuildingBlock {
 
     final static List<String> VALID_TYPES = ImmutableList.of("STRING", "DATETIME", "INTEGER", "FLOAT");
 
+    // TODO add sortables endpoint once we have agreed where to add it, for now the sortables are published
+    //      in the API definition
+
     // TODO change to constructor parameter once SchemaInfo has been changed to an interface as part of
     //      https://github.com/interactive-instruments/ldproxy/issues/376
     @Requires
@@ -62,18 +65,6 @@ public class CapabilitySorting implements ApiBuildingBlock {
     @Override
     public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
 
-        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-                                                                             .mode(apiValidation);
-
-        // check that the feature provider supports sorting
-        FeatureProvider2 provider = providers.getFeatureProvider(apiData);
-        if (!provider.supportsSorting())
-            builder.addErrors(MessageFormat.format("Sorting is enabled, but the feature provider of the API '{0}' does not support sorting.", provider.getData().getId()));
-
-        // no additional operational checks for now, only validation; we can stop, if no validation is requested
-        if (apiValidation== ValidationResult.MODE.NONE)
-            return ValidationResult.of();
-
         // get the sorting configurations to process
         Map<String, SortingConfiguration> configs = apiData.getCollections()
                                                            .entrySet()
@@ -87,6 +78,22 @@ public class CapabilitySorting implements ApiBuildingBlock {
                                                            })
                                                            .filter(Objects::nonNull)
                                                            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        if (configs.isEmpty())
+            // nothing to do
+            return ValidationResult.of();
+
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+                                                                             .mode(apiValidation);
+
+        // check that the feature provider supports sorting
+        FeatureProvider2 provider = providers.getFeatureProvider(apiData);
+        if (!provider.supportsSorting())
+            builder.addErrors(MessageFormat.format("Sorting is enabled, but the feature provider of the API '{0}' does not support sorting.", provider.getData().getId()));
+
+        // no additional operational checks for now, only validation; we can stop, if no validation is requested
+        if (apiValidation==ValidationResult.MODE.NONE)
+            return builder.build();
 
         for (Map.Entry<String, SortingConfiguration> entry : configs.entrySet()) {
             List<String> sortables = entry.getValue().getSortables();
@@ -111,7 +118,7 @@ public class CapabilitySorting implements ApiBuildingBlock {
                           if (!VALID_TYPES.contains(property.getType().toString()))
                               builder.addErrors(MessageFormat.format("The sorting configuration for collection ''{0}'' includes a sortable property ''{1}'', but the property is not of a simple type. Found: ''{2}''.", entry.getKey(), sortable, property.getType().toString()));
                       }, () -> {
-                          builder.addErrors(MessageFormat.format("The sorting configuration for collection ''{0}'' includes a sortable property ''{1}'', but the property is not a top-level property.", entry.getKey(), sortable));
+                          builder.addErrors(MessageFormat.format("The sorting configuration for collection ''{0}'' includes a sortable property ''{1}'', but the property is a nested property, not a top-level property.", entry.getKey(), sortable));
                       });
             }
         }
