@@ -116,7 +116,8 @@ public class QueryParameterSortbyFeatures implements OgcApiQueryParameter, Confo
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDataV2 datasetData) {
-        if (!isExtensionEnabled(datasetData, SortingConfiguration.class)) {
+        if (!isExtensionEnabled(datasetData.getCollections()
+                                           .get(featureTypeConfiguration.getId()), SortingConfiguration.class)) {
             return queryBuilder;
         }
         if (parameters.containsKey("sortby")) {

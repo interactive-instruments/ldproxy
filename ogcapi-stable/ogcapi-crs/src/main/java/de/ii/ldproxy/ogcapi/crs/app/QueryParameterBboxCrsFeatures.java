@@ -88,7 +88,7 @@ public class QueryParameterBboxCrsFeatures implements OgcApiQueryParameter {
     public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                    Map<String, String> parameters, OgcApiDataV2 datasetData) {
 
-        if (!isEnabledForApi(datasetData)) {
+        if (!isEnabledForApi(datasetData, featureTypeConfiguration.getId())) {
             return parameters;
         }
 
