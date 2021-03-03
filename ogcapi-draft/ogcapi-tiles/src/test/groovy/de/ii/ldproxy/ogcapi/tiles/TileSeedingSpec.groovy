@@ -31,7 +31,7 @@ class TileSeedingSpec extends Specification{
         def yMax = 3913575.8482010253
 
         def targetCrs = EpsgCrs.of(3857)
-        def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
+        def bbox = BoundingBox.of(xMin, yMin, xMax, yMax, targetCrs)
 
 
         when: "getLimits is called"
@@ -62,7 +62,7 @@ class TileSeedingSpec extends Specification{
         def yMax = 20037508.342789244
 
         def targetCrs = EpsgCrs.of(3857)
-        def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
+        def bbox = BoundingBox.of(xMin, yMin, xMax, yMax, targetCrs)
 
         when: "getLimits is called"
 
@@ -94,7 +94,7 @@ class TileSeedingSpec extends Specification{
         def yMax = 3913575.8482010253
 
         def targetCrs = EpsgCrs.of(3857)
-        def bbox = new BoundingBox(xMin, yMin, xMax, yMax, targetCrs)
+        def bbox = BoundingBox.of(xMin, yMin, xMax, yMax, targetCrs)
 
         when: "getLimits is called"
 
