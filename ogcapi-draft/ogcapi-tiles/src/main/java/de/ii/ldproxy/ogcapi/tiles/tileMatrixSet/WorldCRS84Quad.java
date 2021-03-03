@@ -33,7 +33,7 @@ public class WorldCRS84Quad extends AbstractTileMatrixSet implements TileMatrixS
     private static final double BBOX_MAX_X = 180.0;
     private static final double BBOX_MIN_Y = -90.0;
     private static final double BBOX_MAX_Y = 90.0;
-    private static final BoundingBox BBOX = new BoundingBox(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
+    private static final BoundingBox BBOX = BoundingBox.of(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
     private static final double[] TOP_LEFT_CORNER = {BBOX_MIN_X, BBOX_MAX_Y};
 
     @Override
