@@ -116,7 +116,7 @@ class LandingPageSpec extends Specification {
                         .label('FeatureType 1')
                         .description('foo bar')
                         .extent(new ImmutableCollectionExtent.Builder()
-                                .spatial(new BoundingBox())
+                                .spatial(BoundingBox.of(-180.0, -90.0, 180.0, 90.0, OgcCrs.CRS84))
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
                         .build())

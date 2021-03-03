@@ -85,7 +85,8 @@ public class QueryParameterProperties implements OgcApiQueryParameter {
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDataV2 datasetData) {
 
-        if (!isExtensionEnabled(datasetData, ProjectionsConfiguration.class)) {
+        if (!isExtensionEnabled(datasetData.getCollections()
+                                           .get(featureTypeConfiguration.getId()), ProjectionsConfiguration.class)) {
             return queryBuilder;
         }
         List<String> propertiesList = getPropertiesList(parameters);

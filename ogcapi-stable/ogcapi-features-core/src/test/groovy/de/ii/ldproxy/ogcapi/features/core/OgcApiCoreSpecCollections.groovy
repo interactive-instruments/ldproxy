@@ -41,6 +41,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQuer
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.json.domain.ImmutableJsonConfiguration
 import de.ii.xtraplatform.crs.domain.BoundingBox
+import de.ii.xtraplatform.crs.domain.OgcCrs
 import de.ii.xtraplatform.features.domain.FeatureProvider2
 import io.swagger.v3.oas.models.media.Schema
 import spock.lang.Specification
@@ -259,7 +260,7 @@ class OgcApiCoreSpecCollections extends Specification {
                         .label('FeatureType 1')
                         .description('foo bar')
                         .extent(new ImmutableCollectionExtent.Builder()
-                                .spatial(new BoundingBox())
+                                .spatial(BoundingBox.of(-180.0, -90.0, 180.0, 90.0, OgcCrs.CRS84))
                                 .temporal(new ImmutableTemporalExtent.Builder().build())
                                 .build())
                         .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder()

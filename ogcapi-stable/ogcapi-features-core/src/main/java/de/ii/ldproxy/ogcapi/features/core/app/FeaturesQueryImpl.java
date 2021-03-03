@@ -375,12 +375,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                        .trimResults()
                                        .splitToList(qValue);
 
-        return Optional.of(CqlPredicate.of(Or.of(qFields.stream()
+        return qFields.size()>1 || qValues.size()>1
+                ? Optional.of(CqlPredicate.of(Or.of(qFields.stream()
                                                         .map(qField -> qValues.stream()
                                                                               .map(word -> CqlPredicate.of(Like.of(qField, ScalarLiteral.of("%"+word+"%"))))
                                                                               .collect(Collectors.toUnmodifiableList()))
                                                         .flatMap(Collection::stream)
-                                                        .collect(Collectors.toUnmodifiableList()))));
+                                                        .collect(Collectors.toUnmodifiableList()))))
+                : Optional.of(CqlPredicate.of(Like.of(qFields.get(0), ScalarLiteral.of("%"+qValues.get(0)+"%"))));
     }
 
     private int parseLimit(int minimumPageSize, int defaultPageSize, int maxPageSize, String paramLimit) {
