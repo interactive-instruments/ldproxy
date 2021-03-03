@@ -360,7 +360,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                                                   .from(result)
                                                   .enums(constraints.getEnumValues()
                                                                     .stream()
-                                                                    .map(val -> Integer.getInteger(val))
+                                                                    .map(val -> Integer.parseInt(val))
                                                                     .collect(Collectors.toList()))
                                                   .build();
             } else if (constraints.getCodelist().isPresent()) {

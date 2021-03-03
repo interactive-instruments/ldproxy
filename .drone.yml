@@ -21,7 +21,7 @@ pipeline:
       - cd ..
       - ./gradlew dockerDistTar
     when:
-      event: [push, pull_request]
+      event: [push]
 
   libs-snapshot:
     image: openjdk:11-slim
@@ -36,7 +36,19 @@ pipeline:
       event: push
       branch: master
 
-  docker-dev:
+  libs-release:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - cd ogcapi-stable
+      - ../gradlew publishToMavenLocal bintrayUpload --continue -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS
+      - cd ../ogcapi-draft
+      - ../gradlew bintrayUpload --continue -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS --init-script ../.maven-local.gradle
+    secrets: [ bintray_user, bintray_pass]
+    when:
+      event: tag
+
+  docker-snapshot:
     image: plugins/docker
     registry: docker.ci.interactive-instruments.de
     repo: docker.ci.interactive-instruments.de/iide/ldproxy
@@ -47,7 +59,19 @@ pipeline:
     when:
       event: push
 
-  release:
+  docker-release:
+    image: plugins/docker
+    repo: iide/ldproxy
+    auto_tag: true
+    username: ${DOCKER_USER}
+    password: ${DOCKER_PASSWORD}
+    dockerfile: build/docker/Dockerfile
+    context: build/docker
+    secrets: [ docker_user, docker_password]
+    when:
+      event: tag
+
+  github-release:
     image: node:12-alpine
     commands:
       - export HOME=$${DRONE_WORKSPACE}
