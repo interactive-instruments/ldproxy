@@ -1,7 +1,7 @@
 # Share geospatial data via modern Web APIs
 
 [![License](https://img.shields.io/badge/license-MPL%202.0-blue.svg)](http://mozilla.org/MPL/2.0/)
-[![Build Status](https://travis-ci.org/interactive-instruments/ldproxy.svg?branch=master)](https://travis-ci.org/interactive-instruments/ldproxy)
+[![Build Status](https://ci.ldproxy.net/api/badges/interactive-instruments/ldproxy/status.svg?branch=master)](https://ci.ldproxy.net/interactive-instruments/ldproxy)
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/interactive-instruments/ldproxy?sort=semver)
 
 ldproxy allows you to quickly set up Web APIs that make geospatial data available to others or to your own applications via HTTP.
