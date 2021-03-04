@@ -46,7 +46,7 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
                         .build())
                 .build()
         when:
-        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES)
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES, SchemaGeneratorFeatureGeoJson.VERSION.V201909)
         then:
         Objects.nonNull(jsonSchemaObject)
         jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
@@ -64,7 +64,7 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
                 .label("foo")
                 .build()
         when:
-        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES)
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES, SchemaGeneratorFeatureGeoJson.VERSION.V201909)
         then:
         Objects.nonNull(jsonSchemaObject)
         jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
@@ -73,8 +73,9 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
         jsonSchemaObject.getRequired() == ["type", "geometry", "properties"]
         jsonSchemaObject.getProperties().get("id").getTitle().get() == "foo"
         jsonSchemaObject.getProperties().get("id").getDescription().get() == "bar"
-        JsonSchemaRef geometry = jsonSchemaObject.getProperties().get("geometry") as JsonSchemaRef
-        geometry.getRef() == "https://geojson.org/schema/MultiPolygon.json"
+        JsonSchemaOneOf geometry = jsonSchemaObject.getProperties().get("geometry") as JsonSchemaOneOf
+        geometry.oneOf.get(0) as JsonSchemaNull
+        geometry.oneOf.get(1).getTitle().get() == "GeoJSON MultiPolygon"
         JsonSchemaObject properties = jsonSchemaObject.getProperties().get("properties") as JsonSchemaObject
         properties.getRequired() == ["string"]
         properties.getProperties().get("boolean").getTitle().get() == "foo"
@@ -112,7 +113,7 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
                 .label("foo")
                 .build()
         when:
-        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT)
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT, SchemaGeneratorFeatureGeoJson.VERSION.V201909)
         then:
         Objects.nonNull(jsonSchemaObject)
         jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
@@ -121,8 +122,9 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
         jsonSchemaObject.getRequired() == ["type", "geometry", "properties"]
         jsonSchemaObject.getProperties().get("id").getTitle().get() == "foo"
         jsonSchemaObject.getProperties().get("id").getDescription().get() == "bar"
-        JsonSchemaRef geometry = jsonSchemaObject.getProperties().get("geometry") as JsonSchemaRef
-        geometry.getRef() == "https://geojson.org/schema/MultiPolygon.json"
+        JsonSchemaOneOf geometry = jsonSchemaObject.getProperties().get("geometry") as JsonSchemaOneOf
+        geometry.oneOf.get(0) as JsonSchemaNull
+        geometry.oneOf.get(1).getTitle().get() == "GeoJSON MultiPolygon"
         JsonSchemaObject properties = jsonSchemaObject.getProperties().get("properties") as JsonSchemaObject
         properties.getRequired() == ["string"]
         properties.getProperties().get("boolean").getTitle().get() == "foo"

@@ -81,8 +81,6 @@ class SchemaGeneratorImplSpec extends Specification {
         schema.getProperties().get("crs").getType() == "array"
         schema.getProperties().get("storageCrs").getType() == "string"
         schema.getProperties().get("storageCrsCoordinateEpoch").getType() == "number"
-        schema.getProperties().get("nativeCrs").getType() == "string"
-        schema.getProperties().get("nativeCrsCoordinateEpoch").getType() == "number"
         schema.getProperties().get("itemType").getType() == "string"
         schema.getProperties().get("id").getType() == "string"
         schema.getProperties().get("description").getType() == "string"
