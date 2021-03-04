@@ -215,13 +215,13 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
                                .map(this::getSpatialExtent)
                                .filter(Optional::isPresent)
                                .map(Optional::get)
-                               .map(BoundingBox::getCoords)
+                               .map(BoundingBox::toArray)
                                .reduce((doubles, doubles2) -> new double[]{
                                        Math.min(doubles[0], doubles2[0]),
                                        Math.min(doubles[1], doubles2[1]),
                                        Math.max(doubles[2], doubles2[2]),
                                        Math.max(doubles[3], doubles2[3])})
-                               .map(doubles -> new BoundingBox(doubles[0], doubles[1], doubles[2], doubles[3], OgcCrs.CRS84));
+                               .map(doubles -> BoundingBox.of(doubles[0], doubles[1], doubles[2], doubles[3], OgcCrs.CRS84));
     }
 
     /**

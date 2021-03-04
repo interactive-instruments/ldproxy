@@ -20,6 +20,4 @@ public interface TemporalExtent {
     default Long getEnd() {
         return null;
     }
-
-    // TODO: support computed temporal extent
 }
