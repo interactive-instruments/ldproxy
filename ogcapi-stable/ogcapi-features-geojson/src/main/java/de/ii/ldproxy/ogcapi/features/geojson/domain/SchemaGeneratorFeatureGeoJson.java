@@ -43,6 +43,9 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
 
     final static String DEFINITIONS_TOKEN_V201909 = "$defs";
     final static String DEFINITIONS_TOKEN_V7 = "definitions";
+
+    final static JsonSchemaNull NO_GEOMETRY = ImmutableJsonSchemaNull.builder()
+                                                              .build();
     final static JsonSchemaArray COORDINATES = ImmutableJsonSchemaArray.builder()
                                                                        .minItems(2)
                                                                        .maxItems(3)
@@ -114,6 +117,14 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                                                                     .addOneOf(POINT, MULTI_POINT, LINE_STRING,
                                                                               MULTI_LINE_STRING, POLYGON, MULTI_POLYGON)
                                                                     .build();
+    final static JsonSchemaObject GEOMETRY_COLLECTION = ImmutableJsonSchemaObject.builder()
+                                                                                 .title("GeoJSON GeometryCollection")
+                                                                                 .addRequired("type", "geometries")
+                                                                                 .putProperties("type", getEnum("GeometryCollection"))
+                                                                                 .putProperties("geometries", ImmutableJsonSchemaArray.builder()
+                                                                                                                                      .items(GEOMETRY)
+                                                                                                                                      .build())
+                                                                                 .build();
     final static JsonSchemaObject LINK_JSON = ImmutableJsonSchemaObject.builder()
                                                                        .putProperties("href", ImmutableJsonSchemaString.builder()
                                                                                                                        .format("uri-reference")
@@ -248,7 +259,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
 
         ImmutableJsonSchemaObject.Builder builder = ImmutableJsonSchemaObject.builder();
         if (version==VERSION.V201909) {
-            builder.schema("http://json-schema.org/draft/2019-09/schema")
+            builder.schema("https://json-schema.org/draft/2019-09/schema")
                    .defs(definitionsMapBuilder.build());
         } else if (version==VERSION.V7) {
             builder.schema("http://json-schema.org/draft-07/schema#")
@@ -501,42 +512,52 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                               break;
                           case GEOMETRY:
                               geometry = true;
+                              boolean required = property.getConstraints().flatMap(SchemaConstraints::getRequired).orElse(false);
                               switch (property.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
                                   case POINT:
-                                      jsonSchema = POINT;
+                                      jsonSchema = required ? POINT : ImmutableJsonSchemaOneOf.builder()
+                                                                                              .addOneOf(NO_GEOMETRY, POINT)
+                                                                                              .build();
                                       break;
                                   case MULTI_POINT:
-                                      jsonSchema = MULTI_POINT;
+                                      jsonSchema = required ? MULTI_POINT : ImmutableJsonSchemaOneOf.builder()
+                                                                                              .addOneOf(NO_GEOMETRY, MULTI_POINT)
+                                                                                              .build();
                                       break;
                                   case LINE_STRING:
-                                      jsonSchema = LINE_STRING;
+                                      jsonSchema = required ? LINE_STRING : ImmutableJsonSchemaOneOf.builder()
+                                                                                              .addOneOf(NO_GEOMETRY, LINE_STRING)
+                                                                                              .build();
                                       break;
                                   case MULTI_LINE_STRING:
-                                      jsonSchema = MULTI_LINE_STRING;
+                                      jsonSchema = required ? MULTI_LINE_STRING : ImmutableJsonSchemaOneOf.builder()
+                                                                                                    .addOneOf(NO_GEOMETRY, MULTI_LINE_STRING)
+                                                                                                    .build();
                                       break;
                                   case POLYGON:
-                                      jsonSchema = POLYGON;
+                                      jsonSchema = required ? POLYGON : ImmutableJsonSchemaOneOf.builder()
+                                                                                                    .addOneOf(NO_GEOMETRY, POLYGON)
+                                                                                                    .build();
                                       break;
                                   case MULTI_POLYGON:
-                                      jsonSchema = MULTI_POLYGON;
+                                      jsonSchema = required ? MULTI_POLYGON : ImmutableJsonSchemaOneOf.builder()
+                                                                                                    .addOneOf(NO_GEOMETRY, MULTI_POLYGON)
+                                                                                                    .build();
                                       break;
                                   case GEOMETRY_COLLECTION:
-                                      jsonSchema = ImmutableJsonSchemaObject.builder()
-                                                                            .title("GeoJSON GeometryCollection")
-                                                                            .addRequired("type", "geometries")
-                                                                            .putProperties("type", getEnum("GeometryCollection"))
-                                                                            .putProperties("geometries", ImmutableJsonSchemaArray.builder()
-                                                                                                                                 .items(GEOMETRY)
-                                                                                                                                 .build())
-                                                                            .build();
+                                      jsonSchema = required ? GEOMETRY_COLLECTION : ImmutableJsonSchemaOneOf.builder()
+                                                                                                      .addOneOf(NO_GEOMETRY, GEOMETRY_COLLECTION)
+                                                                                                      .build();
                                       break;
                                   case NONE:
-                                      jsonSchema = ImmutableJsonSchemaNull.builder()
-                                                                          .build();
+                                      jsonSchema = NO_GEOMETRY;
                                       break;
                                   case ANY:
                                   default:
-                                      jsonSchema = GEOMETRY;
+                                      jsonSchema = required ? GEOMETRY : ImmutableJsonSchemaOneOf.builder()
+                                                                                                 .addOneOf(NO_GEOMETRY, POINT, MULTI_POINT, LINE_STRING,
+                                                                                                           MULTI_LINE_STRING, POLYGON, MULTI_POLYGON)
+                                                                                                 .build();
                                       break;
                               }
                               break;
