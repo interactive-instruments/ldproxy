@@ -17,9 +17,9 @@ pipeline:
       - cd ogcapi-stable
       - ../gradlew assemble publishToMavenLocal -PisSnapshot=true
       - cd ../ogcapi-draft
-      - ../gradlew assemble -PisSnapshot=true --init-script ../.maven-local.gradle
+      - ../gradlew assemble publishToMavenLocal -PisSnapshot=true --init-script ../.maven-local.gradle
       - cd ..
-      - ./gradlew dockerDistTar
+      - ./gradlew dockerDistTar -PisSnapshot=true --init-script ../.maven-local.gradle
     when:
       event: [push]
 
