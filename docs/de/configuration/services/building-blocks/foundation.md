@@ -44,6 +44,7 @@ Es werden die folgenden konfigurierbaren Optionen unterstützt:
 |`useLangParameter` |boolean |`false` |Steuert, ob die Sprache der Antwort bei allen GET-Operationen nur über den `Accept-Lang`-Header oder auch über einen Parameter `lang` ausgewählt werden kann.
 |`apiCatalogLabel` |string |"API-Übersicht" |Titel für die API-Catalog-Ressource in diesem Deployment.
 |`apiCatalogDescription` |string |"Die folgenden OGC APIs sind verfügbar." |Beschreibung für die API-Catalog-Ressource in diesem Deployment. HTML-Markup wird bei der HTML-Ausgabe aufbereitet.
+|`googleSiteVerification` |string |`null` |Sofern gesetzt, wird der Wert in die HTML-Seite des API-Catalog-Ressource in einem "googleSiteVerification"-Meta-Tag eingebettet (`<meta name="`google-site-verification`" content="{value}">).
 
 Beispiel für die Angaben in der Konfigurationsdatei:
 
