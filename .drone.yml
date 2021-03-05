@@ -10,18 +10,39 @@ pipeline:
       - .gradle/caches
       - .gradle/wrapper
 
-  build:
+  test:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - ./gradlew check
+    when:
+      event: [push,tag]
+
+  build-snapshot:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
       - cd ogcapi-stable
       - ../gradlew assemble publishToMavenLocal -PisSnapshot=true
       - cd ../ogcapi-draft
-      - ../gradlew assemble -PisSnapshot=true --init-script ../.maven-local.gradle
+      - ../gradlew assemble publishToMavenLocal -PisSnapshot=true --init-script ../.maven-local.gradle
       - cd ..
-      - ./gradlew dockerDistTar
+      - ./gradlew assemble dockerDistTar -PisSnapshot=true --init-script ./.maven-local.gradle
     when:
       event: [push]
+
+  build-release:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - cd ogcapi-stable
+      - ../gradlew assemble publishToMavenLocal
+      - cd ../ogcapi-draft
+      - ../gradlew assemble publishToMavenLocal --init-script ../.maven-local.gradle
+      - cd ..
+      - ./gradlew assemble dockerDistTar --init-script ./.maven-local.gradle
+    when:
+      event: [tag]
 
   libs-snapshot:
     image: openjdk:11-slim
@@ -56,6 +77,7 @@ pipeline:
     force_tag: true
     dockerfile: build/docker/Dockerfile
     context: build/docker
+    mirror: https://d2.etf.interactive-instruments.de 
     when:
       event: push
 
@@ -67,6 +89,7 @@ pipeline:
     password: ${DOCKER_PASSWORD}
     dockerfile: build/docker/Dockerfile
     context: build/docker
+    mirror: https://d2.etf.interactive-instruments.de 
     secrets: [ docker_user, docker_password]
     when:
       event: tag
