@@ -6,6 +6,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQuer
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson.VERSION
 import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableSchemaConstraints
@@ -25,49 +26,120 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
         schemaGenerator.entityRegistry = new EntityRegistryImpl(null)
     }
 
-    def 'Test GeoJSON schema generation for the QUERYABLES type'() {
+    def 'Test GeoJSON schema generation for the QUERYABLES type, JSON Schema draft-2019-09'() {
         given:
-        FeatureSchema featureSchema = new ImmutableFeatureSchema.Builder()
-                .name("test-name")
-                .description("foobar")
-                .putPropertyMap("property1", new ImmutableFeatureSchema.Builder()
-                        .name("date")
-                        .type(SchemaBase.Type.DATETIME)
-                        .build())
-                .type(SchemaBase.Type.OBJECT)
-                .build()
+        VERSION version = VERSION.V201909
+        FeatureSchema featureSchema = getSchemaObjectQueryables()
         FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                 .id("test-id")
                 .label("test-label")
                 .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder()
                         .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
+                                .spatial(Collections.singletonList("geometry"))
                                 .temporal(Collections.singletonList("date"))
                                 .build())
                         .build())
                 .build()
         when:
-        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES, SchemaGeneratorFeatureGeoJson.VERSION.V201909)
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES, version)
         then:
-        Objects.nonNull(jsonSchemaObject)
-        jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
-        jsonSchemaObject.getTitle().get() == "test-label"
-        jsonSchemaObject.getDescription().get() == "foobar"
-        JsonSchemaString date = jsonSchemaObject.getProperties().get("date") as JsonSchemaString
-        date.getFormat().get() == "date-time,date"
+        checkSchemaQueryables(jsonSchemaObject, version)
     }
 
-    def 'Test GeoJSON schema generation for the RETURNABLES type'() {
+    def 'Test GeoJSON schema generation for the QUERYABLES type, JSON Schema draft-7'() {
         given:
+        VERSION version = VERSION.V7
+        FeatureSchema featureSchema = getSchemaObjectQueryables()
+        FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                .id("test-id")
+                .label("test-label")
+                .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder()
+                        .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
+                                .spatial(Collections.singletonList("geometry"))
+                                .temporal(Collections.singletonList("date"))
+                                .build())
+                        .build())
+                .build()
+        when:
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES, version)
+        then:
+        checkSchemaQueryables(jsonSchemaObject, version)
+    }
+
+    def 'Test GeoJSON schema generation for the RETURNABLES type, JSON Schema draft-2019-09'() {
+        given:
+        VERSION version = VERSION.V201909
         FeatureSchema featureSchema = getSchemaObjectReturnables()
         FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                 .id("id")
                 .label("foo")
                 .build()
         when:
-        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES, SchemaGeneratorFeatureGeoJson.VERSION.V201909)
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES, version)
         then:
+        checkSchemaReturnables(jsonSchemaObject, version)
+    }
+
+    def 'Test GeoJSON schema generation for the RETURNABLES type, JSON Schema draft-7'() {
+        given:
+        VERSION version = VERSION.V7
+        FeatureSchema featureSchema = getSchemaObjectReturnables()
+        FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                .id("id")
+                .label("foo")
+                .build()
+        when:
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES, version)
+        then:
+        checkSchemaReturnables(jsonSchemaObject, version)
+    }
+
+    def 'Test GeoJSON schema generation for the RETURNABLES_FLAT type, JSON Schema draft-2019-09'() {
+        VERSION version = VERSION.V201909
+        FeatureSchema featureSchema = getSchemaObjectReturnables()
+        FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                .id("id")
+                .label("foo")
+                .build()
+        when:
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT, version)
+        then:
+        checkSchemaReturnablesFlat(jsonSchemaObject, version)
+    }
+
+    def 'Test GeoJSON schema generation for the RETURNABLES_FLAT type, JSON Schema draft-7'() {
+        VERSION version = VERSION.V7
+        FeatureSchema featureSchema = getSchemaObjectReturnables()
+        FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                .id("id")
+                .label("foo")
+                .build()
+        when:
+        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT, version)
+        then:
+        checkSchemaReturnablesFlat(jsonSchemaObject, version)
+    }
+
+    void checkSchemaQueryables(JsonSchemaObject jsonSchemaObject, VERSION version) {
         Objects.nonNull(jsonSchemaObject)
-        jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
+        jsonSchemaObject.getSchema().get() == (version == VERSION.V201909
+                ? "https://json-schema.org/draft/2019-09/schema"
+                : "http://json-schema.org/draft-07/schema#")
+        jsonSchemaObject.getTitle().get() == "test-label"
+        jsonSchemaObject.getDescription().get() == "foobar"
+        JsonSchemaObject geometry = jsonSchemaObject.getProperties().get("geometry") as JsonSchemaObject
+        geometry.getTitle().get() == "GeoJSON LineString"
+        JsonSchemaString date = jsonSchemaObject.getProperties().get("date") as JsonSchemaString
+        date.getFormat().get() == "date-time,date"
+        jsonSchemaObject.getDefinitions().isEmpty()
+        jsonSchemaObject.getDefs().isEmpty()
+    }
+
+    void checkSchemaReturnables(JsonSchemaObject jsonSchemaObject, VERSION version) {
+        Objects.nonNull(jsonSchemaObject)
+        jsonSchemaObject.getSchema().get() == ( version==VERSION.V201909
+                ? "https://json-schema.org/draft/2019-09/schema"
+                : "http://json-schema.org/draft-07/schema#" )
         jsonSchemaObject.getTitle().get() == "foo"
         jsonSchemaObject.getDescription().get() == "bar"
         jsonSchemaObject.getRequired() == ["type", "geometry", "properties"]
@@ -93,30 +165,29 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
         properties.getProperties().get("string").getDescription().get() == "bar"
         (properties.getProperties().get("strings") as JsonSchemaArray).getItems().getTitle().get() == "foo"
         (properties.getProperties().get("strings") as JsonSchemaArray).getItems().getDescription().get() == "bar"
-        jsonSchemaObject.getDefs().get().get("Object1").getTitle().get() == "foo"
-        jsonSchemaObject.getDefs().get().get("Object1").getDescription().get() == "bar"
-        (jsonSchemaObject.getDefs().get().get("Object1").getProperties().get("date") as JsonSchemaString).getFormat().get() == "date-time,date"
-        (jsonSchemaObject.getDefs().get().get("Object1").getProperties().get("integer") as JsonSchemaInteger).getTitle().get() == "foo"
-        (jsonSchemaObject.getDefs().get().get("Object1").getProperties().get("integer") as JsonSchemaInteger).getDescription().get() == "bar"
-        jsonSchemaObject.getDefs().get().get("Object1").getProperties().get("object2") != null
-        (jsonSchemaObject.getDefs().get().get("Object2").getProperties().get("enum") as JsonSchemaString).getEnums() == ["foo", "bar"]
-        (jsonSchemaObject.getDefs().get().get("Object2").getProperties().get("regex") as JsonSchemaString).getPattern().get() == "'^_\\\\w+\$'"
-        jsonSchemaObject.getDefs().get().get("Object2").getProperties().get("codelist") != null
-        jsonSchemaObject.getDefs().get().get("Object2").getProperties().get("strings") != null
-
+        (version==VERSION.V201909
+                ? jsonSchemaObject.getDefinitions()
+                : jsonSchemaObject.getDefs()).isEmpty()
+        Map<String, JsonSchema> defs = ( version== VERSION.V201909
+                ? jsonSchemaObject.getDefs()
+                : jsonSchemaObject.getDefinitions() ).get()
+        defs.get("Object1").getTitle().get() == "foo"
+        defs.get("Object1").getDescription().get() == "bar"
+        (defs.get("Object1").getProperties().get("date") as JsonSchemaString).getFormat().get() == "date-time,date"
+        (defs.get("Object1").getProperties().get("integer") as JsonSchemaInteger).getTitle().get() == "foo"
+        (defs.get("Object1").getProperties().get("integer") as JsonSchemaInteger).getDescription().get() == "bar"
+        defs.get("Object1").getProperties().get("object2") != null
+        (defs.get("Object2").getProperties().get("enum") as JsonSchemaString).getEnums() == ["foo", "bar"]
+        (defs.get("Object2").getProperties().get("regex") as JsonSchemaString).getPattern().get() == "'^_\\\\w+\$'"
+        defs.get("Object2").getProperties().get("codelist") != null
+        defs.get("Object2").getProperties().get("strings") != null
     }
 
-    def 'Test GeoJSON schema generation for the RETURNABLES_FLAT type'() {
-        FeatureSchema featureSchema = getSchemaObjectReturnables()
-        FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                .id("id")
-                .label("foo")
-                .build()
-        when:
-        JsonSchemaObject jsonSchemaObject = schemaGenerator.getSchemaJson(featureSchema, collectionData, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT, SchemaGeneratorFeatureGeoJson.VERSION.V201909)
-        then:
+    void checkSchemaReturnablesFlat(JsonSchemaObject jsonSchemaObject, VERSION version) {
         Objects.nonNull(jsonSchemaObject)
-        jsonSchemaObject.getSchema().get() == "https://json-schema.org/draft/2019-09/schema"
+        jsonSchemaObject.getSchema().get() == ( version==VERSION.V201909
+                ? "https://json-schema.org/draft/2019-09/schema"
+                : "http://json-schema.org/draft-07/schema#" )
         jsonSchemaObject.getTitle().get() == "foo"
         jsonSchemaObject.getDescription().get() == "bar"
         jsonSchemaObject.getRequired() == ["type", "geometry", "properties"]
@@ -158,7 +229,25 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
         (properties.getPatternProperties().get("^objects\\.\\d+.object2.regex\$") as JsonSchemaString).getPattern().get() == "'^_\\\\w+\$'"
         properties.getPatternProperties().get("^strings\\.\\d+\$").getTitle().get() == "foo"
         properties.getPatternProperties().get("^strings\\.\\d+\$").getDescription().get() == "bar"
+        jsonSchemaObject.getDefinitions().isEmpty()
+        jsonSchemaObject.getDefs().isEmpty()
+    }
 
+    FeatureSchema getSchemaObjectQueryables() {
+        return new ImmutableFeatureSchema.Builder()
+                .name("test-name")
+                .description("foobar")
+                .putPropertyMap("property1", new ImmutableFeatureSchema.Builder()
+                        .name("date")
+                        .type(SchemaBase.Type.DATETIME)
+                        .build())
+                .putPropertyMap("property2", new ImmutableFeatureSchema.Builder()
+                        .name("geometry")
+                        .type(SchemaBase.Type.GEOMETRY)
+                        .geometryType(SimpleFeatureGeometry.LINE_STRING)
+                        .build())
+                .type(SchemaBase.Type.OBJECT)
+                .build()
     }
 
     FeatureSchema getSchemaObjectReturnables() {
