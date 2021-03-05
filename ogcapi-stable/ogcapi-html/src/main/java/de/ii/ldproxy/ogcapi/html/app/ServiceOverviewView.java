@@ -32,6 +32,7 @@ public class ServiceOverviewView extends OgcApiView {
     public String tagsTitle;
     public String canonicalUrl;
     public List<ApiCatalogEntry> data;
+    public String googleSiteVerification;
 
     public ServiceOverviewView(URI uri, ApiCatalog apiCatalog, HtmlConfiguration htmlConfig, I18n i18n, Optional<Locale> language) {
         super("services.mustache", Charsets.UTF_8, null, new ImmutableList.Builder<NavigationDTO>()
@@ -42,6 +43,7 @@ public class ServiceOverviewView extends OgcApiView {
         this.data = apiCatalog.getApis();
         this.uri = uri;
         this.canonicalUrl = apiCatalog.getCatalogUri().toString();
+        this.googleSiteVerification = apiCatalog.getGoogleSiteVerification();
         this.tagsTitle = i18n.get("tagsTitle", language);
     }
 
