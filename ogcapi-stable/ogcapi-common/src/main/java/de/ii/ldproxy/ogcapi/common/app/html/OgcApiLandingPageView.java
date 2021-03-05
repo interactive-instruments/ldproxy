@@ -50,7 +50,7 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
     public String externalDocsTitle;
     public String attributionTitle;
     public String none;
-    public boolean isDataset = true;
+    public boolean isDataset;
 
     public OgcApiLandingPageView(OgcApiDataV2 apiData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
@@ -66,6 +66,7 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
         this.apiLandingPage = apiLandingPage;
 
         this.spatialSearch = false;
+        this.isDataset = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
 
         this.keywords = apiData.getMetadata()
                                .map(Metadata::getKeywords)

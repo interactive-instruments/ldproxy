@@ -58,6 +58,7 @@ public class FeatureCollectionView extends DatasetView {
     public boolean spatialSearch;
     public boolean classic;
     public boolean complexObjects;
+    public boolean schemaOrgFeatures;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
                                  String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
@@ -69,6 +70,7 @@ public class FeatureCollectionView extends DatasetView {
         this.persistentUri = persistentUri;
         this.classic = layout == FeaturesHtmlConfiguration.LAYOUT.CLASSIC;
         this.complexObjects = layout == FeaturesHtmlConfiguration.LAYOUT.COMPLEX_OBJECTS;
+        this.schemaOrgFeatures = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
     }
 
     @Override

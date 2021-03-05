@@ -59,7 +59,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     public final String styleInfosTitle;
     public final String collectionInformationTitle;
     public final String mainLinksTitle;
-    public final boolean isDataset = true;
+    public final boolean isDataset;
 
     public String none;
 
@@ -75,6 +75,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
                 uriCustomizer,
                 collection.getExtent());
         this.collection = collection;
+        this.isDataset = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
 
         this.items = collection
                 .getLinks()
