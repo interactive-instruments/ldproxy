@@ -94,7 +94,7 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                                 new OgcApiExtent(interval.get().getStart(), interval.get().getEnd()) :
                                 null;
 
-        ImmutableLandingPage.Builder apiLandingPage = new ImmutableLandingPage.Builder()
+        ImmutableLandingPage.Builder builder = new ImmutableLandingPage.Builder()
                 .title(apiData.getLabel())
                 .description(apiData.getDescription())
                 .attribution(apiData.getMetadata().flatMap(md -> md.getAttribution()))
@@ -104,7 +104,7 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                 .addAllLinks(queryInput.getAdditionalLinks());
 
         for (LandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
-            apiLandingPage = ogcApiLandingPageExtension.process(apiLandingPage,
+            builder = ogcApiLandingPageExtension.process(builder,
                     apiData,
                     requestContext.getUriCustomizer()
                                   .copy(),
@@ -118,8 +118,9 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                                                                           Optional.empty())
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
-                .entity(outputFormatExtension.getLandingPageEntity(apiLandingPage.build(),
+        LandingPage apiLandingPage = builder.build();
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null)
+                .entity(outputFormatExtension.getLandingPageEntity(apiLandingPage,
                                                                    requestContext.getApi(),
                                                                    requestContext))
                 .build();
@@ -141,7 +142,7 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
         CommonFormatExtension outputFormatExtension = requestContext.getApi().getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), "/conformance", Optional.empty())
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        ImmutableConformanceDeclaration.Builder conformanceDeclaration = new ImmutableConformanceDeclaration.Builder()
+        ImmutableConformanceDeclaration.Builder builder = new ImmutableConformanceDeclaration.Builder()
                 .links(links)
                 .conformsTo(conformanceClasses.stream()
                                               .map(ConformanceClass::getConformanceClassUris)
@@ -149,7 +150,7 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                                               .collect(Collectors.toList()));
 
         for (ConformanceDeclarationExtension ogcApiConformanceDeclarationExtension : getConformanceExtenders()) {
-            conformanceDeclaration = ogcApiConformanceDeclarationExtension.process(conformanceDeclaration,
+            builder = ogcApiConformanceDeclarationExtension.process(builder,
                     requestContext.getApi().getData(),
                     requestContext.getUriCustomizer()
                             .copy(),
@@ -158,8 +159,9 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
                     requestContext.getLanguage());
         }
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? links : null)
-                .entity(outputFormatExtension.getConformanceEntity(conformanceDeclaration.build(),
+        ConformanceDeclaration conformanceDeclaration = builder.build();
+        return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null)
+                .entity(outputFormatExtension.getConformanceEntity(conformanceDeclaration,
                         requestContext.getApi(),
                         requestContext))
                 .build();
