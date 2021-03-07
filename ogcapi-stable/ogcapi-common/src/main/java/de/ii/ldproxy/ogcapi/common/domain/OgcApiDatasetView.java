@@ -181,8 +181,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                                 .orElse("") + NEW_LINE + (embedded ? INDENT : "") + INDENT + "}"
                         : "") + NEW_LINE +
                 (embedded ? INDENT : "") +"}," + NEW_LINE +
-                // (embedded ? INDENT : "") +"\"sameAs\":\"" + url + "\"," + NEW_LINE +
-                (embedded ? INDENT : "") +"\"url\":\"" + url + "\"" +
+                (embedded ? INDENT : "") + "\"" + (embedded ? "sameAs" : "url") + "\":\"" + url + "\"" +
                 (metadata.getLicenseUrl().isPresent() || metadata.getLicenseName().isPresent()
                         ? "," + NEW_LINE + (embedded ? INDENT : "") + "\"license\": {" + NEW_LINE +
                         (embedded ? INDENT : "") + INDENT + "\"@type\": \"CreativeWork\"" +
