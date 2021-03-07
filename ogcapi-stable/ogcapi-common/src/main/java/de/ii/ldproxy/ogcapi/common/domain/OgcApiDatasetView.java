@@ -152,15 +152,29 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                                                                               .filter(keyword -> Objects.nonNull(keyword) && !keyword.isEmpty())
                                                                               .map(keyword -> ("\"" + keyword + "\""))
                                                                               .collect(Collectors.toList())) + " ]," + NEW_LINE : "") +
-                (embedded ? INDENT : "") + "\"creator\": {" + NEW_LINE +
+                (metadata.getCreatorName().isPresent()
+                        ? ((embedded ? INDENT : "") + "\"creator\": {" + NEW_LINE +
+                        (embedded ? INDENT : "") + INDENT + "\"@type\": \"Organization\"" +
+                        metadata.getCreatorName()
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"name\": \""+s+"\"")
+                                .orElse("") +
+                        metadata.getCreatorUrl()
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"url\": \""+s+"\"")
+                                .orElse("") +
+                        metadata.getCreatorLogoUrl()
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"logo\": \""+s+"\"")
+                                .orElse("") +
+                        NEW_LINE + (embedded ? INDENT : "") +"}," + NEW_LINE)
+                        : "") +
+                (embedded ? INDENT : "") + "\"publisher\": {" + NEW_LINE +
                 (embedded ? INDENT : "") + INDENT + "\"@type\": \"Organization\"" +
-                metadata.getOrgName()
+                metadata.getPublisherName()
                         .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"name\": \""+s+"\"")
                         .orElse("") +
-                metadata.getOrgUrl()
+                metadata.getPublisherUrl()
                         .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"url\": \""+s+"\"")
                         .orElse("") +
-                metadata.getLogoUrl()
+                metadata.getPublisherLogoUrl()
                         .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"logo\": \""+s+"\"")
                         .orElse("") +
                 (metadata.getContactEmail().isPresent() || metadata.getContactPhone().isPresent() ||metadata.getContactUrl().isPresent()

@@ -25,11 +25,17 @@ public interface Metadata {
 
     Optional<String> getContactPhone();
 
-    Optional<String> getOrgName();
+    Optional<String> getCreatorName();
 
-    Optional<String> getOrgUrl();
+    Optional<String> getCreatorUrl();
 
-    Optional<String> getLogoUrl();
+    Optional<String> getCreatorLogoUrl();
+
+    Optional<String> getPublisherName();
+
+    Optional<String> getPublisherUrl();
+
+    Optional<String> getPublisherLogoUrl();
 
     Optional<String> getLicenseName();
 
