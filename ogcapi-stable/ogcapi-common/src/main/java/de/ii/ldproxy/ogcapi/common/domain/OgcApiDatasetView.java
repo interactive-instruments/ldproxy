@@ -154,16 +154,22 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                                                                               .collect(Collectors.toList())) + " ]," + NEW_LINE : "") +
                 (embedded ? INDENT : "") + "\"creator\": {" + NEW_LINE +
                 (embedded ? INDENT : "") + INDENT + "\"@type\": \"Organization\"" +
-                metadata.getContactName()
+                metadata.getOrgName()
                         .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"name\": \""+s+"\"")
                         .orElse("") +
-                metadata.getContactUrl()
+                metadata.getOrgUrl()
                         .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"url\": \""+s+"\"")
+                        .orElse("") +
+                metadata.getLogoUrl()
+                        .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"logo\": \""+s+"\"")
                         .orElse("") +
                 (metadata.getContactEmail().isPresent() || metadata.getContactPhone().isPresent() ||metadata.getContactUrl().isPresent()
                         ? "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + "\"contactPoint\": {" + NEW_LINE +
                         (embedded ? INDENT : "") + INDENT + INDENT + "\"@type\": \"ContactPoint\"," + NEW_LINE +
                         (embedded ? INDENT : "") + INDENT + INDENT + "\"contactType\": \"technical support\"" +
+                        metadata.getContactName()
+                                .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + INDENT + "\"name\": \""+s+"\"")
+                                .orElse("") +
                         metadata.getContactEmail()
                                 .map(s -> "," + NEW_LINE + (embedded ? INDENT : "") + INDENT + INDENT + "\"email\": \""+s+"\"")
                                 .orElse("") +

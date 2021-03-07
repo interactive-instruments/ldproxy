@@ -25,6 +25,12 @@ public interface Metadata {
 
     Optional<String> getContactPhone();
 
+    Optional<String> getOrgName();
+
+    Optional<String> getOrgUrl();
+
+    Optional<String> getLogoUrl();
+
     Optional<String> getLicenseName();
 
     Optional<String> getLicenseUrl();
