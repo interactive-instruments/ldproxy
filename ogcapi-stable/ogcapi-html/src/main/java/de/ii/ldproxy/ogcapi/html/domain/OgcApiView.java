@@ -57,6 +57,22 @@ public abstract class OgcApiView extends View {
         return breadCrumbs;
     }
 
+    public boolean hasBreadCrumbs() { return breadCrumbs.size() > 1; }
+
+    public String getBreadCrumbsList() {
+        String result = "";
+        for (int i=0; i<breadCrumbs.size(); i++) {
+            NavigationDTO item = breadCrumbs.get(i);
+            result += "{ \"@type\": \"ListItem\", \"position\": "+ (i+1) +", \"name\": \""+ item.label +"\"";
+            if (Objects.nonNull(item.url))
+                result += ", \"item\": \""+ item.url +"\"";
+            result += " }";
+            if (i<breadCrumbs.size()-1)
+                result += ",\n    ";
+        }
+        return result;
+    }
+
     public String getUrlPrefix() {
         return urlPrefix;
     }
