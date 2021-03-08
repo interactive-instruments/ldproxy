@@ -102,17 +102,20 @@ public class ExtendableOpenApiDefinition {
                 if (apiData.getMetadata().isPresent()) {
                     Metadata md = apiData.getMetadata().get();
                     openAPI.getInfo()
-                            .version(md.getVersion().orElse("1.0.0"))
-                            .contact(new Contact().name(md.getContactName()
-                                    .orElse(null))
-                                    .url(md.getContactUrl()
-                                            .orElse(null))
-                                    .email(md.getContactEmail()
-                                            .orElse(null)))
-                            .license(new License().name(md.getLicenseName()
-                                    .orElse(null))
-                                    .url(md.getLicenseUrl()
-                                            .orElse(null)));
+                            .version(md.getVersion().orElse("1.0.0"));
+                    if (md.getContactName().isPresent() || md.getContactUrl().isPresent() || md.getContactEmail().isPresent()) {
+                        Contact contact = new Contact();
+                        md.getContactName().ifPresent(v -> contact.name(v));
+                        md.getContactUrl().ifPresent(v -> contact.url(v));
+                        md.getContactEmail().ifPresent(v -> contact.email(v));
+                        openAPI.getInfo().contact(contact);
+                    }
+                    if (md.getLicenseName().isPresent()) {
+                        // license name is required
+                        License license = new License().name(md.getLicenseName().get());
+                        md.getLicenseUrl().ifPresent(v -> license.url(v));
+                        openAPI.getInfo().license(license);
+                    }
                 } else {
                     // version is required
                     openAPI.getInfo()

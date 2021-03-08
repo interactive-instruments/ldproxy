@@ -37,7 +37,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2
 import de.ii.ldproxy.ogcapi.domain.URICustomizer
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
-import io.swagger.v3.oas.models.media.Schema
+import io.swagger.v3.oas.models.media.ObjectSchema
 import spock.lang.PendingFeature
 import spock.lang.Specification
 
@@ -46,7 +46,7 @@ import javax.ws.rs.core.MediaType
 class LandingPageSpec extends Specification {
 
     static final OgcApiDataV2 datasetData = createDatasetData()
-    static OgcApiEntity ogcApiApiEntity = createDatasetEntity()
+    static OgcApiEntity apiEntity = createDatasetEntity()
     static final ApiRequestContext requestContext = createRequestContext()
     static QueriesHandlerCommon queryHandler = new QueriesHandlerCommon(createExtensionRegistry())
 
@@ -67,8 +67,22 @@ class LandingPageSpec extends Specification {
 
         then: 'it should comply to landingPage.yml'
 
+        /* TODO move to OAS30 module
+        and: 'it should contain a link to the api definition'
+        landingPage.links.any { it.rel == 'service-desc' }
+
+        and: 'it should contain a link to the api documentation'
+        landingPage.links.any { it.rel == 'service-doc' }
+         */
+
         and: 'it should contain a link to the conformance resource'
         landingPage.links.any { it.rel == 'conformance' && it.href.contains('/conformance') }
+
+        /* TODO move to COLLECTIONS module
+        and: 'it should contain a link to the collections resource'
+        landingPage.links.any { it.rel == 'data' && it.href.contains('/collections') }
+         */
+
     }
 
     def 'Requirement 6B'() {
@@ -83,7 +97,7 @@ class LandingPageSpec extends Specification {
                 queryInputConformance, requestContext).entity as ConformanceDeclaration
 
         then: 'it should return a list of conformance classes that the server conforms to'
-        conformanceDeclaration.conformsTo.any { it == 'foo bar 1234' }
+        conformanceDeclaration.conformsTo.any { it == 'http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/core' }
 
     }
 
@@ -97,15 +111,14 @@ class LandingPageSpec extends Specification {
         thrown(IllegalStateException)
     }
 
-    @PendingFeature
     def 'Requirement 9 A: invalid query parameter value'() {
         when: 'a request to the landing page with a URI that has an invalid parameter value'
-        def queryInputDataset = new ImmutableQueryInputLandingPage.Builder().includeLinkHeader(false).build()
+        def queryInputDataset = new ImmutableQueryInputLandingPage.Builder().build()
         queryHandler.handle(QueriesHandlerCommon.Query.LANDING_PAGE, queryInputDataset,
                 createRequestContext('http://example.com?f=foobar')).entity as LandingPage
 
         then: 'an exception is thrown resulting in a response with HTTP status code 400'
-        thrown(IllegalArgumentException)
+        thrown(IllegalStateException)
     }
 
     static def createDatasetData() {
@@ -136,7 +149,7 @@ class LandingPageSpec extends Specification {
                 .mediaType(new ImmutableApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build())
-                .api(ogcApiApiEntity)
+                .api(apiEntity)
                 .requestUri(new URI(uri))
                 .build()
     }
@@ -172,15 +185,6 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-                            return new ImmutableApiMediaTypeContent.Builder()
-                                    .schema(new Schema())
-                                    .schemaRef("foobar")
-                                    .ogcApiMediaType(getMediaType())
-                                    .build();
-                        }
-
-                        @Override
                         boolean isEnabledForApi(OgcApiDataV2 apiData) {
                             return true
                         }
@@ -196,12 +200,13 @@ class LandingPageSpec extends Specification {
                         }
                     })
                 }
+
                 if (extensionType == ConformanceClass.class) {
                     return ImmutableList.of((T) new ConformanceClass() {
 
                         @Override
                         List<String> getConformanceClassUris() {
-                            return ['foo bar 1234']
+                            return ImmutableList.of('http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/core')
                         }
 
                         @Override

@@ -18,16 +18,34 @@ import java.util.Set;
 
 // TODO convert to a component
 public class SchemaValidatorImpl implements SchemaValidator {
+    public Optional<String> validate(String schemaContent, String jsonContent, SpecVersion.VersionFlag version) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode schemaNode = mapper.readTree(schemaContent);
+        JsonNode jsonNode = mapper.readTree(jsonContent);
+        return validate(schemaNode, jsonNode, version);
+    }
 
     public Optional<String> validate(String schemaContent, String jsonContent) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        JsonSchemaFactory validatorFactory = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance()).objectMapper(mapper).build();
+        JsonNode schemaNode = mapper.readTree(schemaContent);
+        JsonNode jsonNode = mapper.readTree(jsonContent);
+        SpecVersion.VersionFlag version;
+        try {
+            version = SpecVersionDetector.detect(schemaNode);
+        } catch (Exception e) {
+            // use 2019-09 as the fallback version
+            version = SpecVersion.VersionFlag.V201909;
+        }
+        return validate(schemaNode, jsonNode, version);
+    }
+
+    private Optional<String> validate(JsonNode schemaNode, JsonNode jsonNode, SpecVersion.VersionFlag version) throws IOException {
+        JsonSchemaFactory validatorFactory = JsonSchemaFactory.getInstance(version);
         SchemaValidatorsConfig config = new SchemaValidatorsConfig();
         config.setTypeLoose(true);
         config.setFailFast(true);
         config.setHandleNullableField(true);
-        JsonSchema schema = validatorFactory.getSchema(schemaContent,config);
-        JsonNode jsonNode = mapper.readTree(jsonContent);
+        JsonSchema schema = validatorFactory.getSchema(schemaNode,config);
         Set<ValidationMessage> result;
         try {
             result = schema.validate(jsonNode);
