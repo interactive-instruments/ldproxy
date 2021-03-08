@@ -38,8 +38,7 @@ public class CollectionExtensionFeatures implements CollectionExtension {
 
     private final ExtensionRegistry extensionRegistry;
 
-    public CollectionExtensionFeatures(@Requires ExtensionRegistry extensionRegistry,
-                                       @Requires FeaturesCoreProviders providers) {
+    public CollectionExtensionFeatures(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 
