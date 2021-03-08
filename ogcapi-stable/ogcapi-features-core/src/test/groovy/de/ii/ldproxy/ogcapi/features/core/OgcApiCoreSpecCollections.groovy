@@ -19,12 +19,12 @@ import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollectionsConfiguration
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection
 import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollection
 import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollections
+import de.ii.ldproxy.ogcapi.common.domain.ImmutableCommonConfiguration
 import de.ii.ldproxy.ogcapi.domain.ApiExtension
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent
 import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent
@@ -37,14 +37,12 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2
 import de.ii.ldproxy.ogcapi.features.core.app.CollectionExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.app.CollectionsExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.html.domain.ImmutableHtmlConfiguration
 import de.ii.ldproxy.ogcapi.json.domain.ImmutableJsonConfiguration
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
-import de.ii.xtraplatform.features.domain.FeatureProvider2
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType

@@ -1,19 +1,30 @@
+/*
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.domain.*
-import de.ii.ldproxy.ogcapi.features.geojson.app.GeoJsonWriterCrs
-import de.ii.ldproxy.ogcapi.features.geojson.domain.*
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
+import de.ii.ldproxy.ogcapi.domain.OgcApi
+import de.ii.ldproxy.ogcapi.domain.URICustomizer
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ModifiableStateGeoJson
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs
-import org.mockito.Mockito
 import spock.lang.Shared
 import spock.lang.Specification
 
 import java.nio.charset.StandardCharsets
-
-import static org.mockito.Mockito.mock
 
 class GeoJsonWriterCrsSpec extends Specification {
 
@@ -85,7 +96,7 @@ class GeoJsonWriterCrsSpec extends Specification {
         actual == expected
     }
 
-    private static void runTransformer(ByteArrayOutputStream outputStream, boolean isCollection, EpsgCrs crs) throws IOException, URISyntaxException {
+    private void runTransformer(ByteArrayOutputStream outputStream, boolean isCollection, EpsgCrs crs) throws IOException, URISyntaxException {
         outputStream.reset()
         FeatureTransformationContextGeoJson transformationContext = createTransformationContext(outputStream, isCollection, crs)
         FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterCrs()))
@@ -99,12 +110,11 @@ class GeoJsonWriterCrsSpec extends Specification {
         transformer.onEnd()
     }
 
-    private static FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, boolean isCollection, EpsgCrs crs) throws URISyntaxException {
+    private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, boolean isCollection, EpsgCrs crs) throws URISyntaxException {
         CrsTransformer crsTransformer = null
         if (Objects.nonNull(crs)) {
-            crsTransformer = mock(CrsTransformer.class)
-            Mockito.when(crsTransformer.getTargetCrs())
-                    .thenReturn(crs)
+            crsTransformer = Mock()
+            crsTransformer.getTargetCrs() >> crs
         }
 
         return ImmutableFeatureTransformationContextGeoJson.builder()

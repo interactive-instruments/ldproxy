@@ -185,6 +185,15 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
+                        ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+                            return new ImmutableApiMediaTypeContent.Builder()
+                            .ogcApiMediaType(getMediaType())
+                            .schema(new ObjectSchema())
+                            .schemaRef("#/")
+                            .build()
+                        }
+
+                        @Override
                         boolean isEnabledForApi(OgcApiDataV2 apiData) {
                             return true
                         }
