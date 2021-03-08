@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "title": "Test",
+  "description": "Test schema",
+  "required": [
+    "type",
+    "properties"
+  ,
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "Feature"
+      ]
+    },
+    "id": {
+      "type": "integer",
+      "title": "Test ID"
+    }
+  },
+  "$schema": "http://json-schema.org/draft/2019-09/schema",
+  "$id": "https://demo.ldproxy.net/vineyards/collections/vineyards/schema?f=json",
+  "$defs": {
+    "Link": {
+      "type": "object",
+      "required": [
+        "href"
+      ],
+      "properties": {
+        "href": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "rel": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
