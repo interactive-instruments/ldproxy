@@ -91,9 +91,9 @@
 }
 </script>{{/isApiCatalog}}
 
-{{#isDataset}}<script type="application/ld+json">
-{{{schemaOrgDataset}}}
-</script>{{/isDataset}}
+{{#isDataset}}{{#schemaOrgDataset}}<script type="application/ld+json">
+{{{.}}}
+</script>{{/schemaOrgDataset}}{{/isDataset}}
 
 {{#hasBreadCrumbs}}<script type="application/ld+json">
 {
