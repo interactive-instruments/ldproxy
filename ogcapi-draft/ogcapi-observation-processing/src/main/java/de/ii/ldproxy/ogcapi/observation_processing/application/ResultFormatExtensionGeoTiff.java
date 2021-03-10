@@ -39,6 +39,8 @@ import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 @Component
 @Provides(specifications = {ResultFormatExtensionGeoTiff.class, DapaResultFormatExtension.class, FormatExtension.class, ApiExtension.class})
 @Instantiate
@@ -61,7 +63,7 @@ public class ResultFormatExtensionGeoTiff implements DapaResultFormatExtension {
 
     @Override
     public String getPathPattern() {
-        return "(?:^/collections/[\\w\\-]+/"+DAPA_PATH_ELEMENT+"/grid(?:\\:aggregate-time)?/?$)";
+        return "(?:^/collections/"+COLLECTION_ID_PATTERN+"/"+DAPA_PATH_ELEMENT+"/grid(?:\\:aggregate-time)?/?$)";
     }
 
     @Override

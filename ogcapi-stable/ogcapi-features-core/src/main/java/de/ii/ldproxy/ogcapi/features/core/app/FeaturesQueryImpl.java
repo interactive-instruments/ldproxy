@@ -28,6 +28,7 @@ import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
+import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
@@ -48,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -60,6 +62,7 @@ import java.util.stream.Collectors;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
 
 
 @Component
@@ -127,6 +130,9 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
                                                                    .map(FeaturesCoreConfiguration::getAllFilterParameters)
                                                                    .orElse(ImmutableMap.of());
+        final List<String> qFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                   .map(FeaturesCoreConfiguration::getQProperties)
+                                                   .orElse(ImmutableList.of());
 
         Set<String> filterParameters = ImmutableSet.of();
         for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -179,7 +185,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             if (parameters.containsKey("filter-lang") && "cql-json".equals(parameters.get("filter-lang"))) {
                 cqlFormat = Cql.Format.JSON;
             }
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, cqlFormat);
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, cqlFormat);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -200,7 +206,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         if (!filtersFromQuery.isEmpty()) {
 
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, cqlFormat);
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), cqlFormat);
         }
 
         return Optional.empty();
@@ -218,6 +224,9 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             } else if (filterableFields.containsKey(filterKey)) {
                 String filterValue = query.get(filterKey);
                 filters.put(filterKey, filterValue);
+            } else if (filterKey.equals(PARAMETER_Q)) {
+                String filterValue = query.get(filterKey);
+                filters.put(filterKey, filterValue);
             }
         }
 
@@ -226,7 +235,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
-                                                  Cql.Format cqlFormat) {
+                                                  List<String> qFields, Cql.Format cqlFormat) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
@@ -242,6 +251,10 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                        if (filterableFields.get(filter.getKey()).equals(FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE))
                                                            return null;
                                                        return timeToCql(filterableFields.get(filter.getKey()), filter.getValue()).orElse(null);
+                                                   }
+                                                   if (filter.getKey()
+                                                             .equals(PARAMETER_Q)) {
+                                                       return qToCql(qFields, filter.getValue()).orElse(null);
                                                    }
                                                    if (filterParameters.contains(filter.getKey())) {
                                                        CqlPredicate cqlPredicate;
@@ -354,6 +367,22 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         }
 
         return Optional.of(CqlPredicate.of(TEquals.of(timeField, temporalLiteral)));
+    }
+
+    private Optional<CqlPredicate> qToCql(List<String> qFields, String qValue) {
+        // predicate that ORs LIKE operators of all values;
+        List<String> qValues = Splitter.on(",")
+                                       .trimResults()
+                                       .splitToList(qValue);
+
+        return qFields.size()>1 || qValues.size()>1
+                ? Optional.of(CqlPredicate.of(Or.of(qFields.stream()
+                                                        .map(qField -> qValues.stream()
+                                                                              .map(word -> CqlPredicate.of(Like.of(qField, ScalarLiteral.of("%"+word+"%"))))
+                                                                              .collect(Collectors.toUnmodifiableList()))
+                                                        .flatMap(Collection::stream)
+                                                        .collect(Collectors.toUnmodifiableList()))))
+                : Optional.of(CqlPredicate.of(Like.of(qFields.get(0), ScalarLiteral.of("%"+qValues.get(0)+"%"))));
     }
 
     private int parseLimit(int minimumPageSize, int defaultPageSize, int maxPageSize, String paramLimit) {

@@ -19,6 +19,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -53,13 +54,15 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     }
 
     @Override
-    public Set<String> getValues(OgcApiDataV2 apiData) {
-        Set<String> tmsSetMultiCollection = apiData.getExtension(TilesConfiguration.class)
-                .filter(TilesConfiguration::isEnabled)
-                .filter(TilesConfiguration::getMultiCollectionEnabled)
-                .map(TilesConfiguration::getZoomLevels)
-                .map(Map::keySet)
-                .orElse(ImmutableSet.of());
+    public List<String> getValues(OgcApiDataV2 apiData) {
+        List<String> tmsSetMultiCollection = apiData.getExtension(TilesConfiguration.class)
+                                                    .filter(TilesConfiguration::isEnabled)
+                                                    .filter(TilesConfiguration::getMultiCollectionEnabled)
+                                                    .map(TilesConfiguration::getZoomLevels)
+                                                    .map(Map::keySet)
+                                                    .orElse(ImmutableSet.of())
+                                                    .stream()
+                                                    .collect(Collectors.toUnmodifiableList());
 
         Set<String> tmsSet = apiData.getCollections()
                 .values()
@@ -76,7 +79,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
         return extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
                                                                           .map(tms -> tms.getId())
                                                                           .filter(tms -> tmsSet.contains(tms))
-                                                                          .collect(Collectors.toSet());
+                                                                          .collect(Collectors.toUnmodifiableList());
     }
 
     @Override

@@ -32,7 +32,7 @@ public class WorldMercatorWGS84Quad extends AbstractTileMatrixSet implements Til
     private static final double BBOX_MAX_X = 20037508.3427892;
     private static final double BBOX_MIN_Y = -20037508.3427892;
     private static final double BBOX_MAX_Y = 20037508.3427892;
-    private static final BoundingBox BBOX = new BoundingBox(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
+    private static final BoundingBox BBOX = BoundingBox.of(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

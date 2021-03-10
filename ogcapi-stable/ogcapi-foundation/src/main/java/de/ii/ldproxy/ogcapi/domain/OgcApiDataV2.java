@@ -19,6 +19,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
@@ -78,6 +79,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     public abstract Optional<ExternalDocumentation> getExternalDocs();
 
     public abstract Optional<CollectionExtent> getDefaultExtent();
+
+    @Value.Default
+    public MODE getApiValidation() {
+        return MODE.NONE;
+    }
 
     // TODO: move to ServiceData?
     public abstract List<String> getTags();
@@ -209,13 +215,13 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
                                .map(this::getSpatialExtent)
                                .filter(Optional::isPresent)
                                .map(Optional::get)
-                               .map(BoundingBox::getCoords)
+                               .map(BoundingBox::toArray)
                                .reduce((doubles, doubles2) -> new double[]{
                                        Math.min(doubles[0], doubles2[0]),
                                        Math.min(doubles[1], doubles2[1]),
                                        Math.max(doubles[2], doubles2[2]),
                                        Math.max(doubles[3], doubles2[3])})
-                               .map(doubles -> new BoundingBox(doubles[0], doubles[1], doubles[2], doubles[3], OgcCrs.CRS84));
+                               .map(doubles -> BoundingBox.of(doubles[0], doubles[1], doubles[2], doubles[3], OgcCrs.CRS84));
     }
 
     /**

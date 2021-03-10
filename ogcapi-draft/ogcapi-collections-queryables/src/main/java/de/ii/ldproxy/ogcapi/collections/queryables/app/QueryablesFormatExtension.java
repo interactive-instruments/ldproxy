@@ -15,10 +15,12 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 
 import java.util.List;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 public interface QueryablesFormatExtension extends GenericFormatExtension {
 
     default String getPathPattern() {
-        return "^\\/?collections\\/[^\\/]+\\/queryables/?$";
+        return "^/?collections/"+COLLECTION_ID_PATTERN+"/queryables/?$";
     }
 
     Object getEntity(JsonSchemaObject schemaQueryables, List<Link> links, String collectionId, OgcApi api, ApiRequestContext requestContext);

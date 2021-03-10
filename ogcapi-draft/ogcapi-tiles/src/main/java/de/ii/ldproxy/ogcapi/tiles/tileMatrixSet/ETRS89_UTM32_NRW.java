@@ -33,7 +33,7 @@ public class ETRS89_UTM32_NRW extends AbstractTileMatrixSet implements TileMatri
     private static final double BBOX_MAX_Y = 6301219.54;
     private static final double BBOX_MAX_X = BBOX_MIN_X + DIFF;
     private static final double BBOX_MIN_Y = BBOX_MAX_Y - DIFF;
-    private static final BoundingBox BBOX = new BoundingBox(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
+    private static final BoundingBox BBOX = BoundingBox.of(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

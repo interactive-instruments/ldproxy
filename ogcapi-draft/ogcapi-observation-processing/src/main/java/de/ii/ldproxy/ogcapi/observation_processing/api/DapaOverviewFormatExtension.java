@@ -12,11 +12,13 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.Processing;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 public interface DapaOverviewFormatExtension extends GenericFormatExtension {
 
     default String getPathPattern() {
         String DAPA_PATH_ELEMENT = "processes";
-        return "^/collections/[\\w\\-]+/"+ DAPA_PATH_ELEMENT+"/?$";
+        return "^/collections/"+COLLECTION_ID_PATTERN+"/"+ DAPA_PATH_ELEMENT+"/?$";
     }
 
     Object getEntity(Processing processList, String collectionId, OgcApi api, ApiRequestContext requestContext);

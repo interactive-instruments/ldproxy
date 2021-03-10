@@ -52,7 +52,7 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
                 .filter(featureType -> featureType.getEnabled())
                 .map(featureType -> featureType.getLabel())
                 .collect(Collectors.toList());
-        String suffix = (collectionNames.size()<=4) ? " ("+String.join(", ", collectionNames)+")" : "";
+        String suffix = (collectionNames.size()>0 && collectionNames.size()<=4) ? " ("+String.join(", ", collectionNames)+")" : "";
 
         landingPageBuilder.addLinks(new ImmutableLink.Builder()
                         .href(uriCustomizer.copy()

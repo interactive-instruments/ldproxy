@@ -37,11 +37,6 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
     private I18n i18n;
 
     @Override
-    public String getPathPattern() {
-        return "^/?resources/?$";
-    }
-
-    @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }

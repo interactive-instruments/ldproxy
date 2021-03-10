@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app.json;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.Collections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
@@ -19,6 +20,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 /**
  * @author zahnen
@@ -26,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 @Component
 @Provides(specifications = {CollectionsFormatJson.class, CollectionsFormatExtension.class, FormatExtension.class, ApiExtension.class})
 @Instantiate
-public class CollectionsFormatJson implements CollectionsFormatExtension {
+public class CollectionsFormatJson implements CollectionsFormatExtension, ConformanceClass {
 
     @Requires
     SchemaGenerator schemaGenerator;
@@ -45,6 +47,11 @@ public class CollectionsFormatJson implements CollectionsFormatExtension {
     public CollectionsFormatJson() {
         schemaCollections = schemaGenerator.getSchema(Collections.class);
         schemaCollection = schemaGenerator.getSchema(OgcApiCollection.class);
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/json");
     }
 
     @Override

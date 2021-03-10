@@ -51,7 +51,8 @@ public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryPara
     public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDataV2 datasetData) {
-        if (!isExtensionEnabled(datasetData, GeometrySimplificationConfiguration.class)) {
+        if (!isExtensionEnabled(datasetData.getCollections()
+                                           .get(featureTypeConfiguration.getId()), GeometrySimplificationConfiguration.class)) {
             return queryBuilder;
         }
         if (parameters.containsKey("maxAllowableOffset")) {

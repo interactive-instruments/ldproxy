@@ -71,6 +71,8 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
 
     @Override
     public String getPathPattern() {
+        // This is a special case and we need to override the default pattern to support
+        // auxiliary files accessed by the Swagger UI HTML output
         return "^/api/[^/]+$";
     }
 

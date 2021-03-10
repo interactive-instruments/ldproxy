@@ -39,8 +39,92 @@ import java.util.stream.Collectors;
 @Instantiate
 public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
 
-    final static String DEFINITIONS_TOKEN = "$defs";
+    public enum VERSION {V201909, V7}
 
+    final static String DEFINITIONS_TOKEN_V201909 = "$defs";
+    final static String DEFINITIONS_TOKEN_V7 = "definitions";
+
+    final static JsonSchemaNull NO_GEOMETRY = ImmutableJsonSchemaNull.builder()
+                                                              .build();
+    final static JsonSchemaArray COORDINATES = ImmutableJsonSchemaArray.builder()
+                                                                       .minItems(2)
+                                                                       .maxItems(3)
+                                                                       .items(ImmutableJsonSchemaNumber.builder()
+                                                                                                       .build())
+                                                                       .build();
+    final static JsonSchemaObject POINT = ImmutableJsonSchemaObject.builder()
+                                                                   .title("GeoJSON Point")
+                                                                   .addRequired("type", "coordinates")
+                                                                   .putProperties("type", getEnum("Point"))
+                                                                   .putProperties("coordinates", COORDINATES)
+                                                                   .build();
+    final static JsonSchemaObject MULTI_POINT = ImmutableJsonSchemaObject.builder()
+                                                                         .title("GeoJSON MultiPoint")
+                                                                         .addRequired("type", "coordinates")
+                                                                         .putProperties("type", getEnum("MultiPoint"))
+                                                                         .putProperties("coordinates", ImmutableJsonSchemaArray.builder()
+                                                                                                                               .items(COORDINATES)
+                                                                                                                               .build())
+                                                                         .build();
+    final static JsonSchemaObject LINE_STRING = ImmutableJsonSchemaObject.builder()
+                                                                         .title("GeoJSON LineString")
+                                                                         .addRequired("type", "coordinates")
+                                                                         .putProperties("type", getEnum("LineString"))
+                                                                         .putProperties("coordinates", ImmutableJsonSchemaArray.builder()
+                                                                                                                               .minItems(2)
+                                                                                                                               .items(COORDINATES)
+                                                                                                                               .build())
+                                                                         .build();
+    final static JsonSchemaObject MULTI_LINE_STRING = ImmutableJsonSchemaObject.builder()
+                                                                               .title("GeoJSON MultiLineString")
+                                                                               .addRequired("type", "coordinates")
+                                                                               .putProperties("type", getEnum("MultiLineString"))
+                                                                               .putProperties("coordinates", ImmutableJsonSchemaArray.builder()
+                                                                                                                                     .items(ImmutableJsonSchemaArray.builder()
+                                                                                                                                                                    .minItems(2)
+                                                                                                                                                                    .items(COORDINATES)
+                                                                                                                                                                    .build())
+                                                                                                                                     .build())
+                                                                               .build();
+    final static JsonSchemaObject POLYGON = ImmutableJsonSchemaObject.builder()
+                                                                     .title("GeoJSON Polygon")
+                                                                     .addRequired("type", "coordinates")
+                                                                     .putProperties("type", getEnum("Polygon"))
+                                                                     .putProperties("coordinates", ImmutableJsonSchemaArray.builder()
+                                                                                                                           .minItems(1)
+                                                                                                                           .items(ImmutableJsonSchemaArray.builder()
+                                                                                                                                                          .minItems(4)
+                                                                                                                                                          .items(COORDINATES)
+                                                                                                                                                          .build())
+                                                                                                                           .build())
+                                                                     .build();
+    final static JsonSchemaObject MULTI_POLYGON = ImmutableJsonSchemaObject.builder()
+                                                                           .title("GeoJSON MultiPolygon")
+                                                                           .addRequired("type", "coordinates")
+                                                                           .putProperties("type", getEnum("MultiPolygon"))
+                                                                           .putProperties("coordinates", ImmutableJsonSchemaArray.builder()
+                                                                                                                                 .items(ImmutableJsonSchemaArray.builder()
+                                                                                                                                                                .minItems(1)
+                                                                                                                                                                .items(ImmutableJsonSchemaArray.builder()
+                                                                                                                                                                                               .minItems(4)
+                                                                                                                                                                                               .items(COORDINATES)
+                                                                                                                                                                                               .build())
+                                                                                                                                                                .build())
+                                                                                                                                 .build())
+                                                                           .build();
+    final static JsonSchemaOneOf GEOMETRY = ImmutableJsonSchemaOneOf.builder()
+                                                                    .title("GeoJSON Geometry")
+                                                                    .addOneOf(POINT, MULTI_POINT, LINE_STRING,
+                                                                              MULTI_LINE_STRING, POLYGON, MULTI_POLYGON)
+                                                                    .build();
+    final static JsonSchemaObject GEOMETRY_COLLECTION = ImmutableJsonSchemaObject.builder()
+                                                                                 .title("GeoJSON GeometryCollection")
+                                                                                 .addRequired("type", "geometries")
+                                                                                 .putProperties("type", getEnum("GeometryCollection"))
+                                                                                 .putProperties("geometries", ImmutableJsonSchemaArray.builder()
+                                                                                                                                      .items(GEOMETRY)
+                                                                                                                                      .build())
+                                                                                 .build();
     final static JsonSchemaObject LINK_JSON = ImmutableJsonSchemaObject.builder()
                                                                        .putProperties("href", ImmutableJsonSchemaString.builder()
                                                                                                                        .format("uri-reference")
@@ -51,7 +135,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                                                                        .addRequired("href")
                                                                        .build();
 
-    private final ConcurrentMap<Integer, ConcurrentMap<String, ConcurrentMap<SCHEMA_TYPE, JsonSchemaObject>>> schemaMapJson = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, ConcurrentMap<String, ConcurrentMap<VERSION, ConcurrentMap<SCHEMA_TYPE, JsonSchemaObject>>>> schemaMapJson = new ConcurrentHashMap<>();
 
     @Requires
     SchemaInfo schemaInfo;
@@ -74,12 +158,24 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
     }
 
     public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SCHEMA_TYPE type) {
+        return getSchemaJson(apiData, collectionId, schemaUri, type, VERSION.V201909);
+    }
+
+    public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SCHEMA_TYPE type, Optional<VERSION> version) {
+        return version.isEmpty()
+            ? getSchemaJson(apiData, collectionId, schemaUri, type)
+            : getSchemaJson(apiData, collectionId, schemaUri, type, version.get());
+    }
+
+    public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SCHEMA_TYPE type, VERSION version) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMapJson.containsKey(apiHashCode))
             schemaMapJson.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMapJson.get(apiHashCode).containsKey(collectionId))
             schemaMapJson.get(apiHashCode).put(collectionId, new ConcurrentHashMap<>());
-        if (!schemaMapJson.get(apiHashCode).get(collectionId).containsKey(type)) {
+        if (!schemaMapJson.get(apiHashCode).get(collectionId).containsKey(version))
+            schemaMapJson.get(apiHashCode).get(collectionId).put(version, new ConcurrentHashMap<>());
+        if (!schemaMapJson.get(apiHashCode).get(collectionId).get(version).containsKey(type)) {
 
             FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                     .get(collectionId);
@@ -93,106 +189,123 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                     .getTypes()
                     .get(featureTypeId);
 
-            // TODO support mutables schema
-            ContextJsonSchema featureContext;
-            boolean flatten = false;
-            if (type== SCHEMA_TYPE.QUERYABLES) {
-                // the querables schema is always flattened and we only return the queryables
-                flatten = true;
-                Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
-                Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
-                if (featuresCoreConfiguration.isPresent()) {
-                    queryables = featuresCoreConfiguration.get().getQueryables();
-                }
-                List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
-                featureContext = processPropertiesJsonSchema(featureType, type, true, allQueryables);
-            } else {
-                // the returnables schema
-                // flattening depends on the GeoJSON configuration
-                flatten = type==SCHEMA_TYPE.RETURNABLES_FLAT;
-
-                featureContext = processPropertiesJsonSchema(featureType, type,true, null);
-            }
-
-            ImmutableMap.Builder<String, JsonSchema> definitionsMapBuilder = ImmutableMap.builder();
-            Set<FeatureSchema> processed = new HashSet<>();
-            Set<FeatureSchema> current = featureContext.definitions;
-
-            final boolean[] linkAdded = {false};
-            if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
-                // we know, we will reference links
-                definitionsMapBuilder.put("Link", LINK_JSON);
-                linkAdded[0] = true;
-            }
-
-            while (!flatten && !current.isEmpty()) {
-                Set<FeatureSchema> next = new HashSet<>();
-                current.stream()
-                        .filter(defObject -> !processed.contains(defObject))
-                        .forEach(defObject -> {
-                            if (defObject.getObjectType().isPresent() && defObject.getObjectType().get().equals("Link")) {
-                                if (!linkAdded[0]) {
-                                    definitionsMapBuilder.put("Link", LINK_JSON);
-                                    linkAdded[0] = true;
-                                }
-                            } else {
-                                ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, type, false, null);
-                                definitionsMapBuilder.put(definitionContext.objectKey, ImmutableJsonSchemaObject.builder()
-                                                                                                                .title(defObject.getLabel())
-                                                                                                                .description(defObject.getDescription())
-                                                                                                                .required(ImmutableList.<String>builder()
-                                                                                                                                  .addAll(definitionContext.required)
-                                                                                                                                  .build())
-                                                                                                                .properties(definitionContext.properties)
-                                                                                                                .build());
-                                next.addAll(definitionContext.definitions);
-                            }
-                            processed.add(defObject);
-                        });
-                current = next;
-            }
-
             schemaMapJson.get(apiHashCode)
                          .get(collectionId)
-                         .put(type, ImmutableJsonSchemaObject.builder()
-                                                             .schema("https://json-schema.org/draft/2019-09/schema")
-                                                             .id(schemaUri)
-                                                             .title(collectionData.getLabel())
-                                                             .description(collectionData.getDescription().orElse(featureType.getDescription().orElse("")))
-                                                             .required(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
-                                                                               ImmutableList.<String>builder()
-                                                                                    .add("type", "geometry", "properties")
-                                                                                    .build() :
-                                                                               ImmutableList.of())
-                                                             .properties(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
-                                                                 ImmutableMap.<String,JsonSchema>builder()
-                                                                             .put("type", ImmutableJsonSchemaString.builder()
-                                                                                                                   .enums(ImmutableList.<String>builder()
-                                                                                                                                  .add("Feature")
-                                                                                                                                  .build())
-                                                                                                                   .build())
-                                                                             .put("id", featureContext.id)
-                                                                             .put("links", ImmutableJsonSchemaArray.builder()
-                                                                                                                   .items(ImmutableJsonSchemaRef.builder()
-                                                                                                                                                .ref("#/"+DEFINITIONS_TOKEN+"/Link")
-                                                                                                                                                .build())
-                                                                                                                   .build())
-                                                                             .put("geometry", featureContext.geometry)
-                                                                             .put("properties", ImmutableJsonSchemaObject.builder()
-                                                                                                                         .required(ImmutableList.<String>builder()
-                                                                                                                                           .addAll(featureContext.required)
-                                                                                                                                           .build())
-                                                                                                                         .properties(featureContext.properties)
-                                                                                                                         .patternProperties(featureContext.patternProperties)
-                                                                                                                         .build())
-                                                                             .build() :
-                                                                ImmutableMap.<String,JsonSchema>builder()
-                                                                            .putAll(featureContext.properties)
-                                                                            .build())
-                                                             .defs(definitionsMapBuilder.build())
-                                                             .build());
+                         .get(version)
+                         .put(type, getSchemaJson(featureType, collectionData, schemaUri, type, version));
         }
-        return schemaMapJson.get(apiHashCode).get(collectionId).get(type);
+        return schemaMapJson.get(apiHashCode).get(collectionId).get(version).get(type);
+    }
+
+    public JsonSchemaObject getSchemaJson(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData, Optional<String> schemaUri, SCHEMA_TYPE type, VERSION version) {
+        // TODO support mutables schema
+        ContextJsonSchema featureContext;
+        boolean flatten = false;
+        if (type== SCHEMA_TYPE.QUERYABLES) {
+            // the querables schema is always flattened and we only return the queryables
+            flatten = true;
+            Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
+            Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
+            if (featuresCoreConfiguration.isPresent()) {
+                queryables = featuresCoreConfiguration.get().getQueryables();
+            }
+            List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
+            featureContext = processPropertiesJsonSchema(featureSchema, type, version, true, allQueryables);
+        } else {
+            // the returnables schema
+            // flattening depends on the GeoJSON configuration
+            flatten = type==SCHEMA_TYPE.RETURNABLES_FLAT;
+
+            featureContext = processPropertiesJsonSchema(featureSchema, type,version, true, null);
+        }
+
+        ImmutableMap.Builder<String, JsonSchema> definitionsMapBuilder = ImmutableMap.builder();
+        Set<FeatureSchema> processed = new HashSet<>();
+        Set<FeatureSchema> current = featureContext.definitions;
+
+        final boolean[] linkAdded = {false};
+        if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
+            // we know, we will reference links
+            definitionsMapBuilder.put("Link", LINK_JSON);
+            linkAdded[0] = true;
+        }
+
+        while (!flatten && !current.isEmpty()) {
+            Set<FeatureSchema> next = new HashSet<>();
+            current.stream()
+                    .filter(defObject -> !processed.contains(defObject))
+                    .forEach(defObject -> {
+                        if (defObject.getObjectType().isPresent() && defObject.getObjectType().get().equals("Link")) {
+                            if (!linkAdded[0]) {
+                                definitionsMapBuilder.put("Link", LINK_JSON);
+                                linkAdded[0] = true;
+                            }
+                        } else {
+                            ContextJsonSchema definitionContext = processPropertiesJsonSchema(defObject, type, version,false, null);
+                            definitionsMapBuilder.put(definitionContext.objectKey, ImmutableJsonSchemaObject.builder()
+                                    .title(defObject.getLabel())
+                                    .description(defObject.getDescription())
+                                    .required(ImmutableList.<String>builder()
+                                            .addAll(definitionContext.required)
+                                            .build())
+                                    .properties(definitionContext.properties)
+                                    .build());
+                            next.addAll(definitionContext.definitions);
+                        }
+                        processed.add(defObject);
+                    });
+            current = next;
+        }
+
+        ImmutableJsonSchemaObject.Builder builder = ImmutableJsonSchemaObject.builder();
+        if (version==VERSION.V201909) {
+            builder.schema("https://json-schema.org/draft/2019-09/schema")
+                   .defs(definitionsMapBuilder.build());
+        } else if (version==VERSION.V7) {
+            builder.schema("http://json-schema.org/draft-07/schema#")
+                   .definitions(definitionsMapBuilder.build());
+        }
+
+        builder.id(schemaUri)
+                .title(collectionData.getLabel())
+                .description(collectionData.getDescription().orElse(featureSchema.getDescription().orElse("")))
+                .required(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
+                        ImmutableList.<String>builder()
+                                .add("type", "geometry", "properties")
+                                .build() :
+                        ImmutableList.of())
+                .properties(type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT ?
+                        ImmutableMap.<String,JsonSchema>builder()
+                                .put("type", ImmutableJsonSchemaString.builder()
+                                        .enums(ImmutableList.<String>builder()
+                                                .add("Feature")
+                                                .build())
+                                        .build())
+                                .put("id", featureContext.id)
+                                .put("links", ImmutableJsonSchemaArray.builder()
+                                        .items(ImmutableJsonSchemaRef.builder()
+                                                .ref("#/" + getDefinitionsToken(version) + "/Link")
+                                                .build())
+                                        .build())
+                                .put("geometry", featureContext.geometry)
+                                .put("properties", ImmutableJsonSchemaObject.builder()
+                                        .required(ImmutableList.<String>builder()
+                                                .addAll(featureContext.required)
+                                                .build())
+                                        .properties(featureContext.properties)
+                                        .patternProperties(featureContext.patternProperties)
+                                        .build())
+                                .build() :
+                        ImmutableMap.<String,JsonSchema>builder()
+                                .putAll(featureContext.properties)
+                                .build());
+        if (version==VERSION.V201909) {
+            builder.defs(definitionsMapBuilder.build());
+        } else if (version==VERSION.V7) {
+            builder.definitions(definitionsMapBuilder.build());
+        }
+
+        return builder.build();
     }
 
     private JsonSchema getJsonSchemaForLiteralType(SchemaBase.Type type, Optional<String> label, Optional<String> description) {
@@ -261,7 +374,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                                                   .from(result)
                                                   .enums(constraints.getEnumValues()
                                                                     .stream()
-                                                                    .map(val -> Integer.getInteger(val))
+                                                                    .map(val -> Integer.parseInt(val))
                                                                     .collect(Collectors.toList()))
                                                   .build();
             } else if (constraints.getCodelist().isPresent()) {
@@ -318,7 +431,13 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
         return result;
     }
 
-    private ContextJsonSchema processPropertiesJsonSchema(FeatureSchema schema, SCHEMA_TYPE type, boolean isFeature, List<String> propertySubset) {
+    private static JsonSchemaString getEnum(String value) {
+        return ImmutableJsonSchemaString.builder()
+                                        .addEnums(value)
+                                        .build();
+    }
+
+    private ContextJsonSchema processPropertiesJsonSchema(FeatureSchema schema, SCHEMA_TYPE type, VERSION version, boolean isFeature, List<String> propertySubset) {
 
         boolean flatten = (type==SCHEMA_TYPE.RETURNABLES_FLAT || type==SCHEMA_TYPE.QUERYABLES);
         ContextJsonSchema context = new ContextJsonSchema();
@@ -336,7 +455,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                 properties = schema.getAllNestedProperties()
                                    .stream()
                                    .filter(property -> propertySubset.stream()
-                                                                     .anyMatch(queryableProperty -> queryableProperty.equals(propertyNameMap.get(String.join(".", property.getFullPath())))))
+                                                                     .anyMatch(queryableProperty -> queryableProperty.equals(String.join(".", property.getFullPath()))))
                                    .collect(Collectors.toList());
                 break;
 
@@ -386,66 +505,59 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                               // ignore intermediate objects in flattening mode, only process leaf properties
                               if (type==SCHEMA_TYPE.RETURNABLES) {
                                   jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                     .ref("#/"+DEFINITIONS_TOKEN+"/"+property.getObjectType().orElse(getFallbackTypeName(property)))
+                                                                     .ref("#/"+getDefinitionsToken(version)+"/"+property.getObjectType().orElse(getFallbackTypeName(property)))
                                                                      .build();
                                   context.definitions.add(property);
                               }
                               break;
                           case GEOMETRY:
+                              geometry = true;
+                              boolean noNull = property.getConstraints().flatMap(SchemaConstraints::getRequired).orElse(false) || type == SCHEMA_TYPE.QUERYABLES;
                               switch (property.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
                                   case POINT:
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://geojson.org/schema/Point.json")
-                                                                         .build();
-                                      geometry = true;
+                                      jsonSchema = noNull ? POINT : ImmutableJsonSchemaOneOf.builder()
+                                                                                              .addOneOf(NO_GEOMETRY, POINT)
+                                                                                              .build();
                                       break;
                                   case MULTI_POINT:
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://geojson.org/schema/MultiPoint.json")
-                                                                         .build();
-                                      geometry = true;
+                                      jsonSchema = noNull ? MULTI_POINT : ImmutableJsonSchemaOneOf.builder()
+                                                                                              .addOneOf(NO_GEOMETRY, MULTI_POINT)
+                                                                                              .build();
                                       break;
                                   case LINE_STRING:
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://geojson.org/schema/LineString.json")
-                                                                         .build();
-                                      geometry = true;
+                                      jsonSchema = noNull ? LINE_STRING : ImmutableJsonSchemaOneOf.builder()
+                                                                                              .addOneOf(NO_GEOMETRY, LINE_STRING)
+                                                                                              .build();
                                       break;
                                   case MULTI_LINE_STRING:
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://geojson.org/schema/MultiLineString.json")
-                                                                         .build();
-                                      geometry = true;
+                                      jsonSchema = noNull ? MULTI_LINE_STRING : ImmutableJsonSchemaOneOf.builder()
+                                                                                                    .addOneOf(NO_GEOMETRY, MULTI_LINE_STRING)
+                                                                                                    .build();
                                       break;
                                   case POLYGON:
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://geojson.org/schema/Polygon.json")
-                                                                         .build();
-                                      geometry = true;
+                                      jsonSchema = noNull ? POLYGON : ImmutableJsonSchemaOneOf.builder()
+                                                                                                    .addOneOf(NO_GEOMETRY, POLYGON)
+                                                                                                    .build();
                                       break;
                                   case MULTI_POLYGON:
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://geojson.org/schema/MultiPolygon.json")
-                                                                         .build();
-                                      geometry = true;
+                                      jsonSchema = noNull ? MULTI_POLYGON : ImmutableJsonSchemaOneOf.builder()
+                                                                                                    .addOneOf(NO_GEOMETRY, MULTI_POLYGON)
+                                                                                                    .build();
                                       break;
                                   case GEOMETRY_COLLECTION:
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://geojson.org/schema/GeometryCollection.json")
-                                                                         .build();
-                                      geometry = true;
+                                      jsonSchema = noNull ? GEOMETRY_COLLECTION : ImmutableJsonSchemaOneOf.builder()
+                                                                                                      .addOneOf(NO_GEOMETRY, GEOMETRY_COLLECTION)
+                                                                                                      .build();
                                       break;
                                   case NONE:
-                                      jsonSchema = ImmutableJsonSchemaNull.builder()
-                                                                          .build();
-                                      geometry = true;
+                                      jsonSchema = NO_GEOMETRY;
                                       break;
                                   case ANY:
                                   default:
-                                      jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                         .ref("https://geojson.org/schema/Geometry.json")
-                                                                         .build();
-                                      geometry = true;
+                                      jsonSchema = noNull ? GEOMETRY : ImmutableJsonSchemaOneOf.builder()
+                                                                                                 .addOneOf(NO_GEOMETRY, POINT, MULTI_POINT, LINE_STRING,
+                                                                                                           MULTI_LINE_STRING, POLYGON, MULTI_POLYGON)
+                                                                                                 .build();
                                       break;
                               }
                               break;
@@ -494,5 +606,15 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
                   });
 
         return context;
+    }
+
+    private String getDefinitionsToken(VERSION version) {
+        switch (version) {
+            case V7:
+                return DEFINITIONS_TOKEN_V7;
+            case V201909:
+            default:
+                return DEFINITIONS_TOKEN_V201909;
+        }
     }
 }

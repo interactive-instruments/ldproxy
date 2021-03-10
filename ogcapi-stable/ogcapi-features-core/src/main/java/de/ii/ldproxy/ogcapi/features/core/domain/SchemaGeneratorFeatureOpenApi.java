@@ -7,6 +7,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
@@ -73,42 +74,54 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
             FeatureSchema featureType = featureProvider.getData()
                                                        .getTypes()
                                                        .get(featureTypeId);
+            if (Objects.isNull(featureType))
+                // Use an empty object schema as fallback, if we cannot get one from the provider
+                featureType = new ImmutableFeatureSchema.Builder()
+                                                        .name(featureTypeId)
+                                                        .type(SchemaBase.Type.OBJECT)
+                                                        .build();
 
-            // TODO support mutables schema
-            ContextOpenApi featureContext;
-            Schema schema;
-            if (type== SCHEMA_TYPE.QUERYABLES) {
-                // the querables schema is always flattened and we only return the queryables
-                Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
-                Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
-                if (featuresCoreConfiguration.isPresent()) {
-                    queryables = featuresCoreConfiguration.get().getQueryables();
-                }
-                List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
-                featureContext = processPropertiesOpenApi(featureType, type, true, allQueryables);
-                schema = new ObjectSchema().title(collectionData.getLabel())
-                                           .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
-                                           .properties(featureContext.properties.getProperties());
-            } else {
-                // the returnables schema
-                featureContext = processPropertiesOpenApi(featureType, type, true, null);
-                schema = new ObjectSchema().title(collectionData.getLabel())
-                                           .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
-                                           .addProperties("properties", featureContext.properties);
-            }
-
-            if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
-                schema.required(ImmutableList.of("type", "geometry", "properties"))
-                      .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
-                      .addProperties("geometry", featureContext.geometry)
-                      .addProperties("id", featureContext.id)
-                      .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")));
-            }
             schemaMapOpenApi.get(apiHashCode)
                             .get(collectionId)
-                            .put(type, schema);
+                            .put(type, getSchemaOpenApi(featureType, collectionData, type));
         }
         return schemaMapOpenApi.get(apiHashCode).get(collectionId).get(type);
+    }
+
+    public Schema getSchemaOpenApi(FeatureSchema featureType, FeatureTypeConfigurationOgcApi collectionData, SCHEMA_TYPE type) {
+
+        // TODO support mutables schema
+        ContextOpenApi featureContext;
+        Schema schema;
+        if (type== SCHEMA_TYPE.QUERYABLES) {
+            // the querables schema is always flattened and we only return the queryables
+            Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
+            Optional<FeaturesCollectionQueryables> queryables = Optional.empty();
+            if (featuresCoreConfiguration.isPresent()) {
+                queryables = featuresCoreConfiguration.get().getQueryables();
+            }
+            List<String> allQueryables = queryables.map(FeaturesCollectionQueryables::getAll).orElse(ImmutableList.of());
+            featureContext = processPropertiesOpenApi(featureType, type, true, allQueryables);
+            schema = new ObjectSchema().title(collectionData.getLabel())
+                                       .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
+                                       .properties(featureContext.properties.getProperties());
+        } else {
+            // the returnables schema
+            featureContext = processPropertiesOpenApi(featureType, type, true, null);
+            schema = new ObjectSchema().title(collectionData.getLabel())
+                                       .description(collectionData.getDescription().orElse(featureType.getDescription().orElse(null)))
+                                       .addProperties("properties", featureContext.properties);
+        }
+
+        if (type==SCHEMA_TYPE.RETURNABLES || type==SCHEMA_TYPE.RETURNABLES_FLAT) {
+            schema.required(ImmutableList.of("type", "geometry", "properties"))
+                  .addProperties("type", new StringSchema()._enum(ImmutableList.of("Feature")))
+                  .addProperties("geometry", featureContext.geometry)
+                  .addProperties("id", featureContext.id)
+                  .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")));
+        }
+
+        return schema;
     }
 
     public Optional<Schema> getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, String propertyName) {
@@ -117,10 +130,15 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
             return Optional.empty();
         if (Objects.isNull(featureSchema.getProperties()))
             return Optional.empty();
-        if (!featureSchema.getProperties().containsKey(propertyName))
-            return Optional.empty();
+        if (featureSchema.getProperties().containsKey(propertyName))
+            return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
+        if (propertyName.contains("[")) {
+            String propertyPath = propertyName.replaceAll("\\[[^\\]]*\\]", "");
+            if (featureSchema.getProperties().containsKey(propertyPath))
+                return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyPath));
+        }
 
-        return Optional.ofNullable((Schema) featureSchema.getProperties().get(propertyName));
+        return Optional.empty();
     }
 
     private class ContextOpenApi {
@@ -161,7 +179,7 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
                         constraints.getEnumValues() :
                         constraints.getEnumValues()
                                    .stream()
-                                   .map(val -> Integer.getInteger(val))
+                                   .map(val -> Integer.parseInt(val))
                                    .collect(Collectors.toList()));
             } else if (constraints.getCodelist().isPresent()) {
                 Optional<Codelist> codelist = entityRegistry.getEntitiesForType(Codelist.class)
@@ -204,11 +222,14 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
         List<FeatureSchema> properties;
         switch (type) {
             case QUERYABLES:
-                properties = schema.getAllNestedProperties()
-                                   .stream()
-                                   .filter(property -> propertySubset.stream()
-                                                                     .anyMatch(queryableProperty -> queryableProperty.equals(propertyNameMap.get(String.join(".", property.getFullPath())))))
-                                   .collect(Collectors.toList());
+                properties = Objects.nonNull(schema) ?
+                        schema.getAllNestedProperties()
+                              .stream()
+                              .filter(property -> propertySubset.stream()
+                                                                // queryables have been normalized during hydration and there are no square brackets
+                                                                .anyMatch(queryableProperty -> queryableProperty.equals(String.join(".", property.getFullPath()))))
+                              .collect(Collectors.toList()) :
+                        ImmutableList.of();
                 break;
 
             case MUTABLES:

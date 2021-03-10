@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URISyntaxException;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -93,5 +94,10 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
         }
 
         return openApiViewerResource.getFile("index.html");
+    }
+
+    @Override
+    public Optional<String> getRel() {
+        return Optional.of("service-doc");
     }
 }

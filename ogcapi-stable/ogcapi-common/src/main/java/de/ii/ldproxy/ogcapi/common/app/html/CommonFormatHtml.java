@@ -28,7 +28,7 @@ import java.util.List;
 @Component
 @Provides
 @Instantiate
-public class CommonFormatHtml implements CommonFormatExtension {
+public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
@@ -40,6 +40,11 @@ public class CommonFormatHtml implements CommonFormatExtension {
 
     @Requires
     private I18n i18n;
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/html");
+    }
 
     @Override
     public ApiMediaType getMediaType() {

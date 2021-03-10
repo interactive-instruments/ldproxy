@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
@@ -28,6 +29,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -43,13 +45,32 @@ public class QueryablesFormatHtml implements QueryablesFormatExtension {
     private I18n i18n;
 
     @Override
-    public String getPathPattern() {
-        return "^/collections/[\\w\\-]+/queryables/?$";
+    public ApiMediaType getMediaType() {
+        return MEDIA_TYPE;
     }
 
     @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return apiData.getExtension(getBuildingBlockConfigurationType())
+                      .map(cfg -> cfg.isEnabled())
+                      .orElse(false) &&
+                apiData.getExtension(HtmlConfiguration.class)
+                       .map(cfg -> cfg.isEnabled())
+                       .orElse(true);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return apiData.getCollections()
+                      .get(collectionId)
+                      .getExtension(getBuildingBlockConfigurationType())
+                      .map(cfg -> cfg.isEnabled())
+                      .orElse(false) &&
+                apiData.getCollections()
+                       .get(collectionId)
+                       .getExtension(HtmlConfiguration.class)
+                       .map(cfg -> cfg.isEnabled())
+                       .orElse(true);
     }
 
     @Override

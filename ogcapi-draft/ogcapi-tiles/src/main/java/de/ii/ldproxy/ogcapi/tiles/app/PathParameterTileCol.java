@@ -1,9 +1,9 @@
 package de.ii.ldproxy.ogcapi.tiles.app;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import io.swagger.v3.oas.models.media.IntegerSchema;
@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.util.Set;
+import java.util.List;
 
 @Component
 @Provides
@@ -34,8 +34,8 @@ public class PathParameterTileCol implements OgcApiPathParameter {
     }
 
     @Override
-    public Set<String> getValues(OgcApiDataV2 apiData) {
-        return ImmutableSet.of();
+    public List<String> getValues(OgcApiDataV2 apiData) {
+        return ImmutableList.of();
     }
 
     private Schema schema = new IntegerSchema().minimum(BigDecimal.ZERO);

@@ -31,12 +31,6 @@ public abstract class OgcApiCollection extends PageRepresentationWithId {
     public abstract Optional<String> getStorageCrs();
     public abstract Optional<Float> getStorageCrsCoordinateEpoch();
 
-    // there is an open issue about the naming, so support both options for now
-    @Value.Derived
-    public Optional<String> getNativeCrs() { return getStorageCrs(); }
-    @Value.Derived
-    public Optional<Float> getNativeCrsCoordinateEpoch() { return getStorageCrsCoordinateEpoch(); }
-
     // restrict to information in ogcapi-stable, everything else goes into the extensions map
 
     @JsonAnyGetter

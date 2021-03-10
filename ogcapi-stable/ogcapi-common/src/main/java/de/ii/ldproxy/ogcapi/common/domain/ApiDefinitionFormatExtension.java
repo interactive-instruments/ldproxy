@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 public interface ApiDefinitionFormatExtension extends FormatExtension {
 
@@ -26,5 +27,9 @@ public interface ApiDefinitionFormatExtension extends FormatExtension {
                                           ApiRequestContext apiRequestContext,
                                           String file) {
         throw new RuntimeException("Access to an auxiliary API definition file was requested for a format that does not support auxiliary files.");
+    }
+
+    default Optional<String> getRel() {
+        return Optional.empty();
     }
 }

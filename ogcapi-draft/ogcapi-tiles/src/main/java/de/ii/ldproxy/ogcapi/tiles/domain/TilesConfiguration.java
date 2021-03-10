@@ -27,8 +27,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    Optional<String> getFeatureProvider();
-
     @Nullable
     Integer getLimit();
 

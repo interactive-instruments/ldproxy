@@ -34,6 +34,7 @@ Grundsätzliche Regeln, die für alle API-Module gelten, finden Sie [hier](gener
 |[Filter / CQL](filter.md) |FILTER |draft |Nein |Aktiviert die Angabe von CQL-Filtern für die Ressourcen "Features" und "Vector Tiles"
 |[Geometry Simplification](geometry-simplification.md) |GEOMETRY_SIMPLIFICATION |draft |Nein |Aktiviert die Option zur Vereinfachung von Geometrien nach Douglas-Peucker bei den Ressourcen "Features" und "Feature"
 |[Projections](projections.md) |PROJECTIONS |draft |Nein |Aktiviert die Option zur Begrenzung der zurückgelieferten Feature-Eigenschaften bei den Ressourcen "Features", "Feature" und "Vector Tiles"
+|[Sorting](sorting.md) |SORTING |draft |Nein |Aktiviert die Option zur Sortierung der zurückgelieferten Features bei der Ressource "Features"
 |[Styles](styles.md) |STYLES |draft |Nein |Aktiviert die Unterstützung für die Bereitstellung und Verwaltung von Styles (Mapbox Style oder SLD) und zugehöriger Ressourcen (Synmbole, Sprites) in der API
 |[Vector Tiles](tiles.md) |TILES |draft |Nein |Aktivitert die Unterstützung für die Bereitstellung von Vector Tiles im Format Mapbox Vector Tiles für den gesamten Datensatz und/oder einzelne Collections
 |[Simple Transactions](transactional.md) |TRANSACTIONAL |draft |Nein |Aktiviert die Unterstützung für die Veränderung von Features unter Verwendung der Standardlogik der HTTP-Methoden POST/PUT/DELETE/PATCH

@@ -83,7 +83,7 @@ public class QueryParameterCrsFeatures implements OgcApiQueryParameter, Conforma
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDataV2 apiData) {
 
-        if (isEnabledForApi(apiData) && parameters.containsKey(CRS)) {
+        if (isEnabledForApi(apiData, featureTypeConfiguration.getId()) && parameters.containsKey(CRS)) {
             EpsgCrs targetCrs;
             try {
                 targetCrs = EpsgCrs.fromString(parameters.get(CRS));

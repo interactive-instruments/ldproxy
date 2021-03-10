@@ -46,11 +46,6 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     private I18n i18n;
 
     @Override
-    public String getPathPattern() {
-        return "^/tileMatrixSets(?:/\\w+)?/?$";
-    }
-
-    @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;
     }

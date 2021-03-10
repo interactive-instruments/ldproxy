@@ -27,6 +27,7 @@ import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.streams.domain.HttpClient;
+import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import de.ii.xtraplatform.xml.domain.XMLPathTracker;
 import io.dropwizard.views.ViewRenderer;
 import org.slf4j.Logger;
@@ -45,6 +46,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author zahnen
@@ -387,7 +390,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
         currentValue = null;
         currentProperty = featureProperty;
         int sortPriority = currentFeatureProperties.indexOf(featureProperty);
-        String key = featureProperty.getName().replaceAll("\\[[^\\]]*\\]", "[]");
+        String key = featureProperty.getName().replaceAll("\\[[^\\]]*\\]", "");
         if (transformations.containsKey(key)) {
 
             Optional<FeatureProperty> htmlProperty = transformations.get(key)
@@ -453,10 +456,14 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
             // skip, if the value has been transformed to null
             if (Objects.nonNull(value)) {
-                if (currentFeature.name != null) {
-                    int pos = currentFeature.name.indexOf("{{" + currentProperty.getName() + "}}");
-                    if (pos > -1) {
-                        currentFeature.name = currentFeature.name.substring(0, pos) + value + currentFeature.name.substring(pos);
+                if (currentFeature.name != null && !currentProperty.getName().contains("[")) {
+                    final Pattern valuePattern = Pattern.compile("\\{\\{" + currentProperty.getName() + "( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
+                    final Matcher m = valuePattern.matcher(currentFeature.name);
+                    if (m.find()) {
+                        final int posStart = m.start(0);
+                        final int posEnd = m.end(0);
+                        String formattedValue = StringTemplateFilters.applyTemplate(m.group(0), value, isHtml -> {}, currentProperty.getName());
+                        currentFeature.name = currentFeature.name.substring(0, posStart) + formattedValue + currentFeature.name.substring(posEnd);
                     }
                 }
 
@@ -494,10 +501,12 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
         if (!isSchemaOrgEnabled) return;
 
-        if (transformations.containsKey(featureProperty.getName())) {
+        String tkey = featureProperty.getName()
+                                     .replaceAll("\\[[^\\]]*\\]", "");
+        if (transformations.containsKey(tkey)) {
 
-            Optional<ValueDTO> transformedProperty = transformations.get(featureProperty.getName())
-                                                                              .transform(new ValueDTO(), featureProperty);
+            Optional<ValueDTO> transformedProperty = transformations.get(tkey)
+                                                                    .transform(new ValueDTO(), featureProperty);
 
             if (!transformedProperty.isPresent()) {
                 return;
@@ -629,7 +638,9 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                                                                    .build());
         }
 
-        return Optional.ofNullable(transformations.get(featureProperty.getName().replaceAll("\\[[^\\]]*\\]", "[]")));
+        String tkey = featureProperty.getName()
+                                     .replaceAll("\\[[^\\]]*\\]", "");
+        return Optional.ofNullable(transformations.get(tkey));
     }
 
 }

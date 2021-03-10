@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.codelists.domain.ImmutableFeaturePropertyTransformerCodelist;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
@@ -17,13 +18,18 @@ import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTran
 import de.ii.xtraplatform.features.domain.transform.ImmutableFeaturePropertyTransformerRename;
 import de.ii.xtraplatform.stringtemplates.domain.ImmutableFeaturePropertyTransformerStringFormat;
 import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public interface FeatureTransformations {
+
+    Logger LOGGER = LoggerFactory.getLogger(FeatureTransformations.class);
 
     Map<String, FeatureTypeMapping2> getTransformations();
 
@@ -96,4 +102,25 @@ public interface FeatureTransformations {
         return transformations;
     }
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean hasDeprecatedTransformationKeys() {
+        return getTransformations().keySet()
+                                   .stream()
+                                   .anyMatch(key -> key.matches(".*\\[[^\\]]*\\].*"));
+    }
+
+    default Map<String, FeatureTypeMapping2> normalizeTransformationKeys(String buildingBlock, String collectionId) {
+        return getTransformations().entrySet()
+                                   .stream()
+                                   // normalize property names
+                                   .map(transformation -> {
+                                       if (transformation.getKey().matches(".*\\[[^\\]]*\\].*"))
+                                           // TODO use info for now, but upgrade to warn after some time
+                                           LOGGER.info("The transformation key '{}' in collection '{}' uses a deprecated style that includes square brackets for arrays. The brackets have been dropped during hydration. Building block: {}.", transformation.getKey(), collectionId, buildingBlock);
+                                       return new AbstractMap.SimpleEntry<>(transformation.getKey().replaceAll("\\[[^\\]]*\\]", ""), transformation.getValue());
+                                   })
+                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 }

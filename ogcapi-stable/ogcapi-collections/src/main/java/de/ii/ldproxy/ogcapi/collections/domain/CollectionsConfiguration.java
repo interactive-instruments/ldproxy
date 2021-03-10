@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -23,6 +24,10 @@ public interface CollectionsConfiguration extends ExtensionConfiguration {
     }
 
     List<Link> getAdditionalLinks();
+
+    Optional<Boolean> getCollectionIdAsParameter();
+
+    Optional<Boolean> getCollectionDefinitionsAreIdentical();
 
     @Override
     default Builder getBuilder() {

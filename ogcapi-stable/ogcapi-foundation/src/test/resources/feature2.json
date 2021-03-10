@@ -1,0 +1,42 @@
+{
+  "type": "Feature",
+  "links": [
+    {
+      "href": "https://demo.ldproxy.net/vineyards/collections/vineyards/items/410345?f=json",
+      "rel": "self",
+      "type": "application/geo+json",
+      "title": "Dieses Dokument"
+    },
+    {
+      "href": "https://demo.ldproxy.net/vineyards/collections/vineyards/items/410345?f=html",
+      "rel": "alternate",
+      "type": "text/html",
+      "title": "Dieses Dokument als HTML"
+    },
+    {
+      "href": "https://demo.ldproxy.net/vineyards/collections/vineyards?f=json",
+      "rel": "collection",
+      "type": "application/json",
+      "title": "Die Datensammlung, zu der das Objekt gehört"
+    }
+  ],
+  "id": 410345,
+  "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+      [
+    ]
+  },
+  "properties": {
+    "name": "Niederberg-Helden",
+    "area_ha": "29.9",
+    "region": "Mosel",
+    "subregion": "Bereich Bernkastel",
+    "cluster": "Kurfürstlay",
+    "village": "Lieser",
+    "cadastraldistrict": "Lieser",
+    "searchfield1": "Niederberg-Helden/Lieser",
+    "searchfield2": "Niederberg-Helden (Lieser)",
+    "date": "2020-09-01 00:00:00"
+  }
+}

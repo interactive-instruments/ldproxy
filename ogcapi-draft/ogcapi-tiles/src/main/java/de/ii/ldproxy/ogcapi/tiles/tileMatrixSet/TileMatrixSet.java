@@ -73,7 +73,7 @@ public interface TileMatrixSet extends ContentExtension {
         double maxX = minX + tileWidth;
         double maxY = bbox.getYmax() - tileHeight * row;
         double minY = maxY - tileHeight;
-        return new BoundingBox(minX, minY, maxX, maxY, getCrs());
+        return BoundingBox.of(minX, minY, maxX, maxY, getCrs());
     }
 
     /**

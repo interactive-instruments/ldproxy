@@ -58,7 +58,7 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-2/1.0/conf/tmxs");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-2/0.0/conf/tmxs");
     }
 
     @Override
@@ -76,7 +76,7 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         // currently no vector tiles support for WFS backends
-        if (providers.getFeatureProvider(apiData).getData().getFeatureProviderType().equals("WFS"))
+        if (!providers.getFeatureProvider(apiData).supportsHighLoad())
             return false;
 
         Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);

@@ -49,6 +49,11 @@
                         <a href="{{href}}" target="_blank">{{title}}</a>
                     </li>
                 {{/apiDocumentation}}
+                {{^apiDefinition}}
+                    {{^apiDocumentation}}
+                        <li>{{none}}</li>
+                    {{/apiDocumentation}}
+                {{/apiDefinition}}
             </ul>
         </div>
     </div>

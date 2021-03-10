@@ -50,6 +50,8 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
         String getCollectionId();
 
         boolean getIncludeLinkHeader();
+
+        Optional<String> getProfile();
     }
 
     @Requires
@@ -108,10 +110,21 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
         JsonSchemaObject jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
                                                                                                        .filter(link -> link.getRel().equals("self"))
                                                                                                        .map(link -> link.getHref())
-                                                                                                       .findAny(), type);
+                                                                                                       .findAny(), type, getVersion(queryInput.getProfile()));
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
                 .entity(outputFormat.getEntity(jsonSchema, collectionId, api, requestContext))
                 .build();
+    }
+
+    private Optional<SchemaGeneratorFeatureGeoJson.VERSION> getVersion(Optional<String> profile) {
+        if (profile.isEmpty())
+            return Optional.empty();
+        else if (profile.get().equals("2019-09"))
+            return Optional.of(SchemaGeneratorFeatureGeoJson.VERSION.V201909);
+        else if (profile.get().equals("07"))
+            return Optional.of(SchemaGeneratorFeatureGeoJson.VERSION.V7);
+
+        return Optional.empty();
     }
 }

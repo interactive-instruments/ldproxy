@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.collections.styleinfo;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -51,7 +50,6 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
@@ -115,14 +113,12 @@ public class EndpointManageStyleInfo extends EndpointSubCollection implements Co
                 LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
             } else {
                 final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi();
-                final Set<String> collectionIds = (explode) ?
+                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                final List<String> collectionIds = (explode) ?
                         collectionIdParam.getValues(apiData) :
-                        ImmutableSet.of("{collectionId}");
+                        ImmutableList.of("{collectionId}");
                 for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = explode ?
-                            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH) :
-                            getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PATCH);
+                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH);
                     final String operationSummary = "update the information about available styles for the feature collection '" + collectionId + "'";
                     Optional<String> operationDescription = Optional.of("The content of the request may include an updated list of styles and/or an update to the default style.");
                     String resourcePath = "/collections/" + collectionId;
