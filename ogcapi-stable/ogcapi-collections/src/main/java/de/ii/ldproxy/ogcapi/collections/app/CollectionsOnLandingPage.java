@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.collections.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
@@ -20,6 +22,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -30,6 +33,12 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
 
     @Requires
     I18n i18n;
+
+    private final ExtensionRegistry extensionRegistry;
+
+    public CollectionsOnLandingPage(@Requires ExtensionRegistry extensionRegistry) {
+        this.extensionRegistry = extensionRegistry;
+    }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -65,12 +74,49 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
                         .title(i18n.get("dataLink",language) + suffix)
                         .build());
 
-        landingPageBuilder.putExtensions("datasetDownloadLinks", apiData.getExtension(CollectionsConfiguration.class)
-                                                                 .map(CollectionsConfiguration::getAdditionalLinks)
-                                                                 .orElse(ImmutableList.of())
-                                                                 .stream()
-                                                                 .filter(link -> link.getRel().equals("enclosure"))
-                                                                 .collect(Collectors.toUnmodifiableList()));
+        ImmutableList.Builder<Link> distributionLinks = new ImmutableList.Builder<Link>()
+                .addAll(apiData.getExtension(CollectionsConfiguration.class)
+                               .map(CollectionsConfiguration::getAdditionalLinks)
+                               .orElse(ImmutableList.<Link>of())
+                               .stream()
+                               .filter(link -> Objects.equals(link.getRel(), "enclosure"))
+                               .collect(Collectors.toUnmodifiableList()));
+
+        // for cases with a single collection, that collection is not reported as a sub-dataset and we need to
+        // determine the distribution links (enclosure links provided in additonalLinks and the regular items
+        // links to the features in the API)
+        if (apiData.getCollections().size() == 1) {
+            String collectionId = apiData.getCollections().keySet().iterator().next();
+            FeatureTypeConfigurationOgcApi featureTypeConfiguration = apiData.getCollections()
+                                                                             .get(collectionId);
+            distributionLinks.addAll(featureTypeConfiguration.getAdditionalLinks()
+                                                             .stream()
+                                                             .filter(link -> Objects.equals(link.getRel(), "enclosure"))
+                                                             .collect(Collectors.toUnmodifiableList()));
+
+            ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
+                                                                                          .id(collectionId);
+            for (CollectionExtension ogcApiCollectionExtension : extensionRegistry.getExtensionsForType(CollectionExtension.class)) {
+                ogcApiCollection = ogcApiCollectionExtension.process(ogcApiCollection,
+                                                                     featureTypeConfiguration,
+                                                                     apiData,
+                                                                     uriCustomizer.copy()
+                                                                                  .clearParameters()
+                                                                                  .ensureLastPathSegments("collections", collectionId)
+                                                                                  .ensureNoTrailingSlash(),
+                                                                     false,
+                                                                     mediaType,
+                                                                     alternateMediaTypes,
+                                                                     language);
+            }
+            distributionLinks.addAll(ogcApiCollection.build()
+                                                     .getLinks()
+                                                     .stream()
+                                                     .filter(link -> Objects.equals(link.getRel(), "items") && !Objects.equals(link.getType(), "text/html"))
+                                                     .collect(Collectors.toUnmodifiableList()));
+        }
+
+        landingPageBuilder.putExtensions("datasetDownloadLinks", distributionLinks.build());
 
         return landingPageBuilder;
     }

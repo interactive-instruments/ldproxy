@@ -217,12 +217,15 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                         : "") +
                 (!embedded
                         ? collection.map(s -> "," + NEW_LINE + "\"isPartOf\": " + getSchemaOrgDataset(apiData, Optional.empty(), landingPageUriCustomizer.copy(), true))
-                                    .orElse("," + NEW_LINE + "\"hasPart\": [ " + String.join(", ", apiData.getCollections()
+                                    // for cases with a single collection, that collection is not reported as a sub-dataset
+                                    .orElse((apiData.getCollections().size() > 1
+                                                    ? ("," + NEW_LINE + "\"hasPart\": [ " + String.join(", ", apiData.getCollections()
                                                                                            .values()
                                                                                            .stream()
                                                                                            .filter(col -> col.getEnabled())
                                                                                            .map(s -> getSchemaOrgDataset(apiData, Optional.of(s), landingPageUriCustomizer.copy(), true))
-                                                                                           .collect(Collectors.toUnmodifiableList())) + " ]" +
+                                                                                           .collect(Collectors.toUnmodifiableList())) + " ]")
+                                                    : "") +
                                                     "," + NEW_LINE + "\"includedInDataCatalog\": { \"@type\": \"DataCatalog\", \"url\": \"" + landingPageUriCustomizer.copy()
                                                                                                                                                        .removeParameters()
                                                                                                                                                        .ensureNoTrailingSlash()

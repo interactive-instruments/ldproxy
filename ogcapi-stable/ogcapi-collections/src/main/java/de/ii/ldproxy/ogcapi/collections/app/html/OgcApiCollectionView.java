@@ -180,10 +180,13 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     }
 
     public Optional<String> getSchemaOrgDataset() {
-        return Optional.of(getSchemaOrgDataset(apiData, Optional.of(apiData.getCollections()
-                                                                           .get(collection.getId())), uriCustomizer.clearParameters()
-                                                                                                                   .removeLastPathSegments(2)
-                                                                                                                   .ensureNoTrailingSlash()
-                                                                                                                   .copy(), false));
+        // for cases with a single collection, that collection is not reported as a sub-dataset
+        return apiData.getCollections().size() > 1
+                ? Optional.of(getSchemaOrgDataset(apiData, Optional.of(apiData.getCollections()
+                                                                              .get(collection.getId())), uriCustomizer.clearParameters()
+                                                                                                                      .removeLastPathSegments(2)
+                                                                                                                      .ensureNoTrailingSlash()
+                                                                                                                      .copy(), false))
+                : Optional.empty();
     }
 }
