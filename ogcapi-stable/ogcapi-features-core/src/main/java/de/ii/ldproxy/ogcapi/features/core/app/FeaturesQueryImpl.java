@@ -45,10 +45,16 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
+import javax.measure.unit.NonSI;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -118,7 +124,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
 
-        return queryBuilder.build();
+        return processCoordinatePrecision(queryBuilder, coreConfiguration).build();
     }
 
     @Override
@@ -194,8 +200,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             queryBuilder.filter(cql);
         }
 
-        return queryBuilder.build();
-
+        return processCoordinatePrecision(queryBuilder, coreConfiguration).build();
     }
 
     @Override
@@ -416,5 +421,35 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             }
         }
         return offset;
+    }
+
+    private ImmutableFeatureQuery.Builder processCoordinatePrecision(ImmutableFeatureQuery.Builder queryBuilder,
+                                                                     FeaturesCoreConfiguration coreConfiguration) {
+        // check, if we need to add a precision value; for this we need the target CRS,
+        // so we need to build the query to get the CRS
+        ImmutableFeatureQuery query = queryBuilder.build();
+        if (!coreConfiguration.getCoordinatePrecision().isEmpty()) {
+            Integer precision = null;
+            // TODO we need to handle different units per axis, right now we just look at the first axis
+            //      and assume that the vertical precision would be less digits than the horizontal one
+            try {
+                CoordinateReferenceSystem gtCrs = CRS.decode("EPSG:"+query.getCrs().get().getCode());
+                Unit<?> unit = gtCrs.getCoordinateSystem().getAxis(0).getUnit();
+                if (unit.equals(SI.METRE)) {
+                    precision = coreConfiguration.getCoordinatePrecision().get("meter");
+                    if (Objects.isNull(precision))
+                        precision = coreConfiguration.getCoordinatePrecision().get("metre");
+                } else if (unit.equals(NonSI.DEGREE_ANGLE)) {
+                    precision = coreConfiguration.getCoordinatePrecision().get("degree");
+                } else {
+                    LOGGER.debug("Coordinate precision could not be set, unrecognised unit found: '{}'.", unit.toString());
+                }
+                if (Objects.nonNull(precision))
+                    queryBuilder.geometryPrecision(precision);
+            } catch (FactoryException e) {
+                LOGGER.debug("Coordinate precision could not be set, could not retrieve coordinate reference system 'EPSG:{}'.", query.getCrs().get().getCode());
+            }
+        }
+        return queryBuilder;
     }
 }
