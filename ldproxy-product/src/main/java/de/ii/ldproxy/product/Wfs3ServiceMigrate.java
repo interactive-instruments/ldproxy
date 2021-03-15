@@ -53,19 +53,18 @@ import java.util.concurrent.TimeUnit;
 public class Wfs3ServiceMigrate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Wfs3ServiceMigrate.class);
-
     private static final String[] PATH = {"ldproxy-services"};
-
-    @Requires
-    private EntityRepository entityRepository;
-
-    @Requires
-    private KeyValueStore rootConfigStore;
-
-    @Requires
-    private Jackson jackson;
-
+    private final EntityRepository entityRepository;
+    private final KeyValueStore rootConfigStore;
+    private final Jackson jackson;
     private ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1);
+
+    public Wfs3ServiceMigrate(@Requires EntityRepository entityRepository, @Requires KeyValueStore rootConfigStore,
+                              @Requires Jackson jackson) {
+        this.entityRepository = entityRepository;
+        this.rootConfigStore = rootConfigStore;
+        this.jackson = jackson;
+    }
 
     @Validate
     private void onStart() {

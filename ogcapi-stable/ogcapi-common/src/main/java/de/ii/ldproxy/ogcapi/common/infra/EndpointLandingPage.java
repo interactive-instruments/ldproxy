@@ -29,6 +29,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -55,11 +56,12 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLandingPage.class);
     private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
-    @Requires
-    private QueriesHandlerCommon queryHandler;
+    private final QueriesHandler<Query> queryHandler;
 
-    public EndpointLandingPage(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointLandingPage(@Requires ExtensionRegistry extensionRegistry,
+                               @Requires QueriesHandler<Query> queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override

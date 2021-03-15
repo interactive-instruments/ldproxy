@@ -38,11 +38,12 @@ public class EndpointDefinition extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDefinition.class);
 
-    @Requires
-    private QueriesHandlerCommon queryHandler;
+    private final QueriesHandler<QueriesHandlerCommon.Query> queryHandler;
 
-    public EndpointDefinition(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointDefinition(@Requires ExtensionRegistry extensionRegistry,
+                              @Requires QueriesHandler<QueriesHandlerCommon.Query> queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override

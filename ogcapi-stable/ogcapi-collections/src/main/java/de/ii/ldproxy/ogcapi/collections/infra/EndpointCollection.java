@@ -32,6 +32,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -46,7 +47,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.GET;
@@ -70,11 +70,12 @@ public class EndpointCollection extends EndpointSubCollection {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollection.class);
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    @Requires
-    private QueriesHandlerCollections queryHandler;
+    private final QueriesHandler<QueriesHandlerCollections.Query> queryHandler;
 
-    public EndpointCollection(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointCollection(@Requires ExtensionRegistry extensionRegistry,
+                              @Requires  QueriesHandler<QueriesHandlerCollections.Query> queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override

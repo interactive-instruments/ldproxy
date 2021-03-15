@@ -26,10 +26,10 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureCollectionOpenApi;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -85,20 +85,23 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
 
     private final FeaturesCoreProviders providers;
     private final EntityRegistry entityRegistry;
-
-    @Requires
-    SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
-
-    @Requires
-    SchemaGeneratorFeatureCollectionOpenApi schemaGeneratorFeatureCollection;
-
-    @Requires
-    GeoJsonWriterRegistry geoJsonWriterRegistry;
+    private final FeaturesCoreValidation featuresCoreValidator;
+    private final SchemaGeneratorOpenApi schemaGeneratorFeature;
+    private final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
+    private final GeoJsonWriterRegistry geoJsonWriterRegistry;
 
     public FeaturesFormatGeoJson(@Requires FeaturesCoreProviders providers,
-                                 @Requires EntityRegistry entityRegistry) {
+                                 @Requires EntityRegistry entityRegistry,
+                                 @Requires FeaturesCoreValidation featuresCoreValidator,
+                                 @Requires SchemaGeneratorOpenApi schemaGeneratorFeature,
+                                 @Requires SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
+                                 @Requires GeoJsonWriterRegistry geoJsonWriterRegistry) {
         this.providers = providers;
         this.entityRegistry = entityRegistry;
+        this.featuresCoreValidator = featuresCoreValidator;
+        this.schemaGeneratorFeature = schemaGeneratorFeature;
+        this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
+        this.geoJsonWriterRegistry = geoJsonWriterRegistry;
     }
 
     @Override
@@ -170,7 +173,7 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                                                                                                                     .keySet()))
                                                           .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : featuresCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
             for (String property : stringCollectionEntry.getValue()) {
                 builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
             }

@@ -39,11 +39,12 @@ public class EndpointConformance extends Endpoint {
 
     private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
-    @Requires
-    private QueriesHandlerCommon queryHandler;
+    private final QueriesHandler<QueriesHandlerCommon.Query> queryHandler;
 
-    public EndpointConformance(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointConformance(@Requires ExtensionRegistry extensionRegistry,
+                               @Requires QueriesHandler<QueriesHandlerCommon.Query> queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override

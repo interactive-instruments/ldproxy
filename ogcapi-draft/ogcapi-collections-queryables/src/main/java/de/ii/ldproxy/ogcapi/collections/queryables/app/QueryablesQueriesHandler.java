@@ -22,7 +22,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -51,17 +51,17 @@ public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQuerie
         boolean getIncludeLinkHeader();
     }
 
-    @Requires
-    SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
-
+    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
     public QueryablesQueriesHandler(@Requires I18n i18n,
-                                    @Requires FeaturesCoreProviders providers) {
+                                    @Requires FeaturesCoreProviders providers,
+                                    @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
         this.i18n = i18n;
         this.providers = providers;
+        this.schemaGeneratorFeature = schemaGeneratorFeature;
         this.queryHandlers = ImmutableMap.of(
                 Query.QUERYABLES, QueryHandler.with(QueryInputQueryables.class, this::getQueryablesResponse)
         );

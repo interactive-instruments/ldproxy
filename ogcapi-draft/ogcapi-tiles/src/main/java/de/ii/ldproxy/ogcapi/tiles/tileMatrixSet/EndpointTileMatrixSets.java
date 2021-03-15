@@ -38,22 +38,21 @@ import java.util.Optional;
 @Instantiate
 public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass {
 
-    @Requires
-    I18n i18n;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMatrixSets.class);
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch tiling schemes");
 
     private final TileMatrixSetsQueriesHandler queryHandler;
     private final FeaturesCoreProviders providers;
+    private final I18n i18n;
 
     EndpointTileMatrixSets(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
                            @Requires ExtensionRegistry extensionRegistry,
                            @Requires TileMatrixSetsQueriesHandler queryHandler,
-                           @Requires FeaturesCoreProviders providers) {
+                           @Requires FeaturesCoreProviders providers, @Requires I18n i18n) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
         this.providers = providers;
+        this.i18n = i18n;
     }
 
     @Override

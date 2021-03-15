@@ -30,9 +30,6 @@ import java.util.List;
 @Instantiate
 public class CollectionsFormatJson implements CollectionsFormatExtension, ConformanceClass {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
@@ -44,7 +41,7 @@ public class CollectionsFormatJson implements CollectionsFormatExtension, Confor
     private final Schema schemaCollection;
     public final static String SCHEMA_REF_COLLECTION = "#/components/schemas/Collection";
 
-    public CollectionsFormatJson() {
+    public CollectionsFormatJson(@Requires SchemaGenerator schemaGenerator) {
         schemaCollections = schemaGenerator.getSchema(Collections.class);
         schemaCollection = schemaGenerator.getSchema(OgcApiCollection.class);
     }

@@ -44,8 +44,7 @@ import java.util.Optional;
 @Provides(specifications = {QueriesHandlerCollections.class})
 public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerCollections.Query> {
 
-    @Requires
-    I18n i18n;
+    private final I18n i18n;
 
     public enum Query implements QueryIdentifier {COLLECTIONS, FEATURE_COLLECTION}
 
@@ -66,9 +65,9 @@ public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerC
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
 
-    public QueriesHandlerCollections(@Requires ExtensionRegistry extensionRegistry) {
+    public QueriesHandlerCollections(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
         this.extensionRegistry = extensionRegistry;
-
+        this.i18n = i18n;
         this.queryHandlers = ImmutableMap.of(
                 Query.COLLECTIONS, QueryHandler.with(QueryInputCollections.class, this::getCollectionsResponse),
                 Query.FEATURE_COLLECTION, QueryHandler.with(QueryInputFeatureCollection.class, this::getCollectionResponse)

@@ -37,9 +37,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides(specifications = {SchemaGeneratorFeatureGeoJson.class})
 @Instantiate
-public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
-
-    public enum VERSION {V201909, V7}
+public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implements SchemaGeneratorGeoJson {
 
     final static String DEFINITIONS_TOKEN_V201909 = "$defs";
     final static String DEFINITIONS_TOKEN_V7 = "definitions";
@@ -137,14 +135,17 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
 
     private final ConcurrentMap<Integer, ConcurrentMap<String, ConcurrentMap<VERSION, ConcurrentMap<SCHEMA_TYPE, JsonSchemaObject>>>> schemaMapJson = new ConcurrentHashMap<>();
 
-    @Requires
-    SchemaInfo schemaInfo;
+    private final FeaturesCoreProviders providers;
+    private final EntityRegistry entityRegistry;
+    private final SchemaInfo schemaInfo;
 
-    @Requires
-    FeaturesCoreProviders providers;
-
-    @Requires
-    EntityRegistry entityRegistry;
+    public SchemaGeneratorFeatureGeoJson(@Requires FeaturesCoreProviders providers,
+                                         @Requires EntityRegistry entityRegistry,
+                                         @Requires SchemaInfo schemaInfo) {
+        this.providers = providers;
+        this.entityRegistry = entityRegistry;
+        this.schemaInfo = schemaInfo;
+    }
 
     private class ContextJsonSchema {
         String objectKey = null;
@@ -157,16 +158,19 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
         Set<FeatureSchema> definitions = new HashSet<>();
     }
 
+    @Override
     public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SCHEMA_TYPE type) {
         return getSchemaJson(apiData, collectionId, schemaUri, type, VERSION.V201909);
     }
 
+    @Override
     public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SCHEMA_TYPE type, Optional<VERSION> version) {
         return version.isEmpty()
             ? getSchemaJson(apiData, collectionId, schemaUri, type)
             : getSchemaJson(apiData, collectionId, schemaUri, type, version.get());
     }
 
+    @Override
     public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SCHEMA_TYPE type, VERSION version) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMapJson.containsKey(apiHashCode))
@@ -197,6 +201,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature {
         return schemaMapJson.get(apiHashCode).get(collectionId).get(version).get(type);
     }
 
+    @Override
     public JsonSchemaObject getSchemaJson(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData, Optional<String> schemaUri, SCHEMA_TYPE type, VERSION version) {
         // TODO support mutables schema
         ContextJsonSchema featureContext;

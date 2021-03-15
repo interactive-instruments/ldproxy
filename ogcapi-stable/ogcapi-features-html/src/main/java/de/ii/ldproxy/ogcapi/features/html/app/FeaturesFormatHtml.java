@@ -26,7 +26,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -86,20 +86,23 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     private final Schema schema = new StringSchema().example("<html>...</html>");
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    @Requires
-    private Dropwizard dropwizard;
+    private final Dropwizard dropwizard;
+    private final EntityRegistry entityRegistry;
+    private final Http http;
+    private final I18n i18n;
+    private final FeaturesCoreProviders providers;
+    private final FeaturesCoreValidation featuresCoreValidator;
 
-    @Requires
-    private EntityRegistry entityRegistry;
-
-    @Requires
-    private Http http;
-
-    @Requires
-    private I18n i18n;
-
-    @Requires
-    private FeaturesCoreProviders providers;
+    public FeaturesFormatHtml(@Requires Dropwizard dropwizard, @Requires EntityRegistry entityRegistry,
+                              @Requires Http http, @Requires I18n i18n, @Requires FeaturesCoreProviders providers,
+                              @Requires FeaturesCoreValidation featuresCoreValidator) {
+        this.dropwizard = dropwizard;
+        this.entityRegistry = entityRegistry;
+        this.http = http;
+        this.i18n = i18n;
+        this.providers = providers;
+        this.featuresCoreValidator = featuresCoreValidator;
+    }
 
     @Override
     public List<String> getConformanceClassUris() {
@@ -162,7 +165,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                                                                                                                 .keySet()))
                                                                       .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : featuresCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
             for (String property : stringCollectionEntry.getValue()) {
                 builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
             }

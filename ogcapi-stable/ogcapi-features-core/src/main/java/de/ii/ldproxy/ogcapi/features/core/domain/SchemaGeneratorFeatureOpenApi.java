@@ -39,23 +39,27 @@ import java.util.stream.Collectors;
 @Component
 @Provides(specifications = {SchemaGeneratorFeatureOpenApi.class})
 @Instantiate
-public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
+public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature implements SchemaGeneratorOpenApi {
 
     private final ConcurrentMap<Integer, ConcurrentMap<String, ConcurrentMap<SCHEMA_TYPE, Schema>>> schemaMapOpenApi = new ConcurrentHashMap<>();
+    private final SchemaInfo schemaInfo;
+    private final FeaturesCoreProviders providers;
+    private final EntityRegistry entityRegistry;
 
-    @Requires
-    SchemaInfo schemaInfo;
+    public SchemaGeneratorFeatureOpenApi(@Requires FeaturesCoreProviders providers,
+                                         @Requires EntityRegistry entityRegistry,
+                                         @Requires SchemaInfo schemaInfo) {
+        this.providers = providers;
+        this.entityRegistry = entityRegistry;
+        this.schemaInfo = schemaInfo;
+    }
 
-    @Requires
-    FeaturesCoreProviders providers;
-
-    @Requires
-    EntityRegistry entityRegistry;
-
+    @Override
     public String getSchemaReferenceOpenApi(String collectionIdOrName, SCHEMA_TYPE type) {
         return "#/components/schemas/featureGeoJson_" + collectionIdOrName + "_" + type.toString().toLowerCase();
     }
 
+    @Override
     public Schema getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, SCHEMA_TYPE type) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMapOpenApi.containsKey(apiHashCode))
@@ -88,6 +92,7 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
         return schemaMapOpenApi.get(apiHashCode).get(collectionId).get(type);
     }
 
+    @Override
     public Schema getSchemaOpenApi(FeatureSchema featureType, FeatureTypeConfigurationOgcApi collectionData, SCHEMA_TYPE type) {
 
         // TODO support mutables schema
@@ -124,6 +129,7 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature {
         return schema;
     }
 
+    @Override
     public Optional<Schema> getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, String propertyName) {
         Schema featureSchema = getSchemaOpenApi(apiData, collectionId, SCHEMA_TYPE.QUERYABLES);
         if (Objects.isNull(featureSchema))

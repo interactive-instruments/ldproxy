@@ -33,9 +33,6 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
 
     public enum Query implements QueryIdentifier {LANDING_PAGE, CONFORMANCE_DECLARATION, API_DEFINITION}
 
-    @Requires
-    I18n i18n;
-
     @Value.Immutable
     public interface QueryInputLandingPage extends QueryInput {
         boolean getIncludeLinkHeader();
@@ -53,12 +50,13 @@ public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon
     }
 
     private final ExtensionRegistry extensionRegistry;
+    private final I18n i18n;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
 
-    public QueriesHandlerCommon(@Requires ExtensionRegistry extensionRegistry) {
+    public QueriesHandlerCommon(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
         this.extensionRegistry = extensionRegistry;
-
+        this.i18n = i18n;
         this.queryHandlers = ImmutableMap.of(
                 Query.LANDING_PAGE, QueryHandler.with(QueryInputLandingPage.class, this::getLandingPageResponse),
                 Query.CONFORMANCE_DECLARATION, QueryHandler.with(QueryInputConformance.class, this::getConformanceResponse),

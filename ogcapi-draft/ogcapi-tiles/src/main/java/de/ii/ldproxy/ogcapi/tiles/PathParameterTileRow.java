@@ -22,9 +22,6 @@ import java.util.List;
 @Instantiate
 public class PathParameterTileRow implements OgcApiPathParameter {
 
-    @Requires
-    ExtensionRegistry extensionRegistry;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterTileRow.class);
 
     @Override

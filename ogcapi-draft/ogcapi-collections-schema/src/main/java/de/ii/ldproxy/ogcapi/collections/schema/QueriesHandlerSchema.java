@@ -23,7 +23,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -54,14 +54,13 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
         Optional<String> getProfile();
     }
 
-    @Requires
-    SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
-
+    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
     private final I18n i18n;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
-    public QueriesHandlerSchema(@Requires I18n i18n) {
+    public QueriesHandlerSchema(@Requires I18n i18n, @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
         this.i18n = i18n;
+        this.schemaGeneratorFeature = schemaGeneratorFeature;
         this.queryHandlers = ImmutableMap.of(
                 Query.SCHEMA, QueryHandler.with(QueryInputSchema.class, this::getSchemaResponse)
         );
@@ -117,13 +116,13 @@ public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema
                 .build();
     }
 
-    private Optional<SchemaGeneratorFeatureGeoJson.VERSION> getVersion(Optional<String> profile) {
+    private Optional<SchemaGeneratorGeoJson.VERSION> getVersion(Optional<String> profile) {
         if (profile.isEmpty())
             return Optional.empty();
         else if (profile.get().equals("2019-09"))
-            return Optional.of(SchemaGeneratorFeatureGeoJson.VERSION.V201909);
+            return Optional.of(SchemaGeneratorGeoJson.VERSION.V201909);
         else if (profile.get().equals("07"))
-            return Optional.of(SchemaGeneratorFeatureGeoJson.VERSION.V7);
+            return Optional.of(SchemaGeneratorGeoJson.VERSION.V7);
 
         return Optional.empty();
     }

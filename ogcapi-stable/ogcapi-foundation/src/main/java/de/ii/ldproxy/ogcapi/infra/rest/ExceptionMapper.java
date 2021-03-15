@@ -44,22 +44,20 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionMapper.class);
 
-    @Requires
-    ExtensionRegistry extensionRegistry;
-
-    @Context
-    UriInfo uriInfo;
-
-    @Context
-    Request request;
-
-    @Context
-    HttpHeaders httpHeaders;
+    private final ExtensionRegistry extensionRegistry;
+    private final UriInfo uriInfo;
+    private final Request request;
+    private final HttpHeaders httpHeaders;
 
     private final ContentNegotiation contentNegotiation;
 
-    public ExceptionMapper() {
+    public ExceptionMapper(@Requires ExtensionRegistry extensionRegistry, @Context UriInfo uriInfo,
+                           @Context Request request, @Context HttpHeaders httpHeaders) {
         contentNegotiation = new ContentNegotiation();
+        this.extensionRegistry = extensionRegistry;
+        this.uriInfo = uriInfo;
+        this.request = request;
+        this.httpHeaders = httpHeaders;
     }
 
     @Validate

@@ -32,11 +32,11 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -78,24 +78,27 @@ public class EndpointFeatures extends EndpointSubCollection {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFeatures.class);
     private static final List<String> TAGS = ImmutableList.of("Access data");
 
-    @Requires
-    SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
-
+    private final SchemaGeneratorOpenApi schemaGeneratorFeature;
     private final EntityRegistry entityRegistry;
     private final FeaturesCoreProviders providers;
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreQueriesHandler queryHandler;
+    private final FeaturesCoreValidation featuresCoreValidator;
 
     public EndpointFeatures(@Requires ExtensionRegistry extensionRegistry,
                             @Requires EntityRegistry entityRegistry,
                             @Requires FeaturesCoreProviders providers,
                             @Requires FeaturesQuery ogcApiFeaturesQuery,
-                            @Requires FeaturesCoreQueriesHandler queryHandler) {
+                            @Requires FeaturesCoreQueriesHandler queryHandler,
+                            @Requires FeaturesCoreValidation featuresCoreValidator,
+                            @Requires SchemaGeneratorOpenApi schemaGeneratorFeature) {
         super(extensionRegistry);
         this.entityRegistry = entityRegistry;
         this.providers = providers;
         this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
         this.queryHandler = queryHandler;
+        this.featuresCoreValidator = featuresCoreValidator;
+        this.schemaGeneratorFeature = schemaGeneratorFeature;
     }
 
     @Override
@@ -124,7 +127,7 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
 
-        List<String> invalidCollections = FeaturesCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
+        List<String> invalidCollections = featuresCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
         for (String invalidCollection : invalidCollections) {
             builder.addStrictErrors(MessageFormat.format("The Collection ''{0}'' is invalid, because its feature type was not found in the provider schema.", invalidCollection));
         }
@@ -149,7 +152,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                                                                                                       .getTransformations()
                                                                                                                                       .keySet()))
                                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : featuresCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
             for (String property : stringCollectionEntry.getValue()) {
                 builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
             }
@@ -163,7 +166,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                                                                     .getAll()))
                           .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : featuresCoreValidator.getInvalidPropertyKeys(transformationKeys, featureSchemas).entrySet()) {
             for (String property : stringCollectionEntry.getValue()) {
                 builder.addStrictErrors(MessageFormat.format("A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
             }

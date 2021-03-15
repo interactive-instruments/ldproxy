@@ -24,8 +24,11 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class CapabilityStyles implements ApiBuildingBlock {
 
-    @Requires
-    ExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
+
+    public CapabilityStyles(@Requires ExtensionRegistry extensionRegistry) {
+        this.extensionRegistry = extensionRegistry;
+    }
 
     @Override
     public ExtensionConfiguration.Builder getConfigurationBuilder() {

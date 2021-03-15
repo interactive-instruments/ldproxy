@@ -34,11 +34,13 @@ public class DapaOverviewFormatHtml implements DapaOverviewFormatExtension {
             .parameter("html")
             .build();
 
+    private final I18n i18n;
     private final Schema schema = new StringSchema().example("<html>...</html>");
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    @Requires
-    private I18n i18n;
+    public DapaOverviewFormatHtml(@Requires I18n i18n) {
+        this.i18n = i18n;
+    }
 
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {

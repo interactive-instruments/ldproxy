@@ -35,11 +35,13 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
             .parameter("html")
             .build();
 
-    @Requires
-    private ExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
+    private final I18n i18n;
 
-    @Requires
-    private I18n i18n;
+    public TileSetsFormatHtml(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+        this.extensionRegistry = extensionRegistry;
+        this.i18n = i18n;
+    }
 
     @Override
     public ApiMediaType getMediaType() {

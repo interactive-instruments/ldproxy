@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -51,11 +52,12 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
 
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    @Requires
-    private QueryablesQueriesHandler queryHandler;
+    private final QueriesHandler<QueryablesQueriesHandler.Query> queryHandler;
 
-    public EndpointQueryables(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointQueryables(@Requires ExtensionRegistry extensionRegistry,
+                              @Requires QueriesHandler<QueryablesQueriesHandler.Query> queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     /* TODO wait for updates on Features Part n: Schemas

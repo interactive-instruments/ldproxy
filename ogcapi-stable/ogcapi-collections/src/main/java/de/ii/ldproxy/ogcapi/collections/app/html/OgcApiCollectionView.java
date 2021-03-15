@@ -29,9 +29,6 @@ import java.util.stream.Collectors;
 
 public class OgcApiCollectionView extends OgcApiView {
 
-    @Requires
-    private I18n i18n;
-
     private final OgcApiCollection collection;
     public String itemType;
     public boolean spatialSearch;

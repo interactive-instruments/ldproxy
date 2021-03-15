@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -51,11 +52,12 @@ public class EndpointSchema extends EndpointSubCollection {
 
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    @Requires
-    private QueriesHandlerSchema queryHandler;
+    private final QueriesHandler<QueriesHandlerSchema.Query> queryHandler;
 
-    public EndpointSchema(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointSchema(@Requires ExtensionRegistry extensionRegistry,
+                          @Requires QueriesHandler<QueriesHandlerSchema.Query> queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override
