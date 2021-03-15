@@ -7,6 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -41,13 +46,11 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.geotools.referencing.CRS;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
@@ -64,11 +67,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
 
 
 @Component
@@ -428,13 +426,12 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         // check, if we need to add a precision value; for this we need the target CRS,
         // so we need to build the query to get the CRS
         ImmutableFeatureQuery query = queryBuilder.build();
-        if (!coreConfiguration.getCoordinatePrecision().isEmpty()) {
+        if (!coreConfiguration.getCoordinatePrecision().isEmpty() && query.getCrs().isPresent()) {
             Integer precision = null;
             // TODO we need to handle different units per axis, right now we just look at the first axis
             //      and assume that the vertical precision would be less digits than the horizontal one
             try {
-                CoordinateReferenceSystem gtCrs = CRS.decode("EPSG:"+query.getCrs().get().getCode());
-                Unit<?> unit = gtCrs.getCoordinateSystem().getAxis(0).getUnit();
+                Unit<?> unit = crsTransformerFactory.getCrsUnit(query.getCrs().get());
                 if (unit.equals(SI.METRE)) {
                     precision = coreConfiguration.getCoordinatePrecision().get("meter");
                     if (Objects.isNull(precision))
@@ -446,8 +443,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                 }
                 if (Objects.nonNull(precision))
                     queryBuilder.geometryPrecision(precision);
-            } catch (FactoryException e) {
-                LOGGER.debug("Coordinate precision could not be set, could not retrieve coordinate reference system 'EPSG:{}'.", query.getCrs().get().getCode());
+            } catch (Throwable e) {
+                LOGGER.debug("Coordinate precision could not be set: {}'.", e.getMessage());
             }
         }
         return queryBuilder;
