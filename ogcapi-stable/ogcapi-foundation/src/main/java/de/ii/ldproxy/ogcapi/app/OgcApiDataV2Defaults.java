@@ -42,7 +42,7 @@ public class OgcApiDataV2Defaults implements EntityDataDefaults<OgcApiDataV2> {
     @Override
     public final EntityDataBuilder<OgcApiDataV2> getBuilderWithDefaults() {
         return new ImmutableOgcApiDataV2.Builder().enabled(true)
-                                                     .secured(false)
+                                                     .secured(true)
                                                      .metadata(getMetadata())
                                                      .extensions(getBuildingBlocks());
     }
