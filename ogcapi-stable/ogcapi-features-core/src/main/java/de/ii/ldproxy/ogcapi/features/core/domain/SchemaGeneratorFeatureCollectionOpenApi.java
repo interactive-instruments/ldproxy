@@ -12,7 +12,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
-@Provides(specifications = {SchemaGeneratorFeatureCollectionOpenApi.class})
+@Provides
 @Instantiate
 public class SchemaGeneratorFeatureCollectionOpenApi implements SchemaGeneratorCollectionOpenApi {
 

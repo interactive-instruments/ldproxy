@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Component
 @Instantiate
-@Provides(specifications = {QueriesHandlerCommon.class})
+@Provides
 public class QueriesHandlerCommon implements QueriesHandler<QueriesHandlerCommon.Query> {
 
     public enum Query implements QueryIdentifier {LANDING_PAGE, CONFORMANCE_DECLARATION, API_DEFINITION}

@@ -18,7 +18,7 @@ import java.util.Vector;
 import java.util.stream.Collectors;
 
 @Component
-@Provides(specifications = {SchemaInfoImpl.class})
+@Provides
 @Instantiate
 public class SchemaInfoImpl implements SchemaInfo {
 

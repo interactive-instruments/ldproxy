@@ -65,8 +65,7 @@ import java.util.stream.Collectors;
  * @author zahnen
  */
 @Component
-//TODO
-@Provides(specifications = {FeaturesFormatGeoJson.class, ConformanceClass.class, FeatureFormatExtension.class, FormatExtension.class, ApiExtension.class})
+@Provides
 @Instantiate
 public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExtension {
 

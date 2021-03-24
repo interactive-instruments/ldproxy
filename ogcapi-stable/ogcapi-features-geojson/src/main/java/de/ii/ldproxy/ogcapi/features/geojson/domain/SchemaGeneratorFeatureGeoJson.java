@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Component
-@Provides(specifications = {SchemaGeneratorFeatureGeoJson.class})
+@Provides
 @Instantiate
 public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implements SchemaGeneratorGeoJson {
 

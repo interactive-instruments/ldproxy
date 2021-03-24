@@ -39,7 +39,7 @@ import java.util.Optional;
 
 @Component
 @Instantiate
-@Provides(specifications = {QueryablesQueriesHandler.class})
+@Provides
 public class QueryablesQueriesHandler implements QueriesHandler<QueryablesQueriesHandler.Query> {
 
     public enum Query implements QueryIdentifier {QUERYABLES}

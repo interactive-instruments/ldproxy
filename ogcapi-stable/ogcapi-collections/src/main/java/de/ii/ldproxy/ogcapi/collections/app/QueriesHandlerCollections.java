@@ -41,7 +41,7 @@ import java.util.Optional;
 
 @Component
 @Instantiate
-@Provides(specifications = {QueriesHandlerCollections.class})
+@Provides
 public class QueriesHandlerCollections implements QueriesHandler<QueriesHandlerCollections.Query> {
 
     private final I18n i18n;

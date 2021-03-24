@@ -46,7 +46,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@Provides(specifications = {ResultFormatExtensionGeoJson.class, DapaResultFormatExtension.class, FormatExtension.class, ApiExtension.class})
+@Provides
 @Instantiate
 public class ResultFormatExtensionGeoJson implements DapaResultFormatExtension {
 

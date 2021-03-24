@@ -24,7 +24,7 @@ import java.util.Objects;
  * @author zahnen
  */
 @Component
-@Provides(specifications = GeoJsonWriterRegistryImpl.class)
+@Provides
 @Instantiate
 @Wbp(
         filter = "(objectClass=de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter)",

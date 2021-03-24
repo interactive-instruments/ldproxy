@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 @Component
-@Provides(specifications = {SchemaGeneratorFeatureOpenApi.class})
+@Provides
 @Instantiate
 public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature implements SchemaGeneratorOpenApi {
 

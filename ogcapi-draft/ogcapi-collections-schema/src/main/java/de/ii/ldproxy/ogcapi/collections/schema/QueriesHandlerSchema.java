@@ -40,7 +40,7 @@ import java.util.Optional;
 
 @Component
 @Instantiate
-@Provides(specifications = {QueriesHandlerSchema.class})
+@Provides
 public class QueriesHandlerSchema implements QueriesHandler<QueriesHandlerSchema.Query> {
 
     public enum Query implements QueryIdentifier {SCHEMA}

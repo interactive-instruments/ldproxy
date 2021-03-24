@@ -26,7 +26,7 @@ import java.util.List;
  * @author zahnen
  */
 @Component
-@Provides(specifications = {CommonFormatJson.class, CommonFormatExtension.class, FormatExtension.class, ApiExtension.class, ConformanceClass.class})
+@Provides
 @Instantiate
 public class CommonFormatJson implements CommonFormatExtension, ConformanceClass {
 

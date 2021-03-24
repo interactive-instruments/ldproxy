@@ -26,7 +26,7 @@ import java.util.List;
  * @author zahnen
  */
 @Component
-@Provides(specifications = {CollectionsFormatJson.class, CollectionsFormatExtension.class, FormatExtension.class, ApiExtension.class})
+@Provides
 @Instantiate
 public class CollectionsFormatJson implements CollectionsFormatExtension, ConformanceClass {
 

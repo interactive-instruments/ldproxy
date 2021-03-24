@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 @Component
-@Provides(specifications = {ExtendableOpenApiDefinitionImpl.class})
+@Provides
 @Instantiate
 @Wbp(
         filter = "(objectClass=de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension)",
