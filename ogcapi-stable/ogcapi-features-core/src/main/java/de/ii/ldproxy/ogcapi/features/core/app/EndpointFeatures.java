@@ -179,13 +179,13 @@ public class EndpointFeatures extends EndpointSubCollection {
                 builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be a positive integer.", config.getMinimumPageSize(), collectionId));
             }
             if (config.getMinimumPageSize()>config.getMaximumPageSize()) {
-                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be smaller than the maximum page size ''{2}''.", config.getMinimumPageSize(), collectionId, config.getMaximumPageSize()));
+                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it cannot be greater than the maximum page size ''{2}''.", config.getMinimumPageSize(), collectionId, config.getMaximumPageSize()));
             }
             if (config.getMinimumPageSize()>config.getDefaultPageSize()) {
-                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it must be smaller than the default page size ''{2}''.", config.getMinimumPageSize(), collectionId, config.getDefaultPageSize()));
+                builder.addStrictErrors(MessageFormat.format("The minimum page size ''{0}'' in collection ''{1}'' is invalid, it cannot be greater than the default page size ''{2}''.", config.getMinimumPageSize(), collectionId, config.getDefaultPageSize()));
             }
             if (config.getMaximumPageSize()<config.getDefaultPageSize()) {
-                builder.addStrictErrors(MessageFormat.format("The maxmimum page size ''{0}'' in collection ''{1}'' is invalid, it must be larger than the default page size ''{2}''.", config.getMaximumPageSize(), collectionId, config.getDefaultPageSize()));
+                builder.addStrictErrors(MessageFormat.format("The maxmimum page size ''{0}'' in collection ''{1}'' is invalid, it must be at least the default page size ''{2}''.", config.getMaximumPageSize(), collectionId, config.getDefaultPageSize()));
             }
         }
 
