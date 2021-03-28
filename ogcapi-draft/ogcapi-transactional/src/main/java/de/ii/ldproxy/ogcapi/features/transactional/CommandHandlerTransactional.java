@@ -26,6 +26,7 @@ import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.features.geojson.domain.GeoJsonStreamParser;
 import de.ii.xtraplatform.features.geojson.domain.MappingSwapper;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
@@ -49,6 +50,9 @@ public class CommandHandlerTransactional {
 
         if (result.getError().isPresent()) {
             //TODO: see FeaturesCoreQueryHandler
+            if (result.getError().get() instanceof IllegalArgumentException) {
+                throw new BadRequestException(result.getError().get().getMessage());
+            }
             throw new RuntimeException(result.getError().get());
         }
 
