@@ -210,7 +210,6 @@ public class EndpointCollection extends EndpointSubCollection {
     @Path("/{collectionId}")
     public Response getCollection(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                   @Context ApiRequestContext requestContext, @PathParam("collectionId") String collectionId) {
-        checkAuthorization(api.getData(), optionalUser);
 
         if (!api.getData().isCollectionEnabled(collectionId)) {
             throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));

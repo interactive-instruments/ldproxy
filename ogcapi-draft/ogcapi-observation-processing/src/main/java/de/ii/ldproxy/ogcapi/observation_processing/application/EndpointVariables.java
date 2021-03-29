@@ -122,7 +122,6 @@ public class EndpointVariables extends EndpointSubCollection {
                              @Context ApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
-        checkAuthorization(api.getData(), optionalUser);
         checkPathParameter(extensionRegistry, api.getData(), "/collections/{collectionId}/variables", "collectionId", collectionId);
 
         final boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)

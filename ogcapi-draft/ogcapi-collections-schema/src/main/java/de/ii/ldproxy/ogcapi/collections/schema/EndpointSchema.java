@@ -120,7 +120,6 @@ public class EndpointSchema extends EndpointSubCollection {
                              @Context ApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
-        checkAuthorization(api.getData(), optionalUser);
 
         boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
                 .map(FoundationConfiguration::getIncludeLinkHeader)
