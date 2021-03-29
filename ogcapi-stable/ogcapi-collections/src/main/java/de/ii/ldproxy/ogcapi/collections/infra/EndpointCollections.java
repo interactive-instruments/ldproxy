@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.collections.infra;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputCollections;
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
+import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -28,7 +29,6 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -54,10 +54,10 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollections.class);
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    private final QueriesHandler<QueriesHandlerCollections.Query> queryHandler;
+    private final QueriesHandlerCollections queryHandler;
 
     public EndpointCollections(@Requires ExtensionRegistry extensionRegistry,
-                               @Requires QueriesHandler<QueriesHandlerCollections.Query> queryHandler) {
+                               @Requires QueriesHandlerCollections queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }
@@ -152,11 +152,11 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
                                         .map(CollectionsConfiguration::getAdditionalLinks)
                                         .orElse(ImmutableList.of());
 
-        QueriesHandlerCollections.QueryInputCollections queryInput = new ImmutableQueryInputCollections.Builder()
+        QueriesHandlerCollectionsImpl.QueryInputCollections queryInput = new ImmutableQueryInputCollections.Builder()
                 .includeLinkHeader(includeLinkHeader)
                 .additionalLinks(additionalLinks)
                 .build();
 
-        return queryHandler.handle(QueriesHandlerCollections.Query.COLLECTIONS, queryInput, requestContext);
+        return queryHandler.handle(QueriesHandlerCollectionsImpl.Query.COLLECTIONS, queryInput, requestContext);
     }
 }

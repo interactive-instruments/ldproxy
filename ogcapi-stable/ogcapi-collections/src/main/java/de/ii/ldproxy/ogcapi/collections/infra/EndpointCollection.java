@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputFeatureCollection;
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
+import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
@@ -32,7 +33,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -70,10 +70,10 @@ public class EndpointCollection extends EndpointSubCollection {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollection.class);
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    private final QueriesHandler<QueriesHandlerCollections.Query> queryHandler;
+    private final QueriesHandlerCollections queryHandler;
 
     public EndpointCollection(@Requires ExtensionRegistry extensionRegistry,
-                              @Requires  QueriesHandler<QueriesHandlerCollections.Query> queryHandler) {
+                              @Requires QueriesHandlerCollections queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }
@@ -226,12 +226,12 @@ public class EndpointCollection extends EndpointSubCollection {
                                         .get(collectionId)
                                         .getAdditionalLinks();
 
-        QueriesHandlerCollections.QueryInputFeatureCollection queryInput = new ImmutableQueryInputFeatureCollection.Builder()
+        QueriesHandlerCollectionsImpl.QueryInputFeatureCollection queryInput = new ImmutableQueryInputFeatureCollection.Builder()
                 .collectionId(collectionId)
                 .includeLinkHeader(includeLinkHeader)
                 .additionalLinks(additionalLinks)
                 .build();
 
-        return queryHandler.handle(QueriesHandlerCollections.Query.FEATURE_COLLECTION, queryInput, requestContext);
+        return queryHandler.handle(QueriesHandlerCollectionsImpl.Query.FEATURE_COLLECTION, queryInput, requestContext);
     }
 }

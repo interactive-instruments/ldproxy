@@ -10,7 +10,8 @@ package de.ii.ldproxy.ogcapi.common.infra;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputLandingPage;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon.Query;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -29,7 +30,6 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -56,10 +56,10 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLandingPage.class);
     private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
-    private final QueriesHandler<Query> queryHandler;
+    private final QueriesHandlerCommon queryHandler;
 
     public EndpointLandingPage(@Requires ExtensionRegistry extensionRegistry,
-                               @Requires QueriesHandler<Query> queryHandler) {
+                               @Requires QueriesHandlerCommon queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }
@@ -135,7 +135,7 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
                                         .map(CommonConfiguration::getAdditionalLinks)
                                         .orElse(ImmutableList.of());
 
-        QueriesHandlerCommon.QueryInputLandingPage queryInput = new ImmutableQueryInputLandingPage.Builder()
+        QueriesHandlerCommonImpl.QueryInputLandingPage queryInput = new ImmutableQueryInputLandingPage.Builder()
                 .includeLinkHeader(includeLinkHeader)
                 .additionalLinks(additionalLinks)
                 .build();
