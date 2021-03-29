@@ -172,7 +172,6 @@ public class EndpointTileSingleCollection extends EndpointSubCollection {
             throws CrsTransformationException, IOException, NotFoundException {
 
         OgcApiDataV2 apiData = api.getData();
-        checkAuthorization(apiData, optionalUser);
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
 

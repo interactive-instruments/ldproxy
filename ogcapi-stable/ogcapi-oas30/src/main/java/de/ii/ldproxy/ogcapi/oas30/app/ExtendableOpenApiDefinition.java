@@ -77,13 +77,11 @@ public class ExtendableOpenApiDefinition {
                     .readValue(Resources.asByteSource(Resources.getResource(ExtendableOpenApiDefinition.class, "/openapi.json"))
                             .openBufferedStream());
 
-            // TODO
             if (apiData.getSecured() && authConfig.isJwt()) {
                 openAPI.getComponents()
-                        .addSecuritySchemes("JWT", new SecurityScheme().type(SecurityScheme.Type.HTTP)
+                        .addSecuritySchemes("JWT", new SecurityScheme().name("JWT").type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT"));
-                openAPI.addSecurityItem(new SecurityRequirement().addList("JWT"));
             }
 
             openAPI.servers(ImmutableList.of(new Server().url(requestUriCustomizer.copy()

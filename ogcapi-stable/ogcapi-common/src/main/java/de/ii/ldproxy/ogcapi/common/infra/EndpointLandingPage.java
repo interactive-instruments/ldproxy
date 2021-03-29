@@ -124,7 +124,6 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
     @GET
     public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                    @Context ApiRequestContext requestContext) {
-        checkAuthorization(api.getData(), optionalUser);
 
         boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
                 .map(FoundationConfiguration::getIncludeLinkHeader)
