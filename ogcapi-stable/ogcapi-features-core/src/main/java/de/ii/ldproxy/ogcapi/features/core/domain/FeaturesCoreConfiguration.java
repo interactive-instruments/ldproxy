@@ -77,6 +77,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
 
     Optional<FeaturesCollectionQueryables> getQueryables();
 
+    Map<String, Integer> getCoordinatePrecision();
+
     @Override
     Map<String, PropertyTransformation> getTransformations();
 
@@ -263,4 +265,17 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
         return builder.build();
     }
 
+    @Override
+    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+        ImmutableFeaturesCoreConfiguration.Builder builder = ((ImmutableFeaturesCoreConfiguration.Builder) source.getBuilder())
+                .from(source)
+                .from(this);
+
+        //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
+        // try to find a better solution that also enables deep merges
+        if (!getCoordinatePrecision().isEmpty())
+            builder.coordinatePrecision(getCoordinatePrecision());
+
+        return builder.build();
+    }
 }

@@ -14,6 +14,7 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
 |`defaultCrs` |string |"CRS84" |Setzt das Standard-Koordinatenreferenzsystem, entweder 'CRS84' für einen Datensatz mit 2D-Geometrien oder 'CRS84h' für einen Datensatz mit 3D-Geometrien.
+|`coordinatePrecision` |object |`{}` |Steuert, ob Koordinaten in Abhängig des verwendeten Koordinatenreferenzsystems auf eine bestimmte Anzahl von Stellen begrenzt werden. Anzugeben ist die Maßeinheit und die zugehörige Anzahl der Nachkommastellen. Beispiel: `{ "metre" : 2, "degree" : 7 }`. Gültige Maßeinheiten sind "metre" (bzw. "meter") und "degree".
 |`minimumPageSize` |int |1 |Setzt den Minimalwert für den Parameter `limit`.
 |`defaultPageSize` |int |10 |Setzt den Detaultwert für den Parameter `limit`.
 |`maximumPageSize` |int |10000 |Setzt den Maximalwert für den Parameter `limit`.
