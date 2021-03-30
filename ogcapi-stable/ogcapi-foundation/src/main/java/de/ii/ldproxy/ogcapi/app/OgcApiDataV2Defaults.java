@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
@@ -57,6 +58,7 @@ public class OgcApiDataV2Defaults implements EntityDataDefaults<OgcApiDataV2> {
         return new ImmutableOgcApiDataV2.Builder().enabled(true)
                                                   .secured(false)
                                                   .metadata(getMetadata())
+                                                  .defaultExtent(new ImmutableCollectionExtent.Builder().spatialComputed(true).temporalComputed(true).build())
                                                   .extensions(getBuildingBlocks());
     }
 
