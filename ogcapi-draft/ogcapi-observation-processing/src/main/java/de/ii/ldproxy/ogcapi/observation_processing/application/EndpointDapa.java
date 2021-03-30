@@ -146,7 +146,6 @@ public class EndpointDapa extends EndpointSubCollection implements ConformanceCl
                              @Context ApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
-        checkAuthorization(api.getData(), optionalUser);
         ApiEndpointDefinition endpointDefinition = extensionRegistry.getExtensionsForType(EndpointSubCollection.class)
                                                                     .stream()
                                                                     .filter(ext -> ext.getClass().getName().equals("de.ii.ldproxy.ogcapi.observation_processing.application.EndpointObservationProcessing"))

@@ -343,7 +343,6 @@ public class EndpointFeatures extends EndpointSubCollection {
                              @Context ApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
-        checkAuthorization(api.getData(), optionalUser);
         checkCollectionExists(api.getData(), collectionId);
 
         FeatureTypeConfigurationOgcApi collectionData = api.getData()
@@ -385,7 +384,6 @@ public class EndpointFeatures extends EndpointSubCollection {
                             @Context UriInfo uriInfo,
                             @PathParam("collectionId") String collectionId,
                             @PathParam("featureId") String featureId) {
-        checkAuthorization(api.getData(), optionalUser);
         checkCollectionExists(api.getData(), collectionId);
 
         FeatureTypeConfigurationOgcApi collectionData = api.getData()
