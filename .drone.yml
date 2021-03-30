@@ -4,7 +4,7 @@ pipeline:
 
   load-cache:
     image: drillster/drone-volume-cache
-    volumes: [/tmp:/cache]
+    volumes: [/var/lib/docker/tmp:/cache]
     restore: true
     mount:
       - .gradle/caches
@@ -114,7 +114,7 @@ pipeline:
 
   save-cache:
     image: drillster/drone-volume-cache
-    volumes: [/tmp:/cache]
+    volumes: [/var/lib/docker/tmp:/cache]
     rebuild: true
     mount:
       - .gradle/caches
