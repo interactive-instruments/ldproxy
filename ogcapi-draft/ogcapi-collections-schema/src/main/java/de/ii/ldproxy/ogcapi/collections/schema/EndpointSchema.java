@@ -23,7 +23,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -52,10 +51,10 @@ public class EndpointSchema extends EndpointSubCollection {
 
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    private final QueriesHandler<QueriesHandlerSchema.Query> queryHandler;
+    private final QueriesHandlerSchema queryHandler;
 
     public EndpointSchema(@Requires ExtensionRegistry extensionRegistry,
-                          @Requires QueriesHandler<QueriesHandlerSchema.Query> queryHandler) {
+                          @Requires QueriesHandlerSchema queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }
@@ -129,12 +128,12 @@ public class EndpointSchema extends EndpointSubCollection {
 
         Optional<String> profile = Optional.ofNullable(requestContext.getParameters().get("profile"));
 
-        QueriesHandlerSchema.QueryInputSchema queryInput = new ImmutableQueryInputSchema.Builder()
+        QueriesHandlerSchemaImpl.QueryInputSchema queryInput = new ImmutableQueryInputSchema.Builder()
                 .collectionId(collectionId)
                 .includeLinkHeader(includeLinkHeader)
                 .profile(profile)
                 .build();
 
-        return queryHandler.handle(QueriesHandlerSchema.Query.SCHEMA, queryInput, requestContext);
+        return queryHandler.handle(QueriesHandlerSchemaImpl.Query.SCHEMA, queryInput, requestContext);
     }
 }

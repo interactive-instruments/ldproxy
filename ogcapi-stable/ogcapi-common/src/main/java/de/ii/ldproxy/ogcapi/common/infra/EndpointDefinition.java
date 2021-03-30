@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.common.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableDefinition;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
@@ -38,10 +39,10 @@ public class EndpointDefinition extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDefinition.class);
 
-    private final QueriesHandler<QueriesHandlerCommonImpl.Query> queryHandler;
+    private final QueriesHandlerCommon queryHandler;
 
     public EndpointDefinition(@Requires ExtensionRegistry extensionRegistry,
-                              @Requires QueriesHandler<QueriesHandlerCommonImpl.Query> queryHandler) {
+                              @Requires QueriesHandlerCommon queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

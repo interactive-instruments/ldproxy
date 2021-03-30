@@ -24,7 +24,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -52,10 +51,10 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
 
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    private final QueriesHandler<QueryablesQueriesHandler.Query> queryHandler;
+    private final QueryablesQueriesHandler queryHandler;
 
     public EndpointQueryables(@Requires ExtensionRegistry extensionRegistry,
-                              @Requires QueriesHandler<QueryablesQueriesHandler.Query> queryHandler) {
+                              @Requires QueryablesQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }
@@ -133,11 +132,11 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
                 .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        QueryablesQueriesHandler.QueryInputQueryables queryInput = new ImmutableQueryInputQueryables.Builder()
+        QueryablesQueriesHandlerImpl.QueryInputQueryables queryInput = new ImmutableQueryInputQueryables.Builder()
                 .collectionId(collectionId)
                 .includeLinkHeader(includeLinkHeader)
                 .build();
 
-        return queryHandler.handle(QueryablesQueriesHandler.Query.QUERYABLES, queryInput, requestContext);
+        return queryHandler.handle(QueryablesQueriesHandlerImpl.Query.QUERYABLES, queryInput, requestContext);
     }
 }
