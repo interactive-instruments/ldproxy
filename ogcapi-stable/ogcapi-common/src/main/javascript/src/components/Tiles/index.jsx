@@ -13,8 +13,8 @@ const fieldsTransformation = {
   // {center: [7.5, 51.5]} <--> {centerLon: 7.5, centerLat: 51.5]}
   center: {
     split: {
-      centerLon: (center) => center[0],
-      centerLat: (center) => center[1],
+      centerLon: (center) => (center ? center[0] : 0),
+      centerLat: (center) => (center ? center[1] : 0),
     },
     merge: (centerLon, centerLat) => [centerLon, centerLat],
   },
@@ -26,8 +26,10 @@ const fieldsTransformation = {
   },
   zoomLevels: {
     split: {
-      zoomLevelsMin: (zoomLevels) => zoomLevels.WebMercatorQuad.min,
-      zoomLevelsMax: (zoomLevels) => zoomLevels.WebMercatorQuad.max,
+      zoomLevelsMin: (zoomLevels) =>
+        zoomLevels ? zoomLevels.WebMercatorQuad.min : 0,
+      zoomLevelsMax: (zoomLevels) =>
+        zoomLevels ? zoomLevels.WebMercatorQuad.max : 0,
     },
     merge: (zoomLevelsMin, zoomLevelsMax) => ({
       WebMercatorQuad: {
@@ -44,8 +46,8 @@ const fieldsTransformation = {
   },
   seeding: {
     split: {
-      seedingMin: (seeding) => seeding.WebMercatorQuad.min,
-      seedingMax: (seeding) => seeding.WebMercatorQuad.max,
+      seedingMin: (seeding) => (seeding ? seeding.WebMercatorQuad.min : 0),
+      seedingMax: (seeding) => (seeding ? seeding.WebMercatorQuad.max : 0),
     },
     merge: (seedingMin, seedingMax) => ({
       WebMercatorQuad: { min: seedingMin, max: seedingMax },
