@@ -26,12 +26,9 @@ import java.util.List;
  * @author zahnen
  */
 @Component
-@Provides(specifications = {CommonFormatJson.class, CommonFormatExtension.class, FormatExtension.class, ApiExtension.class, ConformanceClass.class})
+@Provides
 @Instantiate
 public class CommonFormatJson implements CommonFormatExtension, ConformanceClass {
-
-    @Requires
-    SchemaGenerator schemaGenerator;
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
@@ -44,7 +41,7 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
     private final Schema schemaConformance;
     public final static String SCHEMA_REF_CONFORMANCE = "#/components/schemas/ConformanceDeclaration";
 
-    public CommonFormatJson() {
+    public CommonFormatJson(@Requires SchemaGenerator schemaGenerator) {
         schemaLandingPage = schemaGenerator.getSchema(LandingPage.class);
         schemaConformance = schemaGenerator.getSchema(ConformanceDeclaration.class);
     }

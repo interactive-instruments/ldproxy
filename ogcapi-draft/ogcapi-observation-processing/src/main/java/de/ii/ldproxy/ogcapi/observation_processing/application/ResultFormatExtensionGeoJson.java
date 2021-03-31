@@ -19,8 +19,8 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureCollectionOpenApi;
 import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcessingStatisticalFunction;
@@ -46,7 +46,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@Provides(specifications = {ResultFormatExtensionGeoJson.class, DapaResultFormatExtension.class, FormatExtension.class, ApiExtension.class})
+@Provides
 @Instantiate
 public class ResultFormatExtensionGeoJson implements DapaResultFormatExtension {
 
@@ -58,8 +58,11 @@ public class ResultFormatExtensionGeoJson implements DapaResultFormatExtension {
             .parameter("json")
             .build();
 
-    @Requires
-    SchemaGeneratorFeatureCollectionOpenApi schemaGeneratorFeatureCollection;
+    private final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
+
+    public ResultFormatExtensionGeoJson(@Requires SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection) {
+        this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
+    }
 
     @Override
     public ApiMediaType getMediaType() {

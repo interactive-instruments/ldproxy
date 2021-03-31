@@ -65,14 +65,7 @@ import java.util.stream.Collectors;
 @Instantiate
 public class TileFormatMVT implements TileFormatExtension {
 
-    @Requires
-    CrsTransformerFactory crsTransformerFactory;
-    @Requires
-    FeaturesQuery queryParser;
-    @Requires
-    TilesCache tilesCache;
-    @Requires
-    Http http;
+    public final static String SCHEMA_REF_TILE = "#/components/schemas/TileMVT";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
 
@@ -83,7 +76,18 @@ public class TileFormatMVT implements TileFormatExtension {
             .build();
 
     private final Schema schemaTile = new BinarySchema();
-    public final static String SCHEMA_REF_TILE = "#/components/schemas/TileMVT";
+    private final CrsTransformerFactory crsTransformerFactory;
+    private final FeaturesQuery queryParser;
+    private final TilesCache tilesCache;
+    private final Http http;
+
+    public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory, @Requires FeaturesQuery queryParser,
+                         @Requires TilesCache tilesCache, @Requires Http http) {
+        this.crsTransformerFactory = crsTransformerFactory;
+        this.queryParser = queryParser;
+        this.tilesCache = tilesCache;
+        this.http = http;
+    }
 
     @Override
     public ApiMediaType getMediaType() {

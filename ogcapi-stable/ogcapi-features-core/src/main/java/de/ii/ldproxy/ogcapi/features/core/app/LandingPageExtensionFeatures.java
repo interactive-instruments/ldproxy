@@ -26,8 +26,11 @@ import java.util.Optional;
 @Instantiate
 public class LandingPageExtensionFeatures implements LandingPageExtension {
 
-    @Requires
-    I18n i18n;
+    private final I18n i18n;
+
+    public LandingPageExtensionFeatures(I18n i18n) {
+        this.i18n = i18n;
+    }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

@@ -35,13 +35,12 @@ public class ExtensionRegistryImpl implements ExtensionRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExtensionRegistryImpl.class);
 
-    @Context
-    private BundleContext bundleContext;
-
+    private final BundleContext bundleContext;
     private final List<ApiExtension> apiExtensions;
 
-    ExtensionRegistryImpl() {
-        this.apiExtensions = new ArrayList<>();;
+    ExtensionRegistryImpl(@Context BundleContext bundleContext) {
+        this.apiExtensions = new ArrayList<>();
+        this.bundleContext = bundleContext;
     }
 
     @Override

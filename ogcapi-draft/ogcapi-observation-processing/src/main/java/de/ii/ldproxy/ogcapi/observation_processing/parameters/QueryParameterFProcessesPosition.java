@@ -24,11 +24,12 @@ import static de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatEx
 @Instantiate
 public class QueryParameterFProcessesPosition extends QueryParameterF {
 
-    @Requires
-    FeatureProcessInfo featureProcessInfo;
+    private final FeatureProcessInfo featureProcessInfo;
 
-    protected QueryParameterFProcessesPosition(@Requires ExtensionRegistry extensionRegistry) {
+    protected QueryParameterFProcessesPosition(@Requires ExtensionRegistry extensionRegistry,
+                                               @Requires FeatureProcessInfo featureProcessInfo) {
         super(extensionRegistry);
+        this.featureProcessInfo = featureProcessInfo;
     }
 
     @Override

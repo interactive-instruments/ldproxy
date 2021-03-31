@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 @Component
-@Provides(specifications = {ResultFormatExtensionGeoTiff.class, DapaResultFormatExtension.class, FormatExtension.class, ApiExtension.class})
+@Provides
 @Instantiate
 public class ResultFormatExtensionGeoTiff implements DapaResultFormatExtension {
 

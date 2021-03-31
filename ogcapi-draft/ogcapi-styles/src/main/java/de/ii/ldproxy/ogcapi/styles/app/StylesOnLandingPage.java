@@ -40,15 +40,15 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 @Instantiate
 public class StylesOnLandingPage implements LandingPageExtension {
 
-    @Requires
-    I18n i18n;
-
+    private final I18n i18n;
     private final Path stylesStore;
 
-    public StylesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) throws IOException {
+    public StylesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
+                               @Requires I18n i18n) throws IOException {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         Files.createDirectories(stylesStore);
+        this.i18n = i18n;
     }
 
     @Override

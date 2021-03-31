@@ -51,11 +51,12 @@ public class EndpointSchema extends EndpointSubCollection {
 
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    @Requires
-    private QueriesHandlerSchema queryHandler;
+    private final QueriesHandlerSchema queryHandler;
 
-    public EndpointSchema(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointSchema(@Requires ExtensionRegistry extensionRegistry,
+                          @Requires QueriesHandlerSchema queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override
@@ -127,12 +128,12 @@ public class EndpointSchema extends EndpointSubCollection {
 
         Optional<String> profile = Optional.ofNullable(requestContext.getParameters().get("profile"));
 
-        QueriesHandlerSchema.QueryInputSchema queryInput = new ImmutableQueryInputSchema.Builder()
+        QueriesHandlerSchemaImpl.QueryInputSchema queryInput = new ImmutableQueryInputSchema.Builder()
                 .collectionId(collectionId)
                 .includeLinkHeader(includeLinkHeader)
                 .profile(profile)
                 .build();
 
-        return queryHandler.handle(QueriesHandlerSchema.Query.SCHEMA, queryInput, requestContext);
+        return queryHandler.handle(QueriesHandlerSchemaImpl.Query.SCHEMA, queryInput, requestContext);
     }
 }

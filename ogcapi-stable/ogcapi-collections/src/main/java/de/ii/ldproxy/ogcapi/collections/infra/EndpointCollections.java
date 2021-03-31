@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.collections.infra;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputCollections;
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
+import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -53,11 +54,12 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollections.class);
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    @Requires
-    private QueriesHandlerCollections queryHandler;
+    private final QueriesHandlerCollections queryHandler;
 
-    public EndpointCollections(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointCollections(@Requires ExtensionRegistry extensionRegistry,
+                               @Requires QueriesHandlerCollections queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override
@@ -149,11 +151,11 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
                                         .map(CollectionsConfiguration::getAdditionalLinks)
                                         .orElse(ImmutableList.of());
 
-        QueriesHandlerCollections.QueryInputCollections queryInput = new ImmutableQueryInputCollections.Builder()
+        QueriesHandlerCollectionsImpl.QueryInputCollections queryInput = new ImmutableQueryInputCollections.Builder()
                 .includeLinkHeader(includeLinkHeader)
                 .additionalLinks(additionalLinks)
                 .build();
 
-        return queryHandler.handle(QueriesHandlerCollections.Query.COLLECTIONS, queryInput, requestContext);
+        return queryHandler.handle(QueriesHandlerCollectionsImpl.Query.COLLECTIONS, queryInput, requestContext);
     }
 }

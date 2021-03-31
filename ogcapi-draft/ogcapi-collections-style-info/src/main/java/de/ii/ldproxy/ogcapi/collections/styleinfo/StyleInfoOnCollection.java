@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
@@ -54,17 +55,17 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 @Instantiate
 public class StyleInfoOnCollection implements CollectionExtension {
 
-    @Requires
-    I18n i18n;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleInfoOnCollection.class);
 
     private final Path styleInfosStore;
+    private final I18n i18n;
 
-    public StyleInfoOnCollection(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) throws IOException {
+    public StyleInfoOnCollection(@Context BundleContext bundleContext, @Requires I18n i18n) throws IOException {
         this.styleInfosStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                     .resolve("style-infos");
         Files.createDirectories(styleInfosStore);
+        this.i18n = i18n;
     }
 
     @Override

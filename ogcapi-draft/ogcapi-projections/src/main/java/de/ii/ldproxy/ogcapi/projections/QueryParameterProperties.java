@@ -27,8 +27,11 @@ import java.util.concurrent.ConcurrentMap;
 @Instantiate
 public class QueryParameterProperties implements OgcApiQueryParameter {
 
-    @Requires
-    SchemaInfo schemaInfo;
+    private final SchemaInfo schemaInfo;
+
+    public QueryParameterProperties(@Requires SchemaInfo schemaInfo) {
+        this.schemaInfo = schemaInfo;
+    }
 
     @Override
     public String getId(String collectionId) {

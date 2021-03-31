@@ -10,7 +10,8 @@ package de.ii.ldproxy.ogcapi.common.infra;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputConformance;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon.Query;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -39,11 +40,12 @@ public class EndpointConformance extends Endpoint {
 
     private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
-    @Requires
-    private QueriesHandlerCommon queryHandler;
+    private final QueriesHandlerCommon queryHandler;
 
-    public EndpointConformance(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointConformance(@Requires ExtensionRegistry extensionRegistry,
+                               @Requires QueriesHandlerCommon queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override
@@ -97,7 +99,7 @@ public class EndpointConformance extends Endpoint {
                 .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        QueriesHandlerCommon.QueryInputConformance queryInput = new ImmutableQueryInputConformance.Builder()
+        QueriesHandlerCommonImpl.QueryInputConformance queryInput = new ImmutableQueryInputConformance.Builder()
                 .includeLinkHeader(includeLinkHeader)
                 .build();
 

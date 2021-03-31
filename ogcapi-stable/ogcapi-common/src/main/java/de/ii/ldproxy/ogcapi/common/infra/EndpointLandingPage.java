@@ -10,7 +10,8 @@ package de.ii.ldproxy.ogcapi.common.infra;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputLandingPage;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon.Query;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -55,11 +56,12 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLandingPage.class);
     private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
-    @Requires
-    private QueriesHandlerCommon queryHandler;
+    private final QueriesHandlerCommon queryHandler;
 
-    public EndpointLandingPage(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointLandingPage(@Requires ExtensionRegistry extensionRegistry,
+                               @Requires QueriesHandlerCommon queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override
@@ -132,7 +134,7 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
                                         .map(CommonConfiguration::getAdditionalLinks)
                                         .orElse(ImmutableList.of());
 
-        QueriesHandlerCommon.QueryInputLandingPage queryInput = new ImmutableQueryInputLandingPage.Builder()
+        QueriesHandlerCommonImpl.QueryInputLandingPage queryInput = new ImmutableQueryInputLandingPage.Builder()
                 .includeLinkHeader(includeLinkHeader)
                 .additionalLinks(additionalLinks)
                 .build();
