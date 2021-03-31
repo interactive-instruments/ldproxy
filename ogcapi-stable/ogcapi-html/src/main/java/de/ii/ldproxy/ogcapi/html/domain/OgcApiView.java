@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.html.domain;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import io.dropwizard.views.View;
@@ -34,8 +35,8 @@ public abstract class OgcApiView extends View {
                          @Nullable List<Link> links, @Nullable String title, @Nullable String description) {
         super(String.format("/templates/%s", templateName), charset);
         this.apiData = apiData;
-        this.breadCrumbs = breadCrumbs;
-        this.links = links;
+        this.breadCrumbs = Objects.requireNonNullElse(breadCrumbs, ImmutableList.of());
+        this.links = Objects.requireNonNullElse(links, ImmutableList.of());
         this.htmlConfig = htmlConfig;
         this.noIndex = noIndex;
         this.urlPrefix = urlPrefix;
@@ -54,6 +55,22 @@ public abstract class OgcApiView extends View {
 
     public List<NavigationDTO> getBreadCrumbs() {
         return breadCrumbs;
+    }
+
+    public boolean hasBreadCrumbs() { return breadCrumbs.size() > 1; }
+
+    public String getBreadCrumbsList() {
+        String result = "";
+        for (int i=0; i<breadCrumbs.size(); i++) {
+            NavigationDTO item = breadCrumbs.get(i);
+            result += "{ \"@type\": \"ListItem\", \"position\": "+ (i+1) +", \"name\": \""+ item.label +"\"";
+            if (Objects.nonNull(item.url))
+                result += ", \"item\": \""+ item.url +"\"";
+            result += " }";
+            if (i<breadCrumbs.size()-1)
+                result += ",\n    ";
+        }
+        return result;
     }
 
     public String getUrlPrefix() {

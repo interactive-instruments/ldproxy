@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.*;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,6 +31,10 @@ public class ContentNegotiation {
     private static final String ACCEPT_HEADER = "Accept";
     private static final String LANGUAGE_PARAMETER = "lang";
     private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
+
+    private static final List<String> USER_AGENT_BOTS = ImmutableList.of("googlebot", "bingbot", "duckduckbot",
+                                                                         "yandexbot", "baiduspider", "slurp",
+                                                                         "exabot", "facebot", "ia_archiver");
 
     public ContentNegotiation() {
     }
@@ -96,11 +102,25 @@ public class ContentNegotiation {
             MultivaluedMap<String, String> queryParameters,
             MultivaluedMap<String, String> headers) {
 
+        String format = null;
         if (queryParameters.containsKey(CONTENT_TYPE_PARAMETER)) {
-            String format = queryParameters.getFirst(CONTENT_TYPE_PARAMETER);
+            format = queryParameters.getFirst(CONTENT_TYPE_PARAMETER);
+        } else {
+            // use crawler user agent headers to trigger an implicit f=html
+            String userAgent = headers.getFirst("user-agent");
+            if (Objects.nonNull(userAgent)) {
+                String finalUserAgent = userAgent.toLowerCase();
+                if (USER_AGENT_BOTS.stream()
+                                   .anyMatch(bot -> finalUserAgent.contains(bot))) {
+                    format = "html";
+                }
+            }
+        }
 
+        if (Objects.nonNull(format)) {
+            String finalFormat = format;
             Optional<ApiMediaType> ogcApiMediaType = supportedMediaTypes.stream()
-                                                                        .filter(mediaType -> Objects.equals(mediaType.parameter(), format))
+                                                                        .filter(mediaType -> Objects.equals(mediaType.parameter(), finalFormat))
                                                                         .findFirst();
             if (ogcApiMediaType.isPresent()) {
                 headers.putSingle(ACCEPT_HEADER, ogcApiMediaType.get()

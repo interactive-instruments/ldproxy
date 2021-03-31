@@ -25,6 +25,18 @@ public interface Metadata {
 
     Optional<String> getContactPhone();
 
+    Optional<String> getCreatorName();
+
+    Optional<String> getCreatorUrl();
+
+    Optional<String> getCreatorLogoUrl();
+
+    Optional<String> getPublisherName();
+
+    Optional<String> getPublisherUrl();
+
+    Optional<String> getPublisherLogoUrl();
+
     Optional<String> getLicenseName();
 
     Optional<String> getLicenseUrl();
@@ -32,4 +44,6 @@ public interface Metadata {
     List<String> getKeywords();
 
     Optional<String> getVersion();
+
+    Optional<String> getAttribution();
 }

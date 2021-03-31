@@ -17,6 +17,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,6 @@ public class DatasetView extends GenericView {
     public List<String> keywords;
     public String version;
     public String license;
-    public String bbox;
     public String url;
     public String metadataUrl;
     public boolean noIndex;
@@ -91,5 +91,21 @@ public class DatasetView extends GenericView {
 
     public String getUrlPrefix() {
         return urlPrefix;
+    }
+
+    public boolean hasBreadCrumbs() { return breadCrumbs.size() > 1; }
+
+    public String getBreadCrumbsList() {
+        String result = "";
+        for (int i=0; i<breadCrumbs.size(); i++) {
+            NavigationDTO item = breadCrumbs.get(i);
+            result += "{ \"@type\": \"ListItem\", \"position\": "+ (i+1) +", \"name\": \""+ item.label +"\"";
+            if (Objects.nonNull(item.url))
+                result += ", \"item\": \""+ item.url +"\"";
+            result += " }";
+            if (i<breadCrumbs.size()-1)
+                result += ",\n    ";
+        }
+        return result;
     }
 }

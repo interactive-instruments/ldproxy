@@ -5,18 +5,18 @@
             url: '{{{leafletUrl}}}',
             attribution: '{{{leafletAttribution}}}'
             {{/htmlConfig}}
-            {{#bbox2}}
+            {{#bbox}}
             ,bounds: [[{{minLat}},{{minLng}}],[{{maxLat}},{{maxLng}}]]
-            {{/bbox2}}
+            {{/bbox}}
         },
         ol_map: {
             {{#htmlConfig}}
             url: '{{{openLayersUrl}}}',
             attribution: '{{{openLayersAttribution}}}'
             {{/htmlConfig}}
-            {{#bbox2}}
+            {{#bbox}}
             ,extent: [{{minLng}},{{minLat}},{{maxLng}},{{maxLat}}]
-            {{/bbox2}}
+            {{/bbox}}
         },
         time: {
             {{#temporalExtent}}

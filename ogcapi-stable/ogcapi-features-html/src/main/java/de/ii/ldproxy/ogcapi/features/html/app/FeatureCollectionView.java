@@ -46,7 +46,7 @@ public class FeatureCollectionView extends DatasetView {
     public boolean hideMap = true; // set to "hide"; change to "false" when we see a geometry
     public PropertyDTO links;
     public Set<Map.Entry<String, String>> filterFields;
-    public Map<String, String> bbox2;
+    public Map<String, String> bbox;
     public TemporalExtent temporalExtent;
     public URICustomizer uriBuilder;
     public URICustomizer uriBuilderWithFOnly;
@@ -58,6 +58,7 @@ public class FeatureCollectionView extends DatasetView {
     public boolean spatialSearch;
     public boolean classic;
     public boolean complexObjects;
+    public boolean schemaOrgFeatures;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
                                  String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
@@ -69,6 +70,7 @@ public class FeatureCollectionView extends DatasetView {
         this.persistentUri = persistentUri;
         this.classic = layout == FeaturesHtmlConfiguration.LAYOUT.CLASSIC;
         this.complexObjects = layout == FeaturesHtmlConfiguration.LAYOUT.COMPLEX_OBJECTS;
+        this.schemaOrgFeatures = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
     }
 
     @Override

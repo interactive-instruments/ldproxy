@@ -7,10 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 public class OgcApiExtentTemporal {
+
     private String[][] interval;
     private String trs;
 
@@ -29,6 +33,13 @@ public class OgcApiExtentTemporal {
 
     public String[][] getInterval() {
         return interval;
+    }
+
+    @JsonIgnore
+    public String getFirstIntervalIso8601() {
+        return String.format("%s/%s",
+                             Objects.requireNonNullElse(interval[0][0], ".."),
+                             Objects.requireNonNullElse(interval[0][1], ".."));
     }
 
     public void setInterval(String[][] interval) {
