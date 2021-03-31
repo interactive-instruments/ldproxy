@@ -12,17 +12,14 @@ import de.ii.ldproxy.ogcapi.app.I18nDefault
 import de.ii.ldproxy.ogcapi.app.OgcApiEntity
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputConformance
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputLandingPage
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension
 import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration
-import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage
-import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension
 import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import io.swagger.v3.oas.models.media.ObjectSchema
-import spock.lang.PendingFeature
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
@@ -32,7 +29,7 @@ class LandingPageSpec extends Specification {
     static final OgcApiDataV2 datasetData = createDatasetData()
     static OgcApiEntity apiEntity = createDatasetEntity()
     static final ApiRequestContext requestContext = createRequestContext()
-    static QueriesHandlerCommon queryHandler = new QueriesHandlerCommon(createExtensionRegistry())
+    static QueriesHandlerCommonImpl queryHandler = new QueriesHandlerCommonImpl(createExtensionRegistry())
 
 
     def setupSpec() {
@@ -47,7 +44,7 @@ class LandingPageSpec extends Specification {
                 .build()
 
         when: "the response is created"
-        LandingPage landingPage = queryHandler.handle(QueriesHandlerCommon.Query.LANDING_PAGE, queryInputDataset, requestContext).entity as LandingPage
+        LandingPage landingPage = queryHandler.handle(QueriesHandlerCommonImpl.Query.LANDING_PAGE, queryInputDataset, requestContext).entity as LandingPage
 
         then: 'it should comply to landingPage.yml'
 
@@ -77,7 +74,7 @@ class LandingPageSpec extends Specification {
                 .build()
 
         when: 'the response is created'
-        ConformanceDeclaration conformanceDeclaration = queryHandler.handle(QueriesHandlerCommon.Query.CONFORMANCE_DECLARATION,
+        ConformanceDeclaration conformanceDeclaration = queryHandler.handle(QueriesHandlerCommonImpl.Query.CONFORMANCE_DECLARATION,
                 queryInputConformance, requestContext).entity as ConformanceDeclaration
 
         then: 'it should return a list of conformance classes that the server conforms to'
@@ -88,7 +85,7 @@ class LandingPageSpec extends Specification {
     def 'Requirement 8 A: query parameter not specified in the API definition'() {
         when: 'a request to the landing page with a parameter not specified in the API definition'
         def queryInputDataset = new ImmutableQueryInputLandingPage.Builder().build()
-        queryHandler.handle(QueriesHandlerCommon.Query.LANDING_PAGE, queryInputDataset,
+        queryHandler.handle(QueriesHandlerCommonImpl.Query.LANDING_PAGE, queryInputDataset,
                 createRequestContext('http://example.com?foo=bar')).entity as LandingPage
 
         then: 'an exception is thrown resulting in a response with HTTP status code 400'
@@ -98,7 +95,7 @@ class LandingPageSpec extends Specification {
     def 'Requirement 9 A: invalid query parameter value'() {
         when: 'a request to the landing page with a URI that has an invalid parameter value'
         def queryInputDataset = new ImmutableQueryInputLandingPage.Builder().build()
-        queryHandler.handle(QueriesHandlerCommon.Query.LANDING_PAGE, queryInputDataset,
+        queryHandler.handle(QueriesHandlerCommonImpl.Query.LANDING_PAGE, queryInputDataset,
                 createRequestContext('http://example.com?f=foobar')).entity as LandingPage
 
         then: 'an exception is thrown resulting in a response with HTTP status code 400'

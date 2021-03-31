@@ -24,8 +24,11 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 public class CapabilityObservationProcessing implements ApiBuildingBlock {
 
-    @Requires
-    ExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
+
+    public CapabilityObservationProcessing(@Requires ExtensionRegistry extensionRegistry) {
+        this.extensionRegistry = extensionRegistry;
+    }
 
     @Override
     public ExtensionConfiguration.Builder getConfigurationBuilder() {

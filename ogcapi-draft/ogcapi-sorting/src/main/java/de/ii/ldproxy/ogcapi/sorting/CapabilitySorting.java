@@ -40,15 +40,12 @@ public class CapabilitySorting implements ApiBuildingBlock {
     // TODO add sortables endpoint once we have agreed where to add it, for now the sortables are published
     //      in the API definition
 
-    // TODO change to constructor parameter once SchemaInfo has been changed to an interface as part of
-    //      https://github.com/interactive-instruments/ldproxy/issues/376
-    @Requires
-    SchemaInfo schemaInfo;
-
+    private final SchemaInfo schemaInfo;
     private final FeaturesCoreProviders providers;
 
-    public CapabilitySorting(@Requires FeaturesCoreProviders providers) {
+    public CapabilitySorting(@Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo) {
         this.providers = providers;
+        this.schemaInfo = schemaInfo;
     }
 
     @Override

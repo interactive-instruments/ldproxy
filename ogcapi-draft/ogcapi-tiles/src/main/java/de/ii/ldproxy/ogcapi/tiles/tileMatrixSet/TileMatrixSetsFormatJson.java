@@ -23,8 +23,7 @@ import javax.ws.rs.core.MediaType;
 @Instantiate
 public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
+    private final I18n i18n;
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.APPLICATION_JSON_TYPE)
@@ -37,13 +36,12 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     private final Schema schemaStyleTileMatrixSet;
     public final static String SCHEMA_REF_TILE_MATRIX_SET = "#/components/schemas/TileMatrixSet";
 
-    public TileMatrixSetsFormatJson() {
+    public TileMatrixSetsFormatJson(@Requires I18n i18n, @Requires SchemaGenerator schemaGenerator) {
         schemaStyleTileMatrixSet = schemaGenerator.getSchema(TileMatrixSetData.class);
         schemaStyleTileMatrixSets = schemaGenerator.getSchema(TileMatrixSets.class);
+        this.i18n = i18n;
     }
 
-    @Requires
-    private I18n i18n;
 
     @Override
     public ApiMediaType getMediaType() {

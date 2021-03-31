@@ -12,12 +12,9 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
-@Provides(specifications = {SchemaGeneratorFeatureCollectionOpenApi.class})
+@Provides
 @Instantiate
-public class SchemaGeneratorFeatureCollectionOpenApi {
-
-    @Requires
-    SchemaGeneratorFeatureOpenApi schemaGeneratorFeature;
+public class SchemaGeneratorFeatureCollectionOpenApi implements SchemaGeneratorCollectionOpenApi {
 
     final static Schema GENERIC = new ObjectSchema()
             .required(ImmutableList.of("type","features"))
@@ -28,14 +25,24 @@ public class SchemaGeneratorFeatureCollectionOpenApi {
             .addProperties("numberMatched", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberMatched"))
             .addProperties("numberReturned", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberReturned"));
 
+    private final SchemaGeneratorOpenApi schemaGeneratorFeature;
+
+    public SchemaGeneratorFeatureCollectionOpenApi(@Requires SchemaGeneratorOpenApi schemaGeneratorFeature) {
+        this.schemaGeneratorFeature = schemaGeneratorFeature;
+    }
+
+    @Override
     public String getSchemaReferenceOpenApi() { return "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/featureCollectionGeoJSON"; }
 
+    @Override
     public Schema getSchemaOpenApi() {
         return GENERIC;
     }
 
+    @Override
     public String getSchemaReferenceOpenApi(String collectionId, SchemaGeneratorFeature.SCHEMA_TYPE type) { return "#/components/schemas/featureCollectionGeoJson_"+collectionId; }
 
+    @Override
     public Schema getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, SchemaGeneratorFeature.SCHEMA_TYPE type) {
         return new ObjectSchema()
                 .required(ImmutableList.of("type","features"))
@@ -47,8 +54,10 @@ public class SchemaGeneratorFeatureCollectionOpenApi {
                 .addProperties("numberReturned", new Schema().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/numberReturned"));
     }
 
+    @Override
     public String getSchemaReferenceByName(String name, SchemaGeneratorFeature.SCHEMA_TYPE type) { return "#/components/schemas/featureCollectionGeoJson_"+name; }
 
+    @Override
     public Schema getSchemaOpenApiForName(String name, SchemaGeneratorFeature.SCHEMA_TYPE type) {
         return new ObjectSchema()
                 .required(ImmutableList.of("type","features"))

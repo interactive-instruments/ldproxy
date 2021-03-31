@@ -39,15 +39,15 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 @Instantiate
 public class ResourcesOnLandingPage implements LandingPageExtension {
 
-    @Requires
-    I18n i18n;
-
+    private final I18n i18n;
     private final Path resourcesStore;
 
-    public ResourcesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) throws IOException {
+    public ResourcesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
+                                  @Requires I18n i18n) throws IOException {
         this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                    .resolve("resources");
         Files.createDirectories(resourcesStore);
+        this.i18n = i18n;
     }
 
     @Override

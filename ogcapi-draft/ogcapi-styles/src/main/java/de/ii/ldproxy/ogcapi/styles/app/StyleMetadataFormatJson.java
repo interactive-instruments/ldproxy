@@ -27,9 +27,6 @@ import javax.ws.rs.core.Response;
 @Instantiate
 public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
@@ -39,7 +36,7 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     private final Schema schemaStyleMetadata;
     public final static String SCHEMA_REF_STYLE_METADATA = "#/components/schemas/StyleMetadata";
 
-    public StyleMetadataFormatJson() {
+    public StyleMetadataFormatJson(@Requires SchemaGenerator schemaGenerator) {
         schemaStyleMetadata = schemaGenerator.getSchema(StyleMetadata.class);
     }
 

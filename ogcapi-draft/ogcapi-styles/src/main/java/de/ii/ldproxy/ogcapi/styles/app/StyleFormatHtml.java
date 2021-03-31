@@ -48,16 +48,6 @@ import java.util.stream.Collectors;
 @Instantiate
 public class StyleFormatHtml implements StyleFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
-    @Requires
-    private KeyValueStore keyValueStore;
-
-    @Requires
-    private XtraPlatform xtraPlatform;
-
-
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatHtml.class);
     public static final String MEDIA_TYPE_STRING = "application/vnd.mapbox.style+json" ;
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -67,10 +57,17 @@ public class StyleFormatHtml implements StyleFormatExtension {
             .build();
 
     private final Schema schemaStyle;
+    private final SchemaGenerator schemaGenerator;
+    private final KeyValueStore keyValueStore;
+    private final XtraPlatform xtraPlatform;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/htmlSchema";
 
-    public StyleFormatHtml() {
+    public StyleFormatHtml(@Requires SchemaGenerator schemaGenerator, @Requires KeyValueStore keyValueStore,
+                           @Requires XtraPlatform xtraPlatform) {
         schemaStyle = new StringSchema().example("<html>...</html>");
+        this.schemaGenerator = schemaGenerator;
+        this.keyValueStore = keyValueStore;
+        this.xtraPlatform = xtraPlatform;
     }
 
     @Override

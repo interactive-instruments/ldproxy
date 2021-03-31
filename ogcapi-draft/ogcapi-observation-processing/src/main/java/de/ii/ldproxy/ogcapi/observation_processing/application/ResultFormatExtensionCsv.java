@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
-@Provides(specifications = {ResultFormatExtensionCsv.class, DapaResultFormatExtension.class, FormatExtension.class, ApiExtension.class})
+@Provides
 @Instantiate
 public class ResultFormatExtensionCsv implements DapaResultFormatExtension {
 

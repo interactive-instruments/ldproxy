@@ -25,9 +25,6 @@ import javax.ws.rs.core.Response;
 @Instantiate
 public class ResourcesFormatJson implements ResourcesFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
@@ -37,7 +34,7 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
     private final Schema schemaResources;
     public final static String SCHEMA_REF_RESOURCES = "#/components/schemas/Resources";
 
-    public ResourcesFormatJson() {
+    public ResourcesFormatJson(@Requires SchemaGenerator schemaGenerator) {
         schemaResources = schemaGenerator.getSchema(Resources.class);
     }
 

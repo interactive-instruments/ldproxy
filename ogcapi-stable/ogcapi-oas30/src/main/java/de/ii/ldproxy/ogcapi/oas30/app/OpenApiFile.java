@@ -40,11 +40,14 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
             .type(MediaType.WILDCARD_TYPE)
             .build();
 
-    @Requires
-    private ExtendableOpenApiDefinition openApiDefinition;
+    private final ExtendableOpenApiDefinition openApiDefinition;
+    private final OpenApiViewerResource openApiViewerResource;
 
-    @Requires(optional = true)
-    private OpenApiViewerResource openApiViewerResource;
+    public OpenApiFile(@Requires ExtendableOpenApiDefinition openApiDefinition,
+                       @Requires(optional = true) OpenApiViewerResource openApiViewerResource) {
+        this.openApiDefinition = openApiDefinition;
+        this.openApiViewerResource = openApiViewerResource;
+    }
 
     @Override
     public ApiMediaType getMediaType() {

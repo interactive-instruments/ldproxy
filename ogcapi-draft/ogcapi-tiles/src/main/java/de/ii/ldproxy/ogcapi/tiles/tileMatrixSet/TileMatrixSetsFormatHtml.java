@@ -31,8 +31,11 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
             .parameter("html")
             .build();
 
-    @Requires
-    private I18n i18n;
+    private final I18n i18n;
+
+    public TileMatrixSetsFormatHtml(@Requires I18n i18n) {
+        this.i18n = i18n;
+    }
 
     @Override
     public ApiMediaType getMediaType() {

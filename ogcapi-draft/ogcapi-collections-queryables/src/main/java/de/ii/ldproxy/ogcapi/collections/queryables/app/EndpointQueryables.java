@@ -51,11 +51,12 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
 
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    @Requires
-    private QueryablesQueriesHandler queryHandler;
+    private final QueryablesQueriesHandler queryHandler;
 
-    public EndpointQueryables(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointQueryables(@Requires ExtensionRegistry extensionRegistry,
+                              @Requires QueryablesQueriesHandler queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     /* TODO wait for updates on Features Part n: Schemas
@@ -131,11 +132,11 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
                 .map(FoundationConfiguration::getIncludeLinkHeader)
                 .orElse(false);
 
-        QueryablesQueriesHandler.QueryInputQueryables queryInput = new ImmutableQueryInputQueryables.Builder()
+        QueryablesQueriesHandlerImpl.QueryInputQueryables queryInput = new ImmutableQueryInputQueryables.Builder()
                 .collectionId(collectionId)
                 .includeLinkHeader(includeLinkHeader)
                 .build();
 
-        return queryHandler.handle(QueryablesQueriesHandler.Query.QUERYABLES, queryInput, requestContext);
+        return queryHandler.handle(QueryablesQueriesHandlerImpl.Query.QUERYABLES, queryInput, requestContext);
     }
 }

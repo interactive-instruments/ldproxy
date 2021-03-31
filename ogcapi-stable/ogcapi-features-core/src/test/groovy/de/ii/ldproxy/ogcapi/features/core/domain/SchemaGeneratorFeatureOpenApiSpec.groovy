@@ -19,9 +19,7 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
     @Shared SchemaGeneratorFeatureOpenApi schemaGenerator
 
     def setupSpec() {
-        schemaGenerator = new SchemaGeneratorFeatureOpenApi()
-        schemaGenerator.schemaInfo = new SchemaInfo()
-        schemaGenerator.entityRegistry = new EntityRegistryImpl(null)
+        schemaGenerator = new SchemaGeneratorFeatureOpenApi(null, new EntityRegistryImpl(null), new SchemaInfoImpl())
     }
 
     def 'Test Open API schema generation for QUERYABLES type'() {

@@ -49,20 +49,21 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 @Instantiate
 public class EndpointResources extends Endpoint implements ConformanceClass {
 
-    @Requires
-    I18n i18n;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResources.class);
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
+    private final I18n i18n;
+
     private final java.nio.file.Path resourcesStore;
 
-    public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext, @Requires ExtensionRegistry extensionRegistry) throws IOException {
+    public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
+                             @Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) throws IOException {
         super(extensionRegistry);
         this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                    .resolve("resources");
         Files.createDirectories(resourcesStore);
+        this.i18n = i18n;
     }
 
     @Override

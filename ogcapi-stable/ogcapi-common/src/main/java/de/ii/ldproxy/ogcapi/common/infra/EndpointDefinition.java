@@ -10,7 +10,8 @@ package de.ii.ldproxy.ogcapi.common.infra;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableDefinition;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon.Query;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -38,11 +39,12 @@ public class EndpointDefinition extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDefinition.class);
 
-    @Requires
-    private QueriesHandlerCommon queryHandler;
+    private final QueriesHandlerCommon queryHandler;
 
-    public EndpointDefinition(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointDefinition(@Requires ExtensionRegistry extensionRegistry,
+                              @Requires QueriesHandlerCommon queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override
@@ -98,7 +100,7 @@ public class EndpointDefinition extends Endpoint {
     public Response getApiDefinition(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                      @Context ApiRequestContext ogcApiContext) {
 
-        QueriesHandlerCommon.Definition queryInput = new ImmutableDefinition.Builder()
+        QueriesHandlerCommonImpl.Definition queryInput = new ImmutableDefinition.Builder()
                 .build();
 
         return queryHandler.handle(Query.API_DEFINITION, queryInput, ogcApiContext);
@@ -109,7 +111,7 @@ public class EndpointDefinition extends Endpoint {
     public Response getApiDefinition(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                      @Context ApiRequestContext ogcApiContext, @PathParam("file") Optional<String> file) {
 
-        QueriesHandlerCommon.Definition queryInputApiDefinition = new ImmutableDefinition.Builder()
+        QueriesHandlerCommonImpl.Definition queryInputApiDefinition = new ImmutableDefinition.Builder()
                 .subPath(file)
                 .build();
 
