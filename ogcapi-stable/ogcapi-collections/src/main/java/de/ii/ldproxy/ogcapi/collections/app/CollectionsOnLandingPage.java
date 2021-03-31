@@ -32,15 +32,11 @@ import java.util.stream.Collectors;
 public class CollectionsOnLandingPage implements LandingPageExtension {
 
     private final I18n i18n;
-
-    public CollectionsOnLandingPage(@Requires I18n i18n) {
-        this.i18n = i18n;
-    }
-
     private final ExtensionRegistry extensionRegistry;
 
-    public CollectionsOnLandingPage(@Requires ExtensionRegistry extensionRegistry) {
+    public CollectionsOnLandingPage(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
         this.extensionRegistry = extensionRegistry;
+        this.i18n = i18n;
     }
 
     @Override
