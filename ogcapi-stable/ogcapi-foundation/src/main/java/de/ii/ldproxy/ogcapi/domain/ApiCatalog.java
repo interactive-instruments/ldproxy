@@ -15,6 +15,7 @@ import org.immutables.value.Value;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableApiCatalog.Builder.class)
@@ -28,7 +29,7 @@ public abstract class ApiCatalog extends PageRepresentation {
     public abstract String getUrlPrefix();
 
     @JsonIgnore
-    public abstract String getGoogleSiteVerification();
+    public abstract Optional<String> getGoogleSiteVerification();
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
