@@ -32,7 +32,7 @@ public class ServiceOverviewView extends OgcApiView {
     public String tagsTitle;
     public String canonicalUrl;
     public List<ApiCatalogEntry> data;
-    public String googleSiteVerification;
+    public Optional<String> googleSiteVerification;
 
     public ServiceOverviewView(URI uri, ApiCatalog apiCatalog, HtmlConfiguration htmlConfig, I18n i18n, Optional<Locale> language) {
         super("services.mustache", Charsets.UTF_8, null, new ImmutableList.Builder<NavigationDTO>()
