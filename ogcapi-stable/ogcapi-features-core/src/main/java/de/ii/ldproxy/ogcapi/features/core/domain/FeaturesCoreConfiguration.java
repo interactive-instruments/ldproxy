@@ -95,39 +95,39 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     default Map<String, String> getAllFilterParameters() {
         if (getQueryables().isPresent()) {
             FeaturesCollectionQueryables queryables = getQueryables().get();
-            ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
+            Map<String, String> parameters = new LinkedHashMap<>();
 
             if (!queryables.getSpatial()
                            .isEmpty()) {
-                builder.put(PARAMETER_BBOX, queryables.getSpatial()
+                parameters.put(PARAMETER_BBOX, queryables.getSpatial()
                                                       .get(0));
             } else {
-                builder.put(PARAMETER_BBOX, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
+                parameters.put(PARAMETER_BBOX, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
             }
 
             if (queryables.getTemporal()
                           .size() > 1) {
-                builder.put(PARAMETER_DATETIME, String.format("%s%s%s", queryables.getTemporal()
+                parameters.put(PARAMETER_DATETIME, String.format("%s%s%s", queryables.getTemporal()
                                                                                   .get(0), DATETIME_INTERVAL_SEPARATOR, queryables.getTemporal()
                                                                                                                                   .get(1)));
             } else if (!queryables.getTemporal()
                                   .isEmpty()) {
-                builder.put(PARAMETER_DATETIME, queryables.getTemporal()
+                parameters.put(PARAMETER_DATETIME, queryables.getTemporal()
                                                           .get(0));
             } else {
-                builder.put(PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
+                parameters.put(PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
             }
 
             queryables.getSpatial()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
             queryables.getTemporal()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
             queryables.getQ()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
             queryables.getOther()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
 
-            return builder.build();
+            return parameters;
         }
 
         return ImmutableMap.of(
@@ -142,14 +142,14 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     default Map<String, String> getOtherFilterParameters() {
         if (getQueryables().isPresent()) {
             FeaturesCollectionQueryables queryables = getQueryables().get();
-            ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
+            Map<String, String> parameters = new LinkedHashMap<>();
 
             queryables.getQ()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
             queryables.getOther()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
 
-            return builder.build();
+            return parameters;
         }
 
         return ImmutableMap.of();
