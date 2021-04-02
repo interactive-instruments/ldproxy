@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.filter.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.queryables.domain.QueryablesConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
@@ -32,7 +33,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterFilter implements OgcApiQueryParameter, ConformanceClass {
+public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
 
     @Override
     public String getName() {
@@ -73,10 +74,11 @@ public class QueryParameterFilter implements OgcApiQueryParameter, ConformanceCl
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+                    definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
     private final Schema schema = new StringSchema();

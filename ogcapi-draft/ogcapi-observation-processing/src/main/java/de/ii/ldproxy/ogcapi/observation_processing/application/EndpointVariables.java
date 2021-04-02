@@ -72,47 +72,40 @@ public class EndpointVariables extends EndpointSubCollection {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("collections")
+                .sortPriority(10010);
+        final String subSubPath = "/variables";
+        final String path = "/collections/{collectionId}" + subSubPath;
+        final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+        if (!optCollectionIdParam.isPresent()) {
+            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
+        } else {
+            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+            boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final List<String> collectionIds = (explode) ?
+                    collectionIdParam.getValues(apiData) :
+                    ImmutableList.of("{collectionId}");
+            collectionIds.stream()
+                    .forEach(collectionId -> {
+                        String operationSummary = "fetch the observable properties included in this observation collection";
+                        Optional<String> operationDescription = Optional.empty();
+                        String resourcePath = "/collections/" + collectionId + subSubPath;
+                        ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
+                                .path(resourcePath)
+                                .pathParameters(pathParameters);
+                        ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                        if (operation!=null)
+                            resourceBuilder.putOperations("GET", operation);
+                        definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+                    });
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("collections")
-                    .sortPriority(10010);
-            final String subSubPath = "/variables";
-            final String path = "/collections/{collectionId}" + subSubPath;
-            final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-            if (!optCollectionIdParam.isPresent()) {
-                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
-            } else {
-                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                final List<String> collectionIds = (explode) ?
-                        collectionIdParam.getValues(apiData) :
-                        ImmutableList.of("{collectionId}");
-                collectionIds.stream()
-                        .forEach(collectionId -> {
-                            String operationSummary = "fetch the observable properties included in this observation collection";
-                            Optional<String> operationDescription = Optional.empty();
-                            String resourcePath = "/collections/" + collectionId + subSubPath;
-                            ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
-                                    .path(resourcePath)
-                                    .pathParameters(pathParameters);
-                            ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                            if (operation!=null)
-                                resourceBuilder.putOperations("GET", operation);
-                            definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                        });
-
-            }
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     @GET

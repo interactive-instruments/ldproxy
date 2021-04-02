@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterVariables implements OgcApiQueryParameter {
+public class QueryParameterVariables extends ApiExtensionCache implements OgcApiQueryParameter {
 
     final FeatureProcessInfo featureProcessInfo;
 
@@ -55,9 +55,10 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position", "area", "grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position", "area", "grid"));
     }
 
     private List<String> getValues(OgcApiDataV2 apiData, String collectionId) {
@@ -89,7 +90,7 @@ public class QueryParameterVariables implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

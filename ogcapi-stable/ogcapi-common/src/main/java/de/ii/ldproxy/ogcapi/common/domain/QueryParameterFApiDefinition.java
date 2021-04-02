@@ -28,9 +28,8 @@ public class QueryParameterFApiDefinition extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                definitionPath.matches("^/api/?$");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.matches("^/api/?$");
     }
 
     @Override

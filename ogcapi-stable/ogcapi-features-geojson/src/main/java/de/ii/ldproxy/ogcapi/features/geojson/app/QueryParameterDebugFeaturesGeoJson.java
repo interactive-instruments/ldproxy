@@ -7,30 +7,30 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.xtraplatform.runtime.domain.Constants;
+import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.osgi.framework.BundleContext;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
 @Instantiate
-public class QueryParameterDebugFeaturesGeoJson implements OgcApiQueryParameter {
+public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final Schema schema = new BooleanSchema()._default(false);
     private final boolean allowDebug;
 
-    public QueryParameterDebugFeaturesGeoJson(@Context BundleContext context) {
-        this.allowDebug = Constants.ENV.valueOf(context.getProperty(Constants.ENV_KEY)) == Constants.ENV.DEVELOPMENT;
+    public QueryParameterDebugFeaturesGeoJson(@Requires XtraPlatform xtraPlatform) {
+        this.allowDebug = xtraPlatform.isDevEnv();
     }
 
     @Override
@@ -45,10 +45,11 @@ public class QueryParameterDebugFeaturesGeoJson implements OgcApiQueryParameter 
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
+                 definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
     }
 
     @Override
@@ -58,12 +59,12 @@ public class QueryParameterDebugFeaturesGeoJson implements OgcApiQueryParameter 
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, GeoJsonConfiguration.class) && allowDebug;
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) && allowDebug;
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), GeoJsonConfiguration.class) && allowDebug;
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData, collectionId) && allowDebug;
     }
 
     @Override

@@ -21,8 +21,9 @@ public class QueryParameterDatetime extends AbstractQueryParameterDatetime {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items");
+                definitionPath.equals("/collections/{collectionId}/items"));
     }
 }

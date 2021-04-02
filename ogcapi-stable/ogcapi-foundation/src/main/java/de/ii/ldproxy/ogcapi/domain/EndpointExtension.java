@@ -23,11 +23,13 @@ import static de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition.SORT_PRIORITY_DU
 
 public interface EndpointExtension extends ApiExtension {
 
+    ApiEndpointDefinition DEFAULT_DEFINITION = new ImmutableApiEndpointDefinition.Builder()
+        .apiEntrypoint("")
+        .sortPriority(SORT_PRIORITY_DUMMY)
+        .build();
+
     default ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        return new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("")
-                .sortPriority(SORT_PRIORITY_DUMMY)
-                .build();
+        return DEFAULT_DEFINITION;
     }
 
     default ImmutableSet<ApiMediaType> getMediaTypes(OgcApiDataV2 apiData, String requestSubPath) {

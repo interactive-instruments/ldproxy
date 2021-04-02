@@ -36,12 +36,15 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
 @Instantiate
 public class CapabilityVectorTiles implements ApiBuildingBlock {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CapabilityVectorTiles.class);
     private static final int LIMIT_DEFAULT = 100000;
     private static final int MAX_POLYGON_PER_TILE_DEFAULT = 10000;
     private static final int MAX_LINE_STRING_PER_TILE_DEFAULT = 10000;
@@ -119,15 +122,20 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
 
     @Override
     public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        LOGGER.debug("Starting validation for TILES");
         // since building block / capability components are currently always enabled,
         // we need to test, if the TILES module is enabled for the API and stop, if not
         if (!apiData.getExtension(TilesConfiguration.class)
                     .map(cfg -> cfg.getEnabled())
-                    .orElse(false))
+                    .orElse(false)) {
+            LOGGER.debug("Finished validation for TILES");
             return ValidationResult.of();
+        }
 
-        if (apiValidation== MODE.NONE)
+        if (apiValidation== MODE.NONE) {
+            LOGGER.debug("Finished validation for TILES");
             return ValidationResult.of();
+        }
 
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
@@ -291,6 +299,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                 }
             }
         }
+        LOGGER.debug("Finished validation for TILES");
 
         return builder.build();
     }

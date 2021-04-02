@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class QueryParameterProfile implements OgcApiQueryParameter {
+public abstract class QueryParameterProfile extends ApiExtensionCache implements OgcApiQueryParameter {
 
     protected final ExtensionRegistry extensionRegistry;
 
@@ -37,10 +38,12 @@ public abstract class QueryParameterProfile implements OgcApiQueryParameter {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
-                method== HttpMethods.GET;
+    public final boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) && method == HttpMethods.GET && isApplicable(apiData, definitionPath));
     }
+
+    protected abstract boolean isApplicable(OgcApiDataV2 apiData, String definitionPath);
 
     protected abstract List<String> getProfiles(OgcApiDataV2 apiData);
     protected List<String> getProfiles(OgcApiDataV2 apiData, String collectionId) {

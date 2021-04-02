@@ -44,9 +44,8 @@ public class QueryParameterFProcessesResampleToGrid extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
     }
 
     @Override
@@ -56,17 +55,12 @@ public class QueryParameterFProcessesResampleToGrid extends QueryParameterF {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()
                         .filter(FeatureTypeConfigurationOgcApi::getEnabled)
                         .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
-}
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), ObservationProcessingConfiguration.class);
     }
 
     @Override

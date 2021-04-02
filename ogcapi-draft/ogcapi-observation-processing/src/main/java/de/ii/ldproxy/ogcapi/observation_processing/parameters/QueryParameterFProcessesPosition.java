@@ -44,9 +44,8 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position");
     }
 
     @Override
@@ -56,7 +55,7 @@ public class QueryParameterFProcessesPosition extends QueryParameterF {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

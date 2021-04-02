@@ -113,48 +113,44 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("collections")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_JSONLD_CONTEXT);
-            String subSubPath = "/context";
-            String path = "/collections/{collectionId}" + subSubPath;
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-            if (!optCollectionIdParam.isPresent()) {
-                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
-            } else {
-                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                final List<String> collectionIds = (explode) ?
-                        collectionIdParam.getValues(apiData) :
-                        ImmutableList.of("{collectionId}");
-                for (String collectionId : collectionIds) {
-                    if (explode && !apiData.getCollections()
-                                           .get(collectionId)
-                                           .getExtension(GeoJsonLdConfiguration.class)
-                                           .map(cfg -> cfg.getEnabled())
-                                           .orElse(false))
-                        // skip, if disabled for the collection
-                        continue;
-                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
-                    final String operationSummary = "retrieve the JSON-LD context for the feature collection '" + collectionId + "'";
-                    Optional<String> operationDescription = Optional.empty();
-                    String resourcePath = "/collections/" + collectionId + subSubPath;
-                    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                            .path(resourcePath)
-                            .pathParameters(pathParameters);
-                    ApiOperation operation = addOperation(apiData, queryParameters, resourcePath, operationSummary, operationDescription, TAGS);
-                    if (operation!=null)
-                        resourceBuilder.putOperations("GET", operation);
-                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                }
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("collections")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_JSONLD_CONTEXT);
+        String subSubPath = "/context";
+        String path = "/collections/{collectionId}" + subSubPath;
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+        if (!optCollectionIdParam.isPresent()) {
+            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
+        } else {
+            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final List<String> collectionIds = (explode) ?
+                    collectionIdParam.getValues(apiData) :
+                    ImmutableList.of("{collectionId}");
+            for (String collectionId : collectionIds) {
+                if (explode && !apiData.getCollections()
+                                       .get(collectionId)
+                                       .getExtension(GeoJsonLdConfiguration.class)
+                                       .map(cfg -> cfg.getEnabled())
+                                       .orElse(false))
+                    // skip, if disabled for the collection
+                    continue;
+                final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
+                final String operationSummary = "retrieve the JSON-LD context for the feature collection '" + collectionId + "'";
+                Optional<String> operationDescription = Optional.empty();
+                String resourcePath = "/collections/" + collectionId + subSubPath;
+                ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                        .path(resourcePath)
+                        .pathParameters(pathParameters);
+                ApiOperation operation = addOperation(apiData, queryParameters, resourcePath, operationSummary, operationDescription, TAGS);
+                if (operation!=null)
+                    resourceBuilder.putOperations("GET", operation);
+                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 }

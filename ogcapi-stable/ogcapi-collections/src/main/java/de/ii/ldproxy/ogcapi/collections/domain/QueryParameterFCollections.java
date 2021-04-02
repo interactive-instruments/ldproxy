@@ -33,9 +33,8 @@ public class QueryParameterFCollections extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                definitionPath.matches("^/collections(?:/\\{collectionId\\})?/?$");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.matches("^/collections(?:/\\{collectionId\\})?/?$");
     }
 
     @Override

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +41,7 @@ public abstract class Endpoint implements EndpointExtension {
     );
 
     protected final ExtensionRegistry extensionRegistry;
-    protected Map<Integer, ApiEndpointDefinition> apiDefinitions;
+    private final Map<Integer, ApiEndpointDefinition> apiDefinitions;
     protected List<? extends FormatExtension> formats;
 
     /**
@@ -54,6 +56,7 @@ public abstract class Endpoint implements EndpointExtension {
 
     @Override
     public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        LOGGER.debug("Starting validation for ENDPOINT {} {}", this.getClass(), apiData.hashCode());
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
@@ -72,8 +75,21 @@ public abstract class Endpoint implements EndpointExtension {
             builder.addErrors(message);
         }
 
+        LOGGER.debug("Finished validation for ENDPOINT {}", this.getClass());
+
         return builder.build();
     }
+
+    @Override
+    public final ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
+        if (!isEnabledForApi(apiData)) {
+            return EndpointExtension.super.getDefinition(apiData);
+        }
+
+        return apiDefinitions.computeIfAbsent(apiData.hashCode(), ignore -> computeDefinition(apiData));
+    }
+
+    protected abstract ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData);
 
     /**
      *

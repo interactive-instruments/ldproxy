@@ -143,115 +143,107 @@ public class EndpointStyleMetadataManager extends Endpoint {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("styles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_MANAGER);
+        String path = "/styles/{styleId}/metadata";
+        HttpMethods method = HttpMethods.PUT;
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+        String operationSummary = "update the metadata document of a style";
+        Optional<String> operationDescription = Optional.of("Update the style metadata for the style with the id `styleId`. " +
+                "This operation updates the complete metadata document.");
+        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                .path(path)
+                .pathParameters(pathParameters);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
+        ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations(method.name(), operation);
+        method = HttpMethods.PATCH;
+        queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+        operationSummary = "update parts of the style metadata";
+        operationDescription = Optional.of("Update selected elements of the style metadata for " +
+                "the style with the id `styleId`.\n" +
+                "The PATCH semantics in this operation are defined by " +
+                "RFC 7396 (JSON Merge Patch). From the specification:\n" +
+                "\n" +
+                "_'A JSON merge patch document describes changes to be " +
+                "made to a target JSON document using a syntax that " +
+                "closely mimics the document being modified. Recipients " +
+                "of a merge patch document determine the exact set of " +
+                "changes being requested by comparing the content of " +
+                "the provided patch against the current content of the " +
+                "target document. If the provided merge patch contains " +
+                "members that do not appear within the target, those " +
+                "members are added. If the target does contain the " +
+                "member, the value is replaced. Null values in the " +
+                "merge patch are given special meaning to indicate " +
+                "the removal of existing values in the target.'_\n" +
+                "\n" +
+                "Some examples:\n" +
+                "\n" +
+                "To add or update the point of contact, the access" +
+                "constraint and the revision date, just send\n" +
+                "\n" +
+                "```\n" +
+                "{\n" +
+                "  \"pointOfContact\": \"Jane Doe\",\n" +
+                "  \"accessConstraints\": \"restricted\",\n" +
+                "  \"dates\": {\n" +
+                "    \"revision\": \"2019-05-17T11:46:12Z\"\n" +
+                "  }\n" +
+                "}\n" +
+                "```\n" +
+                "\n" +
+                "To remove the point of contact, the access " +
+                "constraint and the revision date, send \n" +
+                "\n" +
+                "```\n" +
+                "{\n" +
+                "  \"pointOfContact\": null,\n" +
+                "  \"accessConstraints\": null,\n" +
+                "  \"dates\": {\n" +
+                "    \"revision\": null\n" +
+                "  }\n" +
+                "}\n" +
+                "```\n" +
+                "\n" +
+                "For arrays the complete array needs to be sent. " +
+                "To add a keyword to the example style metadata object, send\n" +
+                "\n" +
+                "```\n" +
+                "{\n" +
+                "  \"keywords\": [ \"basemap\", \"TDS\", \"TDS 6.1\", \"OGC API\", \"new keyword\" ]\n" +
+                "}\n" +
+                "```\n" +
+                "\n" +
+                "To remove the \"TDS\" keyword, send\n" +
+                "\n" +
+                "```\n" +
+                "{\n" +
+                "  \"keywords\": [ \"basemap\", \"TDS 6.1\", \"OGC API\", \"new keyword\" ]\n" +
+                "}\n" +
+                "```\n" +
+                "\n" +
+                "To remove the keywords, send\n" +
+                "\n" +
+                "```\n" +
+                "{\n" +
+                "  \"keywords\": null\n" +
+                "}\n" +
+                "```\n" +
+                "\n" +
+                "The same applies to `stylesheets` and `layers`. To update " +
+                "these members, you have to send the complete new array value.");
+        requestContent = getRequestContent(apiData, path, method);
+        operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations(method.name(), operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("styles")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_MANAGER);
-            String path = "/styles/{styleId}/metadata";
-            HttpMethods method = HttpMethods.PUT;
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-            String operationSummary = "update the metadata document of a style";
-            Optional<String> operationDescription = Optional.of("Update the style metadata for the style with the id `styleId`. " +
-                    "This operation updates the complete metadata document.");
-            ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
-            ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations(method.name(), operation);
-            method = HttpMethods.PATCH;
-            queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-            operationSummary = "update parts of the style metadata";
-            operationDescription = Optional.of("Update selected elements of the style metadata for " +
-                    "the style with the id `styleId`.\n" +
-                    "The PATCH semantics in this operation are defined by " +
-                    "RFC 7396 (JSON Merge Patch). From the specification:\n" +
-                    "\n" +
-                    "_'A JSON merge patch document describes changes to be " +
-                    "made to a target JSON document using a syntax that " +
-                    "closely mimics the document being modified. Recipients " +
-                    "of a merge patch document determine the exact set of " +
-                    "changes being requested by comparing the content of " +
-                    "the provided patch against the current content of the " +
-                    "target document. If the provided merge patch contains " +
-                    "members that do not appear within the target, those " +
-                    "members are added. If the target does contain the " +
-                    "member, the value is replaced. Null values in the " +
-                    "merge patch are given special meaning to indicate " +
-                    "the removal of existing values in the target.'_\n" +
-                    "\n" +
-                    "Some examples:\n" +
-                    "\n" +
-                    "To add or update the point of contact, the access" +
-                    "constraint and the revision date, just send\n" +
-                    "\n" +
-                    "```\n" +
-                    "{\n" +
-                    "  \"pointOfContact\": \"Jane Doe\",\n" +
-                    "  \"accessConstraints\": \"restricted\",\n" +
-                    "  \"dates\": {\n" +
-                    "    \"revision\": \"2019-05-17T11:46:12Z\"\n" +
-                    "  }\n" +
-                    "}\n" +
-                    "```\n" +
-                    "\n" +
-                    "To remove the point of contact, the access " +
-                    "constraint and the revision date, send \n" +
-                    "\n" +
-                    "```\n" +
-                    "{\n" +
-                    "  \"pointOfContact\": null,\n" +
-                    "  \"accessConstraints\": null,\n" +
-                    "  \"dates\": {\n" +
-                    "    \"revision\": null\n" +
-                    "  }\n" +
-                    "}\n" +
-                    "```\n" +
-                    "\n" +
-                    "For arrays the complete array needs to be sent. " +
-                    "To add a keyword to the example style metadata object, send\n" +
-                    "\n" +
-                    "```\n" +
-                    "{\n" +
-                    "  \"keywords\": [ \"basemap\", \"TDS\", \"TDS 6.1\", \"OGC API\", \"new keyword\" ]\n" +
-                    "}\n" +
-                    "```\n" +
-                    "\n" +
-                    "To remove the \"TDS\" keyword, send\n" +
-                    "\n" +
-                    "```\n" +
-                    "{\n" +
-                    "  \"keywords\": [ \"basemap\", \"TDS 6.1\", \"OGC API\", \"new keyword\" ]\n" +
-                    "}\n" +
-                    "```\n" +
-                    "\n" +
-                    "To remove the keywords, send\n" +
-                    "\n" +
-                    "```\n" +
-                    "{\n" +
-                    "  \"keywords\": null\n" +
-                    "}\n" +
-                    "```\n" +
-                    "\n" +
-                    "The same applies to `stylesheets` and `layers`. To update " +
-                    "these members, you have to send the complete new array value.");
-            requestContent = getRequestContent(apiData, path, method);
-            operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations(method.name(), operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

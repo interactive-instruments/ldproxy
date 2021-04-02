@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
@@ -40,7 +41,7 @@ import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParame
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParameter {
+public class QueryParameterCoordRefResampleToGrid extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QueryParameterCoordRefResampleToGrid.class);
 
@@ -63,9 +64,10 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid"));
     }
 
     @Override
@@ -85,7 +87,7 @@ public class QueryParameterCoordRefResampleToGrid implements OgcApiQueryParamete
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

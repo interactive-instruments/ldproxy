@@ -21,7 +21,7 @@ import java.util.Map;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryParameter {
+public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
     @Override
     public String getName() {
@@ -36,10 +36,11 @@ public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryPara
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
+                 definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
     }
 
     private final Schema schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);

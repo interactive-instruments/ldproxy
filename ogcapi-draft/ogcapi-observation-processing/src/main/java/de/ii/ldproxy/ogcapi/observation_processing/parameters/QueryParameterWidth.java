@@ -25,7 +25,7 @@ import java.util.OptionalInt;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterWidth implements OgcApiQueryParameter {
+public class QueryParameterWidth extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final Schema baseSchema;
     final FeatureProcessInfo featureProcessInfo;
@@ -47,9 +47,10 @@ public class QueryParameterWidth implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid"));
     }
 
     @Override

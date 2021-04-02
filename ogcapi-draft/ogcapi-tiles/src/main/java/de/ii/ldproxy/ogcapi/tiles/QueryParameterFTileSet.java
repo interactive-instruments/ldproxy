@@ -29,9 +29,8 @@ public class QueryParameterFTileSet extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-               definitionPath.endsWith("/tiles/{tileMatrixSetId}");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.endsWith("/tiles/{tileMatrixSetId}");
     }
 
     @Override

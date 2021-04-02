@@ -75,33 +75,25 @@ public class EndpointTileSetMultiCollection extends Endpoint {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("tiles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SET);
+        String path = "/tiles/{tileMatrixSetId}";
+        HttpMethods method = HttpMethods.GET;
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        String operationSummary = "retrieve information about a tile set";
+        Optional<String> operationDescription = Optional.of("This operation fetches information about a tile set.");
+        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilderSet = new ImmutableOgcApiResourceAuxiliary.Builder()
+                .path(path)
+                .pathParameters(pathParameters);
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilderSet.putOperations(method.name(), operation);
+        definitionBuilder.putResources(path, resourceBuilderSet.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("tiles")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SET);
-            String path = "/tiles/{tileMatrixSetId}";
-            HttpMethods method = HttpMethods.GET;
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            String operationSummary = "retrieve information about a tile set";
-            Optional<String> operationDescription = Optional.of("This operation fetches information about a tile set.");
-            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilderSet = new ImmutableOgcApiResourceAuxiliary.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilderSet.putOperations(method.name(), operation);
-            definitionBuilder.putResources(path, resourceBuilderSet.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

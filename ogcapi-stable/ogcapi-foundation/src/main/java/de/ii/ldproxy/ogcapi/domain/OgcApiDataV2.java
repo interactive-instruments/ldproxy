@@ -301,4 +301,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
             .from(collectionExtent.get())
             .build());
     }
+
+    public <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz, String collectionId) {
+        if (isCollectionEnabled(collectionId)) {
+            return getCollections().get(collectionId).getExtension(clazz);
+        }
+        return getExtension(clazz);
+    }
 }

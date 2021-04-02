@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterLang implements OgcApiQueryParameter {
+public class QueryParameterLang extends ApiExtensionCache implements OgcApiQueryParameter {
 
     @Requires
     ExtensionRegistry extensionRegistry;
@@ -39,8 +39,9 @@ public class QueryParameterLang implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
-                method== HttpMethods.GET;
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
+                method== HttpMethods.GET);
     }
 
     private Schema schema = null;
@@ -55,13 +56,11 @@ public class QueryParameterLang implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getUseLangParameter)
-                .orElse(false);
+        return isExtensionEnabled(apiData, FoundationConfiguration.class, FoundationConfiguration::getUseLangParameter);
     }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CommonConfiguration.class;
+        return FoundationConfiguration.class;
     }
 }

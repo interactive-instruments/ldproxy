@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
@@ -23,7 +24,7 @@ import java.math.BigDecimal;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterOffsetFeatures implements OgcApiQueryParameter {
+public class QueryParameterOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
     @Override
     public String getId() {
@@ -43,9 +44,10 @@ public class QueryParameterOffsetFeatures implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items");
+                definitionPath.equals("/collections/{collectionId}/items"));
     }
 
     private Schema schema = null;

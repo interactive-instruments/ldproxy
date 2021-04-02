@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.collections.domain;
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
@@ -17,7 +18,7 @@ import org.immutables.value.Value;
 import java.util.Set;
 
 @Value.Immutable
-public abstract class QueryParameterTemplateQueryable implements OgcApiQueryParameter {
+public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache implements OgcApiQueryParameter {
 
     public abstract String getApiId();
     public abstract String getCollectionId();
@@ -39,15 +40,17 @@ public abstract class QueryParameterTemplateQueryable implements OgcApiQueryPara
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-        return apiData.getId().equals(getApiId()) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + collectionId + method.name(), () ->
+            apiData.getId().equals(getApiId()) &&
                 method== HttpMethods.GET &&
                 definitionPath.equals("/collections/{collectionId}") &&
-                collectionId.equals(getCollectionId());
+                collectionId.equals(getCollectionId()));
     }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return false;
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            false);
     }
 
     @Override

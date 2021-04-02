@@ -94,31 +94,24 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_LANDING_PAGE);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/");
+        String operationSummary = "landing page";
+        Optional<String> operationDescription = Optional.of("The landing page provides links to the API definition " +
+                "(link relations `service-desc` and `service-doc`), the Conformance declaration (path `/conformance`, " +
+                "link relation `conformance`), and other resources in the API.");
+        String path = "/";
+        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                .path(path);
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations("GET", operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_LANDING_PAGE);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/");
-            String operationSummary = "landing page";
-            Optional<String> operationDescription = Optional.of("The landing page provides links to the API definition " +
-                    "(link relations `service-desc` and `service-doc`), the Conformance declaration (path `/conformance`, " +
-                    "link relation `conformance`), and other resources in the API.");
-            String path = "/";
-            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                    .path(path);
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("GET", operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     @GET

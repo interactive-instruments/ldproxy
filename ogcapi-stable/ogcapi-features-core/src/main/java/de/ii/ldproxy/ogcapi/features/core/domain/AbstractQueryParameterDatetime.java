@@ -7,13 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 
-public abstract class AbstractQueryParameterDatetime implements OgcApiQueryParameter {
+public abstract class AbstractQueryParameterDatetime extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private static final String OPEN_REGEX = "(?:\\.\\.)?";
     private static final String LOCAL_DATE_REGEX = "(?:\\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])";

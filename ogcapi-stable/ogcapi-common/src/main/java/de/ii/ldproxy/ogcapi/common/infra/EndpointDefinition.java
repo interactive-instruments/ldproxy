@@ -58,39 +58,31 @@ public class EndpointDefinition extends Endpoint {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("api")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_API_DEFINITION);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/api");
+        String operationSummary = "API definition";
+        String path = "/api";
+        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                .path(path);
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, Optional.empty(), ImmutableList.of());
+        if (operation!=null)
+            resourceBuilder.putOperations("GET", operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
+        operationSummary = "support files for the API definition in HTML";
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, "/api/{resource}");
+        path = "/api/{resource}";
+        resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                .path(path)
+                .pathParameters(pathParameters);
+        operation = addOperation(apiData, queryParameters, path, operationSummary, Optional.empty(), ImmutableList.of());
+        if (operation!=null)
+            resourceBuilder.putOperations("GET", operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("api")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_API_DEFINITION);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/api");
-            String operationSummary = "API definition";
-            String path = "/api";
-            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                    .path(path);
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, Optional.empty(), ImmutableList.of());
-            if (operation!=null)
-                resourceBuilder.putOperations("GET", operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-            operationSummary = "support files for the API definition in HTML";
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, "/api/{resource}");
-            path = "/api/{resource}";
-            resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            operation = addOperation(apiData, queryParameters, path, operationSummary, Optional.empty(), ImmutableList.of());
-            if (operation!=null)
-                resourceBuilder.putOperations("GET", operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     @GET

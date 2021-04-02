@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterBboxArea implements OgcApiQueryParameter {
+public class QueryParameterBboxArea extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final Schema baseSchema;
     private final GeometryHelperWKT geometryHelper;
@@ -73,9 +73,10 @@ public class QueryParameterBboxArea implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                method== HttpMethods.GET &&
-               featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area");
+               featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area"));
     }
 
     @Override
@@ -102,7 +103,7 @@ public class QueryParameterBboxArea implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

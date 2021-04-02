@@ -100,42 +100,38 @@ public class EndpointManageStyleInfo extends EndpointSubCollection implements Co
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("collections")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_INFO);
-            String path = "/collections/{collectionId}";
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-            if (!optCollectionIdParam.isPresent()) {
-                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
-            } else {
-                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                final List<String> collectionIds = (explode) ?
-                        collectionIdParam.getValues(apiData) :
-                        ImmutableList.of("{collectionId}");
-                for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH);
-                    final String operationSummary = "update the information about available styles for the feature collection '" + collectionId + "'";
-                    Optional<String> operationDescription = Optional.of("The content of the request may include an updated list of styles and/or an update to the default style.");
-                    String resourcePath = "/collections/" + collectionId;
-                    ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                            .path(resourcePath)
-                            .pathParameters(pathParameters);
-                    // TODO secure the PATCH operation and remove hide=true
-                    ApiOperation operation = addOperation(apiData, HttpMethods.PATCH, queryParameters, collectionId, "", operationSummary, operationDescription, TAGS, true);
-                    if (operation!=null)
-                        resourceBuilder.putOperations("PATCH", operation);
-                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                }
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("collections")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_INFO);
+        String path = "/collections/{collectionId}";
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+        if (!optCollectionIdParam.isPresent()) {
+            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
+        } else {
+            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final List<String> collectionIds = (explode) ?
+                    collectionIdParam.getValues(apiData) :
+                    ImmutableList.of("{collectionId}");
+            for (String collectionId : collectionIds) {
+                final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH);
+                final String operationSummary = "update the information about available styles for the feature collection '" + collectionId + "'";
+                Optional<String> operationDescription = Optional.of("The content of the request may include an updated list of styles and/or an update to the default style.");
+                String resourcePath = "/collections/" + collectionId;
+                ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                        .path(resourcePath)
+                        .pathParameters(pathParameters);
+                // TODO secure the PATCH operation and remove hide=true
+                ApiOperation operation = addOperation(apiData, HttpMethods.PATCH, queryParameters, collectionId, "", operationSummary, operationDescription, TAGS, true);
+                if (operation!=null)
+                    resourceBuilder.putOperations("PATCH", operation);
+                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

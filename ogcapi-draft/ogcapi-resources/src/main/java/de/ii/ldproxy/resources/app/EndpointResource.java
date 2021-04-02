@@ -100,37 +100,29 @@ public class EndpointResource extends Endpoint {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
-
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("resources")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCE);
-            String path = "/resources/{resourceId}";
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            if (!pathParameters.stream().filter(param -> param.getName().equals("resourceId")).findAny().isPresent()) {
-                LOGGER.error("Path parameter 'resourceId' missing for resource at path '" + path + "'. The GET method will not be available.");
-            } else {
-                String operationSummary = "fetch the file resource `{resourceId}`";
-                Optional<String> operationDescription = Optional.of("Fetches the file resource with identifier `resourceId`. The set of " +
-                        "available resources can be retrieved at `/resources`.");
-                ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                        .path(path)
-                        .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations("GET", operation);
-                definitionBuilder.putResources(path, resourceBuilder.build());
-            }
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("resources")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCE);
+        String path = "/resources/{resourceId}";
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        if (!pathParameters.stream().filter(param -> param.getName().equals("resourceId")).findAny().isPresent()) {
+            LOGGER.error("Path parameter 'resourceId' missing for resource at path '" + path + "'. The GET method will not be available.");
+        } else {
+            String operationSummary = "fetch the file resource `{resourceId}`";
+            Optional<String> operationDescription = Optional.of("Fetches the file resource with identifier `resourceId`. The set of " +
+                    "available resources can be retrieved at `/resources`.");
+            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                    .path(path)
+                    .pathParameters(pathParameters);
+            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+            if (operation!=null)
+                resourceBuilder.putOperations("GET", operation);
+            definitionBuilder.putResources(path, resourceBuilder.build());
         }
 
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

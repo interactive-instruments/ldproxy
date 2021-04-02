@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.observation_processing.api.DapaResultFormatExtension;
 import de.ii.ldproxy.ogcapi.observation_processing.api.ObservationProcess;
@@ -49,9 +50,8 @@ public class QueryParameterFProcessesArea extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area");
     }
 
     @Override
@@ -61,7 +61,7 @@ public class QueryParameterFProcessesArea extends QueryParameterF {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

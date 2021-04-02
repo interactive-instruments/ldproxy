@@ -97,45 +97,37 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("collections")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_COLLECTIONS);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/collections");
+        String operationSummary = "feature collections in the dataset '"+apiData.getLabel()+"'";
+        Optional<String> operationDescription = Optional.of("The dataset is organized in feature collections. " +
+                "This resource provides information about and access to the feature collections.\n" +
+                "The response contains the list of collections. For each collection, a link to the items in the " +
+                "collection (path `/collections/{collectionId}/items`, link relation `items`) as well as key " +
+                "information about the collection.\n" +
+                "This information includes:\n\n" +
+                "* A local identifier for the collection that is unique for the dataset;\n" +
+                "* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. " +
+                "The first CRS is the default coordinate reference system (the default is always WGS 84 with " +
+                "axis order longitude/latitude);\n" +
+                "* An optional title and description for the collection;\n" +
+                "* An optional extent that can be used to provide an indication of the spatial and temporal extent " +
+                "of the collection - typically derived from the data;\n" +
+                "* An optional indicator about the type of the items in the collection (the default value, " +
+                "if the indicator is not provided, is 'feature').");
+        String path = "/collections";
+        ImmutableOgcApiResourceSet.Builder resourceBuilder = new ImmutableOgcApiResourceSet.Builder()
+                .path(path)
+                .subResourceType("Collection");
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations("GET", operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("collections")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_COLLECTIONS);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/collections");
-            String operationSummary = "feature collections in the dataset '"+apiData.getLabel()+"'";
-            Optional<String> operationDescription = Optional.of("The dataset is organized in feature collections. " +
-                    "This resource provides information about and access to the feature collections.\n" +
-                    "The response contains the list of collections. For each collection, a link to the items in the " +
-                    "collection (path `/collections/{collectionId}/items`, link relation `items`) as well as key " +
-                    "information about the collection.\n" +
-                    "This information includes:\n\n" +
-                    "* A local identifier for the collection that is unique for the dataset;\n" +
-                    "* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. " +
-                    "The first CRS is the default coordinate reference system (the default is always WGS 84 with " +
-                    "axis order longitude/latitude);\n" +
-                    "* An optional title and description for the collection;\n" +
-                    "* An optional extent that can be used to provide an indication of the spatial and temporal extent " +
-                    "of the collection - typically derived from the data;\n" +
-                    "* An optional indicator about the type of the items in the collection (the default value, " +
-                    "if the indicator is not provided, is 'feature').");
-            String path = "/collections";
-            ImmutableOgcApiResourceSet.Builder resourceBuilder = new ImmutableOgcApiResourceSet.Builder()
-                    .path(path)
-                    .subResourceType("Collection");
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("GET", operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     @GET

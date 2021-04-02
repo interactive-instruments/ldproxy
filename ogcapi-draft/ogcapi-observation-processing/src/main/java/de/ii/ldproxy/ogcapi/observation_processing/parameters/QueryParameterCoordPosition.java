@@ -26,7 +26,7 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCoordPosition implements OgcApiQueryParameter {
+public class QueryParameterCoordPosition extends ApiExtensionCache implements OgcApiQueryParameter {
 
     static final double BUFFER = 75.0; // buffer in km
     static public final double R = 6378.1; // earth radius in km
@@ -47,9 +47,10 @@ public class QueryParameterCoordPosition implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position"));
     }
 
     @Override
@@ -96,7 +97,7 @@ public class QueryParameterCoordPosition implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

@@ -31,9 +31,8 @@ public class QueryParameterFVariables extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                definitionPath.equals("/collections/{collectionId}/variables");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.equals("/collections/{collectionId}/variables");
     }
 
     @Override
@@ -43,7 +42,7 @@ public class QueryParameterFVariables extends QueryParameterF {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

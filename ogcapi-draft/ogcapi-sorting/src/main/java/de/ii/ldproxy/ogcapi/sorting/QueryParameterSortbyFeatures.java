@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterSortbyFeatures implements OgcApiQueryParameter, ConformanceClass {
+public class QueryParameterSortbyFeatures extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
 
     final static Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
@@ -70,19 +70,21 @@ public class QueryParameterSortbyFeatures implements OgcApiQueryParameter, Confo
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return apiData.getCollections()
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            apiData.getCollections()
                       .entrySet()
                       .stream()
                       .anyMatch(entry -> isEnabledForApi(apiData, entry.getKey())) &&
                 method==HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items");
+                definitionPath.equals("/collections/{collectionId}/items"));
     }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-        return isEnabledForApi(apiData, collectionId) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + collectionId + method.name(), () ->
+            isEnabledForApi(apiData, collectionId) &&
                 method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items");
+                definitionPath.equals("/collections/{collectionId}/items"));
     }
 
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();

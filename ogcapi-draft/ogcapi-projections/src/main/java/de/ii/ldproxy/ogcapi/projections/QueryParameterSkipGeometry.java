@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.projections;
 
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
@@ -25,7 +26,7 @@ import java.util.Objects;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterSkipGeometry implements OgcApiQueryParameter {
+public class QueryParameterSkipGeometry extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private static final Schema<?> SCHEMA = new BooleanSchema()._default(false);
 
@@ -46,10 +47,11 @@ public class QueryParameterSkipGeometry implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method == HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                        definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
+                        definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
     }
 
     @Override

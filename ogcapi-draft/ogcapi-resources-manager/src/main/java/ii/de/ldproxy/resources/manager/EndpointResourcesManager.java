@@ -122,55 +122,47 @@ public class EndpointResourcesManager extends Endpoint implements ConformanceCla
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("resources")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
+        String path = "/resources/{resourceId}";
+        HttpMethods method = HttpMethods.PUT;
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+        String operationSummary = "replace a file resource or add a new one";
+        Optional<String> operationDescription = Optional.of("Replace an existing resource with the id `resourceId`. If no " +
+                "such resource exists, a new resource with that id is added. " +
+                "A sprite used in a Mapbox Style stylesheet consists of " +
+                "three resources. Each of the resources needs to be created " +
+                "(and eventually deleted) separately.\n" +
+                "The PNG bitmap image (resourceId ends in '.png'), the JSON " +
+                "index file (resourceId of the same name, but ends in '.json' " +
+                "instead of '.png') and the PNG  bitmap image for " +
+                "high-resolution displays (the file ends in '.@2x.png').\n" +
+                "The resource will only by available in the native format in " +
+                "which the resource is posted. There is no support for " +
+                "automated conversions to other representations.");
+        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                .path(path)
+                .pathParameters(pathParameters);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
+        ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations(method.name(), operation);
+        method = HttpMethods.DELETE;
+        queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+        operationSummary = "delete a file resource";
+        operationDescription = Optional.of("Delete an existing resource with the id `resourceId`. If no " +
+                "such resource exists, an error is returned.");
+        requestContent = getRequestContent(apiData, path, method);
+        operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations(method.name(), operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("resources")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
-            String path = "/resources/{resourceId}";
-            HttpMethods method = HttpMethods.PUT;
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-            String operationSummary = "replace a file resource or add a new one";
-            Optional<String> operationDescription = Optional.of("Replace an existing resource with the id `resourceId`. If no " +
-                    "such resource exists, a new resource with that id is added. " +
-                    "A sprite used in a Mapbox Style stylesheet consists of " +
-                    "three resources. Each of the resources needs to be created " +
-                    "(and eventually deleted) separately.\n" +
-                    "The PNG bitmap image (resourceId ends in '.png'), the JSON " +
-                    "index file (resourceId of the same name, but ends in '.json' " +
-                    "instead of '.png') and the PNG  bitmap image for " +
-                    "high-resolution displays (the file ends in '.@2x.png').\n" +
-                    "The resource will only by available in the native format in " +
-                    "which the resource is posted. There is no support for " +
-                    "automated conversions to other representations.");
-            ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
-            ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations(method.name(), operation);
-            method = HttpMethods.DELETE;
-            queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-            operationSummary = "delete a file resource";
-            operationDescription = Optional.of("Delete an existing resource with the id `resourceId`. If no " +
-                    "such resource exists, an error is returned.");
-            requestContent = getRequestContent(apiData, path, method);
-            operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations(method.name(), operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

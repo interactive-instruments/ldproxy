@@ -30,10 +30,9 @@ public class QueryParameterFTileMatrixSets extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                (definitionPath.equals("/tileMatrixSets") ||
-                 definitionPath.equals("/tileMatrixSets/{tileMatrixSetId}"));
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.equals("/tileMatrixSets") ||
+                 definitionPath.equals("/tileMatrixSets/{tileMatrixSetId}");
     }
 
     @Override

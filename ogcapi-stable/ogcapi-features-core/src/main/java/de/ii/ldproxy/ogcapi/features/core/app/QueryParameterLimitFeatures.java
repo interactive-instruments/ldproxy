@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtendableConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterLimitFeatures implements OgcApiQueryParameter {
+public class QueryParameterLimitFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
     @Override
     public String getId(String collectionId) {
@@ -57,9 +58,10 @@ public class QueryParameterLimitFeatures implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items");
+                definitionPath.equals("/collections/{collectionId}/items"));
     }
 
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();

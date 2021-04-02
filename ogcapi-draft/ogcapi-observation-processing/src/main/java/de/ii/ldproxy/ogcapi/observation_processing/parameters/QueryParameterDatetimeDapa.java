@@ -37,7 +37,7 @@ import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParame
 @Component
 @Provides
 @Instantiate
-public class QueryParameterDatetimeDapa implements OgcApiQueryParameter {
+public class QueryParameterDatetimeDapa extends ApiExtensionCache implements OgcApiQueryParameter {
 
     public static final double ANI = 2; // TODO document
 
@@ -85,9 +85,10 @@ public class QueryParameterDatetimeDapa implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position", "area", "grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position", "area", "grid"));
     }
 
     @Override
@@ -124,7 +125,7 @@ public class QueryParameterDatetimeDapa implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

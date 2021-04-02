@@ -122,35 +122,27 @@ public class EndpointTileMultiCollection extends Endpoint {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("tiles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE);
+        final String path = "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
+        final HttpMethods method = HttpMethods.GET;
+        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        String operationSummary = "fetch a tile with multiple layers, one per collection";
+        Optional<String> operationDescription = Optional.of("The tile in the requested tiling scheme ('{tileMatrixSetId}'), " +
+                "on the requested zoom level ('{tileMatrix}'), with the requested grid coordinates ('{tileRow}', '{tileCol}') is returned. " +
+                "The tile has one layer per collection with all selected features in the bounding box of the tile with the requested properties.");
+        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                .path(path)
+                .pathParameters(pathParameters);
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation != null)
+            resourceBuilder.putOperations(method.name(), operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("tiles")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE);
-            final String path = "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
-            final HttpMethods method = HttpMethods.GET;
-            final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            String operationSummary = "fetch a tile with multiple layers, one per collection";
-            Optional<String> operationDescription = Optional.of("The tile in the requested tiling scheme ('{tileMatrixSetId}'), " +
-                    "on the requested zoom level ('{tileMatrix}'), with the requested grid coordinates ('{tileRow}', '{tileCol}') is returned. " +
-                    "The tile has one layer per collection with all selected features in the bounding box of the tile with the requested properties.");
-            ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation != null)
-                resourceBuilder.putOperations(method.name(), operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     @Path("/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")

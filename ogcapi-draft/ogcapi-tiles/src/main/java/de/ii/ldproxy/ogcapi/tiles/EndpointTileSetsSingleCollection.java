@@ -101,48 +101,40 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
-
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("collections")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION);
-            final String subSubPath = "/tiles";
-            final String path = "/collections/{collectionId}" + subSubPath;
-            final HttpMethods method = HttpMethods.GET;
-            final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-            if (!optCollectionIdParam.isPresent()) {
-                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
-            } else {
-                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                final List<String> collectionIds = (explode) ?
-                        collectionIdParam.getValues(apiData) :
-                        ImmutableList.of("{collectionId}");
-                for (String collectionId : collectionIds) {
-                    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
-                    String operationSummary = "retrieve a list of the available tile sets";
-                    Optional<String> operationDescription = Optional.of("This operation fetches the list of tile sets available for this collection.");
-                    String resourcePath = path.replace("{collectionId}",collectionId);
-                    ImmutableOgcApiResourceSet.Builder resourceBuilder = new ImmutableOgcApiResourceSet.Builder()
-                            .path(resourcePath)
-                            .pathParameters(pathParameters)
-                            .subResourceType("Tile Set");
-                    ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                    if (operation != null)
-                        resourceBuilder.putOperations(method.name(), operation);
-                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                }
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("collections")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION);
+        final String subSubPath = "/tiles";
+        final String path = "/collections/{collectionId}" + subSubPath;
+        final HttpMethods method = HttpMethods.GET;
+        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+        if (!optCollectionIdParam.isPresent()) {
+            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
+        } else {
+            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+            boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final List<String> collectionIds = (explode) ?
+                    collectionIdParam.getValues(apiData) :
+                    ImmutableList.of("{collectionId}");
+            for (String collectionId : collectionIds) {
+                List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
+                String operationSummary = "retrieve a list of the available tile sets";
+                Optional<String> operationDescription = Optional.of("This operation fetches the list of tile sets available for this collection.");
+                String resourcePath = path.replace("{collectionId}",collectionId);
+                ImmutableOgcApiResourceSet.Builder resourceBuilder = new ImmutableOgcApiResourceSet.Builder()
+                        .path(resourcePath)
+                        .pathParameters(pathParameters)
+                        .subResourceType("Tile Set");
+                ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                if (operation != null)
+                    resourceBuilder.putOperations(method.name(), operation);
+                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
         }
 
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

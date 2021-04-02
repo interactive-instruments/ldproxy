@@ -31,9 +31,8 @@ public class QueryParameterFCommon extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                definitionPath.matches("^/?(?:conformance)?/?$");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.matches("^/?(?:conformance)?/?$");
     }
 
     @Override

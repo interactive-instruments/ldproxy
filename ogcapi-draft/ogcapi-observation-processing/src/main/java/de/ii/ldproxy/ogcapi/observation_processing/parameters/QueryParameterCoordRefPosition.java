@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
@@ -39,7 +40,7 @@ import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParame
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCoordRefPosition implements OgcApiQueryParameter {
+public class QueryParameterCoordRefPosition extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(QueryParameterCoordRefPosition.class);
 
@@ -59,9 +60,10 @@ public class QueryParameterCoordRefPosition implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"position"));
     }
 
     @Override
@@ -81,7 +83,7 @@ public class QueryParameterCoordRefPosition implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

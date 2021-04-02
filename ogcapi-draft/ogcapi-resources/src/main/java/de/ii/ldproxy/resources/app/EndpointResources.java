@@ -94,33 +94,25 @@ public class EndpointResources extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("resources")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/resources");
+        String operationSummary = "information about the available file resources";
+        Optional<String> operationDescription = Optional.of("This operation fetches the set of file resources that have been " +
+                "created and that may be used by reference, for example, in stylesheets. For each resource the id and " +
+                "a link to the resource is provided.");
+        String path = "/resources";
+        ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
+                .path(path)
+                .subResourceType("File Resource");
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilderSet.putOperations("GET", operation);
+        definitionBuilder.putResources(path, resourceBuilderSet.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("resources")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/resources");
-            String operationSummary = "information about the available file resources";
-            Optional<String> operationDescription = Optional.of("This operation fetches the set of file resources that have been " +
-                    "created and that may be used by reference, for example, in stylesheets. For each resource the id and " +
-                    "a link to the resource is provided.");
-            String path = "/resources";
-            ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
-                    .path(path)
-                    .subResourceType("File Resource");
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilderSet.putOperations("GET", operation);
-            definitionBuilder.putResources(path, resourceBuilderSet.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

@@ -31,9 +31,8 @@ public class QueryParameterFStyle extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                definitionPath.equals("/styles/{styleId}");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.equals("/styles/{styleId}");
     }
 
     @Override

@@ -28,7 +28,7 @@ import java.util.Vector;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCoordArea implements OgcApiQueryParameter {
+public class QueryParameterCoordArea extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final GeometryHelperWKT geometryHelper;
     final FeatureProcessInfo featureProcessInfo;
@@ -46,9 +46,10 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"area"));
     }
 
     @Override
@@ -68,7 +69,7 @@ public class QueryParameterCoordArea implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()
