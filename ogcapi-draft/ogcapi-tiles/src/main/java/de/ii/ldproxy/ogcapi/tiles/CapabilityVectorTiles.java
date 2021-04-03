@@ -122,18 +122,15 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
 
     @Override
     public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
-        LOGGER.debug("Starting validation for TILES");
         // since building block / capability components are currently always enabled,
         // we need to test, if the TILES module is enabled for the API and stop, if not
         if (!apiData.getExtension(TilesConfiguration.class)
-                    .map(cfg -> cfg.getEnabled())
+                    .map(ExtensionConfiguration::getEnabled)
                     .orElse(false)) {
-            LOGGER.debug("Finished validation for TILES");
             return ValidationResult.of();
         }
 
         if (apiValidation== MODE.NONE) {
-            LOGGER.debug("Finished validation for TILES");
             return ValidationResult.of();
         }
 
@@ -299,7 +296,6 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                 }
             }
         }
-        LOGGER.debug("Finished validation for TILES");
 
         return builder.build();
     }

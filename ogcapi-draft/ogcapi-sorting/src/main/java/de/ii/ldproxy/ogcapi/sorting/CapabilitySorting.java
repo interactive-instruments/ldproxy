@@ -63,7 +63,6 @@ public class CapabilitySorting implements ApiBuildingBlock {
 
     @Override
     public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
-        LOGGER.debug("Starting validation for SORTING");
         // get the sorting configurations to process
         Map<String, SortingConfiguration> configs = apiData.getCollections()
                                                            .entrySet()
@@ -80,7 +79,6 @@ public class CapabilitySorting implements ApiBuildingBlock {
 
         if (configs.isEmpty()) {
             // nothing to do
-            LOGGER.debug("Finished validation for SORTING");
             return ValidationResult.of();
         }
 
@@ -123,8 +121,6 @@ public class CapabilitySorting implements ApiBuildingBlock {
                       });
             }
         }
-
-        LOGGER.debug("Finished validation for SORTING");
 
         return builder.build();
     }

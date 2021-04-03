@@ -292,7 +292,6 @@ public class EndpointFeatures extends EndpointSubCollection {
         String subSubPath, String path, List<OgcApiPathParameter> pathParameters,
         Stream<OgcApiQueryParameter> queryParameters, String collectionId,
         String summary, String description, String logPrefix) {
-        LOGGER.debug("{} 1 {}", logPrefix, collectionId);
 
         final List<OgcApiQueryParameter> queryParameters1 = path.equals("/collections/{collectionId}/items")
             ? getQueryParametersWithQueryables(queryParameters, apiData, collectionId, logPrefix)
@@ -303,19 +302,18 @@ public class EndpointFeatures extends EndpointSubCollection {
         ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
             .path(resourcePath)
             .pathParameters(pathParameters);
-        LOGGER.debug("{} 2 {}", logPrefix, collectionId);
+
         ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters1,
             collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-        LOGGER.debug("{} 3 {}", logPrefix, collectionId);
+
         if (operation != null)
             resourceBuilder.putOperations("GET", operation);
+
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-        LOGGER.debug("{} 4 {}", logPrefix, collectionId);
     }
 
     private List<OgcApiQueryParameter> getQueryParametersWithQueryables(
         Stream<OgcApiQueryParameter> generalList, OgcApiDataV2 apiData, String collectionId, String logPrefix) {
-        LOGGER.debug("{} 1.1 {}", logPrefix, collectionId);
 
         Optional<FeaturesCoreConfiguration> coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
         final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getOtherFilterParameters)
@@ -326,7 +324,6 @@ public class EndpointFeatures extends EndpointSubCollection {
             transformations = coreConfiguration.get().getTransformations();
             // TODO
         }
-        LOGGER.debug("{} 1.2 {}", logPrefix, collectionId);
 
         List<OgcApiQueryParameter> build = Stream.concat(
             generalList,
@@ -351,7 +348,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                 })
                 .filter(Objects::nonNull))
             .collect(Collectors.toList());
-        LOGGER.debug("{} 1.3 {}", logPrefix, collectionId);
+
         return build;
     }
 

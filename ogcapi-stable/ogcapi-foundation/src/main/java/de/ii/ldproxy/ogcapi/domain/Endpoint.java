@@ -56,7 +56,6 @@ public abstract class Endpoint implements EndpointExtension {
 
     @Override
     public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
-        LOGGER.debug("Starting validation for ENDPOINT {} {}", this.getClass(), apiData.hashCode());
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
@@ -75,8 +74,6 @@ public abstract class Endpoint implements EndpointExtension {
             builder.addErrors(message);
         }
 
-        LOGGER.debug("Finished validation for ENDPOINT {}", this.getClass());
-
         return builder.build();
     }
 
@@ -86,7 +83,19 @@ public abstract class Endpoint implements EndpointExtension {
             return EndpointExtension.super.getDefinition(apiData);
         }
 
-        return apiDefinitions.computeIfAbsent(apiData.hashCode(), ignore -> computeDefinition(apiData));
+        return apiDefinitions.computeIfAbsent(apiData.hashCode(), ignore -> {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Generating API definition for {}", this.getClass().getSimpleName());
+            }
+
+            ApiEndpointDefinition apiEndpointDefinition = computeDefinition(apiData);
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Finished generating API definition for {}", this.getClass().getSimpleName());
+            }
+
+            return apiEndpointDefinition;
+        });
     }
 
     protected abstract ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData);
