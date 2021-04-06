@@ -3,6 +3,12 @@ pluginManagement {
         maven {
             url 'https://dl.bintray.com/iide/maven'
         }
+        maven {
+            url "https://dl.interactive-instruments.de/repository/maven-releases/"
+        }
+        maven {
+            url "https://dl.interactive-instruments.de/repository/maven-snapshots/"
+        }
         gradlePluginPortal()
     }
 }
@@ -12,9 +18,12 @@ rootProject.name = 'ldproxy-composite'
 def siblingDirectories = rootDir.parentFile.parentFile.listFiles()
 def xtraplatform = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform') })
 def xtraplatformSpatial = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-spatial') })
+def xtraplatformBuild = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-build') })
 
+if (xtraplatformBuild) {
+    includeBuild "../../${xtraplatformBuild.name}"
+}
 if (xtraplatform) {
-    includeBuild "../../${xtraplatform.name}/xtraplatform-gradle-plugins"
     includeBuild "../../${xtraplatform.name}/xtraplatform-core"
     includeBuild "../../${xtraplatform.name}/xtraplatform-dev"
 }
