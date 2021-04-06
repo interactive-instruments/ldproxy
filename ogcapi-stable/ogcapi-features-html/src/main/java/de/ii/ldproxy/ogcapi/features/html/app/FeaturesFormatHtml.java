@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,10 +23,10 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -177,7 +177,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                               .collect(Collectors.toUnmodifiableSet());
         for (Map.Entry<String, FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
             String collectionId = entry.getKey();
-            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+            for (Map.Entry<String, PropertyTransformation> entry2 : entry.getValue().getTransformations().entrySet()) {
                 String property = entry2.getKey();
                 builder = entry2.getValue().validate(builder, collectionId, property, codelists);
             }

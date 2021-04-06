@@ -54,14 +54,9 @@ class OgcApiCoreSpecCollections extends Specification {
     static final OgcApiDataV2 datasetData = createDatasetData()
     static final de.ii.ldproxy.ogcapi.app.OgcApiEntity api = createOgcApiApiEntity()
     static final ApiRequestContext requestContext = createRequestContext()
-    static QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry)
+    static QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry, new I18nDefault())
     static final EndpointCollections collectionsEndpoint = createCollectionsEndpoint()
     static final EndpointCollection collectionEndpoint = createCollectionEndpoint()
-
-    def setupSpec() {
-        ogcApiQueriesHandlerCollections.i18n = new I18nDefault()
-    }
-
 
     def 'Requirement 13 A: collections response'() {
         given: 'A request to the server at /collections'
@@ -208,8 +203,7 @@ class OgcApiCoreSpecCollections extends Specification {
                 }
 
                 if (extensionType == CollectionExtension.class) {
-                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry)
-                    collectionExtension.i18n = new I18nDefault()
+                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault())
                     return ImmutableList.of((T) collectionExtension)
                 }
 
@@ -308,15 +302,11 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
     static def createCollectionsEndpoint() {
-        def endpoint = new EndpointCollections(registry)
-        endpoint.queryHandler = ogcApiQueriesHandlerCollections
-        return endpoint
+        return new EndpointCollections(registry, ogcApiQueriesHandlerCollections)
     }
 
     static def createCollectionEndpoint() {
-        def endpoint = new EndpointCollection(registry)
-        endpoint.queryHandler = ogcApiQueriesHandlerCollections
-        return endpoint
+        return new EndpointCollection(registry, ogcApiQueriesHandlerCollections)
     }
 
 }

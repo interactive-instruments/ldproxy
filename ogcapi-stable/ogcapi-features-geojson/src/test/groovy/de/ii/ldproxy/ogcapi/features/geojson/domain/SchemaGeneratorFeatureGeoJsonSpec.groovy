@@ -13,7 +13,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQuer
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfoImpl
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson.VERSION
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson.VERSION
 import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableSchemaConstraints
@@ -28,7 +28,7 @@ class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
     @Shared SchemaGeneratorFeatureGeoJson schemaGenerator
 
     def setupSpec() {
-        schemaGenerator = new SchemaGeneratorFeatureGeoJson(null, new EntityRegistryImpl(null), new SchemaInfoImpl())
+        schemaGenerator = new SchemaGeneratorFeatureGeoJson(null, new EntityRegistryImpl(null), new SchemaInfoImpl(null))
     }
 
     def 'Test GeoJSON schema generation for the QUERYABLES type, JSON Schema draft-2019-09'() {

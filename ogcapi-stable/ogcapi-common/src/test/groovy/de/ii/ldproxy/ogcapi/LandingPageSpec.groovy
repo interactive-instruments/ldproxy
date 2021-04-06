@@ -29,12 +29,7 @@ class LandingPageSpec extends Specification {
     static final OgcApiDataV2 datasetData = createDatasetData()
     static OgcApiEntity apiEntity = createDatasetEntity()
     static final ApiRequestContext requestContext = createRequestContext()
-    static QueriesHandlerCommonImpl queryHandler = new QueriesHandlerCommonImpl(createExtensionRegistry())
-
-
-    def setupSpec() {
-        queryHandler.i18n = new I18nDefault()
-    }
+    static QueriesHandlerCommonImpl queryHandler = new QueriesHandlerCommonImpl(createExtensionRegistry(), new I18nDefault())
 
     def 'Requirement 2 B: landing page response'() {
 
