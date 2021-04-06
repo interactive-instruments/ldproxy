@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputFeatureCollection;
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections;
+import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
@@ -46,7 +47,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.ws.rs.GET;
@@ -70,11 +70,12 @@ public class EndpointCollection extends EndpointSubCollection {
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollection.class);
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    @Requires
-    private QueriesHandlerCollections queryHandler;
+    private final QueriesHandlerCollections queryHandler;
 
-    public EndpointCollection(@Requires ExtensionRegistry extensionRegistry) {
+    public EndpointCollection(@Requires ExtensionRegistry extensionRegistry,
+                              @Requires QueriesHandlerCollections queryHandler) {
         super(extensionRegistry);
+        this.queryHandler = queryHandler;
     }
 
     @Override
@@ -202,7 +203,6 @@ public class EndpointCollection extends EndpointSubCollection {
     @Path("/{collectionId}")
     public Response getCollection(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                   @Context ApiRequestContext requestContext, @PathParam("collectionId") String collectionId) {
-        checkAuthorization(api.getData(), optionalUser);
 
         if (!api.getData().isCollectionEnabled(collectionId)) {
             throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
@@ -217,12 +217,12 @@ public class EndpointCollection extends EndpointSubCollection {
                                         .get(collectionId)
                                         .getAdditionalLinks();
 
-        QueriesHandlerCollections.QueryInputFeatureCollection queryInput = new ImmutableQueryInputFeatureCollection.Builder()
+        QueriesHandlerCollectionsImpl.QueryInputFeatureCollection queryInput = new ImmutableQueryInputFeatureCollection.Builder()
                 .collectionId(collectionId)
                 .includeLinkHeader(includeLinkHeader)
                 .additionalLinks(additionalLinks)
                 .build();
 
-        return queryHandler.handle(QueriesHandlerCollections.Query.FEATURE_COLLECTION, queryInput, requestContext);
+        return queryHandler.handle(QueriesHandlerCollectionsImpl.Query.FEATURE_COLLECTION, queryInput, requestContext);
     }
 }

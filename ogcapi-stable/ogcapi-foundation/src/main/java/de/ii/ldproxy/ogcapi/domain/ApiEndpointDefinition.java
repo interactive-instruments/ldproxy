@@ -17,6 +17,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.parameters.Parameter;
 import io.swagger.v3.oas.models.parameters.RequestBody;
 import io.swagger.v3.oas.models.responses.ApiResponses;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import org.immutables.value.Value;
 
 import java.util.Comparator;
@@ -296,21 +297,26 @@ public abstract class ApiEndpointDefinition {
                             op.addParametersItem(new Parameter().$ref("#/components/parameters/" + param.getId(collectionId)));
                             status400 = true;
                         }
+                        boolean isMutation = false;
                         switch (method) {
                             case "GET":
                                 pathItem.get(op);
                                 break;
                             case "POST":
                                 pathItem.post(op);
+                                isMutation = true;
                                 break;
                             case "PUT":
                                 pathItem.put(op);
+                                isMutation = true;
                                 break;
                             case "DELETE":
                                 pathItem.delete(op);
+                                isMutation = true;
                                 break;
                             case "PATCH":
                                 pathItem.patch(op);
+                                isMutation = true;
                                 break;
                             default:
                                 // skip HEAD and OPTIONS, these are not included in the OpenAPI definition
@@ -398,6 +404,10 @@ public abstract class ApiEndpointDefinition {
                         responses.addApiResponse("500", response);
 
                         op.responses(responses);
+
+                        if (apiData.getSecured() && isMutation) {
+                            op.addSecurityItem(new SecurityRequirement().addList("JWT"));
+                        }
                     }
                     openAPI.path(path, pathItem);
                 });

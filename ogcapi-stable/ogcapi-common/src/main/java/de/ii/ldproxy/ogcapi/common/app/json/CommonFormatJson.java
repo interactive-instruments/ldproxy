@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.common.app.json;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
+import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
@@ -21,17 +22,16 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author zahnen
  */
 @Component
-@Provides(specifications = {CommonFormatJson.class, CommonFormatExtension.class, FormatExtension.class, ApiExtension.class, ConformanceClass.class})
+@Provides
 @Instantiate
 public class CommonFormatJson implements CommonFormatExtension, ConformanceClass {
-
-    @Requires
-    SchemaGenerator schemaGenerator;
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
@@ -44,7 +44,7 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
     private final Schema schemaConformance;
     public final static String SCHEMA_REF_CONFORMANCE = "#/components/schemas/ConformanceDeclaration";
 
-    public CommonFormatJson() {
+    public CommonFormatJson(@Requires SchemaGenerator schemaGenerator) {
         schemaLandingPage = schemaGenerator.getSchema(LandingPage.class);
         schemaConformance = schemaGenerator.getSchema(ConformanceDeclaration.class);
     }
@@ -81,7 +81,14 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
 
     @Override
     public Object getLandingPageEntity(LandingPage apiLandingPage, OgcApi api, ApiRequestContext requestContext) {
-        return apiLandingPage;
+        return new ImmutableLandingPage.Builder()
+                .from(apiLandingPage)
+                .extensions(apiLandingPage.getExtensions()
+                                          .entrySet()
+                                          .stream()
+                                          .filter(entry -> !entry.getKey().equals("datasetDownloadLinks"))
+                                          .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)))
+                .build();
     }
 
     @Override

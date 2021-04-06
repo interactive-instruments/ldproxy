@@ -20,8 +20,11 @@ import org.apache.felix.ipojo.annotations.Requires;
 @Instantiate
 public class CapabilityCommon implements ApiBuildingBlock {
 
-    @Requires
-    ExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
+
+    public CapabilityCommon(@Requires ExtensionRegistry extensionRegistry) {
+        this.extensionRegistry = extensionRegistry;
+    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {

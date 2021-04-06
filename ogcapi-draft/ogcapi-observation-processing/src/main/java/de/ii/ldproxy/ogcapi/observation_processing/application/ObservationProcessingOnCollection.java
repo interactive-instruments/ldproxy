@@ -27,14 +27,13 @@ import java.util.Optional;
 @Instantiate
 public class ObservationProcessingOnCollection implements CollectionExtension {
 
-    @Requires
-    I18n i18n;
-
+    private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
 
     public ObservationProcessingOnCollection(@Requires ExtensionRegistry extensionRegistry,
-                                             @Requires FeaturesCoreProviders providers) {
+                                             @Requires FeaturesCoreProviders providers, @Requires I18n i18n) {
         this.extensionRegistry = extensionRegistry;
+        this.i18n = i18n;
     }
 
     @Override

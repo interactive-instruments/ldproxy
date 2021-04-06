@@ -20,6 +20,8 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableLandingPage.Builder.class)
 public abstract class LandingPage extends PageRepresentation {
 
+    public abstract Optional<String> getAttribution();
+
     public abstract Optional<OgcApiExtent> getExtent();
 
     public abstract Optional<ExternalDocumentation> getExternalDocs();

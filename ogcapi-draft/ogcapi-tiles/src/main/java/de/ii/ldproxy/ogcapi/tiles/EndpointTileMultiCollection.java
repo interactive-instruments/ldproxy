@@ -154,7 +154,6 @@ public class EndpointTileMultiCollection extends Endpoint {
             throws CrsTransformationException, IOException, NotFoundException {
 
         OgcApiDataV2 apiData = api.getData();
-        checkAuthorization(apiData, optionalUser);
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
 

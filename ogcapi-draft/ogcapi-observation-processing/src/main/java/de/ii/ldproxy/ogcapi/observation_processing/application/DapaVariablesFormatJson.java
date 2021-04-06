@@ -31,9 +31,6 @@ import java.util.stream.Collectors;
 @Instantiate
 public class DapaVariablesFormatJson implements DapaVariablesFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
@@ -43,7 +40,7 @@ public class DapaVariablesFormatJson implements DapaVariablesFormatExtension {
     private final Schema schema;
     private final static String schemaRef = "#/components/schemas/Variables";
 
-    public DapaVariablesFormatJson() {
+    public DapaVariablesFormatJson(@Requires SchemaGenerator schemaGenerator) {
         this.schema = schemaGenerator.getSchema(Variables.class);
     }
 

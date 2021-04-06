@@ -23,7 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -60,11 +60,14 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
     private final FeaturesCoreProviders providers;
     private final CrsTransformerFactory crsTransformerFactory;
+    private final FeaturesCoreValidation featuresCoreValidator;
 
     public FeaturesCoreDataHydrator(@Requires FeaturesCoreProviders providers,
-                                    @Requires CrsTransformerFactory crsTransformerFactory) {
+                                    @Requires CrsTransformerFactory crsTransformerFactory,
+                                    @Requires FeaturesCoreValidation featuresCoreValidator) {
         this.providers = providers;
         this.crsTransformerFactory = crsTransformerFactory;
+        this.featuresCoreValidator = featuresCoreValidator;
     }
 
     @Override
@@ -102,7 +105,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
         if (apiValidation== MODE.LAX) {
             // LAX: remove collections without a feature type
-            List<String> invalidCollections = FeaturesCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
+            List<String> invalidCollections = featuresCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
             if (!invalidCollections.isEmpty()) {
                 invalidCollections.stream()
                                   .forEach(collectionId -> LOGGER.error("Collection '{}' has been removed during hydration, because its feature type was not found in the provider schema.", collectionId));

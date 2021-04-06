@@ -89,7 +89,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
                                 .replaceInPath("/rest/services", getExternalUri().get()
                                                                                  .getPath())
                                 .ensureLastPathSegment("___static___")
-                                .ensureTrailingSlash()
+                                .ensureNoTrailingSlash()
                                 .getPath();
         }
 
@@ -191,6 +191,9 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
                                   }
                               })
                               .collect(Collectors.toList()));
+
+        if (Objects.nonNull(config.getGoogleSiteVerification()))
+            builder.googleSiteVerification(config.getGoogleSiteVerification());
 
         for (ApiCatalogExtension extension : extensionRegistry.getExtensionsForType(ApiCatalogExtension.class)) {
             builder = extension.process(builder,

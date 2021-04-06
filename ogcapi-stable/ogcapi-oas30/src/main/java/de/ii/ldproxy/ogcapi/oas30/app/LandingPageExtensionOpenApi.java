@@ -32,13 +32,12 @@ import java.util.Optional;
 @Instantiate
 public class LandingPageExtensionOpenApi implements LandingPageExtension {
 
-    @Requires
-    I18n i18n;
-
+    private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
 
-    public LandingPageExtensionOpenApi(@Requires ExtensionRegistry extensionRegistry) {
+    public LandingPageExtensionOpenApi(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
         this.extensionRegistry = extensionRegistry;
+        this.i18n = i18n;
     }
 
     @Override

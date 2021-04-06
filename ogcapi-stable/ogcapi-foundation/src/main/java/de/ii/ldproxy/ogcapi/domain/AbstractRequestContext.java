@@ -60,7 +60,7 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
                     .replaceInPath("/rest/services", getExternalUri().get()
                                                                      .getPath())
                     .ensureLastPathSegment("___static___")
-                    .ensureTrailingSlash()
+                    .ensureNoTrailingSlash()
                     .getPath();
         }
 

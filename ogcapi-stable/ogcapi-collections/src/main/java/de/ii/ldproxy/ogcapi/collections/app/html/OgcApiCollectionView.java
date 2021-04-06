@@ -8,34 +8,30 @@
 package de.ii.ldproxy.ogcapi.collections.app.html;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtentSpatial;
-import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtentTemporal;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.common.domain.OgcApiDatasetView;
+import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.StyleEntry;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class OgcApiCollectionView extends OgcApiView {
-
-    @Requires
-    private I18n i18n;
+public class OgcApiCollectionView extends OgcApiDatasetView {
 
     private final OgcApiCollection collection;
     public String itemType;
     public boolean spatialSearch;
-    public Map<String, String> bbox2;
     public Map<String, String> temporalExtent;
     public List<String> crs;
     public boolean hasGeometry;
@@ -60,21 +56,23 @@ public class OgcApiCollectionView extends OgcApiView {
     public final String styleInfosTitle;
     public final String collectionInformationTitle;
     public final String mainLinksTitle;
+    public final boolean isDataset;
 
     public String none;
 
     public OgcApiCollectionView(OgcApiDataV2 apiData, OgcApiCollection collection,
                                 final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
-                                boolean noIndex, I18n i18n, Optional<Locale> language) {
+                                boolean noIndex, URICustomizer uriCustomizer, I18n i18n, Optional<Locale> language) {
         super("collection.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
                 collection.getLinks(),
-                collection
-                        .getTitle()
-                        .orElse(collection.getId()),
-                collection
-                        .getDescription()
-                        .orElse(""));
+                collection.getTitle()
+                          .orElse(collection.getId()),
+                collection.getDescription()
+                          .orElse(null),
+                uriCustomizer,
+                collection.getExtent());
         this.collection = collection;
+        this.isDataset = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
 
         this.items = collection
                 .getLinks()
@@ -89,51 +87,12 @@ public class OgcApiCollectionView extends OgcApiView {
                 .getStorageCrs()
                 .orElse(null);
         this.hasGeometry = apiData.getSpatialExtent().isPresent();
-        Optional<String> defaultStyleOrNull = (Optional<String>) collection
-                .getExtensions()
-                .get("defaultStyle");
+        Optional<String> defaultStyleOrNull = (Optional<String>) collection.getExtensions()
+                                                                           .get("defaultStyle");
         this.defaultStyle = defaultStyleOrNull==null ? null : defaultStyleOrNull.get();
-        this.styleEntries = (List<StyleEntry>) collection
-                .getExtensions()
-                .get("styles");
+        this.styleEntries = (List<StyleEntry>) collection.getExtensions()
+                                                         .get("styles");
         this.withStyleInfos = (this.styleEntries!=null);
-        Optional<OgcApiExtent> extent = collection.getExtent();
-        if (extent.isPresent()) {
-            OgcApiExtentSpatial spatialExtent = extent.get()
-                                                      .getSpatial()
-                                                      .orElse(null);
-            if (Objects.nonNull(spatialExtent)) {
-                double[] boundingBox = spatialExtent.getBbox()[0]; // TODO just the first bbox and it is assumed to be in CRS84
-                this.bbox2 = ImmutableMap.of(
-                        "minLng", Double.toString(boundingBox[0]),
-                        "minLat", Double.toString(boundingBox[1]),
-                        "maxLng", Double.toString(boundingBox[2]),
-                        "maxLat", Double.toString(boundingBox[3]));
-            }
-            OgcApiExtentTemporal temporalExtent = extent.get()
-                                                        .getTemporal()
-                                                        .orElse(null);
-            if (Objects.nonNull(temporalExtent)) {
-                String[] interval = temporalExtent.getInterval()[0]; // TODO just the first interval and it is assumed to be in Gregorian calendar
-                if (interval==null)
-                    this.temporalExtent = null;
-                else if (interval[0]==null && interval[1]==null)
-                    this.temporalExtent = ImmutableMap.of();
-                else if (interval[0]==null)
-                    this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "end", interval[1]==null ? null : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
-                else if (interval[1]==null)
-                    this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "start", interval[0]==null ? null : String.valueOf(Instant.parse(interval[0]).toEpochMilli()));
-                else
-                    this.temporalExtent = interval==null ? null : ImmutableMap.of(
-                            "start", interval[0]==null ? null : String.valueOf(Instant.parse(interval[0]).toEpochMilli()),
-                            "end", interval[1]==null ? null : String.valueOf(Instant.parse(interval[1]).toEpochMilli()));
-            }
-        } else {
-            this.bbox2 = null;
-            this.temporalExtent = null;
-        }
         this.spatialSearch = false;
         this.itemType = i18n.get(collection.getItemType().orElse("feature"), language);
         this.itemTypeTitle = i18n.get("itemTypeTitle", language);
@@ -155,12 +114,6 @@ public class OgcApiCollectionView extends OgcApiView {
         this.none = i18n.get ("none", language);
     }
 
-    public List<Link> getLinks() {
-        return links
-                .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|items|tiles|describedby|license|enclosure|ogc-dapa-processes)$"))
-                .collect(Collectors.toList());
-    }
 
     public boolean hasMetadata() {
         return !getMetadataLinks().isEmpty();
@@ -181,7 +134,7 @@ public class OgcApiCollectionView extends OgcApiView {
         return links
                 .stream()
                 .filter(link -> link.getRel().matches("^(?:license)$"))
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public boolean hasDownload() {
@@ -192,7 +145,15 @@ public class OgcApiCollectionView extends OgcApiView {
         return links
                 .stream()
                 .filter(link -> link.getRel().matches("^(?:enclosure)$"))
-                .collect(Collectors.toList());
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    @Override
+    public List<Link> getDistributionLinks() {
+        return links.stream()
+                    .filter(link -> Objects.equals(link.getRel(), "items") || Objects.equals(link.getRel(), "enclosure"))
+                    .filter(link -> !"text/html".equals(link.getType()))
+                    .collect(Collectors.toUnmodifiableList());
     }
 
     public Optional<Link> getTiles() {
@@ -213,5 +174,16 @@ public class OgcApiCollectionView extends OgcApiView {
 
     public List<StyleEntry> getStyles() {
         return styleEntries;
+    }
+
+    public Optional<String> getSchemaOrgDataset() {
+        // for cases with a single collection, that collection is not reported as a sub-dataset
+        return apiData.getCollections().size() > 1
+                ? Optional.of(getSchemaOrgDataset(apiData, Optional.of(apiData.getCollections()
+                                                                              .get(collection.getId())), uriCustomizer.clearParameters()
+                                                                                                                      .removeLastPathSegments(2)
+                                                                                                                      .ensureNoTrailingSlash()
+                                                                                                                      .copy(), false))
+                : Optional.empty();
     }
 }

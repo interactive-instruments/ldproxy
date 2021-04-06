@@ -34,8 +34,11 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
             .label("JSON")
             .build();
 
-    @Requires
-    private ExtendableOpenApiDefinition openApiDefinition;
+    private final ExtendableOpenApiDefinition openApiDefinition;
+
+    public OpenApiJson(@Requires ExtendableOpenApiDefinition openApiDefinition) {
+        this.openApiDefinition = openApiDefinition;
+    }
 
     @Override
     public ApiMediaType getMediaType() {

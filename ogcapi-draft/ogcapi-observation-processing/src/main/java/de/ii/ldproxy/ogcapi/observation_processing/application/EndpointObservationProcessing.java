@@ -273,7 +273,6 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
                                      @Context UriInfo uriInfo,
                                      @PathParam("collectionId") String collectionId,
                                      @PathParam("processIds") String processIds) {
-        checkAuthorization(api.getData(), optionalUser);
         FeatureProcessChain processChain = featureProcessInfo.getProcessingChains(api.getData(), collectionId, ObservationProcess.class).stream()
                 .filter(chain -> chain.getSubSubPath().equals("/"+DAPA_PATH_ELEMENT+"/"+processIds))
                 .findAny()

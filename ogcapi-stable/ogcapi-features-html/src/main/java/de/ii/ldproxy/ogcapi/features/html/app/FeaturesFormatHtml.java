@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2020 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,10 +23,10 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidator;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -86,20 +86,23 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     private final Schema schema = new StringSchema().example("<html>...</html>");
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    @Requires
-    private Dropwizard dropwizard;
+    private final Dropwizard dropwizard;
+    private final EntityRegistry entityRegistry;
+    private final Http http;
+    private final I18n i18n;
+    private final FeaturesCoreProviders providers;
+    private final FeaturesCoreValidation featuresCoreValidator;
 
-    @Requires
-    private EntityRegistry entityRegistry;
-
-    @Requires
-    private Http http;
-
-    @Requires
-    private I18n i18n;
-
-    @Requires
-    private FeaturesCoreProviders providers;
+    public FeaturesFormatHtml(@Requires Dropwizard dropwizard, @Requires EntityRegistry entityRegistry,
+                              @Requires Http http, @Requires I18n i18n, @Requires FeaturesCoreProviders providers,
+                              @Requires FeaturesCoreValidation featuresCoreValidator) {
+        this.dropwizard = dropwizard;
+        this.entityRegistry = entityRegistry;
+        this.http = http;
+        this.i18n = i18n;
+        this.providers = providers;
+        this.featuresCoreValidator = featuresCoreValidator;
+    }
 
     @Override
     public List<String> getConformanceClassUris() {
@@ -162,7 +165,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                                                                                                                 .keySet()))
                                                                       .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        for (Map.Entry<String, Collection<String>> stringCollectionEntry : FeaturesCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
+        for (Map.Entry<String, Collection<String>> stringCollectionEntry : featuresCoreValidator.getInvalidPropertyKeys(keyMap, featureSchemas).entrySet()) {
             for (String property : stringCollectionEntry.getValue()) {
                 builder.addStrictErrors(MessageFormat.format("A transformation for property ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.", property, stringCollectionEntry.getKey()));
             }
@@ -174,7 +177,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                               .collect(Collectors.toUnmodifiableSet());
         for (Map.Entry<String, FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
             String collectionId = entry.getKey();
-            for (Map.Entry<String, PropertyTransformation> entry2 : entry.getValue().getTransformations().entrySet()) {
+            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
                 String property = entry2.getKey();
                 builder = entry2.getValue().validate(builder, collectionId, property, codelists);
             }
@@ -321,7 +324,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), layout);
 
         featureTypeDataset.temporalExtent = apiData.getTemporalExtent(featureType.getId()).orElse(null);
-        apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox2 = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
+        apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
         featureTypeDataset.filterFields = filterableFields.entrySet()
                                                           .stream()

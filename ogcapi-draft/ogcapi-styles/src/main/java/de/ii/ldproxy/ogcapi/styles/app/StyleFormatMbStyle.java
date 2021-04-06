@@ -52,9 +52,6 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatMbStyle.class);
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "vnd.mapbox.style+json"))
             .label("Mapbox")
@@ -64,7 +61,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
     private final Schema schemaStyle;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/MbStyleStylesheet";
 
-    public StyleFormatMbStyle() {
+    public StyleFormatMbStyle(@Requires SchemaGenerator schemaGenerator) {
         schemaStyle = schemaGenerator.getSchema(MbStyleStylesheet.class);
     }
 

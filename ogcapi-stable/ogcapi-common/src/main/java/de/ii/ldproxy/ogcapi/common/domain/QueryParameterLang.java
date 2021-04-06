@@ -23,8 +23,12 @@ import java.util.stream.Collectors;
 @Instantiate
 public class QueryParameterLang extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    @Requires
-    ExtensionRegistry extensionRegistry;
+    private Schema schema = null;
+    private final ExtensionRegistry extensionRegistry;
+
+    public QueryParameterLang(@Requires ExtensionRegistry extensionRegistry) {
+        this.extensionRegistry = extensionRegistry;
+    }
 
     @Override
     public String getName() {
@@ -43,8 +47,6 @@ public class QueryParameterLang extends ApiExtensionCache implements OgcApiQuery
             isEnabledForApi(apiData) &&
                 method== HttpMethods.GET);
     }
-
-    private Schema schema = null;
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData) {

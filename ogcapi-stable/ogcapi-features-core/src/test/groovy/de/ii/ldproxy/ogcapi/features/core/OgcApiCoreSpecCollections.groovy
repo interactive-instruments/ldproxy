@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.features.core
 import com.google.common.collect.ImmutableList
 import de.ii.ldproxy.ogcapi.app.I18nDefault
 import de.ii.ldproxy.ogcapi.app.OgcApiEntity
-import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollections
+import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollectionsImpl
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension
 import de.ii.ldproxy.ogcapi.collections.domain.Collections
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsExtension
@@ -54,7 +54,7 @@ class OgcApiCoreSpecCollections extends Specification {
     static final OgcApiDataV2 datasetData = createDatasetData()
     static final de.ii.ldproxy.ogcapi.app.OgcApiEntity api = createOgcApiApiEntity()
     static final ApiRequestContext requestContext = createRequestContext()
-    static QueriesHandlerCollections ogcApiQueriesHandlerCollections = new QueriesHandlerCollections(registry)
+    static QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry)
     static final EndpointCollections collectionsEndpoint = createCollectionsEndpoint()
     static final EndpointCollection collectionEndpoint = createCollectionEndpoint()
 

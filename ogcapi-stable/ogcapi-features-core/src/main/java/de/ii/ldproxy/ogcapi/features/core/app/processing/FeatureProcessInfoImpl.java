@@ -23,13 +23,12 @@ import java.util.List;
 @Instantiate
 public class FeatureProcessInfoImpl implements FeatureProcessInfo {
 
-    @Requires
-    I18n i18n;
-
     private final ExtensionRegistry extensionRegistry;
+    private final I18n i18n;
 
-    public FeatureProcessInfoImpl(@Requires ExtensionRegistry extensionRegistry) {
+    public FeatureProcessInfoImpl(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
         this.extensionRegistry = extensionRegistry;
+        this.i18n = i18n;
     }
 
     public List<FeatureProcessChain> getProcessingChains(OgcApiDataV2 apiData,

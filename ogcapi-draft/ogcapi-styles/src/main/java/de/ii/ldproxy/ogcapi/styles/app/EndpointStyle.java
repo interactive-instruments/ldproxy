@@ -70,21 +70,21 @@ import org.slf4j.LoggerFactory;
 @Instantiate
 public class EndpointStyle extends Endpoint {
 
-    @Requires
-    I18n i18n;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyle.class);
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
     private final java.nio.file.Path stylesStore;
 
+    private final I18n i18n;
+
     public EndpointStyle(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                         @Requires ExtensionRegistry extensionRegistry) throws IOException {
+                         @Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) throws IOException {
         super(extensionRegistry);
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         java.nio.file.Files.createDirectories(stylesStore);
+        this.i18n = i18n;
     }
 
     private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDataV2 apiData) {

@@ -40,9 +40,6 @@ import java.util.Optional;
 @Instantiate
 public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
@@ -52,7 +49,7 @@ public class CollectionStyleInfoFormatJson implements CollectionStyleInfoFormatE
     private final Schema schema;
     public final static String SCHEMA_REF = "#/components/schemas/StyleInfo";
 
-    public CollectionStyleInfoFormatJson() {
+    public CollectionStyleInfoFormatJson(@Requires SchemaGenerator schemaGenerator) {
         schema = schemaGenerator.getSchema(StyleInfo.class);
     }
 

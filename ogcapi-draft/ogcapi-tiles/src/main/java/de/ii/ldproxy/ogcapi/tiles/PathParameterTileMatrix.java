@@ -28,10 +28,13 @@ import java.util.List;
 @Instantiate
 public class PathParameterTileMatrix implements OgcApiPathParameter {
 
-    @Requires
-    ExtensionRegistry extensionRegistry;
+    private final ExtensionRegistry extensionRegistry;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterTileMatrix.class);
+
+    public PathParameterTileMatrix(@Requires ExtensionRegistry extensionRegistry) {
+        this.extensionRegistry = extensionRegistry;
+    }
 
     @Override
     public String getPattern() {

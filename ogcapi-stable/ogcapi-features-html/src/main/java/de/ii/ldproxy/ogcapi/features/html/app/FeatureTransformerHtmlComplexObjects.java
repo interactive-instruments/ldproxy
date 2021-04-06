@@ -524,15 +524,15 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
 
         coordinatesTransformerBuilder.coordinatesWriter(ImmutableCoordinatesWriterMicrodata.of(coordinatesOutput, Optional.ofNullable(dimension).orElse(2)));
 
-        if (transformationContext.getCrsTransformer()
-                                 .isPresent()) {
-            coordinatesTransformerBuilder.crsTransformer(transformationContext.getCrsTransformer()
-                                                                           .get());
-        }
+        int fallbackDimension = Objects.nonNull(dimension) ? dimension : 2;
 
-        if (dimension != null) {
-            coordinatesTransformerBuilder.sourceDimension(dimension);
-            coordinatesTransformerBuilder.targetDimension(dimension);
+        if (Objects.nonNull(crsTransformer)) {
+            coordinatesTransformerBuilder.crsTransformer(crsTransformer);
+            coordinatesTransformerBuilder.sourceDimension(Objects.requireNonNullElse(crsTransformer.getSourceDimension(), fallbackDimension));
+            coordinatesTransformerBuilder.targetDimension(Objects.requireNonNullElse(crsTransformer.getTargetDimension(), fallbackDimension));
+        } else {
+            coordinatesTransformerBuilder.sourceDimension(fallbackDimension);
+            coordinatesTransformerBuilder.targetDimension(fallbackDimension);
         }
 
         coordinatesWriter = coordinatesTransformerBuilder.build();

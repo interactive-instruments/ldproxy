@@ -28,8 +28,11 @@ import java.util.Optional;
 @Instantiate
 public class LandingPageVectorTiles implements LandingPageExtension {
 
-    @Requires
-    I18n i18n;
+    private final I18n i18n;
+
+    public LandingPageVectorTiles(@Requires I18n i18n) {
+        this.i18n = i18n;
+    }
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {

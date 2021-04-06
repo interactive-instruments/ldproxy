@@ -38,8 +38,11 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
     private final Schema schema = new StringSchema().example("<html>...</html>");
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    @Requires
-    private I18n i18n;
+    private final I18n i18n;
+
+    public CommonFormatHtml(@Requires I18n i18n) {
+        this.i18n = i18n;
+    }
 
     @Override
     public List<String> getConformanceClassUris() {

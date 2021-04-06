@@ -21,9 +21,9 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -50,15 +50,6 @@ import java.util.stream.Collectors;
 @Instantiate
 public class TileSetFormatTileJson implements TileSetFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
-    @Requires
-    SchemaInfo schemaInfo;
-
-    @Requires
-    FeaturesCoreProviders providers;
-
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.APPLICATION_JSON_TYPE)
             .label("TileJSON")
@@ -66,10 +57,16 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
             .build();
 
     private final Schema schemaTileJson;
+    private final FeaturesCoreProviders providers;
+    private final SchemaInfo schemaInfo;
     public final static String SCHEMA_REF_TILE_JSON = "#/components/schemas/TileJson";
 
-    public TileSetFormatTileJson() {
+    public TileSetFormatTileJson(@Requires SchemaGenerator schemaGenerator,
+                                 @Requires FeaturesCoreProviders providers,
+                                 @Requires SchemaInfo schemaInfo) {
         schemaTileJson = schemaGenerator.getSchema(TileJson.class);
+        this.providers = providers;
+        this.schemaInfo = schemaInfo;
     }
 
     @Override

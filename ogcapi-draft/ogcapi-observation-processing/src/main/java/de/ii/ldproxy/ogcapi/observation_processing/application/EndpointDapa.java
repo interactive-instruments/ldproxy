@@ -67,15 +67,15 @@ public class EndpointDapa extends EndpointSubCollection implements ConformanceCl
     private static final String DAPA_PATH_ELEMENT = "processes";
     private static final List<String> TAGS = ImmutableList.of("DAPA");
 
-    @Requires
     I18n i18n;
 
     private final ObservationProcessingQueriesHandler queryHandler;
 
     public EndpointDapa(@Requires ExtensionRegistry extensionRegistry,
-                        @Requires ObservationProcessingQueriesHandler queryHandler) {
+                        @Requires ObservationProcessingQueriesHandler queryHandler, @Requires I18n i18n) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
+        this.i18n = i18n;
     }
 
     public List<? extends FormatExtension> getFormats() {
@@ -139,7 +139,6 @@ public class EndpointDapa extends EndpointSubCollection implements ConformanceCl
                              @Context ApiRequestContext requestContext,
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
-        checkAuthorization(api.getData(), optionalUser);
         ApiEndpointDefinition endpointDefinition = extensionRegistry.getExtensionsForType(EndpointSubCollection.class)
                                                                     .stream()
                                                                     .filter(ext -> ext.getClass().getName().equals("de.ii.ldproxy.ogcapi.observation_processing.application.EndpointObservationProcessing"))

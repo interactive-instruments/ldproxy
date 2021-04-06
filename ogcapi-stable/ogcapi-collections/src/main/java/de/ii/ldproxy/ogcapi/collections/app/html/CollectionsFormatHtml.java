@@ -37,10 +37,12 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
             .parameter("html")
             .build();
     private final Schema schema = new StringSchema().example("<html>...</html>");
+    private final I18n i18n;
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    @Requires
-    private I18n i18n;
+    public CollectionsFormatHtml(@Requires I18n i18n) {
+        this.i18n = i18n;
+    }
 
     @Override
     public List<String> getConformanceClassUris() {
@@ -139,7 +141,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
                                                  .getExtension(HtmlConfiguration.class)
                                                  .orElse(null);
 
-        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
+        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return collectionView;
     }

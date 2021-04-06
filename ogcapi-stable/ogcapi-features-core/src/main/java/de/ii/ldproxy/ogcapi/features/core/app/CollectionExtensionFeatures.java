@@ -33,13 +33,12 @@ import java.util.stream.Collectors;
 @Instantiate
 public class CollectionExtensionFeatures implements CollectionExtension {
 
-    @Requires
-    I18n i18n;
-
+    private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
 
-    public CollectionExtensionFeatures(@Requires ExtensionRegistry extensionRegistry) {
+    public CollectionExtensionFeatures(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
         this.extensionRegistry = extensionRegistry;
+        this.i18n = i18n;
     }
 
     @Override
@@ -96,7 +95,8 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                         .type(mtype.type()
                                    .toString())
                         .title(i18n.get("itemsLink", language)
-                                   .replace("{{collection}}", featureType.getLabel()))
+                                   .replace("{{collection}}", featureType.getLabel())
+                                   .replace("{{type}}", mtype.label()))
                         .build()));
 
         Optional<String> describeFeatureTypeUrl = Optional.empty();

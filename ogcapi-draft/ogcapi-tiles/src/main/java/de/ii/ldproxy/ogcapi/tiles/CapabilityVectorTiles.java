@@ -50,12 +50,18 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
     private static final int MAX_LINE_STRING_PER_TILE_DEFAULT = 10000;
     private static final int MAX_POINT_PER_TILE_DEFAULT = 10000;
 
-    @Requires
-    ExtensionRegistry extensionRegistry;
-    @Requires
-    FeaturesCoreProviders providers;
-    @Requires
-    FeaturesQuery queryParser;
+    private final ExtensionRegistry extensionRegistry;
+    private final FeaturesCoreProviders providers;
+    private final FeaturesQuery queryParser;
+    private final SchemaInfo schemaInfo;
+
+    public CapabilityVectorTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
+                                 @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo) {
+        this.extensionRegistry = extensionRegistry;
+        this.queryParser = queryParser;
+        this.providers = providers;
+        this.schemaInfo = schemaInfo;
+    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
@@ -147,7 +153,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
             String collectionId = entry.getKey();
             TilesConfiguration config = entry.getValue();
 
-            List<String> featureProperties = SchemaInfo.getPropertyNames(providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId)), false);
+            List<String> featureProperties = schemaInfo.getPropertyNames(providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId)), false);
 
             List<String> formatLabels = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                                                          .stream()

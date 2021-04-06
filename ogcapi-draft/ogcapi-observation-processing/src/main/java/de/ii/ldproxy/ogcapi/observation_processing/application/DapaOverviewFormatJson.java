@@ -37,14 +37,8 @@ import java.util.stream.Collectors;
 @Instantiate
 public class DapaOverviewFormatJson implements DapaOverviewFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
-    @Requires
-    I18n i18n;
-
-    @Requires
-    ExtensionRegistry extensionRegistry;
+    private final I18n i18n;
+    private final ExtensionRegistry extensionRegistry;
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
@@ -56,7 +50,10 @@ public class DapaOverviewFormatJson implements DapaOverviewFormatExtension {
     private static final String DAPA_PATH_ELEMENT = "processes";
     private final static String schemaRef = "#/components/schemas/"+DAPA_PATH_ELEMENT;
 
-    public DapaOverviewFormatJson() {
+    public DapaOverviewFormatJson(@Requires SchemaGenerator schemaGenerator, @Requires I18n i18n,
+                                  @Requires ExtensionRegistry extensionRegistry) {
+        this.i18n = i18n;
+        this.extensionRegistry = extensionRegistry;
         this.schema = schemaGenerator.getSchema(Processing.class);
     }
 

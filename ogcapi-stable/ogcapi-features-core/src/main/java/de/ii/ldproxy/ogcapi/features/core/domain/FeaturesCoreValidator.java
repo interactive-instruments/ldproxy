@@ -10,6 +10,10 @@ package de.ii.ldproxy.ogcapi.features.core.domain;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -18,9 +22,19 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class FeaturesCoreValidator {
+@Component
+@Provides
+@Instantiate
+public class FeaturesCoreValidator implements FeaturesCoreValidation {
 
-    public static List<String> getCollectionsWithoutType(OgcApiDataV2 apiData, Map<String, FeatureSchema> featureSchemas) {
+    private final SchemaInfo schemaInfo;
+
+    public FeaturesCoreValidator(@Requires SchemaInfo schemaInfo) {
+        this.schemaInfo = schemaInfo;
+    }
+
+    @Override
+    public List<String> getCollectionsWithoutType(OgcApiDataV2 apiData, Map<String, FeatureSchema> featureSchemas) {
         return apiData.getCollections()
                       .entrySet()
                       .stream()
@@ -32,20 +46,22 @@ public class FeaturesCoreValidator {
                       .collect(Collectors.toUnmodifiableList());
     }
 
-    public static List<String> getInvalidPropertyKeys(Collection<String> keys, FeatureSchema schema) {
+    @Override
+    public List<String> getInvalidPropertyKeys(Collection<String> keys, FeatureSchema schema) {
         if (Objects.isNull(keys))
             return ImmutableList.of();
 
         return keys.stream()
                    // normalize property names
                    //.map(key -> key.replaceAll("\\[[^\\]]*\\]", ""))
-                   .filter(key -> SchemaInfo.getPropertyNames(schema, false)
+                   .filter(key -> schemaInfo.getPropertyNames(schema, false)
                                             .stream()
                                             .noneMatch(schemaProperty -> schemaProperty.equals(key)))
                    .collect(Collectors.toUnmodifiableList());
     }
 
-    public static Map<String, Collection<String>> getInvalidPropertyKeys(Map<String, Collection<String>> keyMap, Map<String, FeatureSchema> featureSchemas) {
+    @Override
+    public Map<String, Collection<String>> getInvalidPropertyKeys(Map<String, Collection<String>> keyMap, Map<String, FeatureSchema> featureSchemas) {
         return keyMap.entrySet()
                    .stream()
                    .map(entry -> {

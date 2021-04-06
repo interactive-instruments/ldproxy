@@ -100,20 +100,19 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 @Instantiate
 public class EndpointStylesManager extends Endpoint implements ConformanceClass {
 
-    @Requires
-    I18n i18n;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStylesManager.class);
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
     private final java.nio.file.Path stylesStore;
+    private final I18n i18n;
 
     public EndpointStylesManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                 @Requires ExtensionRegistry extensionRegistry) throws IOException {
+                                 @Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) throws IOException {
         super(extensionRegistry);
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         Files.createDirectories(stylesStore);
+        this.i18n = i18n;
     }
 
     @Override

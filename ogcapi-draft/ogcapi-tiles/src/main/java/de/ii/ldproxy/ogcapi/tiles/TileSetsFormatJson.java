@@ -24,9 +24,6 @@ import java.util.Optional;
 @Instantiate
 public class TileSetsFormatJson implements TileSetsFormatExtension {
 
-    @Requires
-    SchemaGenerator schemaGenerator;
-
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.APPLICATION_JSON_TYPE)
             .label("JSON")
@@ -36,7 +33,7 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
     private final Schema schemaTiles;
     public final static String SCHEMA_REF_TILES = "#/components/schemas/TileSets";
 
-    public TileSetsFormatJson() {
+    public TileSetsFormatJson(@Requires SchemaGenerator schemaGenerator) {
         schemaTiles = schemaGenerator.getSchema(TileMatrixSetData.class);
     }
 

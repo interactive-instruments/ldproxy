@@ -30,17 +30,16 @@ import java.util.Optional;
 @Instantiate
 public class ObservationProcessingOnLandingPage implements LandingPageExtension {
 
-    @Requires
-    I18n i18n;
-
+    private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
     private final FeatureProcessInfo featureProcessInfo;
 
     public ObservationProcessingOnLandingPage(@Requires ExtensionRegistry extensionRegistry,
                                               @Requires FeaturesCoreProviders providers,
-                                              @Requires FeatureProcessInfo featureProcessInfo) {
+                                              @Requires FeatureProcessInfo featureProcessInfo, @Requires I18n i18n) {
         this.extensionRegistry = extensionRegistry;
         this.featureProcessInfo = featureProcessInfo;
+        this.i18n = i18n;
     }
 
     @Override
