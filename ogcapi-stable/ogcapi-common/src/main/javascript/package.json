@@ -42,7 +42,7 @@
     "@xtraplatform/core": "^2.0.0-beta.11",
     "@xtraplatform/manager": "^2.0.0-beta.10",
     "@xtraplatform/neutrino": "^2.0.0-beta.5",
-    "@xtraplatform/services": "^2.0.0-beta.7",
+    "@xtraplatform/services": "^2.0.0-beta.8",
     "apollo-link-rest": "^0.8.0-beta.0",
     "babel-loader": "*",
     "core-js": "^3",

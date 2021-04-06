@@ -3268,7 +3268,7 @@ __metadata:
     "@xtraplatform/core": ^2.0.0-beta.11
     "@xtraplatform/manager": ^2.0.0-beta.10
     "@xtraplatform/neutrino": ^2.0.0-beta.5
-    "@xtraplatform/services": ^2.0.0-beta.7
+    "@xtraplatform/services": ^2.0.0-beta.8
     apollo-link-rest: ^0.8.0-beta.0
     babel-loader: "*"
     core-js: ^3
@@ -5374,7 +5374,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xtraplatform/services@^2.0.0-beta.7, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
+"@xtraplatform/services@^2.0.0-beta.8, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript"
   dependencies:
@@ -12532,7 +12532,7 @@ fsevents@^1.2.7:
     "@xtraplatform/core": ^2.0.0-beta.11
     "@xtraplatform/manager": ^2.0.0-beta.10
     "@xtraplatform/neutrino": ^2.0.0-beta.5
-    "@xtraplatform/services": ^2.0.0-beta.7
+    "@xtraplatform/services": ^2.0.0-beta.8
     apollo-link-rest: ^0.8.0-beta.0
     eslint: ^7
     eslint-plugin-babel: "*"
