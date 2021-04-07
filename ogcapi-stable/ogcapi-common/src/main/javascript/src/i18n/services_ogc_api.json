@@ -108,6 +108,10 @@
           "_label": "Additional Schemas",
           "_description": "The names of database schemas that should be used in addition to `public`."
         },
+        "autoTypes": {
+          "_label": "Tables to include",
+          "_description": "Optional list of table names (or regex patterns) that should be included in the configuration. Empty means all tables will be included."
+        },
         "url": {
           "_label": "WFS URL",
           "_description": "The GetCapabilities endpoint of the existing service"
@@ -484,6 +488,10 @@
         "schemas": {
           "_label": "Zusätzliche Schemas",
           "_description": "Die Namen der Schemas in der Datenbank, auf die zugegriffen werden soll (zusätzlich zu `public`)."
+        },
+        "autoTypes": {
+          "_label": "Zu berücksichtigende Tabellen",
+          "_description": "Optionale Liste von Tabellennamen (oder regulären Ausdrücken), die für die Konfiguration berücksichtigt werden sollen. Keine Angabe bedeutet alle Tabellen werden berücksichtigt."
         },
         "url": {
           "_label": "WFS URL",
