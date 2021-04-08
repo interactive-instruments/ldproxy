@@ -6,17 +6,16 @@ Hier werden die Besonderheiten des SQL-Feature-Providers beschrieben.
 
 ## Das Connection-Info-Objekt für SQL-Datenbanken
 
-Das Connection-Info-Objekt für PostgreSQL/PostGIS-Datenbanken wird wie folgt beschrieben:
+Das Connection-Info-Objekt für SQL-Datenbanken wird wie folgt beschrieben:
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`connectorType` |enum | |Stets `SLICK`.
-|`dialect` |enum | |Stets `PGIS`.
-|`host` |string | |Der Datenbankhost. Wird ein anderer Port als der Standardport verwendet, ist dieser durch einen Doppelpunkt getrennt anzugeben, z.B. `db:30305`.
-|`database` |string | |Der Name der Datenbank.
-|`schemas` |array |`[ 'public' ]` |Die Namen der Schemas in der Datenbank, auf die zugegriffen werden soll.
-|`user` |string | |Der Benutzername.
-|`password` |string | |Das mit base64 kodierte Passwort des Benutzers.
+|`dialect` |enum | |`PGIS` für PostgreSQL/PostGIS, `GPKG` für GeoPackages oder SQLite/SpatiaLite.
+|`host` |string | |Der Datenbankhost. Wird ein anderer Port als der Standardport verwendet, ist dieser durch einen Doppelpunkt getrennt anzugeben, z.B. `db:30305`. Nicht relevant für `GPKG`. 
+|`database` |string | |Der Name der Datenbank. Für `GPKG` der Pfad zur Datei, entweder absolut oder relativ zum [Daten-Verzeichnis](../../data-folder.md).
+|`schemas` |array |`[ 'public' ]` |Die Namen der Schemas in der Datenbank, auf die zugegriffen werden soll. Nicht relevant für `GPKG`. 
+|`user` |string | |Der Benutzername. Nicht relevant für `GPKG`. 
+|`password` |string | |Das mit base64 kodierte Passwort des Benutzers. Nicht relevant für `GPKG`. 
 |`initFailFast` |boolean |`true` |Steuert, ob das Starten des Feature-Providers abgebrochen werden soll, wenn der Verbindungsaufbau etwas länger dauert. Diese Option sollte in der Regel nur auf Entwicklungssystemen deaktiviert werden.
 |`maxConnections` |integer |dynamisch |Steuert die maximale Anzahl von Verbindungen zur Datenbank. Der Default-Wert ist abhängig von der Anzahl der Prozessorkerne und der Anzahl der Joins in der [Types-Konfiguration](README.md#feature-provider-types). Der Default-Wert wird für optimale Performanz unter Last empfohlen. Der kleinstmögliche Wert ist ebenfalls von der Anzahl der Joins abhängig, kleinere Werte werden zurückgewiesen. 
 |`minConnections` |integer |`maxConnections` |Steuert die minimale Anzahl von Verbindungen zur Datenbank, die jederzeit offen gehalten werden.
