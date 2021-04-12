@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -895,11 +895,12 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
     private CoordinateSequence parseCoordinates(String text) {
         double[] coords = ArrayUtils.toPrimitive(
-                Splitter.on(separatorPattern)
-                        .splitToList(text)
-                        .stream()
-                        .map(num -> Double.parseDouble(num))
-                        .toArray(Double[]::new));
+            Splitter.on(separatorPattern)
+                .omitEmptyStrings()
+                .splitToList(text)
+                .stream()
+                .map(num -> Double.parseDouble(num))
+                .toArray(Double[]::new));
         if (crsTransformer!=null) {
             if (currentDimension == 2) {
                 coords = crsTransformer.transform(coords, coords.length / currentDimension, swapCoordinates);

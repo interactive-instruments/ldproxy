@@ -1,9 +1,8 @@
-task run {
-    dependsOn gradle.includedBuild('ldproxy').task(':run')
+plugins {
+    id 'de.interactive_instruments.xtraplatform-composite' version '3.5.0'
 }
-task check {
-    dependsOn gradle.includedBuild('ldproxy').task(':check')
-}
+
+
 task manager {
     dependsOn gradle.includedBuild('ldproxy').task(':ldproxy-manager:assemble')
 }
