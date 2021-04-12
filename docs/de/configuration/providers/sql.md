@@ -10,7 +10,7 @@ Das Connection-Info-Objekt für SQL-Datenbanken wird wie folgt beschrieben:
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`dialect` |enum | |`PGIS` für PostgreSQL/PostGIS, `GPKG` für GeoPackages oder SQLite/SpatiaLite.
+|`dialect` |enum | |`PGIS` für PostgreSQL/PostGIS, `GPKG` für GeoPackage oder SQLite/SpatiaLite.
 |`host` |string | |Der Datenbankhost. Wird ein anderer Port als der Standardport verwendet, ist dieser durch einen Doppelpunkt getrennt anzugeben, z.B. `db:30305`. Nicht relevant für `GPKG`. 
 |`database` |string | |Der Name der Datenbank. Für `GPKG` der Pfad zur Datei, entweder absolut oder relativ zum [Daten-Verzeichnis](../../data-folder.md).
 |`schemas` |array |`[ 'public' ]` |Die Namen der Schemas in der Datenbank, auf die zugegriffen werden soll. Nicht relevant für `GPKG`. 

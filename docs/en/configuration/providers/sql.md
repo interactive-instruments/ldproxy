@@ -6,17 +6,17 @@ The specifics of the SQL feature provider.
 
 ## Connection Info for SQL databases
 
-The connection info object for PostgreSQL/PostGIS databases has the following properties:
+The connection info object for SQL databases has the following properties:
 
 |Property |Data Type |Default |Description
 | --- | --- | --- | ---
 |`connectorType` |enum | |Always `SLICK`.
-|`dialect` |enum | |Always `PGIS`.
-|`host` |string | |The database host. To use a non-default port, add it to the host separated by `:`, e.g. `db:30305`.
-|`database` |string | |The name of the database.
-|`schemas` |array |`[]` |The names of database schemas that should be used in addition to `public`.
-|`user` |string | |The user name.
-|`password` |string | |The base64 encoded password of the user.
+|`dialect` |enum | |`PGIS` for PostgreSQL/PostGIS, `GPKG` for GeoPackage or SQLite/SpatiaLite.
+|`host` |string | |The database host. To use a non-default port, add it to the host separated by `:`, e.g. `db:30305`. Not relevant for `GPKG`. 
+|`database` |string | |The name of the database. For `GPKG` the file path, either absolute or relative to the [data folder](../../data-folder.md).
+|`schemas` |array |`[]` |The names of database schemas that should be used in addition to `public`. Not relevant for `GPKG`.
+|`user` |string | |The user name. Not relevant for `GPKG`.
+|`password` |string | |The base64 encoded password of the user. Not relevant for `GPKG`.
 |`initFailFast` |boolean |`true` |If disabled the provider will wait longer for the databse connection to be established. Should normally be disabled only on development systems.
 |`maxConnections` |integer |dynamic |Maximum number of connections to the database. The default value is computed depending on the number of processor cores and the maximum number of joins per feature type in the [Types Configuration](README.md#feature-provider-types). The default value is recommended for optimal performance under load. The smallest possible value also depends on the maximum number of joins per feature type, smaller values are rejected. 
 |`minConnections` |integer |`maxConnections` |Minimum number of connections to the database that are maintained.
