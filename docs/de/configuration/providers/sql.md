@@ -5,8 +5,8 @@ Hier werden die Besonderheiten des SQL-Feature-Providers beschrieben.
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
 |`connectionInfo` |object | |Siehe [Das Connection-Info-Objekt für SQL-Datenbanken](#connection-info).
-|`sourcePathDefaults` |object | |Siehe [SQL-Pfad-Defaults](#source-path-defaults).
-|`queryGeneration` |object | |Siehe [Query-Generierung](#query-generation).
+|`sourcePathDefaults` |object |siehe unten |Defaults für die Pfad-Ausdrücke in `sourcePath`, für Details siehe [SQL-Pfad-Defaults](#source-path-defaults). 
+|`queryGeneration` |object |siehe unten |Einstellungen für die Query-Generierung, für Details siehe [Query-Generierung](#query-generation). 
 
 <a name="connection-info"></a>
 
@@ -23,8 +23,6 @@ Das Connection-Info-Objekt für SQL-Datenbanken wird wie folgt beschrieben:
 |`password` |string | |Das mit base64 kodierte Passwort des Benutzers. Nicht relevant für `GPKG`. 
 |`schemas` |array |`[]` |Die Namen der Schemas in der Datenbank, auf die zugegriffen werden soll. Nicht relevant für `GPKG`. 
 |`pool` |object |siehe unten |Einstellungen für den Connection-Pool, für Details siehe [Pool](#connection-pool). 
-|`sourcePathDefaults` |object |siehe unten |Defaults für die Pfad-Ausdrücke in `sourcePath`, für Details siehe [SQL-Pfad-Defaults](#source-path-defaults). 
-|`queryGeneration` |object |siehe unten |Einstellungen für die Query-Generierung, für Details siehe [Query-Generierung](#query-generation). 
 |`driverOptions` |object |`{}` |Einstellungen für den JDBC-Treiber. Für `PGIS` werden `gssEncMode`, `ssl`, `sslmode`, `sslcert`, `sslkey`, `sslrootcert` und `sslpassword` durchgereicht. Für Details siehe die [Dokumentation des Treibers](https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters).
 |`initFailFast` |boolean |`true` |*Deprecated* Siehe `pool.initFailFast`.
 |`maxConnections` |integer |dynamic |*Deprecated* Siehe `pool.maxConnections`.

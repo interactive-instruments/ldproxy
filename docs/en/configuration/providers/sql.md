@@ -5,8 +5,8 @@ The specifics of the SQL feature provider.
 |Property |Data Type |Default |Description
 | --- | --- | --- | ---
 |`connectionInfo` |object | |See [Connection Info for SQL databases](#connection-info).
-|`sourcePathDefaults` |object | |See [Source Path Defaults](#source-path-defaults).
-|`queryGeneration` |object | |See [Query Generation](#query-generation).
+|`sourcePathDefaults` |object |see below |Defaults for the path expressions in `sourcePath`, for details see [Source Path Defaults](#source-path-defaults) below. 
+|`queryGeneration` |object |see below |Options for query generation, for details see [Query Generation](#query-generation) below. 
 
 <a name="connection-info"></a>
 
@@ -23,8 +23,6 @@ The connection info object for SQL databases has the following properties:
 |`password` |string | |The base64 encoded password of the user. Not relevant for `GPKG`.
 |`schemas` |array |`[]` |The names of database schemas that should be used in addition to `public`. Not relevant for `GPKG`.
 |`pool` |object |see below |Connection pool settings, for details see [Pool](#connection-pool) below. 
-|`sourcePathDefaults` |object |see below |Defaults for the path expressions in `sourcePath`, for details see [Source Path Defaults](#source-path-defaults) below. 
-|`queryGeneration` |object |see below |Options for query generation, for details see [Query Generation](#query-generation) below. 
 |`driverOptions` |object |`{}` |Custom options for the JDBC driver. For `PGIS`, you might pass `gssEncMode`, `ssl`, `sslmode`, `sslcert`, `sslkey`, `sslrootcert` and `sslpassword`. For details see the [driver documentation](https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters).
 |`initFailFast` |boolean |`true` |*Deprecated* See `pool.initFailFast`.
 |`maxConnections` |integer |dynamic |*Deprecated* See `pool.maxConnections`.
