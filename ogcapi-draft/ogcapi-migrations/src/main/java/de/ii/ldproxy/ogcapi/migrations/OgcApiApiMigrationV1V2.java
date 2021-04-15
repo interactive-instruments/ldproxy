@@ -402,7 +402,6 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                 featureProviderData.featureProviderType("SQL")
                                    .connectionInfo(new ImmutableConnectionInfoSql.Builder()
                                            .from(featureProvider.getConnectionInfo())
-                                           .connectorType("SLICK")
                                            .dialect(ConnectionInfoSql.Dialect.PGIS)
                                            .computeNumberMatched(featureProvider.computeNumberMatched())
                                            .triggers(Optional.ofNullable(featureProvider.getTrigger()).map(o -> (FeatureActionTrigger)o))
@@ -411,7 +410,6 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                 featureProviderData.featureProviderType("WFS")
                                    .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
                                            .from(featureProvider.getConnectionInfo())
-                                           .connectorType("HTTP")
                                            .build());
             }
 
