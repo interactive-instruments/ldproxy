@@ -49,10 +49,6 @@ Defaults, Konfigurationsobjekte und Overrides werden in dieser Reihenfolge einge
 
 Das Zusammenführen funktioniert auch für verschachtelte Strukturen, d.h. man muss in den verschiedenen Dateien keine Angaben wiederholen, sondern kann z.B. in Overrides nur gezielt die Angaben setzen, die man überschreiben will.
 
-<a name="merge-exceptions"></a>
-
-Ausnahmen, bei denen das Zusammenführen für verschachtelte Strukturen nicht funktioniert und ganze Objekte wiederholt werden müssen, sind ensprechend in der Beschreibung der [Konfigurationsobjekt-Typen](README.md#configuration-object-types) im Abschnitt ["Besonderheiten"](README.md#special-cases) genannt.
-
 Die zusammengeführten Konfigurationsobjekte müssen dann alle Pflichtangaben enthalten, ansonsten kommt es beim Start zu einem Fehler.
 
 <a name="additional-locations"></a>

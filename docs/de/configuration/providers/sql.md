@@ -2,6 +2,12 @@
 
 Hier werden die Besonderheiten des SQL-Feature-Providers beschrieben.
 
+|Eigenschaft |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`connectionInfo` |object | |Siehe [Das Connection-Info-Objekt für SQL-Datenbanken](#connection-info).
+|`sourcePathDefaults` |object | |Siehe [SQL-Pfad-Defaults](#source-path-defaults).
+|`queryGeneration` |object | |Siehe [Query-Generierung](#query-generation).
+
 <a name="connection-info"></a>
 
 ## Das Connection-Info-Objekt für SQL-Datenbanken
@@ -27,15 +33,6 @@ Das Connection-Info-Objekt für SQL-Datenbanken wird wie folgt beschrieben:
 |`pathSyntax` |object |`{ 'defaultPrimaryKey': 'id', 'defaultSortKey': 'id' }` | *Deprecated* Siehe [SQL-Pfad-Defaults](#source-path-defaults). 
 |`computeNumberMatched` |boolean |`true` |*Deprecated* Siehe [Query-Generierung](#query-generation). 
 
-Bei `connectionInfo`-Objekten muss stets [das ganze Objekt angegeben/wiederholt werden](../global-configuration.md#merge-exceptions). Ein `connectionInfo`-Objekt in den Overrides ersetzt ein `connectionInfo`-Objekt in den Defaults oder den regulären Konfigurationsobjekten. 
-
-Wird ein `connectionInfo`-Objekt immer in den Overrides gesetzt, dann ist ein minimales Objekt mit den Pflichtangaben im regulären Provider anzugeben, z.B.:
-
-```yaml
-connectionInfo:
-  database: ''
-```
-
 <a name="connection-pool"></a>
 
 ### Pool
@@ -51,18 +48,18 @@ Einstellungen für den Connection-Pool.
 
 <a name="source-path-defaults"></a>
 
-### SQL-Pfad-Defaults
+## SQL-Pfad-Defaults
 
-Defaults für die Pfad-Ausdrücke in `sourcePath`.
+Defaults für die Pfad-Ausdrücke in `sourcePath`, siehe auch [SQL-Pfad-Syntax](#path-syntax).
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`sortKey` |string |`id` |Die Standard-Spalte die zur Sortierung von Reihen verwendet wird, wenn keine abweichende Spalte in [sourcePath](#path-syntax) gesetzt wird. Es wird empfohlen, dass als Datentyp eine Ganzzahl verwendet wird.
-|`primaryKey` |string |`id` |Die Standard-Spalte die zur Analyse von Joins verwendet wird, wenn keine abweichende Spalte in [sourcePath](#path-syntax) gesetzt wird.
+|`sortKey` |string |`id` |Die Standard-Spalte die zur Sortierung von Reihen verwendet wird, wenn keine abweichende Spalte in `sourcePath` gesetzt wird. Es wird empfohlen, dass als Datentyp eine Ganzzahl verwendet wird.
+|`primaryKey` |string |`id` |Die Standard-Spalte die zur Analyse von Joins verwendet wird, wenn keine abweichende Spalte in `sourcePath` gesetzt wird.
 
 <a name="query-generation"></a>
 
-### Query-Generierung
+## Query-Generierung
 
 Optionen für die Query-Generierung.
 

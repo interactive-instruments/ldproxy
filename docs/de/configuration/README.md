@@ -80,7 +80,6 @@ Dieser Konfigurationsobjekt-Typ hat die folgenden Eigenschaften:
 
 Bei der Verwendung von `defaults` und `overrides` sind die folgenden in Besonderheiten zu beachten:
 
-* Bei `connectionInfo`-Objekten muss stets [das ganze Objekt angegeben/wiederholt werden](global-configuration.md#merge-exceptions).
 * Beim [Aufsplitten von Konfigurationsobjekten](global-configuration.md#split-defaults-overrides) ist bei `buildingBlock`-Objekten im `api`-Array der Wert von `buildingBlock` in Kleinbuchstaben als Dateiname zu verwenden, nicht [der Schlüssel des JSON-Elements](global-configuration.md#array-exceptions)). Beispiel: `store/defaults/services/ogc_api/features-core.yml`.
 
 Der [HTTP-Client](global-configuration.md#http-client) wird nur bei der Verwendung von WFS-Feature-Providern benötigt.

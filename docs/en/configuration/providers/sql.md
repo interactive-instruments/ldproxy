@@ -2,6 +2,12 @@
 
 The specifics of the SQL feature provider.
 
+|Property |Data Type |Default |Description
+| --- | --- | --- | ---
+|`connectionInfo` |object | |See [Connection Info for SQL databases](#connection-info).
+|`sourcePathDefaults` |object | |See [Source Path Defaults](#source-path-defaults).
+|`queryGeneration` |object | |See [Query Generation](#query-generation).
+
 <a name="connection-info"></a>
 
 ## Connection Info for SQL databases
@@ -27,15 +33,6 @@ The connection info object for SQL databases has the following properties:
 |`pathSyntax` |object |`{ 'defaultPrimaryKey': 'id', 'defaultSortKey': 'id' }` | *Deprecated* See [Source Path Defaults](#source-path-defaults) below. 
 |`computeNumberMatched` |boolean |`true` |*Deprecated* See [Query Generation](#query-generation) below. 
 
-For `connectionInfo` [the whole object has to be set/repeated](../global-configuration.md#merge-exceptions) in all cases. A `connectionInfo` object in overrides will replace `connectionInfo` in the defaults or the regular provider. 
-
-If `connectionInfo` is always set in overrides, a minimal configuration has to be set in the regular provider, e.g.:
-
-```yaml
-connectionInfo:
-  database: ''
-```
-
 <a name="connection-pool"></a>
 
 ### Pool
@@ -51,9 +48,9 @@ Settings for the connection pool.
 
 <a name="source-path-defaults"></a>
 
-### Source Path Defaults
+## Source Path Defaults
 
-Defaults for the path expressions in `sourcePath`.
+Defaults for the path expressions in `sourcePath`, also see [Source Path Syntax](#path-syntax).
 
 |Option |Data Type |Default |Description
 | --- | --- | --- | ---
@@ -62,7 +59,7 @@ Defaults for the path expressions in `sourcePath`.
 
 <a name="query-generation"></a>
 
-### Query Generation
+## Query Generation
 
 Options for query generation.
 
