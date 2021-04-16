@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,10 +9,12 @@ package de.ii.ldproxy.ogcapi.tiles
 
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet
 import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.WebMercatorQuad
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import javax.ws.rs.NotFoundException
 
+@Ignore //TODO
 class TilesMultitilesSpec extends Specification {
 
     def "Test bbox parameter parsing"() {

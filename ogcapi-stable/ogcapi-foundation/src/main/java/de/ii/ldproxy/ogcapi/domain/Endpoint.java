@@ -1,5 +1,13 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -8,6 +16,7 @@ import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +41,7 @@ public abstract class Endpoint implements EndpointExtension {
     );
 
     protected final ExtensionRegistry extensionRegistry;
-    protected Map<Integer, ApiEndpointDefinition> apiDefinitions;
+    private final Map<Integer, ApiEndpointDefinition> apiDefinitions;
     protected List<? extends FormatExtension> formats;
 
     /**
@@ -67,6 +76,29 @@ public abstract class Endpoint implements EndpointExtension {
 
         return builder.build();
     }
+
+    @Override
+    public final ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
+        if (!isEnabledForApi(apiData)) {
+            return EndpointExtension.super.getDefinition(apiData);
+        }
+
+        return apiDefinitions.computeIfAbsent(apiData.hashCode(), ignore -> {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Generating API definition for {}", this.getClass().getSimpleName());
+            }
+
+            ApiEndpointDefinition apiEndpointDefinition = computeDefinition(apiData);
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Finished generating API definition for {}", this.getClass().getSimpleName());
+            }
+
+            return apiEndpointDefinition;
+        });
+    }
+
+    protected abstract ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData);
 
     /**
      *

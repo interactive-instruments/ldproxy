@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -61,34 +61,26 @@ public class EndpointConformance extends Endpoint {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("conformance")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_CONFORMANCE);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/conformance");
+        String operationSummary = "conformance declaration";
+        Optional<String> operationDescription = Optional.of("The URIs of all conformance classes supported by the server. " +
+                "This information is provided to support 'generic' clients that want to access multiple " +
+                "OGC API implementations - and not 'just' a specific API. For clients accessing only a single " +
+                "API, this information is in general not relevant and the OpenAPI definition details the " +
+                "required information about the API.");
+        String path = "/conformance";
+        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                .path(path);
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations("GET", operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("conformance")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_CONFORMANCE);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/conformance");
-            String operationSummary = "conformance declaration";
-            Optional<String> operationDescription = Optional.of("The URIs of all conformance classes supported by the server. " +
-                    "This information is provided to support 'generic' clients that want to access multiple " +
-                    "OGC API implementations - and not 'just' a specific API. For clients accessing only a single " +
-                    "API, this information is in general not relevant and the OpenAPI definition details the " +
-                    "required information about the API.");
-            String path = "/conformance";
-            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                    .path(path);
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("GET", operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     @GET

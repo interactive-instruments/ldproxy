@@ -1,9 +1,17 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.crs.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
@@ -26,7 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterBboxCrsFeatures implements OgcApiQueryParameter {
+public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
     public static final String BBOX = "bbox";
     public static final String BBOX_CRS = "bbox-crs";
@@ -56,9 +64,10 @@ public class QueryParameterBboxCrsFeatures implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items");
+                definitionPath.equals("/collections/{collectionId}/items"));
     }
 
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();

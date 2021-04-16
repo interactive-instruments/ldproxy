@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -147,38 +147,30 @@ public class EndpointStyle extends Endpoint {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
-
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("styles")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLESHEET);
-            String path = "/styles/{styleId}";
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            if (!pathParameters.stream().filter(param -> param.getName().equals("styleId")).findAny().isPresent()) {
-                LOGGER.error("Path parameter 'styleId' missing for resource at path '" + path + "'. The GET method will not be available.");
-            } else {
-                String operationSummary = "fetch a style";
-                Optional<String> operationDescription = Optional.of("Fetches the style with identifier `styleId`. " +
-                        "The set of available styles can be retrieved at `/styles`. Not all styles are available in " +
-                        "all style encodings.");
-                ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                        .path(path)
-                        .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations("GET", operation);
-                definitionBuilder.putResources(path, resourceBuilder.build());
-            }
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("styles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLESHEET);
+        String path = "/styles/{styleId}";
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        if (!pathParameters.stream().filter(param -> param.getName().equals("styleId")).findAny().isPresent()) {
+            LOGGER.error("Path parameter 'styleId' missing for resource at path '" + path + "'. The GET method will not be available.");
+        } else {
+            String operationSummary = "fetch a style";
+            Optional<String> operationDescription = Optional.of("Fetches the style with identifier `styleId`. " +
+                    "The set of available styles can be retrieved at `/styles`. Not all styles are available in " +
+                    "all style encodings.");
+            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+                    .path(path)
+                    .pathParameters(pathParameters);
+            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+            if (operation!=null)
+                resourceBuilder.putOperations("GET", operation);
+            definitionBuilder.putResources(path, resourceBuilder.build());
         }
 
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

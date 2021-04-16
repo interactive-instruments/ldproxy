@@ -1,4 +1,5 @@
-import { launch } from '@xtraplatform/core';
-import { Services } from '@xtraplatform/services';
+import { launch } from "@xtraplatform/manager";
+import { Services, Codelists } from "@xtraplatform/services";
+import Common from "@ogcapi/common";
 
-launch([Services]);
+launch([Services, Codelists, Common]);

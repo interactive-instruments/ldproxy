@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Set;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -22,11 +23,25 @@ public interface CrsConfiguration extends ExtensionConfiguration {
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    //TODO: migrate
-    List<EpsgCrs> getAdditionalCrs();
+    Set<EpsgCrs> getAdditionalCrs();
 
     @Override
     default Builder getBuilder() {
         return new ImmutableCrsConfiguration.Builder();
+    }
+
+    @Override
+    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+        ImmutableCrsConfiguration.Builder builder = getBuilder().from(source)
+                                                                .from(this);
+
+        getAdditionalCrs().forEach(epsgCrs -> {
+            if (!((CrsConfiguration) source).getAdditionalCrs()
+                                            .contains(epsgCrs)) {
+                builder.addAdditionalCrs(epsgCrs);
+            }
+        });
+
+        return builder.build();
     }
 }

@@ -5,8 +5,20 @@
       "path": "."
     },
     {
+      "name": "@ogcapi",
+      "path": "../../../../ogcapi-stable/ogcapi-common/src/main/javascript"
+    },
+    {
+      "name": "@xtraplatform",
+      "path": "../../../../../xtraplatform"
+    },
+    {
       "name": "@xtraplatform/core",
-      "path": "../../../../../xtraplatform/xtraplatform-admin/xtraplatform-manager/src/main/javascript/packages/core"
+      "path": "../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core"
+    },
+    {
+      "name": "@xtraplatform/manager",
+      "path": "../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/manager"
     },
     {
       "name": "@xtraplatform/create-module",
@@ -18,7 +30,7 @@
     },
     {
       "name": "@xtraplatform/services",
-      "path": "../../../../../xtraplatform/xtraplatform-store/xtraplatform-service-api/src/main/javascript"
+      "path": "../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript"
     },
     {
       "name": "old-ldproxy-manager",
@@ -37,6 +49,19 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": true
+    },
+    "files.exclude": {
+      "**/.idea": true,
+      "**/.pnp.js": true,
+      "**/.vscode": true,
+      "**/.yarn": true,
+      "**/*.gradle": true,
+      "**/*.iml": true,
+      "**/build": true,
+      "**/gradle*": true,
+      "**/out": true,
+      "**/src/main/java": true,
+      "**/yarn.lock": true
     }
   }
 }

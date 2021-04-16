@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -36,12 +36,15 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
 @Instantiate
 public class CapabilityVectorTiles implements ApiBuildingBlock {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CapabilityVectorTiles.class);
     private static final int LIMIT_DEFAULT = 100000;
     private static final int MAX_POLYGON_PER_TILE_DEFAULT = 10000;
     private static final int MAX_LINE_STRING_PER_TILE_DEFAULT = 10000;
@@ -58,11 +61,6 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
         this.queryParser = queryParser;
         this.providers = providers;
         this.schemaInfo = schemaInfo;
-    }
-
-    @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableTilesConfiguration.Builder();
     }
 
     @Override
@@ -133,12 +131,14 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
         // since building block / capability components are currently always enabled,
         // we need to test, if the TILES module is enabled for the API and stop, if not
         if (!apiData.getExtension(TilesConfiguration.class)
-                    .map(cfg -> cfg.getEnabled())
-                    .orElse(false))
+                    .map(ExtensionConfiguration::getEnabled)
+                    .orElse(false)) {
             return ValidationResult.of();
+        }
 
-        if (apiValidation== MODE.NONE)
+        if (apiValidation== MODE.NONE) {
             return ValidationResult.of();
+        }
 
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);

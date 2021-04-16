@@ -1,3 +1,10 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.styles.app.manager;
 
 import com.google.common.collect.ImmutableList;
@@ -14,7 +21,7 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterValidateStyle implements OgcApiQueryParameter {
+public class QueryParameterValidateStyle extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private Schema schema = new StringSchema()._enum(ImmutableList.of("yes","no","only"))._default("no");
 
@@ -38,9 +45,10 @@ public class QueryParameterValidateStyle implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                ((method== HttpMethods.PUT && definitionPath.equals("/styles/{styleId}")) ||
-                (method== HttpMethods.POST && definitionPath.equals("/styles")));
+                (method== HttpMethods.POST && definitionPath.equals("/styles"))));
     }
 
     @Override
@@ -50,12 +58,7 @@ public class QueryParameterValidateStyle implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<StylesConfiguration> extension = apiData.getExtension(StylesConfiguration.class);
-
-        return extension
-                .filter(StylesConfiguration::isEnabled)
-                .filter(StylesConfiguration::getManagerEnabled)
-                .isPresent();
+        return isExtensionEnabled(apiData, StylesConfiguration.class, StylesConfiguration::getManagerEnabled);
     }
 
     @Override

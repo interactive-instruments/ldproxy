@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.crs.app;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -24,6 +25,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Component
@@ -47,7 +49,7 @@ public class CrsSupportImpl implements CrsSupport {
                                              @Nullable FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
         EpsgCrs nativeCrs = getStorageCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
         EpsgCrs defaultCrs = getDefaultCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
-        List<EpsgCrs> additionalCrs = getAdditionalCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
+        Set<EpsgCrs> additionalCrs = getAdditionalCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
 
         return Stream.concat(
                 Stream.of(
@@ -91,10 +93,10 @@ public class CrsSupportImpl implements CrsSupport {
                       .getDefaultEpsgCrs();
     }
 
-    private List<EpsgCrs> getAdditionalCrs(OgcApiDataV2 apiData,
-                                           Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
+    private Set<EpsgCrs> getAdditionalCrs(OgcApiDataV2 apiData,
+                                          Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
         return apiData.getExtension(CrsConfiguration.class)
                       .map(CrsConfiguration::getAdditionalCrs)
-                      .orElse(ImmutableList.of());
+                      .orElse(ImmutableSet.of());
     }
 }

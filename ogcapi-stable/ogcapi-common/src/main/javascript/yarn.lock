@@ -2022,6 +2022,71 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ogcapi/common@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@ogcapi/common@workspace:."
+  dependencies:
+    "@apollo/client": ^3.1.3
+    "@babel/core": "*"
+    "@mdx-js/react": ^1.6.16
+    "@neutrinojs/airbnb": ^9.3.0
+    "@neutrinojs/mocha": ^9.3.0
+    "@neutrinojs/react-components": ^9.3.0
+    "@storybook/addon-docs": ^6.0.10
+    "@storybook/addon-essentials": ^6.0.10
+    "@storybook/addon-links": ^6.0.10
+    "@storybook/react": ^6.0.10
+    "@xtraplatform/core": ^2.0.0-beta.4
+    "@xtraplatform/manager": ^2.0.0-beta.4
+    "@xtraplatform/neutrino": ^2.0.0-beta.4
+    apollo-link-rest: ^0.8.0-beta.0
+    babel-loader: "*"
+    core-js: ^3
+    deepmerge: ^4.2.2
+    eslint: ^7
+    eslint-import-resolver-node: "*"
+    eslint-plugin-babel: "*"
+    eslint-plugin-import: "*"
+    eslint-plugin-jsx-a11y: "*"
+    eslint-plugin-react: "*"
+    eslint-plugin-react-hooks: "*"
+    feature-u: ^3
+    graphql: ^15.3.0
+    graphql-anywhere: ^4.2.7
+    grommet: ^2
+    grommet-icons: ^4
+    jwt-decode: ^2.2.0
+    mocha: ^8
+    moment: ^2.29.1
+    neutrino: ^9.3.0
+    pnp-webpack-plugin: ^1
+    prop-types: ^15
+    qs: ^6.9.4
+    react: ^16
+    react-dom: ^16
+    react-is: ^16
+    react-router-dom: ^5
+    regenerator-runtime: ^0.13.7
+    styled-components: ^5
+    webpack: ^4
+    webpack-cli: ^3
+    webpack-dev-server: ^3
+  peerDependencies:
+    "@xtraplatform/core": ^2
+    "@xtraplatform/manager": ^2
+    "@xtraplatform/services": ^2
+    feature-u: ^3
+    grommet: ^2
+    grommet-icons: ^4
+    prop-types: ^15
+    react: ^16
+    react-dom: ^16
+    react-is: ^16
+    react-router-dom: ^5
+    styled-components: ^5
+  languageName: unknown
+  linkType: soft
+
 "@reach/router@npm:^1.3.3":
   version: 1.3.4
   resolution: "@reach/router@npm:1.3.4"
@@ -3412,93 +3477,46 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xtraplatform/core@npm:^2.0.0-beta.2":
-  version: 2.0.0-beta.2
-  resolution: "@xtraplatform/core@npm:2.0.0-beta.2::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fcore%2F-%2F%40xtraplatform%2Fcore-2.0.0-beta.2.tgz"
+"@xtraplatform/core@npm:^2.0.0-beta.4":
+  version: 2.0.0-beta.4
+  resolution: "@xtraplatform/core@npm:2.0.0-beta.4::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fcore%2F-%2F%40xtraplatform%2Fcore-2.0.0-beta.4.tgz"
   dependencies:
+    apollo-link-rest: ^0.8.0-beta.0
     check-prop-types: ^1.1.2
     core-js: ^3.6.5
     deepmerge: ^4.2.2
-    query-string: ^6.13.1
+    graphql: ^15.3.0
+    graphql-anywhere: ^4.2.7
+    jwt-decode: ^2.2.0
+    qs: ^6.9.4
     use-deep-compare-effect: ^1.3.1
   peerDependencies:
     "@apollo/client": ^3
-    apollo-link-rest: ^0.8.0-beta.0
     feature-u: ^3
-    graphql: ^15
-    graphql-anywhere: ^4
     grommet: ^2
     grommet-icons: ^4
-    jwt-decode: ^2
     prop-types: ^15
-    qs: ^6
     react: ^16
     react-dom: ^16
     react-is: ^16
     react-router-dom: ^5
     styled-components: ^5
-  checksum: 9f44a2cd18f598b8bfc5b141668584d7f8786c3a5f6d34ab2c59d275a3febce99dcfd4c9260c2f7a8ec08d380032baeb4bade17524c927500ebf4fa5363675ba
+  checksum: a9f26229769159a0b1c43a77d279b36bc48432b8ab5854cd3ac7deb5bbd385ea681a7fda537e3eb75f91fb05dd3125f1cc9cd4fd97e2364dcad8ecb1682a5955
   languageName: node
   linkType: hard
 
-"@xtraplatform/neutrino@npm:^2.0.0-beta.3":
-  version: 2.0.0-beta.3
-  resolution: "@xtraplatform/neutrino@npm:2.0.0-beta.3::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fneutrino%2F-%2F%40xtraplatform%2Fneutrino-2.0.0-beta.3.tgz"
+"@xtraplatform/manager@npm:^2.0.0-beta.4":
+  version: 2.0.0-beta.4
+  resolution: "@xtraplatform/manager@npm:2.0.0-beta.4::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fmanager%2F-%2F%40xtraplatform%2Fmanager-2.0.0-beta.4.tgz"
   dependencies:
-    deepmerge: ^4.2.2
-    pnp-webpack-plugin: ^1.6.4
-  checksum: abc3c047e06065f2f59eb507cbba2360764a411a2a35e63d0bc4a8b7050d96daf66134ca7050533c518c38ec3ba5ace6963f87166aca579191138ab3998f083d
-  languageName: node
-  linkType: hard
-
-"@xtraplatform/ogcapi-common@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@xtraplatform/ogcapi-common@workspace:."
-  dependencies:
-    "@apollo/client": ^3.1.3
-    "@babel/core": "*"
-    "@mdx-js/react": ^1.6.16
-    "@neutrinojs/airbnb": ^9.3.0
-    "@neutrinojs/mocha": ^9.3.0
-    "@neutrinojs/react-components": ^9.3.0
-    "@storybook/addon-docs": ^6.0.10
-    "@storybook/addon-essentials": ^6.0.10
-    "@storybook/addon-links": ^6.0.10
-    "@storybook/react": ^6.0.10
-    "@xtraplatform/core": ^2.0.0-beta.2
-    "@xtraplatform/neutrino": ^2.0.0-beta.3
     apollo-link-rest: ^0.8.0-beta.0
-    babel-loader: "*"
-    core-js: "*"
-    eslint: ^7
-    eslint-import-resolver-node: "*"
-    eslint-plugin-babel: "*"
-    eslint-plugin-import: "*"
-    eslint-plugin-jsx-a11y: "*"
-    eslint-plugin-react: "*"
-    eslint-plugin-react-hooks: "*"
-    feature-u: ^3
     graphql: ^15.3.0
     graphql-anywhere: ^4.2.7
-    grommet: ^2
-    grommet-icons: ^4
     jwt-decode: ^2.2.0
-    mocha: ^8
-    neutrino: ^9.3.0
-    pnp-webpack-plugin: ^1
-    prop-types: ^15
     qs: ^6.9.4
-    react: ^16
-    react-dom: ^16
-    react-is: ^16
-    react-router-dom: ^5
-    regenerator-runtime: ^0.13.7
-    styled-components: ^5
-    webpack: ^4
-    webpack-cli: ^3
-    webpack-dev-server: ^3
   peerDependencies:
-    "@xtraplatform/core": ^2
+    "@apollo/client": ^3
+    "@xtraplatform/core": ^2.0.0-beta.4
     feature-u: ^3
     grommet: ^2
     grommet-icons: ^4
@@ -3508,8 +3526,20 @@ __metadata:
     react-is: ^16
     react-router-dom: ^5
     styled-components: ^5
-  languageName: unknown
-  linkType: soft
+  checksum: de0e79aee002f79d8b3358deaa17816fcb26950986fd44e6fa26f37bcd16dc6ca5a019ff2330ee25c15bccdae059c7bd4c90e008e8277aab124239bc51fe6e7c
+  languageName: node
+  linkType: hard
+
+"@xtraplatform/neutrino@npm:^2.0.0-beta.4":
+  version: 2.0.0-beta.4
+  resolution: "@xtraplatform/neutrino@npm:2.0.0-beta.4::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fneutrino%2F-%2F%40xtraplatform%2Fneutrino-2.0.0-beta.4.tgz"
+  dependencies:
+    deepmerge: ^4.2.2
+    eslint-config-prettier: ^6.11.0
+    pnp-webpack-plugin: ^1.6.4
+  checksum: e53ae3d9ccbb6e26a0c21af2595da533afc5a6fc828595e1703f15152d7aba9db4df919caef69bff10106ea52496570c55af1167dbd70688e2e5c086db2d5c3b
+  languageName: node
+  linkType: hard
 
 "@xtuc/ieee754@npm:^1.2.0":
   version: 1.2.0
@@ -5780,17 +5810,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:*, core-js@npm:^3.0.1, core-js@npm:^3.0.4, core-js@npm:^3.6.5":
-  version: 3.6.5
-  resolution: "core-js@npm:3.6.5"
-  checksum: 9283348dd5be2f1d07feaf90e2336b3f00a2316e3d3c6d4f789c9a67bdd4d7b08ce1c88dca4e591340130056c6b412b0b74fae039f8e259206f1073f542e4e85
-  languageName: node
-  linkType: hard
-
 "core-js@npm:^1.0.0":
   version: 1.2.7
   resolution: "core-js@npm:1.2.7"
   checksum: 845cd9fe577300e5ce549fea1b66665e79e699ed7ab3bc4d64c9c1e2a35a479c331198039666a7675190e17e8d55097a162e962bec8c9ca3db393425724bbb29
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^3":
+  version: 3.7.0
+  resolution: "core-js@npm:3.7.0"
+  checksum: 95958cddb786e51d5ba2a0f60a0232270da1ba460e20870604adb03fbc282f83df78b84509b95ad5990ddbe79b990d9fb5a27426bd36a0e6243b50788fae369f
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^3.0.1, core-js@npm:^3.0.4, core-js@npm:^3.6.5":
+  version: 3.6.5
+  resolution: "core-js@npm:3.6.5"
+  checksum: 9283348dd5be2f1d07feaf90e2336b3f00a2316e3d3c6d4f789c9a67bdd4d7b08ce1c88dca4e591340130056c6b412b0b74fae039f8e259206f1073f542e4e85
   languageName: node
   linkType: hard
 
@@ -7005,6 +7042,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-config-prettier@npm:^6.11.0":
+  version: 6.15.0
+  resolution: "eslint-config-prettier@npm:6.15.0"
+  dependencies:
+    get-stdin: ^6.0.0
+  peerDependencies:
+    eslint: ">=3.14.1"
+  bin:
+    eslint-config-prettier-check: bin/cli.js
+  checksum: a790bc61699e43a2edc5453488576cd977fad3b3cf99c129c10760ce6970d422923fddf80b65b2b10a93c00af0180a854e4b7824cc268e5957826cbe5b969e90
+  languageName: node
+  linkType: hard
+
 "eslint-import-resolver-node@npm:*, eslint-import-resolver-node@npm:^0.3.3":
   version: 0.3.4
   resolution: "eslint-import-resolver-node@npm:0.3.4"
@@ -8114,6 +8164,13 @@ fsevents@^1.2.7:
   version: 0.1.0
   resolution: "get-package-type@npm:0.1.0"
   checksum: a5b8beaf68d8bcdb507e23b3d2b6458e54b9061e84e2a8a94b846c8e1d794beb47fdcbda895da16ae59225bb3ea1608c0719e4f986e8a987ec2f228eaf00d78b
+  languageName: node
+  linkType: hard
+
+"get-stdin@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "get-stdin@npm:6.0.0"
+  checksum: b51d664838aef7f8353dc57371ce59cea54d8d584fec015a9d89d24561e95b97806d5b5ba120bc81574c9ed63cb3e210176ffa0ff9263c7e7ba4d56d0fe54913
   languageName: node
   linkType: hard
 
@@ -10968,6 +11025,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"moment@npm:^2.29.1":
+  version: 2.29.1
+  resolution: "moment@npm:2.29.1"
+  checksum: 86729013febf7160de5b93da69273dd304d674b0224f9544b3abd09a87671ddd2cdd57598261ce57588910d63747ffd5590965e83c790d8bf327083c0e0a06e0
+  languageName: node
+  linkType: hard
+
 "move-concurrently@npm:^1.0.1":
   version: 1.0.1
   resolution: "move-concurrently@npm:1.0.1"
@@ -12521,17 +12585,6 @@ fsevents@^1.2.7:
     object-assign: ^4.1.0
     strict-uri-encode: ^1.0.0
   checksum: fcdbc2e76024a3afd0c5ea3addda75311d5d10402ddb5a03542dec430d36dbc44c87a11765ffa952d53e0b96e187298929561b88cc196a828f8728d2a3545ab8
-  languageName: node
-  linkType: hard
-
-"query-string@npm:^6.13.1":
-  version: 6.13.1
-  resolution: "query-string@npm:6.13.1"
-  dependencies:
-    decode-uri-component: ^0.2.0
-    split-on-first: ^1.0.0
-    strict-uri-encode: ^2.0.0
-  checksum: 5e640f0cf6077f3fd4dcb6d8f3a88306bbb5d5638001450b15a244ca74f76e4a6a1d70baff114cef43ca15670d5d2523f92113f3567561b9dbd1fcb26489066a
   languageName: node
   linkType: hard
 
@@ -14113,13 +14166,6 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"split-on-first@npm:^1.0.0":
-  version: 1.1.0
-  resolution: "split-on-first@npm:1.1.0"
-  checksum: 2ef26fee62665be9547e8035734b856e658b08fd13e70271a2f258147f29d1f18e12b5cb7f7670d83e113c172a9c5fe3d87d9d7c02a1d3d57824818d75d942ab
-  languageName: node
-  linkType: hard
-
 "split-string@npm:^3.0.1, split-string@npm:^3.0.2":
   version: 3.1.0
   resolution: "split-string@npm:3.1.0"
@@ -14257,13 +14303,6 @@ fsevents@^1.2.7:
   version: 1.1.0
   resolution: "strict-uri-encode@npm:1.1.0"
   checksum: 6c80f6998a45414d7c124772383cc10ce7bd22586af80762407cded1569666564fb8c0a4c9c997ac39a1116d46dfffc5d57135e759a0acb66a4da1191f5a3a4a
-  languageName: node
-  linkType: hard
-
-"strict-uri-encode@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "strict-uri-encode@npm:2.0.0"
-  checksum: 775012e88b9d8dff939d514bf376d615a15e8228a5dd587a94ac3c71fce41aa3635cd808aa796e2c1cd33f3f2fe2fbf89b74ee18a504a1905efa1854311e04bb
   languageName: node
   linkType: hard
 

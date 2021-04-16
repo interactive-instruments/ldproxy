@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -52,7 +52,7 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     }
 
     @Override
-    protected boolean onStartup() {
+    protected boolean onStartup() throws InterruptedException {
 
         // validate the API, the behaviour depends on the validation option for the API:
         // NONE: no validation
@@ -65,25 +65,15 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
         if (apiValidation!= MODE.NONE)
             LOGGER.info("Validating service '{}'.", apiData.getId());
 
-        try {
-            for (ApiExtension extension : extensionRegistry.getExtensions()) {
-                if (extension.isEnabledForApi(apiData)) {
-                    ValidationResult result = extension.onStartup(getData(), apiValidation);
-                    isSuccess = isSuccess && result.isSuccess();
-                    result.getErrors().forEach(LOGGER::error);
-                    result.getStrictErrors().forEach(result.getMode() == MODE.STRICT ? LOGGER::error : LOGGER::warn);
-                    result.getWarnings().forEach(LOGGER::warn);
-                }
+        for (ApiExtension extension : extensionRegistry.getExtensions()) {
+            if (extension.isEnabledForApi(apiData)) {
+                ValidationResult result = extension.onStartup(getData(), apiValidation);
+                isSuccess = isSuccess && result.isSuccess();
+                result.getErrors().forEach(LOGGER::error);
+                result.getStrictErrors().forEach(result.getMode() == MODE.STRICT ? LOGGER::error : LOGGER::warn);
+                result.getWarnings().forEach(LOGGER::warn);
             }
-        } catch (Exception exception) {
-            String msg = exception.getMessage();
-            if (Objects.isNull(msg))
-                msg = exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
-            LOGGER.error(msg);
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Stacktrace:", exception);
-            }
-            isSuccess = false;
+            checkForStartupCancel();
         }
 
         if (!isSuccess)

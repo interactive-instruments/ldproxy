@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -84,33 +84,25 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("styles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLES);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/styles");
+        String operationSummary = "lists the available styles";
+        Optional<String> operationDescription = Optional.of("This operation fetches the set of styles available. " +
+                "For each style the id, a title, links to the stylesheet of the style in each supported encoding, " +
+                "and the link to the metadata is provided.");
+        String path = "/styles";
+        ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
+                .path(path)
+                .subResourceType("Style");
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilderSet.putOperations("GET", operation);
+        definitionBuilder.putResources(path, resourceBuilderSet.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("styles")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLES);
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/styles");
-            String operationSummary = "lists the available styles";
-            Optional<String> operationDescription = Optional.of("This operation fetches the set of styles available. " +
-                    "For each style the id, a title, links to the stylesheet of the style in each supported encoding, " +
-                    "and the link to the metadata is provided.");
-            String path = "/styles";
-            ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
-                    .path(path)
-                    .subResourceType("Style");
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilderSet.putOperations("GET", operation);
-            definitionBuilder.putResources(path, resourceBuilderSet.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

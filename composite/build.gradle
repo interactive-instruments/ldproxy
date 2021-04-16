@@ -1,9 +1,11 @@
 plugins {
     id 'de.interactive_instruments.xtraplatform-composite' version '3.5.0'
 }
-
-
-task manager {
+task d {
+    dependsOn gradle.includedBuild('xtraplatform-core').task(':xtraplatform-dropwizard:dependencyUpdates')
+}
+//TODO: should be triggered by assemble, but is not
+task m {
     dependsOn gradle.includedBuild('ldproxy').task(':ldproxy-manager:assemble')
 }
 

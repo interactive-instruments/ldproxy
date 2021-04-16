@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,11 +18,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 @Provides
 @Instantiate
 public class CapabilityFilter implements ApiBuildingBlock {
-
-    @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableFilterConfiguration.Builder();
-    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {

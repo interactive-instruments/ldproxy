@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.sorting;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.app.OgcApiEntity;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -29,12 +30,15 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
 @Instantiate
 public class CapabilitySorting implements ApiBuildingBlock {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CapabilitySorting.class);
     final static List<String> VALID_TYPES = ImmutableList.of("STRING", "DATETIME", "INTEGER", "FLOAT");
 
     // TODO add sortables endpoint once we have agreed where to add it, for now the sortables are published
@@ -49,11 +53,6 @@ public class CapabilitySorting implements ApiBuildingBlock {
     }
 
     @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableSortingConfiguration.Builder();
-    }
-
-    @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableSortingConfiguration.Builder().enabled(false)
                                                           .build();
@@ -61,7 +60,6 @@ public class CapabilitySorting implements ApiBuildingBlock {
 
     @Override
     public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
-
         // get the sorting configurations to process
         Map<String, SortingConfiguration> configs = apiData.getCollections()
                                                            .entrySet()
@@ -76,9 +74,10 @@ public class CapabilitySorting implements ApiBuildingBlock {
                                                            .filter(Objects::nonNull)
                                                            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        if (configs.isEmpty())
+        if (configs.isEmpty()) {
             // nothing to do
             return ValidationResult.of();
+        }
 
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                                                                              .mode(apiValidation);

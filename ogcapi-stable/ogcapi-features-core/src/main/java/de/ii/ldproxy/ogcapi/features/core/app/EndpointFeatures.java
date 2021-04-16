@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,12 +22,14 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.ParameterExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -50,12 +52,14 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -195,7 +199,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                                               .collect(Collectors.toUnmodifiableSet());
         for (Map.Entry<String, FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
             String collectionId = entry.getKey();
-            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+            for (Map.Entry<String, PropertyTransformation> entry2 : entry.getValue().getTransformations().entrySet()) {
                 String property = entry2.getKey();
                 builder = entry2.getValue().validate(builder, collectionId, property, codelists);
             }
@@ -205,135 +209,150 @@ public class EndpointFeatures extends EndpointSubCollection {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("collections")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES);
+        ImmutableList<OgcApiQueryParameter> allQueryParameters = extensionRegistry
+            .getExtensionsForType(OgcApiQueryParameter.class)
+            .stream()
+            .sorted(Comparator.comparing(ParameterExtension::getName))
+            .collect(ImmutableList.toImmutableList());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("collections")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES);
-            String subSubPath = "/items";
-            String path = "/collections/{collectionId}" + subSubPath;
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-            if (!optCollectionIdParam.isPresent()) {
-                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
-            } else {
-                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                final List<String> collectionIds = (explode) ?
-                        collectionIdParam.getValues(apiData) :
-                        ImmutableList.of("{collectionId}");
-                for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
-                    final String operationSummary = "retrieve features in the feature collection '" + collectionId + "'";
-                    Optional<String> operationDescription = Optional.of("The response is a document consisting of features in the collection. " +
-                            "The features included in the response are determined by the server based on the query parameters of the request. " +
-                            "To support access to larger collections without overloading the client, the API supports paged access with links " +
-                            "to the next page, if more features are selected that the page size. The `bbox` and `datetime` parameter can be " +
-                            "used to select only a subset of the features in the collection (the features that are in the bounding box or time interval). " +
-                            "The `bbox` parameter matches all features in the collection that are not associated with a location, too. " +
-                            "The `datetime` parameter matches all features in the collection that are not associated with a time stamp or interval, too. " +
-                            "The `limit` parameter may be used to control the subset of the selected features that should be returned in the response, " +
-                            "the page size. Each page may include information about the number of selected and returned features (`numberMatched` " +
-                            "and `numberReturned`) as well as links to support paging (link relation `next`).");
-                    String resourcePath = "/collections/" + collectionId + subSubPath;
-                    ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                            .path(resourcePath)
-                            .pathParameters(pathParameters);
-                    ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                    if (operation!=null)
-                        resourceBuilder.putOperations("GET", operation);
-                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                }
+        generateDefinition(apiData, definitionBuilder, allQueryParameters, "/items",
+            "retrieve features in the feature collection '",
+            "The response is a document consisting of features in the collection. " +
+                "The features included in the response are determined by the server based on the query parameters of the request. " +
+                "To support access to larger collections without overloading the client, the API supports paged access with links " +
+                "to the next page, if more features are selected that the page size. The `bbox` and `datetime` parameter can be " +
+                "used to select only a subset of the features in the collection (the features that are in the bounding box or time interval). " +
+                "The `bbox` parameter matches all features in the collection that are not associated with a location, too. " +
+                "The `datetime` parameter matches all features in the collection that are not associated with a time stamp or interval, too. " +
+                "The `limit` parameter may be used to control the subset of the selected features that should be returned in the response, " +
+                "the page size. Each page may include information about the number of selected and returned features (`numberMatched` " +
+                "and `numberReturned`) as well as links to support paging (link relation `next`).",
+            "FEATURES");
 
-            }
-            subSubPath = "/items/{featureId}";
-            path = "/collections/{collectionId}" + subSubPath;
-            pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-            if (!optCollectionIdParam.isPresent()) {
-                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
-            } else {
-                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                final List<String> collectionIds = explode ?
-                        collectionIdParam.getValues(apiData) :
-                        ImmutableList.of("{collectionId}");
-                for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
-                    final String operationSummary = "retrieve a feature in the feature collection '" + collectionId + "'";
-                    final Optional<String> operationDescription = Optional.of("Fetch the feature with id `{featureId}`.");
-                    String resourcePath = "/collections/" + collectionId + subSubPath;
-                    ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                            .path(resourcePath)
-                            .pathParameters(pathParameters);
-                    ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                    if (operation!=null)
-                        resourceBuilder.putOperations("GET", operation);
-                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                }
+        generateDefinition(apiData, definitionBuilder, allQueryParameters, "/items/{featureId}",
+            "retrieve a feature in the feature collection '",
+            "Fetch the feature with id `{featureId}`.", "FEATURE");
 
-            }
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
-    @Override
-    public ImmutableList<OgcApiQueryParameter> getQueryParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, String collectionId) {
-        if (collectionId.equals("{collectionId}")) {
-            Optional<String> representativeCollectionId = getRepresentativeCollectionId(apiData);
-            if (representativeCollectionId.isEmpty())
-                return getQueryParameters(extensionRegistry, apiData, definitionPath);
+    private void generateDefinition(OgcApiDataV2 apiData, Builder definitionBuilder,
+        ImmutableList<OgcApiQueryParameter> allQueryParameters, String subSubPath, String summary, String description,
+        String logPrefix) {
 
-            collectionId = representativeCollectionId.get();
+        String path = "/collections/{collectionId}" + subSubPath;
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream()
+            .filter(param -> param.getName().equals("collectionId")).findAny();
+
+        if (optCollectionIdParam.isEmpty()) {
+            LOGGER.error("Path parameter 'collectionId' is missing for resource at path '{}'. The resource will not be available.", path);
+            return;
         }
 
-        ImmutableList<OgcApiQueryParameter> generalList = super.getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId);
+        final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+        final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
 
-        FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-        Optional<FeaturesCoreConfiguration> coreConfiguration = featureType==null ?
-                apiData.getExtension(FeaturesCoreConfiguration.class) :
-                featureType.getExtension(FeaturesCoreConfiguration.class);
+        if (explode) {
+            for (String collectionId : collectionIdParam.getValues(apiData)) {
+                Stream<OgcApiQueryParameter> queryParameters = allQueryParameters.stream()
+                    .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
 
+                generateCollectionDefinition(apiData, definitionBuilder, subSubPath, path,
+                    pathParameters,
+                    queryParameters, collectionId,
+                    summary, description, logPrefix);
+
+                // since the generation is quite expensive, check if the startup was interrupted
+                // after every collection
+                if (Thread.interrupted()) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        } else {
+            Optional<String> representativeCollectionId = getRepresentativeCollectionId(apiData);
+            Stream<OgcApiQueryParameter> queryParameters = allQueryParameters.stream();
+
+            if (representativeCollectionId.isPresent()) {
+                String collectionId = representativeCollectionId.get();
+                queryParameters = allQueryParameters.stream()
+                    .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
+            }
+
+            generateCollectionDefinition(apiData, definitionBuilder, subSubPath, path,
+                pathParameters,
+                queryParameters, "{collectionId}",
+                summary, description, logPrefix);
+        }
+    }
+
+    private void generateCollectionDefinition(OgcApiDataV2 apiData, Builder definitionBuilder,
+        String subSubPath, String path, List<OgcApiPathParameter> pathParameters,
+        Stream<OgcApiQueryParameter> queryParameters, String collectionId,
+        String summary, String description, String logPrefix) {
+
+        final List<OgcApiQueryParameter> queryParameters1 = path.equals("/collections/{collectionId}/items")
+            ? getQueryParametersWithQueryables(queryParameters, apiData, collectionId, logPrefix)
+            : queryParameters.collect(Collectors.toList());
+        final String operationSummary = summary + collectionId + "'";
+        final Optional<String> operationDescription = Optional.of(description);
+        String resourcePath = "/collections/" + collectionId + subSubPath;
+        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+            .path(resourcePath)
+            .pathParameters(pathParameters);
+
+        ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters1,
+            collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+
+        if (operation != null)
+            resourceBuilder.putOperations("GET", operation);
+
+        definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+    }
+
+    private List<OgcApiQueryParameter> getQueryParametersWithQueryables(
+        Stream<OgcApiQueryParameter> generalList, OgcApiDataV2 apiData, String collectionId, String logPrefix) {
+
+        Optional<FeaturesCoreConfiguration> coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
         final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getOtherFilterParameters)
-                .orElse(ImmutableMap.of());
+            .orElse(ImmutableMap.of());
 
-        Map<String, FeatureTypeMapping2> transformations;
+        Map<String, PropertyTransformation> transformations;
         if (coreConfiguration.isPresent()) {
             transformations = coreConfiguration.get().getTransformations();
             // TODO
         }
 
-        if (definitionPath.equals("/collections/{collectionId}/items")) {
-            String finalCollectionId = collectionId;
-            return ImmutableList.<OgcApiQueryParameter>builder()
-                    .addAll(generalList)
-                    .addAll(filterableFields.keySet().stream()
-                        .map(field -> {
-                            Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData, finalCollectionId, field);
-                            if (schema2.isEmpty()) {
-                                LOGGER.warn("Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.", field, finalCollectionId);
-                                return null;
-                            }
-                            return new ImmutableQueryParameterTemplateQueryable.Builder()
-                                    .apiId(apiData.getId())
-                                    .collectionId(finalCollectionId)
-                                    .name(field)
-                                    .description("Filter the collection by property '" + field + "'")
-                                    .schema(schema2.get())
-                                    .build();
-                        })
-                        .filter(Objects::nonNull)
-                        .collect(Collectors.toList()))
-                    .build();
-        }
+        List<OgcApiQueryParameter> build = Stream.concat(
+            generalList,
+            filterableFields.keySet().stream()
+                .map(field -> {
+                    Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData,
+                        collectionId, field);
+                    if (schema2.isEmpty()) {
+                        LOGGER.warn(
+                            "Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",
+                            field,
+                            collectionId);
+                        return null;
+                    }
+                    return new ImmutableQueryParameterTemplateQueryable.Builder()
+                        .apiId(apiData.getId())
+                        .collectionId(collectionId)
+                        .name(field)
+                        .description("Filter the collection by property '" + field + "'")
+                        .schema(schema2.get())
+                        .build();
+                })
+                .filter(Objects::nonNull))
+            .collect(Collectors.toList());
 
-        return generalList;
+        return build;
     }
 
     @GET

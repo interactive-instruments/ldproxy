@@ -1,4 +1,6 @@
 
 dependencies {
     provided project(":ogcapi-styles")
+
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

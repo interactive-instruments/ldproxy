@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -86,50 +86,42 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("tileMatrixSets")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_MATRIX_SETS);
+        String path = "/tileMatrixSets";
+        HttpMethods method = HttpMethods.GET;
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        String operationSummary = "retrieve a list of the available tiling schemes";
+        Optional<String> operationDescription = Optional.of("This operation fetches the set of tiling schemes supported by this API. " +
+                "For each tiling scheme the id, a title and the link to the tiling scheme object is provided.");
+        ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
+                .path(path)
+                .subResourceType("Tile Matrix Set");
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilderSet.putOperations(method.name(), operation);
+        definitionBuilder.putResources(path, resourceBuilderSet.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("tileMatrixSets")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_MATRIX_SETS);
-            String path = "/tileMatrixSets";
-            HttpMethods method = HttpMethods.GET;
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            String operationSummary = "retrieve a list of the available tiling schemes";
-            Optional<String> operationDescription = Optional.of("This operation fetches the set of tiling schemes supported by this API. " +
-                    "For each tiling scheme the id, a title and the link to the tiling scheme object is provided.");
-            ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
+        path = "/tileMatrixSets/{tileMatrixSetId}";
+        queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        if (!pathParameters.stream().filter(param -> param.getName().equals("tileMatrixSetId")).findAny().isPresent()) {
+            LOGGER.error("Path parameter 'tileMatrixSetId' missing for resource at path '" + path + "'. The GET method will not be available.");
+        } else {
+            operationSummary = "fetch information about the tiling scheme `{tileMatrixSetId}`";
+            operationDescription = Optional.of("Returns the definition of the tiling scheme according to the [OGC Two Dimensional Tile Matrix Set standard](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html).");
+            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                     .path(path)
-                    .subResourceType("Tile Matrix Set");
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+                    .pathParameters(pathParameters);
+            operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
             if (operation!=null)
-                resourceBuilderSet.putOperations(method.name(), operation);
-            definitionBuilder.putResources(path, resourceBuilderSet.build());
-
-            path = "/tileMatrixSets/{tileMatrixSetId}";
-            queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            if (!pathParameters.stream().filter(param -> param.getName().equals("tileMatrixSetId")).findAny().isPresent()) {
-                LOGGER.error("Path parameter 'tileMatrixSetId' missing for resource at path '" + path + "'. The GET method will not be available.");
-            } else {
-                operationSummary = "fetch information about the tiling scheme `{tileMatrixSetId}`";
-                operationDescription = Optional.of("Returns the definition of the tiling scheme according to the [OGC Two Dimensional Tile Matrix Set standard](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html).");
-                ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                        .path(path)
-                        .pathParameters(pathParameters);
-                operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations(method.name(), operation);
-                definitionBuilder.putResources(path, resourceBuilder.build());
-            }
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
+                resourceBuilder.putOperations(method.name(), operation);
+            definitionBuilder.putResources(path, resourceBuilder.build());
         }
 
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

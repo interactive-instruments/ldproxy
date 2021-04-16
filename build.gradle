@@ -24,13 +24,24 @@ dependencies {
     bundle subprojects
 }
 
+tasks.run {
+    debug = project.findProperty('debug') ?: false
+    args = project.findProperty('data') ? [project.findProperty('data')] : args 
+}
+
+tasks.test {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':testAll')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':testAll')
+}
+
+tasks.check {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':checkAll')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':checkAll')
+}
+
 apply from: 'snapshot.gradle'
 
 apply from: 'immutables.gradle'
-
-apply from: 'unit-tests.gradle'
-
-//apply from: 'integration-tests.gradle'
 
 apply from: 'license-headers.gradle'
 
@@ -41,45 +52,4 @@ apply from: 'license-report.gradle'
 //apply plugin: 'xtraplatform-docs'
 
 apply from: 'git-hooks.gradle'
-
-/*
-
-gradle-plugin-xtraplatform-docs-source
-
-xpdocs {
-    source: {
-        format: markdown|asciidoc,
-        layout: default|arc42,
-        arc42: {
-            goals: docs/01_introduction_and_goals.md,
-            ...
-        }
-    }
-}
-
-
-gradle-plugin-xtraplatform-docs
-
-xpdocs {
-    target: {
-        processor: default|asciidoctor,
-        theme: ii,
-        style: {
-            primaryColor: #111111,
-            ...
-        }
-    }
-}
-
-*/
-task allDependencies {
-    dependsOn allprojects.collect { "$it.path:dependencies" }
-}
-tasks.run {
-    debug = project.findProperty('debug') ?: false
-//    args= ["/home/zahnen/development/configs-ldproxy/inspire-nrw"]
-}
-
-tasks.check { dependsOn subprojects*.tasks*.findByPath('test') }
-
 

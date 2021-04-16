@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -99,178 +99,170 @@ public class EndpointObservationProcessing extends EndpointSubCollection {
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+          ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                  .apiEntrypoint("collections")
+                  .sortPriority(10020);
+          featureProcessInfo.getProcessingChains(apiData, ObservationProcess.class)
+                  .stream()
+                  .forEach(chain -> {
+                      final String subSubPath = chain.getSubSubPath();
+                      final String path = "/collections/{collectionId}" + subSubPath;
+                      final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+                      final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+                      final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+                      if (!optCollectionIdParam.isPresent()) {
+                          LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
+                          return;
+                      }
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("collections")
-                    .sortPriority(10020);
-            featureProcessInfo.getProcessingChains(apiData, ObservationProcess.class)
-                    .stream()
-                    .forEach(chain -> {
-                        final String subSubPath = chain.getSubSubPath();
-                        final String path = "/collections/{collectionId}" + subSubPath;
-                        final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-                        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-                        final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-                        if (!optCollectionIdParam.isPresent()) {
-                            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
-                            return;
-                        }
+                      final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+                      boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+                      final List<String> collectionIds = (explode) ?
+                              collectionIdParam.getValues(apiData) :
+                              ImmutableList.of("{collectionId}");
+                      collectionIds.stream()
+                              .forEach(collectionId -> {
+                                  if (explode) {
+                                      if (!chain.asList().get(0).getSupportedCollections(apiData).contains(collectionId))
+                                          // resources do not apply for this collection
+                                          return;
+                                  }
 
-                        final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                        boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                        final List<String> collectionIds = (explode) ?
-                                collectionIdParam.getValues(apiData) :
-                                ImmutableList.of("{collectionId}");
-                        collectionIds.stream()
-                                .forEach(collectionId -> {
-                                    if (explode) {
-                                        if (!chain.asList().get(0).getSupportedCollections(apiData).contains(collectionId))
-                                            // resources do not apply for this collection
-                                            return;
-                                    }
+                                  FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
+                                  ObservationProcessingConfiguration config = featureType.getExtension(ObservationProcessingConfiguration.class)
+                                                                                         .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration."));
+                                  Map<String, ProcessDocumentation> configDoc = config.getDocumentation();
+                                  String operationSummary = chain.getOperationSummary();
+                                  Optional<String> operationDescription = chain.getOperationDescription();
+                                  Optional<String> responseDescription = chain.getResponseDescription();
+                                  Optional<ExternalDocumentation> externalDocs = Optional.empty();
+                                  Map<String, List<Example>> examples = ImmutableMap.of();
+                                  List<String> tags;
+                                  String processId = subSubPath.substring(DAPA_PATH_ELEMENT.length()+2);
+                                  switch (processId) {
+                                      case "position:retrieve":
+                                          operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                  configDoc.get(processId).getSummary().get() :
+                                                  "retrieve a time series for a position";
+                                          operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                  configDoc.get(processId).getDescription() :
+                                                  Optional.of("Returns a time series at the selected location (parameter `coords` or `coordRefs`) " +
+                                                          "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                          "The time series contains values for each selected variable (parameter `variables`) for which " +
+                                                          "a value can be interpolated.\n\n" +
+                                                          "The time steps are determined from the information in the original data.");
+                                          break;
 
-                                    FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-                                    ObservationProcessingConfiguration config = featureType.getExtension(ObservationProcessingConfiguration.class)
-                                                                                           .orElseThrow(() -> new RuntimeException("Could not retrieve Observation Process configuration."));
-                                    Map<String, ProcessDocumentation> configDoc = config.getDocumentation();
-                                    String operationSummary = chain.getOperationSummary();
-                                    Optional<String> operationDescription = chain.getOperationDescription();
-                                    Optional<String> responseDescription = chain.getResponseDescription();
-                                    Optional<ExternalDocumentation> externalDocs = Optional.empty();
-                                    Map<String, List<Example>> examples = ImmutableMap.of();
-                                    List<String> tags;
-                                    String processId = subSubPath.substring(DAPA_PATH_ELEMENT.length()+2);
-                                    switch (processId) {
-                                        case "position:retrieve":
-                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
-                                                    configDoc.get(processId).getSummary().get() :
-                                                    "retrieve a time series for a position";
-                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
-                                                    configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns a time series at the selected location (parameter `coords` or `coordRefs`) " +
-                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
-                                                            "The time series contains values for each selected variable (parameter `variables`) for which " +
-                                                            "a value can be interpolated.\n\n" +
-                                                            "The time steps are determined from the information in the original data.");
-                                            break;
+                                      case "position:aggregate-time":
+                                          operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                  configDoc.get(processId).getSummary().get() :
+                                                  "retrieve aggregated observation values for a position, aggregated over time";
+                                          operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                  configDoc.get(processId).getDescription() :
+                                                  Optional.of("Returns observation values at the selected location (parameter `coords` or `coordsRef`) " +
+                                                          "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                          "All values in the time interval for each requested variable (parameter `variables`) are aggregated " +
+                                                          "and each of the requested statistical functions (parameter `functions`) is applied to " +
+                                                          "the aggregated values.");
+                                          break;
 
-                                        case "position:aggregate-time":
-                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
-                                                    configDoc.get(processId).getSummary().get() :
-                                                    "retrieve aggregated observation values for a position, aggregated over time";
-                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
-                                                    configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns observation values at the selected location (parameter `coords` or `coordsRef`) " +
-                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
-                                                            "All values in the time interval for each requested variable (parameter `variables`) are aggregated " +
-                                                            "and each of the requested statistical functions (parameter `functions`) is applied to " +
-                                                            "the aggregated values.");
-                                            break;
+                                      case "area:retrieve":
+                                          operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                  configDoc.get(processId).getSummary().get() :
+                                                  "retrieve a time series for each station in an area";
+                                          operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                  configDoc.get(processId).getDescription() :
+                                                  Optional.of("Returns a time series for each station in an area (parameter `box`, `coords` or `coordsRef`) " +
+                                                          "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                          "Each time series contains values for each selected variable (parameter `variables`) for which " +
+                                                          "a value has been observed at the station during the time interval.\n\n" +
+                                                          "The time steps are determined from the information in the original data.");
+                                          break;
 
-                                        case "area:retrieve":
-                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
-                                                    configDoc.get(processId).getSummary().get() :
-                                                    "retrieve a time series for each station in an area";
-                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
-                                                    configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns a time series for each station in an area (parameter `box`, `coords` or `coordsRef`) " +
-                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
-                                                            "Each time series contains values for each selected variable (parameter `variables`) for which " +
-                                                            "a value has been observed at the station during the time interval.\n\n" +
-                                                            "The time steps are determined from the information in the original data.");
-                                            break;
+                                      case "area:aggregate-time":
+                                          operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                  configDoc.get(processId).getSummary().get() :
+                                                  "retrieve aggregated observation values for each station in an area, aggregated over time";
+                                          operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                  configDoc.get(processId).getDescription() :
+                                                  Optional.of("Returns observation values for each station in an area (parameter `box`, `coords` or `coordsRef`) " +
+                                                          "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                          "All values of each station in the time interval for each requested variable (parameter `variables`) are aggregated " +
+                                                          "and each of the requested statistical functions (parameter `functions`) is applied to " +
+                                                          "the aggregated values.");
+                                          break;
 
-                                        case "area:aggregate-time":
-                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
-                                                    configDoc.get(processId).getSummary().get() :
-                                                    "retrieve aggregated observation values for each station in an area, aggregated over time";
-                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
-                                                    configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns observation values for each station in an area (parameter `box`, `coords` or `coordsRef`) " +
-                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
-                                                            "All values of each station in the time interval for each requested variable (parameter `variables`) are aggregated " +
-                                                            "and each of the requested statistical functions (parameter `functions`) is applied to " +
-                                                            "the aggregated values.");
-                                            break;
+                                      case "area:aggregate-space":
+                                          operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                  configDoc.get(processId).getSummary().get() :
+                                                  "retrieve a time series for an area, aggregated over all stations in the area";
+                                          operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                  configDoc.get(processId).getDescription() :
+                                                  Optional.of("Returns a time series for an area (parameter `bbox`, `coords` or `coordsRef`) " +
+                                                          "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                          "All values in the area for each requested variable (parameter `variables`) are aggregated " +
+                                                          "for each time step and each of the requested statistical functions (parameter `functions`) " +
+                                                          "is applied to the aggregated values.");
+                                          break;
 
-                                        case "area:aggregate-space":
-                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
-                                                    configDoc.get(processId).getSummary().get() :
-                                                    "retrieve a time series for an area, aggregated over all stations in the area";
-                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
-                                                    configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns a time series for an area (parameter `bbox`, `coords` or `coordsRef`) " +
-                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
-                                                            "All values in the area for each requested variable (parameter `variables`) are aggregated " +
-                                                            "for each time step and each of the requested statistical functions (parameter `functions`) " +
-                                                            "is applied to the aggregated values.");
-                                            break;
+                                      case "area:aggregate-space-time":
+                                          operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                  configDoc.get(processId).getSummary().get() :
+                                                  "retrieve aggregated observation values for an area, aggregated over space and time";
+                                          operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                  configDoc.get(processId).getDescription() :
+                                                  Optional.of("Returns observation values for an area (parameter `bbox`, `coords` or `coordsRef`) " +
+                                                          "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                          "All values for each requested variable (parameter `variables`) are aggregated " +
+                                                          "and each of the requested statistical functions (parameter `functions`) is applied to " +
+                                                          "the aggregated values.");
+                                          break;
 
-                                        case "area:aggregate-space-time":
-                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
-                                                    configDoc.get(processId).getSummary().get() :
-                                                    "retrieve aggregated observation values for an area, aggregated over space and time";
-                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
-                                                    configDoc.get(processId).getDescription() :
-                                                    Optional.of("Returns observation values for an area (parameter `bbox`, `coords` or `coordsRef`) " +
-                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
-                                                            "All values for each requested variable (parameter `variables`) are aggregated " +
-                                                            "and each of the requested statistical functions (parameter `functions`) is applied to " +
-                                                            "the aggregated values.");
-                                            break;
+                                      case "grid:retrieve":
+                                          operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                  configDoc.get(processId).getSummary().get() :
+                                                  "retrieve observations in a spatio-temporal cube";
+                                          operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                  configDoc.get(processId).getDescription() :
+                                                  Optional.of("Retrieves observation values for each cell in a spatio-temporal cube consisting of a rectangular " +
+                                                          "spatial grid (parameter `box` or `coordsRef`) and the time steps in a time interval (parameter `datetime`). " +
+                                                          "The time steps are determined from the information in the original data.\n\n" +
+                                                          "The cells of the spatial grid are determined by the parameters `width` and `height`. If only `width` " +
+                                                          "is provided, the value of `height` is derived from the area.\n\n" +
+                                                          "Each cell contains values for each selected variable (parameter `variables`) for which " +
+                                                          "a value could be interpolated from the observations.");
+                                          break;
 
-                                        case "grid:retrieve":
-                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
-                                                    configDoc.get(processId).getSummary().get() :
-                                                    "retrieve observations in a spatio-temporal cube";
-                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
-                                                    configDoc.get(processId).getDescription() :
-                                                    Optional.of("Retrieves observation values for each cell in a spatio-temporal cube consisting of a rectangular " +
-                                                            "spatial grid (parameter `box` or `coordsRef`) and the time steps in a time interval (parameter `datetime`). " +
-                                                            "The time steps are determined from the information in the original data.\n\n" +
-                                                            "The cells of the spatial grid are determined by the parameters `width` and `height`. If only `width` " +
-                                                            "is provided, the value of `height` is derived from the area.\n\n" +
-                                                            "Each cell contains values for each selected variable (parameter `variables`) for which " +
-                                                            "a value could be interpolated from the observations.");
-                                            break;
+                                      case "grid:aggregate-time":
+                                          operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
+                                                  configDoc.get(processId).getSummary().get() :
+                                                  "retrieve aggregated observations in a spatial grid, aggregated over time";
+                                          operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
+                                                  configDoc.get(processId).getDescription() :
+                                                  Optional.of("Retrieves observation values for each cell in a rectangular spatial grid (parameter `box` or `coordsRef`) " +
+                                                          "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
+                                                          "The cells of the spatial grid are determined by the parameters `width` and `height`. If only `width` " +
+                                                          "is provided, the value of `height` is derived from the area.\n\n" +
+                                                          "For each cell, all values in the time interval for each requested variable (parameter `variables`) are aggregated " +
+                                                          "and each of the requested statistical functions (parameter `functions`) is applied to " +
+                                                          "the aggregated values.");
+                                          break;
+                                  }
+                                  externalDocs = configDoc.containsKey(processId) ? configDoc.get(processId).getExternalDocs() : Optional.empty();
+                                  examples = configDoc.containsKey(processId) ? configDoc.get(processId).getExamples() : ImmutableMap.of();
+                                  String resourcePath = "/collections/" + collectionId + subSubPath;
+                                  ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
+                                          .path(resourcePath)
+                                          .pathParameters(pathParameters);
+                                  ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, TAGS);
+                                  if (operation!=null)
+                                      resourceBuilder.putOperations("GET", operation);
+                                  definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+                              });
+                  });
 
-                                        case "grid:aggregate-time":
-                                            operationSummary = configDoc.containsKey(processId) && configDoc.get(processId).getSummary().isPresent() ?
-                                                    configDoc.get(processId).getSummary().get() :
-                                                    "retrieve aggregated observations in a spatial grid, aggregated over time";
-                                            operationDescription = configDoc.containsKey(processId) && configDoc.get(processId).getDescription().isPresent() ?
-                                                    configDoc.get(processId).getDescription() :
-                                                    Optional.of("Retrieves observation values for each cell in a rectangular spatial grid (parameter `box` or `coordsRef`) " +
-                                                            "in the selected time interval or at the selected time instant (parameter `datetime`).\n\n" +
-                                                            "The cells of the spatial grid are determined by the parameters `width` and `height`. If only `width` " +
-                                                            "is provided, the value of `height` is derived from the area.\n\n" +
-                                                            "For each cell, all values in the time interval for each requested variable (parameter `variables`) are aggregated " +
-                                                            "and each of the requested statistical functions (parameter `functions`) is applied to " +
-                                                            "the aggregated values.");
-                                            break;
-                                    }
-                                    externalDocs = configDoc.containsKey(processId) ? configDoc.get(processId).getExternalDocs() : Optional.empty();
-                                    examples = configDoc.containsKey(processId) ? configDoc.get(processId).getExamples() : ImmutableMap.of();
-                                    String resourcePath = "/collections/" + collectionId + subSubPath;
-                                    ImmutableOgcApiResourceProcess.Builder resourceBuilder = new ImmutableOgcApiResourceProcess.Builder()
-                                            .path(resourcePath)
-                                            .pathParameters(pathParameters);
-                                    ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, TAGS);
-                                    if (operation!=null)
-                                        resourceBuilder.putOperations("GET", operation);
-                                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                                });
-                    });
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+          return definitionBuilder.build();
     }
 
     @GET

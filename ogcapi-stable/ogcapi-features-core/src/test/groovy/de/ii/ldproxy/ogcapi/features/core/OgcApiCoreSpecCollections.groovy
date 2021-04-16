@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,7 +20,20 @@ import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection
 import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollection
 import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollections
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableCommonConfiguration
-import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.domain.ApiExtension
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent
+import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
+import de.ii.ldproxy.ogcapi.domain.ImmutableRequestContext
+import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent
+import de.ii.ldproxy.ogcapi.domain.OgcApi
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2
 import de.ii.ldproxy.ogcapi.features.core.app.CollectionExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.app.CollectionsExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension
@@ -41,14 +54,9 @@ class OgcApiCoreSpecCollections extends Specification {
     static final OgcApiDataV2 datasetData = createDatasetData()
     static final de.ii.ldproxy.ogcapi.app.OgcApiEntity api = createOgcApiApiEntity()
     static final ApiRequestContext requestContext = createRequestContext()
-    static QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry)
+    static QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry, new I18nDefault())
     static final EndpointCollections collectionsEndpoint = createCollectionsEndpoint()
     static final EndpointCollection collectionEndpoint = createCollectionEndpoint()
-
-    def setupSpec() {
-        ogcApiQueriesHandlerCollections.i18n = new I18nDefault()
-    }
-
 
     def 'Requirement 13 A: collections response'() {
         given: 'A request to the server at /collections'
@@ -170,13 +178,13 @@ class OgcApiCoreSpecCollections extends Specification {
                             return new ImmutableApiMediaType.Builder()
                                     .type(MediaType.TEXT_HTML_TYPE)
                                     .build()
-                        }
+                }
 
                         @Override
                         ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
                             return new ImmutableApiMediaTypeContent.Builder()
                                     .build()
-                        }
+                }
 
                         @Override
                         Object getCollectionsEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
@@ -188,15 +196,14 @@ class OgcApiCoreSpecCollections extends Specification {
                             return ogcApiCollection
                         }
                     })
-                }
+                    }
 
                 if (extensionType == CollectionsExtension.class) {
                     return ImmutableList.of((T) new CollectionsExtensionFeatures(registry))
                 }
 
                 if (extensionType == CollectionExtension.class) {
-                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry)
-                    collectionExtension.i18n = new I18nDefault()
+                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault())
                     return ImmutableList.of((T) collectionExtension)
                 }
 
@@ -251,7 +258,7 @@ class OgcApiCoreSpecCollections extends Specification {
     static def createDatasetData() {
         return new ImmutableOgcApiDataV2.Builder()
                 .id('test')
-                .serviceType('WFS3')
+                .serviceType('OGC_API')
                 .putCollections('featureType1', new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                         .id('featureType1')
                         .label('FeatureType 1')
@@ -295,15 +302,11 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
     static def createCollectionsEndpoint() {
-        def endpoint = new EndpointCollections(registry)
-        endpoint.queryHandler = ogcApiQueriesHandlerCollections
-        return endpoint
+        return new EndpointCollections(registry, ogcApiQueriesHandlerCollections)
     }
 
     static def createCollectionEndpoint() {
-        def endpoint = new EndpointCollection(registry)
-        endpoint.queryHandler = ogcApiQueriesHandlerCollections
-        return endpoint
+        return new EndpointCollection(registry, ogcApiQueriesHandlerCollections)
     }
 
 }

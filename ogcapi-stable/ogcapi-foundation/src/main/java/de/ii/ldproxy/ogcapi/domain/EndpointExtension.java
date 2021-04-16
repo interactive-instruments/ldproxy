@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,11 +23,13 @@ import static de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition.SORT_PRIORITY_DU
 
 public interface EndpointExtension extends ApiExtension {
 
+    ApiEndpointDefinition DEFAULT_DEFINITION = new ImmutableApiEndpointDefinition.Builder()
+        .apiEntrypoint("")
+        .sortPriority(SORT_PRIORITY_DUMMY)
+        .build();
+
     default ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        return new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("")
-                .sortPriority(SORT_PRIORITY_DUMMY)
-                .build();
+        return DEFAULT_DEFINITION;
     }
 
     default ImmutableSet<ApiMediaType> getMediaTypes(OgcApiDataV2 apiData, String requestSubPath) {

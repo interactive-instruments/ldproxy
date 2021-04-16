@@ -1,3 +1,10 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.domain;
 
 import java.util.Optional;
@@ -9,9 +16,6 @@ public interface OgcApiQueryParameter extends ParameterExtension {
 
     boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method);
     default boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) { return isApplicable(apiData, definitionPath, method); }
-    default boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, Optional<String> collectionId, HttpMethods method) {
-        return collectionId.isPresent() ? isApplicable(apiData,definitionPath,collectionId.get(),method) : isApplicable(apiData,definitionPath,method);
-    }
 
     default Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) { return filterParameters; };
 }

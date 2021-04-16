@@ -1,3 +1,10 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.collections.domain;
 
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
@@ -26,9 +33,8 @@ public class QueryParameterFCollections extends QueryParameterF {
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return super.isApplicable(apiData, definitionPath, method) &&
-                definitionPath.matches("^/collections(?:/\\{collectionId\\})?/?$");
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.matches("^/collections(?:/\\{collectionId\\})?/?$");
     }
 
     @Override

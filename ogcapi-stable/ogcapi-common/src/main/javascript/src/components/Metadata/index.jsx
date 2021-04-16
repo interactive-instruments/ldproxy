@@ -1,56 +1,132 @@
-import React, { useState } from 'react';
-import { Box, Form, FormField, TextInput, TextArea } from 'grommet';
-import { InfoLabel, useDebounceFields } from '@xtraplatform/core'
+import React, { useCallback } from "react";
+import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
-// From https://reactjs.org/docs/hooks-state.html
-export default function Metadata({contactName, contactUrl, contactEmail, contactPhone, licenseName, licenseUrl, keywords, version, onChange}) {
+import { Box } from "grommet";
+import { AutoForm, TextField, getFieldsDefault } from "@xtraplatform/core";
+
+const fieldsTransformation = {
+  keywords: {
+    from: (value) => (Array.isArray(value) ? value.join() : value),
+    to: (value) =>
+      typeof value === "string"
+        ? value
+            .split(",")
+            .map((keyword) => keyword.trim())
+            .filter((keyword) => keyword.length > 0)
+        : value,
+  },
+};
+
+const Metadata = ({
+  id,
+  metadata = {},
+  defaults,
+  debounce,
+  onPending,
+  onChange,
+}) => {
+  const metadata2 = metadata || {}; //TODO: why do neither the props nor the deconstruct defaults work?
 
   const fields = {
-      contactName: contactName,
-      contactUrl: contactUrl,
-      contactEmail: contactEmail,
-      contactPhone: contactPhone,
-      licenseName: licenseName,
-      licenseUrl: licenseUrl,
-      keywords: keywords,
-      version: version
-    }
+    contactName: metadata2.contactName,
+    contactUrl: metadata2.contactUrl,
+    contactEmail: metadata2.contactEmail,
+    contactPhone: metadata2.contactPhone,
+    licenseName: metadata2.licenseName,
+    licenseUrl: metadata2.licenseUrl,
+    keywords: metadata2.keywords || [],
+    version: metadata2.version,
+  };
+  const fieldsDefault = getFieldsDefault(fields, defaults.metadata);
 
-  const postProcess = change => {
-    change.keywords = change.keywords.split(',').map(keyword => keyword.trim());
-    onChange(change);
-  }
+  const onMetadataChange = useCallback(
+    (change) => onChange({ metadata: change }),
+    []
+  );
 
-  const [state, setState] = useDebounceFields(fields, 2000, postProcess);
+  const { t } = useTranslation();
 
   return (
-    <Box pad={{ horizontal: 'small', vertical: 'medium' }} fill="horizontal">
-      <Form>
-        <FormField label={<InfoLabel label="Contact Name" />}>
-          <TextInput name="contactName" value={state.contactName} onChange={setState} />
-        </FormField>
-        <FormField label={<InfoLabel label="Contact URL" />}>
-          <TextInput name="contactUrl" value={state.contactUrl} onChange={setState} />
-        </FormField>
-        <FormField label={<InfoLabel label="Contact Email" />}>
-          <TextInput name="contactEmail" value={state.contactEmail} onChange={setState} />
-        </FormField>
-        <FormField label={<InfoLabel label="Contact Phone" />}>
-          <TextInput name="contactPhone" value={state.contactPhone} onChange={setState} />
-        </FormField>
-        <FormField label={<InfoLabel label="License Name" />}>
-          <TextInput name="licenseName" value={state.licenseName} onChange={setState} />
-        </FormField>
-        <FormField label={<InfoLabel label="License URL" />}>
-          <TextInput name="licenseUrl" value={state.licenseUrl} onChange={setState} />
-        </FormField>
-        <FormField label={<InfoLabel label="Keywords" />}>
-          <TextInput name="keywords" value={state.keywords} onChange={setState} />
-        </FormField>
-        <FormField label={<InfoLabel label="Version" />}>
-          <TextInput name="version" value={state.version} onChange={setState} />
-        </FormField>
-      </Form>
+    <Box pad={{ horizontal: "small", vertical: "medium" }} fill="horizontal">
+      <AutoForm
+        key={id}
+        fields={fields}
+        fieldsDefault={fieldsDefault}
+        fieldsTransformation={fieldsTransformation}
+        inheritedLabel={t("services/ogc_api:services.defaults._label")}
+        debounce={debounce}
+        onPending={onPending}
+        onChange={onMetadataChange}
+      >
+        <TextField
+          name="contactName"
+          label={t("services/ogc_api:Metadata.contactName._label")}
+          help={t("services/ogc_api:Metadata.contactName._description")}
+        />
+        <TextField
+          name="contactUrl"
+          label={t("services/ogc_api:Metadata.contactUrl._label")}
+          help={t("services/ogc_api:Metadata.contactUrl._description")}
+          type="url"
+        />
+        <TextField
+          name="contactEmail"
+          label={t("services/ogc_api:Metadata.contactEmail._label")}
+          help={t("services/ogc_api:Metadata.contactEmail._description")}
+          type="email"
+        />
+        <TextField
+          name="contactPhone"
+          label={t("services/ogc_api:Metadata.contactPhone._label")}
+          help={t("services/ogc_api:Metadata.contactPhone._description")}
+        />
+        <TextField
+          name="licenseName"
+          label={t("services/ogc_api:Metadata.licenseName._label")}
+          help={t("services/ogc_api:Metadata.licenseName._description")}
+        />
+        <TextField
+          name="licenseUrl"
+          label={t("services/ogc_api:Metadata.licenseUrl._label")}
+          help={t("services/ogc_api:Metadata.licenseUrl._description")}
+          type="url"
+        />
+        <TextField
+          area
+          name="keywords"
+          label={t("services/ogc_api:Metadata.keywords._label")}
+          help={t("services/ogc_api:Metadata.keywords._description")}
+        />
+        <TextField
+          name="version"
+          label={t("services/ogc_api:Metadata.version._label")}
+          help={t("services/ogc_api:Metadata.version._description")}
+        />
+      </AutoForm>
     </Box>
   );
-}
+};
+
+Metadata.displayName = "Metadata";
+
+Metadata.propTypes = {
+  metadata: PropTypes.shape({
+    keywords: PropTypes.arrayOf(PropTypes.string),
+  }),
+  defaults: PropTypes.object,
+  onChange: PropTypes.func.isRequired,
+};
+
+Metadata.defaultProps = {
+  metadata: {
+    keywords: [],
+  },
+  defaults: {
+    metadata: {
+      keywords: [],
+    },
+  },
+};
+
+export default Metadata;

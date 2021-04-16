@@ -8,6 +8,8 @@ Die Konfigurationsdatei `cfg.yml` befindet sich im Daten-Verzeichnis.
 |`server` |object | |Konfiguration des [Webserver](#webserver)
 |`httpClient` |object | |Konfiguration des [HTTP-Client](#http-client)
 |`logging` |object | |Konfiguration des [Logging](#logging)
+|`auth` |object | |Konfiguration der [Autorisierung](#auth)
+|`manager` |object | |Konfiguration des [Manager](#manager)
 
 <a name="store"></a>
 
@@ -46,10 +48,6 @@ store/overrides/{typ}/{id}.yml
 Defaults, Konfigurationsobjekte und Overrides werden in dieser Reihenfolge eingelesen und zusammengeführt. Das heißt Angaben im Konfigurationsobjekt überschreiben Angaben in Defaults und Angaben in Overrides überschreiben sowohl Angaben in Defaults als auch im Konfigurationsobjekt.
 
 Das Zusammenführen funktioniert auch für verschachtelte Strukturen, d.h. man muss in den verschiedenen Dateien keine Angaben wiederholen, sondern kann z.B. in Overrides nur gezielt die Angaben setzen, die man überschreiben will.
-
-<a name="merge-exceptions"></a>
-
-Ausnahmen, bei denen das Zusammenführen für verschachtelte Strukturen nicht funktioniert und ganze Objekte wiederholt werden müssen, sind ensprechend in der Beschreibung der [Konfigurationsobjekt-Typen](README.md#configuration-object-types) im Abschnitt ["Besonderheiten"](README.md#special-cases) genannt.
 
 Die zusammengeführten Konfigurationsobjekte müssen dann alle Pflichtangaben enthalten, ansonsten kommt es beim Start zu einem Fehler.
 
@@ -290,3 +288,20 @@ logging:
 ```
 
 Weitere mögliche Werte sind `OFF`, `ERROR` und `WARN`.
+
+<a name="auth"></a>
+
+## Autorisierung
+
+|Eigenschaft |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`jwtSigningKey` |string |Generiert beim Start |*HMAC SHA* Schlüssel zu Signierung der *JSON Web Token*. Falls nicht gesetzt wird bei jedem Start ein neuer Schlüssel generiert und alle ausgegebenen Tokens werden ungültig. Der generierte Schlüssel wird im Log als Warnung ausgegeben und kann einfach von dort in die Konfiguration kopiert werden.
+|`allowAnonymousAccess` |boolean |`false` |Anonymen Zugriff auf abgesicherte Ressourcen erlauben?
+
+<a name="manager"></a>
+
+## Manager
+
+|Eigenschaft |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`enabled` |boolean |`true` |Soll die Manager-App zur Verwaltung der Konfiguration aktiviert werden (siehe [Manager](README.md#manager))?

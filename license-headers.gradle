@@ -15,7 +15,7 @@ subprojects {
                 "**/*.js",
                 "**/*.css",
                 "**/*.xsd",
-                "**/template.html",
+                "**/*.html",
                 "**/*.json"])
         ext.year = Calendar.getInstance().get(Calendar.YEAR)
         ext.name = "interactive instruments GmbH"

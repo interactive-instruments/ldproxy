@@ -1,22 +1,33 @@
+/*
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.domain.*
-import de.ii.ldproxy.ogcapi.features.geojson.app.GeoJsonWriterProperties
-import de.ii.ldproxy.ogcapi.features.geojson.domain.*
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
+import de.ii.ldproxy.ogcapi.domain.OgcApi
+import de.ii.ldproxy.ogcapi.domain.URICustomizer
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ModifiableStateGeoJson
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import de.ii.xtraplatform.features.domain.FeatureProperty
 import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty
-import org.mockito.Mockito
 import spock.lang.Shared
 import spock.lang.Specification
 
 import java.util.stream.Collectors
 import java.util.stream.IntStream
-
-import static org.mockito.Mockito.mock
 
 class GeoJsonWriterPropertiesSpec extends Specification {
 
@@ -237,11 +248,6 @@ class GeoJsonWriterPropertiesSpec extends Specification {
                                                                                    boolean isCollection,
                                                                                    EpsgCrs crs) throws URISyntaxException {
         CrsTransformer crsTransformer = null
-        if (Objects.nonNull(crs)) {
-            crsTransformer = mock(CrsTransformer.class)
-            Mockito.when(crsTransformer.getTargetCrs())
-                    .thenReturn(crs)
-        }
 
         return ImmutableFeatureTransformationContextGeoJson.builder()
                 .crsTransformer(Optional.ofNullable(crsTransformer))

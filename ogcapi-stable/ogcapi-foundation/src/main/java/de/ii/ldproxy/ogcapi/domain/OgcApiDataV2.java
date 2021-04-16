@@ -1,6 +1,6 @@
 /**
- * Copyright 2020 interactive instruments GmbH
- * <p>
+ * Copyright 2021 interactive instruments GmbH
+ *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,6 +19,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import jersey.repackaged.com.google.common.collect.ImmutableList;
@@ -50,9 +51,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
         @Override
         public EntityDataBuilder<OgcApiDataV2> fillRequiredFieldsWithPlaceholders() {
-            String placeholder = "__DEFAULT__";
-            return this.id(placeholder)
-                .serviceType(placeholder);
+            return this.id(EntityDataDefaults.PLACEHOLDER)
+                       .serviceType(EntityDataDefaults.PLACEHOLDER);
         }
 
     }
@@ -89,19 +89,15 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     public abstract List<String> getTags();
 
     // TODO: move to ServiceData?
+    @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     public List<String> getSubPath() {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
         builder.add(getId());
         if (getApiVersion().isPresent())
             builder.add("v"+getApiVersion().get());
         return builder.build();
-    }
-
-    // TODO: move to ServiceData?
-    @Value.Derived
-    public int getSubPathLength() {
-        return 1 + (getApiVersion().isPresent() ? 1 : 0);
     }
 
     @JsonProperty(value = "api")
@@ -127,72 +123,36 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         return false;
     }
 
-    private Optional<CollectionExtent> merge(Optional<CollectionExtent> defaultExtent, Optional<CollectionExtent> collectionExtent) {
-        if (defaultExtent.isEmpty())
-            return collectionExtent;
-        else if (collectionExtent.isEmpty())
-            return defaultExtent;
-
-        return Optional.of(new ImmutableCollectionExtent.Builder()
-                                   .from(defaultExtent.get())
-                                   .from(collectionExtent.get())
-                                   .build());
-    }
-
-    private boolean isToBeMerged(CollectionExtent defaultExtent, Optional<CollectionExtent> collectionExtent) {
-        if (collectionExtent.isEmpty())
-            return true;
-
-        boolean spatial = collectionExtent.get().getSpatial().isPresent() || collectionExtent.get().getSpatialComputed().isPresent();
-        if (!spatial && (defaultExtent.getSpatialComputed().isPresent() || defaultExtent.getSpatial().isPresent()))
-            return true;
-
-        boolean temporal = collectionExtent.get().getTemporal().isPresent() || collectionExtent.get().getTemporalComputed().isPresent();
-        if (!temporal && (defaultExtent.getTemporalComputed().isPresent() || defaultExtent.getTemporal().isPresent()))
-            return true;
-
-        return false;
-    }
-
     @Value.Check
-    public OgcApiDataV2 mergeCollectionDefaults() {
-        boolean collectionsHaveMissingExtents = getDefaultExtent().isPresent() && getCollections().values()
-                                                                                                  .stream()
-                                                                                                  .anyMatch(collection -> isToBeMerged(getDefaultExtent().get(), collection.getExtent()));
+    public OgcApiDataV2 mergeBuildingBlocks() {
+        List<ExtensionConfiguration> distinctExtensions = getMergedExtensions();
+
+        // remove duplicates
+        if (getExtensions().size() > distinctExtensions.size()) {
+            return new ImmutableOgcApiDataV2.Builder().from(this)
+                                                      .extensions(distinctExtensions)
+                                                      .build();
+        }
 
         boolean collectionsHaveMissingParentExtensions = getCollections().values()
                                                                          .stream()
                                                                          .anyMatch(collection -> collection.getParentExtensions()
-                                                                                                           .size() < getExtensions().size());
+                                                                                                           .size() < getMergedExtensions().size());
 
-        if (collectionsHaveMissingExtents || collectionsHaveMissingParentExtensions) {
+        if (collectionsHaveMissingParentExtensions) {
             Map<String, FeatureTypeConfigurationOgcApi> mergedCollections = new LinkedHashMap<>(getCollections());
 
-            if (collectionsHaveMissingExtents) {
-                mergedCollections.values()
-                    .stream()
-                    .filter(featureTypeConfigurationOgcApi -> isToBeMerged(getDefaultExtent().get(), featureTypeConfigurationOgcApi.getExtent()))
-                    .forEach(featureTypeConfigurationOgcApi -> mergedCollections
-                        .put(featureTypeConfigurationOgcApi.getId(),
-                            featureTypeConfigurationOgcApi.getBuilder()
-                                .extent(merge(getDefaultExtent(), featureTypeConfigurationOgcApi.getExtent()))
-                                .build()));
-            }
-
-            if (collectionsHaveMissingParentExtensions) {
                 mergedCollections.values()
                     .forEach(featureTypeConfigurationOgcApi -> mergedCollections
                         .put(featureTypeConfigurationOgcApi.getId(),
                             featureTypeConfigurationOgcApi.getBuilder()
-                                .parentExtensions(getExtensions())
+                                                                                                                                                                   .parentExtensions(getMergedExtensions())
                                 .build()));
-            }
 
             return new ImmutableOgcApiDataV2.Builder().from(this)
                                                       .collections(mergedCollections)
                                                       .build();
         }
-
 
         return this;
     }
@@ -270,15 +230,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
      * @return the bounding box in the default CRS
      */
     public Optional<BoundingBox> getSpatialExtent(String collectionId) {
-        return getCollections().values()
-                               .stream()
-                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
-                                                                                           .equals(collectionId))
-                               .filter(FeatureTypeConfigurationOgcApi::getEnabled)
-                               .findFirst()
-                               .flatMap(FeatureTypeConfigurationOgcApi::getExtent)
-                               .flatMap(CollectionExtent::getSpatial)
-                               .or(() -> getDefaultExtent().flatMap(CollectionExtent::getSpatial));
+        return getExtent(collectionId).flatMap(CollectionExtent::getSpatial);
     }
 
     /**
@@ -317,14 +269,43 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
      * @return the temporal extent in the Gregorian calendar
      */
     public Optional<TemporalExtent> getTemporalExtent(String collectionId) {
+        return getExtent(collectionId).flatMap(CollectionExtent::getTemporal);
+    }
+
+    /**
+     * Determine extent of a collection in the dataset.
+     *
+     * @param collectionId the name of the feature type
+     * @return the extent
+     */
+    public Optional<CollectionExtent> getExtent(String collectionId) {
         return getCollections().values()
-                               .stream()
-                               .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
-                                                                                           .equals(collectionId))
-                               .filter(FeatureTypeConfigurationOgcApi::getEnabled)
-                               .findFirst()
-                               .flatMap(FeatureTypeConfigurationOgcApi::getExtent)
-                               .flatMap(CollectionExtent::getTemporal)
-                               .or(() -> getDefaultExtent().flatMap(CollectionExtent::getTemporal));
+            .stream()
+            .filter(featureTypeConfiguration -> featureTypeConfiguration.getId()
+                .equals(collectionId))
+            .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+            .findFirst()
+            .flatMap(FeatureTypeConfigurationOgcApi::getExtent)
+            .flatMap(collectionExtent -> mergeExtents(getDefaultExtent(), Optional.of(collectionExtent)))
+            .or(this::getDefaultExtent);
+    }
+
+    private Optional<CollectionExtent> mergeExtents(Optional<CollectionExtent> defaultExtent, Optional<CollectionExtent> collectionExtent) {
+        if (defaultExtent.isEmpty())
+            return collectionExtent;
+        else if (collectionExtent.isEmpty())
+            return defaultExtent;
+
+        return Optional.of(new ImmutableCollectionExtent.Builder()
+            .from(defaultExtent.get())
+            .from(collectionExtent.get())
+            .build());
+    }
+
+    public <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz, String collectionId) {
+        if (isCollectionEnabled(collectionId)) {
+            return getCollections().get(collectionId).getExtension(clazz);
+        }
+        return getExtension(clazz);
     }
 }

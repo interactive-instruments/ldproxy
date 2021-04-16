@@ -23,9 +23,9 @@ apply from: '../bintray.gradle'
 
 apply from: '../snapshot.gradle'
 
-apply from: '../unit-tests.gradle'
-
 apply from: '../license-headers.gradle'
 
 apply from: '../license-report.gradle'
 
+task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
+task testAll { dependsOn subprojects*.tasks*.findByPath('test') }

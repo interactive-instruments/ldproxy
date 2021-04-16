@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,7 +31,7 @@ public interface FeatureTransformations {
 
     Logger LOGGER = LoggerFactory.getLogger(FeatureTransformations.class);
 
-    Map<String, FeatureTypeMapping2> getTransformations();
+    Map<String, PropertyTransformation> getTransformations();
 
     @Value.Derived
     @JsonIgnore
@@ -111,7 +111,7 @@ public interface FeatureTransformations {
                                    .anyMatch(key -> key.matches(".*\\[[^\\]]*\\].*"));
     }
 
-    default Map<String, FeatureTypeMapping2> normalizeTransformationKeys(String buildingBlock, String collectionId) {
+    default Map<String, PropertyTransformation> normalizeTransformationKeys(String buildingBlock, String collectionId) {
         return getTransformations().entrySet()
                                    .stream()
                                    // normalize property names

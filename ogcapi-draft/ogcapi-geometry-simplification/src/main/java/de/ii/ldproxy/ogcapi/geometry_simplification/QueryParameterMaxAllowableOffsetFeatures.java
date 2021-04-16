@@ -1,3 +1,10 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.geometry_simplification;
 
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -14,7 +21,7 @@ import java.util.Map;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryParameter {
+public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
     @Override
     public String getName() {
@@ -29,10 +36,11 @@ public class QueryParameterMaxAllowableOffsetFeatures implements OgcApiQueryPara
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/collections/{collectionId}/items/{featureId}"));
+                 definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
     }
 
     private final Schema schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);

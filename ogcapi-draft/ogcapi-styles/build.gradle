@@ -1,4 +1,6 @@
 
 dependencies {
     provided project(":ogcapi-collections-queryables")
+
+    testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

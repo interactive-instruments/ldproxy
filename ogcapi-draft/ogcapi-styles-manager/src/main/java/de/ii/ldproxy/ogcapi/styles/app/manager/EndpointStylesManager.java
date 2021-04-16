@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -164,84 +164,76 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
-
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("styles")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLES_MANAGER);
-            String path = "/styles";
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
-            String operationSummary = "add a new style";
-            String description = "Adds a style to the style repository";
-            if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
-                description += " or just validates a style.\n" +
-                        "If the parameter `validate` is set to `yes`, the style will be validated before adding " +
-                        "the style to the server. If the parameter `validate` is set to `only`, the server will " +
-                        "not be changed and only the validation result will be returned";
-            }
-            description += ".\n" +
-                    "If a new style is created, the following rules apply:\n" +
-                    "* If the style submitted in the request body includes an identifier (this depends on " +
-                    "the style encoding), that identifier will be used. If a style with that identifier " +
-                    "already exists, an error is returned.\n" +
-                    "* If no identifier can be determined from the submitted style, the server will assign " +
-                    "a new identifier to the style.\n" +
-                    "* A minimal style metadata resource is created at `/styles/{styleId}/metadata`. Please " +
-                    "update the metadata using a PUT request to keep the style metadata consistent with " +
-                    "the style definition.\n" +
-                    "* The URI of the new style is returned in the header `Location`.\n";
-            Optional<String> operationDescription = Optional.of(description);
-            ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                    .path(path);
-            Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, HttpMethods.POST);
-            ApiOperation operation = addOperation(apiData, HttpMethods.POST, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("POST", operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-            path = "/styles/{styleId}";
-            ImmutableList<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
-            operationSummary = "replace a style or add a new style";
-            description = "Replace an existing style with the id `styleId`. If no such style exists, " +
-                    "a new style with that id is added.\n";
-            if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
-                description +=
-                        "If the parameter `validate` is set to `yes`, the style will be validated before adding " +
-                                "the style to the server. If the parameter `validate` is set to `only`, the server will " +
-                                "not be changed and only the validation result will be returned.\n";
-            }
-            description += "For updated styles, the style metadata resource at `/styles/{styleId}/metadata` " +
-                    "is not updated. For new styles a minimal style metadata resource is created. Please " +
-                    "update the metadata using a PUT request to keep the style metadata consistent with " +
-                    "the style definition.";
-            operationDescription = Optional.of(description);
-            resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            requestContent = getRequestContent(apiData, path, HttpMethods.PUT);
-            operation = addOperation(apiData, HttpMethods.PUT, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("PUT", operation);
-            queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
-            operationSummary = "delete a style";
-            operationDescription = Optional.of("Delete an existing style with the id `styleId`. If no such style exists, " +
-                    "an error is returned. Deleting a style also deletes the subordinate resources, " +
-                    "i.e., the style metadata.");
-            requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);
-            operation = addOperation(apiData, HttpMethods.DELETE, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("DELETE", operation);
-            definitionBuilder.putResources(path, resourceBuilder.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("styles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLES_MANAGER);
+        String path = "/styles";
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.POST);
+        String operationSummary = "add a new style";
+        String description = "Adds a style to the style repository";
+        if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
+            description += " or just validates a style.\n" +
+                    "If the parameter `validate` is set to `yes`, the style will be validated before adding " +
+                    "the style to the server. If the parameter `validate` is set to `only`, the server will " +
+                    "not be changed and only the validation result will be returned";
         }
+        description += ".\n" +
+                "If a new style is created, the following rules apply:\n" +
+                "* If the style submitted in the request body includes an identifier (this depends on " +
+                "the style encoding), that identifier will be used. If a style with that identifier " +
+                "already exists, an error is returned.\n" +
+                "* If no identifier can be determined from the submitted style, the server will assign " +
+                "a new identifier to the style.\n" +
+                "* A minimal style metadata resource is created at `/styles/{styleId}/metadata`. Please " +
+                "update the metadata using a PUT request to keep the style metadata consistent with " +
+                "the style definition.\n" +
+                "* The URI of the new style is returned in the header `Location`.\n";
+        Optional<String> operationDescription = Optional.of(description);
+        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                .path(path);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, HttpMethods.POST);
+        ApiOperation operation = addOperation(apiData, HttpMethods.POST, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations("POST", operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
+        path = "/styles/{styleId}";
+        ImmutableList<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
+        operationSummary = "replace a style or add a new style";
+        description = "Replace an existing style with the id `styleId`. If no such style exists, " +
+                "a new style with that id is added.\n";
+        if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
+            description +=
+                    "If the parameter `validate` is set to `yes`, the style will be validated before adding " +
+                            "the style to the server. If the parameter `validate` is set to `only`, the server will " +
+                            "not be changed and only the validation result will be returned.\n";
+        }
+        description += "For updated styles, the style metadata resource at `/styles/{styleId}/metadata` " +
+                "is not updated. For new styles a minimal style metadata resource is created. Please " +
+                "update the metadata using a PUT request to keep the style metadata consistent with " +
+                "the style definition.";
+        operationDescription = Optional.of(description);
+        resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                .path(path)
+                .pathParameters(pathParameters);
+        requestContent = getRequestContent(apiData, path, HttpMethods.PUT);
+        operation = addOperation(apiData, HttpMethods.PUT, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations("PUT", operation);
+        queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
+        operationSummary = "delete a style";
+        operationDescription = Optional.of("Delete an existing style with the id `styleId`. If no such style exists, " +
+                "an error is returned. Deleting a style also deletes the subordinate resources, " +
+                "i.e., the style metadata.");
+        requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);
+        operation = addOperation(apiData, HttpMethods.DELETE, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilder.putOperations("DELETE", operation);
+        definitionBuilder.putResources(path, resourceBuilder.build());
 
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     /**

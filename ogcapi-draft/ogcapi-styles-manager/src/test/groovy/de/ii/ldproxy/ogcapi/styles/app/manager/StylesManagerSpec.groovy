@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -346,7 +346,9 @@ class StylesManagerSpec extends Specification{
                 "      \"type\": \"fill\",\n" +
                 "      \"source\": \"default\",\n" +
                 "      \"source-layer\": \"collectionId \",\n" +
-                "      \"layout\": \"string\",\n" +
+                "      \"layout\": {\n" +
+                "        \"foo\": \"bar\"\n" +
+                "      },\n" +
                 "      \"paint\": {\n" +
                 "        \"fill-color\": \"#11083b\"\n" +
                 "      }\n" +
@@ -356,7 +358,9 @@ class StylesManagerSpec extends Specification{
                 "      \"type\": \"fill\",\n" +
                 "      \"source\": \"default\",\n" +
                 "      \"source-layer\": \"collectionId \",\n" +
-                "      \"layout\": \"string\",\n" +
+                "      \"layout\": {\n" +
+                "        \"foo\": \"bar\"\n" +
+                "      },\n" +
                 "      \"paint\": {\n" +
                 "        \"fill-color\": \"#11083b\"\n" +
                 "      }\n" +

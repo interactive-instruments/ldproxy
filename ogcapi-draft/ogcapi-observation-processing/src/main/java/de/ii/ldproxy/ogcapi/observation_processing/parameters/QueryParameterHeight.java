@@ -1,3 +1,10 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -17,7 +24,7 @@ import java.util.OptionalInt;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterHeight implements OgcApiQueryParameter {
+public class QueryParameterHeight extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final Schema schema;
     final FeatureProcessInfo featureProcessInfo;
@@ -39,9 +46,10 @@ public class QueryParameterHeight implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
-                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
+                featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid"));
     }
 
     @Override
@@ -49,7 +57,7 @@ public class QueryParameterHeight implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

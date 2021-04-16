@@ -1,5 +1,13 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
@@ -19,7 +27,7 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterQ implements OgcApiQueryParameter {
+public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final Schema baseSchema;
 
@@ -41,30 +49,26 @@ public class QueryParameterQ implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                method== HttpMethods.GET &&
-               definitionPath.equals("/collections/{collectionId}/items");
+               definitionPath.equals("/collections/{collectionId}/items"));
     }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-        return isEnabledForApi(apiData, collectionId) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + collectionId + method.name(), () ->
+            isEnabledForApi(apiData, collectionId) &&
                 method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items");
+                definitionPath.equals("/collections/{collectionId}/items"));
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        Optional<FeaturesCoreConfiguration> config = collectionData.getExtension(FeaturesCoreConfiguration.class);
-        if (config.isPresent() && config.get().isEnabled()) {
-            return !config.get()
-                          .getQueryables()
-                          .orElse(FeaturesCollectionQueryables.of())
-                          .getQ()
-                          .isEmpty();
-        }
-        return false;
+        return isExtensionEnabled(apiData.getCollections().get(collectionId), FeaturesCoreConfiguration.class, config -> !config.getQueryables()
+            .orElse(FeaturesCollectionQueryables.of())
+            .getQ()
+            .isEmpty());
     }
 
     @Override

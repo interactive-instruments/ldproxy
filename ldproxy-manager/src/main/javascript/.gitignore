@@ -109,8 +109,11 @@ dist
 
 # yarn v2
 
-.yarn
+.yarn/*
 .pnp.*
+!.yarn/plugins/
+!.yarn/releases/
+!.yarn/sdks/
 
 # Neutrino build directory
 build

@@ -1,3 +1,10 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.common.domain;
 
 import de.ii.ldproxy.ogcapi.domain.I18n;
@@ -14,7 +21,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterLang implements OgcApiQueryParameter {
+public class QueryParameterLang extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private Schema schema = null;
     private final ExtensionRegistry extensionRegistry;
@@ -36,8 +43,9 @@ public class QueryParameterLang implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
-                method== HttpMethods.GET;
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
+                method== HttpMethods.GET);
     }
 
     @Override
@@ -50,13 +58,11 @@ public class QueryParameterLang implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getUseLangParameter)
-                .orElse(false);
+        return isExtensionEnabled(apiData, FoundationConfiguration.class, FoundationConfiguration::getUseLangParameter);
     }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CommonConfiguration.class;
+        return FoundationConfiguration.class;
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
-import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
@@ -25,11 +24,6 @@ public class CapabilityCommon implements ApiBuildingBlock {
 
     public CapabilityCommon(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
-    }
-
-    @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableCommonConfiguration.Builder();
     }
 
     @Override

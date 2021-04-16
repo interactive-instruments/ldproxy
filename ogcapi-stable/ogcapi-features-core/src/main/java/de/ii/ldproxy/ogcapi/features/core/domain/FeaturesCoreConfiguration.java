@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,13 +13,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +37,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     List<String> ITEM_TYPES = ImmutableList.of("feature", "record");
 
     enum DefaultCrs {CRS84, CRS84h}
+
     enum ItemType {feature, record}
 
     int MINIMUM_PAGE_SIZE = 1;
@@ -78,13 +80,13 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     Map<String, Integer> getCoordinatePrecision();
 
     @Override
-    Map<String, FeatureTypeMapping2> getTransformations();
+    Map<String, PropertyTransformation> getTransformations();
 
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default EpsgCrs getDefaultEpsgCrs() {
-        return getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84;
+    default ImmutableEpsgCrs getDefaultEpsgCrs() {
+        return ImmutableEpsgCrs.copyOf(getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84);
     }
 
     @JsonIgnore
@@ -93,39 +95,39 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     default Map<String, String> getAllFilterParameters() {
         if (getQueryables().isPresent()) {
             FeaturesCollectionQueryables queryables = getQueryables().get();
-            ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
+            Map<String, String> parameters = new LinkedHashMap<>();
 
             if (!queryables.getSpatial()
                            .isEmpty()) {
-                builder.put(PARAMETER_BBOX, queryables.getSpatial()
+                parameters.put(PARAMETER_BBOX, queryables.getSpatial()
                                                       .get(0));
             } else {
-                builder.put(PARAMETER_BBOX, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
+                parameters.put(PARAMETER_BBOX, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
             }
 
             if (queryables.getTemporal()
                           .size() > 1) {
-                builder.put(PARAMETER_DATETIME, String.format("%s%s%s", queryables.getTemporal()
+                parameters.put(PARAMETER_DATETIME, String.format("%s%s%s", queryables.getTemporal()
                                                                                   .get(0), DATETIME_INTERVAL_SEPARATOR, queryables.getTemporal()
                                                                                                                                   .get(1)));
             } else if (!queryables.getTemporal()
                                   .isEmpty()) {
-                builder.put(PARAMETER_DATETIME, queryables.getTemporal()
+                parameters.put(PARAMETER_DATETIME, queryables.getTemporal()
                                                           .get(0));
             } else {
-                builder.put(PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
+                parameters.put(PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
             }
 
             queryables.getSpatial()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
             queryables.getTemporal()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
             queryables.getQ()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
             queryables.getOther()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
 
-            return builder.build();
+            return parameters;
         }
 
         return ImmutableMap.of(
@@ -140,14 +142,14 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     default Map<String, String> getOtherFilterParameters() {
         if (getQueryables().isPresent()) {
             FeaturesCollectionQueryables queryables = getQueryables().get();
-            ImmutableMap.Builder<String, String> builder = new ImmutableMap.Builder<>();
+            Map<String, String> parameters = new LinkedHashMap<>();
 
             queryables.getQ()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
             queryables.getOther()
-                      .forEach(property -> builder.put(property, property));
+                      .forEach(property -> parameters.put(property, property));
 
-            return builder.build();
+            return parameters;
         }
 
         return ImmutableMap.of();
@@ -158,7 +160,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @Value.Auxiliary
     default List<String> getQProperties() {
         if (getQueryables().isPresent()) {
-            return getQueryables().get().getQ();
+            return getQueryables().get()
+                                  .getQ();
         }
 
         return ImmutableList.of();
@@ -187,16 +190,20 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     default Optional<FeaturesCollectionQueryables> normalizeQueryables(String collectionId) {
         Optional<FeaturesCollectionQueryables> queryables = getQueryables();
         if (queryables.isPresent()) {
-            List<String> spatial = normalizeQueryables(queryables.get().getSpatial(), collectionId);
-            List<String> temporal = normalizeQueryables(queryables.get().getTemporal(), collectionId);
-            List<String> q = normalizeQueryables(queryables.get().getQ(), collectionId);
-            List<String> other = normalizeQueryables(queryables.get().getOther(), collectionId);
+            List<String> spatial = normalizeQueryables(queryables.get()
+                                                                 .getSpatial(), collectionId);
+            List<String> temporal = normalizeQueryables(queryables.get()
+                                                                  .getTemporal(), collectionId);
+            List<String> q = normalizeQueryables(queryables.get()
+                                                           .getQ(), collectionId);
+            List<String> other = normalizeQueryables(queryables.get()
+                                                               .getOther(), collectionId);
             queryables = Optional.of(new ImmutableFeaturesCollectionQueryables.Builder()
-                                             .spatial(spatial)
-                                             .temporal(temporal)
-                                             .q(q)
-                                             .other(other)
-                                             .build());
+                    .spatial(spatial)
+                    .temporal(temporal)
+                    .q(q)
+                    .other(other)
+                    .build());
         }
         return queryables;
     }
@@ -210,35 +217,54 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     default Optional<FeaturesCollectionQueryables> removeQueryables(Collection<String> queryablesToRemove) {
         Optional<FeaturesCollectionQueryables> queryables = getQueryables();
         if (queryables.isPresent()) {
-            List<String> spatial = removeQueryables(queryables.get().getSpatial(), queryablesToRemove);
-            List<String> temporal = removeQueryables(queryables.get().getTemporal(), queryablesToRemove);
-            List<String> q = removeQueryables(queryables.get().getQ(), queryablesToRemove);
-            List<String> other = removeQueryables(queryables.get().getOther(), queryablesToRemove);
+            List<String> spatial = removeQueryables(queryables.get()
+                                                              .getSpatial(), queryablesToRemove);
+            List<String> temporal = removeQueryables(queryables.get()
+                                                               .getTemporal(), queryablesToRemove);
+            List<String> q = removeQueryables(queryables.get()
+                                                        .getQ(), queryablesToRemove);
+            List<String> other = removeQueryables(queryables.get()
+                                                            .getOther(), queryablesToRemove);
             queryables = Optional.of(new ImmutableFeaturesCollectionQueryables.Builder()
-                                             .spatial(spatial)
-                                             .temporal(temporal)
-                                             .q(q)
-                                             .other(other)
-                                             .build());
+                    .spatial(spatial)
+                    .temporal(temporal)
+                    .q(q)
+                    .other(other)
+                    .build());
         }
         return queryables;
     }
 
     @Override
     default Builder getBuilder() {
-        return new ImmutableFeaturesCoreConfiguration.Builder();
+        return new ImmutableFeaturesCoreConfiguration.Builder().from(this);
     }
 
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        ImmutableFeaturesCoreConfiguration.Builder builder = ((ImmutableFeaturesCoreConfiguration.Builder) source.getBuilder())
-                .from(source)
-                .from(this);
+        ImmutableFeaturesCoreConfiguration.Builder builder = new ImmutableFeaturesCoreConfiguration.Builder().from(source)
+                                                                                                             .from(this);
 
-        //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
-        // try to find a better solution that also enables deep merges
-        if (!getCoordinatePrecision().isEmpty())
-            builder.coordinatePrecision(getCoordinatePrecision());
+        Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getTransformations());
+        getTransformations().forEach((key, transformation) -> {
+            if (mergedTransformations.containsKey(key)) {
+                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
+            } else {
+                mergedTransformations.put(key, transformation);
+            }
+        });
+        builder.transformations(mergedTransformations);
+
+        if (getQueryables().isPresent() && ((FeaturesCoreConfiguration) source).getQueryables()
+                                                                               .isPresent()) {
+            builder.queryables(getQueryables().get()
+                                              .mergeInto(((FeaturesCoreConfiguration) source).getQueryables()
+                                                                                             .get()));
+        }
+
+        Map<String, Integer> mergedCoordinatePrecision = new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getCoordinatePrecision());
+        mergedCoordinatePrecision.putAll(getCoordinatePrecision());
+        builder.coordinatePrecision(mergedCoordinatePrecision);
 
         return builder.build();
     }

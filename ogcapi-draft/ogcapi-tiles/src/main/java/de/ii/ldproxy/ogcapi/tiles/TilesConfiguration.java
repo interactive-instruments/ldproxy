@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,10 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.tiles;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -49,13 +53,13 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     Boolean getIgnoreInvalidGeometries();
 
     @Nullable
-    Map<String, MinMax> getSeeding();
-
-    @Nullable
     Map<String, MinMax> getZoomLevels();
 
     @Nullable
     Map<String, MinMax> getZoomLevelsCache();
+
+    @Nullable
+    Map<String, MinMax> getSeeding();
 
     @Nullable
     Map<String, List<PredefinedFilter>> getFilters();
@@ -90,31 +94,68 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
                 .from(source)
                 .from(this);
 
-        //TODO: this is a work-around for default from behaviour (map is not reset, which leads to duplicates in ImmutableMap)
-        // try to find a better solution that also enables deep merges
-        if (!getTileEncodings().isEmpty())
-            builder.tileEncodings(getTileEncodings());
-        if (!getTileSetEncodings().isEmpty())
-            builder.tileSetEncodings(getTileSetEncodings());
-        if (getSeeding()!=null)
-            builder.seeding(getSeeding());
-        if (getZoomLevels()!=null)
-            builder.zoomLevels(getZoomLevels());
-        if (getZoomLevelsCache()!=null)
-            builder.zoomLevelsCache(getZoomLevelsCache());
-        if (getFilters()!=null)
-            builder.filters(getFilters());
-        if (getRules()!=null)
-            builder.rules(getRules());
+        TilesConfiguration src = (TilesConfiguration) source;
+
+        List<String> tileEncodings = Objects.nonNull(src.getTileEncodings()) ? Lists.newArrayList(src.getTileEncodings()) : Lists.newArrayList();
+        getTileEncodings().forEach(tileEncoding -> {
+            if (!tileEncodings.contains(tileEncoding)) {
+                tileEncodings.add(tileEncoding);
+            }
+        });
+        builder.tileEncodings(tileEncodings);
+
+        List<String> tileSetEncodings = Objects.nonNull(src.getTileSetEncodings()) ? Lists.newArrayList(src.getTileSetEncodings()) : Lists.newArrayList();
+        getTileSetEncodings().forEach(tileSetEncoding -> {
+            if (!tileSetEncodings.contains(tileSetEncoding)) {
+                tileSetEncodings.add(tileSetEncoding);
+            }
+        });
+        builder.tileSetEncodings(tileSetEncodings);
+
+        Map<String, PropertyTransformation> mergedTransformations = Objects.nonNull(src.getTransformations()) ? Maps.newLinkedHashMap(src.getTransformations()) : Maps.newLinkedHashMap();
+        getTransformations().forEach((key, transformation) -> {
+            if (mergedTransformations.containsKey(key)) {
+                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
+            } else {
+                mergedTransformations.put(key, transformation);
+            }
+        });
+        builder.transformations(mergedTransformations);
+
+        Map<String, MinMax> mergedSeeding = Objects.nonNull(src.getSeeding()) ? Maps.newLinkedHashMap(src.getSeeding()) : Maps.newLinkedHashMap();
+        if (Objects.nonNull(getSeeding()))
+            getSeeding().forEach(mergedSeeding::put);
+        builder.seeding(mergedSeeding);
+
+        Map<String, MinMax> mergedZoomLevels = Objects.nonNull(src.getZoomLevels()) ? Maps.newLinkedHashMap(src.getZoomLevels()) : Maps.newLinkedHashMap();
+        if (Objects.nonNull(getZoomLevels()))
+            getZoomLevels().forEach(mergedZoomLevels::put);
+        builder.zoomLevels(mergedZoomLevels);
+
+        Map<String, MinMax> mergedZoomLevelsCache = Objects.nonNull(src.getZoomLevelsCache()) ? Maps.newLinkedHashMap(src.getZoomLevelsCache()) : Maps.newLinkedHashMap();
+        if (Objects.nonNull(getZoomLevelsCache()))
+            getZoomLevelsCache().forEach(mergedZoomLevelsCache::put);
+        builder.zoomLevelsCache(mergedZoomLevelsCache);
+
+        Map<String, List<Rule>> mergedRules = Objects.nonNull(src.getRules()) ? Maps.newLinkedHashMap(src.getRules()) : Maps.newLinkedHashMap();
+        if (Objects.nonNull(getRules()))
+            getRules().forEach(mergedRules::put);
+        builder.rules(mergedRules);
+
+        Map<String, List<PredefinedFilter>> mergedFilters = Objects.nonNull(src.getFilters()) ? Maps.newLinkedHashMap(src.getFilters()) : Maps.newLinkedHashMap();
+        if (Objects.nonNull(getFilters()))
+            getFilters().forEach(mergedFilters::put);
+        builder.filters(mergedFilters);
 
         return builder.build();
     }
 
     /**
-     *
      * @return seeding map also considering the zoom level configuration (drops zoom levels outside of the range from seeding)
      */
+    @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     default Map<String, MinMax> getEffectiveSeeding() {
         Map<String, MinMax> baseSeeding = getSeeding();
         if (Objects.isNull(baseSeeding))
@@ -128,15 +169,17 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         for (Map.Entry<String, MinMax> entry : baseSeeding.entrySet()) {
             if (zoomLevels.containsKey(entry.getKey())) {
                 MinMax minmax = zoomLevels.get(entry.getKey());
-                int minSeeding = entry.getValue().getMin();
-                int maxSeeding = entry.getValue().getMax();
+                int minSeeding = entry.getValue()
+                                      .getMin();
+                int maxSeeding = entry.getValue()
+                                      .getMax();
                 int minRange = minmax.getMin();
                 int maxRange = minmax.getMax();
                 if (maxSeeding >= minRange && minSeeding <= maxRange)
                     responseBuilder.put(entry.getKey(), new ImmutableMinMax.Builder()
-                                                                           .min(Math.max(minSeeding, minRange))
-                                                                           .max(Math.min(maxSeeding, maxRange))
-                                                                           .build());
+                            .min(Math.max(minSeeding, minRange))
+                            .max(Math.min(maxSeeding, maxRange))
+                            .build());
             }
         }
 

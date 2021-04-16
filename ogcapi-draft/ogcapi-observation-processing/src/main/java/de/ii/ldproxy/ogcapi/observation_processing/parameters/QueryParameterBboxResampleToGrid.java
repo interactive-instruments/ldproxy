@@ -1,3 +1,10 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.observation_processing.parameters;
 
 import com.google.common.base.Splitter;
@@ -26,7 +33,7 @@ import static de.ii.ldproxy.ogcapi.observation_processing.parameters.QueryParame
 @Component
 @Provides
 @Instantiate
-public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
+public class QueryParameterBboxResampleToGrid extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final Schema baseSchema;
     private final GeometryHelperWKT geometryHelper;
@@ -69,9 +76,10 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                method== HttpMethods.GET &&
-               featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid");
+               featureProcessInfo.matches(apiData, ObservationProcess.class, definitionPath,"grid"));
     }
 
     @Override
@@ -98,7 +106,7 @@ public class QueryParameterBboxResampleToGrid implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, ObservationProcessingConfiguration.class) ||
+        return OgcApiQueryParameter.super.isEnabledForApi(apiData) ||
                 apiData.getCollections()
                         .values()
                         .stream()

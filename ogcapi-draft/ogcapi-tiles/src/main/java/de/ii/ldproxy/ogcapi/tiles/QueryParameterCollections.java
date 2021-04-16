@@ -1,3 +1,10 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ldproxy.ogcapi.tiles;
 
 import com.google.common.base.Splitter;
@@ -20,7 +27,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCollections implements OgcApiQueryParameter {
+public class QueryParameterCollections extends ApiExtensionCache implements OgcApiQueryParameter {
 
     @Override
     public String getName() {
@@ -34,9 +41,10 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
                method== HttpMethods.GET &&
-               definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
+               definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
     }
 
     private Map<Integer,Schema> schemaMap = new ConcurrentHashMap<>();
@@ -67,12 +75,7 @@ public class QueryParameterCollections implements OgcApiQueryParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
-
-        return extension
-                .filter(TilesConfiguration::isEnabled)
-                .filter(TilesConfiguration::getMultiCollectionEnabled)
-                .isPresent();
+        return isExtensionEnabled(apiData, TilesConfiguration.class, TilesConfiguration::getMultiCollectionEnabled);
     }
 
     @Override

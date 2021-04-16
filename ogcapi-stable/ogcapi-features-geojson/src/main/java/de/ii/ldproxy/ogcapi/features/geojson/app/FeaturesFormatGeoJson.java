@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,7 +24,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTypeMapping2;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
@@ -184,7 +184,7 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                               .collect(Collectors.toUnmodifiableSet());
         for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
             String collectionId = entry.getKey();
-            for (Map.Entry<String, FeatureTypeMapping2> entry2 : entry.getValue().getTransformations().entrySet()) {
+            for (Map.Entry<String, PropertyTransformation> entry2 : entry.getValue().getTransformations().entrySet()) {
                 String property = entry2.getKey();
                 builder = entry2.getValue().validate(builder, collectionId, property, codelists);
             }
@@ -208,19 +208,19 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                   .next();
         }
         if (!collectionId.equals("{collectionId}")) {
-            Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
-                                                                         .get(collectionId)
-                                                                         .getExtension(GeoJsonConfiguration.class);
-            boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                  .isPresent();
-            SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
-            if (path.matches("/collections/[^//]+/items/?")) {
-                schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId, type);
-                schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId, type);
-            } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-                schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
-                schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
-            }
+        Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
+                                                                     .get(collectionId)
+                                                                     .getExtension(GeoJsonConfiguration.class);
+        boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                              .isPresent();
+        SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
+        if (path.matches("/collections/[^//]+/items/?")) {
+            schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId, type);
+            schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId, type);
+        } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
+            schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
+            schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
+        }
         }
         // TODO example
         return new ImmutableApiMediaTypeContent.Builder()
@@ -248,13 +248,13 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                       .next();
             }
             if (!collectionId.equals("{collectionId}")) {
-                // TODO change to MUTABLES
-                Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
-                                                                             .get(collectionId)
-                                                                             .getExtension(GeoJsonConfiguration.class);
-                boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                      .isPresent();
-                SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
+            // TODO change to MUTABLES
+            Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
+                                                                         .get(collectionId)
+                                                                         .getExtension(GeoJsonConfiguration.class);
+            boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
+                                                  .isPresent();
+            SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
                 schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
                 schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
             }

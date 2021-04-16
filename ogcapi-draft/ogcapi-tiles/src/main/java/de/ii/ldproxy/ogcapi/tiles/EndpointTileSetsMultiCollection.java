@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -81,32 +81,24 @@ public class EndpointTileSetsMultiCollection extends Endpoint implements Conform
     }
 
     @Override
-    public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        if (!isEnabledForApi(apiData))
-            return super.getDefinition(apiData);
+    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("tiles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS);
+        String path = "/tiles";
+        HttpMethods method = HttpMethods.GET;
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        String operationSummary = "retrieve a list of the available tile sets";
+        Optional<String> operationDescription = Optional.of("This operation fetches the list of multi-layer tile sets supported by this API.");
+        ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
+                .path(path)
+                .subResourceType("Tile Set");
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation!=null)
+            resourceBuilderSet.putOperations(method.name(), operation);
+        definitionBuilder.putResources(path, resourceBuilderSet.build());
 
-        int apiDataHash = apiData.hashCode();
-        if (!apiDefinitions.containsKey(apiDataHash)) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("tiles")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS);
-            String path = "/tiles";
-            HttpMethods method = HttpMethods.GET;
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-            String operationSummary = "retrieve a list of the available tile sets";
-            Optional<String> operationDescription = Optional.of("This operation fetches the list of multi-layer tile sets supported by this API.");
-            ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
-                    .path(path)
-                    .subResourceType("Tile Set");
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilderSet.putOperations(method.name(), operation);
-            definitionBuilder.putResources(path, resourceBuilderSet.build());
-
-            apiDefinitions.put(apiDataHash, definitionBuilder.build());
-        }
-
-        return apiDefinitions.get(apiDataHash);
+        return definitionBuilder.build();
     }
 
     @Path("")

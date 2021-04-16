@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,16 +7,30 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.Mergeable;
+import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
+import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCollectionQueryables.Builder.class)
-public interface FeaturesCollectionQueryables {
+public interface FeaturesCollectionQueryables extends Buildable<FeaturesCollectionQueryables>, Mergeable<FeaturesCollectionQueryables> {
+
+    abstract class Builder implements BuildableBuilder<FeaturesCollectionQueryables> {
+    }
+
+    @Override
+    default FeaturesCollectionQueryables.Builder getBuilder() {
+        return new ImmutableFeaturesCollectionQueryables.Builder().from(this);
+    }
 
     static FeaturesCollectionQueryables of() {
         return new ImmutableFeaturesCollectionQueryables.Builder().build();
@@ -30,7 +44,9 @@ public interface FeaturesCollectionQueryables {
 
     List<String> getOther();
 
+    @JsonIgnore
     @Value.Derived
+    @Value.Auxiliary
     default List<String> getAll() {
         return ImmutableList.<String>builder()
                 .addAll(getSpatial())
@@ -38,5 +54,24 @@ public interface FeaturesCollectionQueryables {
                 .addAll(getQ())
                 .addAll(getOther())
                 .build();
+    }
+
+    @Override
+    default FeaturesCollectionQueryables mergeInto(FeaturesCollectionQueryables source) {
+        return new ImmutableFeaturesCollectionQueryables.Builder().from(source)
+                                                                  .from(this)
+                                                                  .spatial(Stream.concat(source.getSpatial()
+                                                                                               .stream(), getSpatial().stream())
+                                                                                 .distinct()
+                                                                                 .collect(Collectors.toList()))
+                                                                  .temporal(Stream.concat(source.getTemporal()
+                                                                                                .stream(), getTemporal().stream())
+                                                                                  .distinct()
+                                                                                  .collect(Collectors.toList()))
+                                                                  .other(Stream.concat(source.getOther()
+                                                                                             .stream(), getOther().stream())
+                                                                               .distinct()
+                                                                               .collect(Collectors.toList()))
+                                                                  .build();
     }
 }

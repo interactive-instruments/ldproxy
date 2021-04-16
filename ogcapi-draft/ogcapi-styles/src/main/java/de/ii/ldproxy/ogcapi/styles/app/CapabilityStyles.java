@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 interactive instruments GmbH
+ * Copyright 2021 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,11 +28,6 @@ public class CapabilityStyles implements ApiBuildingBlock {
 
     public CapabilityStyles(@Requires ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
-    }
-
-    @Override
-    public ExtensionConfiguration.Builder getConfigurationBuilder() {
-        return new ImmutableStylesConfiguration.Builder();
     }
 
     @Override

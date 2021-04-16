@@ -4,24 +4,45 @@ pipeline:
 
   load-cache:
     image: drillster/drone-volume-cache
-    volumes: [/tmp:/cache]
+    volumes: [/var/lib/docker/tmp:/cache]
     restore: true
     mount:
       - .gradle/caches
       - .gradle/wrapper
 
-  build:
+  test:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - ./gradlew check
+    when:
+      event: [push,tag]
+
+  build-snapshot:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
       - cd ogcapi-stable
       - ../gradlew assemble publishToMavenLocal -PisSnapshot=true
       - cd ../ogcapi-draft
-      - ../gradlew assemble -PisSnapshot=true --init-script ../.maven-local.gradle
+      - ../gradlew assemble publishToMavenLocal -PisSnapshot=true --init-script ../.maven-local.gradle
       - cd ..
-      - ./gradlew dockerDistTar
+      - ./gradlew assemble dockerDistTar -PisSnapshot=true --init-script ./.maven-local.gradle
     when:
       event: [push]
+
+  build-release:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - cd ogcapi-stable
+      - ../gradlew assemble publishToMavenLocal
+      - cd ../ogcapi-draft
+      - ../gradlew assemble publishToMavenLocal --init-script ../.maven-local.gradle
+      - cd ..
+      - ./gradlew assemble dockerDistTar --init-script ./.maven-local.gradle
+    when:
+      event: [tag]
 
   libs-snapshot:
     image: openjdk:11-slim
@@ -93,7 +114,7 @@ pipeline:
 
   save-cache:
     image: drillster/drone-volume-cache
-    volumes: [/tmp:/cache]
+    volumes: [/var/lib/docker/tmp:/cache]
     rebuild: true
     mount:
       - .gradle/caches
