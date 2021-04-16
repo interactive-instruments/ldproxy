@@ -124,27 +124,27 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
 
         Map<String, MinMax> mergedSeeding = Objects.nonNull(src.getSeeding()) ? Maps.newLinkedHashMap(src.getSeeding()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getSeeding()))
-            getSeeding().forEach(mergedSeeding::putIfAbsent);
+            getSeeding().forEach(mergedSeeding::put);
         builder.seeding(mergedSeeding);
 
         Map<String, MinMax> mergedZoomLevels = Objects.nonNull(src.getZoomLevels()) ? Maps.newLinkedHashMap(src.getZoomLevels()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getZoomLevels()))
-            getZoomLevels().forEach(mergedZoomLevels::putIfAbsent);
+            getZoomLevels().forEach(mergedZoomLevels::put);
         builder.zoomLevels(mergedZoomLevels);
 
         Map<String, MinMax> mergedZoomLevelsCache = Objects.nonNull(src.getZoomLevelsCache()) ? Maps.newLinkedHashMap(src.getZoomLevelsCache()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getZoomLevelsCache()))
-            getZoomLevelsCache().forEach(mergedZoomLevelsCache::putIfAbsent);
+            getZoomLevelsCache().forEach(mergedZoomLevelsCache::put);
         builder.zoomLevelsCache(mergedZoomLevelsCache);
 
         Map<String, List<Rule>> mergedRules = Objects.nonNull(src.getRules()) ? Maps.newLinkedHashMap(src.getRules()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getRules()))
-            getRules().forEach(mergedRules::putIfAbsent);
+            getRules().forEach(mergedRules::put);
         builder.rules(mergedRules);
 
         Map<String, List<PredefinedFilter>> mergedFilters = Objects.nonNull(src.getFilters()) ? Maps.newLinkedHashMap(src.getFilters()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getFilters()))
-            getFilters().forEach(mergedFilters::putIfAbsent);
+            getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
 
         return builder.build();
