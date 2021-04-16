@@ -16,6 +16,7 @@ A feature provider is defined in a configuration file by an object with the foll
 |`typeValidation` |enum |`NONE` |Optional type definition validation with regard to the data source (only for SQL). `NONE` means no validation. With `LAX` the validation will fail and the provider will not start, when issues are detected that would definitely lead to runtime errors. Issues that might lead to runtime errors depending on the data will be logged as warning. With `STRICT` the validation will fail for any detected issue. That means the provider will only start if runtime errors with regard to the data source can be ruled out.
 |`auto` |boolean |`false` |Option to derive `types` definitions automatically from the data source. When enabled `types` must not be set.
 |`autoPersist` |boolean |`false` |Option to persist definitions generated with `auto: true` to the configuration file. Will remove `auto` und `autoPersist` from the configuration file. If the configuration file does not reside in `store/entities/providers` (see `additionalLocations`), a new file will be created in `store/entities/providers`. The `store` must not be `READ_ONLY` for this to take effect.
+|`autoTypes` |boolean |`[]` |List of source types to include in derived `types` definitions when `auto: true`. Currently only works for [SQL](sql.md).
 
 <a name="feature-provider-types"></a>
 
