@@ -1,6 +1,6 @@
 {
   "name": "@ogcapi/common",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "author": "interactive instruments GmbH",
   "license": "MPL-2.0",
   "module": "src/components/index.jsx",
