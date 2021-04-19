@@ -254,9 +254,26 @@ httpClient:
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`level` |string |`OFF` |Log-Level für Third-Party-Libraries. Sollte nur für Fehlerberichte an den Hersteller auf `WARN` gesetzt werden.
+|`level` |string |`INFO` |Konfiguration des [Log-Level](#log-level)
 |`appenders` |object | |Konfiguration der [Log-Ausgabe](#log-appenders)
-|`loggers` |object | |Konfiguration des [Log-Level](#log-level)
+|`sqlQueries` |boolean |false |Logging von SQL-Queries unabhängig vom Log-Level aktivieren.
+|`sqlResults` |boolean |false |Logging von Auszügen der Ergebnisse von SQL-Queries unabhängig vom Log-Level aktivieren.
+|`stackTraces` |boolean |false |Logging von Stacktraces bei Fehlermeldungen unabhängig vom Log-Level aktivieren.
+|`configDumps` |boolean |false |Logging von Dumps von tatsächlich angewendeten Konfigurationen unabhängig vom Log-Level aktivieren. Aktuell wird nur ein Dump der Globalen Konfiguration geloggt.
+|`loggers` |object | |Log-Level für einzelne Komponenten. Wird normalerweise nur auf Anforderung des Herstellers für Fehlerberichte oder von Entwicklern benötigt.
+
+<a name="log-level"></a>
+
+### Log-Level
+
+Der Log-Level für die Applikation ist standardmäßig `INFO`. Für die Fehlersuche kann er zum Beispiel auf `DEBUG` gesetzt werden:
+
+```yaml
+logging:
+  level: DEBUG
+```
+
+Weitere mögliche Werte sind `OFF`, `ERROR` und `WARN`.
 
 <a name="log-appenders"></a>
 
@@ -274,20 +291,6 @@ logging:
       archivedFileCount: 30
       timeZone: Europe/Berlin
 ```
-
-<a name="log-level"></a>
-
-### Log-Level
-
-Der Log-Level für die Applikation ist standardmäßig `INFO`. Für die Fehlersuche kann er zum Beispiel auf `DEBUG` gesetzt werden:
-
-```yaml
-logging:
-  loggers:
-    de.ii: DEBUG
-```
-
-Weitere mögliche Werte sind `OFF`, `ERROR` und `WARN`.
 
 <a name="auth"></a>
 
