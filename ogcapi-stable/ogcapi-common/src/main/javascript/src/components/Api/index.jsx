@@ -67,7 +67,7 @@ const ServiceEditApi = ({
       (bb2) =>
         bb2.dependencies &&
         bb2.dependencies.includes(bb.id.toLowerCase()) &&
-        mergedBuildingBlocksDefault[bb2.id].enabled &&
+        (mergedBuildingBlocksDefault[bb2.id].enabled || isDefaults) &&
         (!mergedBuildingBlocks[bb2.id] ||
           mergedBuildingBlocks[bb2.id].enabled !== false)
     );
@@ -79,7 +79,7 @@ const ServiceEditApi = ({
       (bb2) =>
         bb.dependencies &&
         bb.dependencies.includes(bb2.id.toLowerCase()) &&
-        (!mergedBuildingBlocksDefault[bb2.id].enabled ||
+        ((!mergedBuildingBlocksDefault[bb2.id].enabled && !isDefaults) ||
           (mergedBuildingBlocks[bb2.id] &&
             mergedBuildingBlocks[bb2.id].enabled === false))
     );

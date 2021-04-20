@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -50,7 +51,7 @@ public abstract class Endpoint implements EndpointExtension {
      */
     public Endpoint(ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
-        this.apiDefinitions =  new HashMap<>();
+        this.apiDefinitions =  new ConcurrentHashMap<>();
         this.formats = null;
     }
 
