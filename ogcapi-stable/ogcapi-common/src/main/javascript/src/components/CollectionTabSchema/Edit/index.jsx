@@ -77,7 +77,7 @@ const transformTo = (changes, path, schema) => {
   } else if (changes.enabledOverview === true) {
     if (!data.transformations) data.transformations = {};
     if (!data.transformations[path]) data.transformations[path] = {};
-    data.transformations[path].remove = "NEVER";
+    data.transformations[path].remove = null;
   }
 
   if (changes.enabled === false) {
@@ -87,7 +87,7 @@ const transformTo = (changes, path, schema) => {
   } else if (changes.enabled === true) {
     if (!data.transformations) data.transformations = {};
     if (!data.transformations[path]) data.transformations[path] = {};
-    data.transformations[path].remove = "NEVER";
+    data.transformations[path].remove = null;
   }
 
   if (changes.rename) {
