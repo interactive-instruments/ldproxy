@@ -83,15 +83,13 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     Map<String, PropertyTransformation> getTransformations();
 
     @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
+    @Value.Lazy
     default ImmutableEpsgCrs getDefaultEpsgCrs() {
         return ImmutableEpsgCrs.copyOf(getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84);
     }
 
     @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
+    @Value.Lazy
     default Map<String, String> getAllFilterParameters() {
         if (getQueryables().isPresent()) {
             FeaturesCollectionQueryables queryables = getQueryables().get();
@@ -137,8 +135,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     }
 
     @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
+    @Value.Lazy
     default Map<String, String> getOtherFilterParameters() {
         if (getQueryables().isPresent()) {
             FeaturesCollectionQueryables queryables = getQueryables().get();
@@ -156,8 +153,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     }
 
     @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
+    @Value.Lazy
     default List<String> getQProperties() {
         if (getQueryables().isPresent()) {
             return getQueryables().get()
@@ -167,6 +163,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
         return ImmutableList.of();
     }
 
+    @JsonIgnore
+    @Value.Lazy
     default boolean hasDeprecatedQueryables() {
         return getQueryables().orElse(FeaturesCollectionQueryables.of())
                               .getAll()

@@ -154,8 +154,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
      * @return seeding map also considering the zoom level configuration (drops zoom levels outside of the range from seeding)
      */
     @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
+    @Value.Lazy
     default Map<String, MinMax> getEffectiveSeeding() {
         Map<String, MinMax> baseSeeding = getSeeding();
         if (Objects.isNull(baseSeeding))
