@@ -27,6 +27,7 @@ class FilterParameterSpecification extends Specification {
     static final String CULTURE_PNT = "CulturePnt"
     static final String TRANSPORTATION_GROUND_CRV = "TransportationGroundCrv"
     static final String GEO_JSON = "application/geo+json";
+    static final String JSON = "application/json";
 
     RESTClient restClient = new RESTClient(SUT_URL)
 
@@ -844,11 +845,217 @@ class FilterParameterSpecification extends Specification {
         }
     }
 
-    // Logical operators TODO
+    // Spatial predicates including filter-crs
 
-    // Spatial predicates including filter-crs TODO
+    def "Spatial predicates"() {
+        given: "CulturePnt features in the Daraa dataset"
+        def path = API_PATH_DARAA + "/collections/" + CULTURE_PNT + "/items"
 
-    // Temporal predicates TODO
+        when:
+        def allFeatures = getRequest(restClient, path, null)
+        def collection = getRequest(restClient, API_PATH_DARAA + "/collections/" + CULTURE_PNT, null)
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(allFeatures)
+        assertSuccess(collection)
+        def envelopeCollection = "ENVELOPE(" + String.join(",", collection.responseData.extent.spatial.bbox[0].stream().map( n -> String.valueOf(n)).toList()) + ")"
+        def id = allFeatures.responseData.features[0].id
+        def lon = allFeatures.responseData.features[0].geometry.coordinates[0] as double
+        def lat = allFeatures.responseData.features[0].geometry.coordinates[1] as double
+        def delta = 0.01
+        def envelopeFeature = "ENVELOPE(" + String.join(",", String.valueOf(lon-delta), String.valueOf(lat-delta), String.valueOf(lon+delta), String.valueOf(lat+delta)) + ")"
+        def polygonFeature = "POLYGON((" + String.join(",",
+                String.valueOf(lon-delta)+" "+String.valueOf(lat),
+                String.valueOf(lon)+" "+String.valueOf(lat-delta),
+                String.valueOf(lon+delta)+" "+String.valueOf(lat),
+                String.valueOf(lon)+" "+String.valueOf(lat+delta),
+                String.valueOf(lon-delta)+" "+String.valueOf(lat)) + "))"
+        def epsg4326 = "http://www.opengis.net/def/crs/EPSG/0/4326"
+        def envelopeFeature4326 = "ENVELOPE(" + String.join(",", String.valueOf(lat-delta), String.valueOf(lon-delta), String.valueOf(lat+delta), String.valueOf(lon+delta)) + ")"
+        def polygonFeature4326 = "POLYGON((" + String.join(",",
+                String.valueOf(lat)+" "+String.valueOf(lon-delta),
+                String.valueOf(lat-delta)+" "+String.valueOf(lon),
+                String.valueOf(lat)+" "+String.valueOf(lon+delta),
+                String.valueOf(lat+delta)+" "+String.valueOf(lon),
+                String.valueOf(lat)+" "+String.valueOf(lon-delta)) + "))"
+
+        /* TODO not yet supported
+        when: "1. Data is selected using a filter InterSectS(geometry,geometry)"
+        def twoProperties = getRequest(restClient, path, [filter:"InterSectS(geometry,geometry)"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(twoProperties)
+
+        and: "Returns all features"
+        twoProperties.responseData.numberReturned == allFeatures.responseData.numberReturned
+         */
+
+        // TODO InterSectS is rejected
+        when: "2. Data is selected using a filter INTERSECTS(geometry,<bbox of collection>)"
+        def propertyAndLiteral = getRequest(restClient, path, [filter:"INTERSECTS(geometry," + envelopeCollection + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral.responseData.numberReturned == allFeatures.responseData.numberReturned
+
+        when: "3. Data is selected using a filter INTERSECTS(geometry,<bbox around first feature>)"
+        def propertyAndLiteral2 = getRequest(restClient, path, [filter:"INTERSECTS(geometry," + envelopeFeature + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2)
+
+        and: "Returns the feature"
+        propertyAndLiteral2.responseData.features.stream().anyMatch( f -> f.id == id )
+
+        when: "3b. The same request using EPSG:4326"
+        def propertyAndLiteral2b = getRequest(restClient, path, ["filter-crs":epsg4326, filter:"INTERSECTS(geometry," + envelopeFeature4326 + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral2, propertyAndLiteral2b)
+
+        when: "4. Data is selected using a filter INTERSECTS(geometry,<polygon around first feature>)"
+        def propertyAndLiteral3 = getRequest(restClient, path, [filter:"INTERSECTS(geometry," + polygonFeature + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral3)
+
+        and: "Returns the feature"
+        propertyAndLiteral3.responseData.features.stream().anyMatch( f -> f.id == id )
+
+        when: "4b. The same request using EPSG:4326"
+        def propertyAndLiteral3b = getRequest(restClient, path, ["filter-crs":epsg4326, filter:"INTERSECTS(geometry," + polygonFeature4326 + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral3b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral3, propertyAndLiteral3b)
+
+        when: "5. Data is selected using a filter NOT DISJOINT(geometry,<polygon around first feature>)"
+        def propertyAndLiteral4 = getRequest(restClient, path, [filter:"NOT DISJOINT(geometry," + polygonFeature + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral4)
+
+        and: "Returns the same features as INTERSECTS"
+        propertyAndLiteral4.responseData.numberReturned == propertyAndLiteral3.responseData.numberReturned
+        for (int i=0; i<propertyAndLiteral4.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral4.responseData.features[i], propertyAndLiteral3.responseData.features[i])
+        }
+
+        when: "5b. The same request using EPSG:4326"
+        def propertyAndLiteral4b = getRequest(restClient, path, ["filter-crs":epsg4326, filter:"NOT DISJOINT(geometry," + polygonFeature4326 + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral4b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral4, propertyAndLiteral4b)
+
+        when: "6. Data is selected using a filter DISJOINT(geometry,<polygon around first feature>)"
+        def propertyAndLiteral5 = getRequest(restClient, path, [filter:"DISJOINT(geometry," + polygonFeature + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral5)
+
+        and: "Returns the feature"
+        propertyAndLiteral5.responseData.numberReturned == allFeatures.responseData.numberReturned - propertyAndLiteral3.responseData.numberReturned
+        propertyAndLiteral5.responseData.features.stream().noneMatch( f -> f.id == id )
+
+        when: "6b. The same request using EPSG:4326"
+        def propertyAndLiteral5b = getRequest(restClient, path, ["filter-crs":epsg4326, filter:"DISJOINT(geometry," + polygonFeature4326 + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral5b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral5, propertyAndLiteral5b)
+
+        when: "7. Data is selected using a filter EQUALS(geometry,<point of first feature>)"
+        def propertyAndLiteral6 = getRequest(restClient, path, [filter:"EQUALS(geometry, POINT(" + String.valueOf(lon) + " " + String.valueOf(lat) + "))"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral6)
+
+        and: "Returns the feature"
+        propertyAndLiteral6.responseData.numberReturned == 1
+        assertFeature(propertyAndLiteral6.responseData.features[0], allFeatures.responseData.features[0])
+
+        when: "7b. The same request using EPSG:4326"
+        def propertyAndLiteral6b = getRequest(restClient, path, ["filter-crs":epsg4326, filter:"EQUALS(geometry, POINT(" + String.valueOf(lat) + " " + String.valueOf(lon) + "))"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral6b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral6, propertyAndLiteral6b)
+
+        when: "8. Data is selected using a filter NOT EQUALS(geometry,<point of first feature>)"
+        def propertyAndLiteral7 = getRequest(restClient, path, [filter:"NOT EQUALS(geometry, POINT(" + String.valueOf(lon) + " " + String.valueOf(lat) + "))"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral7)
+
+        and: "Returns everything but the feature"
+        propertyAndLiteral7.responseData.numberReturned == allFeatures.responseData.numberReturned - 1
+
+        when: "8b. The same request using EPSG:4326"
+        def propertyAndLiteral7b = getRequest(restClient, path, ["filter-crs":epsg4326, filter:"NOT EQUALS(geometry, POINT(" + String.valueOf(lat) + " " + String.valueOf(lon) + "))"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral7b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral7, propertyAndLiteral7b)
+
+        when: "9. Data is selected using a filter WITHIN(geometry,<polygon around first feature>)"
+        def propertyAndLiteral8 = getRequest(restClient, path, [filter:"WITHIN(geometry, " + polygonFeature + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral8)
+
+        and: "Returns the feature"
+        propertyAndLiteral8.responseData.numberReturned > 0
+        propertyAndLiteral8.responseData.features.stream().anyMatch( f -> f.id == id )
+
+        when: "9b. The same request using EPSG:4326"
+        def propertyAndLiteral8b = getRequest(restClient, path, ["filter-crs":epsg4326, filter:"WITHIN(geometry, " + polygonFeature4326 + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral8b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral8, propertyAndLiteral8b)
+
+        when: "10. Data is selected using a filter NOT WITHIN(geometry,<polygon around first feature>)"
+        def propertyAndLiteral9 = getRequest(restClient, path, [filter:"NOT WITHIN(geometry, " + polygonFeature + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral9)
+
+        and: "Returns everything but the feature"
+        propertyAndLiteral9.responseData.numberReturned == allFeatures.responseData.numberReturned - propertyAndLiteral8.responseData.numberReturned
+        propertyAndLiteral9.responseData.features.stream().noneMatch( f -> f.id == id )
+
+        when: "10b. The same request using EPSG:4326"
+        def propertyAndLiteral9b = getRequest(restClient, path, ["filter-crs":epsg4326, filter:"NOT WITHIN(geometry, " + polygonFeature4326 + ")"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral9b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral9, propertyAndLiteral9b)
+
+        // TODO tests for TOUCHES, OVERLAPS, CROSSES using other collections with line string/polygon geometry
+
+    }
+
+    // Temporal predicates
 
     def "Temporal predicates"() {
         given: "CulturePnt features in the Daraa dataset"
@@ -1005,11 +1212,13 @@ class FilterParameterSpecification extends Specification {
 
     // Array predicates TODO
 
+    // Logical operators TODO
+
     // filter-lang=cql-json TODO
 
     static void assertSuccess(Object response) {
         assert response.status == 200
-        assert response.getContentType() == "application/geo+json"
+        assert response.getContentType() == "application/geo+json" || response.getContentType() == "application/json"
     }
 
     static void assertFeature(Object feature1, Object feature2) {
@@ -1019,11 +1228,18 @@ class FilterParameterSpecification extends Specification {
         assert feature1.geometry == feature2.geometry
     }
 
+    static void assertSameResult(Object request1, Object request2) {
+        request1.responseData.numberReturned == request2.responseData.numberReturned
+        for (int i=0; i<request1.responseData.numberReturned; i++) {
+            assertFeature(request1.responseData.features[i], request2.responseData.features[i])
+        }
+    }
+
     static Object getRequest(restClient, path, query) {
         return restClient.request(Method.GET,  ContentType.JSON, { req ->
             uri.path = path
             uri.query = query
-            headers.Accept = GEO_JSON
+            headers.Accept = path.contains("/items") ? GEO_JSON : JSON
         })
     }
 
