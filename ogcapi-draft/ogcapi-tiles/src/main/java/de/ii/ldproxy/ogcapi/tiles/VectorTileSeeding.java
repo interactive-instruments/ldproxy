@@ -219,6 +219,11 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             FeaturesCoreConfiguration coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class)
                                                                  .get();
 
+            // skip collections without spatial queryable
+            if (coreConfiguration.getQueryables().isEmpty()
+                || coreConfiguration.getQueryables().get().getSpatial().isEmpty())
+                return true;
+
             TilesQueriesHandler.QueryInputTileSingleLayer queryInput = new ImmutableQueryInputTileSingleLayer.Builder()
                     .tile(tile)
                     .query(query)
@@ -264,6 +269,15 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                                                 .values()
                                                 .stream()
                                                 .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+                                                // skip collections without spatial queryable
+                                                .filter(collection -> {
+                                                    Optional<FeaturesCoreConfiguration> featuresConfiguration = collection.getExtension(FeaturesCoreConfiguration.class);
+                                                    if (featuresConfiguration.isEmpty()
+                                                        || featuresConfiguration.get().getQueryables().isEmpty()
+                                                        || featuresConfiguration.get().getQueryables().get().getSpatial().isEmpty())
+                                                        return false;
+                                                    return true;
+                                                })
                                                 .filter(collection -> {
                                                     Optional<TilesConfiguration> layerConfiguration = collection.getExtension(TilesConfiguration.class);
                                                     if (!layerConfiguration.isPresent() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().getMultiCollectionEnabled())
