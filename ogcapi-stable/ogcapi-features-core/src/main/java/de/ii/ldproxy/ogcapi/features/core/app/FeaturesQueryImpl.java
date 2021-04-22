@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.xtraplatform.cql.domain.And;
+import de.ii.xtraplatform.cql.domain.AnyInteracts;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
@@ -370,7 +371,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                       .collect(Collectors.toList()))
                     : Function.of("interval", ImmutableList.of(Property.of(timeField), Property.of(timeField)));
 
-            return Optional.of(CqlPredicate.of(TOverlaps.of(intervalFunction, temporalLiteral)));
+            return Optional.of(CqlPredicate.of(AnyInteracts.of(intervalFunction, temporalLiteral)));
         }
 
         return Optional.of(CqlPredicate.of(TEquals.of(timeField, temporalLiteral)));
