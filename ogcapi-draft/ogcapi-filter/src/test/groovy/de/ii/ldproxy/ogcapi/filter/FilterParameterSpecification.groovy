@@ -846,13 +846,166 @@ class FilterParameterSpecification extends Specification {
 
     // Logical operators TODO
 
-    // Spatial predicates TODO
+    // Spatial predicates including filter-crs TODO
 
     // Temporal predicates TODO
 
+    def "Temporal predicates"() {
+        given: "CulturePnt features in the Daraa dataset"
+        def path = API_PATH_DARAA + "/collections/" + CULTURE_PNT + "/items"
+
+        when:
+        def allFeatures = getRequest(restClient, path, null)
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(allFeatures)
+
+        /* TODO not yet supported
+        when: "1. Data is selected using a filter ZI001_SDV TEqualS ZI001_SDV"
+        def twoProperties = getRequest(restClient, path, [filter:"ZI001_SDV TEqualS ZI001_SDV"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(twoProperties)
+
+        and: "Returns all features"
+        twoProperties.responseData.numberReturned == allFeatures.responseData.numberReturned
+         */
+
+        when: "2. Data is selected using a filter ZI001_SDV BEFORE 2012-01-01T00:00:00Z"
+        def propertyAndLiteral = getRequest(restClient, path, [filter:"ZI001_SDV BEFORE 2012-01-01T00:00:00Z"])
+        def propertyAndLiteralCheck = allFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2012-01-01T00:00:00Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "3. Data is selected using a filter ZI001_SDV DURING ../2011-12-31T23:59:59Z"
+        def propertyAndLiteral2 = getRequest(restClient, path, [filter:"ZI001_SDV DURING ../2011-12-31T23:59:59Z"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral2.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral2.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "4. Data is selected using datetime=../2011-12-31T23:59:59Z"
+        def datetime = getRequest(restClient, path, [datetime:"../2011-12-31T23:59:59Z"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(datetime)
+
+        and: "Returns the same number of features"
+        datetime.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<datetime.responseData.numberReturned; i++) {
+            assertFeature(datetime.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "5. Data is selected using a filter ZI001_SDV AFTER 2011-12-31T23:59:59Z"
+        def propertyAndLiteral3 = getRequest(restClient, path, [filter:"ZI001_SDV AFTER 2011-12-31T23:59:59Z"])
+        def propertyAndLiteral3Check = allFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2011-12-31T23:59:59Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral3)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral3.responseData.numberReturned == propertyAndLiteral3Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral3.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral3.responseData.features[i], propertyAndLiteral3Check.get(i))
+        }
+
+        when: "6. Data is selected using a filter ZI001_SDV DURING 2012-01-01T00:00:00Z/.."
+        def propertyAndLiteral4 = getRequest(restClient, path, [filter:"ZI001_SDV DURING 2012-01-01T00:00:00Z/.."])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral4)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral4.responseData.numberReturned == propertyAndLiteral3Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral4.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral4.responseData.features[i], propertyAndLiteral3Check.get(i))
+        }
+
+        when: "7. Data is selected using datetime=2012-01-01T00:00:00Z/.."
+        def datetime2 = getRequest(restClient, path, [datetime:"2012-01-01T00:00:00Z/.."])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(datetime2)
+
+        and: "Returns the same number of features"
+        datetime2.responseData.numberReturned == propertyAndLiteral3Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<datetime2.responseData.numberReturned; i++) {
+            assertFeature(datetime2.responseData.features[i], propertyAndLiteral3Check.get(i))
+        }
+
+        when: "8. Data is selected using a filter ZI001_SDV TEQUALS 2011-12-26T20:55:27Z"
+        def propertyAndLiteral5 = getRequest(restClient, path, [filter:"ZI001_SDV TEQUALS 2011-12-26T20:55:27Z"])
+        def propertyAndLiteral5Check = allFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV == '2011-12-26 20:55:27' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral5)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral5.responseData.numberReturned == propertyAndLiteral5Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral5.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral5.responseData.features[i], propertyAndLiteral5Check.get(i))
+        }
+
+        when: "9. Data is selected using datetime=2011-12-26T20:55:27Z"
+        def datetime3 = getRequest(restClient, path, [datetime:"2011-12-26T20:55:27Z"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(datetime3)
+
+        and: "Returns the same number of features"
+        datetime3.responseData.numberReturned == propertyAndLiteral5Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<datetime3.responseData.numberReturned; i++) {
+            assertFeature(datetime3.responseData.features[i], propertyAndLiteral5Check.get(i))
+        }
+
+        /* TODO only Z seems to be supported?
+        when: "10. Data is selected using a filter ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"
+        def propertyAndLiteral6 = getRequest(restClient, path, [filter:"ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral6)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral6.responseData.numberReturned == propertyAndLiteral5Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral6.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral6.responseData.features[i], propertyAndLiteral5Check.get(i))
+        }
+         */
+    }
+
     // Array predicates TODO
 
-    // CQL JSON TODO
+    // filter-lang=cql-json TODO
 
     static void assertSuccess(Object response) {
         assert response.status == 200
