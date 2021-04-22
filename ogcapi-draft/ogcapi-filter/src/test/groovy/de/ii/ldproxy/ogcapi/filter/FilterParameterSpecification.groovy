@@ -266,7 +266,7 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns the expected features"
         for (int i=0; i<literalAndProperty.responseData.numberReturned; i++) {
-            // TODO assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
+            // FIXME assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
         }
     }
 
@@ -346,7 +346,7 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns the expected features"
         for (int i=0; i<literalAndProperty.responseData.numberReturned; i++) {
-            // TODO assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
+            // FIXME assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
         }
     }
 
@@ -426,7 +426,7 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns the expected features"
         for (int i=0; i<literalAndProperty.responseData.numberReturned; i++) {
-            // TODO assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
+            // FIXME assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
         }
     }
 
@@ -506,7 +506,7 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns the expected features"
         for (int i=0; i<literalAndProperty.responseData.numberReturned; i++) {
-            // TODO assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
+            // FIXME assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
         }
     }
 
@@ -520,7 +520,7 @@ class FilterParameterSpecification extends Specification {
         then: "Success and returns GeoJSON"
         assertSuccess(allFeatures)
 
-        /* TODO does not yet work
+        /* FIXME does not yet work
         when: "1. Data is selected using a filter F_CODE LiKe F_CODE"
         def twoProperties = getRequest(restClient, path, [filter:"F_CODE LiKe F_CODE"])
 
@@ -630,7 +630,7 @@ class FilterParameterSpecification extends Specification {
         then: "Success and returns GeoJSON"
         assertSuccess(allFeatures)
 
-        /* TODO not yet supported
+        /* FIXME not yet supported
         when: "1. Data is selected using a filter ZI037_REL BeTweeN ZI037_REL AnD ZI037_REL"
         def twoProperties = getRequest(restClient, path, [filter:"ZI037_REL BeTweeN ZI037_REL AnD ZI037_REL"])
 
@@ -710,7 +710,7 @@ class FilterParameterSpecification extends Specification {
             assertFeature(propertyAndLiteral4.responseData.features[i], propertyAndLiteral4Check.get(i))
         }
 
-        /* TODO not yet supported
+        /* FIXME not yet supported
         when: "7. Data is selected using a filter 6 BeTweeN 0 AnD ZI037_REL"
         def literalAndProperty = getRequest(restClient, path, [filter:"6 BeTweeN 0 AnD ZI037_REL"])
         def literalAndPropertyCheck = allFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL>=6 ).toList()
@@ -740,7 +740,7 @@ class FilterParameterSpecification extends Specification {
 
         // TODO need test dataset to test expressions with two properties
 
-        /* TODO not yet supported?
+        /* FIXME not yet supported?
         when: "1. Data is selected using a filter F_CODE iN ('AL030', 'AL012')"
         def propertyAndLiteralString = getRequest(restClient, path, [filter:"F_CODE iN ('AL030', 'AL012')"])
         def propertyAndLiteralStringCheck = allFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE.equals('AL012') || f.properties.F_CODE.equals('AL030') ).toList()
@@ -879,7 +879,7 @@ class FilterParameterSpecification extends Specification {
                 String.valueOf(lat+delta)+" "+String.valueOf(lon),
                 String.valueOf(lat)+" "+String.valueOf(lon-delta)) + "))"
 
-        /* TODO not yet supported
+        /* FIXME not yet supported
         when: "1. Data is selected using a filter InterSectS(geometry,geometry)"
         def twoProperties = getRequest(restClient, path, [filter:"InterSectS(geometry,geometry)"])
 
@@ -1066,7 +1066,7 @@ class FilterParameterSpecification extends Specification {
         then: "Success and returns GeoJSON"
         assertSuccess(allFeatures)
 
-        /* TODO not yet supported
+        /* FIXME not yet supported
         when: "1. Data is selected using a filter ZI001_SDV TEqualS ZI001_SDV"
         def twoProperties = getRequest(restClient, path, [filter:"ZI001_SDV TEqualS ZI001_SDV"])
 
@@ -1192,7 +1192,7 @@ class FilterParameterSpecification extends Specification {
             assertFeature(datetime3.responseData.features[i], propertyAndLiteral5Check.get(i))
         }
 
-        /* TODO only Z seems to be supported?
+        /* FIXME only Z seems to be supported?
         when: "10. Data is selected using a filter ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"
         def propertyAndLiteral6 = getRequest(restClient, path, [filter:"ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"])
 
@@ -1207,11 +1207,56 @@ class FilterParameterSpecification extends Specification {
             assertFeature(propertyAndLiteral6.responseData.features[i], propertyAndLiteral5Check.get(i))
         }
          */
+
+        // TODO ANYINTERACTS, TEQUALS, AFTER, BEFORE and DURING are the only implemented predicates;
+        //      add tests for BEGINS, BEGUNBY, TCONTAINS, ENDEDBY, ENDS, MEETS, METBY, TOVERLAPS,
+        //      OVERLAPPEDBY once they are implemented
     }
 
     // Array predicates TODO
 
-    // Logical operators TODO
+    // Logical operators
+
+    def "Logical operators"() {
+        given: "CulturePnt features in the Daraa dataset"
+        def path = API_PATH_DARAA + "/collections/" + CULTURE_PNT + "/items"
+
+        when:
+        def allFeatures = getRequest(restClient, path, null)
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(allFeatures)
+
+        when: "1. Data is selected using a filter F_CODE=F_CODE AnD NoT (F_CODE='AL030' oR (ZI001_SDV AFTER 2011-12-31T23:59:59Z aNd ZI037_REL iS nULL))"
+        def logical = getRequest(restClient, path, [filter: "F_CODE=F_CODE AnD NoT (F_CODE='AL030' oR (ZI001_SDV AFTER 2011-12-31T23:59:59Z aNd ZI037_REL iS nULL))"])
+        def logicalCheck = allFeatures.responseData.features.stream()
+                .filter(f -> !(f.properties.F_CODE == 'AL030' || (f.properties.ZI001_SDV > '2011-12-31T23:59:59Z' && Objects.isNull(f.properties.ZI037_REL))))
+                .toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(logical)
+
+        and: "Returns all selected features"
+        logical.responseData.numberReturned == logicalCheck.size()
+        for (int i = 0; i < logical.responseData.numberReturned; i++) {
+            assertFeature(logical.responseData.features[i], logicalCheck.get(i))
+        }
+
+        when: "2. Data is selected using a filter F_CODE='AL030' or F_CODE='AL012'"
+        def logical2 = getRequest(restClient, path, [filter: "F_CODE='AL030' or F_CODE='AL012'"])
+        def logical2Check = allFeatures.responseData.features.stream().filter(f -> f.properties.F_CODE == 'AL030' || f.properties.F_CODE == 'AL012').toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(logical2)
+
+        and: "Returns the same number of features"
+        logical2.responseData.numberReturned == logical2Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i = 0; i < logical2.responseData.numberReturned; i++) {
+            assertFeature(logical2.responseData.features[i], logical2Check.get(i))
+        }
+    }
 
     // filter-lang=cql-json TODO
 
