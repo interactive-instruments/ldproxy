@@ -740,9 +740,8 @@ class FilterParameterSpecification extends Specification {
 
         // TODO need test dataset to test expressions with two properties
 
-        /* FIXME not yet supported?
         when: "1. Data is selected using a filter F_CODE iN ('AL030', 'AL012')"
-        def propertyAndLiteralString = getRequest(restClient, path, [filter:"F_CODE iN ('AL030', 'AL012')"])
+        def propertyAndLiteralString = getRequest(restClient, path, [filter:"F_CODE in ('AL030','AL012')"])
         def propertyAndLiteralStringCheck = allFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE.equals('AL012') || f.properties.F_CODE.equals('AL030') ).toList()
 
         then: "Success and returns GeoJSON"
@@ -757,8 +756,8 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "1. Data is selected using a filter F_CODE NoT iN ('AL030', 'AL012')"
-        def propertyAndLiteral2String = getRequest(restClient, path, [filter:"F_CODE NoT iN ('AL030', 'AL012')"])
-        def propertyAndLiteral2StringCheck = allFeatures.responseData.features.stream().filter( f -> !f.properties.F_CODE.equals('AL012') && !f.properties.F_CODE.equals('AL030') ).toList()
+        def propertyAndLiteralString2 = getRequest(restClient, path, [filter:"F_CODE NoT iN ('AL030', 'AL012')"])
+        def propertyAndLiteralString2Check = allFeatures.responseData.features.stream().filter( f -> !f.properties.F_CODE.equals('AL012') && !f.properties.F_CODE.equals('AL030') ).toList()
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteralString2)
@@ -772,7 +771,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL iN (11, 12)"
-        def propertyAndLiteralNumeric = getRequest(restClient, path, [filter:"ZI037_REL iN (11, 12)"])
+        def propertyAndLiteralNumeric = getRequest(restClient, path, [filter:"ZI037_REL in (11, 12)"])
         def propertyAndLiteralNumericCheck = allFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && (f.properties.ZI037_REL==11 || f.properties.ZI037_REL==12) ).toList()
 
         then: "Success and returns GeoJSON"
@@ -788,7 +787,7 @@ class FilterParameterSpecification extends Specification {
 
         when: "4. Data is selected using a filter ZI037_REL NoT iN (11, 12)"
         def propertyAndLiteralNumeric2 = getRequest(restClient, path, [filter:"ZI037_REL NoT iN (11, 12)"])
-        def propertyAndLiteralNumeric2Check = allFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && (f.properties.ZI037_REL==11 || f.properties.ZI037_REL==12) ).toList()
+        def propertyAndLiteralNumeric2Check = allFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && !(f.properties.ZI037_REL==11 || f.properties.ZI037_REL==12) ).toList()
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteralNumeric2)
@@ -800,8 +799,6 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<propertyAndLiteralNumeric2.responseData.numberReturned; i++) {
             assertFeature(propertyAndLiteralNumeric2.responseData.features[i], propertyAndLiteralNumeric2Check.get(i))
         }
-
-         */
     }
 
     def "Operator null"() {
@@ -1077,8 +1074,8 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == allFeatures.responseData.numberReturned
          */
 
-        when: "2. Data is selected using a filter ZI001_SDV BEFORE 2012-01-01T00:00:00Z"
-        def propertyAndLiteral = getRequest(restClient, path, [filter:"ZI001_SDV BEFORE 2012-01-01T00:00:00Z"])
+        when: "2. Data is selected using a filter ZI001_SDV BeForE 2012-01-01T00:00:00Z"
+        def propertyAndLiteral = getRequest(restClient, path, [filter:"ZI001_SDV BeForE 2012-01-01T00:00:00Z"])
         def propertyAndLiteralCheck = allFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2012-01-01T00:00:00Z' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1092,8 +1089,8 @@ class FilterParameterSpecification extends Specification {
             assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
         }
 
-        when: "3. Data is selected using a filter ZI001_SDV DURING ../2011-12-31T23:59:59Z"
-        def propertyAndLiteral2 = getRequest(restClient, path, [filter:"ZI001_SDV DURING ../2011-12-31T23:59:59Z"])
+        when: "3. Data is selected using a filter ZI001_SDV DuRinG ../2011-12-31T23:59:59Z"
+        def propertyAndLiteral2 = getRequest(restClient, path, [filter:"ZI001_SDV DuRinG ../2011-12-31T23:59:59Z"])
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral2)
