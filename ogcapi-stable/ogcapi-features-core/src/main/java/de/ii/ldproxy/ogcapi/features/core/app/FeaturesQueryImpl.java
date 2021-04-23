@@ -117,6 +117,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                                 .type(featureTypeId)
                                                                                 .filter(filter)
+                                                                                .returnsSingleFeature(true)
                                                                                 .crs(coreConfiguration.getDefaultEpsgCrs());
 
         for (OgcApiQueryParameter parameter : allowedParameters) {
