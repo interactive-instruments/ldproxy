@@ -3265,10 +3265,10 @@ __metadata:
     "@storybook/addon-essentials": ^6.0.10
     "@storybook/addon-links": ^6.0.10
     "@storybook/react": ^6.0.10
-    "@xtraplatform/core": ^2.0.0-beta.12
-    "@xtraplatform/manager": ^2.0.0-beta.10
+    "@xtraplatform/core": ^2.0.0-beta.13
+    "@xtraplatform/manager": ^2.0.0-beta.12
     "@xtraplatform/neutrino": ^2.0.0-beta.5
-    "@xtraplatform/services": ^2.0.0-beta.9
+    "@xtraplatform/services": ^2.0.0-beta.10
     apollo-link-rest: ^0.8.0-beta.0
     babel-loader: "*"
     core-js: ^3
@@ -5245,7 +5245,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xtraplatform/core@^2.0.0-beta.12, @xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core":
+"@xtraplatform/core@^2.0.0-beta.13, @xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core"
   dependencies:
@@ -5296,14 +5296,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@xtraplatform/manager@^2.0.0-beta.10, @xtraplatform/manager@^2.0.0-beta.11, @xtraplatform/manager@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/manager":
+"@xtraplatform/manager@^2.0.0-beta.12, @xtraplatform/manager@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/manager":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/manager@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/manager"
   dependencies:
     "@apollo/client": ^3
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/mocha": ^9.3.0
-    "@xtraplatform/core": ^2.0.0-beta.12
+    "@xtraplatform/core": ^2.0.0-beta.13
     "@xtraplatform/neutrino": ^2.0.0-beta.4
     apollo-link-rest: ^0.8.0-beta.0
     core-js: ^3
@@ -5335,7 +5335,7 @@ __metadata:
     styled-components: ^5
   peerDependencies:
     "@apollo/client": ^3
-    "@xtraplatform/core": ^2.0.0-beta.12
+    "@xtraplatform/core": ^2.0.0-beta.13
     feature-u: ^3
     grommet: ^2
     grommet-icons: ^4
@@ -5374,15 +5374,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xtraplatform/services@^2.0.0-beta.9, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
+"@xtraplatform/services@^2.0.0-beta.10, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript"
   dependencies:
     "@apollo/client": ^3
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/mocha": ^9.3.0
-    "@xtraplatform/core": ^2.0.0-beta.12
-    "@xtraplatform/manager": ^2.0.0-beta.11
+    "@xtraplatform/core": ^2.0.0-beta.13
+    "@xtraplatform/manager": ^2.0.0-beta.12
     "@xtraplatform/neutrino": ^2.0.0-beta.4
     apollo-link-rest: ^0.8.0-beta.0
     core-js: ^3
@@ -5411,8 +5411,8 @@ __metadata:
     styled-components: ^5
   peerDependencies:
     "@apollo/client": ^3
-    "@xtraplatform/core": ^2.0.0-beta.12
-    "@xtraplatform/manager": ^2.0.0-beta.11
+    "@xtraplatform/core": ^2.0.0-beta.13
+    "@xtraplatform/manager": ^2.0.0-beta.12
     feature-u: ^3
     grommet: ^2
     grommet-icons: ^4
@@ -12529,10 +12529,10 @@ fsevents@^1.2.7:
     "@neutrinojs/react": ^9.3.0
     "@ogcapi/common": ^1.0.0-beta.1
     "@pmmmwh/react-refresh-webpack-plugin": ^0.4.3
-    "@xtraplatform/core": ^2.0.0-beta.12
-    "@xtraplatform/manager": ^2.0.0-beta.11
+    "@xtraplatform/core": ^2.0.0-beta.13
+    "@xtraplatform/manager": ^2.0.0-beta.12
     "@xtraplatform/neutrino": ^2.0.0-beta.5
-    "@xtraplatform/services": ^2.0.0-beta.9
+    "@xtraplatform/services": ^2.0.0-beta.10
     apollo-link-rest: ^0.8.0-beta.0
     eslint: ^7
     eslint-plugin-babel: "*"

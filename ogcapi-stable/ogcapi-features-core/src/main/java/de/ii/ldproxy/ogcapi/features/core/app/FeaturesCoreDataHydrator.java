@@ -83,44 +83,25 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
     @Override
     public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
-
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
-        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
-        MODE apiValidation = apiData.getApiValidation();
+
+        OgcApiDataV2 data = apiData;
+        if (data.isAuto() && data.getCollections()
+            .isEmpty()) {
+          data = new ImmutableOgcApiDataV2.Builder()
+              .from(data)
+              .collections(generateCollections(featureProvider))
+              .build();
+
+        }
+
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(data);
+        MODE apiValidation = data.getApiValidation();
 
         // The behaviour depends on the requested validation approach
         // NONE: no validation during hydration
         // LAX: try to remove invalid options, but start the service with the valid options, if possible
         // STRICT: no validation during hydration, validation will be done in onStartup() and startup will fail in case of an error
-
-        OgcApiDataV2 data = apiData;
-        if (data.isAuto() && data.getCollections()
-                                 .isEmpty()) {
-            data = new ImmutableOgcApiDataV2.Builder()
-                    .from(data)
-                    .collections(generateCollections(featureProvider))
-                    .build();
-
-        }
-
-        if (apiValidation== MODE.LAX) {
-            // LAX: remove collections without a feature type
-            List<String> invalidCollections = featuresCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
-            if (!invalidCollections.isEmpty()) {
-                invalidCollections.stream()
-                                  .forEach(collectionId -> LOGGER.error("Collection '{}' has been removed during hydration, because its feature type was not found in the provider schema.", collectionId));
-
-                data = new ImmutableOgcApiDataV2.Builder()
-                        .from(data)
-                        .collections(
-                                data.getCollections()
-                                    .entrySet()
-                                    .stream()
-                                    .filter(collection -> !invalidCollections.contains(collection.getKey()))
-                                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
-                        .build();
-            }
-        }
 
         // get Features Core configurations to process, normalize property names unless in STRICT mode
         Map<String, FeaturesCoreConfiguration> coreConfigs = data.getCollections()
@@ -165,6 +146,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                                                  .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         // update data with changes
+        // also disable invalid collections where either the feature type is not found or has no property with role id
         // also update label and description, if we have information in the provider
         data = new ImmutableOgcApiDataV2.Builder()
                 .from(data)
@@ -174,17 +156,25 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                             .stream()
                             .map(entry -> {
                                 final String collectionId = entry.getKey();
-                                if (!coreConfigs.containsKey(collectionId))
-                                    return entry;
-
-                                final FeaturesCoreConfiguration config = coreConfigs.get(collectionId);
-                                final String buildingBlock = config.getBuildingBlock();
-
+                                final Optional<FeaturesCoreConfiguration> coreConfiguration = Optional.ofNullable(coreConfigs.get(collectionId));
                                 final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
                                 final FeatureSchema schema = featureSchemas.get(collectionId);
 
+                                final boolean featureTypeNotFound = Objects.isNull(schema);
+                                final boolean idNotFound = !featureTypeNotFound && schema.getAllNestedProperties().stream().noneMatch(FeatureSchema::isId);
+                                final boolean disabled = featureTypeNotFound || idNotFound;
+
+                                if (featureTypeNotFound) {
+                                  LOGGER.error("Collection '{}' has been disabled because its feature type was not found in the provider schema.", collectionId);
+                                }
+                                if (idNotFound) {
+                                  LOGGER.error("Collection '{}' has been disabled because its feature type has no property with role ID in the provider schema.", collectionId);
+                                }
+
                                 return new AbstractMap.SimpleImmutableEntry<String, FeatureTypeConfigurationOgcApi>(collectionId, new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                         .from(entry.getValue())
+                                        // disable if feature type or id not found
+                                        .enabled(!disabled)
                                         // use the type label from the provider, if the service configuration has just the default label
                                         .label(collectionData.getLabel().equals(collectionId) && Objects.nonNull(schema) && schema.getLabel().isPresent()
                                                        ? schema.getLabel().get()
@@ -194,16 +184,19 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                                                                        .orElse(Objects.nonNull(schema) ? schema.getDescription()
                                                                                                                                .orElse(null)
                                                                                                                        : null )))
-                                        .extensions(new ImmutableList.Builder<ExtensionConfiguration>()
+                                        .extensions(coreConfiguration.isPresent()
+                                            ? new ImmutableList.Builder<ExtensionConfiguration>()
                                                 // do not touch any other extension
                                                 .addAll(entry.getValue()
                                                                   .getExtensions()
                                                                   .stream()
-                                                                  .filter(ext -> !ext.getBuildingBlock().equals(buildingBlock))
+                                                                  .filter(ext -> !ext.getBuildingBlock().equals(coreConfiguration.get().getBuildingBlock()))
                                                                   .collect(Collectors.toUnmodifiableList()))
-                                                // add the Features Core configuration
-                                                .add(config)
+                                                // add the modified Features Core configuration
+                                                .add(coreConfiguration.get())
                                                 .build()
+                                            : entry.getValue()
+                                                    .getExtensions()
                                         )
                                         .build());
                             })
@@ -315,7 +308,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
     private boolean hasMissingBboxes(OgcApiDataV2 data) {
         return data.getCollections().values()
                            .stream()
-                           .anyMatch(collection -> hasMissingBbox(data, collection.getId()));
+                           .anyMatch(collection -> collection.getEnabled() && hasMissingBbox(data, collection.getId()));
     }
 
     private boolean hasMissingBbox(OgcApiDataV2 data, String collectionId) {
@@ -394,7 +387,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
         return data.getCollections()
                 .values()
                 .stream()
-                .anyMatch(collection -> hasMissingInterval(data, collection.getId()));
+                .anyMatch(collection -> collection.getEnabled() && hasMissingInterval(data, collection.getId()));
     }
 
     private boolean hasMissingInterval(OgcApiDataV2 data, String collectionId) {

@@ -293,6 +293,17 @@ public class EndpointTileMultiCollection extends Endpoint {
         }
 
         Map<String, FeatureQuery> queryMap = collections.stream()
+                // skip collections without spatial queryable
+                .filter(collectionId -> {
+                    Optional<FeaturesCoreConfiguration> featuresConfiguration = apiData.getCollections()
+                                                                                       .get(collectionId)
+                                                                                       .getExtension(FeaturesCoreConfiguration.class);
+                    if (featuresConfiguration.isEmpty()
+                        || featuresConfiguration.get().getQueryables().isEmpty()
+                        || featuresConfiguration.get().getQueryables().get().getSpatial().isEmpty())
+                        return false;
+                    return true;
+                })
                 .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> {
                     String featureTypeId = apiData.getCollections()
                                                   .get(collectionId)
