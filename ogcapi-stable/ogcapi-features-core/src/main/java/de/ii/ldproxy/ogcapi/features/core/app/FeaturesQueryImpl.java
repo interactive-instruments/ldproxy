@@ -270,7 +270,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                        try {
                                                            cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs);
                                                        } catch (Throwable e) {
-                                                           throw new IllegalArgumentException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
+                                                           throw new IllegalArgumentException(String.format("The parameter '%s' is invalid", filter.getKey()), e);
                                                        }
 
                                                        List<String> invalidProperties = cql.findInvalidProperties(cqlPredicate, filterableFields.keySet());
