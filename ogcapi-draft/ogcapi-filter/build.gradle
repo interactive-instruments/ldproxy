@@ -5,7 +5,7 @@ dependencies {
 }
 
 test {
-    // deactivate to skip filter tests
-    environment "SUT_URL", "http://localhost:7080"
+    // activate to run filter tests
+    // environment "SUT_URL", "http://localhost:7080"
 }
 

@@ -161,6 +161,20 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns all features"
         literals.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
+
+        when: "7. Data is selected using a filter \"F_CODE\"='AL030' with a double quote"
+        def propertyAndLiteral2String = getRequest(restClient, CULTURE_PNT_PATH, [filter:"\"F_CODE\"='AL030'"])
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2String)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral2String.responseData.numberReturned == propertyAndLiteralStringCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral2String.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral2String.responseData.features[i], propertyAndLiteralStringCheck.get(i))
+        }
     }
 
     def "Operator neq"() {
@@ -1336,7 +1350,6 @@ class FilterParameterSpecification extends Specification {
             assertFeature(datetime3.responseData.features[i], propertyAndLiteralCheck.get(i))
         }
 
-        /* FIXME only Z seems to be supported?
         when: "4. Data is selected using a filter ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"
         def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"])
 
@@ -1344,13 +1357,12 @@ class FilterParameterSpecification extends Specification {
         assertSuccess(propertyAndLiteral6)
 
         and: "Returns the same number of features"
-        propertyAndLiteral6.responseData.numberReturned == propertyAndLiteral5Check.size()
+        propertyAndLiteral6.responseData.numberReturned == propertyAndLiteralCheck.size()
 
         and: "Returns the same feature arrays"
         for (int i=0; i<propertyAndLiteral6.responseData.numberReturned; i++) {
-            assertFeature(propertyAndLiteral6.responseData.features[i], propertyAndLiteral5Check.get(i))
+            assertFeature(propertyAndLiteral6.responseData.features[i], propertyAndLiteralCheck.get(i))
         }
-         */
     }
 
     def "Operator after"() {
