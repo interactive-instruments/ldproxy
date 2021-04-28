@@ -20,34 +20,21 @@ import java.util.regex.Pattern;
  * multiple resources of the API.
  */
 public interface OgcApiResource {
-    /*
-    String getApiEntrypoint();
-    String getSubPath();
-    @Value.Derived
-    @Value.Auxiliary
-    default String getPath() {
-        return "/"+getApiEntrypoint()+getSubPath();
-    }
-     */
+
     String getPath();
 
     List<OgcApiPathParameter> getPathParameters();
     Map<String, ApiOperation> getOperations();
 
-    @Value.Derived
-    @Value.Auxiliary
     default boolean isSubCollectionWithExplicitId(OgcApiDataV2 apiData) {
         return getPathParameters().stream().anyMatch(param -> param.getName().equals("collectionId") && param.getExplodeInOpenApi(apiData));
     }
 
-    @Value.Derived
-    @Value.Auxiliary
     default Optional<String> getCollectionId(OgcApiDataV2 apiData) {
         return isSubCollectionWithExplicitId(apiData)? Optional.ofNullable(Splitter.on("/").limit(3).omitEmptyStrings().splitToList(getPath()).get(1)) :Optional.empty();
     }
 
-    @Value.Derived
-    @Value.Auxiliary
+    @Value.Lazy
     default String getPathPattern() {
         String path = getPath();
         for (OgcApiPathParameter param : getPathParameters()) {
@@ -56,28 +43,8 @@ public interface OgcApiResource {
         return "^(?:"+path+")/?$";
     }
 
-    @Value.Derived
-    @Value.Auxiliary
+    @Value.Lazy
     default Pattern getPathPatternCompiled() {
         return Pattern.compile(getPathPattern());
     }
-
-    /*
-    @Value.Derived
-    @Value.Auxiliary
-    default String getSubPathPattern() {
-        String path = getSubPath();
-        for (OgcApiPathParameter param : getPathParameters()) {
-            path = path.replace("{"+param.getName()+"}", param.getPattern());
-        }
-        return "^(?:"+path+")/?$";
-    }
-
-    @Value.Derived
-    @Value.Auxiliary
-    default Pattern getSubPathPatternCompiled() {
-        return Pattern.compile(getSubPathPattern());
-    }
-     */
-
 }

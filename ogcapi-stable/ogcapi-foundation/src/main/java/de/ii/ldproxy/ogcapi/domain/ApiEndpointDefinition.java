@@ -72,8 +72,6 @@ public abstract class ApiEndpointDefinition {
      * @param subPath
      * @return
      */
-    @Value.Derived
-    @Value.Auxiliary
     public String getPath(String subPath) {
         return  "/" + getApiEntrypoint() + subPath;
     }
@@ -91,31 +89,11 @@ public abstract class ApiEndpointDefinition {
     public abstract Map<String, OgcApiResource> getResources();
 
     /**
-     *
-     * @return derive a single regular expression for all sub-paths implemented by this endpoint
-     */
-    /*
-    @Value.Derived
-    @Value.Auxiliary
-    public Optional<String> getSubPathPattern() {
-        String regex = null;
-        for (OgcApiResource resource : getResources().values()) {
-            String path = resource.getSubPathPattern();
-            regex = regex!=null ? regex+"|"+path : path;
-        }
-        return Optional.ofNullable(regex);
-    }
-
-     */
-
-    /**
      * Checks, if a request is supported by this endpoint based on the API path and the HTTP method
      * @param requestPath the path of the resource
      * @param method the HTTP method that; set to {@code null} for checking against all methods
      * @return flag, whether the endpoint supports the request
      */
-    @Value.Derived
-    @Value.Auxiliary
     public boolean matches(String requestPath, String method) {
         return getOperation(requestPath, method).isPresent();
     }
@@ -126,8 +104,6 @@ public abstract class ApiEndpointDefinition {
      * @param method the HTTP method that; set to {@code null} for checking against all methods
      * @return the operation that supports the request
      */
-    @Value.Derived
-    @Value.Auxiliary
     public Optional<ApiOperation> getOperation(OgcApiResource resource, String method) {
         // at least one method is supported?
         if (method==null)
@@ -146,8 +122,6 @@ public abstract class ApiEndpointDefinition {
      * @param method the HTTP method that; set to {@code null} for checking against all methods
      * @return the operation that supports the request
      */
-    @Value.Derived
-    @Value.Auxiliary
     public Optional<ApiOperation> getOperation(String requestPath, String method) {
         Optional<OgcApiResource> resource = getResource(requestPath);
 
@@ -158,32 +132,10 @@ public abstract class ApiEndpointDefinition {
     }
 
     /**
-     * Checks, if a request is supported by this endpoint based on the API path and the HTTP method
-     * @param firstPathSegment the entrypoint resource of this endpoint
-     * @param requestSubPath the sub-path under the entrypoint resource
-     * @param method the HTTP method that; set to {@code null} for checking against all methods
-     * @return the operation that supports the request
-     */
-    /*
-    @Value.Derived
-    @Value.Auxiliary
-    public Optional<ApiOperation> getOperation(String firstPathSegment, String requestSubPath, String method) {
-        Optional<OgcApiResource> resource = getResource(firstPathSegment, requestSubPath);
-
-        if (!resource.isPresent())
-            return Optional.empty();
-
-        return getOperation(resource.get(), method);
-    }
-     */
-
-    /**
      * Checks, if a request may be supported by this endpoint based on the API path
      * @param requestPath the path of the resource
      * @return the resource that supports the request
      */
-    @Value.Derived
-    @Value.Auxiliary
     public Optional<OgcApiResource> getResource(String requestPath) {
         OgcApiResource resource = getResources().get(requestPath);
         if (resource==null)
@@ -197,37 +149,10 @@ public abstract class ApiEndpointDefinition {
     }
 
     /**
-     * Checks, if a request may be supported by this endpoint based on the API path
-     * @param firstPathSegment the entrypoint resource of this endpoint
-     * @param requestSubPath the sub-path under the entrypoint resource
-     * @return the resource that supports the request
-     */
-    /*
-    @Value.Derived
-    @Value.Auxiliary
-    public Optional<OgcApiResource> getResource(String firstPathSegment, String requestSubPath) {
-        if (!firstPathSegment.matches(getApiEntrypoint()))
-            return Optional.empty();
-
-        OgcApiResource resource = getResources().get(requestSubPath);
-        if (resource==null)
-            // if nothing was found, replace path parameters with their pattern
-            resource = getResources().values().stream()
-                    .filter(r -> r.getSubPathPatternCompiled().matcher(requestSubPath).matches())
-                    .findAny()
-                    .orElse(null);
-
-        return Optional.ofNullable(resource);
-    }
-     */
-
-    /**
      *
      * @param openAPI the OpenAPI definition without the endpoint
      * @return the updated OpenAPI definition
      */
-    @Value.Derived
-    @Value.Auxiliary
     public OpenAPI updateOpenApiDefinition(OgcApiDataV2 apiData, OpenAPI openAPI) {
         getResources().values()
                 .stream()
@@ -444,80 +369,4 @@ public abstract class ApiEndpointDefinition {
         }
          */
     }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // legacy methods from the old ApiContext class that may no longer be needed
-
-    /*
-    @Value.Derived
-    @Value.Auxiliary
-    public Optional<Pattern> getSubPathPatternCompiled() {
-        return getSubPathPattern().map(Pattern::compile);
-    }
-     */
-
-    /**
-     *
-     * @return the list of aggregated HTTP methods supported by this endpoint
-     */
-    /*
-    @Value.Derived
-    @Value.Auxiliary
-    public List<String> getMethods() {
-        return getResources().values()
-                             .stream()
-                             .map(resource -> resource.getOperations().keySet())
-                             .flatMap(Set::stream)
-                             .distinct()
-                             .collect(ImmutableList.toImmutableList()); // TODO add HEAD for all GET entries
-    }
-
-     */
-
-    /**
-     *
-     * @return the list of aggregated HTTP methods supported by this endpoint
-     */
-    /*
-    @Value.Derived
-    @Value.Auxiliary
-    public Map<String, List<String>> getSubPathsAndMethods() {
-        ImmutableMap.Builder<String, List<String>> builder = new ImmutableMap.Builder<>();
-        getResources().values()
-                      .stream()
-                      .forEach(resource -> builder.put( resource.getSubPathPattern(),
-                                                        resource.getOperations()
-                                                                .keySet()
-                                                                .stream()
-                                                                .collect(ImmutableList.toImmutableList()))); // TODO add HEAD for all GET entries
-        return builder.build();
-    }
-
-    @Value.Derived
-    @Value.Auxiliary
-    public List<String> getMethodStrings(boolean withOptions) {
-        return getMethods().stream()
-                .filter(method -> withOptions || !method.equalsIgnoreCase("OPTIONS"))
-                .collect(ImmutableList.toImmutableList());
-    }
-
-    @Value.Derived
-    @Value.Auxiliary
-    public Map<Optional<Pattern>, List<String>> getSubPathsAndMethodsProcessed(boolean withOptions) {
-        if (getSubPathsAndMethods().isEmpty()) {
-            return new ImmutableMap.Builder()
-                    .put(getSubPathPatternCompiled(), getMethodStrings(withOptions))
-                    .build();
-        }
-
-        return getSubPathsAndMethods().entrySet().stream()
-                .map(pathAndMethods -> new AbstractMap.SimpleImmutableEntry<Optional<Pattern>,List<String>>(
-                        Optional.ofNullable(Pattern.compile(pathAndMethods.getKey())),
-                        pathAndMethods.getValue()
-                                .stream()
-                                .filter(method -> withOptions || !method.equals("OPTIONS"))
-                                .collect(ImmutableList.toImmutableList())))
-                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-     */
 }

@@ -164,8 +164,6 @@ public abstract class Tile {
      * @return the transform
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
-    @Value.Derived
-    @Value.Auxiliary
     public AffineTransformation createTransformLonLatToTile(
             CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
 
@@ -201,8 +199,6 @@ public abstract class Tile {
      * @return the bounding box of the tile matrix set in the form of the target crs
      * @throws CrsTransformationException an error occurred when transforming the coordinates
      */
-    @Value.Derived
-    @Value.Auxiliary
     public BoundingBox getBoundingBox(EpsgCrs crs,
                                        CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
