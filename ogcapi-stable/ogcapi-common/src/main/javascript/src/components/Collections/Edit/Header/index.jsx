@@ -18,7 +18,7 @@ const CollectionEditHeader = ({
       title={`${collection.label} [${collection.id}]`}
       actions2={
         <AsyncIcon
-          size="small"
+          size="list"
           pending={mutationPending}
           loading={mutationLoading}
           success={mutationSuccess}

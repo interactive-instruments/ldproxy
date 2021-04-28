@@ -202,7 +202,7 @@
     "Metadata": {
       "version": {
         "_label": "Version",
-        "_description": "???"
+        "_description": "Version of the published dataset."
       },
       "contactName": {
         "_label": "Contact Name",
@@ -583,7 +583,7 @@
     "Metadata": {
       "version": {
         "_label": "Version",
-        "_description": "???"
+        "_description": "Version des veröffentlichten Datensatzes."
       },
       "contactName": {
         "_label": "Kontakt Name",
@@ -712,7 +712,7 @@
         "format": {
           "string": {
             "_label": "Text-Formatierung",
-            "_description": "Der Wert wird in den angegebenen neuen Wert transformiert. `{{value}}` wird dabei durch den aktuellen Wert und `{{serviceUr}}` durch die Landing-Page-URI der API ersetzt. Bei `{{value}}` können noch weitere Filter ausgeführt werden, diese werden durch `|` getrennt. Diese Transformation ist nur bei STRING-wertigen Eigenschaften anwendbar. Ist der transformierte Wert für die HTML-Ausgabe gedacht, dann kann auch Markdown-Markup verwendet werden, dieser wird bei der HTML-Ausgabe aufbereitet."
+            "_description": "Der Wert wird in den angegebenen neuen Wert transformiert. `{{value}}` wird dabei durch den aktuellen Wert und `{{serviceUrl}}` durch die Landing-Page-URI der API ersetzt. Bei `{{value}}` können noch weitere Filter ausgeführt werden, diese werden durch `|` getrennt. Diese Transformation ist nur bei STRING-wertigen Eigenschaften anwendbar. Ist der transformierte Wert für die HTML-Ausgabe gedacht, dann kann auch Markdown-Markup verwendet werden, dieser wird bei der HTML-Ausgabe aufbereitet."
           },
           "date": {
             "_label": "Datums-Formatierung",
