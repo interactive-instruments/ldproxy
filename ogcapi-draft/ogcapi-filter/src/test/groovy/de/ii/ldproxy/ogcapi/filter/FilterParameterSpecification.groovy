@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.filter
 
+import de.ii.xtraplatform.cql.app.CqlImpl
+import de.ii.xtraplatform.cql.domain.Cql
 import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
@@ -30,6 +32,10 @@ class FilterParameterSpecification extends Specification {
     static final String GEO_JSON = "application/geo+json";
     static final String JSON = "application/json";
 
+    @Shared
+    Cql cql = new CqlImpl()
+    @Shared
+    boolean json = true // set to true to test CQL JSON, to false to test CQL Text
     @Shared
     RESTClient restClient = new RESTClient(SUT_URL)
     @Shared
@@ -87,7 +93,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter F_CODE=F_CODE"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE=F_CODE"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE=F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -96,7 +102,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "2. Data is selected using a filter F_CODE='AL030'"
-        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE='AL030'"])
+        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE='AL030'"))
         def propertyAndLiteralStringCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.F_CODE=='AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -125,7 +131,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL=11"
-        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL=11"])
+        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL=11"))
         def propertyAndLiteralNumericCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI037_REL==11 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -140,7 +146,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "5. Data is selected using a filter 'AL030'=F_CODE"
-        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'AL030'=F_CODE"])
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'AL030'=F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(literalAndProperty)
@@ -154,7 +160,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter 'A'='A'"
-        def literals = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'A'='A'"])
+        def literals = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'A'='A'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(literals)
@@ -163,7 +169,7 @@ class FilterParameterSpecification extends Specification {
         literals.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "7. Data is selected using a filter \"F_CODE\"='AL030' with a double quote"
-        def propertyAndLiteral2String = getRequest(restClient, CULTURE_PNT_PATH, [filter:"\"F_CODE\"='AL030'"])
+        def propertyAndLiteral2String = getRequest(restClient, CULTURE_PNT_PATH, getQuery("\"F_CODE\"='AL030'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral2String)
@@ -181,7 +187,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter F_CODE<>F_CODE"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE<>F_CODE"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE<>F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -190,7 +196,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == 0
 
         when: "2. Data is selected using a filter F_CODE<>'AL030'"
-        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE<>'AL030'"])
+        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE<>'AL030'"))
         def propertyAndLiteralStringCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE!='AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -205,7 +211,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter ZI037_REL<>11"
-        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL<>11"])
+        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL<>11"))
         def propertyAndLiteralNumericCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL!=11 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -220,7 +226,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL<>10"
-        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL<>10"])
+        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL<>10"))
         def propertyAndLiteralNumeric2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL!=10 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -235,7 +241,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "5. Data is selected using a filter 'AL030'<>F_CODE"
-        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'AL030'<>F_CODE"])
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'AL030'<>F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(literalAndProperty)
@@ -249,7 +255,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter 'A'<>'A'"
-        def literals = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'A'<>'A'"])
+        def literals = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'A'<>'A'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(literals)
@@ -262,7 +268,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter F_CODE<F_CODE"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE<F_CODE"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE<F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -271,7 +277,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == 0
 
         when: "2. Data is selected using a filter F_CODE<'AL030'"
-        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE<'AL030'"])
+        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE<'AL030'"))
         def propertyAndLiteralStringCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE<'AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -286,7 +292,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter ZI037_REL<11"
-        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL<11"])
+        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL<11"))
         def propertyAndLiteralNumericCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL<11 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -301,7 +307,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL<12"
-        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL<12"])
+        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL<12"))
         def propertyAndLiteralNumeric2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL<12 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -316,7 +322,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "5. Data is selected using a filter 'AL030'<F_CODE"
-        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'AL030'<F_CODE"])
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'AL030'<F_CODE"))
         def literalAndPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE>'AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -331,7 +337,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter 'A'<'A'"
-        def literals = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'A'<'A'"])
+        def literals = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'A'<'A'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(literals)
@@ -344,7 +350,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter F_CODE>F_CODE"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE>F_CODE"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE>F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -353,7 +359,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == 0
 
         when: "2. Data is selected using a filter F_CODE>'AL030'"
-        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE>'AL030'"])
+        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE>'AL030'"))
         def propertyAndLiteralStringCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE>'AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -368,7 +374,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter ZI037_REL>11"
-        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL>11"])
+        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL>11"))
         def propertyAndLiteralNumericCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL>11 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -383,7 +389,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL>0"
-        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL>0"])
+        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL>0"))
         def propertyAndLiteralNumeric2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL>0 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -398,7 +404,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "5. Data is selected using a filter 'AL030'>F_CODE"
-        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'AL030'>F_CODE"])
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'AL030'>F_CODE"))
         def literalAndPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE<'AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -413,7 +419,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter 'A'>'A'"
-        def literals = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'A'>'A'"])
+        def literals = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'A'>'A'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(literals)
@@ -426,7 +432,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter F_CODE<=F_CODE"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE<=F_CODE"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE<=F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -435,7 +441,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "2. Data is selected using a filter F_CODE<='AL030'"
-        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE<='AL030'"])
+        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE<='AL030'"))
         def propertyAndLiteralStringCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE<='AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -450,7 +456,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter ZI037_REL<=11"
-        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL<=11"])
+        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL<=11"))
         def propertyAndLiteralNumericCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL<=11 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -465,7 +471,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL<=10"
-        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL<=10"])
+        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL<=10"))
         def propertyAndLiteralNumeric2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL<=10 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -480,7 +486,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "5. Data is selected using a filter 'AL030'<=F_CODE"
-        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'AL030'<=F_CODE"])
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'AL030'<=F_CODE"))
         def literalAndPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE>='AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -495,7 +501,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter 'A'<='A'"
-        def literals = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'A'<='A'"])
+        def literals = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'A'<='A'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(literals)
@@ -508,7 +514,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter F_CODE>=F_CODE"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE>=F_CODE"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE>=F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -517,7 +523,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "2. Data is selected using a filter F_CODE<='AL030'"
-        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE>='AL030'"])
+        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE>='AL030'"))
         def propertyAndLiteralStringCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE>='AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -532,7 +538,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter ZI037_REL>=11"
-        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL>=11"])
+        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL>=11"))
         def propertyAndLiteralNumericCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL>=11 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -547,7 +553,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL>=12"
-        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL>=12"])
+        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL>=12"))
         def propertyAndLiteralNumeric2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL>=12 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -562,7 +568,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "5. Data is selected using a filter 'AL030'>=F_CODE"
-        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'AL030'>=F_CODE"])
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'AL030'>=F_CODE"))
         def literalAndPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE<='AL030' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -577,7 +583,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter 'A'>='A'"
-        def literals = getRequest(restClient, CULTURE_PNT_PATH, [filter:"'A'>='A'"])
+        def literals = getRequest(restClient, CULTURE_PNT_PATH, getQuery("'A'>='A'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(literals)
@@ -590,7 +596,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter F_CODE LiKe F_CODE"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE LiKe F_CODE"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe F_CODE"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -599,7 +605,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "2. Data is selected using a filter F_CODE LiKe 'AL0%'"
-        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE LiKe 'AL0%'"])
+        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe 'AL0%'"))
         def propertyAndLiteralStringCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE.startsWith('AL0') ).toList()
 
         then: "Success and returns GeoJSON"
@@ -614,7 +620,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter F_CODE LiKe 'AL0*' wildCard '*'"
-        def propertyAndLiteralString2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE LiKe 'AL0*' wildCard '*'"])
+        def propertyAndLiteralString2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe 'AL0*' wildCard '*'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteralString2)
@@ -628,7 +634,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter F_CODE LiKe 'AL0..' singleChar '.'"
-        def propertyAndLiteralString3 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE LiKe 'AL0..' singleChar '.'"])
+        def propertyAndLiteralString3 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe 'AL0..' singleChar '.'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteralString3)
@@ -642,7 +648,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "5. Data is selected using a filter F_CODE LiKe 'al0..' singleChar '.' ESCAPECHAR '?'"
-        def propertyAndLiteralString4 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE LiKe 'al0..' singleChar '.' ESCAPECHAR '?'"])
+        def propertyAndLiteralString4 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe 'al0..' singleChar '.' ESCAPECHAR '?'"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteralString4)
@@ -656,7 +662,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter F_CODE LiKe 'al0%' NoCasE true"
-        def propertyAndLiteralString5 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE LiKe 'al0%' NoCasE true"])
+        def propertyAndLiteralString5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe 'al0%' NoCasE true"))
         def propertyAndLiteralString5Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE.toLowerCase().startsWith('al0') ).toList()
 
         then: "Success and returns GeoJSON"
@@ -672,7 +678,7 @@ class FilterParameterSpecification extends Specification {
 
         when: "7. Data is selected using a filter F_CODE LiKe 'al0%' NoCasE FalsE"
         // TODO currently only true/false (case-insensitive), not the other options that will likely be removed: "T" | "t" | "F" | "f" | "1" | "0"
-        def propertyAndLiteralString6 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE LiKe 'al0%' NoCasE FalsE"])
+        def propertyAndLiteralString6 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe 'al0%' NoCasE FalsE"))
         def propertyAndLiteralString6Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE.startsWith('al0') ).toList()
 
         then: "Success and returns GeoJSON"
@@ -691,7 +697,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter ZI037_REL BeTweeN ZI037_REL AnD ZI037_REL"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL BeTweeN ZI037_REL AnD ZI037_REL"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL BeTweeN ZI037_REL AnD ZI037_REL"))
         def twoPropertiesCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) ).toList()
 
         then: "Success and returns GeoJSON"
@@ -706,7 +712,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "2. Data is selected using a filter ZI037_REL NoT BeTweeN ZI037_REL AnD ZI037_REL"
-        def twoProperties2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL NoT BeTweeN ZI037_REL AnD ZI037_REL"])
+        def twoProperties2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL NoT BeTweeN ZI037_REL AnD ZI037_REL"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties2)
@@ -715,7 +721,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties2.responseData.numberReturned == 0
 
         when: "3. Data is selected using a filter ZI037_REL BeTweeN 0 AnD 10"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL BeTweeN 0 AnD 10"])
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL BeTweeN 0 AnD 10"))
         def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL>=0 && f.properties.ZI037_REL<=10 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -730,7 +736,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL BeTweeN 0 AnD 11"
-        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL BeTweeN 0 AnD 11"])
+        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL BeTweeN 0 AnD 11"))
         def propertyAndLiteral2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL>=0 && f.properties.ZI037_REL<=11 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -745,7 +751,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "5. Data is selected using a filter ZI037_REL NoT BeTweeN 0 AnD 10"
-        def propertyAndLiteral3 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL NoT BeTweeN 0 AnD 10"])
+        def propertyAndLiteral3 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL NoT BeTweeN 0 AnD 10"))
         def propertyAndLiteral3Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && !(f.properties.ZI037_REL>=0 && f.properties.ZI037_REL<=10) ).toList()
 
         then: "Success and returns GeoJSON"
@@ -760,7 +766,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter ZI037_REL NoT BeTweeN 0 AnD 11"
-        def propertyAndLiteral4 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL NoT BeTweeN 0 AnD 11"])
+        def propertyAndLiteral4 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL NoT BeTweeN 0 AnD 11"))
         def propertyAndLiteral4Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && !(f.properties.ZI037_REL>=0 && f.properties.ZI037_REL<=11) ).toList()
 
         then: "Success and returns GeoJSON"
@@ -775,7 +781,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "7. Data is selected using a filter 6 BeTweeN 0 AnD ZI037_REL"
-        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, [filter:"6 BeTweeN 0 AnD ZI037_REL"])
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("6 BeTweeN 0 AnD ZI037_REL"))
         def literalAndPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && f.properties.ZI037_REL>=6 ).toList()
 
         then: "Success and returns GeoJSON"
@@ -797,7 +803,7 @@ class FilterParameterSpecification extends Specification {
         // TODO NOCASE currently not supported
 
         when: "1. Data is selected using a filter F_CODE iN ('AL030', 'AL012')"
-        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE in ('AL030','AL012')"])
+        def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE in ('AL030','AL012')"))
         def propertyAndLiteralStringCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE.equals('AL012') || f.properties.F_CODE.equals('AL030') ).toList()
 
         then: "Success and returns GeoJSON"
@@ -812,7 +818,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "2. Data is selected using a filter F_CODE NoT iN ('AL030', 'AL012')"
-        def propertyAndLiteralString2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"F_CODE NoT iN ('AL030', 'AL012')"])
+        def propertyAndLiteralString2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE NoT iN ('AL030', 'AL012')"))
         def propertyAndLiteralString2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> !f.properties.F_CODE.equals('AL012') && !f.properties.F_CODE.equals('AL030') ).toList()
 
         then: "Success and returns GeoJSON"
@@ -827,7 +833,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter ZI037_REL iN (11, 12)"
-        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL in (11, 12)"])
+        def propertyAndLiteralNumeric = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL in (11, 12)"))
         def propertyAndLiteralNumericCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && (f.properties.ZI037_REL==11 || f.properties.ZI037_REL==12) ).toList()
 
         then: "Success and returns GeoJSON"
@@ -842,7 +848,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI037_REL NoT iN (11, 12)"
-        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL NoT iN (11, 12)"])
+        def propertyAndLiteralNumeric2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL NoT iN (11, 12)"))
         def propertyAndLiteralNumeric2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) && !(f.properties.ZI037_REL==11 || f.properties.ZI037_REL==12) ).toList()
 
         then: "Success and returns GeoJSON"
@@ -861,7 +867,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter ZI037_REL iS NulL"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL iS NulL"])
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL iS NulL"))
         def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.isNull(f.properties.ZI037_REL) ).toList()
 
         then: "Success and returns GeoJSON"
@@ -876,7 +882,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "2. Data is selected using a filter ZI037_REL iS NoT NulL"
-        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI037_REL iS NoT NulL"])
+        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI037_REL iS NoT NulL"))
         def propertyAndLiteral2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> Objects.nonNull(f.properties.ZI037_REL) ).toList()
 
         then: "Success and returns GeoJSON"
@@ -897,7 +903,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter InterSectS(geometry,geometry)"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter: "InterSectS(geometry,geometry)"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "InterSectS(geometry,geometry)"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -906,7 +912,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "2. Data is selected using a filter InterSectS(geometry,<bbox of collection>)"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, [filter: "InterSectS(geometry," + envelopeCollection + ")"])
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "InterSectS(geometry," + envelopeCollection + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral)
@@ -915,7 +921,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "3. Data is selected using a filter InterSectS(<bbox of collection>,geometry)"
-        def propertyAndLiterala = getRequest(restClient, CULTURE_PNT_PATH, [filter: "InterSectS(" + envelopeCollection + ",geometry)"])
+        def propertyAndLiterala = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "InterSectS(" + envelopeCollection + ",geometry)"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiterala)
@@ -924,7 +930,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiterala.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "4. Data is selected using a filter InterSectS(geometry,<bbox around first feature>)"
-        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, [filter: "InterSectS(geometry," + envelopeFeature + ")"])
+        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "InterSectS(geometry," + envelopeFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral2)
@@ -933,7 +939,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral2.responseData.features.stream().anyMatch(f -> f.id == id)
 
         when: "5. Data is selected using a filter InterSectS(<bbox around first feature>,geometry)"
-        def propertyAndLiteral2a = getRequest(restClient, CULTURE_PNT_PATH, [filter: "InterSectS(" + envelopeFeature + ",geometry)"])
+        def propertyAndLiteral2a = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "InterSectS(" + envelopeFeature + ",geometry)"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral2a)
@@ -942,7 +948,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral2a.responseData.features.stream().anyMatch(f -> f.id == id)
 
         when: "6. The same request using EPSG:4326"
-        def propertyAndLiteral2b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs": epsg4326, filter: "InterSectS(geometry," + envelopeFeature4326 + ")"])
+        def propertyAndLiteral2b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326( "InterSectS(geometry," + envelopeFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral2b)
@@ -951,7 +957,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral2, propertyAndLiteral2b)
 
         when: "7. Data is selected using a filter InterSectS(geometry,<polygon around first feature>)"
-        def propertyAndLiteral3 = getRequest(restClient, CULTURE_PNT_PATH, [filter: "InterSectS(geometry," + polygonFeature + ")"])
+        def propertyAndLiteral3 = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "InterSectS(geometry," + polygonFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral3)
@@ -960,7 +966,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral3.responseData.features.stream().anyMatch(f -> f.id == id)
 
         when: "8. The same request using EPSG:4326"
-        def propertyAndLiteral3b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs": epsg4326, filter: "InterSectS(geometry," + polygonFeature4326 + ")"])
+        def propertyAndLiteral3b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326( "InterSectS(geometry," + polygonFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral3b)
@@ -973,8 +979,8 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter NoT DisJoinT(geometry,<polygon around first feature>)"
-        def propertyAndLiteral4 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"NoT DisJoinT(geometry," + polygonFeature + ")"])
-        def propertyAndLiteral4Check = getRequest(restClient, CULTURE_PNT_PATH, [filter: "InterSectS(geometry," + polygonFeature + ")"])
+        def propertyAndLiteral4 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT DisJoinT(geometry," + polygonFeature + ")"))
+        def propertyAndLiteral4Check = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "InterSectS(geometry," + polygonFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral4)
@@ -986,7 +992,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "2. The same request using EPSG:4326"
-        def propertyAndLiteral4b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs":epsg4326, filter:"NoT DisJoinT(geometry," + polygonFeature4326 + ")"])
+        def propertyAndLiteral4b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT DisJoinT(geometry," + polygonFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral4b)
@@ -995,7 +1001,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral4, propertyAndLiteral4b)
 
         when: "3. Data is selected using a filter DisJoinT(geometry,<polygon around first feature>)"
-        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"DisJoinT(geometry," + polygonFeature + ")"])
+        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("DisJoinT(geometry," + polygonFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral5)
@@ -1005,7 +1011,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral5.responseData.features.stream().noneMatch( f -> f.id == id )
 
         when: "4. The same request using EPSG:4326"
-        def propertyAndLiteral5b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs":epsg4326, filter:"DisJoinT(geometry," + polygonFeature4326 + ")"])
+        def propertyAndLiteral5b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("DisJoinT(geometry," + polygonFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral5b)
@@ -1018,7 +1024,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter EqualS(geometry,<point of first feature>)"
-        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"EqualS(geometry, " + pointFeature + ")"])
+        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("EqualS(geometry, " + pointFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral6)
@@ -1028,7 +1034,7 @@ class FilterParameterSpecification extends Specification {
         assertFeature(propertyAndLiteral6.responseData.features[0], allCulturePntFeatures.responseData.features[0])
 
         when: "2. The same request using EPSG:4326"
-        def propertyAndLiteral6b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs":epsg4326, filter:"EqualS(geometry, " + pointFeature4326 + ")"])
+        def propertyAndLiteral6b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("EqualS(geometry, " + pointFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral6b)
@@ -1037,7 +1043,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral6, propertyAndLiteral6b)
 
         when: "3. Data is selected using a filter NoT EqualS(geometry,<point of first feature>)"
-        def propertyAndLiteral7 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"NoT EqualS(geometry, " + pointFeature + ")"])
+        def propertyAndLiteral7 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT EqualS(geometry, " + pointFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral7)
@@ -1046,7 +1052,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral7.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned - 1
 
         when: "4. The same request using EPSG:4326"
-        def propertyAndLiteral7b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs":epsg4326, filter:"NoT EqualS(geometry, " + pointFeature4326 + ")"])
+        def propertyAndLiteral7b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT EqualS(geometry, " + pointFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral7b)
@@ -1059,7 +1065,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter WithiN(geometry,<polygon around first feature>)"
-        def propertyAndLiteral8 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"WithiN(geometry, " + polygonFeature + ")"])
+        def propertyAndLiteral8 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("WithiN(geometry, " + polygonFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral8)
@@ -1069,7 +1075,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral8.responseData.features.stream().anyMatch( f -> f.id == id )
 
         when: "2. The same request using EPSG:4326"
-        def propertyAndLiteral8b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs":epsg4326, filter:"WithiN(geometry, " + polygonFeature4326 + ")"])
+        def propertyAndLiteral8b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("WithiN(geometry, " + polygonFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral8b)
@@ -1078,7 +1084,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral8, propertyAndLiteral8b)
 
         when: "3. Data is selected using a filter NoT WithiN(geometry,<polygon around first feature>)"
-        def propertyAndLiteral9 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"NoT WithiN(geometry, " + polygonFeature + ")"])
+        def propertyAndLiteral9 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT WithiN(geometry, " + polygonFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral9)
@@ -1088,7 +1094,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral9.responseData.features.stream().noneMatch( f -> f.id == id )
 
         when: "4. The same request using EPSG:4326"
-        def propertyAndLiteral9b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs":epsg4326, filter:"NoT WithiN(geometry, " + polygonFeature4326 + ")"])
+        def propertyAndLiteral9b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT WithiN(geometry, " + polygonFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral9b)
@@ -1097,7 +1103,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral9, propertyAndLiteral9b)
 
         when: "5. Data is selected using a filter WithiN(<point of first feature>,<polygon around first feature>)"
-        def propertyAndLiteral10 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"WithiN(" + pointFeature + ", " + polygonFeature + ")"])
+        def propertyAndLiteral10 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("WithiN(" + pointFeature + ", " + polygonFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral10)
@@ -1106,7 +1112,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral10.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "6. The same request using EPSG:4326"
-        def propertyAndLiteral10b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs":epsg4326, filter:"WithiN(" + pointFeature4326 + ", " + polygonFeature4326 + ")"])
+        def propertyAndLiteral10b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("WithiN(" + pointFeature4326 + ", " + polygonFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral10b)
@@ -1115,7 +1121,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral10, propertyAndLiteral10b)
 
         when: "7. Data is selected using a filter NoT WithiN(geometry,<polygon around first feature>)"
-        def propertyAndLiteral11 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"NoT WithiN(" + pointFeature + ", " + polygonFeature + ")"])
+        def propertyAndLiteral11 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT WithiN(" + pointFeature + ", " + polygonFeature + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral11)
@@ -1124,7 +1130,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral11.responseData.numberReturned == 0
 
         when: "8. The same request using EPSG:4326"
-        def propertyAndLiteral11b = getRequest(restClient, CULTURE_PNT_PATH, ["filter-crs":epsg4326, filter:"NoT WithiN(" + pointFeature4326 + ", " + polygonFeature4326 + ")"])
+        def propertyAndLiteral11b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT WithiN(" + pointFeature4326 + ", " + polygonFeature4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral11b)
@@ -1144,7 +1150,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter ZI001_SDV AnyInterActS 2011-12-01T00:00:00Z/2011-12-31T23:59:59Z"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV AnyInterActS 2011-12-01T00:00:00Z/2011-12-31T23:59:59Z"])
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AnyInterActS 2011-12-01T00:00:00Z/2011-12-31T23:59:59Z"))
         def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2011-12' && f.properties.ZI001_SDV < '2012' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1159,7 +1165,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "2. Data is selected using a filter ZI001_SDV AnyInterActS ../2011-12-31T23:59:59Z"
-        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV AnyInterActS ../2011-12-31T23:59:59Z"])
+        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AnyInterActS ../2011-12-31T23:59:59Z"))
         def propertyAndLiteral2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2012' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1174,7 +1180,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter ZI001_SDV AnyInterActS 2012-01-01T00:00:00Z/.."
-        def propertyAndLiteral3 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV AnyInterActS 2012-01-01T00:00:00Z/.."])
+        def propertyAndLiteral3 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AnyInterActS 2012-01-01T00:00:00Z/.."))
         def propertyAndLiteral3Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2012' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1189,7 +1195,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI001_SDV AnyInterActS ../.."
-        def propertyAndLiteral4 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV AnyInterActS ../.."])
+        def propertyAndLiteral4 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AnyInterActS ../.."))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral4)
@@ -1198,7 +1204,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral4, allCulturePntFeatures)
 
         when: "5. Data is selected using a filter ZI001_SDV AnyInterActS 2011-12-27"
-        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV AnyInterActS 2011-12-27"])
+        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AnyInterActS 2011-12-27"))
         def propertyAndLiteral5Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2011-12-27' && f.properties.ZI001_SDV < '2011-12-28' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1213,7 +1219,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "6. Data is selected using a filter ZI001_SDV AnyInterActS 2011-12-26T20:55:27Z"
-        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV AnyInterActS 2011-12-26T20:55:27Z"])
+        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AnyInterActS 2011-12-26T20:55:27Z"))
         def propertyAndLiteral6Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV == '2011-12-26 20:55:27' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1228,7 +1234,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "7. Data is selected using a filter ZI001_SDV AnyInterActS ZI001_SDV"
-        def propertyAndLiteral7 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV AnyInterActS ZI001_SDV"])
+        def propertyAndLiteral7 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AnyInterActS ZI001_SDV"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral7)
@@ -1237,7 +1243,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral7, allCulturePntFeatures)
 
         when: "8. Data is selected using a filter 2011-12-01T00:00:00Z/2011-12-31T23:59:59Z AnyInterActS ZI001_SDV"
-        def propertyAndLiteral8 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"2011-12-01T00:00:00Z/2011-12-31T23:59:59Z AnyInterActS ZI001_SDV"])
+        def propertyAndLiteral8 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("2011-12-01T00:00:00Z/2011-12-31T23:59:59Z AnyInterActS ZI001_SDV"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral8)
@@ -1246,7 +1252,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral8, propertyAndLiteral)
 
         when: "9. Data is selected using a filter ../2011-12-31T23:59:59Z AnyInterActS ZI001_SDV"
-        def propertyAndLiteral9 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"../2011-12-31T23:59:59Z AnyInterActS ZI001_SDV"])
+        def propertyAndLiteral9 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("../2011-12-31T23:59:59Z AnyInterActS ZI001_SDV"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral9)
@@ -1255,7 +1261,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral9, propertyAndLiteral2)
 
         when: "10. Data is selected using a filter 2012-01-01T00:00:00Z/.. AnyInterActS ZI001_SDV"
-        def propertyAndLiteral10 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"2012-01-01T00:00:00Z/.. AnyInterActS ZI001_SDV"])
+        def propertyAndLiteral10 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("2012-01-01T00:00:00Z/.. AnyInterActS ZI001_SDV"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral10)
@@ -1264,7 +1270,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral10, propertyAndLiteral3)
 
         when: "11. Data is selected using a filter ../.. AnyInterActS ZI001_SDV"
-        def propertyAndLiteral11 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"../.. AnyInterActS ZI001_SDV"])
+        def propertyAndLiteral11 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("../.. AnyInterActS ZI001_SDV"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral11)
@@ -1273,7 +1279,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral11, propertyAndLiteral4)
 
         when: "12. Data is selected using a filter 2011-12-27 AnyInterActS ZI001_SDV"
-        def propertyAndLiteral12 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"2011-12-27 AnyInterActS ZI001_SDV"])
+        def propertyAndLiteral12 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("2011-12-27 AnyInterActS ZI001_SDV"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral12)
@@ -1282,7 +1288,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral12, propertyAndLiteral5)
 
         when: "13. Data is selected using a filter 2011-12-26T20:55:27Z AnyInterActS ZI001_SDV"
-        def propertyAndLiteral13 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"2011-12-26T20:55:27Z AnyInterActS ZI001_SDV"])
+        def propertyAndLiteral13 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("2011-12-26T20:55:27Z AnyInterActS ZI001_SDV"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral13)
@@ -1291,7 +1297,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral13, propertyAndLiteral6)
 
         when: "14. Data is selected using a filter 2011-12-26T20:55:27Z AnyInterActS 2011-01-01/2011-12-31"
-        def propertyAndLiteral14 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"2011-12-26T20:55:27Z AnyInterActS 2011-01-01/2011-12-31"])
+        def propertyAndLiteral14 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("2011-12-26T20:55:27Z AnyInterActS 2011-01-01/2011-12-31"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral14)
@@ -1300,7 +1306,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral14, allCulturePntFeatures)
 
         when: "14. Data is selected using a filter ../2010-12-26 AnyInterActS 2011-01-01/2011-12-31"
-        def propertyAndLiteral15 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"../2010-12-26 AnyInterActS 2011-01-01/2011-12-31"])
+        def propertyAndLiteral15 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("../2010-12-26 AnyInterActS 2011-01-01/2011-12-31"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral15)
@@ -1313,7 +1319,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter ZI001_SDV TEqualS ZI001_SDV"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV TEqualS ZI001_SDV"])
+        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV TEqualS ZI001_SDV"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
@@ -1322,7 +1328,7 @@ class FilterParameterSpecification extends Specification {
         twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
 
         when: "2. Data is selected using a filter ZI001_SDV TEqualS 2011-12-26T20:55:27Z"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV TEqualS 2011-12-26T20:55:27Z"])
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV TEqualS 2011-12-26T20:55:27Z"))
         def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV == '2011-12-26 20:55:27' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1351,7 +1357,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "4. Data is selected using a filter ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"
-        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"])
+        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV TEQUALS 2011-12-26T21:55:27+01:00"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral6)
@@ -1369,7 +1375,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter ZI001_SDV AFTER 2011-12-31T23:59:59Z"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV AFTER 2011-12-31T23:59:59Z"])
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AFTER 2011-12-31T23:59:59Z"))
         def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2011-12-31T23:59:59Z' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1388,7 +1394,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter ZI001_SDV BeForE 2012-01-01T00:00:00Z"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV BeForE 2012-01-01T00:00:00Z"])
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV BeForE 2012-01-01T00:00:00Z"))
         def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2012-01-01T00:00:00Z' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1407,7 +1413,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter ZI001_SDV DuRinG ../2011-12-31T23:59:59Z"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV DuRinG ../2011-12-31T23:59:59Z"])
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV DuRinG ../2011-12-31T23:59:59Z"))
         def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV <= '2011-12-31T23:59:59Z' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1436,7 +1442,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "3. Data is selected using a filter ZI001_SDV DURING 2012-01-01T00:00:00Z/.."
-        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, [filter:"ZI001_SDV DURING 2012-01-01T00:00:00Z/.."])
+        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV DURING 2012-01-01T00:00:00Z/.."))
         def propertyAndLiteral2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV >= '2012-01-01T00:00:00Z' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1474,7 +1480,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter F_CODE=F_CODE AnD NoT (F_CODE='AL030' oR (ZI001_SDV AFTER 2011-12-31T23:59:59Z aNd ZI037_REL iS nULL))"
-        def logical = getRequest(restClient, CULTURE_PNT_PATH, [filter: "F_CODE=F_CODE AnD NoT (F_CODE='AL030' oR (ZI001_SDV AFTER 2011-12-31T23:59:59Z aNd ZI037_REL iS nULL))"])
+        def logical = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "F_CODE=F_CODE AnD NoT (F_CODE='AL030' oR (ZI001_SDV AFTER 2011-12-31T23:59:59Z aNd ZI037_REL iS nULL))"))
         def logicalCheck = allCulturePntFeatures.responseData.features.stream()
                 .filter(f -> !(f.properties.F_CODE == 'AL030' || (f.properties.ZI001_SDV > '2011-12-31T23:59:59Z' && Objects.isNull(f.properties.ZI037_REL))))
                 .toList()
@@ -1489,7 +1495,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "2. Data is selected using a filter F_CODE='AL030' or F_CODE='AL012'"
-        def logical2 = getRequest(restClient, CULTURE_PNT_PATH, [filter: "F_CODE='AL030' or F_CODE='AL012'"])
+        def logical2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "F_CODE='AL030' or F_CODE='AL012'"))
         def logical2Check = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.F_CODE == 'AL030' || f.properties.F_CODE == 'AL012').toList()
 
         then: "Success and returns GeoJSON"
@@ -1504,7 +1510,17 @@ class FilterParameterSpecification extends Specification {
         }
     }
 
-    // filter-lang=cql-json TODO
+    LinkedHashMap<String, String> getQuery(String filter) {
+        return json
+        ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json"]
+        : [filter:filter]
+    }
+
+    LinkedHashMap<String, String> getQuery4326(String filter) {
+        return json
+                ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json","filter-crs":epsg4326]
+                : [filter:filter,"filter-crs":epsg4326]
+    }
 
     static void assertSuccess(Object response) {
         assert response.status == 200
@@ -1532,5 +1548,4 @@ class FilterParameterSpecification extends Specification {
             headers.Accept = path.contains("/items") ? GEO_JSON : JSON
         })
     }
-
 }
