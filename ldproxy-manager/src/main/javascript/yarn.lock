@@ -3251,7 +3251,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ogcapi/common@^1.0.0-beta.1, @ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript":
+"@ogcapi/common@^1.0.0, @ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript"
   dependencies:
@@ -3265,10 +3265,10 @@ __metadata:
     "@storybook/addon-essentials": ^6.0.10
     "@storybook/addon-links": ^6.0.10
     "@storybook/react": ^6.0.10
-    "@xtraplatform/core": ^2.0.0-beta.13
-    "@xtraplatform/manager": ^2.0.0-beta.12
-    "@xtraplatform/neutrino": ^2.0.0-beta.5
-    "@xtraplatform/services": ^2.0.0-beta.10
+    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/manager": ^2.0.0
+    "@xtraplatform/neutrino": ^2.0.0
+    "@xtraplatform/services": ^2.0.0
     apollo-link-rest: ^0.8.0-beta.0
     babel-loader: "*"
     core-js: ^3
@@ -5245,7 +5245,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xtraplatform/core@^2.0.0-beta.13, @xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core":
+"@xtraplatform/core@^2.0.0, @xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core"
   dependencies:
@@ -5254,7 +5254,7 @@ __metadata:
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/mocha": ^9.3.0
     "@storybook/addon-docs": ^6.0.12
-    "@xtraplatform/neutrino": ^2.0.0-beta.4
+    "@xtraplatform/neutrino": ^2.0.0
     check-prop-types: ^1.1.2
     core-js: ^3
     deepmerge: ^4.2.2
@@ -5296,15 +5296,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@xtraplatform/manager@^2.0.0-beta.12, @xtraplatform/manager@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/manager":
+"@xtraplatform/manager@^2.0.0, @xtraplatform/manager@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/manager":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/manager@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/manager"
   dependencies:
     "@apollo/client": ^3
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/mocha": ^9.3.0
-    "@xtraplatform/core": ^2.0.0-beta.13
-    "@xtraplatform/neutrino": ^2.0.0-beta.4
+    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/neutrino": ^2.0.0
     apollo-link-rest: ^0.8.0-beta.0
     core-js: ^3
     eslint: "*"
@@ -5335,7 +5335,7 @@ __metadata:
     styled-components: ^5
   peerDependencies:
     "@apollo/client": ^3
-    "@xtraplatform/core": ^2.0.0-beta.13
+    "@xtraplatform/core": ^2.0.0
     feature-u: ^3
     grommet: ^2
     grommet-icons: ^4
@@ -5349,7 +5349,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@xtraplatform/neutrino@^2.0.0-beta.4, @xtraplatform/neutrino@workspace:../../../../../xtraplatform/xtraplatform-build-tools/scaffolding/src/main/javascript/neutrino":
+"@xtraplatform/neutrino@^2.0.0, @xtraplatform/neutrino@workspace:../../../../../xtraplatform/xtraplatform-build-tools/scaffolding/src/main/javascript/neutrino":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/neutrino@workspace:../../../../../xtraplatform/xtraplatform-build-tools/scaffolding/src/main/javascript/neutrino"
   dependencies:
@@ -5361,29 +5361,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@xtraplatform/neutrino@npm:^2.0.0-beta.5":
-  version: 2.0.0-beta.5
-  resolution: "@xtraplatform/neutrino@npm:2.0.0-beta.5::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fneutrino%2F-%2F%40xtraplatform%2Fneutrino-2.0.0-beta.5.tgz"
-  dependencies:
-    "@pmmmwh/react-refresh-webpack-plugin": ^0.4.3
-    deepmerge: ^4.2.2
-    eslint-config-prettier: ^6.11.0
-    pnp-webpack-plugin: ^1.6.4
-    react-refresh: ^0.9.0
-  checksum: 65197a6c2b51753e13b284fd88fb08281cb9c257fb7d79e50fd8b82b39b9f1951c04d64b8c1561d7e3ca54799d74a4e0060b87a83de168546f721c1981d1fb62
-  languageName: node
-  linkType: hard
-
-"@xtraplatform/services@^2.0.0-beta.10, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
+"@xtraplatform/services@^2.0.0, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript"
   dependencies:
     "@apollo/client": ^3
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/mocha": ^9.3.0
-    "@xtraplatform/core": ^2.0.0-beta.13
-    "@xtraplatform/manager": ^2.0.0-beta.12
-    "@xtraplatform/neutrino": ^2.0.0-beta.4
+    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/manager": ^2.0.0
+    "@xtraplatform/neutrino": ^2.0.0
     apollo-link-rest: ^0.8.0-beta.0
     core-js: ^3
     deepmerge: ^4.2.2
@@ -5411,8 +5398,8 @@ __metadata:
     styled-components: ^5
   peerDependencies:
     "@apollo/client": ^3
-    "@xtraplatform/core": ^2.0.0-beta.13
-    "@xtraplatform/manager": ^2.0.0-beta.12
+    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/manager": ^2.0.0
     feature-u: ^3
     grommet: ^2
     grommet-icons: ^4
@@ -12527,12 +12514,12 @@ fsevents@^1.2.7:
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/mocha": ^9.3.0
     "@neutrinojs/react": ^9.3.0
-    "@ogcapi/common": ^1.0.0-beta.1
+    "@ogcapi/common": ^1.0.0
     "@pmmmwh/react-refresh-webpack-plugin": ^0.4.3
-    "@xtraplatform/core": ^2.0.0-beta.13
-    "@xtraplatform/manager": ^2.0.0-beta.12
-    "@xtraplatform/neutrino": ^2.0.0-beta.5
-    "@xtraplatform/services": ^2.0.0-beta.10
+    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/manager": ^2.0.0
+    "@xtraplatform/neutrino": ^2.0.0
+    "@xtraplatform/services": ^2.0.0
     apollo-link-rest: ^0.8.0-beta.0
     eslint: ^7
     eslint-plugin-babel: "*"
