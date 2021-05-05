@@ -1,5 +1,5 @@
 ext {
-    versionSuffix = project.findProperty('isSnapshot') == 'true' ? '-SNAPSHOT' : ''
+    versionSuffix = project.findProperty('snapshot') == 'true' ? '-SNAPSHOT' : ''
 }
 
 version = '3.0.0' + versionSuffix

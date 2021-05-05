@@ -1,8 +1,5 @@
 pluginManagement {
     repositories {
-        maven {
-            url 'https://dl.bintray.com/iide/maven'
-        }
         maven {  
             url "https://dl.interactive-instruments.de/repository/maven-releases/"  
         }
