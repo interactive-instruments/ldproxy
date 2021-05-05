@@ -19,7 +19,7 @@ abstract class AbstractExtensionConfigurationSpec extends Specification{
 
         when: "#when"
 
-        def actual = source.mergeInto(target);
+        def actual = source.mergeInto(target)
 
         then: "#then"
 

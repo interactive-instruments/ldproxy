@@ -1456,6 +1456,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.12.0, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.13.6":
+  version: 7.13.17
+  resolution: "@babel/runtime@npm:7.13.17"
+  dependencies:
+    regenerator-runtime: ^0.13.4
+  checksum: c32e5e2833348b586bc919c0fbc8efbd2fdd79451cce56ed5962ace6ff74ea44fbb8723dcd3f08e52ce07e88e37f4c02cd5021855417d365558e41de38d277a8
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.10.4":
   version: 7.10.4
   resolution: "@babel/template@npm:7.10.4"
@@ -2036,9 +2045,10 @@ __metadata:
     "@storybook/addon-essentials": ^6.0.10
     "@storybook/addon-links": ^6.0.10
     "@storybook/react": ^6.0.10
-    "@xtraplatform/core": ^2.0.0-beta.4
-    "@xtraplatform/manager": ^2.0.0-beta.4
-    "@xtraplatform/neutrino": ^2.0.0-beta.4
+    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/manager": ^2.0.0
+    "@xtraplatform/neutrino": ^2.0.0
+    "@xtraplatform/services": ^2.0.0
     apollo-link-rest: ^0.8.0-beta.0
     babel-loader: "*"
     core-js: ^3
@@ -2064,6 +2074,7 @@ __metadata:
     qs: ^6.9.4
     react: ^16
     react-dom: ^16
+    react-i18next: ^11.8.5
     react-is: ^16
     react-router-dom: ^5
     regenerator-runtime: ^0.13.7
@@ -2081,11 +2092,48 @@ __metadata:
     prop-types: ^15
     react: ^16
     react-dom: ^16
+    react-i18next: ^11.8.5
     react-is: ^16
     react-router-dom: ^5
     styled-components: ^5
   languageName: unknown
   linkType: soft
+
+"@pmmmwh/react-refresh-webpack-plugin@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "@pmmmwh/react-refresh-webpack-plugin@npm:0.4.3"
+  dependencies:
+    ansi-html: ^0.0.7
+    error-stack-parser: ^2.0.6
+    html-entities: ^1.2.1
+    native-url: ^0.2.6
+    schema-utils: ^2.6.5
+    source-map: ^0.7.3
+  peerDependencies:
+    "@types/webpack": 4.x
+    react-refresh: ">=0.8.3 <0.10.0"
+    sockjs-client: ^1.4.0
+    type-fest: ^0.13.1
+    webpack: ">=4.43.0 <6.0.0"
+    webpack-dev-server: 3.x
+    webpack-hot-middleware: 2.x
+    webpack-plugin-serve: 0.x || 1.x
+  peerDependenciesMeta:
+    "@types/webpack":
+      optional: true
+    sockjs-client:
+      optional: true
+    type-fest:
+      optional: true
+    webpack-dev-server:
+      optional: true
+    webpack-hot-middleware:
+      optional: true
+    webpack-plugin-serve:
+      optional: true
+  checksum: 718853bf7b8a517616e1b136d698fdd600998c667b556982c7f460ba628da7575248f1c75a3b2b8fe0e2a458121c81039038d25ed1c79f4517c783e407417585
+  languageName: node
+  linkType: hard
 
 "@reach/router@npm:^1.3.3":
   version: 1.3.4
@@ -3477,17 +3525,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xtraplatform/core@npm:^2.0.0-beta.4":
-  version: 2.0.0-beta.4
-  resolution: "@xtraplatform/core@npm:2.0.0-beta.4::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fcore%2F-%2F%40xtraplatform%2Fcore-2.0.0-beta.4.tgz"
+"@xtraplatform/core@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@xtraplatform/core@npm:2.0.0"
   dependencies:
-    apollo-link-rest: ^0.8.0-beta.0
     check-prop-types: ^1.1.2
-    core-js: ^3.6.5
     deepmerge: ^4.2.2
-    graphql: ^15.3.0
-    graphql-anywhere: ^4.2.7
-    jwt-decode: ^2.2.0
+    polished: ^4.0.4
     qs: ^6.9.4
     use-deep-compare-effect: ^1.3.1
   peerDependencies:
@@ -3498,46 +3542,78 @@ __metadata:
     prop-types: ^15
     react: ^16
     react-dom: ^16
+    react-i18next: ^11.8.5
     react-is: ^16
     react-router-dom: ^5
     styled-components: ^5
-  checksum: a9f26229769159a0b1c43a77d279b36bc48432b8ab5854cd3ac7deb5bbd385ea681a7fda537e3eb75f91fb05dd3125f1cc9cd4fd97e2364dcad8ecb1682a5955
+  checksum: fcafb2419649815f15fb1ef4ecf11e7c7b37d88e4df7cb791416eaade4ac6be5900c7b3dcbd0f9fae85b10bd6bbabc8ed6b63afd6f95a905e1d557084faad7ce
   languageName: node
   linkType: hard
 
-"@xtraplatform/manager@npm:^2.0.0-beta.4":
-  version: 2.0.0-beta.4
-  resolution: "@xtraplatform/manager@npm:2.0.0-beta.4::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fmanager%2F-%2F%40xtraplatform%2Fmanager-2.0.0-beta.4.tgz"
+"@xtraplatform/manager@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@xtraplatform/manager@npm:2.0.0"
   dependencies:
     apollo-link-rest: ^0.8.0-beta.0
     graphql: ^15.3.0
     graphql-anywhere: ^4.2.7
+    i18next: ^19.8.4
+    i18next-browser-languagedetector: ^6.0.1
     jwt-decode: ^2.2.0
     qs: ^6.9.4
   peerDependencies:
     "@apollo/client": ^3
-    "@xtraplatform/core": ^2.0.0-beta.4
+    "@xtraplatform/core": ^2.0.0
     feature-u: ^3
     grommet: ^2
     grommet-icons: ^4
     prop-types: ^15
     react: ^16
     react-dom: ^16
+    react-i18next: ^11.8.5
     react-is: ^16
     react-router-dom: ^5
     styled-components: ^5
-  checksum: de0e79aee002f79d8b3358deaa17816fcb26950986fd44e6fa26f37bcd16dc6ca5a019ff2330ee25c15bccdae059c7bd4c90e008e8277aab124239bc51fe6e7c
+  checksum: a74c6007063e89a32e40a807a653a592678e0cde9277477f36c6c3a17e6f4da69dd346ba2b4191f47039a595bc214355ead6b49b168432b909cf47ffe2580bdd
   languageName: node
   linkType: hard
 
-"@xtraplatform/neutrino@npm:^2.0.0-beta.4":
-  version: 2.0.0-beta.4
-  resolution: "@xtraplatform/neutrino@npm:2.0.0-beta.4::__archiveUrl=https%3A%2F%2Fdl.bintray.com%2F%2Fiide%2Fnpm%2F%40xtraplatform%2Fneutrino%2F-%2F%40xtraplatform%2Fneutrino-2.0.0-beta.4.tgz"
+"@xtraplatform/neutrino@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@xtraplatform/neutrino@npm:2.0.0"
   dependencies:
+    "@pmmmwh/react-refresh-webpack-plugin": ^0.4.3
     deepmerge: ^4.2.2
     eslint-config-prettier: ^6.11.0
     pnp-webpack-plugin: ^1.6.4
-  checksum: e53ae3d9ccbb6e26a0c21af2595da533afc5a6fc828595e1703f15152d7aba9db4df919caef69bff10106ea52496570c55af1167dbd70688e2e5c086db2d5c3b
+    react-refresh: ^0.9.0
+  checksum: d14b764c99a2f57882916939d24c5b310594cf169938abc08f6fba9e7c278929c83c58c56de9e69ea130304ec476a569579eefb3f3335ae3b5c02609e8222fef
+  languageName: node
+  linkType: hard
+
+"@xtraplatform/services@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@xtraplatform/services@npm:2.0.0"
+  dependencies:
+    apollo-link-rest: ^0.8.0-beta.0
+    deepmerge: ^4.2.2
+    graphql: ^15.3.0
+    graphql-anywhere: ^4.2.7
+  peerDependencies:
+    "@apollo/client": ^3
+    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/manager": ^2.0.0
+    feature-u: ^3
+    grommet: ^2
+    grommet-icons: ^4
+    prop-types: ^15
+    react: ^16
+    react-dom: ^16
+    react-i18next: ^11.8.5
+    react-is: ^16
+    react-router-dom: ^5
+    styled-components: ^5
+  checksum: 29116939dc3b2777fd9d0cf76299f89676365baaa65987c827b75f511a66897669b0416cb3b32ab1f4a0af080383c6b942baec0e5cfcd1f5336762f5f5efdf82
   languageName: node
   linkType: hard
 
@@ -3710,7 +3786,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-html@npm:0.0.7":
+"ansi-html@npm:0.0.7, ansi-html@npm:^0.0.7":
   version: 0.0.7
   resolution: "ansi-html@npm:0.0.7"
   bin:
@@ -6856,6 +6932,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"error-stack-parser@npm:^2.0.6":
+  version: 2.0.6
+  resolution: "error-stack-parser@npm:2.0.6"
+  dependencies:
+    stackframe: ^1.1.1
+  checksum: 7abf762c20054310d33f0c0a34a2ea38f93a1b0169f5289feb96cf94d7b30d277a0df09567469be79ccfcfa49df37cddc8c59e0bc5b682a1e7e3c234e67b25c8
+  languageName: node
+  linkType: hard
+
 "es-abstract@npm:^1.17.0, es-abstract@npm:^1.17.0-next.0, es-abstract@npm:^1.17.0-next.1, es-abstract@npm:^1.17.4, es-abstract@npm:^1.17.5":
   version: 1.17.6
   resolution: "es-abstract@npm:1.17.6"
@@ -8783,7 +8868,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"html-entities@npm:^1.2.0, html-entities@npm:^1.3.1":
+"html-entities@npm:^1.2.0, html-entities@npm:^1.2.1, html-entities@npm:^1.3.1":
   version: 1.3.1
   resolution: "html-entities@npm:1.3.1"
   checksum: 53d37e5161230ad7f2c16dd2b54945069d84b5167113eac55e39a8fffed357378afc022d5dc66045b132ea46232cab41aee86e79dd5cd0618e0b78776b9085b5
@@ -8834,6 +8919,15 @@ fsevents@^1.2.7:
   bin:
     html-minifier: ./cli.js
   checksum: c392d2128c7d2f7de9d44fedcae1e899f3825eb7792c90ca55ab07129b89d0a005fa4f898b6bf73a7f0526d3ff827898c2065cccd53c7f00d45b386ddb8821bf
+  languageName: node
+  linkType: hard
+
+"html-parse-stringify@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "html-parse-stringify@npm:3.0.0"
+  dependencies:
+    void-elements: 3.1.0
+  checksum: bf35f8560cd90b872b8c68484824d3de4e2e838eb8f4e532f7393d5a8f8a64ddf9093111b77178d7097db31485c3b73f05a01fdbc94f64a746b175f002bbbf17
   languageName: node
   linkType: hard
 
@@ -8967,6 +9061,24 @@ fsevents@^1.2.7:
   version: 1.0.0
   resolution: "https-browserify@npm:1.0.0"
   checksum: 9746a4ef0283691774f207039efed38e31e86732ed15bcebf1878e2e7cf4b87e8a4e5fe3cce342caba9545ce0e7e2bcf44fe08edb52284b1b53bfe026e1e8f07
+  languageName: node
+  linkType: hard
+
+"i18next-browser-languagedetector@npm:^6.0.1":
+  version: 6.1.0
+  resolution: "i18next-browser-languagedetector@npm:6.1.0"
+  dependencies:
+    "@babel/runtime": ^7.5.5
+  checksum: e45df3bfb92ebb2df0feb6cb31f70e79fa3f04a92d860832e5f1fdb996be3e345a42827400b7a85c03e53057c9bb930c152b68d361574e1e37df50fc27d3f730
+  languageName: node
+  linkType: hard
+
+"i18next@npm:^19.8.4":
+  version: 19.9.2
+  resolution: "i18next@npm:19.9.2"
+  dependencies:
+    "@babel/runtime": ^7.12.0
+  checksum: 2570489cf92fdbc6c9c6e937deb23725afa1e2af3376f3c1d4880c4cacfc7b79e6136c62527dbc23052a206781f056a5800cda1f7379199a721623cd45e8dd6d
   languageName: node
   linkType: hard
 
@@ -11121,6 +11233,15 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"native-url@npm:^0.2.6":
+  version: 0.2.6
+  resolution: "native-url@npm:0.2.6"
+  dependencies:
+    querystring: ^0.2.0
+  checksum: 064e580759f06060740636184ba8dbd8cf21a1237c769625591f8a0e956714ea27d58d601fe84c4b9600dfabc88edfb3bf51fc7a579764b5d60e0d9392aec9df
+  languageName: node
+  linkType: hard
+
 "natural-compare@npm:^1.4.0":
   version: 1.4.0
   resolution: "natural-compare@npm:1.4.0"
@@ -12175,6 +12296,15 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"polished@npm:^4.0.4":
+  version: 4.1.1
+  resolution: "polished@npm:4.1.1"
+  dependencies:
+    "@babel/runtime": ^7.12.5
+  checksum: 177c15c317464eb4a7b523e3b291223ef9d1365b8ca3e3f4cc57a3abac4390c74fb74024103729d0a5244db19a2b941ce34f0084c60634ed7c14b88ef07f5d90
+  languageName: node
+  linkType: hard
+
 "popper.js@npm:^1.14.4, popper.js@npm:^1.14.7":
   version: 1.16.1
   resolution: "popper.js@npm:1.16.1"
@@ -12856,6 +12986,19 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"react-i18next@npm:^11.8.5":
+  version: 11.8.13
+  resolution: "react-i18next@npm:11.8.13"
+  dependencies:
+    "@babel/runtime": ^7.13.6
+    html-parse-stringify: ^3.0.0
+  peerDependencies:
+    i18next: ">= 19.0.0"
+    react: ">= 16.8.0"
+  checksum: 6ff531811ae872a52f97dc852aef5fd69a8cce1f63a6a9163f2b84b1f7395b15ab9cf62829450689e69e6edad4c672ed2f18f68d444d0ec752010f79cb265f37
+  languageName: node
+  linkType: hard
+
 "react-inspector@npm:^5.0.1":
   version: 5.0.1
   resolution: "react-inspector@npm:5.0.1"
@@ -12910,6 +13053,13 @@ fsevents@^1.2.7:
   peerDependencies:
     react: 0.14.x || ^15.0.0 || ^16.0.0
   checksum: 09ef58054bd9d449283939af861cbb205aee771289884fa62e30a6927163fab53e865593c0e014364d807a8e219d9642be6d34ae58b1e4f2f0530ffc9b289e5a
+  languageName: node
+  linkType: hard
+
+"react-refresh@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "react-refresh@npm:0.9.0"
+  checksum: 300dc431389f4c532bdfec08d5bc59b591c8c440486a7d5770c8954adf3afe62501b659c5acbdb7831751e8be506eb90a6f72491fab40352f3b3fba16897acf6
   languageName: node
   linkType: hard
 
@@ -14225,6 +14375,13 @@ fsevents@^1.2.7:
   version: 0.1.8
   resolution: "stable@npm:0.1.8"
   checksum: a430967bb543d4d1a5cbec81b48034006a467464f5d4bdf72bd7279da406956e1f8edaa56aab74ec17cc4e56ee61668dc4f1b380255507cf2f70c6ba589f7c48
+  languageName: node
+  linkType: hard
+
+"stackframe@npm:^1.1.1":
+  version: 1.2.0
+  resolution: "stackframe@npm:1.2.0"
+  checksum: 71e2868a529123e9ca1cf510192a7de879b8d92b5829c7f58d5576e1500cbedf22b5d9cc86589c547b6842abcf01cea13979ab8301b51e85bdb6267a6f9288f2
   languageName: node
   linkType: hard
 
@@ -15606,6 +15763,13 @@ fsevents@^1.2.7:
   version: 1.1.2
   resolution: "vm-browserify@npm:1.1.2"
   checksum: fc571a62d2cf797ae8773ebb3cb0d2bea50ed02059e128dd9087975929fce4c80a6485ce1aaf7d44ef69db99dfdcde50b6be5d5eb73b296660d761c32fb544fe
+  languageName: node
+  linkType: hard
+
+"void-elements@npm:3.1.0":
+  version: 3.1.0
+  resolution: "void-elements@npm:3.1.0"
+  checksum: ed0f78f1434f4a5588078861815b3ebdbb0913e5129c3f1b37a3408a9f7c772d28702846316734e758ba40cad4e85371e50160d92d7968b86f12bf7227a1c6c9
   languageName: node
   linkType: hard
 
