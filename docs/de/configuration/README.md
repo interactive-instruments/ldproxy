@@ -2,9 +2,9 @@
 
 <a name="manager"></a>
 
-## ldproxy Manager
+## Manager
 
-Die Konfiguration von einfachen APIs kann zukünftig über den ldproxy-Manager im Webbrowser erfolgen. Der ldproxy-Manager befindet sich derzeit in der Überarbeitung und wird mit einer späteren Version von ldproxy 2.0 zur Verfügung stehen.
+Die Konfiguration von einfachen APIs kann  über den [Manager](./manager/README.md) im Webbrowser erfolgen. 
 
 ## Konfigurationsdateien
 
