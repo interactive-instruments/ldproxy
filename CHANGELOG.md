@@ -1,5 +1,54 @@
 # Changelog
 
+## v3.0.0 (07/05/2021)
+
+#### Implemented enhancements
+
+-  support full text search via q parameter [#420](https://github.com/interactive-instruments/ldproxy/issues/420)
+-  reintroduce manager web app for easy configuration [#419](https://github.com/interactive-instruments/ldproxy/issues/419)
+-  enhance HTML and schema.org representation [#405](https://github.com/interactive-instruments/ldproxy/issues/405)
+-  update Filtering/CQL to Part 3, 1.0.0-draft.2 [#395](https://github.com/interactive-instruments/ldproxy/issues/395)
+-  support sortby parameter [#386](https://github.com/interactive-instruments/ldproxy/issues/386)
+-  add support for OGC API Records [#369](https://github.com/interactive-instruments/ldproxy/issues/369)
+-  add support for JSON Schema draft-07 [#365](https://github.com/interactive-instruments/ldproxy/issues/365)
+-  support auto-reload of entity configurations [#267](https://github.com/interactive-instruments/ldproxy/issues/267)
+-  support GeoPackage and SQLite/SpatiaLite [#444](https://github.com/interactive-instruments/ldproxy/issues/444)
+
+#### Improvements
+
+-  temporal filter improvements [#409](https://github.com/interactive-instruments/ldproxy/issues/409)
+-  support option to reduce the number of decimal places [#399](https://github.com/interactive-instruments/ldproxy/issues/399)
+-  accept limit values greater than the maximum value [#396](https://github.com/interactive-instruments/ldproxy/issues/396)
+-  suppress selected properties in OgcApiCollection, if there are no spatial/temporal queryables [#372](https://github.com/interactive-instruments/ldproxy/issues/372)
+-  make property references more tolerant/robust [#356](https://github.com/interactive-instruments/ldproxy/issues/356)
+-  improve sql logging [#270](https://github.com/interactive-instruments/ldproxy/issues/270)
+-  add admin task to change log level [#268](https://github.com/interactive-instruments/ldproxy/issues/268)
+-  add admin task to reload entity configuration [#266](https://github.com/interactive-instruments/ldproxy/issues/266)
+-  advanced database connection configuration [#264](https://github.com/interactive-instruments/ldproxy/issues/264)
+-  add service startup validation [#263](https://github.com/interactive-instruments/ldproxy/issues/263)
+-  add context information in log messages from the database (PostgreSQL) [#211](https://github.com/interactive-instruments/ldproxy/issues/211)
+
+#### Fixed bugs
+
+-  tile seeding fails if some type has no geometry [#429](https://github.com/interactive-instruments/ldproxy/issues/429)
+-  connectionInfo configuration is not merged [#418](https://github.com/interactive-instruments/ldproxy/issues/418)
+-  HTML layout COMPLEX_OBJECTS is incompatible with WFS providers [#414](https://github.com/interactive-instruments/ldproxy/issues/414)
+-  OpenAPI 3.0: info.license.name is required [#393](https://github.com/interactive-instruments/ldproxy/issues/393)
+-  not all links shown in Link header on the landing page [#391](https://github.com/interactive-instruments/ldproxy/issues/391)
+-  error in Mapbox Style serialization [#390](https://github.com/interactive-instruments/ldproxy/issues/390)
+-  integer enums in schemas result in NPE [#383](https://github.com/interactive-instruments/ldproxy/issues/383)
+-  limit/offset ignored in some queries [#381](https://github.com/interactive-instruments/ldproxy/issues/381)
+-  default CRS in spatial extents is EPSG 4326, not CRS84 [#371](https://github.com/interactive-instruments/ldproxy/issues/371)
+-  exception when OAS30 is disabled [#366](https://github.com/interactive-instruments/ldproxy/issues/366)
+-  GML output raises an exception [#244](https://github.com/interactive-instruments/ldproxy/issues/244)
+
+#### Dependency updates
+
+-  bump dropwizard from 1.3.24 to 1.3.29 [#426](https://github.com/interactive-instruments/ldproxy/issues/426)
+-  update vector tiles dep 1.3.10 -> 1.3.13 [#361](https://github.com/interactive-instruments/ldproxy/issues/361)
+
+---
+
 ## v2.5.1 (08/02/2021)
 
 #### Fixed bugs
