@@ -1,4 +1,4 @@
-pluginManagement {
+settings.pluginManagement {
     repositories {
         maven {
             url "https://dl.interactive-instruments.de/repository/maven-releases/"
@@ -16,6 +16,7 @@ def siblingDirectories = rootDir.parentFile.parentFile.listFiles()
 def xtraplatform = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform') })
 def xtraplatformSpatial = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-spatial') })
 def xtraplatformBuild = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-build') })
+def ldproxyCommunity = siblingDirectories.find({ it.name.toLowerCase().equals('ldproxy-community') })
 
 if (xtraplatformBuild) {
     includeBuild "../../${xtraplatformBuild.name}"
@@ -30,4 +31,9 @@ if (xtraplatformSpatial) {
 
 includeBuild '../ogcapi-stable'
 includeBuild '../ogcapi-draft'
+
+if (hasProperty('community') && ldproxyCommunity) {
+    includeBuild "../../${ldproxyCommunity.name}"
+}
+
 includeBuild '../'
