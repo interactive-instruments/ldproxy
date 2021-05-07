@@ -2048,7 +2048,7 @@ __metadata:
     "@xtraplatform/core": ^2.0.0
     "@xtraplatform/manager": ^2.0.0
     "@xtraplatform/neutrino": ^2.0.0
-    "@xtraplatform/services": ^2.0.0
+    "@xtraplatform/services": ^2.0.1
     apollo-link-rest: ^0.8.0-beta.0
     babel-loader: "*"
     core-js: ^3
@@ -3591,9 +3591,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xtraplatform/services@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "@xtraplatform/services@npm:2.0.0"
+"@xtraplatform/services@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "@xtraplatform/services@npm:2.0.1"
   dependencies:
     apollo-link-rest: ^0.8.0-beta.0
     deepmerge: ^4.2.2
@@ -3613,7 +3613,7 @@ __metadata:
     react-is: ^16
     react-router-dom: ^5
     styled-components: ^5
-  checksum: 29116939dc3b2777fd9d0cf76299f89676365baaa65987c827b75f511a66897669b0416cb3b32ab1f4a0af080383c6b942baec0e5cfcd1f5336762f5f5efdf82
+  checksum: 69117588e422c70e6988658c2634f21078b9d39dce725c1a122b4a83539646c41551cd82e4a56cacdff4d6462e3df85cba1919bb85d4e5d24569477b69e86989
   languageName: node
   linkType: hard
 

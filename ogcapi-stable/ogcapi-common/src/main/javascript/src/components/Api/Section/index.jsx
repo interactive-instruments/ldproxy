@@ -76,7 +76,7 @@ const ApiSection = ({
       })
     : t("services/ogc_api:api.buildingBlocks.enable");
 
-  console.log(id, dependents, dependees, rejectToggle, rejectReason);
+  //console.log(id, dependents, dependees, rejectToggle, rejectReason);
   return (
     <AccordionPanel
       onFocus={(e) => {
