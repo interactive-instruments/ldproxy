@@ -3251,7 +3251,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ogcapi/common@^1.0.0, @ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript":
+"@ogcapi/common@^1.0.1, @ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript"
   dependencies:
@@ -3268,7 +3268,7 @@ __metadata:
     "@xtraplatform/core": ^2.0.0
     "@xtraplatform/manager": ^2.0.0
     "@xtraplatform/neutrino": ^2.0.0
-    "@xtraplatform/services": ^2.0.0
+    "@xtraplatform/services": ^2.0.1
     apollo-link-rest: ^0.8.0-beta.0
     babel-loader: "*"
     core-js: ^3
@@ -5361,7 +5361,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@xtraplatform/services@^2.0.0, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
+"@xtraplatform/services@^2.0.1, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript"
   dependencies:
@@ -12514,12 +12514,12 @@ fsevents@^1.2.7:
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/mocha": ^9.3.0
     "@neutrinojs/react": ^9.3.0
-    "@ogcapi/common": ^1.0.0
+    "@ogcapi/common": ^1.0.1
     "@pmmmwh/react-refresh-webpack-plugin": ^0.4.3
     "@xtraplatform/core": ^2.0.0
     "@xtraplatform/manager": ^2.0.0
     "@xtraplatform/neutrino": ^2.0.0
-    "@xtraplatform/services": ^2.0.0
+    "@xtraplatform/services": ^2.0.1
     apollo-link-rest: ^0.8.0-beta.0
     eslint: ^7
     eslint-plugin-babel: "*"

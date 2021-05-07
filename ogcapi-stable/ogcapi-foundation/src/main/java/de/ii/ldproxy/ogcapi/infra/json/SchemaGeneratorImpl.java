@@ -75,8 +75,9 @@ public class SchemaGeneratorImpl implements SchemaGenerator {
     }
 
     private Schema generateSchema(Class clazz) {
-
-        LOGGER.debug("Generating schema for class '"+clazz.getName()+"'.");
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("Generating schema for class '" + clazz.getName() + "'.");
+        }
 
         if (clazz.isEnum()) {
             Object[] enums = clazz.getEnumConstants();
