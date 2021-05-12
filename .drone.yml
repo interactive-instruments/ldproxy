@@ -9,25 +9,32 @@ pipeline:
     mount:
       - .gradle/caches
       - .gradle/wrapper
+      - ldproxy-manager/src/main/javascript/.yarn/build-state.yml
+      - ldproxy-manager/src/main/javascript/.yarn/cache
+      - ldproxy-manager/src/main/javascript/.yarn/install-state.gz
+      - ldproxy-manager/src/main/javascript/.yarn/unplugged
 
-  test:
+  check-snapshot:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - ./gradlew check -Psnapshot=true
+    when:
+      event: [push]
+
+  check-release:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
       - ./gradlew check
     when:
-      event: [push,tag]
+      event: [tag]
 
   build-snapshot:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - cd ogcapi-stable
-      - ../gradlew assemble publishToMavenLocal -Psnapshot=true
-      - cd ../ogcapi-draft
-      - ../gradlew assemble publishToMavenLocal -Psnapshot=true --init-script ../.maven-local.gradle
-      - cd ..
-      - ./gradlew assemble dockerDistTar -Psnapshot=true --init-script ./.maven-local.gradle
+      - ./gradlew assemble dockerDistTar -Psnapshot=true
     when:
       event: [push]
 
@@ -35,12 +42,7 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - cd ogcapi-stable
-      - ../gradlew assemble publishToMavenLocal
-      - cd ../ogcapi-draft
-      - ../gradlew assemble publishToMavenLocal --init-script ../.maven-local.gradle
-      - cd ..
-      - ./gradlew assemble dockerDistTar --init-script ./.maven-local.gradle
+      - ./gradlew assemble dockerDistTar
     when:
       event: [tag]
 
@@ -48,10 +50,7 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - cd ogcapi-stable
-      - ../gradlew publishToMavenLocal publish -Psnapshot=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
-      - cd ../ogcapi-draft
-      - ../gradlew publish -Psnapshot=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS --init-script ../.maven-local.gradle
+      - ./gradlew publish -Psnapshot=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: push
@@ -61,10 +60,7 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - cd ogcapi-stable
-      - ../gradlew publishToMavenLocal publish -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
-      - cd ../ogcapi-draft
-      - ../gradlew publish -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS --init-script ../.maven-local.gradle
+      - ./gradlew publish -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: tag
@@ -84,8 +80,8 @@ pipeline:
     image: plugins/docker
     repo: iide/ldproxy
     auto_tag: true
-    username: ${DOCKER_USER}
-    password: ${DOCKER_PASSWORD}
+    username: $${DOCKER_USER}
+    password: $${DOCKER_PASSWORD}
     dockerfile: build/docker/Dockerfile
     context: build/docker
     secrets: [ docker_user, docker_password]
@@ -112,13 +108,38 @@ pipeline:
     when:
       event: [tag]
 
-  save-cache:
+  build-community:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - ./gradlew assemble dockerDistTar -Psnapshot=true -Pcommunity
+    when:
+      event: [push]
+#      branch: master
+
+ docker-community:
+    image: plugins/docker
+    registry: docker.ci.interactive-instruments.de
+    repo: docker.ci.interactive-instruments.de/iide/ldproxy
+    tags: _community
+    force_tag: true
+    dockerfile: build/docker/Dockerfile
+    context: build/docker
+    when:
+      event: push
+#      branch: master
+
+   save-cache:
     image: drillster/drone-volume-cache
     volumes: [/var/lib/docker/tmp:/cache]
     rebuild: true
     mount:
       - .gradle/caches
       - .gradle/wrapper
+      - ldproxy-manager/src/main/javascript/.yarn/build-state.yml
+      - ldproxy-manager/src/main/javascript/.yarn/cache
+      - ldproxy-manager/src/main/javascript/.yarn/install-state.gz
+      - ldproxy-manager/src/main/javascript/.yarn/unplugged
 
 #  notify:
 #    image: plugins/slack:1.3.0
