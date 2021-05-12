@@ -117,7 +117,7 @@ pipeline:
       event: [push]
 #      branch: master
 
- docker-community:
+  docker-community:
     image: plugins/docker
     registry: docker.ci.interactive-instruments.de
     repo: docker.ci.interactive-instruments.de/iide/ldproxy
@@ -129,7 +129,7 @@ pipeline:
       event: push
 #      branch: master
 
-   save-cache:
+  save-cache:
     image: drillster/drone-volume-cache
     volumes: [/var/lib/docker/tmp:/cache]
     rebuild: true
