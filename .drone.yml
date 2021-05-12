@@ -115,7 +115,7 @@ pipeline:
       - ./gradlew assemble dockerDistTar -Psnapshot=true -Pcommunity
     when:
       event: [push]
-#      branch: master
+      branch: master
 
   docker-community:
     image: plugins/docker
@@ -127,7 +127,7 @@ pipeline:
     context: build/docker
     when:
       event: push
-#      branch: master
+      branch: master
 
   save-cache:
     image: drillster/drone-volume-cache
