@@ -47,7 +47,7 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointResources extends Endpoint implements ConformanceClass {
+public class EndpointResources extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResources.class);
 
@@ -64,11 +64,6 @@ public class EndpointResources extends Endpoint implements ConformanceClass {
                                    .resolve("resources");
         Files.createDirectories(resourcesStore);
         this.i18n = i18n;
-    }
-
-    @Override
-    public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/resources");
     }
 
     @Override

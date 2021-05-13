@@ -66,7 +66,7 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 @Component
 @Provides
 @Instantiate
-public class EndpointResourcesManager extends Endpoint implements ConformanceClass {
+public class EndpointResourcesManager extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
     private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
@@ -80,11 +80,6 @@ public class EndpointResourcesManager extends Endpoint implements ConformanceCla
         this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                    .resolve("resources");
         Files.createDirectories(resourcesStore);
-    }
-
-    @Override
-    public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/manage-resources");
     }
 
     @Override
