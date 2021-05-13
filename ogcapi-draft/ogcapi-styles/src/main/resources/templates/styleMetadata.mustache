@@ -111,7 +111,7 @@
                             <ul>
                                 {{#specification}}<li>{{specificationTitle}}: {{.}}</li>{{/specification}}
                                 {{#version}}<li>{{versionTitle}}: {{.}}</li>{{/version}}
-                                <li>{{nativeTitle}}: {{#native}}{{trueTitle}}{{/native}}{{^native}}{{falseTitle}}{{/native}}</li>
+                                <li>{{nativeTitle}}: {{#native_}}{{trueTitle}}{{/native_}}{{^native_}}{{falseTitle}}{{/native_}}</li>
                             </ul>
                             <br/>
                         </li>
