@@ -22,13 +22,12 @@ import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableStyleMetadata.class)
 public abstract class StyleMetadata extends PageRepresentation {
 
     public abstract Optional<String> getId();
 
-    public abstract Optional<List<String>> getKeywords();
+    public abstract List<String> getKeywords();
 
     public abstract Optional<String> getPointOfContact();
 
@@ -40,22 +39,20 @@ public abstract class StyleMetadata extends PageRepresentation {
 
     public abstract Optional<String> getVersion();
 
-    public abstract Optional<List<StylesheetMetadata>> getStylesheets();
+    public abstract List<StylesheetMetadata> getStylesheets();
 
-    public abstract Optional<List<StyleLayer>> getLayers();
+    public abstract List<StyleLayer> getLayers();
 
     @JsonIgnore
     public StyleMetadata replaceParameters(URICustomizer uriCustomizer) {
 
         // any template parameters in links?
         boolean templated = this.getStylesheets()
-                                    .orElse(ImmutableList.of())
                                     .stream()
                                     .map(styleSheet -> styleSheet.getLink().orElse(null))
                                     .filter(Objects::nonNull)
                                     .anyMatch(link -> Objects.requireNonNullElse(link.getTemplated(),false) && link.getHref().matches("^.*\\{serviceUrl\\}.*$")) ||
                 this.getLayers()
-                        .orElse(ImmutableList.of())
                         .stream()
                         .map(layer -> layer.getSampleData().orElse(null))
                         .filter(Objects::nonNull)
@@ -76,7 +73,6 @@ public abstract class StyleMetadata extends PageRepresentation {
         return ImmutableStyleMetadata.builder()
                                      .from(this)
                                      .stylesheets(this.getStylesheets()
-                                                          .orElse(ImmutableList.of())
                                                           .stream()
                                                           .map(styleSheet -> ImmutableStylesheetMetadata.builder()
                                                                                                         .from(styleSheet)
@@ -94,7 +90,6 @@ public abstract class StyleMetadata extends PageRepresentation {
                                                                                                         .build())
                                                           .collect(ImmutableList.toImmutableList()))
                                      .layers(this.getLayers()
-                                                     .orElse(ImmutableList.of())
                                                      .stream()
                                                      .map(layer -> ImmutableStyleLayer.builder()
                                                                                       .from(layer)

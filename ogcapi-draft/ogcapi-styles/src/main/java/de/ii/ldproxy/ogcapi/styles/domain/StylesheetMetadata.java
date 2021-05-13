@@ -16,8 +16,7 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableStylesheetMetadata.class)
 public abstract class StylesheetMetadata {
 
