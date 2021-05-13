@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableStyleEntry;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
@@ -245,6 +246,13 @@ public class StyleRepositoryFiles implements StyleRepository {
     public StyleMetadata getStyleMetadata(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
         File metadataFile = getPathMetadata(apiData, collectionId, styleId).toFile();
 
+        final DefaultLinksGenerator defaultLinkGenerator = new DefaultLinksGenerator();
+        List<Link> links = defaultLinkGenerator.generateLinks(requestContext.getUriCustomizer(),
+                                                              requestContext.getMediaType(),
+                                                              requestContext.getAlternateMediaTypes(),
+                                                              i18n,
+                                                              requestContext.getLanguage());
+
         if (!metadataFile.exists()) {
             // TODO derive metadata from a source metadata, if the style is derived
             List<StylesheetMetadata> stylesheets = deriveStylesheetMetadata(apiData, collectionId, styleId, requestContext);
@@ -257,7 +265,8 @@ public class StyleRepositoryFiles implements StyleRepository {
             ImmutableStyleMetadata.Builder metadata = ImmutableStyleMetadata.builder()
                                                                             .id(styleId)
                                                                             .title(title.orElse(styleId))
-                                                                            .stylesheets(stylesheets);
+                                                                            .stylesheets(stylesheets)
+                                                                            .links(links);
 
             return metadata.build();
         }
@@ -272,7 +281,10 @@ public class StyleRepositoryFiles implements StyleRepository {
             mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             try {
                 // parse input
-                StyleMetadata metadata = mapper.readValue(metadataContent, StyleMetadata.class);
+                StyleMetadata metadata = ImmutableStyleMetadata.builder()
+                                                               .from(mapper.readValue(metadataContent, StyleMetadata.class))
+                                                               .addAllLinks(links)
+                                                               .build();
 
                 return metadata.replaceParameters(requestContext.getUriCustomizer());
             } catch (IOException e) {
