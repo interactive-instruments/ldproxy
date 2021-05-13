@@ -8,6 +8,12 @@ import { Box, Accordion } from "grommet";
 import { apiBuildingBlocks } from "../constants";
 import Section from "./Section";
 
+const isEnabled = (id, buildingBlocks, defaults, ignoreDefaults) =>
+  (!ignoreDefaults &&
+    defaults[id].enabled &&
+    (!buildingBlocks[id] || buildingBlocks[id].enabled !== false)) ||
+  (buildingBlocks[id] && buildingBlocks[id].enabled);
+
 const ServiceEditApi = ({
   id,
   api,
@@ -67,9 +73,12 @@ const ServiceEditApi = ({
       (bb2) =>
         bb2.dependencies &&
         bb2.dependencies.includes(bb.id.toLowerCase()) &&
-        mergedBuildingBlocksDefault[bb2.id].enabled &&
-        (!mergedBuildingBlocks[bb2.id] ||
-          mergedBuildingBlocks[bb2.id].enabled !== false)
+        isEnabled(
+          bb2.id,
+          mergedBuildingBlocks,
+          mergedBuildingBlocksDefault,
+          isDefaults
+        )
     );
     dependents[bb.id] = deps;
   });
@@ -79,9 +88,12 @@ const ServiceEditApi = ({
       (bb2) =>
         bb.dependencies &&
         bb.dependencies.includes(bb2.id.toLowerCase()) &&
-        (!mergedBuildingBlocksDefault[bb2.id].enabled ||
-          (mergedBuildingBlocks[bb2.id] &&
-            mergedBuildingBlocks[bb2.id].enabled === false))
+        !isEnabled(
+          bb2.id,
+          mergedBuildingBlocks,
+          mergedBuildingBlocksDefault,
+          isDefaults
+        )
     );
     dependees[bb.id] = deps;
   });

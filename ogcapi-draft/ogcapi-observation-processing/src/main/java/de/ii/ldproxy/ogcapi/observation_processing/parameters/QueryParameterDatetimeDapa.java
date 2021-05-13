@@ -191,7 +191,7 @@ public class QueryParameterDatetimeDapa extends ApiExtensionCache implements Ogc
                     throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime));
             }            
         } catch (DateTimeException e) {
-            throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'.", "datetime", datetime), e);
+            throw new IllegalArgumentException(String.format("The parameter '%s' has an invalid value '%s'", "datetime", datetime), e);
         }
         parameters.put(getName(),newDatetime);
         return parameters;

@@ -33,8 +33,6 @@ public interface FeatureTransformations {
 
     Map<String, PropertyTransformation> getTransformations();
 
-    @Value.Derived
-    @JsonIgnore
     default Map<String, List<FeaturePropertySchemaTransformer>> getSchemaTransformations(boolean isOverview) {
         Map<String, List<FeaturePropertySchemaTransformer>> transformations = new LinkedHashMap<>();
 
@@ -58,8 +56,6 @@ public interface FeatureTransformations {
         return transformations;
     }
 
-    @Value.Derived
-    @JsonIgnore
     default Map<String, List<FeaturePropertyValueTransformer>> getValueTransformations(Map<String, Codelist> codelists,
                                                                                        String serviceUrl) {
         Map<String, List<FeaturePropertyValueTransformer>> transformations = new LinkedHashMap<>();

@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.xtraplatform.cql.domain.And;
+import de.ii.xtraplatform.cql.domain.AnyInteracts;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
@@ -116,6 +117,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                                 .type(featureTypeId)
                                                                                 .filter(filter)
+                                                                                .returnsSingleFeature(true)
                                                                                 .crs(coreConfiguration.getDefaultEpsgCrs());
 
         for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -186,10 +188,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         if (!filters.isEmpty()) {
             Cql.Format cqlFormat = Cql.Format.TEXT;
+            EpsgCrs crs = OgcCrs.CRS84;
             if (parameters.containsKey("filter-lang") && "cql-json".equals(parameters.get("filter-lang"))) {
                 cqlFormat = Cql.Format.JSON;
             }
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, cqlFormat);
+            if (parameters.containsKey("filter-crs")) {
+                crs = EpsgCrs.fromString(parameters.get("filter-crs"));
+            }
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, cqlFormat, crs);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -209,7 +215,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         if (!filtersFromQuery.isEmpty()) {
 
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), cqlFormat);
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), cqlFormat, OgcCrs.CRS84);
         }
 
         return Optional.empty();
@@ -238,7 +244,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
-                                                  List<String> qFields, Cql.Format cqlFormat) {
+                                                  List<String> qFields, Cql.Format cqlFormat, EpsgCrs crs) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
@@ -262,9 +268,9 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                    if (filterParameters.contains(filter.getKey())) {
                                                        CqlPredicate cqlPredicate;
                                                        try {
-                                                           cqlPredicate = cql.read(filter.getValue(), cqlFormat);
+                                                           cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs);
                                                        } catch (Throwable e) {
-                                                           throw new IllegalArgumentException(String.format("The parameter '%s' is invalid.", filter.getKey()), e);
+                                                           throw new IllegalArgumentException(String.format("The parameter '%s' is invalid", filter.getKey()), e);
                                                        }
 
                                                        List<String> invalidProperties = cql.findInvalidProperties(cqlPredicate, filterableFields.keySet());
@@ -277,7 +283,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                    }
                                                    if (filter.getValue()
                                                              .contains("*")) {
-                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue()), "*"));
+                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue()), "*", null, null, null));
                                                    }
 
                                                    return CqlPredicate.of(Eq.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
@@ -366,7 +372,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                       .collect(Collectors.toList()))
                     : Function.of("interval", ImmutableList.of(Property.of(timeField), Property.of(timeField)));
 
-            return Optional.of(CqlPredicate.of(TOverlaps.of(intervalFunction, temporalLiteral)));
+            return Optional.of(CqlPredicate.of(AnyInteracts.of(intervalFunction, temporalLiteral)));
         }
 
         return Optional.of(CqlPredicate.of(TEquals.of(timeField, temporalLiteral)));

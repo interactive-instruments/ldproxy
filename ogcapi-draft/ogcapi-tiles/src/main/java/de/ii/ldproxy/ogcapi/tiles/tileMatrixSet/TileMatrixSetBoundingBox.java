@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.tileMatrixSet;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
@@ -28,9 +29,11 @@ public abstract class TileMatrixSetBoundingBox {
      * the coordinate reference system that is the basis of this tiling scheme
      * @return
      */
+    @JsonIgnore
     public abstract Optional<EpsgCrs> getCrsEpsg();
 
     @Value.Derived
+    @Value.Auxiliary
     public Optional<String> getCrs() {
         return getCrsEpsg().map(EpsgCrs::toUriString);
     }

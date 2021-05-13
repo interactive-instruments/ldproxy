@@ -34,8 +34,6 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    List<String> ITEM_TYPES = ImmutableList.of("feature", "record");
-
     enum DefaultCrs {CRS84, CRS84h}
 
     enum ItemType {feature, record}
@@ -167,6 +165,9 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
         return ImmutableList.of();
     }
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default boolean hasDeprecatedQueryables() {
         return getQueryables().orElse(FeaturesCollectionQueryables.of())
                               .getAll()

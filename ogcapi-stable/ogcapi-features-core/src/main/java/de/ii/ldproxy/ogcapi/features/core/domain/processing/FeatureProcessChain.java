@@ -40,8 +40,6 @@ public class FeatureProcessChain {
      * @param processNames names of the process to look for, "*" is a wildcard
      * @return {@code true}, if the process chain includes a process with any of the names in {@code processName}
      */
-    @Value.Derived
-    @Value.Auxiliary
     public boolean includes(String... processNames) {
         for (String name : processNames) {
             if (processes.stream().anyMatch(process -> process.getName().equals(name) || name.equals("*")))

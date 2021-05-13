@@ -23,11 +23,11 @@ pipeline:
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
       - cd ogcapi-stable
-      - ../gradlew assemble publishToMavenLocal -PisSnapshot=true
+      - ../gradlew assemble publishToMavenLocal -Psnapshot=true
       - cd ../ogcapi-draft
-      - ../gradlew assemble publishToMavenLocal -PisSnapshot=true --init-script ../.maven-local.gradle
+      - ../gradlew assemble publishToMavenLocal -Psnapshot=true --init-script ../.maven-local.gradle
       - cd ..
-      - ./gradlew assemble dockerDistTar -PisSnapshot=true --init-script ./.maven-local.gradle
+      - ./gradlew assemble dockerDistTar -Psnapshot=true --init-script ./.maven-local.gradle
     when:
       event: [push]
 
@@ -49,9 +49,9 @@ pipeline:
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
       - cd ogcapi-stable
-      - ../gradlew publish -PisSnapshot=true -PsnapshotUser=$SNAPSHOT_USER -PsnapshotPassword=$SNAPSHOT_PASS
+      - ../gradlew publishToMavenLocal publish -Psnapshot=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
       - cd ../ogcapi-draft
-      - ../gradlew publish -PisSnapshot=true -PsnapshotUser=$SNAPSHOT_USER -PsnapshotPassword=$SNAPSHOT_PASS --init-script ../.maven-local.gradle
+      - ../gradlew publish -Psnapshot=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS --init-script ../.maven-local.gradle
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: push
@@ -62,10 +62,10 @@ pipeline:
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
       - cd ogcapi-stable
-      - ../gradlew publishToMavenLocal bintrayUpload --continue -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS
+      - ../gradlew publishToMavenLocal publish -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
       - cd ../ogcapi-draft
-      - ../gradlew bintrayUpload --continue -PbintrayUser=$BINTRAY_USER -PbintrayApiKey=$BINTRAY_PASS --init-script ../.maven-local.gradle
-    secrets: [ bintray_user, bintray_pass]
+      - ../gradlew publish -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS --init-script ../.maven-local.gradle
+    secrets: [ snapshot_user, snapshot_pass]
     when:
       event: tag
 

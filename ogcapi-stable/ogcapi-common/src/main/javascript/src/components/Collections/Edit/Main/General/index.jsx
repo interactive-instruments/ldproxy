@@ -3,12 +3,13 @@ import PropTypes from "prop-types";
 import { useTranslation } from "react-i18next";
 
 import { Box } from "grommet";
-import { AutoForm, TextField } from "@xtraplatform/core";
+import { AutoForm, TextField, ToggleField } from "@xtraplatform/core";
 
 const CollectionEditGeneral = ({
   id,
   label,
   description,
+  enabled,
   debounce,
   onPending,
   onChange,
@@ -16,6 +17,7 @@ const CollectionEditGeneral = ({
   const fields = {
     label,
     description,
+    enabled,
   };
 
   const { t } = useTranslation();
@@ -46,6 +48,11 @@ const CollectionEditGeneral = ({
           name="description"
           label={t("services/ogc_api:description._label")}
           help={t("services/ogc_api:description._description")}
+        />
+        <ToggleField
+          name="enabled"
+          label={t("services/ogc_api:enabled._label")}
+          help={t("services/ogc_api:enabled._description")}
         />
       </AutoForm>
     </Box>
