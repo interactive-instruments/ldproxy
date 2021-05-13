@@ -23,6 +23,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -62,48 +63,64 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
     }
 
     @Override
-    public Response getStyleMetadataResponse(StyleMetadata metadata,
-                                             OgcApi api,
-                                             ApiRequestContext requestContext) {
+    public Object getStyleMetadataEntity(StyleMetadata metadata,
+                                         OgcApiDataV2 apiData,
+                                         Optional<String> collectionId,
+                                         ApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
+        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
         String stylesTitle = i18n.get("stylesTitle", requestContext.getLanguage());
         String styleTitle = metadata.getTitle().orElse(metadata.getId().orElse("?"));
         String metadataTitle = i18n.get("metadataTitle", requestContext.getLanguage());
 
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle,
-                        requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(api.getData()
-                                                           .getSubPath()
-                                                           .size() + 3)
-                                .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(),
-                        requestContext.getUriCustomizer()
-                                .copy()
-                                .removeLastPathSegments(3)
-                                .toString()))
+        ImmutableList.Builder<NavigationDTO> breadCrumbBuilder = collectionId.isPresent() ?
+                new ImmutableList.Builder<NavigationDTO>()
+                        .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer()
+                                                                        .copy()
+                                                                        .removeLastPathSegments(apiData.getSubPath().size() + 5)
+                                                                        .toString()))
+                        .add(new NavigationDTO(apiData.getLabel(), requestContext.getUriCustomizer()
+                                                                                 .copy()
+                                                                                 .removeLastPathSegments(5)
+                                                                                 .toString()))
+                        .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer()
+                                                                               .copy()
+                                                                               .removeLastPathSegments(4)
+                                                                               .toString()))
+                        .add(new NavigationDTO(apiData.getCollections()
+                                                      .get(collectionId.get())
+                                                      .getLabel(), requestContext.getUriCustomizer()
+                                                                                 .copy()
+                                                                                 .removeLastPathSegments(3)
+                                                                                 .toString())) :
+                new ImmutableList.Builder<NavigationDTO>()
+                        .add(new NavigationDTO(rootTitle,
+                                               requestContext.getUriCustomizer().copy()
+                                                             .removeLastPathSegments(apiData.getSubPath().size() + 3)
+                                                             .toString()))
+                        .add(new NavigationDTO(apiData.getLabel(),
+                                               requestContext.getUriCustomizer()
+                                                             .copy()
+                                                             .removeLastPathSegments(3)
+                                                             .toString()));
+
+        final List<NavigationDTO> breadCrumbs = breadCrumbBuilder
                 .add(new NavigationDTO(stylesTitle,
-                        requestContext.getUriCustomizer()
-                                .copy()
-                                .removeLastPathSegments(2)
-                                .toString()))
+                                       requestContext.getUriCustomizer()
+                                                     .copy()
+                                                     .removeLastPathSegments(2)
+                                                     .toString()))
                 .add(new NavigationDTO(styleTitle,
-                        requestContext.getUriCustomizer()
-                                .copy()
-                                .removeLastPathSegments(1)
-                                .toString()))
+                                       requestContext.getUriCustomizer()
+                                                     .copy()
+                                                     .removeLastPathSegments(1)
+                                                     .toString()))
                 .add(new NavigationDTO(metadataTitle))
                 .build();
 
-        HtmlConfiguration htmlConfig = api.getData()
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
+        HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class)
+                                              .orElse(null);
 
-        StyleMetadataView metadataView = new StyleMetadataView(api.getData(), metadata, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(metadataView)
-                .build();
+        return new StyleMetadataView(apiData, metadata, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(apiData), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 }

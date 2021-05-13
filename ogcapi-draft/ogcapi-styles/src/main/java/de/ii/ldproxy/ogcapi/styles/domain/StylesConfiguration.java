@@ -44,6 +44,9 @@ public interface StylesConfiguration extends ExtensionConfiguration {
     String getDefaultStyle();
 
     @Nullable
+    Boolean getDeriveCollectionStyles();
+
+    @Nullable
     Boolean getWebmapWithPopup();
 
     @Nullable

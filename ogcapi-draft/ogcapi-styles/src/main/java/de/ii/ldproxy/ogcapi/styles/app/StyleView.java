@@ -29,12 +29,12 @@ public class StyleView extends GenericView {
     public final Map<String, String> bbox;
     private final OgcApiDataV2 apiData;
 
-    public StyleView(String styleUrl, OgcApi api, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap) {
+    public StyleView(String styleUrl, OgcApiDataV2 apiData, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap) {
         super("/templates/style", null);
         this.styleUrl = styleUrl;
-        this.apiId = api.getId();
+        this.apiId = apiData.getId();
         this.styleId = styleId;
-        this.apiData = api.getData();
+        this.apiData = apiData;
         this.popup = popup;
         this.layerSwitcher = layerControl;
         this.layerIds = "{" +

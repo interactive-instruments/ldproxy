@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
@@ -19,7 +20,6 @@ import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
@@ -29,6 +29,7 @@ import de.ii.ldproxy.ogcapi.styles.domain.MbStyleSource;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleVectorSource;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -39,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -113,8 +113,11 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         return "8";
     }
 
-    static MbStyleStylesheet parseFile(File stylesheet, URICustomizer uriCustomizer) throws IOException {
-        final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
+    @Override
+    public boolean getAsDefault() { return true; }
+
+    static MbStyleStylesheet parse(StylesheetContent stylesheetContent, Optional<URICustomizer> uriCustomizer) {
+        final byte[] content = stylesheetContent.getContent();
 
         // prepare Jackson mapper for deserialization
         final ObjectMapper mapper = new ObjectMapper();
@@ -125,42 +128,52 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             // parse input
             parsedContent = mapper.readValue(content, MbStyleStylesheet.class);
         } catch (IOException e) {
-            throw new RuntimeException("Stylesheet in the styles store is invalid. Path: " + stylesheet.getAbsolutePath() + ".", e);
+            throw new RuntimeException("StylesheetContent in the styles store is invalid: " + stylesheetContent.getDescriptor() + ".", e);
         }
 
         return replaceParameters(parsedContent, uriCustomizer);
     }
 
     @Override
-    public String getTitle(String styleId, File stylesheet, ApiRequestContext requestContext) throws IOException {
-        return parseFile(stylesheet, requestContext.getUriCustomizer().copy()).getName().orElse(styleId);
+    public String getTitle(String styleId, StylesheetContent stylesheetContent) {
+        return parse(stylesheetContent, Optional.empty()).getName().orElse(styleId);
     }
 
     @Override
-    public Response getStyleResponse(String styleId, File stylesheet, List<Link> links, OgcApi api, ApiRequestContext requestContext) throws IOException {
-
-        final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
-
-        // prepare Jackson mapper for deserialization
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new Jdk8Module());
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        MbStyleStylesheet parsedContent;
-        try {
-            // parse input
-            parsedContent = mapper.readValue(content, MbStyleStylesheet.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Stylesheet in the styles store is invalid. Path: " + stylesheet.getAbsolutePath() + ".", e);
-        }
-
-        return Response.ok()
-                .entity(parseFile(stylesheet, requestContext.getUriCustomizer().copy()))
-                .type(MEDIA_TYPE.type())
-                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
-                .build();
+    public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
+        return parse(stylesheetContent, Optional.of(requestContext.getUriCustomizer()));
     }
 
-    private static MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, URICustomizer uriCustomizer) {
+    @Override
+    public boolean canDeriveCollectionStyle() {
+        return true;
+    }
+
+    @Override
+    public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, String apiId, String collectionId, String styleId, Optional<URICustomizer> uriCustomizer) {
+        MbStyleStylesheet mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, uriCustomizer);
+        MbStyleStylesheet mbStyleDerived = ImmutableMbStyleStylesheet.builder()
+                                                                     .from(mbStyleOriginal)
+                                                                     .layers(mbStyleOriginal.getLayers()
+                                                                                            .stream()
+                                                                                            .filter(layer -> layer.getSource().isEmpty() || !layer.getSource().get().equals(apiId) || (layer.getSourceLayer().isEmpty() || layer.getSourceLayer().get().equals(collectionId)))
+                                                                                            .collect(Collectors.toUnmodifiableList()))
+                                                                     .build();
+
+        String descriptor = String.format("%s/%s/%s", apiId, collectionId, styleId);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new Jdk8Module());
+            return Optional.of(new StylesheetContent(mapper.writeValueAsBytes(mbStyleDerived), descriptor));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(String.format("Could not derive style %s. Reason: %s", descriptor, e.getMessage()));
+            return Optional.empty();
+        }
+    }
+
+    private static MbStyleStylesheet replaceParameters(MbStyleStylesheet stylesheet, Optional<URICustomizer> uriCustomizer) {
+        if (uriCustomizer.isEmpty())
+            return stylesheet;
 
         // any template parameters in links?
         boolean templated = stylesheet.getSprite()
@@ -183,7 +196,9 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         if (!templated)
             return stylesheet;
 
-        String serviceUrl = uriCustomizer.removeLastPathSegments(2)
+        String serviceUrl = uriCustomizer.get()
+                                         .copy()
+                                         .removeLastPathSegments(2)
                                          .clearParameters()
                                          .ensureNoTrailingSlash()
                                          .toString();

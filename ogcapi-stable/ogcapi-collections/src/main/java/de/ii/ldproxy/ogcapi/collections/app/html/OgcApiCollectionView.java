@@ -163,6 +163,20 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
                 .findFirst();
     }
 
+    public Optional<Link> getStyles() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "styles"))
+                .findFirst();
+    }
+
+    public Optional<Link> getMap() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "ldp-map"))
+                .findFirst();
+    }
+
     public Optional<Link> getDapa() {
         return links
                 .stream()
@@ -171,10 +185,6 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     }
 
     public OgcApiCollection getCollection() { return collection; }
-
-    public List<StyleEntry> getStyles() {
-        return styleEntries;
-    }
 
     public Optional<String> getSchemaOrgDataset() {
         // for cases with a single collection, that collection is not reported as a sub-dataset

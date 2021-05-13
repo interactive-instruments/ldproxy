@@ -5,14 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.styles.app;
+package de.ii.ldproxy.ogcapi.styles.domain;
 
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -31,9 +30,11 @@ public class PathParameterStyleId implements OgcApiPathParameter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterStyleId.class);
 
+    public static final String STYLE_ID_PATTERN = "[^/]+";
+
     @Override
     public String getPattern() {
-        return "[^/]+";
+        return STYLE_ID_PATTERN;
     }
 
     @Override
@@ -59,8 +60,8 @@ public class PathParameterStyleId implements OgcApiPathParameter {
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         return isEnabledForApi(apiData) &&
-               (definitionPath.equals("/styles/{styleId}") ||
-                definitionPath.equals("/styles/{styleId}/metadata"));
+               (definitionPath.endsWith("/styles/{styleId}") ||
+                definitionPath.endsWith("/styles/{styleId}/metadata"));
     }
 
     @Override

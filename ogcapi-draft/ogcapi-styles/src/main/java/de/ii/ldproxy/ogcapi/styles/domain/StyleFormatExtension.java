@@ -11,13 +11,13 @@ import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 
-import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 /**
  * ApiExtension for a style encoding at /{serviceId}/styles/{styleId}
@@ -33,13 +33,23 @@ public interface StyleFormatExtension extends FormatExtension {
     }
 
     @Override
+    default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return apiData.getCollections()
+                      .get(collectionId)
+                      .getExtension(StylesConfiguration.class)
+                      .filter(StylesConfiguration::getEnabled)
+                      .filter(config -> config.getStyleEncodings().contains(this.getMediaType().label()))
+                      .isPresent();
+    }
+
+    @Override
     default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return StylesConfiguration.class;
     }
 
     @Override
     default String getPathPattern() {
-        return "^/?styles/[^/]+/?$";
+        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/?styles/[^/]+/?$";
     }
 
     /**
@@ -64,11 +74,10 @@ public interface StyleFormatExtension extends FormatExtension {
      * returns the title of a style
      *
      * @param styleId the id of the style
-     * @param stylesheet the stylesheet content
-     * @param requestContext
+     * @param stylesheetContent the stylesheetContent content
      * @return the title of the style, if applicable, or the style identifier
      */
-    default String getTitle(String styleId, File stylesheet, ApiRequestContext requestContext) throws IOException { return styleId; }
+    default String getTitle(String styleId, StylesheetContent stylesheetContent) { return styleId; }
 
     /**
      *
@@ -78,12 +87,37 @@ public interface StyleFormatExtension extends FormatExtension {
 
     /**
      *
-     * @param stylesheet the stylesheet content
-     * @param api
+     * @return {@code true}, if it is a style encoding that can be used for a default style
+     */
+    default boolean getAsDefault() { return false; }
+
+    /**
+     *
+     * @return
+     */
+    default boolean canDeriveCollectionStyle() {
+        return false;
+    }
+
+    /**
+     *
+     * @param stylesheetContent
+     * @param apiId - the api, source must use the apiId
+     * @param collectionId - the collection, all layers of other collections will be removed, source-layer must use the collectionId
+     * @return
+     */
+    default Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, String apiId, String collectionId, String styleId, Optional<URICustomizer> uriCustomizer) {
+        return Optional.empty();
+    }
+
+    /**
+     *
+     * @param stylesheetContent the stylesheetContent content
+     * @param apiData
      * @param requestContext
      * @return the response
      */
-    Response getStyleResponse(String styleId, File stylesheet, List<Link> links,
-                              OgcApi api, ApiRequestContext requestContext) throws IOException;
+    Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData,
+                          Optional<String> collectionId, String styleId, ApiRequestContext requestContext);
 
 };

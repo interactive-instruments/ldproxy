@@ -47,8 +47,8 @@ public class QueryParameterValidateStyle extends ApiExtensionCache implements Og
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
             isEnabledForApi(apiData) &&
-               ((method== HttpMethods.PUT && definitionPath.equals("/styles/{styleId}")) ||
-                (method== HttpMethods.POST && definitionPath.equals("/styles"))));
+               ((method== HttpMethods.PUT && definitionPath.endsWith("/styles/{styleId}")) ||
+                (method== HttpMethods.POST && definitionPath.endsWith("/styles"))));
     }
 
     @Override

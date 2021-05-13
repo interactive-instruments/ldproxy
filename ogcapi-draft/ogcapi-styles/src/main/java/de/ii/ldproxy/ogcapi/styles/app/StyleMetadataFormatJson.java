@@ -14,7 +14,6 @@ import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
@@ -28,6 +27,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -58,23 +58,15 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     }
 
     @Override
-    public Response getStyleMetadataResponse(StyleMetadata metadata, OgcApi api, ApiRequestContext requestContext) {
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
-
-        return Response.ok()
-                .entity(metadata)
-                .links(includeLinkHeader ? metadata.getLinks().stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .build();
+    public Object getStyleMetadataEntity(StyleMetadata metadata, OgcApiDataV2 apiData, Optional<String> collectionId, ApiRequestContext requestContext) {
+        return metadata;
     }
 
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
         // TODO add examples
-        if (path.equals("/styles/{styleId}/metadata"))
+        if (path.endsWith("/styles/{styleId}/metadata"))
             return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyleMetadata)
                     .schemaRef(SCHEMA_REF_STYLE_METADATA)

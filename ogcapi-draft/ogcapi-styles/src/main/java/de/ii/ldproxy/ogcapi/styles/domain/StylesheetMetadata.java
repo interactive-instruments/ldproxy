@@ -18,8 +18,8 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(as = ImmutableStyleSheet.class)
-public abstract class StyleSheet {
+@JsonDeserialize(as = ImmutableStylesheetMetadata.class)
+public abstract class StylesheetMetadata {
 
     public abstract Optional<String> getTitle();
 

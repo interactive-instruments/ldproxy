@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ArrayListMultimap;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
@@ -16,13 +19,15 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleVectorSource;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.store.domain.legacy.KeyValueStore;
 import io.swagger.v3.oas.models.media.Schema;
@@ -36,10 +41,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -118,19 +122,47 @@ public class StyleFormatHtml implements StyleFormatExtension {
     }
 
     @Override
-    public Response getStyleResponse(String styleId, File stylesheet, List<Link> links, OgcApi api, ApiRequestContext requestContext) throws IOException {
+    public boolean canDeriveCollectionStyle() {
+        return true;
+    }
 
-        String styleUri = String.format("%s/%s/styles/%s?f=mbs", xtraPlatform.getServicesUri(), String.join("/", api.getData().getSubPath()), styleId);
+    // TODO centralize
+    @Override
+    public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, String apiId, String collectionId, String styleId, Optional<URICustomizer> uriCustomizer) {
+        MbStyleStylesheet mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, uriCustomizer);
+        MbStyleStylesheet mbStyleDerived = ImmutableMbStyleStylesheet.builder()
+                                                                     .from(mbStyleOriginal)
+                                                                     .layers(mbStyleOriginal.getLayers()
+                                                                                            .stream()
+                                                                                            .filter(layer -> layer.getSource().isEmpty() || !layer.getSource().get().equals(apiId) || (layer.getSourceLayer().isEmpty() || layer.getSourceLayer().get().equals(collectionId)))
+                                                                                            .collect(Collectors.toUnmodifiableList()))
+                                                                     .build();
 
-        boolean popup = api.getData().getExtension(StylesConfiguration.class).map(StylesConfiguration::getWebmapWithPopup).orElse(true);
+        String descriptor = String.format("%s/%s/%s", apiId, collectionId, styleId);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new Jdk8Module());
+            return Optional.of(new StylesheetContent(mapper.writeValueAsBytes(mbStyleDerived), descriptor));
+        } catch (JsonProcessingException e) {
+            LOGGER.error(String.format("Could not derive style %s. Reason: %s", descriptor, e.getMessage()));
+            return Optional.empty();
+        }
+    }
 
-        boolean layerControl = api.getData().getExtension(StylesConfiguration.class).map(StylesConfiguration::getWebmapWithLayerControl).orElse(false);
-        boolean allLayers = api.getData().getExtension(StylesConfiguration.class).map(StylesConfiguration::getLayerControlAllLayers).orElse(false);
+    @Override
+    public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
+
+        String styleUri = String.format("%s/%s%s/styles/%s?f=mbs", xtraPlatform.getServicesUri(), String.join("/", apiData.getSubPath()), collectionId.isEmpty() ? "" : "/collections/"+collectionId.get(), styleId);
+
+        boolean popup = apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getWebmapWithPopup).orElse(true);
+
+        boolean layerControl = apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getWebmapWithLayerControl).orElse(false);
+        boolean allLayers = apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getLayerControlAllLayers).orElse(false);
         ArrayListMultimap<String,String> layerMap = ArrayListMultimap.create();
         if (layerControl) {
-            MbStyleStylesheet mbStyle = StyleFormatMbStyle.parseFile(stylesheet, requestContext.getUriCustomizer());
+            MbStyleStylesheet mbStyle = StyleFormatMbStyle.parse(stylesheetContent, Optional.of(requestContext.getUriCustomizer()));
             if (allLayers) {
-                Map<String, FeatureTypeConfigurationOgcApi> collectionData = api.getData().getCollections();
+                Map<String, FeatureTypeConfigurationOgcApi> collectionData = apiData.getCollections();
                 mbStyle.getLayers()
                        .stream()
                        .forEach(styleLayer -> {
@@ -148,9 +180,9 @@ public class StyleFormatHtml implements StyleFormatExtension {
                                                    .entrySet()
                                                    .stream()
                                                    .filter(source -> source.getValue() instanceof MbStyleVectorSource)
-                                                   .map(source -> source.getKey())
+                                                   .map(Map.Entry::getKey)
                                                    .collect(Collectors.toUnmodifiableSet());
-                Map<String, FeatureTypeConfigurationOgcApi> collectionData = api.getData().getCollections();
+                Map<String, FeatureTypeConfigurationOgcApi> collectionData = apiData.getCollections();
                 mbStyle.getLayers()
                        .stream()
                        .filter(styleLayer -> styleLayer.getSource().isPresent() && vectorSources.contains(styleLayer.getSource().get()) && styleLayer.getSourceLayer().isPresent() && collectionData.containsKey(styleLayer.getSourceLayer().get()))
@@ -161,12 +193,6 @@ public class StyleFormatHtml implements StyleFormatExtension {
             }
         }
 
-        StyleView styleView = new StyleView(styleUri, api, styleId, popup, layerControl, layerMap.asMap());
-
-        return Response.ok()
-                .entity(styleView)
-                .type(MEDIA_TYPE.type())
-                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
-                .build();
+        return new StyleView(styleUri, apiData, styleId, popup, layerControl, layerMap.asMap());
     }
 }

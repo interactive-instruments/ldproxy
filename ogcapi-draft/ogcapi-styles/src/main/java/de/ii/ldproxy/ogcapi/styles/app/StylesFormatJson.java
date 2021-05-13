@@ -13,7 +13,6 @@ import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.styles.domain.Styles;
@@ -27,6 +26,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -52,22 +52,15 @@ public class StylesFormatJson implements StylesFormatExtension {
     }
 
     @Override
-    public Response getStylesResponse(Styles styles, OgcApi api, ApiRequestContext requestContext) {
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
-
-        return Response.ok(styles)
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .links(includeLinkHeader ? styles.getLinks().stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
-                .build();
+    public Object getStylesEntity(Styles styles, OgcApiDataV2 apiData, Optional<String> collectionId, ApiRequestContext requestContext) {
+        return styles;
     }
 
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
         // TODO add examples
-        if (path.equals("/styles"))
+        if (path.endsWith("/styles"))
             return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyles)
                     .schemaRef(SCHEMA_REF_STYLES)

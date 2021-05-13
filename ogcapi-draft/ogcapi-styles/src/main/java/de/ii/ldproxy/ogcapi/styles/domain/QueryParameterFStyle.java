@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.styles.app;
+package de.ii.ldproxy.ogcapi.styles.domain;
 
 import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -32,7 +32,7 @@ public class QueryParameterFStyle extends QueryParameterF {
 
     @Override
     protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return definitionPath.equals("/styles/{styleId}");
+        return definitionPath.endsWith("/styles/{styleId}");
     }
 
     @Override

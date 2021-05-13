@@ -133,7 +133,7 @@ public class EndpointResourcesManager extends Endpoint implements ConformanceCla
         List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
         String operationSummary = "replace a file resource or add a new one";
         Optional<String> operationDescription = Optional.of("Replace an existing resource with the id `resourceId`. If no " +
-                "such resource exists, a new resource with that id is added. " +
+                "such resource stylesheetExists, a new resource with that id is added. " +
                 "A sprite used in a Mapbox Style stylesheet consists of " +
                 "three resources. Each of the resources needs to be created " +
                 "(and eventually deleted) separately.\n" +
@@ -155,7 +155,7 @@ public class EndpointResourcesManager extends Endpoint implements ConformanceCla
         queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
         operationSummary = "delete a file resource";
         operationDescription = Optional.of("Delete an existing resource with the id `resourceId`. If no " +
-                "such resource exists, an error is returned.");
+                "such resource stylesheetExists, an error is returned.");
         requestContent = getRequestContent(apiData, path, method);
         operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
         if (operation!=null)

@@ -33,11 +33,11 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
-import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleSheet;
+import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStylesheetMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleSheet;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
@@ -183,7 +183,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
                 "If a new style is created, the following rules apply:\n" +
                 "* If the style submitted in the request body includes an identifier (this depends on " +
                 "the style encoding), that identifier will be used. If a style with that identifier " +
-                "already exists, an error is returned.\n" +
+                "already stylesheetExists, an error is returned.\n" +
                 "* If no identifier can be determined from the submitted style, the server will assign " +
                 "a new identifier to the style.\n" +
                 "* A minimal style metadata resource is created at `/styles/{styleId}/metadata`. Please " +
@@ -202,7 +202,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         ImmutableList<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
         queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
         operationSummary = "replace a style or add a new style";
-        description = "Replace an existing style with the id `styleId`. If no such style exists, " +
+        description = "Replace an existing style with the id `styleId`. If no such style stylesheetExists, " +
                 "a new style with that id is added.\n";
         if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
             description +=
@@ -224,7 +224,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             resourceBuilder.putOperations("PUT", operation);
         queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
         operationSummary = "delete a style";
-        operationDescription = Optional.of("Delete an existing style with the id `styleId`. If no such style exists, " +
+        operationDescription = Optional.of("Delete an existing style with the id `styleId`. If no such style stylesheetExists, " +
                 "an error is returned. Deleting a style also deletes the subordinate resources, " +
                 "i.e., the style metadata.");
         requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);
@@ -390,15 +390,15 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             if (newStyle) {
                 final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-                ImmutableStyleSheet.Builder stylesheet = ImmutableStyleSheet.builder()
-                                                                            .native_(true)
-                                                                            .link(stylesLinkGenerator.generateStylesheetLink(ogcApiRequest.getUriCustomizer(),
+                ImmutableStylesheetMetadata.Builder stylesheet = ImmutableStylesheetMetadata.builder()
+                                                                                            .native_(true)
+                                                                                            .link(stylesLinkGenerator.generateStylesheetLink(ogcApiRequest.getUriCustomizer(),
                                                                                     styleId, format.getMediaType(),
                                                                                     i18n, ogcApiRequest.getLanguage()))
-                                                                            .specification(format.getSpecification())
-                                                                            .version(format.getVersion());
+                                                                                            .specification(format.getSpecification())
+                                                                                            .version(format.getVersion());
 
-                List<StyleSheet> stylesheets = new ArrayList<>();
+                List<StylesheetMetadata> stylesheets = new ArrayList<>();
                 stylesheets.add(stylesheet.build());
 
                 ImmutableStyleMetadata.Builder metadata = ImmutableStyleMetadata.builder()
