@@ -63,9 +63,9 @@ public class StyleMetadataView extends OgcApiView {
                              I18n i18n,
                              Optional<Locale> language) {
         super("styleMetadata.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
-                metadata.getLinks(),
-                null,
-                null);
+              metadata.getLinks(),
+              i18n.get("styleMetadataTitle", language),
+              null);
 
         // TODO the view could be improved
 
