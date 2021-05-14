@@ -23,6 +23,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -58,6 +59,7 @@ public class LandingPageExtensionOpenApi implements LandingPageExtension {
                          .stream()
                          .filter(f -> f.isEnabledForApi(apiData))
                          .filter(f -> f.getRel().isPresent())
+                         .sorted(Comparator.comparing(f -> f.getMediaType().parameter()))
                          .forEach(f -> landingPageBuilder.addLinks(new ImmutableLink.Builder()
                                                                            .href(uriCustomizer.copy()
                                                                                               .ensureLastPathSegment("api")
