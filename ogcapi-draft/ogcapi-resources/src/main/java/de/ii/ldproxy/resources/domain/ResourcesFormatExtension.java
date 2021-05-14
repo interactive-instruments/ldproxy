@@ -8,11 +8,15 @@
 package de.ii.ldproxy.resources.domain;
 
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.app.Resources;
 
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 public interface ResourcesFormatExtension extends GenericFormatExtension {
 
@@ -24,4 +28,23 @@ public interface ResourcesFormatExtension extends GenericFormatExtension {
     Response getResourcesResponse(Resources resources,
                                   OgcApi api,
                                   ApiRequestContext requestContext);
+
+    @Override
+    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return ResourcesConfiguration.class;
+    }
+
+    @Override
+    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
+        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
+
+        if ((resourcesExtension.isPresent() && resourcesExtension.get()
+                                                                 .isEnabled()) ||
+                (stylesExtension.isPresent() && stylesExtension.get()
+                                                               .getResourcesEnabled())) {
+            return true;
+        }
+        return false;
+    }
 }

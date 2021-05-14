@@ -26,7 +26,7 @@ public class ResourcesLinkGenerator {
      * generates the links for a resource on the page /{serviceId}/resources
      *
      * @param uriBuilder the URI, split in host, path and query
-     * @param resourceId    the ids of the styles
+     * @param resourceId the id of the resource
      * @return the link
      */
     public Link generateResourceLink(URICustomizer uriBuilder, String resourceId) {

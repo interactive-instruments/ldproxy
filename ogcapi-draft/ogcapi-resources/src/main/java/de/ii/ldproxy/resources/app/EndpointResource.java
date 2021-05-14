@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
+import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -62,7 +63,7 @@ public class EndpointResource extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResource.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
+    private static final List<String> TAGS = ImmutableList.of("Discover and fetch other resources");
 
     private final I18n i18n;
 
@@ -79,10 +80,13 @@ public class EndpointResource extends Endpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() && stylesExtension.get()
-                                                          .getResourcesEnabled()) {
+        if ((resourcesExtension.isPresent() && resourcesExtension.get()
+                                                                 .isEnabled()) ||
+            (stylesExtension.isPresent() && stylesExtension.get()
+                                                          .getResourcesEnabled())) {
             return true;
         }
         return false;
@@ -90,7 +94,7 @@ public class EndpointResource extends Endpoint {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
+        return ResourcesConfiguration.class;
     }
 
     @Override
@@ -129,8 +133,8 @@ public class EndpointResource extends Endpoint {
     /**
      * Fetch a resource by id
      *
-     * @param resourceId the local identifier of a specific style
-     * @return the style in a json file
+     * @param resourceId the local identifier of a specific resource
+     * @return the resources as a file
      */
     @Path("/{resourceId}")
     @GET

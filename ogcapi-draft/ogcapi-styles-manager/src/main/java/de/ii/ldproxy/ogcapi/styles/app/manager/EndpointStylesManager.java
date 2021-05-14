@@ -183,7 +183,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
                 "If a new style is created, the following rules apply:\n" +
                 "* If the style submitted in the request body includes an identifier (this depends on " +
                 "the style encoding), that identifier will be used. If a style with that identifier " +
-                "already stylesheetExists, an error is returned.\n" +
+                "already exists, an error is returned.\n" +
                 "* If no identifier can be determined from the submitted style, the server will assign " +
                 "a new identifier to the style.\n" +
                 "* A minimal style metadata resource is created at `/styles/{styleId}/metadata`. Please " +
@@ -202,7 +202,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         ImmutableList<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
         queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
         operationSummary = "replace a style or add a new style";
-        description = "Replace an existing style with the id `styleId`. If no such style stylesheetExists, " +
+        description = "Replace an existing style with the id `styleId`. If no such style exists, " +
                 "a new style with that id is added.\n";
         if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
             description +=
@@ -224,7 +224,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             resourceBuilder.putOperations("PUT", operation);
         queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
         operationSummary = "delete a style";
-        operationDescription = Optional.of("Delete an existing style with the id `styleId`. If no such style stylesheetExists, " +
+        operationDescription = Optional.of("Delete an existing style with the id `styleId`. If no such style exists, " +
                 "an error is returned. Deleting a style also deletes the subordinate resources, " +
                 "i.e., the style metadata.");
         requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);

@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -42,7 +43,7 @@ import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
- * fetch list of styles or a style for the service
+ * fetch list of resources available in an API
  */
 @Component
 @Provides
@@ -51,7 +52,7 @@ public class EndpointResources extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResources.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
+    private static final List<String> TAGS = ImmutableList.of("Discover and fetch other resources");
 
     private final I18n i18n;
 
@@ -68,10 +69,13 @@ public class EndpointResources extends Endpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() && stylesExtension.get()
-                                                          .getResourcesEnabled()) {
+        if ((resourcesExtension.isPresent() && resourcesExtension.get()
+                                                                 .isEnabled()) ||
+                (stylesExtension.isPresent() && stylesExtension.get()
+                                                               .getResourcesEnabled())) {
             return true;
         }
         return false;
@@ -79,7 +83,7 @@ public class EndpointResources extends Endpoint {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
+        return ResourcesConfiguration.class;
     }
 
     @Override

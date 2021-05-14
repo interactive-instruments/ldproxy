@@ -26,17 +26,16 @@ public interface StylesConfiguration extends ExtensionConfiguration {
     List<String> getStyleEncodings();
 
     @Nullable
-    Boolean getStyleInfosOnCollection();
-
-    @Nullable
     Boolean getManagerEnabled();
 
     @Nullable
     Boolean getValidationEnabled();
 
+    @Deprecated
     @Nullable
     Boolean getResourcesEnabled();
 
+    @Deprecated
     @Nullable
     Boolean getResourceManagerEnabled();
 
@@ -54,27 +53,6 @@ public interface StylesConfiguration extends ExtensionConfiguration {
 
     @Nullable
     Boolean getLayerControlAllLayers();
-
-    @Deprecated
-    @Nullable
-    Boolean getMapsEnabled();
-
-    @Deprecated
-    @Value.Derived
-    @Nullable
-    default Boolean getHtmlEnabled() { return getMapsEnabled(); }
-
-    @Deprecated
-    @Nullable
-    Boolean getMbStyleEnabled();
-
-    @Deprecated
-    @Nullable
-    Boolean getSld10Enabled();
-
-    @Deprecated
-    @Nullable
-    Boolean getSld11Enabled();
 
     @Override
     default Builder getBuilder() {

@@ -26,6 +26,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
+import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -69,7 +70,7 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 public class EndpointResourcesManager extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
-    private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
+    private static final List<String> TAGS = ImmutableList.of("Create, update and delete other resources");
 
     private final java.nio.file.Path resourcesStore;
 
@@ -84,10 +85,13 @@ public class EndpointResourcesManager extends Endpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() && stylesExtension.get()
-                                                          .getResourceManagerEnabled()) {
+        if ((resourcesExtension.isPresent() && resourcesExtension.get()
+                                                                 .getManagerEnabled()) ||
+                (stylesExtension.isPresent() && stylesExtension.get()
+                                                               .getResourceManagerEnabled())) {
             return true;
         }
         return false;
@@ -95,7 +99,7 @@ public class EndpointResourcesManager extends Endpoint {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
+        return ResourcesConfiguration.class;
     }
 
     @Override
@@ -118,7 +122,6 @@ public class EndpointResourcesManager extends Endpoint {
 
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
         ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                 .apiEntrypoint("resources")
                 .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
@@ -128,7 +131,7 @@ public class EndpointResourcesManager extends Endpoint {
         List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
         String operationSummary = "replace a file resource or add a new one";
         Optional<String> operationDescription = Optional.of("Replace an existing resource with the id `resourceId`. If no " +
-                "such resource stylesheetExists, a new resource with that id is added. " +
+                "such resource exists, a new resource with that id is added. " +
                 "A sprite used in a Mapbox Style stylesheet consists of " +
                 "three resources. Each of the resources needs to be created " +
                 "(and eventually deleted) separately.\n" +
@@ -150,7 +153,7 @@ public class EndpointResourcesManager extends Endpoint {
         queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
         operationSummary = "delete a file resource";
         operationDescription = Optional.of("Delete an existing resource with the id `resourceId`. If no " +
-                "such resource stylesheetExists, an error is returned.");
+                "such resource exists, an error is returned.");
         requestContent = getRequestContent(apiData, path, method);
         operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
         if (operation!=null)
