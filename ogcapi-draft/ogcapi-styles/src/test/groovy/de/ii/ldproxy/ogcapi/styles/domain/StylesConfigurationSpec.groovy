@@ -21,7 +21,6 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     StylesConfiguration getFull() {
         return new ImmutableStylesConfiguration.Builder()
                 .enabled(true)
-                .styleInfosOnCollection(true)
                 .managerEnabled(true)
                 .validationEnabled(true)
                 .resourcesEnabled(true)
@@ -29,12 +28,8 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .webmapWithPopup(true)
                 .webmapWithLayerControl(true)
                 .layerControlAllLayers(true)
-                .mapsEnabled(true)
-                .mbStyleEnabled(true)
-                .sld10Enabled(true)
-                .sld11Enabled(true)
                 .defaultStyle("foo")
-                .addStyleEncodings("foo")
+                .addStyleEncodings("foo", "bar")
                 .build()
     }
 
@@ -53,7 +48,6 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     StylesConfiguration getSimple() {
         return new ImmutableStylesConfiguration.Builder()
                 .enabled(false)
-                .styleInfosOnCollection(false)
                 .managerEnabled(false)
                 .validationEnabled(false)
                 .resourcesEnabled(false)
@@ -61,10 +55,6 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .webmapWithPopup(false)
                 .webmapWithLayerControl(false)
                 .layerControlAllLayers(false)
-                .mapsEnabled(false)
-                .mbStyleEnabled(false)
-                .sld10Enabled(false)
-                .sld11Enabled(false)
                 .defaultStyle("bar")
                 .build()
     }
