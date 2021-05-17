@@ -1,6 +1,6 @@
 
 dependencies {
-    embedded (group: 'no.ecc.vectortile', name: 'java-vector-tile', version: '1.3.13') {
+    embedded (group: 'no.ecc.vectortile', name: 'java-vector-tile', version: '1.3.14') {
         exclude module: 'jts-core'
     }
     embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.17.1')

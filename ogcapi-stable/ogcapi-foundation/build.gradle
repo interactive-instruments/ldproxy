@@ -1,6 +1,5 @@
 dependencies {
-    //  use an old version, because of the Jackson dependency
-    embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.48') {
+    embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.52') {
         exclude module: 'jackson-databind'
         exclude module: 'commons-lang3'
         exclude module: 'slf4j-api'
