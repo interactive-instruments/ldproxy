@@ -7,20 +7,20 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.RequestInjectableContext;
 import de.ii.xtraplatform.services.domain.ServiceInjectableContext;
+import java.util.function.Supplier;
+import javax.inject.Inject;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.ext.Provider;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.glassfish.hk2.utilities.Binder;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
+import org.glassfish.jersey.internal.inject.Binder;
 import org.glassfish.jersey.process.internal.RequestScoped;
-import org.glassfish.jersey.server.internal.inject.AbstractContainerRequestValueFactory;
-
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.ext.Provider;
 
 
 @Component
@@ -49,21 +49,35 @@ public class RequestContextBinder extends AbstractBinder implements Binder, Requ
                                                .in(RequestScoped.class);
     }
 
-    public static class OgcApiRequestFactory extends AbstractContainerRequestValueFactory<ApiRequestContext> {
+    public static class OgcApiDatasetFactory implements Supplier<OgcApi> {
+
+        private final ContainerRequestContext  containerRequestContext;
+
+        @Inject
+        public OgcApiDatasetFactory(ContainerRequestContext containerRequestContext) {
+            this.containerRequestContext = containerRequestContext;
+        }
 
         @Override
-        @RequestScoped
-        public ApiRequestContext provide() {
-            return (ApiRequestContext) getContainerRequest().getProperty(OGCAPI_REQUEST_CONTEXT_KEY);
+        public OgcApi get() {
+            return (OgcApi)
+                containerRequestContext.getProperty(ServiceInjectableContext.SERVICE_CONTEXT_KEY);
         }
     }
 
-    public static class OgcApiDatasetFactory extends AbstractContainerRequestValueFactory<OgcApi> {
+    public static class OgcApiRequestFactory implements Supplier<ApiRequestContext> {
+
+        private final ContainerRequestContext  containerRequestContext;
+
+        @Inject
+        public OgcApiRequestFactory(ContainerRequestContext containerRequestContext) {
+            this.containerRequestContext = containerRequestContext;
+        }
 
         @Override
-        @RequestScoped
-        public OgcApi provide() {
-            return (OgcApi) getContainerRequest().getProperty(ServiceInjectableContext.SERVICE_CONTEXT_KEY);
+        public ApiRequestContext get() {
+            return (ApiRequestContext)
+                containerRequestContext.getProperty(OGCAPI_REQUEST_CONTEXT_KEY);
         }
     }
 }

@@ -1,6 +1,6 @@
 
 dependencies {
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-core', version: '3.5.1'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-core', version: '4.0.0-SNAPSHOT'
     feature group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '4.6.1'
 }
 

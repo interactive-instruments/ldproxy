@@ -67,15 +67,11 @@ class SchemaValidatorSpec extends Specification {
         thrown(exception)
         where:
         schema                                                | feature                                                | exception
-        // empty feature and empty schema
-        ""                                                    | ""                                                     | NullPointerException
-        // proper feature and empty schema
-        ""                                                    | new File('src/test/resources/feature.json').getText()  | NullPointerException
-        // empty feature and proper schema
-        new File('src/test/resources/schema.json').getText()  | ""                                                     | NullPointerException
         // proper schema, invalid feature json
         new File('src/test/resources/schema.json').getText()  | new File('src/test/resources/feature2.json').getText() | JsonParseException
         // invalid schema json, proper feature
         new File('src/test/resources/schema2.json').getText() | new File('src/test/resources/feature.json').getText()  | JsonParseException
+        // invalid schema json, invalid feature json
+        new File('src/test/resources/schema2.json').getText() | new File('src/test/resources/feature2.json').getText()  | JsonParseException
     }
 }
