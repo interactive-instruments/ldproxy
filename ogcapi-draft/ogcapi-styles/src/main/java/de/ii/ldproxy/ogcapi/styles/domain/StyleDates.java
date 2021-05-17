@@ -11,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableStyleDates.class)
 public abstract class StyleDates {
 

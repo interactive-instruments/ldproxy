@@ -176,14 +176,15 @@ public class EndpointResourcesManager extends Endpoint {
                                 @Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @Context HttpServletRequest request, byte[] requestBody) throws IOException {
 
-        checkAuthorization(api.getData(), optionalUser);
+        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
+        // checkAuthorization(api.getData(), optionalUser);
 
         return getFormats().stream()
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
                 .findAny()
                 .map(ResourceFormatExtension.class::cast)
                 .orElseThrow(() -> new NotSupportedException(MessageFormat.format("The provided media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())))
-                .putResource(resourcesStore, requestBody, resourceId, api, requestContext);
+                .putResource(resourcesStore, requestBody, resourceId, api.getData(), requestContext);
     }
 
     /**
@@ -197,7 +198,8 @@ public class EndpointResourcesManager extends Endpoint {
     public Response deleteResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
                                 @Context OgcApi dataset) {
 
-        checkAuthorization(dataset.getData(), optionalUser);
+        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
+        // checkAuthorization(dataset.getData(), optionalUser);
 
         final String datasetId = dataset.getId();
         File apiDir = new File(resourcesStore + File.separator + datasetId);

@@ -5,13 +5,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.resources.app;
+package de.ii.ldproxy.resources.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.ldproxy.resources.app.ImmutableResource;
+import de.ii.ldproxy.resources.app.ImmutableResources;
+import de.ii.ldproxy.resources.app.Resources;
+import de.ii.ldproxy.resources.app.ResourcesLinkGenerator;
+import de.ii.ldproxy.resources.domain.ImmutableQueryInputResource;
+import de.ii.ldproxy.resources.domain.ImmutableQueryInputResources;
+import de.ii.ldproxy.resources.domain.QueriesHandlerResources;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;
@@ -55,15 +63,14 @@ public class EndpointResources extends Endpoint {
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch other resources");
 
     private final I18n i18n;
-
-    private final java.nio.file.Path resourcesStore;
+    private final QueriesHandlerResources queryHandler;
 
     public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                             @Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) throws IOException {
+                             @Requires ExtensionRegistry extensionRegistry,
+                             @Requires I18n i18n,
+                             @Requires QueriesHandlerResources queryHandler) {
         super(extensionRegistry);
-        this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                   .resolve("resources");
-        Files.createDirectories(resourcesStore);
+        this.queryHandler = queryHandler;
         this.i18n = i18n;
     }
 
@@ -124,38 +131,14 @@ public class EndpointResources extends Endpoint {
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getResources(@Context OgcApi api, @Context ApiRequestContext requestContext) {
-        final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
+        OgcApiDataV2 apiData = api.getData();
+        boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
+                                           .map(FoundationConfiguration::getIncludeLinkHeader)
+                                           .orElse(false);
+        QueriesHandlerResources.QueryInputResources queryInput = ImmutableQueryInputResources.builder()
+                                                                                             .includeLinkHeader(includeLinkHeader)
+                                                                                             .build();
 
-        final String apiId = api.getId();
-        File apiDir = new File(resourcesStore + File.separator + apiId);
-        if (!apiDir.exists()) {
-            apiDir.mkdirs();
-        }
-
-        Resources resources = ImmutableResources.builder()
-            .resources(
-                Arrays.stream(apiDir.listFiles())
-                .filter(file -> !file.isHidden())
-                .map(File::getName)
-                .sorted()
-                .map(filename -> ImmutableResource.builder()
-                        .id(filename)
-                        .link(resourcesLinkGenerator.generateResourceLink(requestContext.getUriCustomizer(), filename))
-                        .build())
-                .collect(Collectors.toList()))
-            .links(new DefaultLinksGenerator()
-                    .generateLinks(requestContext.getUriCustomizer(),
-                            requestContext.getMediaType(),
-                            requestContext.getAlternateMediaTypes(),
-                            i18n,
-                            requestContext.getLanguage()))
-            .build();
-
-        return getFormats().stream()
-                .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
-                .findAny()
-                .map(ResourcesFormatExtension.class::cast)
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())))
-                .getResourcesResponse(resources, api, requestContext);
+        return queryHandler.handle(QueriesHandlerResources.Query.RESOURCES, queryInput, requestContext);
     }
 }

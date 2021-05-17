@@ -7,15 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.styles.domain;
 
+import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public interface StyleRepository {
@@ -125,6 +126,8 @@ public interface StyleRepository {
      * @return the style metadata, or throws an exception, if the style is not available
      */
     StyleMetadata getStyleMetadata(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext);
+    Optional<JsonMergePatch> getStyleMetadataPatch(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId);
+    byte[] updateStyleMetadataPatch(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, byte[] additionalPatch, boolean strict);
 
     /**
      * validate the style configuration during startup
@@ -136,4 +139,14 @@ public interface StyleRepository {
     ImmutableValidationResult.Builder validate(ImmutableValidationResult.Builder builder,
                                                OgcApiDataV2 apiData,
                                                Optional<String> collectionId);
+
+    Set<String> getStyleIds(OgcApiDataV2 apiData, Optional<String> collectionId, boolean includeDerived);
+
+    String getNewStyleId(OgcApiDataV2 apiData, Optional<String> collectionId);
+
+    void writeStyleDocument(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension format, byte[] requestBody) throws IOException;
+
+    void deleteStyle(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) throws IOException;
+
+    void writeStyleMetadataDocument(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, byte[] requestBody) throws IOException;
 }

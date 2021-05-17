@@ -31,15 +31,15 @@ public interface ResourceFormatExtension extends FormatExtension {
         return true;
     }
 
-    Response getResourceResponse(byte[] resource,
-                                 String resourceId,
-                                 OgcApi api,
-                                 ApiRequestContext requestContext);
+    Object getResourceEntity(byte[] resource,
+                             String resourceId,
+                             OgcApiDataV2 apiData,
+                             ApiRequestContext requestContext);
 
     Response putResource(Path resourcesStore,
                          byte[] resource,
                          String resourceId,
-                         OgcApi api,
+                         OgcApiDataV2 apiData,
                          ApiRequestContext requestContext) throws IOException;
 
     @Override

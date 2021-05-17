@@ -60,6 +60,10 @@ public interface EndpointExtension extends ApiExtension {
     }
 
     default List<OgcApiQueryParameter> getParameters(OgcApiDataV2 apiData, String requestSubPath) {
+        return getParameters(apiData, requestSubPath, "GET");
+    }
+
+    default List<OgcApiQueryParameter> getParameters(OgcApiDataV2 apiData, String requestSubPath, String method) {
         ApiEndpointDefinition apiDef = getDefinition(apiData);
         if (apiDef.getResources().isEmpty())
             return ImmutableList.of();
@@ -67,7 +71,7 @@ public interface EndpointExtension extends ApiExtension {
         OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
                                         .orElse(null);
         if (resource != null) {
-            ApiOperation operation = resource.getOperations().get("GET");
+            ApiOperation operation = resource.getOperations().get(method);
             if (operation != null && operation.getSuccess().isPresent()) {
                 return operation.getQueryParameters();
             }
@@ -93,6 +97,14 @@ public interface EndpointExtension extends ApiExtension {
                 .filter(param -> param.isApplicable(apiData, definitionPath, method))
                 .sorted(Comparator.comparing(ParameterExtension::getName))
                 .collect(ImmutableList.toImmutableList());
+    }
+
+    default ImmutableList<ApiHeader> getHeaders(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+        return extensionRegistry.getExtensionsForType(ApiHeader.class)
+                                .stream()
+                                .filter(param -> param.isApplicable(apiData, definitionPath, method))
+                                .sorted(Comparator.comparing(ApiHeader::getId))
+                                .collect(ImmutableList.toImmutableList());
     }
 
     default void checkAuthorization(OgcApiDataV2 apiData, Optional<User> optionalUser) {

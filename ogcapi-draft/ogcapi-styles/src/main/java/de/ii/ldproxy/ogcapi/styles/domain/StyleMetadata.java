@@ -12,10 +12,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,7 +46,7 @@ public abstract class StyleMetadata extends PageRepresentation {
     public abstract List<StyleLayer> getLayers();
 
     @JsonIgnore
-    public StyleMetadata replaceParameters(URICustomizer uriCustomizer) {
+    public StyleMetadata replaceParameters(URICustomizer uriCustomizer, boolean inCollection) {
 
         // any template parameters in links?
         boolean templated = this.getStylesheets()
@@ -65,7 +67,7 @@ public abstract class StyleMetadata extends PageRepresentation {
             return this;
 
         String serviceUrl = uriCustomizer.copy()
-                                         .removeLastPathSegments(3)
+                                         .removeLastPathSegments(inCollection ? 5 : 3)
                                          .clearParameters()
                                          .ensureNoTrailingSlash()
                                          .toString();

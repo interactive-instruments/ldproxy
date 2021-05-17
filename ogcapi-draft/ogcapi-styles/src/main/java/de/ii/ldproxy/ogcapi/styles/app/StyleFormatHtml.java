@@ -129,10 +129,13 @@ public class StyleFormatHtml implements StyleFormatExtension {
     // TODO centralize
     @Override
     public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, String apiId, String collectionId, String styleId, Optional<URICustomizer> uriCustomizer) {
-        MbStyleStylesheet mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, uriCustomizer);
+        Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, uriCustomizer, false, false);
+        if (mbStyleOriginal.isEmpty())
+            return Optional.empty();
+
         MbStyleStylesheet mbStyleDerived = ImmutableMbStyleStylesheet.builder()
-                                                                     .from(mbStyleOriginal)
-                                                                     .layers(mbStyleOriginal.getLayers()
+                                                                     .from(mbStyleOriginal.get())
+                                                                     .layers(mbStyleOriginal.get().getLayers()
                                                                                             .stream()
                                                                                             .filter(layer -> layer.getSource().isEmpty() || !layer.getSource().get().equals(apiId) || (layer.getSourceLayer().isEmpty() || layer.getSourceLayer().get().equals(collectionId)))
                                                                                             .collect(Collectors.toUnmodifiableList()))
@@ -142,7 +145,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new Jdk8Module());
-            return Optional.of(new StylesheetContent(mapper.writeValueAsBytes(mbStyleDerived), descriptor));
+            return Optional.of(new StylesheetContent(mapper.writeValueAsBytes(mbStyleDerived), descriptor, true));
         } catch (JsonProcessingException e) {
             LOGGER.error(String.format("Could not derive style %s. Reason: %s", descriptor, e.getMessage()));
             return Optional.empty();
@@ -160,7 +163,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
         boolean allLayers = apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getLayerControlAllLayers).orElse(false);
         ArrayListMultimap<String,String> layerMap = ArrayListMultimap.create();
         if (layerControl) {
-            MbStyleStylesheet mbStyle = StyleFormatMbStyle.parse(stylesheetContent, Optional.of(requestContext.getUriCustomizer()));
+            MbStyleStylesheet mbStyle = StyleFormatMbStyle.parse(stylesheetContent, Optional.of(requestContext.getUriCustomizer()), true, false).get();
             if (allLayers) {
                 Map<String, FeatureTypeConfigurationOgcApi> collectionData = apiData.getCollections();
                 mbStyle.getLayers()

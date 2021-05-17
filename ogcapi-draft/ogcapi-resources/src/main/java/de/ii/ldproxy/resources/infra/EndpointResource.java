@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.resources.app;
+package de.ii.ldproxy.resources.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -23,6 +23,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.ldproxy.resources.domain.ImmutableQueryInputResource;
+import de.ii.ldproxy.resources.domain.QueriesHandlerResources;
 import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
@@ -34,19 +36,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,17 +63,12 @@ public class EndpointResource extends Endpoint {
 
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch other resources");
 
-    private final I18n i18n;
+    private final QueriesHandlerResources queryHandler;
 
-    private final java.nio.file.Path resourcesStore;
-
-    public EndpointResource(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                            @Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) throws IOException {
+    public EndpointResource(@Requires ExtensionRegistry extensionRegistry,
+                            @Requires QueriesHandlerResources queryHandler) {
         super(extensionRegistry);
-        this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                   .resolve("resources");
-        Files.createDirectories(resourcesStore);
-        this.i18n = i18n;
+        this.queryHandler = queryHandler;
     }
 
     @Override
@@ -140,29 +133,11 @@ public class EndpointResource extends Endpoint {
     @GET
     @Produces(MediaType.WILDCARD)
     public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApi api,
-                                @Context ApiRequestContext requestContext) throws IOException {
+                                @Context ApiRequestContext requestContext) {
+        QueriesHandlerResources.QueryInputResource queryInput = ImmutableQueryInputResource.builder()
+                                                                                           .resourceId(resourceId)
+                                                                                           .build();
 
-        final String datasetId = api.getId();
-        java.nio.file.Path apiDir = resourcesStore.resolve(datasetId);
-        Files.createDirectories(apiDir);
-
-        java.nio.file.Path resourceFile = apiDir.resolve(resourceId);
-
-        if (Files.notExists(resourceFile)) {
-            throw new NotFoundException(MessageFormat.format("The file ''{0}'' does not exist.", resourceId));
-        }
-
-        try {
-            final byte[] resource = Files.readAllBytes(resourceFile);
-
-            return getFormats().stream()
-                    .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
-                    .findAny()
-                    .map(ResourceFormatExtension.class::cast)
-                    .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())))
-                    .getResourceResponse(resource, resourceId, api, requestContext);
-        } catch (IOException e) {
-            throw new ServerErrorException("resource could not be read: "+resourceId, 500);
-        }
+        return queryHandler.handle(QueriesHandlerResources.Query.RESOURCE, queryInput, requestContext);
     }
 }

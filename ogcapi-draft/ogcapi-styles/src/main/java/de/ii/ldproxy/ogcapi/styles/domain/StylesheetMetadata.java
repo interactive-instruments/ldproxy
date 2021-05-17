@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value.Immutable

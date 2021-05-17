@@ -15,20 +15,24 @@ public class StylesheetContent {
 
     final String descriptor;
     final byte[] content;
+    final boolean inStore;
 
     public StylesheetContent(File file) throws IOException {
         content = java.nio.file.Files.readAllBytes(file.toPath());
         descriptor = file.getAbsolutePath();
+        inStore = true;
     }
 
     public StylesheetContent(Path path) throws IOException {
         content = java.nio.file.Files.readAllBytes(path);
         descriptor = path.toFile().getAbsolutePath();
+        inStore = true;
     }
 
-    public StylesheetContent(byte[] content, String descriptor) {
+    public StylesheetContent(byte[] content, String descriptor, boolean inStore) {
         this.content = content;
         this.descriptor = descriptor;
+        this.inStore = inStore;
     }
 
     public byte[] getContent() {
@@ -38,5 +42,7 @@ public class StylesheetContent {
     public String getDescriptor() {
         return descriptor;
     }
+
+    public boolean getInStore() { return inStore; }
 
 }

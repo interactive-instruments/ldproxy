@@ -7,6 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -16,6 +20,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
@@ -24,9 +29,11 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.Optional;
 
 @Component
@@ -78,7 +85,7 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
 
     @Override
     public ApiMediaTypeContent getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-        if (path.equals("/styles/{styleId}/metadata") && (method== HttpMethods.PUT || method== HttpMethods.PATCH))
+        if (path.endsWith("/styles/{styleId}/metadata") && (method== HttpMethods.PUT || method== HttpMethods.PATCH))
             return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schemaStyleMetadata)
                     .schemaRef(SCHEMA_REF_STYLE_METADATA)
@@ -86,5 +93,30 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
                     .build();
 
         throw new RuntimeException("Unexpected path: " + path);
+    }
+
+    public StyleMetadata parse(byte[] content, boolean strict, boolean inStore) {
+
+        // prepare Jackson mapper for deserialization
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new Jdk8Module());
+        mapper.registerModule(new GuavaModule());
+        mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, strict);
+        StyleMetadata parsedContent;
+        try {
+            // parse input
+            parsedContent = mapper.readValue(content, StyleMetadata.class);
+        } catch (IOException e) {
+            if (inStore) {
+                // this is invalid style metadata already in the store: server error
+                throw new RuntimeException("The style metadata is invalid.", e);
+            } else {
+                // style metadata provided by a client: client error
+                throw new IllegalArgumentException("The style metadata is invalid.", e);
+            }
+        }
+
+        return parsedContent;
     }
 }

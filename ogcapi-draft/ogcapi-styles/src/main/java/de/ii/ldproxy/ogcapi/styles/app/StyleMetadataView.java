@@ -101,6 +101,10 @@ public class StyleMetadataView extends OgcApiView {
         this.thumbnailTitle = i18n.get ("thumbnailTitle", language);
     }
 
+    public boolean hasLayers() {
+        return !metadata.getLayers().isEmpty();
+    }
+
     public Link getThumbnail() {
         return links.stream()
                 .filter(link -> Objects.equals(link.getRel(), "preview"))

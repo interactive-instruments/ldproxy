@@ -17,13 +17,16 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import org.slf4j.Logger;
@@ -138,31 +141,44 @@ public abstract class Endpoint implements EndpointExtension {
     protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, Map<MediaType, ApiMediaTypeContent> content,
                                         List<OgcApiQueryParameter> queryParameters, String path,
                                         String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, method, content, queryParameters, path, operationSummary, operationDescription, Optional.empty(), tags);
+        return addOperation(apiData, method, content, queryParameters, ImmutableList.of(), path, operationSummary, operationDescription, Optional.empty(), tags);
+    }
+
+    protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, Map<MediaType, ApiMediaTypeContent> content,
+                                        List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers, String path,
+                                        String operationSummary, Optional<String> operationDescription, List<String> tags) {
+        return addOperation(apiData, method, content, queryParameters, headers, path, operationSummary, operationDescription, Optional.empty(), tags);
     }
 
     protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, Map<MediaType, ApiMediaTypeContent> content,
                                         List<OgcApiQueryParameter> queryParameters, String path,
                                         String operationSummary, Optional<String> operationDescription,
                                         Optional<ExternalDocumentation> externalDocs, List<String> tags) {
+        return addOperation(apiData, method, content, queryParameters, ImmutableList.of(), path, operationSummary, operationDescription, externalDocs, tags);
+    }
+
+    protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, Map<MediaType, ApiMediaTypeContent> content,
+                                        List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers, String path,
+                                        String operationSummary, Optional<String> operationDescription,
+                                        Optional<ExternalDocumentation> externalDocs, List<String> tags) {
         ImmutableApiResponse.Builder responseBuilder = new ImmutableApiResponse.Builder()
                 .statusCode(SUCCESS_STATUS.get(method))
-                .description("The operation was executed successfully.");
+                .description("The operation was executed successfully.")
+                .headers(headers.stream().filter(header -> header.isResponseHeader()).collect(Collectors.toUnmodifiableList()));
         if (method== HttpMethods.GET && !content.isEmpty())
             responseBuilder.content(content);
-        if (method== HttpMethods.POST)
-            responseBuilder.putHeaders("Location",new Header().schema(new StringSchema()).description("The URI of the new resource."));
         ImmutableApiOperation.Builder operationBuilder = new ImmutableApiOperation.Builder()
                 .summary(operationSummary)
                 .description(operationDescription)
                 .externalDocs(externalDocs)
                 .tags(tags)
                 .queryParameters(queryParameters)
+                .headers(headers.stream().filter(header -> header.isRequestHeader()).collect(Collectors.toUnmodifiableList()))
                 .success(responseBuilder.build());
         if ((method== HttpMethods.POST || method== HttpMethods.PUT || method== HttpMethods.PATCH) && content!=null)
             operationBuilder.requestBody(new ImmutableApiRequestBody.Builder()
                     .content(content)
-                    .description(method== HttpMethods.POST ? "The new resource to be added." : "The new resource to be added or updated.")
+                    .description(method== HttpMethods.POST ? "The new resource to be added." : "The new resource to be updated.")
                     .build());
         return operationBuilder.build();
     }
@@ -214,5 +230,54 @@ public abstract class Endpoint implements EndpointExtension {
                 .build();
 
         return queryInput;
+    }
+
+    protected boolean strictHandling(Enumeration<String> prefer) {
+        boolean strict = false;
+        boolean lenient = false;
+        for (Iterator<String> s = prefer.asIterator(); s.hasNext(); ) {
+            String header = s.next();
+            strict = strict || header.contains("handling=strict");
+            lenient = lenient || header.contains("handling=lenient");
+        }
+        if (strict && lenient) {
+            throw new IllegalArgumentException("The request contains preferences for both strict and lenient processing. Both preferences are incompatible with each other.");
+        }
+        return strict;
+    }
+
+    /**
+     * create MediaType from text string; if the input string has problems, the value defaults to wildcards
+     *
+     * @param mediaTypeString the media type as a string
+     * @return the processed media type
+     */
+    public static MediaType mediaTypeFromString(String mediaTypeString) {
+        String[] typeAndSubtype = mediaTypeString.split("/", 2);
+        if (typeAndSubtype[0].matches("application|audio|font|example|image|message|model|multipart|text|video")) {
+            if (typeAndSubtype.length==1) {
+                // no subtype
+                return new MediaType(typeAndSubtype[0],"*");
+            } else {
+                // we have a subtype - and maybe parameters
+                String[] subtypeAndParameters = typeAndSubtype[1].split(";");
+                int count = subtypeAndParameters.length;
+                if (count==1) {
+                    // no parameters
+                    return new MediaType(typeAndSubtype[0],subtypeAndParameters[0]);
+                } else {
+                    // we have at least one parameter
+                    Map<String, String> params = IntStream.rangeClosed(1, count-1)
+                                                          .mapToObj( i -> subtypeAndParameters[i].split("=",2) )
+                                                          .filter(nameValuePair -> nameValuePair.length==2)
+                                                          .map(nameValuePair -> new AbstractMap.SimpleImmutableEntry<>(nameValuePair[0].trim(), nameValuePair[1].trim()))
+                                                          .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+                    return new MediaType(typeAndSubtype[0],subtypeAndParameters[0],params);
+                }
+            }
+        } else {
+            // not a valid type, fall back to wildcard
+            return MediaType.WILDCARD_TYPE;
+        }
     }
 }

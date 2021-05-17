@@ -60,20 +60,18 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
     }
 
     @Override
-    public Response getResourcesResponse(Resources resources,
-                                         OgcApi api,
-                                         ApiRequestContext requestContext) {
+    public Object getResourcesEntity(Resources resources,
+                                     OgcApiDataV2 apiData,
+                                     ApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String resourcesTitle = i18n.get("resourcesTitle", requestContext.getLanguage());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                         requestContext.getUriCustomizer().copy()
-                                .removeLastPathSegments(api.getData()
-                                                           .getSubPath()
-                                                           .size() + 1)
+                                .removeLastPathSegments(apiData.getSubPath().size() + 1)
                                 .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(),
+                .add(new NavigationDTO(apiData.getLabel(),
                         requestContext.getUriCustomizer()
                                 .copy()
                                 .removeLastPathSegments(1)
@@ -81,15 +79,9 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
                 .add(new NavigationDTO(resourcesTitle))
                 .build();
 
-        HtmlConfiguration htmlConfig = api.getData()
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
+        HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class)
+                                              .orElse(null);
 
-        ResourcesView view = new ResourcesView(api.getData(), resources, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-
-        return Response.ok()
-                .type(getMediaType().type())
-                .entity(view)
-                .build();
+        return new ResourcesView(apiData, resources, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(apiData), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 }

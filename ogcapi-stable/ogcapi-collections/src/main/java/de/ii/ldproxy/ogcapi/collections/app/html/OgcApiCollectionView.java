@@ -14,11 +14,9 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
@@ -38,9 +36,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     public String storageCrs;
     public Metadata metadata;
     public Link items;
-    private List<StyleEntry> styleEntries;
     public String defaultStyle;
-    public boolean withStyleInfos;
     public final String itemTypeTitle;
     public final String dataTitle;
     public final String metadataTitle;
@@ -90,9 +86,6 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
         Optional<String> defaultStyleOrNull = (Optional<String>) collection.getExtensions()
                                                                            .get("defaultStyle");
         this.defaultStyle = defaultStyleOrNull==null ? null : defaultStyleOrNull.get();
-        this.styleEntries = (List<StyleEntry>) collection.getExtensions()
-                                                         .get("styles");
-        this.withStyleInfos = (this.styleEntries!=null);
         this.spatialSearch = false;
         this.itemType = i18n.get(collection.getItemType().orElse("feature"), language);
         this.itemTypeTitle = i18n.get("itemTypeTitle", language);

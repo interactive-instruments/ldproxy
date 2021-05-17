@@ -7,20 +7,26 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableStyleEntry;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.StyleEntry;
+import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStylesheetMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyles;
@@ -76,15 +82,38 @@ public class StyleRepositoryFiles implements StyleRepository {
     private final ExtensionRegistry extensionRegistry;
     private final java.nio.file.Path stylesStore;
     private final I18n i18n;
+    private final DefaultLinksGenerator defaultLinkGenerator;
+    private final ObjectMapper patchMapperLenient;
+    private final ObjectMapper patchMapperStrict;
+    private final ObjectMapper metadataMapper;
+    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
 
     public StyleRepositoryFiles(@Context BundleContext bundleContext,
                                 @Requires ExtensionRegistry extensionRegistry,
-                                @Requires I18n i18n) throws IOException {
+                                @Requires I18n i18n,
+                                @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) throws IOException {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
+        this.schemaGeneratorFeature = schemaGeneratorFeature;
+        this.defaultLinkGenerator = new DefaultLinksGenerator();
         java.nio.file.Files.createDirectories(stylesStore);
+        this.patchMapperLenient = new ObjectMapper();
+        patchMapperLenient.registerModule(new Jdk8Module());
+        patchMapperLenient.registerModule(new GuavaModule());
+        patchMapperLenient.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        patchMapperLenient.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        this.patchMapperStrict = new ObjectMapper();
+        patchMapperStrict.registerModule(new Jdk8Module());
+        patchMapperStrict.registerModule(new GuavaModule());
+        patchMapperStrict.configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true);
+        patchMapperStrict.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+        patchMapperStrict.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        this.metadataMapper = new ObjectMapper();
+        metadataMapper.registerModule(new Jdk8Module());
+        metadataMapper.registerModule(new GuavaModule());
+        metadataMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public Stream<StylesFormatExtension> getStylesFormatStream(OgcApiDataV2 apiData, Optional<String> collectionId) {
@@ -220,6 +249,7 @@ public class StyleRepositoryFiles implements StyleRepository {
         }
 
         try {
+            // TODO parse first?
             return new StylesheetContent(getPathStyle(apiData, collectionId, styleId, styleFormat));
         } catch (IOException e) {
             if (collectionId.isPresent())
@@ -244,50 +274,108 @@ public class StyleRepositoryFiles implements StyleRepository {
 
     @Override
     public StyleMetadata getStyleMetadata(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
-        File metadataFile = getPathMetadata(apiData, collectionId, styleId).toFile();
-
-        final DefaultLinksGenerator defaultLinkGenerator = new DefaultLinksGenerator();
+        // derive standard links (self/alternate)
         List<Link> links = defaultLinkGenerator.generateLinks(requestContext.getUriCustomizer(),
                                                               requestContext.getMediaType(),
                                                               requestContext.getAlternateMediaTypes(),
                                                               i18n,
                                                               requestContext.getLanguage());
 
-        if (!metadataFile.exists()) {
-            // TODO derive metadata from a source metadata, if the style is derived
-            List<StylesheetMetadata> stylesheets = deriveStylesheetMetadata(apiData, collectionId, styleId, requestContext);
-            Optional<String> title = stylesheets.stream()
-                                                .map(sheet -> sheet.getTitle())
-                                                .filter(Optional::isPresent)
-                                                .map(Optional::get)
-                                                .filter(stylesheetTitle -> !stylesheetTitle.equals(styleId))
-                                                .findAny();
-            ImmutableStyleMetadata.Builder metadata = ImmutableStyleMetadata.builder()
-                                                                            .id(styleId)
-                                                                            .title(title.orElse(styleId))
-                                                                            .stylesheets(stylesheets)
-                                                                            .links(links);
+        // Derive standard metadata from the style
+        // TODO move outside of this specific repository implementation
+        List<StylesheetMetadata> stylesheets = deriveStylesheetMetadata(apiData, collectionId, styleId, requestContext);
+        Optional<String> title = stylesheets.stream()
+                                            .map(StylesheetMetadata::getTitle)
+                                            .filter(Optional::isPresent)
+                                            .map(Optional::get)
+                                            .filter(stylesheetTitle -> !stylesheetTitle.equals(styleId))
+                                            .findAny();
 
-            return metadata.build();
+        Optional<StyleFormatExtension> format = getStyleFormatStream(apiData, collectionId).filter(f -> f.canDeriveMetadata())
+                                                                                           .filter(f -> stylesheetExists(apiData, collectionId, styleId, f, true))
+                                                                                           .findAny();
+        ImmutableStyleMetadata.Builder builder = ImmutableStyleMetadata.builder()
+                                                                       .scope("Style")
+                                                                       .id(Optional.ofNullable(styleId))
+                                                                       .title(title.orElse(styleId))
+                                                                       .stylesheets(stylesheets);
+        if (format.isPresent()) {
+            builder.layers(format.get().deriveLayerMetadata(getStylesheet(apiData, collectionId, styleId, format.get(), requestContext, true), apiData, schemaGeneratorFeature));
+        }
+        StyleMetadata metadata = builder.build();
+
+        // TODO derive patch metadata from a source patch metadata, if the style is derived
+
+        Optional<JsonMergePatch> patch = getStyleMetadataPatch(apiData, collectionId, styleId);
+        if (patch.isPresent()) {
+            try {
+                metadata = metadataMapper.treeToValue(patch.get().apply(metadataMapper.valueToTree(metadata)), StyleMetadata.class);
+            } catch (JsonProcessingException | JsonPatchException e) {
+                if (collectionId.isPresent())
+                    throw new InternalServerErrorException(MessageFormat.format("Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.", styleId, collectionId.get(), apiData.getId()), e);
+                throw new InternalServerErrorException(MessageFormat.format("Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.", styleId, apiData.getId()), e);
+            }
+        }
+
+        metadata = ImmutableStyleMetadata.builder()
+                                         .from(metadata)
+                                         .addAllLinks(links)
+                                         .build();
+
+        return metadata.replaceParameters(requestContext.getUriCustomizer(), collectionId.isPresent());
+    }
+
+    @Override
+    public Optional<JsonMergePatch> getStyleMetadataPatch(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) {
+        File patchFile = getPathMetadata(apiData, collectionId, styleId).toFile();
+        if (!patchFile.exists())
+            return Optional.empty();
+
+        try {
+            final byte[] patchContent = Files.readAllBytes(patchFile.toPath());
+
+            try {
+                // parse patch file
+                return Optional.of(patchMapperLenient.readValue(patchContent, JsonMergePatch.class));
+            } catch (IOException e) {
+                if (collectionId.isPresent())
+                    throw new InternalServerErrorException(MessageFormat.format("Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.", styleId, collectionId.get(), apiData.getId()), e);
+                throw new InternalServerErrorException(MessageFormat.format("Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.", styleId, apiData.getId()), e);
+            }
+        } catch (IOException e) {
+            if (collectionId.isPresent())
+                throw new InternalServerErrorException(MessageFormat.format("Style metadata could not be read for style ''{0}'' in collection ''{1}'' in API ''{2}''.", styleId, collectionId.get(), apiData.getId()), e);
+            throw new InternalServerErrorException(MessageFormat.format("Style metadata could not be read for style ''{0}'' in API ''{1}''.", styleId, apiData.getId()), e);
+        }
+    }
+
+    @Override
+    public byte[] updateStyleMetadataPatch(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, byte[] additionalPatchContent, boolean strict) {
+
+        ObjectMapper mapper = strict ? patchMapperStrict : patchMapperLenient;
+
+        File patchFile = getPathMetadata(apiData, collectionId, styleId).toFile();
+        if (!patchFile.exists())
+            return additionalPatchContent;
+
+        JsonMergePatch patch;
+        try {
+            // parse patch file
+            patch = mapper.readValue(additionalPatchContent, JsonMergePatch.class);
+            if (strict)
+                mapper.readValue(additionalPatchContent, StyleMetadata.class);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(MessageFormat.format("Style metadata patch file is invalid for style ''{0}'' in API ''{1}''.", styleId, apiData.getId()), e);
         }
 
         try {
-            final byte[] metadataContent = Files.readAllBytes(metadataFile.toPath());
+            final byte[] patchContent = Files.readAllBytes(patchFile.toPath());
 
-            // prepare Jackson mapper for deserialization
-            final ObjectMapper mapper = new ObjectMapper();
-            mapper.registerModule(new Jdk8Module());
-            mapper.registerModule(new GuavaModule());
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             try {
-                // parse input
-                StyleMetadata metadata = ImmutableStyleMetadata.builder()
-                                                               .from(mapper.readValue(metadataContent, StyleMetadata.class))
-                                                               .addAllLinks(links)
-                                                               .build();
-
-                return metadata.replaceParameters(requestContext.getUriCustomizer());
-            } catch (IOException e) {
+                // parse patch file
+                StyleMetadata current = mapper.readValue(patchContent, StyleMetadata.class);
+                return mapper.writeValueAsBytes(mapper.treeToValue(patch.apply(mapper.valueToTree(current)), JsonMergePatch.class));
+            } catch (IOException | JsonPatchException e) {
                 if (collectionId.isPresent())
                     throw new InternalServerErrorException(MessageFormat.format("Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.", styleId, collectionId.get(), apiData.getId()), e);
                 throw new InternalServerErrorException(MessageFormat.format("Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.", styleId, apiData.getId()), e);
@@ -325,6 +413,55 @@ public class StyleRepositoryFiles implements StyleRepository {
         }
 
         return builder;
+    }
+
+    @Override
+    public String getNewStyleId(OgcApiDataV2 apiData, Optional<String> collectionId) {
+        Set<String> styleIds = getStyleIds(apiData, collectionId, true);
+        int id = 1;
+        String s;
+        while(true) {
+            s = String.format("%s%s%s", collectionId.orElse(""), (collectionId.isPresent() ? "_" : ""), id++);
+            if (!styleIds.contains(s))
+                return s;
+        }
+    }
+
+    @Override
+    public void writeStyleDocument(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension format, byte[] requestBody) throws IOException {
+        Files.write(getStylesheetPath(apiData, collectionId, styleId, format), requestBody);
+    }
+
+    @Override
+    public void writeStyleMetadataDocument(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, byte[] requestBody) throws IOException {
+        Files.write(getStyleMetadataPath(apiData, collectionId, styleId), requestBody);
+    }
+
+    @Override
+    public void deleteStyle(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) throws IOException {
+        for(StyleFormatExtension format: getStyleFormatStream(apiData, collectionId).collect(Collectors.toUnmodifiableList())) {
+            deleteFile(getStylesheetPath(apiData, collectionId, styleId, format));
+        }
+        deleteFile(getStyleMetadataPath(apiData, collectionId, styleId));
+    }
+
+    private void deleteFile(Path path) throws IOException {
+        if (Files.exists(path))
+            Files.delete(path);
+    }
+
+    private Path getStylesheetPath(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension format) {
+        String filename = styleId + "." + format.getFileExtension();
+        return collectionId.isEmpty()
+                ? stylesStore.resolve(apiData.getId()).resolve(filename)
+                : stylesStore.resolve(apiData.getId()).resolve(collectionId.get()).resolve(filename);
+    }
+
+    private Path getStyleMetadataPath(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) {
+        String filename = styleId + ".metadata";
+        return collectionId.isEmpty()
+                ? stylesStore.resolve(apiData.getId()).resolve(filename)
+                : stylesStore.resolve(apiData.getId()).resolve(collectionId.get()).resolve(filename);
     }
 
     private boolean deriveCollectionStylesEnabled(OgcApiDataV2 apiData, String collectionId) {
@@ -373,7 +510,9 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                                   .map(format -> ImmutableStylesheetMetadata.builder()
                                                                                                             .native_(true)
                                                                                                             .title(format.getTitle(styleId, getStylesheet(apiData, collectionId, styleId, format, requestContext, true)))
-                                                                                                            .link(stylesLinkGenerator.generateStylesheetLink(requestContext.getUriCustomizer(), styleId, format.getMediaType(), i18n, requestContext.getLanguage()))
+                                                                                                            .link(stylesLinkGenerator.generateStylesheetLink(requestContext.getUriCustomizer()
+                                                                                                                                                                           .copy()
+                                                                                                                                                                           .removeLastPathSegments(2), styleId, format.getMediaType(), i18n, requestContext.getLanguage()))
                                                                                                             .specification(format.getSpecification())
                                                                                                             .version(format.getVersion())
                                                                                                             .build())
@@ -404,10 +543,38 @@ public class StyleRepositoryFiles implements StyleRepository {
 
     private Optional<String> getTitle(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
         return getStyleFormatStream(apiData, collectionId)
+                .filter(format -> stylesheetExists(apiData, collectionId, styleId, format))
                 .map(format -> format.getTitle(styleId, getStylesheet(apiData, collectionId, styleId, format, requestContext)))
                 .filter(title -> !title.equals(styleId))
                 .findAny();
     }
 
+    public Set<String> getStyleIds(OgcApiDataV2 apiData, Optional<String> collectionId, boolean includeDerived) {
+        ImmutableSet.Builder<String> builder = new ImmutableSet.Builder<>();
+        builder.addAll(Arrays.stream(Objects.requireNonNullElse(getPathStyles(apiData, collectionId).toFile().listFiles(), new File[0]))
+                             .map(file -> {
+                                 String filename = file.getName();
+                                 if (filename.contains("."))
+                                     filename = filename.substring(0, file.getName().lastIndexOf("."));
 
+                                 return filename;
+                             })
+                             .collect(Collectors.toUnmodifiableSet()));
+
+        if (includeDerived && collectionId.isPresent() && deriveCollectionStylesEnabled(apiData, collectionId.get())) {
+            // add the styles from the parent style collection, that are used to derive a style for the collection
+            builder.addAll(Arrays.stream(Objects.requireNonNullElse(getPathStyles(apiData, Optional.empty()).toFile().listFiles(), new File[0]))
+                                 .map(file -> {
+                                     String filename = file.getName();
+                                     if (filename.contains("."))
+                                         filename = filename.substring(0, file.getName().lastIndexOf("."));
+
+                                     return filename;
+                                 })
+                                 .filter(styleId -> getStyleFormatStream(apiData, collectionId).anyMatch(format -> willDeriveStylesheet(apiData, collectionId, styleId, format)))
+                                 .collect(Collectors.toUnmodifiableSet()));
+        }
+
+        return builder.build();
+    }
 }

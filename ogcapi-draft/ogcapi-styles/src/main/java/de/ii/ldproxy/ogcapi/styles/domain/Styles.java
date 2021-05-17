@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.styles.domain;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
-import de.ii.ldproxy.ogcapi.domain.StyleEntry;
 import org.immutables.value.Value;
 
 import java.util.List;

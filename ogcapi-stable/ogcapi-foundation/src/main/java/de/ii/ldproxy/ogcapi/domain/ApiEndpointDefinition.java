@@ -277,13 +277,21 @@ public abstract class ApiEndpointDefinition {
                             status400 = true;
                         }
 
+                        for (ApiHeader header : operation.getHeaders()) {
+                            op.addParametersItem(new Parameter().in("header")
+                                                                .name(header.getId())
+                                                                .description(header.getDescription())
+                                                                .schema(header.getSchema(apiData)));
+                        }
+
                         ApiResponse success = operation.getSuccess().get();
                         ApiResponses responses = new ApiResponses();
 
                         io.swagger.v3.oas.models.responses.ApiResponse response = new io.swagger.v3.oas.models.responses.ApiResponse();
                         response.description(success.getDescription());
-                        for (Map.Entry<String, Header> header : success.getHeaders().entrySet()) {
-                            response.addHeaderObject(header.getKey(), header.getValue());
+                        for (ApiHeader header : success.getHeaders()) {
+                            response.addHeaderObject(header.getId(), new Header().description(header.getDescription())
+                                                                                 .schema(header.getSchema(apiData)));
                         }
                         Content content = new Content();
                         success.getContent()

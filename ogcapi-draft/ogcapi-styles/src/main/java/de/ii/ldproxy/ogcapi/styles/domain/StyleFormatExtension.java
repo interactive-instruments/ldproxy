@@ -7,12 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.styles.domain;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 
 import java.util.List;
 import java.util.Optional;
@@ -112,12 +113,37 @@ public interface StyleFormatExtension extends FormatExtension {
 
     /**
      *
-     * @param stylesheetContent the stylesheetContent content
+     * @return
+     */
+    default boolean canDeriveMetadata() {
+        return false;
+    }
+
+    /**
+     *
+     * @return
+     */
+    default List<StyleLayer> deriveLayerMetadata(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, SchemaGeneratorGeoJson schemaGeneratorFeature) {
+        return ImmutableList.of();
+    }
+
+    /**
+     *
+     * @param stylesheetContent the stylesheet content
      * @param apiData
      * @param requestContext
      * @return the response
      */
-    Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData,
-                          Optional<String> collectionId, String styleId, ApiRequestContext requestContext);
+    default Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData,
+                                  Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
+        return stylesheetContent.getContent();
+    }
 
+    /**
+     * validate the content of the stylesheet
+     * @param stylesheetContent the stylesheet content
+     * @param strict strict or lenient validation
+     * @return the derived id
+     */
+    default Optional<String> analyze(StylesheetContent stylesheetContent, boolean strict) { return Optional.empty(); }
 };

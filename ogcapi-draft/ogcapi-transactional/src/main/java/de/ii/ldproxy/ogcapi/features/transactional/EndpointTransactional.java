@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiHeader;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
@@ -99,68 +100,71 @@ public class EndpointTransactional extends EndpointSubCollection {
 
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-            ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                    .apiEntrypoint("collections")
-                    .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_TRANSACTION);
-            String subSubPath = "/items";
-            String path = "/collections/{collectionId}" + subSubPath;
-            List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-            if (!optCollectionIdParam.isPresent()) {
-                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
-            } else {
-                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                final List<String> collectionIds = (explode) ?
-                        collectionIdParam.getValues(apiData) :
-                        ImmutableList.of("{collectionId}");
-                for (String collectionId : collectionIds) {
-                    final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.POST);
-                    final String operationSummary = "add a feature in the feature collection '" + collectionId + "'";
-                    Optional<String> operationDescription = Optional.of("The content of the request is a new feature in one of the supported encodings. The URI of the new feature is returned in the header `Location`.");
-                    String resourcePath = "/collections/" + collectionId + subSubPath;
-                    ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                            .path(resourcePath)
-                            .pathParameters(pathParameters);
-                    ApiOperation operation = addOperation(apiData, HttpMethods.POST, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                    if (operation!=null)
-                        resourceBuilder.putOperations("POST", operation);
-                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                }
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("collections")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_TRANSACTION);
+        String subSubPath = "/items";
+        String path = "/collections/{collectionId}" + subSubPath;
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+        if (!optCollectionIdParam.isPresent()) {
+            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
+        } else {
+            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final List<String> collectionIds = (explode) ?
+                    collectionIdParam.getValues(apiData) :
+                    ImmutableList.of("{collectionId}");
+            for (String collectionId : collectionIds) {
+                final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.POST);
+                final List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.POST);
+                final String operationSummary = "add a feature in the feature collection '" + collectionId + "'";
+                Optional<String> operationDescription = Optional.of("The content of the request is a new feature in one of the supported encodings. The URI of the new feature is returned in the header `Location`.");
+                String resourcePath = "/collections/" + collectionId + subSubPath;
+                ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                        .path(resourcePath)
+                        .pathParameters(pathParameters);
+                ApiOperation operation = addOperation(apiData, HttpMethods.POST, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                if (operation!=null)
+                    resourceBuilder.putOperations("POST", operation);
+                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
-            subSubPath = "/items/{featureId}";
-            path = "/collections/{collectionId}" + subSubPath;
-            pathParameters = getPathParameters(extensionRegistry, apiData, path);
-            optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-            if (!optCollectionIdParam.isPresent()) {
-                LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
-            } else {
-                final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-                final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-                final List<String> collectionIds = explode ?
-                        collectionIdParam.getValues(apiData) :
-                        ImmutableList.of("{collectionId}");
-                for (String collectionId : collectionIds) {
-                    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT);
-                    String operationSummary = "add or update a feature in the feature collection '" + collectionId + "'";
-                    Optional<String> operationDescription = Optional.of("The content of the request is a new feature in one of the supported encodings. The id of the new or updated feature is `{featureId}`.");
-                    String resourcePath = "/collections/" + collectionId + subSubPath;
-                    ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                            .path(resourcePath)
-                            .pathParameters(pathParameters);
-                    ApiOperation operation = addOperation(apiData, HttpMethods.PUT, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                    if (operation!=null)
-                        resourceBuilder.putOperations("PUT", operation);
-                    queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE);
-                    operationSummary = "delete a feature in the feature collection '" + collectionId + "'";
-                    operationDescription = Optional.of("The feature with id `{featureId}` will be deleted.");
-                    operation = addOperation(apiData, HttpMethods.DELETE, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                    if (operation!=null)
-                        resourceBuilder.putOperations("DELETE", operation);
-                    definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-                }
+        }
+        subSubPath = "/items/{featureId}";
+        path = "/collections/{collectionId}" + subSubPath;
+        pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+        if (!optCollectionIdParam.isPresent()) {
+            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
+        } else {
+            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final List<String> collectionIds = explode ?
+                    collectionIdParam.getValues(apiData) :
+                    ImmutableList.of("{collectionId}");
+            for (String collectionId : collectionIds) {
+                List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT);
+                List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT);
+                String operationSummary = "add or update a feature in the feature collection '" + collectionId + "'";
+                Optional<String> operationDescription = Optional.of("The content of the request is a new feature in one of the supported encodings. The id of the new or updated feature is `{featureId}`.");
+                String resourcePath = "/collections/" + collectionId + subSubPath;
+                ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                        .path(resourcePath)
+                        .pathParameters(pathParameters);
+                ApiOperation operation = addOperation(apiData, HttpMethods.PUT, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                if (operation!=null)
+                    resourceBuilder.putOperations("PUT", operation);
+                queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE);
+                headers = getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE);
+                operationSummary = "delete a feature in the feature collection '" + collectionId + "'";
+                operationDescription = Optional.of("The feature with id `{featureId}` will be deleted.");
+                operation = addOperation(apiData, HttpMethods.DELETE, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                if (operation!=null)
+                    resourceBuilder.putOperations("DELETE", operation);
+                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+            }
 
-            }
+        }
         return definitionBuilder.build();
     }
 

@@ -2,5 +2,10 @@
 dependencies {
     provided project(":ogcapi-styles")
 
+    embedded (group: 'com.github.java-json-tools', name: 'json-patch', version: '1.13') {
+        exclude module: 'jackson-core'
+        exclude module: 'jackson-databind'
+    }
+
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

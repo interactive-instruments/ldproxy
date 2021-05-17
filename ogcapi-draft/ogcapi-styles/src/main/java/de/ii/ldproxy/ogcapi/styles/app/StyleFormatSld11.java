@@ -78,7 +78,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
 
     @Override
     public String getSpecification() {
-        return "http://www.opengeospatial.org/standards/sld";
+        return "https://www.ogc.org/standards/sld";
     }
 
     @Override

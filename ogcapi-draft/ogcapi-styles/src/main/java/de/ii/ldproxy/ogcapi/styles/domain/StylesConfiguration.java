@@ -31,6 +31,9 @@ public interface StylesConfiguration extends ExtensionConfiguration {
     @Nullable
     Boolean getValidationEnabled();
 
+    @Nullable
+    Boolean getUseIdFromStylesheet();
+
     @Deprecated
     @Nullable
     Boolean getResourcesEnabled();

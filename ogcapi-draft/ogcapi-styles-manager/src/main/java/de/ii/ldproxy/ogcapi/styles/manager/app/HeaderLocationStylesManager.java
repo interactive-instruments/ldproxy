@@ -5,10 +5,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.styles.app.manager;
+package de.ii.ldproxy.ogcapi.styles.manager.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.domain.ApiHeader;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -16,39 +20,30 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-import java.util.Optional;
-
 @Component
 @Provides
 @Instantiate
-public class QueryParameterValidateStyle extends ApiExtensionCache implements OgcApiQueryParameter {
+public class HeaderLocationStylesManager extends ApiExtensionCache implements ApiHeader {
 
-    private Schema schema = new StringSchema()._enum(ImmutableList.of("yes","no","only"))._default("no");
+    private final Schema schema = new StringSchema().format("uri");
 
     @Override
     public String getId() {
-        return "validateStyle";
-    }
-
-    @Override
-    public String getName() {
-        return "validate";
+        return "Location";
     }
 
     @Override
     public String getDescription() {
-        return "'yes' creates or updates a style after successful validation and returns 400," +
-                "if validation fails. 'no' creates or updates the style without validation. 'only' just " +
-                "validates the style without creating a new style or updating an existing style " +
-                "and returns 400, if validation fails, otherwise 204.";
+        return "The URI of the style that has been created.";
     }
+
+    @Override
+    public boolean isResponseHeader() { return true; }
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) &&
-               ((method== HttpMethods.PUT && definitionPath.endsWith("/styles/{styleId}")) ||
-                (method== HttpMethods.POST && definitionPath.endsWith("/styles"))));
+            isEnabledForApi(apiData) && method== HttpMethods.POST && definitionPath.endsWith("/styles"));
     }
 
     @Override

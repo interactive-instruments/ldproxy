@@ -35,6 +35,7 @@ public class CapabilityStyles implements ApiBuildingBlock {
         return new ImmutableStylesConfiguration.Builder().enabled(false)
                                                          .managerEnabled(false)
                                                          .validationEnabled(false)
+                                                         .useIdFromStylesheet(false)
                                                          .resourcesEnabled(false)
                                                          .resourceManagerEnabled(false)
                                                          .styleEncodings(extensionRegistry.getExtensionsForType(StyleFormatExtension.class)

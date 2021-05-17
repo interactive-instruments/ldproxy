@@ -123,60 +123,35 @@
             </div>
         </div>
 
-        <h2>{{layersTitle}}</h2>
-        {{#layers}}
-            <h3>{{id}}</h3>
-            {{#description}}<span>{{{.}}}</span>{{/description}}
-
-            {{#type}}
-                <div class="row my-3">
-                    <div class="col-md-2 font-weight-bold">{{layerTypeTitle}}</div>
-                    <div class="col-md-10">
-                        <ul class="list-unstyled">
-                            <li>{{.}}</li>
-                        </ul>
-                    </div>
-                </div>
-            {{/type}}
-
-            <div class="row my-3">
-                <div class="col-md-2 font-weight-bold">{{sampleDataTitle}}</div>
-                <div class="col-md-10">
-                    <ul class="list-unstyled">
-                        {{#sampleData}}
-                            <li>
-                                <a itemprop="url" href="{{href}}">{{#title}}{{.}}{{/title}}{{^title}}{{#type}}{{.}}{{/type}}{{^type}}Link{{/type}}{{/title}}</a>
-                            </li>
-                        {{/sampleData}}
-                        {{^sampleData}}
-                            <li>{{none}}</li>
-                        {{/sampleData}}
-                    </ul>
-                </div>
+        {{#hasLayers}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{layersTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    {{#layers}}
+                        <li>
+                            {{id}}
+                            <ul>
+                                {{#type}}
+                                    <li>{{layerTypeTitle}}: {{.}}</li>
+                                {{/type}}
+                                {{#attributeList}}
+                                    <li>{{attributesTitle}}: {{.}}</li>
+                                {{/attributeList}}
+                                {{#sampleData}}
+                                    <li><a itemprop="url" href="{{href}}" target="_blank">{{#title}}{{.}}{{/title}}{{^title}}{{sampleDataTitle}}{{/title}}</a></li>
+                                {{/sampleData}}
+                            </ul>
+                            <br/>
+                        </li>
+                    {{/layers}}
+                    {{^layers}}
+                        <li>{{none}}</li>
+                    {{/layers}}
+                </ul>
             </div>
-
-            {{#attributes}}
-                <div class="row my-3">
-                    <div class="col-md-2 font-weight-bold">{{attributesTitle}}</div>
-                    <div class="col-md-10">
-                        <ul class="list-unstyled">
-                            <li>
-                                {{#title}}{{.}} ({{id}}){{/title}}{{^title}}{{id}}{{/title}}
-                                {{#description}}<br/>{{{.}}}{{/description}}
-                                <ul>
-                                    {{#type}}<li>{{dataTypeTitle}}: {{.}}</li>{{/type}}
-                                    <li>{{requiredTitle}}: {{#required}}{{trueTitle}}{{/required}}{{^required}}{{falseTitle}}{{/required}}</li>
-                                </ul>
-                                <br/>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            {{/attributes}}
-        {{/layers}}
-        {{^layers}}
-            <span>{{none}}</span>
-        {{/layers}}
+        </div>
+        {{/hasLayers}}
 
     {{/metadata}}
 </div>

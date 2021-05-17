@@ -123,4 +123,9 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
 
         return new StyleMetadataView(apiData, metadata, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(apiData), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
+
+    @Override
+    public StyleMetadata parse(byte[] content, boolean strict, boolean inStore) {
+        throw new RuntimeException("Style metadata in HTML cannot be parsed. This method should never be called.");
+    }
 }

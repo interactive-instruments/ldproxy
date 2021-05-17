@@ -41,6 +41,10 @@ public class PathParameterCollectionIdStyles extends AbstractPathParameterCollec
     }
 
     @Override
+    public boolean getExplodeInOpenApi(OgcApiDataV2 apiData) { return false;
+    }
+
+    @Override
     public String getId() {
         return "collectionIdStyles";
     }

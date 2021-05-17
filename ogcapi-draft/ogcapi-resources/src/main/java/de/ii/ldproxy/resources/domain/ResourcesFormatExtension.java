@@ -9,13 +9,11 @@ package de.ii.ldproxy.resources.domain;
 
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.app.Resources;
 
-import javax.ws.rs.core.Response;
 import java.util.Optional;
 
 public interface ResourcesFormatExtension extends GenericFormatExtension {
@@ -25,9 +23,9 @@ public interface ResourcesFormatExtension extends GenericFormatExtension {
         return "^/resources/?$";
     }
 
-    Response getResourcesResponse(Resources resources,
-                                  OgcApi api,
-                                  ApiRequestContext requestContext);
+    Object getResourcesEntity(Resources resources,
+                              OgcApiDataV2 apiData,
+                              ApiRequestContext requestContext);
 
     @Override
     default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
