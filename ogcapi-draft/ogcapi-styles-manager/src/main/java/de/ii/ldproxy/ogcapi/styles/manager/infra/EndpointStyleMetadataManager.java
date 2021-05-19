@@ -229,10 +229,8 @@ public class EndpointStyleMetadataManager extends Endpoint {
                                      @Context HttpServletRequest request,
                                      byte[] requestBody) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/styles/{styleId}/metadata", "styleId", styleId);
 
         QueriesHandlerStylesManager.QueryInputStyleMetadata queryInput = new ImmutableQueryInputStyleMetadata.Builder()
@@ -263,10 +261,8 @@ public class EndpointStyleMetadataManager extends Endpoint {
                                        @Context HttpServletRequest request,
                                        byte[] requestBody) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/styles/{styleId}/metadata", "styleId", styleId);
 
         QueriesHandlerStylesManager.QueryInputStyleMetadata queryInput = new ImmutableQueryInputStyleMetadata.Builder()

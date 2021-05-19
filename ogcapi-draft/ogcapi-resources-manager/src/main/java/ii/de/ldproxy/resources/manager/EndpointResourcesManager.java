@@ -176,8 +176,7 @@ public class EndpointResourcesManager extends Endpoint {
                                 @Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @Context HttpServletRequest request, byte[] requestBody) throws IOException {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(api.getData(), optionalUser);
+        checkAuthorization(api.getData(), optionalUser);
 
         return getFormats().stream()
                 .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
@@ -198,8 +197,7 @@ public class EndpointResourcesManager extends Endpoint {
     public Response deleteResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
                                 @Context OgcApi dataset) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
+        checkAuthorization(dataset.getData(), optionalUser);
 
         final String datasetId = dataset.getId();
         File apiDir = new File(resourcesStore + File.separator + datasetId);

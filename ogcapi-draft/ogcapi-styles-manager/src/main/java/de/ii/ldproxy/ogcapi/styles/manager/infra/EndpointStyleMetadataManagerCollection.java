@@ -112,7 +112,7 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
         ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                 .apiEntrypoint("collections")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLES_MANAGER_COLLECTION);
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_MANAGER_COLLECTION);
         String subSubPath = "/styles/{styleId}/metadata";
         String path = "/collections/{collectionId}" + subSubPath;
         List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -263,10 +263,8 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                                      @Context HttpServletRequest request,
                                      byte[] requestBody) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}/metadata", "collectionId", collectionId);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}/metadata", "styleId", styleId);
 
@@ -300,10 +298,8 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                                        @Context HttpServletRequest request,
                                        byte[] requestBody) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}/metadata", "collectionId", collectionId);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}/metadata", "styleId", styleId);
 

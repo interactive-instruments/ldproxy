@@ -209,8 +209,8 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
                               @Context HttpServletRequest request,
                               byte[] requestBody) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
+        OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
 
         QueriesHandlerStylesManager.QueryInputStyleCreateReplace queryInput = new ImmutableQueryInputStyleCreateReplace.Builder()
                 .contentType(mediaTypeFromString(request.getContentType()))
@@ -238,10 +238,8 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
                              @Context HttpServletRequest request,
                              byte[] requestBody) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/styles/{styleId}", "styleId", styleId);
 
         QueriesHandlerStylesManager.QueryInputStyleCreateReplace queryInput = new ImmutableQueryInputStyleCreateReplace.Builder()
@@ -266,10 +264,8 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
     public Response deleteStyle(@Auth Optional<User> optionalUser, @PathParam("styleId") String styleId,
                                 @Context OgcApi api, @Context ApiRequestContext requestContext) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/styles/{styleId}", "styleId", styleId);
 
         QueriesHandlerStylesManager.QueryInputStyleDelete queryInput = new ImmutableQueryInputStyleDelete.Builder()

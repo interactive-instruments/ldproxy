@@ -239,10 +239,8 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
                               @Context HttpServletRequest request,
                               byte[] requestBody) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles", "collectionId", collectionId);
 
         QueriesHandlerStylesManager.QueryInputStyleCreateReplace queryInput = new ImmutableQueryInputStyleCreateReplace.Builder()
@@ -273,10 +271,8 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
                              @Context HttpServletRequest request,
                              byte[] requestBody) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}", "collectionId", collectionId);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}", "styleId", styleId);
 
@@ -306,10 +302,8 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
                                 @Context OgcApi api,
                                 @Context ApiRequestContext requestContext) {
 
-        // TODO temporarily disabled until it is clear how to set up unsecured and secured APIs
-        // checkAuthorization(dataset.getData(), optionalUser);
-
         OgcApiDataV2 apiData = api.getData();
+        checkAuthorization(apiData, optionalUser);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}", "collectionId", collectionId);
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}", "styleId", styleId);
 
