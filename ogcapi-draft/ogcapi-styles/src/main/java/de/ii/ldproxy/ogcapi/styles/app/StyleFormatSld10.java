@@ -11,12 +11,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Resources;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.oas30.app.ExtendableOpenApiDefinitionImpl;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import io.swagger.v3.oas.models.media.ObjectSchema;
-import java.util.concurrent.Executors;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -32,8 +37,6 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,22 +61,17 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
 
     @Validate
     void onStart() {
-        //TODO: this takes ca. 20 seconds, presumably because the imports in sld10.xsd are resolved from the web
-        // as web access should not be expected on the backend, this needs to be refactored to use local files only
-        // if the refactoring reduces the time needed to less than 1 sec, the executor can be removed
-        Executors.newSingleThreadExecutor().submit(() -> {
-            try {
-                SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-                Schema schema = factory.newSchema(Resources.getResource(StyleFormatSld10.class, "/schemas/sld10.xsd"));
+        try {
+            SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            Schema schema = factory.newSchema(Resources.getResource(StyleFormatSld10.class, "/schemas/sld10.xsd"));
 
-                this.validator = Optional.ofNullable(schema.newValidator());
-            } catch (SAXException e) {
-                LOGGER.error("StyleFormatSld10 initialization failed: Could not process SLD 1.0 XSD.");
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Stacktrace: ", e);
-                }
+            this.validator = Optional.ofNullable(schema.newValidator());
+        } catch (SAXException e) {
+            LOGGER.error("StyleFormatSld10 initialization failed: Could not process SLD 1.0 XSD.");
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace: ", e);
             }
-        });
+        }
     }
 
     @Override
