@@ -26,6 +26,7 @@ apply from: '../license-report.gradle'
 
 task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
 task testAll { dependsOn subprojects*.tasks*.findByPath('test') }
+tasks.publish { dependsOn subprojects*.tasks*.findByPath('publish') }
 
 //TODO: M5 breaks extensions of AbstractExtensionConfigurationSpec
 subprojects {
