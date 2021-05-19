@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
@@ -40,6 +41,7 @@ import de.ii.ldproxy.ogcapi.styles.domain.Styles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
+import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Context;
@@ -87,16 +89,19 @@ public class StyleRepositoryFiles implements StyleRepository {
     private final ObjectMapper patchMapperStrict;
     private final ObjectMapper metadataMapper;
     private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final XtraPlatform xtraPlatform;
 
     public StyleRepositoryFiles(@Context BundleContext bundleContext,
                                 @Requires ExtensionRegistry extensionRegistry,
                                 @Requires I18n i18n,
-                                @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) throws IOException {
+                                @Requires SchemaGeneratorGeoJson schemaGeneratorFeature,
+                                @Requires XtraPlatform xtraPlatform) throws IOException {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
+        this.xtraPlatform = xtraPlatform;
         this.defaultLinkGenerator = new DefaultLinksGenerator();
         java.nio.file.Files.createDirectories(stylesStore);
         this.patchMapperLenient = new ObjectMapper();
@@ -156,30 +161,46 @@ public class StyleRepositoryFiles implements StyleRepository {
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
         Map<String, StyleFormatExtension> formatMap = getStyleFormatStream(apiData, collectionId).filter(format -> !format.getDerived())
                                                                                                  .collect(Collectors.toUnmodifiableMap(format -> format.getFileExtension(), format -> format));
+        List<StyleEntry> styleEntries = Arrays.stream(Objects.requireNonNullElse(dir.listFiles(), ImmutableList.of().toArray(File[]::new)))
+                                              .filter(file -> !file.isHidden())
+                                              .filter(file -> formatMap.containsKey(com.google.common.io.Files.getFileExtension(file.getName())))
+                                              .map(file -> com.google.common.io.Files.getNameWithoutExtension(file.getName()))
+                                              .distinct()
+                                              .sorted()
+                                              .map(styleId -> {
+                                                  ImmutableStyleEntry.Builder builder = ImmutableStyleEntry.builder()
+                                                                                                           .id(styleId)
+                                                                                                           .title(getTitle(apiData, collectionId, styleId, requestContext).orElse(styleId));
+                                                  List<ApiMediaType> mediaTypes = getStylesheetMediaTypes(apiData, collectionId, styleId);
+                                                  builder.links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
+                                                                                                       styleId,
+                                                                                                       mediaTypes,
+                                                                                                       i18n,
+                                                                                                       requestContext.getLanguage()));
+                                                  if (collectionId.isPresent()) {
+                                                      List<ApiMediaType> additionalMediaTypes =
+                                                              getStyleFormatStream(apiData, collectionId).filter(format -> format.canDeriveCollectionStyle()
+                                                                      && !mediaTypes.contains(format.getMediaType())
+                                                                      && willDeriveStylesheet(apiData, collectionId, styleId, format))
+                                                                                                         .map(StyleFormatExtension::getMediaType)
+                                                                                                         .collect(Collectors.toUnmodifiableList());
+                                                      if (!additionalMediaTypes.isEmpty()) {
+                                                          builder.addAllLinks(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
+                                                                                                               styleId,
+                                                                                                               additionalMediaTypes,
+                                                                                                               i18n,
+                                                                                                               requestContext.getLanguage()));
+                                                      }
+                                                  }
+                                                  builder.addLinks(stylesLinkGenerator.generateStyleMetadataLink(requestContext.getUriCustomizer(),
+                                                                                                                 styleId,
+                                                                                                                 i18n,
+                                                                                                                 requestContext.getLanguage()));
+                                                  return builder.build();
+                                              })
+                                              .collect(Collectors.toList());
         Styles styles = ImmutableStyles.builder()
-                                       .styles(
-                                               Arrays.stream(Objects.requireNonNullElse(dir.listFiles(), ImmutableList.of().toArray(File[]::new)))
-                                                     .filter(file -> !file.isHidden())
-                                                     .filter(file -> formatMap.containsKey(com.google.common.io.Files.getFileExtension(file.getName())))
-                                                     .map(file -> com.google.common.io.Files.getNameWithoutExtension(file.getName()))
-                                                     .distinct()
-                                                     .sorted()
-                                                     .map(styleId -> ImmutableStyleEntry.builder()
-                                                                                        .id(styleId)
-                                                                                        .title(getTitle(apiData, collectionId, styleId, requestContext).orElse(styleId))
-                                                                                        .links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
-                                                                                                                                      styleId,
-                                                                                                                                      getStylesheetMediaTypes(apiData,
-                                                                                                                                                              collectionId,
-                                                                                                                                                              styleId),
-                                                                                                                                      i18n,
-                                                                                                                                      requestContext.getLanguage()))
-                                                                                        .addLinks(stylesLinkGenerator.generateStyleMetadataLink(requestContext.getUriCustomizer(),
-                                                                                                                                                styleId,
-                                                                                                                                                i18n,
-                                                                                                                                                requestContext.getLanguage()))
-                                                                                        .build())
-                                                     .collect(Collectors.toList()))
+                                       .styles(styleEntries)
                                        .links(new DefaultLinksGenerator()
                                                       .generateLinks(requestContext.getUriCustomizer(),
                                                                      requestContext.getMediaType(),
@@ -222,10 +243,16 @@ public class StyleRepositoryFiles implements StyleRepository {
 
     private boolean willDeriveStylesheet(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension styleFormat) {
         // for specific style encodings, we derive a style for a single feature collection from a multi-collection stylesheet, if this capability is not switched of for the collection
-        return collectionId.isPresent() &&
-                deriveCollectionStylesEnabled(apiData, collectionId.get()) &&
-                getPathStyle(apiData, Optional.empty(), styleId, styleFormat).toFile().exists() &&
-                styleFormat.canDeriveCollectionStyle();
+        try {
+            return collectionId.isPresent() &&
+                    deriveCollectionStylesEnabled(apiData, collectionId.get()) &&
+                    getPathStyle(apiData, Optional.empty(), styleId, styleFormat).toFile().exists() &&
+                    styleFormat.canDeriveCollectionStyle() &&
+                    styleFormat.deriveCollectionStyle(new StylesheetContent(getPathStyle(apiData, Optional.empty(), styleId, styleFormat)), apiData, collectionId.get(), styleId).isPresent();
+        } catch (IOException e) {
+            LOGGER.error("Could not derive stylesheet for style ''{0}'' in collection ''{1}'' in API ''{2}'' for style encoding ''{3}''", styleId, collectionId, apiData.getId(), styleFormat.getMediaType().label());
+        }
+        return false;
     }
 
     public StylesheetContent getStylesheet(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension styleFormat, ApiRequestContext requestContext) {
@@ -263,8 +290,8 @@ public class StyleRepositoryFiles implements StyleRepository {
         if (collectionId.isEmpty() || stylesheetExists(apiData, collectionId, styleId, styleFormat))
             return getStylesheet(apiData, collectionId, styleId, styleFormat, requestContext);
 
-        if (stylesheetExists(apiData, Optional.empty(), styleId, styleFormat, true)) {
-            Optional<StylesheetContent> stylesheet = styleFormat.deriveCollectionStyle(getStylesheet(apiData, Optional.empty(), styleId, styleFormat, requestContext), apiData.getId(), collectionId.get(), styleId, Optional.of(requestContext.getUriCustomizer()));
+        if (stylesheetExists(apiData, collectionId, styleId, styleFormat, true)) {
+            Optional<StylesheetContent> stylesheet = styleFormat.deriveCollectionStyle(getStylesheet(apiData, Optional.empty(), styleId, styleFormat, requestContext), apiData, collectionId.get(), styleId);
             if (stylesheet.isPresent())
                 return stylesheet.get();
         }
@@ -284,12 +311,7 @@ public class StyleRepositoryFiles implements StyleRepository {
         // Derive standard metadata from the style
         // TODO move outside of this specific repository implementation
         List<StylesheetMetadata> stylesheets = deriveStylesheetMetadata(apiData, collectionId, styleId, requestContext);
-        Optional<String> title = stylesheets.stream()
-                                            .map(StylesheetMetadata::getTitle)
-                                            .filter(Optional::isPresent)
-                                            .map(Optional::get)
-                                            .filter(stylesheetTitle -> !stylesheetTitle.equals(styleId))
-                                            .findAny();
+        Optional<String> title = getTitle(apiData, collectionId, styleId, requestContext);
 
         Optional<StyleFormatExtension> format = getStyleFormatStream(apiData, collectionId).filter(f -> f.canDeriveMetadata())
                                                                                            .filter(f -> stylesheetExists(apiData, collectionId, styleId, f, true))
@@ -304,9 +326,10 @@ public class StyleRepositoryFiles implements StyleRepository {
         }
         StyleMetadata metadata = builder.build();
 
-        // TODO derive patch metadata from a source patch metadata, if the style is derived
-
         Optional<JsonMergePatch> patch = getStyleMetadataPatch(apiData, collectionId, styleId);
+        if (patch.isEmpty() && collectionId.isPresent() && deriveCollectionStylesEnabled(apiData, collectionId.get())) {
+            patch = getStyleMetadataPatch(apiData, Optional.empty(), styleId);
+        }
         if (patch.isPresent()) {
             try {
                 metadata = metadataMapper.treeToValue(patch.get().apply(metadataMapper.valueToTree(metadata)), StyleMetadata.class);
@@ -322,7 +345,9 @@ public class StyleRepositoryFiles implements StyleRepository {
                                          .addAllLinks(links)
                                          .build();
 
-        return metadata.replaceParameters(requestContext.getUriCustomizer(), collectionId.isPresent());
+        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        String serviceUrl = uriCustomizer.toString();
+        return metadata.replaceParameters(serviceUrl);
     }
 
     @Override
@@ -486,7 +511,7 @@ public class StyleRepositoryFiles implements StyleRepository {
                 .filter(format -> stylesheetExists(apiData, Optional.empty(), styleId, format))
                 .forEach(format -> {
                     StylesheetContent stylesheetContent = getStylesheet(apiData, Optional.empty(), styleId, format, requestContext);
-                    Optional<StylesheetContent> derivedStylesheet = format.deriveCollectionStyle(stylesheetContent, apiData.getId(), collectionId, styleId, Optional.of(requestContext.getUriCustomizer()));
+                    Optional<StylesheetContent> derivedStylesheet = format.deriveCollectionStyle(stylesheetContent, apiData, collectionId, styleId);
                     if (derivedStylesheet.isEmpty())
                         return;
 
@@ -509,7 +534,7 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                                   .filter(format -> stylesheetExists(apiData, collectionId, styleId, format, true))
                                                                   .map(format -> ImmutableStylesheetMetadata.builder()
                                                                                                             .native_(true)
-                                                                                                            .title(format.getTitle(styleId, getStylesheet(apiData, collectionId, styleId, format, requestContext, true)))
+                                                                                                            .title(format.getMediaType().label())
                                                                                                             .link(stylesLinkGenerator.generateStylesheetLink(requestContext.getUriCustomizer()
                                                                                                                                                                            .copy()
                                                                                                                                                                            .removeLastPathSegments(2), styleId, format.getMediaType(), i18n, requestContext.getLanguage()))

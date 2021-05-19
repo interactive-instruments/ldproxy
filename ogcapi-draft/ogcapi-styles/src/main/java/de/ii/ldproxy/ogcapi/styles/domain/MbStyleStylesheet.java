@@ -21,6 +21,7 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import org.immutables.value.Value;
 
+import java.net.URI;
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
@@ -169,10 +170,7 @@ public abstract class MbStyleStylesheet {
     }
 
     @JsonIgnore
-    public MbStyleStylesheet replaceParameters(Optional<URICustomizer> uriCustomizer) {
-        if (uriCustomizer.isEmpty())
-            return this;
-
+    public MbStyleStylesheet replaceParameters(String serviceUrl) {
         // any template parameters in links?
         boolean templated = this.getSprite()
                                 .orElse("")
@@ -193,13 +191,6 @@ public abstract class MbStyleStylesheet {
                                                           .matches("^.*\\{serviceUrl\\}.*$"));
         if (!templated)
             return this;
-
-        String serviceUrl = uriCustomizer.get()
-                                         .copy()
-                                         .removeLastPathSegments(2)
-                                         .clearParameters()
-                                         .ensureNoTrailingSlash()
-                                         .toString();
 
         return ImmutableMbStyleStylesheet.builder()
                                          .from(this)

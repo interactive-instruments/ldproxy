@@ -109,7 +109,7 @@
                         <li>
                             {{#title}}{{.}}{{/title}}{{^title}}?{{/title}}
                             <ul>
-                                {{#specification}}<li>{{specificationTitle}}: {{.}}</li>{{/specification}}
+                                {{#specification}}<li><a href="{{.}}" target="_blank">{{specificationTitle}}</a></li>{{/specification}}
                                 {{#version}}<li>{{versionTitle}}: {{.}}</li>{{/version}}
                                 <li>{{nativeTitle}}: {{#native_}}{{trueTitle}}{{/native_}}{{^native_}}{{falseTitle}}{{/native_}}</li>
                             </ul>

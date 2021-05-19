@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles
 
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.WebMercatorQuad
+import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.WebMercatorQuad
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import spock.lang.Specification

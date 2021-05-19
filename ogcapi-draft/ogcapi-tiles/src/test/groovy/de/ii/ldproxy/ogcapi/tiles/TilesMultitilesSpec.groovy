@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.tiles
 
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.TileMatrixSet
-import de.ii.ldproxy.ogcapi.tiles.tileMatrixSet.WebMercatorQuad
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet
+import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.WebMercatorQuad
 import spock.lang.Ignore
 import spock.lang.Specification
 

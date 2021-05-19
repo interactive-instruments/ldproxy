@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.styles.domain
 
 import com.google.common.collect.ImmutableList
 import de.ii.ldproxy.ogcapi.domain.AbstractExtensionConfigurationSpec
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink
 import de.ii.ldproxy.ogcapi.domain.MergeBase
 import de.ii.ldproxy.ogcapi.domain.MergeCollection
 import de.ii.ldproxy.ogcapi.domain.MergeMinimal
@@ -23,8 +22,6 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .enabled(true)
                 .managerEnabled(true)
                 .validationEnabled(true)
-                .resourcesEnabled(true)
-                .resourceManagerEnabled(true)
                 .webmapWithPopup(true)
                 .webmapWithLayerControl(true)
                 .layerControlAllLayers(true)
@@ -50,8 +47,6 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .enabled(false)
                 .managerEnabled(false)
                 .validationEnabled(false)
-                .resourcesEnabled(false)
-                .resourceManagerEnabled(false)
                 .webmapWithPopup(false)
                 .webmapWithLayerControl(false)
                 .layerControlAllLayers(false)

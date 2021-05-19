@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
@@ -23,6 +24,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -68,6 +70,11 @@ public class StylesOnCollection implements CollectionExtension {
         }
 
         Optional<String> defaultStyle = Optional.ofNullable(apiData.getCollections().get(collectionId).getExtension(StylesConfiguration.class).get().getDefaultStyle());
+        if (defaultStyle.isPresent()) {
+            Optional<StyleFormatExtension> htmlStyleFormat = styleRepo.getStyleFormatStream(apiData, Optional.of(collectionId)).filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)).findAny();
+            if (htmlStyleFormat.isPresent() && !styleRepo.stylesheetExists(apiData, Optional.of(collectionId), defaultStyle.get(), htmlStyleFormat.get(), true))
+                defaultStyle = Optional.empty();
+        }
         return collection.addAllLinks(new StylesLinkGenerator().generateCollectionLinks(uriCustomizer, defaultStyle, i18n, language));
     }
 }

@@ -9,6 +9,9 @@ package de.ii.ldproxy.ogcapi.tiles
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax
+import de.ii.ldproxy.ogcapi.tiles.domain.MinMax
+import de.ii.ldproxy.ogcapi.tiles.infra.EndpointTileSetsMultiCollection
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -71,7 +74,7 @@ class Wfs3EndpointTilesSpec extends Specification {
 
 
 
-    def 'get all Collection ids multiple tests with data table'(boolean mvtEnabled,boolean onlyJson, boolean startSeeding,Set<String>allCollectionIds,Map<String,Boolean> enabledMap,Map<String,List<String>> formatsMap,Map<String,Map<String,MinMax>> seedingMap, HashSet<String> result){
+    def 'get all Collection ids multiple tests with data table'(boolean mvtEnabled, boolean onlyJson, boolean startSeeding, Set<String>allCollectionIds, Map<String,Boolean> enabledMap, Map<String,List<String>> formatsMap, Map<String,Map<String, MinMax>> seedingMap, HashSet<String> result){
 
         expect: EndpointTileSetsMultiCollection.getCollectionIdsDataset(allCollectionIds,enabledMap,formatsMap,seedingMap,mvtEnabled,onlyJson,startSeeding)==result
 

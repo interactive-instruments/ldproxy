@@ -18,7 +18,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
@@ -41,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -128,20 +128,28 @@ public class StyleFormatHtml implements StyleFormatExtension {
 
     // TODO centralize
     @Override
-    public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, String apiId, String collectionId, String styleId, Optional<URICustomizer> uriCustomizer) {
-        Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, uriCustomizer, false, false);
-        if (mbStyleOriginal.isEmpty())
+    public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, String collectionId, String styleId) {
+        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        String serviceUrl = uriCustomizer.toString();
+        Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
+        if (mbStyleOriginal.isEmpty() ||
+                mbStyleOriginal.get().getLayers()
+                               .stream()
+                               .noneMatch(layer -> layer.getSource().isPresent() &&
+                                       layer.getSource().get().equals(apiData.getId()) &&
+                                       layer.getSource().isPresent() &&
+                                       layer.getSourceLayer().get().equals(collectionId)))
             return Optional.empty();
 
         MbStyleStylesheet mbStyleDerived = ImmutableMbStyleStylesheet.builder()
                                                                      .from(mbStyleOriginal.get())
                                                                      .layers(mbStyleOriginal.get().getLayers()
                                                                                             .stream()
-                                                                                            .filter(layer -> layer.getSource().isEmpty() || !layer.getSource().get().equals(apiId) || (layer.getSourceLayer().isEmpty() || layer.getSourceLayer().get().equals(collectionId)))
+                                                                                            .filter(layer -> layer.getSource().isEmpty() || !layer.getSource().get().equals(apiData.getId()) || (layer.getSourceLayer().isEmpty() || layer.getSourceLayer().get().equals(collectionId)))
                                                                                             .collect(Collectors.toUnmodifiableList()))
                                                                      .build();
 
-        String descriptor = String.format("%s/%s/%s", apiId, collectionId, styleId);
+        String descriptor = String.format("%s/%s/%s", apiData.getId(), collectionId, styleId);
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new Jdk8Module());
@@ -155,7 +163,14 @@ public class StyleFormatHtml implements StyleFormatExtension {
     @Override
     public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
 
-        String styleUri = String.format("%s/%s%s/styles/%s?f=mbs", xtraPlatform.getServicesUri(), String.join("/", apiData.getSubPath()), collectionId.isEmpty() ? "" : "/collections/"+collectionId.get(), styleId);
+        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        String serviceUrl = uriCustomizer.toString();
+
+        if (collectionId.isPresent())
+            uriCustomizer.ensureLastPathSegments("collections", collectionId.get());
+        uriCustomizer.ensureLastPathSegments("styles", styleId)
+                .addParameter("f", "mbs");
+        String styleUrl = uriCustomizer.toString();
 
         boolean popup = apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getWebmapWithPopup).orElse(true);
 
@@ -163,7 +178,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
         boolean allLayers = apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getLayerControlAllLayers).orElse(false);
         ArrayListMultimap<String,String> layerMap = ArrayListMultimap.create();
         if (layerControl) {
-            MbStyleStylesheet mbStyle = StyleFormatMbStyle.parse(stylesheetContent, Optional.of(requestContext.getUriCustomizer()), true, false).get();
+            MbStyleStylesheet mbStyle = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, true, false).get();
             if (allLayers) {
                 Map<String, FeatureTypeConfigurationOgcApi> collectionData = apiData.getCollections();
                 mbStyle.getLayers()
@@ -196,6 +211,6 @@ public class StyleFormatHtml implements StyleFormatExtension {
             }
         }
 
-        return new StyleView(styleUri, apiData, styleId, popup, layerControl, layerMap.asMap());
+        return new StyleView(styleUrl, apiData, styleId, popup, layerControl, layerMap.asMap());
     }
 }

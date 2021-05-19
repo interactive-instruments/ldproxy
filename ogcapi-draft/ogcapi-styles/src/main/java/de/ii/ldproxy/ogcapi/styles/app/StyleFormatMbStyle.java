@@ -25,14 +25,12 @@ import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
-import de.ii.ldproxy.ogcapi.styles.domain.ImmutableMbStyleVectorSource;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleLayer;
-import de.ii.ldproxy.ogcapi.styles.domain.MbStyleSource;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
-import de.ii.ldproxy.ogcapi.styles.domain.MbStyleVectorSource;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleLayer;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
+import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -43,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -64,11 +63,13 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             .parameter("mbs")
             .build();
 
+    private final XtraPlatform xtraPlatform;
     private final Schema schemaStyle;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/MbStyleStylesheet";
 
-    public StyleFormatMbStyle(@Requires SchemaGenerator schemaGenerator) {
-        schemaStyle = schemaGenerator.getSchema(MbStyleStylesheet.class);
+    public StyleFormatMbStyle(@Requires XtraPlatform xtraPlatform, @Requires SchemaGenerator schemaGenerator) {
+        this.xtraPlatform = xtraPlatform;
+        this.schemaStyle = schemaGenerator.getSchema(MbStyleStylesheet.class);
     }
 
     @Override
@@ -124,13 +125,15 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     @Override
     public String getTitle(String styleId, StylesheetContent stylesheetContent) {
-        Optional<MbStyleStylesheet> optionalStylesheet = parse(stylesheetContent, Optional.empty(), false, false);
+        Optional<MbStyleStylesheet> optionalStylesheet = parse(stylesheetContent, "", false, false);
         return optionalStylesheet.isPresent() ? optionalStylesheet.get().getName().orElse(styleId) : styleId;
     }
 
     @Override
     public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
-        return parse(stylesheetContent, Optional.of(requestContext.getUriCustomizer()));
+        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        String serviceUrl = uriCustomizer.toString();
+        return parse(stylesheetContent, serviceUrl, true, false);
     }
 
     @Override
@@ -139,20 +142,28 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
     }
 
     @Override
-    public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, String apiId, String collectionId, String styleId, Optional<URICustomizer> uriCustomizer) {
-        Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, uriCustomizer, false, false);
-        if (mbStyleOriginal.isEmpty())
+    public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, String collectionId, String styleId) {
+        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        String serviceUrl = uriCustomizer.toString();
+        Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
+        if (mbStyleOriginal.isEmpty() ||
+            mbStyleOriginal.get().getLayers()
+                           .stream()
+                           .noneMatch(layer -> layer.getSource().isPresent() &&
+                                   layer.getSource().get().equals(apiData.getId()) &&
+                                   layer.getSource().isPresent() &&
+                                   layer.getSourceLayer().get().equals(collectionId)))
             return Optional.empty();
 
         MbStyleStylesheet mbStyleDerived = ImmutableMbStyleStylesheet.builder()
                                                                      .from(mbStyleOriginal.get())
                                                                      .layers(mbStyleOriginal.get().getLayers()
                                                                                             .stream()
-                                                                                            .filter(layer -> layer.getSource().isEmpty() || !layer.getSource().get().equals(apiId) || (layer.getSourceLayer().isEmpty() || layer.getSourceLayer().get().equals(collectionId)))
+                                                                                            .filter(layer -> layer.getSource().isEmpty() || !layer.getSource().get().equals(apiData.getId()) || (layer.getSourceLayer().isEmpty() || layer.getSourceLayer().get().equals(collectionId)))
                                                                                             .collect(Collectors.toUnmodifiableList()))
                                                                      .build();
 
-        String descriptor = String.format("%s/%s/%s", apiId, collectionId, styleId);
+        String descriptor = String.format("%s/%s/%s", apiData.getId(), collectionId, styleId);
         try {
             ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new Jdk8Module());
@@ -168,7 +179,9 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     @Override
     public List<StyleLayer> deriveLayerMetadata(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, SchemaGeneratorGeoJson schemaGeneratorFeature) {
-        Optional<MbStyleStylesheet> mbStyle = StyleFormatMbStyle.parse(stylesheetContent, Optional.empty(), false, false);
+        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        String serviceUrl = uriCustomizer.toString();
+        Optional<MbStyleStylesheet> mbStyle = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
         if (mbStyle.isEmpty())
             return ImmutableList.of();
 
@@ -177,7 +190,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     @Override
     public Optional<String> analyze(StylesheetContent stylesheetContent, boolean strict) {
-        MbStyleStylesheet stylesheet = parse(stylesheetContent, Optional.empty(), true, strict).get();
+        MbStyleStylesheet stylesheet = parse(stylesheetContent, "", true, strict).get();
 
         // TODO add more checks
         if (strict) {
@@ -223,12 +236,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         return styleIdCandidate;
     }
 
-    // TODO change from static?
-    static Optional<MbStyleStylesheet> parse(StylesheetContent stylesheetContent, Optional<URICustomizer> uriCustomizer) {
-        return parse(stylesheetContent, uriCustomizer, true, false);
-    }
-
-    static Optional<MbStyleStylesheet> parse(StylesheetContent stylesheetContent, Optional<URICustomizer> uriCustomizer, boolean throwOnError, boolean strict) {
+    static Optional<MbStyleStylesheet> parse(StylesheetContent stylesheetContent, String serviceUrl, boolean throwOnError, boolean strict) {
         final byte[] content = stylesheetContent.getContent();
 
         // prepare Jackson mapper for deserialization
@@ -258,6 +266,6 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             return Optional.empty();
         }
 
-        return Optional.of(parsedContent.replaceParameters(uriCustomizer));
+        return Optional.of(parsedContent.replaceParameters(serviceUrl));
     }
 }

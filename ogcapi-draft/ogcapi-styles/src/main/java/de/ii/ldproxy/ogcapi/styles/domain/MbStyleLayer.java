@@ -56,7 +56,7 @@ public abstract class MbStyleLayer {
 
     public abstract Optional<Integer> getMaxzoom();
 
-    public abstract List<Object> getFilter();
+    public abstract Optional<Object> getFilter();
 
     public abstract Map<String, Object> getLayout();
 

@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,7 +47,7 @@ public abstract class StyleMetadata extends PageRepresentation {
     public abstract List<StyleLayer> getLayers();
 
     @JsonIgnore
-    public StyleMetadata replaceParameters(URICustomizer uriCustomizer, boolean inCollection) {
+    public StyleMetadata replaceParameters(String serviceUrl) {
 
         // any template parameters in links?
         boolean templated = this.getStylesheets()
@@ -66,12 +67,6 @@ public abstract class StyleMetadata extends PageRepresentation {
         if (!templated)
             return this;
 
-        String serviceUrl = uriCustomizer.copy()
-                                         .removeLastPathSegments(inCollection ? 5 : 3)
-                                         .clearParameters()
-                                         .ensureNoTrailingSlash()
-                                         .toString();
-
         return ImmutableStyleMetadata.builder()
                                      .from(this)
                                      .stylesheets(this.getStylesheets()
@@ -85,7 +80,7 @@ public abstract class StyleMetadata extends PageRepresentation {
                                                                                                                                           .from(styleSheet.getLink().get())
                                                                                                                                           .href(styleSheet.getLink().get()
                                                                                                                                                           .getHref()
-                                                                                                                                                          .replace("{serviceUrl}", serviceUrl))
+                                                                                                                                                          .replace("{serviceUrl}", serviceUrl.toString()))
                                                                                                                                           .templated(null)
                                                                                                                                           .build()) :
                                                                                                                       styleSheet.getLink())
@@ -104,7 +99,7 @@ public abstract class StyleMetadata extends PageRepresentation {
                                                                                                                                       .href(layer.getSampleData()
                                                                                                                                                  .get()
                                                                                                                                                  .getHref()
-                                                                                                                                                 .replace("{serviceUrl}", serviceUrl))
+                                                                                                                                                 .replace("{serviceUrl}", serviceUrl.toString()))
                                                                                                                                       .templated(null)
                                                                                                                                       .build()) :
                                                                                                                   layer.getSampleData())
@@ -115,7 +110,7 @@ public abstract class StyleMetadata extends PageRepresentation {
                                                     .map(link -> new ImmutableLink.Builder()
                                                             .from(link)
                                                             .href(link.getHref()
-                                                                      .replace("{serviceUrl}", serviceUrl))
+                                                                      .replace("{serviceUrl}", serviceUrl.toString()))
                                                             .templated(null)
                                                             .build())
                                                     .collect(ImmutableList.toImmutableList()))

@@ -103,11 +103,11 @@ public interface StyleFormatExtension extends FormatExtension {
     /**
      *
      * @param stylesheetContent
-     * @param apiId - the api, source must use the apiId
+     * @param apiData - the api, source must use the API Id
      * @param collectionId - the collection, all layers of other collections will be removed, source-layer must use the collectionId
      * @return
      */
-    default Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, String apiId, String collectionId, String styleId, Optional<URICustomizer> uriCustomizer) {
+    default Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, String collectionId, String styleId) {
         return Optional.empty();
     }
 
