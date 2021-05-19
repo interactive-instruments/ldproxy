@@ -19,6 +19,10 @@ dependencies {
     feature group: 'de.interactive_instruments', name: 'ogcapi-stable'
     feature group: 'de.interactive_instruments', name: 'ogcapi-draft'
 
+    if (project.hasProperty('community')) {
+        feature group: 'de.interactive_instruments', name: 'ldproxy-community', version: '1.0.0-SNAPSHOT'
+    }
+
     // bundles to include in this application
     bundle subprojects
 }
@@ -36,6 +40,11 @@ tasks.test {
 tasks.check {
     dependsOn project.gradle.includedBuild('ogcapi-stable').task(':checkAll')
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':checkAll')
+}
+
+tasks.publish {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':publish')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':publish')
 }
 
 apply from: 'immutables.gradle'
