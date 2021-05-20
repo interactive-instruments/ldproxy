@@ -150,6 +150,11 @@ public abstract class MbStyleStylesheet {
     @JsonIgnore
     private Set<String> getAttributes(Object expression) {
         ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+        if (expression instanceof Optional) {
+            if (((Optional) expression).isEmpty())
+                return ImmutableSet.of();
+            expression = ((Optional) expression).get();
+        }
         if (expression instanceof Iterable) {
             Iterator it = ((Iterable) expression).iterator();
             if (it.hasNext()) {
