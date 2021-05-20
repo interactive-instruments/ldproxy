@@ -174,7 +174,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                 return new AbstractMap.SimpleImmutableEntry<String, FeatureTypeConfigurationOgcApi>(collectionId, new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                         .from(entry.getValue())
                                         // disable if feature type or id not found
-                                        .enabled(!disabled)
+                                        .enabled(collectionData.getEnabled() && !disabled)
                                         // use the type label from the provider, if the service configuration has just the default label
                                         .label(collectionData.getLabel().equals(collectionId) && Objects.nonNull(schema) && schema.getLabel().isPresent()
                                                        ? schema.getLabel().get()
