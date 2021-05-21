@@ -58,16 +58,9 @@
         var tilesUrl{{tileMatrixSet}} = template.replace("{tileMatrixSetId}","{{tileMatrixSet}}").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}")
 
         var maxLevel{{tileMatrixSet}} = {{maxLevel}};
-        var maxResolution = {{resolutionAt0}};
-        var resolutions{{tileMatrixSet}} = new Array(maxLevel{{tileMatrixSet}}+1);
-        for (var i = 0; i <= maxLevel{{tileMatrixSet}}; ++i) {
-            resolutions{{tileMatrixSet}}[i] = maxResolution / Math.pow(2, i);
-        }
+        var resolutions{{tileMatrixSet}} = {{resolutions}};
 
-        var sizes{{tileMatrixSet}} = new Array(maxLevel{{tileMatrixSet}}+1);
-        for (var i = 0; i <= maxLevel{{tileMatrixSet}}; ++i) {
-            sizes{{tileMatrixSet}}[i] = [ {{widthAtL0}} * Math.pow(2, i), Math.pow(2, i) ] ;
-        }
+        var sizes{{tileMatrixSet}} = {{sizes}};
 
         var tileGrid{{tileMatrixSet}} = new ol.tilegrid.TileGrid({
             extent: {{extent}},
@@ -158,7 +151,6 @@
 			map.getLayers().setAt(1, layer{{tileMatrixSet}});
 			map.getView().setCenter(center{{tileMatrixSet}})
 			map.getView().setZoom(zoom{{tileMatrixSet}});
-			// map.getView().fit(extent{{tileMatrixSet}}, map.getSize());
             tilejson.href = tileJsonUrl{{tileMatrixSet}};
             xyzTemplate.innerText = tilesUrl{{tileMatrixSet}};
 		  }

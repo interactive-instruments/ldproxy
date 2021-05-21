@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
@@ -86,23 +87,26 @@ public class TileSetsView extends OgcApiView {
                         return null;
                     BoundingBox bbox = tileMatrixSet.getBoundingBox();
                     String extent = "[" + bbox.getXmin() + "," + bbox.getYmin() + "," + bbox.getXmax() + "," + bbox.getYmax() + "]";
-                    long widthAtL0 = tileMatrixSet.getTileMatrix(0).getMatrixWidth();
+                    int maxLevel = tileMatrixSet.getMaxLevel();
+                    List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
+                    String sizes = String.format("[%s]", tileMatrixList.stream()
+                                                                       .map(tileMatrix -> String.format("[%d, %d]", tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight()))
+                                                                       .collect(Collectors.joining(", ")));
+                    double diff = bbox.getXmax() - bbox.getXmin();
+                    String resolutions = String.format("[%s]", tileMatrixList.stream()
+                                                                       .map(tileMatrix -> String.valueOf(diff/(tileMatrix.getMatrixWidth()*tileMatrixSet.getTileSize())))
+                                                                       .collect(Collectors.joining(", ")));
                     return new ImmutableMap.Builder<String,String>()
                             .put("tileMatrixSet",tmsId)
-                            .put("maxLevel",tms.getTileMatrixSetLimits()
-                                    .stream()
-                                    .map(tmsl -> Integer.parseInt(tmsl.getTileMatrix()))
-                                    .max(Comparator.naturalOrder())
-                                    .orElse(-1)
-                                    .toString())
+                            .put("maxLevel",String.valueOf(maxLevel))
                             .put("extent",extent)
                             // TODO: The +1 for CRS84 is necessary as OpenLayers seems to change the zoom levels by 1 for this tile grid
                             // TODO: we should have a better fallback than simply "10"
                             .put("defaultZoomLevel",Integer.toString(tms.getDefaultZoomLevel().orElse(10) + (tmsId.equals("WorldCRS84Quad")?1:0)))
                             .put("defaultCenterLon",this.center.get("lon"))
                             .put("defaultCenterLat",this.center.get("lat"))
-                            .put("resolutionAt0",Double.toString((bbox.getXmax()- bbox.getXmin())/(widthAtL0*tileMatrixSet.getTileSize())))
-                            .put("widthAtL0",Long.toString(widthAtL0))
+                            .put("resolutions",resolutions)
+                            .put("sizes",sizes)
                             .put("projection","EPSG:"+tileMatrixSet.getCrs().getCode())
                             .build();
                 })

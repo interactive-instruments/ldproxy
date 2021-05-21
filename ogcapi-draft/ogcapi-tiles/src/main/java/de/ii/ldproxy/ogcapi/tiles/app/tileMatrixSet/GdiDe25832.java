@@ -40,7 +40,9 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
     private static final double BBOX_MAX_X = BBOX_MIN_X + DIFF;
     private static final double BBOX_MIN_Y = BBOX_MAX_Y - DIFF;
     private static final BoundingBox BBOX = BoundingBox.of(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
-    private static final List<Integer> WIDTH_HEIGHT_PER_LEVEL = new ImmutableList.Builder().add(2, 4, 8, 20, 40, 80, 200, 400, 800, 2000, 4000, 8000, 20000).build();
+    private static final List<Integer> WIDTH_HEIGHT_PER_LEVEL = new ImmutableList.Builder<Integer>()
+            .add(2, 4, 8, 20, 40, 80, 200, 400, 800, 2000, 4000, 8000, 20000, 40000, 80000, 200000)
+            .build();
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -79,16 +81,27 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
     public BoundingBox getBoundingBox() { return BBOX; }
 
     @Override
+    public int getCols(int level) {
+        return WIDTH_HEIGHT_PER_LEVEL.get(level);
+    }
+
+    @Override
+    public int getRows(int level) {
+        return WIDTH_HEIGHT_PER_LEVEL.get(level);
+    }
+
+    @Override
     public TileMatrix getTileMatrix(int level) {
         double initScaleDenominator = getInitialScaleDenominator();
         int initialWidth = getInitialWidth();
-        int width = WIDTH_HEIGHT_PER_LEVEL.get(level);
+        int width = getCols(level);
+        int height = getRows(level);
         return ImmutableTileMatrix.builder()
                                   .tileLevel(level)
                                   .tileWidth(getTileSize())
                                   .tileHeight(getTileSize())
                                   .matrixWidth(width)
-                                  .matrixHeight(width)
+                                  .matrixHeight(height)
                                   .scaleDenominator(initScaleDenominator * initialWidth / width)
                                   .topLeftCorner(new double[]{BBOX_MIN_X, BBOX_MAX_Y})
                                   .build();
