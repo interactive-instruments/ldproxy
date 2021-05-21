@@ -37,7 +37,7 @@ public abstract class EndpointSubCollection extends Endpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) ||
+        return super.isEnabledForApi(apiData) &&
                 apiData.getCollections()
                         .values()
                         .stream()
