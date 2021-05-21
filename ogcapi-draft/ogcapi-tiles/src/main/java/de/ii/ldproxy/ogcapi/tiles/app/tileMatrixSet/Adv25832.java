@@ -10,8 +10,6 @@ package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.AbstractTileMatrixSet;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrix;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -25,14 +23,14 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class ETRS89_UTM32_NRW extends AbstractTileMatrixSet implements TileMatrixSet {
+public class Adv25832 extends AbstractTileMatrixSet implements TileMatrixSet {
 
     private static final EpsgCrs CRS = EpsgCrs.of(25832);
 
     /**
      * The bounding box of the tiling scheme
      */
-    private static final double DIFF = 1252344.271424;
+    private static final double DIFF = 1252344.27142433;
     private static final double BBOX_MIN_X = -46133.17;
     private static final double BBOX_MAX_Y = 6301219.54;
     private static final double BBOX_MAX_X = BBOX_MIN_X + DIFF;
@@ -46,7 +44,7 @@ public class ETRS89_UTM32_NRW extends AbstractTileMatrixSet implements TileMatri
 
     @Override
     public String getId() {
-        return "ETRS89_UTM32_NRW";
+        return "AdV_25832";
     }
 
     @Override
@@ -55,7 +53,7 @@ public class ETRS89_UTM32_NRW extends AbstractTileMatrixSet implements TileMatri
     }
 
     @Override
-    public Optional<String> getTitle() { return Optional.of("ETRS89 UTM32 in North-Rhine Westphalia"); }
+    public Optional<String> getTitle() { return Optional.of("AdV tiling scheme für ETRS89/UTM32N in Germany"); }
 
     @Override
     public Optional<URI> getWellKnownScaleSet() { return Optional.empty(); }
@@ -64,7 +62,7 @@ public class ETRS89_UTM32_NRW extends AbstractTileMatrixSet implements TileMatri
     public int getMaxLevel() { return 14; }
 
     @Override
-    public double getInitialScaleDenominator() { return 17471320.750897426; }
+    public double getInitialScaleDenominator() { return  17471320.7508974; }
 
     @Override
     public int getInitialWidth() { return 1; }
@@ -74,43 +72,4 @@ public class ETRS89_UTM32_NRW extends AbstractTileMatrixSet implements TileMatri
 
     @Override
     public BoundingBox getBoundingBox() { return BBOX; }
-
-    @Override
-    public TileMatrix getTileMatrix(int level) {
-        double initScaleDenominator = getInitialScaleDenominator();
-        int width;
-        switch (level) {
-            case 9:
-                width = 511;
-                break;
-            case 10:
-                width = 1021;
-                break;
-            case 11:
-                width = 2042;
-                break;
-            case 12:
-                width = 4084;
-                break;
-            case 13:
-                width = 8167;
-                break;
-            case 14:
-                width = 16334;
-                break;
-            default:
-                 width = getCols(level);
-                 break;
-        }
-        return ImmutableTileMatrix.builder()
-                                  .tileLevel(level)
-                                  .tileWidth(getTileSize())
-                                  .tileHeight(getTileSize())
-                                  .matrixWidth(width)
-                                  .matrixHeight(getRows(level))
-                                  .scaleDenominator(initScaleDenominator / Math.pow(2, level))
-                                  .topLeftCorner(new double[]{BBOX_MIN_X, BBOX_MAX_Y})
-                                  .build();
-    }
-
 }

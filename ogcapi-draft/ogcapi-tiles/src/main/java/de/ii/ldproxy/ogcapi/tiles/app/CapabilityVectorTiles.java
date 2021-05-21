@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.domain.ContentExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -178,7 +179,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                          .collect(Collectors.toUnmodifiableList());
             List<String> tileEncodings = config.getTileEncodingsDerived();
             if (Objects.isNull(tileEncodings)) {
-                builder.addStrictErrors(MessageFormat.format("No tile encoding has been specified in the TILES module configuration of collection ''{1}''.", collectionId));
+                builder.addStrictErrors(MessageFormat.format("No tile encoding has been specified in the TILES module configuration of collection ''{0}''.", collectionId));
             } else {
                 for (String encoding : config.getTileEncodingsDerived()) {
                     if (!formatLabels.contains(encoding)) {
@@ -197,6 +198,10 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                     builder.addStrictErrors(MessageFormat.format("The tile set encoding ''{0}'' is specified in the TILES module configuration of collection ''{1}'', but the format does not exist.", encoding, collectionId));
                 }
             }
+
+            double[] center = config.getCenterDerived();
+            if (Objects.nonNull(center) && center.length!=2)
+                builder.addStrictErrors(MessageFormat.format("The center has been specified in the TILES module configuration of collection ''{1}'', but the array length is ''{0}'', not 2.", center.length, collectionId));
 
             Map<String, MinMax> zoomLevels = config.getZoomLevelsDerived();
             if (Objects.nonNull(zoomLevels)) {
