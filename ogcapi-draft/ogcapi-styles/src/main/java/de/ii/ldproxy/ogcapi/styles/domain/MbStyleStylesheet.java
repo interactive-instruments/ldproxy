@@ -186,14 +186,22 @@ public abstract class MbStyleStylesheet {
                 this.getSources()
                     .values()
                     .stream()
-                    .filter(source -> source instanceof MbStyleVectorSource)
-                    .anyMatch(source -> ((MbStyleVectorSource) source).getTiles()
-                                                                      .orElse(ImmutableList.of())
-                                                                      .stream()
-                                                                      .anyMatch(tilesUri -> tilesUri.matches("^.*\\{serviceUrl\\}.*$")) ||
-                            ((MbStyleVectorSource) source).getUrl()
-                                                          .orElse("")
-                                                          .matches("^.*\\{serviceUrl\\}.*$"));
+                    .filter(source -> source instanceof MbStyleVectorSource || source instanceof MbStyleGeojsonSource)
+                    .anyMatch(source ->
+                                      (source instanceof MbStyleVectorSource &&
+                                              (((MbStyleVectorSource) source).getTiles()
+                                                                             .orElse(ImmutableList.of())
+                                                                             .stream()
+                                                                             .anyMatch(tilesUri -> tilesUri.matches("^.*\\{serviceUrl\\}.*$")) ||
+                                                      ((MbStyleVectorSource) source).getUrl()
+                                                                                    .orElse("")
+                                                                                    .matches("^.*\\{serviceUrl\\}.*$"))) ||
+                                              (source instanceof MbStyleGeojsonSource &&
+                                                      (((MbStyleGeojsonSource) source).getData()
+                                                                                      .filter(data -> data instanceof String)
+                                                                                      .map(data -> (String) data)
+                                                                                      .orElse("")
+                                                                                      .matches("^.*\\{serviceUrl\\}.*$"))));
         if (!templated)
             return this;
 
@@ -211,18 +219,30 @@ public abstract class MbStyleStylesheet {
                                                       .collect(Collectors.toMap(entry -> entry.getKey(),
                                                                                 entry -> {
                                                                                     MbStyleSource source = entry.getValue();
-                                                                                    return (source instanceof MbStyleVectorSource) ?
-                                                                                            ImmutableMbStyleVectorSource.builder()
-                                                                                                                        .from((MbStyleVectorSource)source)
-                                                                                                                        .url(((MbStyleVectorSource)source).getUrl()
-                                                                                                                                                          .map(url -> url.replace("{serviceUrl}", serviceUrl)))
-                                                                                                                        .tiles(((MbStyleVectorSource)source).getTiles()
-                                                                                                                                                            .orElse(ImmutableList.of())
-                                                                                                                                                            .stream()
-                                                                                                                                                            .map(tile -> tile.replace("{serviceUrl}", serviceUrl))
-                                                                                                                                                            .collect(Collectors.toList()))
-                                                                                                                        .build() :
-                                                                                            source;
+                                                                                    if (source instanceof MbStyleVectorSource)
+                                                                                        return ImmutableMbStyleVectorSource.builder()
+                                                                                                                           .from((MbStyleVectorSource)source)
+                                                                                                                           .url(((MbStyleVectorSource)source).getUrl()
+                                                                                                                                                             .map(url -> url.replace("{serviceUrl}", serviceUrl)))
+                                                                                                                           .tiles(((MbStyleVectorSource)source).getTiles()
+                                                                                                                                                               .orElse(ImmutableList.of())
+                                                                                                                                                               .stream()
+                                                                                                                                                               .map(tile -> tile.replace("{serviceUrl}", serviceUrl))
+                                                                                                                                                               .collect(Collectors.toList()))
+                                                                                                                           .build();
+                                                                                    else if (source instanceof MbStyleGeojsonSource &&
+                                                                                            ((MbStyleGeojsonSource) source).getData().isPresent() &&
+                                                                                            ((MbStyleGeojsonSource) source).getData().get() instanceof String) {
+                                                                                        return ImmutableMbStyleGeojsonSource.builder()
+                                                                                                                     .from((MbStyleGeojsonSource)source)
+                                                                                                                     .data(((MbStyleGeojsonSource)source).getData()
+                                                                                                                                                         .map(data -> (String) data)
+                                                                                                                                                         .map(data -> data.replace("{serviceUrl}", serviceUrl)))
+                                                                                                                     .build();
+
+                                                                                    }
+
+                                                                                    return source;
                                                                                 })))
                                          .build();
     }
