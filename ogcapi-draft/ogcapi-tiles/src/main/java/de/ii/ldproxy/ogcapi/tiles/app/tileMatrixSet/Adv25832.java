@@ -53,7 +53,7 @@ public class Adv25832 extends AbstractTileMatrixSet implements TileMatrixSet {
     }
 
     @Override
-    public Optional<String> getTitle() { return Optional.of("AdV tiling scheme für ETRS89/UTM32N in Germany"); }
+    public Optional<String> getTitle() { return Optional.of("AdV tiling scheme using ETRS89/UTM32N covering Germany"); }
 
     @Override
     public Optional<URI> getWellKnownScaleSet() { return Optional.empty(); }

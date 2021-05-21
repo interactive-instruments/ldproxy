@@ -60,7 +60,7 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
     }
 
     @Override
-    public Optional<String> getTitle() { return Optional.of("GDI-DE tiling scheme für ETRS89/UTM32N in Germany"); }
+    public Optional<String> getTitle() { return Optional.of("GDI-DE tiling scheme using ETRS89/UTM32N covering Germany"); }
 
     @Override
     public Optional<URI> getWellKnownScaleSet() { return Optional.empty(); }

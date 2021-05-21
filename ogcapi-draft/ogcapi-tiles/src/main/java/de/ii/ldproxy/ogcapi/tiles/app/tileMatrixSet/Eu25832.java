@@ -53,7 +53,7 @@ public class Eu25832 extends AbstractTileMatrixSet implements TileMatrixSet {
     }
 
     @Override
-    public Optional<String> getTitle() { return Optional.of("Tiling scheme für ETRS89/UTM32N covering Europe"); }
+    public Optional<String> getTitle() { return Optional.of("Tiling scheme using ETRS89/UTM32N covering Europe"); }
 
     @Override
     public Optional<URI> getWellKnownScaleSet() { return Optional.empty(); }
