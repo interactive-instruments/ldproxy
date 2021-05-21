@@ -92,14 +92,17 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
         Optional<TilesConfiguration> config = apiData.getCollections()
                                                      .get(collectionId)
                                                      .getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+        if (config.filter(TilesConfiguration::isEnabled)
+                  .isEmpty())
+            return false;
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
             // Tiles are pre-generated as a static tile set
             return config.map(ExtensionConfiguration::isEnabled).orElse(false);
         } else {
-            // Tiles are generated on-demand from a data source
-            if (config.filter(TilesConfiguration::isEnabled)
-                      .filter(TilesConfiguration::getSingleCollectionEnabledDerived)
-                      .isEmpty()) return false;
+            if (config.filter(TilesConfiguration::getSingleCollectionEnabledDerived)
+                      .isEmpty()) 
+                return false;
+            // Tiles are generated on-demand from a data source;
             // currently no vector tiles support for WFS backends
             return providers.getFeatureProvider(apiData).supportsHighLoad();
         }
