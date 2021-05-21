@@ -238,7 +238,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Value.Derived
     @JsonIgnore
     default Map<String, List<PredefinedFilter>> getFiltersDerived() {
-        return getFilters().isEmpty() ?
+        return !getFilters().isEmpty() ?
                 getFilters() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getFilters() :
@@ -252,7 +252,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Value.Derived
     @JsonIgnore
     default Map<String, List<Rule>> getRulesDerived() {
-        return getRules().isEmpty() ?
+        return !getRules().isEmpty() ?
                 getRules() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getRules() :
