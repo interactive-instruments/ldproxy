@@ -21,7 +21,6 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableTileJson.class)
 @JsonPropertyOrder({
     "tilejson",
