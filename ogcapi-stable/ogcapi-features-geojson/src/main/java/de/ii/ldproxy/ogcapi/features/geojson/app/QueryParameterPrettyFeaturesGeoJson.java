@@ -56,6 +56,11 @@ public class QueryParameterPrettyFeaturesGeoJson extends ApiExtensionCache imple
     }
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        return schema;
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }

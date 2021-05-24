@@ -46,6 +46,11 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache 
     private final Schema schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        return schema;
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }

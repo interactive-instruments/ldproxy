@@ -55,6 +55,11 @@ public class QueryParameterSkipGeometry extends ApiExtensionCache implements Ogc
     }
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        return SCHEMA;
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return SCHEMA;
     }

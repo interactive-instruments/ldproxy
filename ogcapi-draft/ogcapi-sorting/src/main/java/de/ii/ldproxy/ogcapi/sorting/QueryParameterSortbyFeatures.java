@@ -77,6 +77,28 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey("*")) {
+            List<String> sortables = apiData.getExtension(SortingConfiguration.class)
+                                            .map(SortingConfiguration::getSortables)
+                                            .orElse(ImmutableList.of());
+            if (sortables.isEmpty())
+                schemaMap.get(apiHashCode)
+                         .put("*", new ArraySchema().items(new StringSchema()));
+            else
+                schemaMap.get(apiHashCode)
+                         .put("*", new ArraySchema().items(new StringSchema()._enum(sortables.stream()
+                                                                                                      .map(p -> ImmutableList.of(p, "+"+p, "-"+p))
+                                                                                                      .flatMap(Collection::stream)
+                                                                                                      .collect(Collectors.toUnmodifiableList()))));
+        }
+        return schemaMap.get(apiHashCode).get("*");
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))

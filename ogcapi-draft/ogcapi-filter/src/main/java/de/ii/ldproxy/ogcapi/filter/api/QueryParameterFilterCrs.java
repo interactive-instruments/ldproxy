@@ -7,27 +7,35 @@
  */
 package de.ii.ldproxy.ogcapi.filter.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Component
 @Provides
 @Instantiate
-public class QueryParameterFilterCrs implements OgcApiQueryParameter {
+public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApiQueryParameter {
 
     public static final String FILTER_CRS = "filter-crs";
+    public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
 
     private final CrsSupport crsSupport;
 
@@ -37,10 +45,11 @@ public class QueryParameterFilterCrs implements OgcApiQueryParameter {
 
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return isEnabledForApi(apiData) &&
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+                isEnabledForApi(apiData) &&
                 method == HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                        definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+                        definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
     @Override
@@ -51,6 +60,38 @@ public class QueryParameterFilterCrs implements OgcApiQueryParameter {
     @Override
     public String getDescription() {
         return "Specify which of the supported CRSs to use to encode geometric values in a filter expression";
+    }
+
+    private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
+
+    @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey("*")) {
+            List<String> crsList = crsSupport.getSupportedCrsList(apiData)
+                                             .stream()
+                                             .map(EpsgCrs::toUriString)
+                                             .collect(ImmutableList.toImmutableList());
+            schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(crsList)._default(CRS84));
+        }
+        return schemaMap.get(apiHashCode).get("*");
+    }
+
+    @Override
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+            List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
+                                             .stream()
+                                             .map(EpsgCrs::toUriString)
+                                             .collect(ImmutableList.toImmutableList());
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
+        }
+        return schemaMap.get(apiHashCode).get(collectionId);
     }
 
     @Override
