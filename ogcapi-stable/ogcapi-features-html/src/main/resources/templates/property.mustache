@@ -4,7 +4,7 @@
 <div class="col-md-{{#complexObjects}}8{{/complexObjects}}{{#classic}}6{{/classic}}">
 <ul class="list-unstyled">
 {{#values}}
-{{^isNull}}<li>{{#isUrl}}<div class="text-truncate"><a target="_blank" href="{{value}}">{{value}}</a></div>{{/isUrl}}{{^isUrl}}{{#isImg}}<img src="{{value}}" class="img-fluid"/>{{/isImg}}{{^isImg}}{{#isHtml}}{{{value}}}{{/isHtml}}{{^isHtml}}{{value}}{{/isHtml}}{{/isImg}}{{/isUrl}}</li>{{/isNull}}
+{{^isNull}}<li>{{#isImageUrl}}<img src="{{value}}" class="img-fluid"/>{{/isImageUrl}}{{^isImageUrl}}{{#isUrl}}<div class="text-truncate"><a target="_blank" href="{{value}}">{{value}}</a></div>{{/isUrl}}{{^isUrl}}{{#isHtml}}{{{value}}}{{/isHtml}}{{^isHtml}}{{value}}{{/isHtml}}{{/isUrl}}{{/isImageUrl}}</li>{{/isNull}}
 {{/values}}
 </ul>
 </div>
