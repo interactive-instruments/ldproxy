@@ -112,6 +112,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
 
         return prepareSuccessResponse(api, requestContext, links)
                 .entity(format.getStyleEntity(stylesheetContent, apiData, collectionId, styleId, requestContext))
+                .header("Content-Disposition", "inline; filename=\""+styleId+"."+format.getFileExtension()+"\"")
                 .build();
     }
 
