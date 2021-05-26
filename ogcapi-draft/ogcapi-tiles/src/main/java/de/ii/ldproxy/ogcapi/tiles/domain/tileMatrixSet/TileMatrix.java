@@ -19,7 +19,7 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableTileMatrix.Builder.class)
 public abstract class TileMatrix {
 
-    public String getIdentifier() { return String.valueOf(getTileLevel()); }
+    public String getId() { return String.valueOf(getTileLevel()); }
     public abstract Optional<String> getTitle();
     public abstract Optional<String> getAbstract();
     public abstract List<String> getKeywords();
@@ -28,12 +28,14 @@ public abstract class TileMatrix {
     public abstract long getMatrixWidth();
     public abstract long getMatrixHeight();
     public abstract double getScaleDenominator();
-    public abstract double[] getTopLeftCorner();
+    public double getCellSize() {  return getScaleDenominator() * 0.00028 / getMetersPerUnit(); }
+    public abstract double[] getPointOfOrigin();
+    public String getCornerOfOrigin() { return "topLeft"; }
+
+    @JsonIgnore
+    public abstract double getMetersPerUnit();
 
     @JsonIgnore
     public abstract int getTileLevel();
-
-    @Value.Default
-    public String getType() { return "TileMatrixType"; }
 
 }

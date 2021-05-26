@@ -43,10 +43,32 @@ public interface TileMatrixSet extends ContentExtension {
     }
 
     /**
+     * fetch a description of the tiling scheme for presentation to humans
+     * @return the description, e.g. "The most common TileMatrixSet, used in most of the main IT map browsers. It was initially popularized by Google Maps."
+     */
+    default Optional<String> getAbstract() { return Optional.empty(); }
+
+    /**
+     * fetch a list of keywords relevant for the tiling scheme
+     * @return the keywords
+     */
+    default List<String> getKeywords() {
+        return ImmutableList.of();
+    }
+
+    /**
      * fetch the base coordinate reference system of the tiling scheme
      * @return the CRS
      */
     EpsgCrs getCrs();
+
+    /**
+     * fetch the axes labels in the correct order
+     * @return the axes labels
+     */
+    default List<String> getOrderedAxes() {
+        return ImmutableList.of();
+    }
 
     /**
      * fetch a well known scale set URI, if one exists
@@ -124,6 +146,14 @@ public interface TileMatrixSet extends ContentExtension {
         }
         return (bbox.getXmax()-bbox.getXmin())/getTileExtent();
     }
+
+    /**
+     * get the number of meters for each coordinate unit.
+     * In a CRS with coordinates expressed in meters, 1.0. This is set as a default.
+     * In CRS with coordinates expressed in degrees the result is 360/(EquatorialRadius*2*PI).
+     * @return the number of meters
+     */
+    default double getMetersPerUnit() { return 1.0; };
 
     /**
      * fetch the maximum zoom level, typically 24 or less
@@ -242,8 +272,9 @@ public interface TileMatrixSet extends ContentExtension {
                                   .tileHeight(getTileSize())
                                   .matrixWidth(getCols(level))
                                   .matrixHeight(getRows(level))
+                                  .metersPerUnit(getMetersPerUnit())
                                   .scaleDenominator(initScaleDenominator / Math.pow(2, level))
-                                  .topLeftCorner(new double[]{bbox.getXmin(), bbox.getYmax()})
+                                  .pointOfOrigin(new double[]{bbox.getXmin(), bbox.getYmax()})
                                   .build();
     }
 

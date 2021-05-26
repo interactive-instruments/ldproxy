@@ -19,11 +19,9 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableTileMatrixSetBoundingBox.Builder.class)
 public abstract class TileMatrixSetBoundingBox {
 
-    @Value.Default
-    public String getType() { return "BoundingBoxType"; }
 
-    public abstract double[] getLowerCorner();
-    public abstract double[] getUpperCorner();
+    public abstract double[] getLowerLeft();
+    public abstract double[] getUpperRight();
 
     /**
      * the coordinate reference system that is the basis of this tiling scheme
@@ -34,7 +32,5 @@ public abstract class TileMatrixSetBoundingBox {
 
     @Value.Derived
     @Value.Auxiliary
-    public Optional<String> getCrs() {
-        return getCrsEpsg().map(EpsgCrs::toUriString);
-    }
+    public Optional<String> getCrs() { return getCrsEpsg().map(EpsgCrs::toUriString); }
 }

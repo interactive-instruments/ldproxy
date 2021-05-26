@@ -23,14 +23,15 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableTileMatrixSetData.Builder.class)
 public abstract class TileMatrixSetData {
 
-    public abstract String getIdentifier();
+    public abstract String getId();
 
     public abstract Optional<String> getTitle();
 
-    public abstract List<Link> getLinks();
+    public abstract Optional<String> getAbstract_();
 
-    @Value.Default
-    public String getType() { return "TileMatrixSetType"; }
+    public abstract List<String> getKeywords();
+
+    public abstract List<Link> getLinks();
 
     public abstract String getSupportedCRS();
 
@@ -38,6 +39,7 @@ public abstract class TileMatrixSetData {
 
     public abstract Optional<TileMatrixSetBoundingBox> getBoundingBox();
 
-    public abstract List<TileMatrix> getTileMatrix();
+    public abstract List<TileMatrix> getTileMatrices();
 
+    public abstract List<String> getOrderedAxes();
 }

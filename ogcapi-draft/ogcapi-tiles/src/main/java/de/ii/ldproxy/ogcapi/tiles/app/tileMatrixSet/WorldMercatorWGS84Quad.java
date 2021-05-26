@@ -52,7 +52,7 @@ public class WorldMercatorWGS84Quad extends AbstractTileMatrixSet implements Til
     }
 
     @Override
-    public Optional<String> getTitle() { return Optional.of("WGS84 for the World"); }
+    public Optional<String> getTitle() { return Optional.of("World Mercator WGS84 (ellipsoid)"); }
 
     @Override
     public Optional<URI> getWellKnownScaleSet() { return Optional.of(URI.create("http://www.opengis.net/def/wkss/OGC/1.0/WorldMercatorWGS84")); }

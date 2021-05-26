@@ -27,7 +27,9 @@ public class TileMatrixSetView extends OgcApiView {
     public String wellKnownScaleSetTitle;
     public String supportedCrsTitle;
     public String scaleDenominatorTitle;
-    public String topLeftCornerTitle;
+    public String cellSizeTitle;
+    public String cornerOfOriginTitle;
+    public String pointOfOriginTitle;
     public String tileWidthTitle;
     public String tileHeightTitle;
     public String matrixWidthTitle;
@@ -53,7 +55,9 @@ public class TileMatrixSetView extends OgcApiView {
         this.wellKnownScaleSetTitle = i18n.get("wellKnownScaleSetTitle", language);
         this.supportedCrsTitle = i18n.get("supportedCrsTitle", language);
         this.scaleDenominatorTitle = i18n.get("scaleDenominatorTitle", language);
-        this.topLeftCornerTitle = i18n.get("topLeftCornerTitle", language);
+        this.cellSizeTitle = i18n.get("cellSizeTitle", language);
+        this.cornerOfOriginTitle = i18n.get("cornerOfOriginTitle", language);
+        this.pointOfOriginTitle = i18n.get("pointOfOriginTitle", language);
         this.tileWidthTitle = i18n.get("tileWidthTitle", language);
         this.tileHeightTitle = i18n.get("tileHeightTitle", language);
         this.matrixWidthTitle = i18n.get("matrixWidthTitle", language);

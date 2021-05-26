@@ -95,7 +95,7 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
                                          ApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
-        String title = tileMatrixSet.getTitle().orElse(tileMatrixSet.getIdentifier());
+        String title = tileMatrixSet.getTitle().orElse(tileMatrixSet.getId());
 
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,

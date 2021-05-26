@@ -22,7 +22,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;

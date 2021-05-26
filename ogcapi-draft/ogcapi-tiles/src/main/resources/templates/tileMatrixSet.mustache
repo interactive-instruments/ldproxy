@@ -11,8 +11,7 @@
         <div class="col-md-2 font-weight-bold">{{idTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                <li>{{identifier}}</li>
-                {{#wellKnownScaleSet}}<li><a href="{{.}}" target="_blank">{{.}}</a></li>{{/wellKnownScaleSet}}
+                <li>{{id}}</li>
             </ul>
         </div>
     </div>
@@ -26,12 +25,23 @@
         </div>
     </div>
 
+    {{#wellKnownScaleSet}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{wellKnownScaleSetTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                <li><a href="{{.}}" target="_blank">{{.}}</a></li>
+            </ul>
+        </div>
+    </div>
+    {{/wellKnownScaleSet}}
+
     {{#boundingBox}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{boundingBoxTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    <li>({{#lowerCorner}}{{.}}{{/lowerCorner}}), ({{#upperCorner}}{{.}}{{/upperCorner}})</li>
+                    <li>( {{#lowerLeft}}{{.}} {{/lowerLeft}}), ( {{#upperRight}}{{.}} {{/upperRight}})</li>
                     {{#crs}}<li><a href="{{.}}" target="_blank">{{.}}</a></li>{{/crs}}
                 </ul>
             </div>
@@ -44,7 +54,9 @@
             <tr>
                 <th scope="col" class="text-right">{{idTitle}}</th>
                 <th scope="col" class="text-right">{{scaleDenominatorTitle}}</th>
-                <th scope="col" colspan="2" class="text-center">{{topLeftCornerTitle}}</th>
+                <th scope="col" class="text-right">{{cellSizeTitle}}</th>
+                <th scope="col" class="text-right">{{cornerOfOriginTitle}}</th>
+                <th scope="col" colspan="2" class="text-center">{{pointOfOriginTitle}}</th>
                 <th scope="col" class="text-right">{{tileWidthTitle}}</th>
                 <th scope="col" class="text-right">{{tileHeightTitle}}</th>
                 <th scope="col" class="text-right">{{matrixWidthTitle}}</th>
@@ -52,19 +64,21 @@
             </tr>
             </thead>
             <tbody>
-            {{#tileMatrix}}
+            {{#tileMatrices}}
                 <tr>
-                    <td class="text-right">{{identifier}}</td>
+                    <td class="text-right">{{id}}</td>
                     <td class="text-right">{{scaleDenominator}}</td>
-                    {{#topLeftCorner}}
+                    <td class="text-right">{{cellSize}}</td>
+                    <td class="text-right">{{cornerOfOrigin}}</td>
+                    {{#pointOfOrigin}}
                         <td class="text-right">{{.}}</td>
-                    {{/topLeftCorner}}
+                    {{/pointOfOrigin}}
                     <td class="text-right">{{tileWidth}}</td>
                     <td class="text-right">{{tileHeight}}</td>
                     <td class="text-right">{{matrixWidth}}</td>
                     <td class="text-right">{{matrixHeight}}</td>
                 </tr>
-            {{/tileMatrix}}
+            {{/tileMatrices}}
             </tbody>
         </table>
     </div>

@@ -103,7 +103,8 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
                                   .matrixWidth(width)
                                   .matrixHeight(height)
                                   .scaleDenominator(initScaleDenominator * initialWidth / width)
-                                  .topLeftCorner(new double[]{BBOX_MIN_X, BBOX_MAX_Y})
+                                  .metersPerUnit(1.0)
+                                  .pointOfOrigin(new double[]{BBOX_MIN_X, BBOX_MAX_Y})
                                   .build();
     }
 }

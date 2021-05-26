@@ -24,15 +24,19 @@ public abstract class AbstractTileMatrixSet implements TileMatrixSet {
 
         BoundingBox bbox = getBoundingBox();
         data = ImmutableTileMatrixSetData.builder()
-                .identifier(getId())
+                .id(getId())
                 .title(getTitle())
+                .abstract_(getAbstract())
+                .keywords(getKeywords())
+                .orderedAxes(getOrderedAxes())
                 .supportedCRS(getCrs().toUriString())
                 .wellKnownScaleSet(getWellKnownScaleSet())
                 .boundingBox(ImmutableTileMatrixSetBoundingBox.builder()
-                        .lowerCorner(bbox.getXmin(), bbox.getYmin())
-                        .upperCorner(bbox.getXmax(), bbox.getYmax())
-                        .build())
-                .tileMatrix(getTileMatrices(getMinLevel(), getMaxLevel()))
+                                                              .crsEpsg(getCrs())
+                                                              .lowerLeft(bbox.getXmin(), bbox.getYmin())
+                                                              .upperRight(bbox.getXmax(), bbox.getYmax())
+                                                              .build())
+                .tileMatrices(getTileMatrices(getMinLevel(), getMaxLevel()))
                 .build();
 
         return data;

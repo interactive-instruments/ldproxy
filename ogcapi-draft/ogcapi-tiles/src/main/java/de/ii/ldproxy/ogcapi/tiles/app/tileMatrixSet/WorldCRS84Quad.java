@@ -80,6 +80,9 @@ public class WorldCRS84Quad extends AbstractTileMatrixSet implements TileMatrixS
     }
 
     @Override
+    public double getMetersPerUnit() { return 111319.4908; }
+
+    @Override
     public BoundingBox getBoundingBox() {
         return BBOX;
     }
