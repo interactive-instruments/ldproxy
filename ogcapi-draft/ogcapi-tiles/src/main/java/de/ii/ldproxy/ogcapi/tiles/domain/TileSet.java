@@ -33,10 +33,8 @@ public abstract class TileSet extends Metadata2 {
     @JsonProperty("abstract")
     public abstract Optional<String> getDescription();
 
-    /*
     public abstract Optional<MediaType> getMediaType();
-    public abstract Optional<DataType> getDataType();
-     */
+    public abstract DataType getDataType();
 
     public abstract String getTileMatrixSetId();
     public abstract Optional<TileMatrixSetData> getTileMatrixSet();

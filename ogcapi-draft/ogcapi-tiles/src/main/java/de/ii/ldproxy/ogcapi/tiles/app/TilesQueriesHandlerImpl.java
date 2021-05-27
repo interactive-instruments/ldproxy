@@ -604,7 +604,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     private TileSet getTileSet(OgcApiDataV2 apiData, TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
                                Optional<String> collectionId, List<Link> links, URICustomizer uriCustomizer) {
-        ImmutableTileSet.Builder builder = ImmutableTileSet.builder();
+        ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
+                                                           .dataType(TileSet.DataType.vector);
 
         builder.tileMatrixSetId(tileMatrixSet.getId());
 
