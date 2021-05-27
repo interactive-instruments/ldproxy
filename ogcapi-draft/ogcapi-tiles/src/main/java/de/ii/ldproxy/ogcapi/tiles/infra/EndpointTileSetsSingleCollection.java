@@ -70,8 +70,7 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset",
-                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets",
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
                                 "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-tilesets");
     }
 

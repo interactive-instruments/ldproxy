@@ -41,7 +41,15 @@ public class LandingPageLinksGenerator extends DefaultLinksGenerator {
                                         .toString())
                         .rel("conformance")
                         .title(i18n.get("conformanceLink",language))
-                        .build());
+                        .build())
+               .add(new ImmutableLink.Builder()
+                            .href(uriBuilder.copy()
+                                            .ensureLastPathSegment("conformance")
+                                            .removeParameters("f")
+                                            .toString())
+                            .rel("http://www.opengis.net/def/rel/ogc/1.0/conformance")
+                            .title(i18n.get("conformanceLink",language))
+                            .build());
 
         return builder.build();
     }

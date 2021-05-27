@@ -28,10 +28,14 @@ import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileJson;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableVectorLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileJson;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -58,9 +62,9 @@ import java.util.stream.Collectors;
 public class TileSetFormatTileJson implements TileSetFormatExtension {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.APPLICATION_JSON_TYPE)
+            .type(new MediaType("application","vnd.mapbox.tile+json"))
             .label("TileJSON")
-            .parameter("json")
+            .parameter("tilejson")
             .build();
 
     private final Schema schemaTileJson;
@@ -99,12 +103,9 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     }
 
     @Override
-    public Object getTileSetEntity(OgcApiDataV2 apiData, ApiRequestContext requestContext,
-                                   Optional<String> collectionId,
-                                   TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
-                                   List<Link> links) {
+    public Object getTileSetEntity(TileSet tileset, OgcApiDataV2 apiData, Optional<String> collectionId, ApiRequestContext requestContext) {
 
-        String tilesUriTemplate = getTilesUriTemplate(links, tileMatrixSet);
+        String tilesUriTemplate = getTilesUriTemplate(tileset);
 
         ImmutableTileJson.Builder tileJsonBuilder = ImmutableTileJson.builder();
 
@@ -118,13 +119,37 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         Optional<BoundingBox> bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
         bbox.ifPresent(boundingBox -> tileJsonBuilder.bounds(ImmutableList.of(boundingBox.getXmin(), boundingBox.getYmin(), boundingBox.getXmax(), boundingBox.getYmax())));
 
-        List<Integer> minMaxZoom = getMinMaxZoom(zoomLevels, tileMatrixSet);
-        tileJsonBuilder.minzoom(minMaxZoom.get(0))
-                       .maxzoom(minMaxZoom.get(1));
 
-        double centerLon = (Objects.nonNull(center) && center.length>=1) ? center[0] : bbox.get().getXmin()+(bbox.get().getXmax()-bbox.get().getXmin())*0.5;
-        double centerLat = (Objects.nonNull(center) && center.length>=2) ? center[1] : bbox.get().getYmin()+(bbox.get().getYmax()-bbox.get().getYmin())*0.5;
-        int defaultZoomLevel = zoomLevels.getDefault().orElse(minMaxZoom.get(0) + (minMaxZoom.get(1)-minMaxZoom.get(0))/2);
+        int minZoom = tileset.getTileMatrixSetLimits()
+                             .stream()
+                             .map(TileMatrixSetLimits::getTileMatrix)
+                             .map(Integer::valueOf)
+                             .min(Integer::compareTo)
+                             .orElse(0);
+        int maxZoom = tileset.getTileMatrixSetLimits()
+                             .stream()
+                             .map(TileMatrixSetLimits::getTileMatrix)
+                             .map(Integer::valueOf)
+                             .max(Integer::compareTo)
+                             .orElse(24); // TODO
+        tileJsonBuilder.minzoom(minZoom)
+                       .maxzoom(maxZoom);
+
+        double centerLon = tileset.getCenterPoint()
+                                  .map(TilePoint::getCoordinates)
+                                  .filter(coord -> coord.size() >= 2)
+                                  .map(coord -> coord.get(0))
+                                  .orElse(bbox.get().getXmin()+(bbox.get().getXmax()-bbox.get().getXmin())*0.5);
+        double centerLat = tileset.getCenterPoint()
+                                  .map(TilePoint::getCoordinates)
+                                  .filter(coord -> coord.size() >= 2)
+                                  .map(coord -> coord.get(1))
+                                  .orElse(bbox.get().getYmin()+(bbox.get().getYmax()-bbox.get().getYmin())*0.5);
+        int defaultZoomLevel = tileset.getCenterPoint()
+                                      .map(TilePoint::getTileMatrix)
+                                      .flatMap(level -> level)
+                                      .map(Integer::valueOf)
+                                      .orElse((minZoom+maxZoom)/2);
         tileJsonBuilder.center(ImmutableList.of(centerLon, centerLat, defaultZoomLevel));
 
         Map<String, FeatureTypeConfigurationOgcApi> featureTypesApi = apiData.getCollections();
@@ -211,8 +236,8 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                     return ImmutableVectorLayer.builder()
                             .id(featureTypeApi.getId())
                             .description(featureTypeApi.getDescription().orElse(""))
-                            .minzoom(minMaxZoom.get(0))
-                            .maxzoom(minMaxZoom.get(1))
+                            .minzoom(minZoom)
+                            .maxzoom(maxZoom)
                             .geometryType(geometryType.get())
                             .fields(fieldsBuilder.build())
                             .build();
@@ -239,13 +264,14 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         return "unknown";
     }
 
-    private String getTilesUriTemplate(List<Link> links, TileMatrixSet tileMatrixSet) {
-        return links.stream()
+    private String getTilesUriTemplate(TileSet tileset) {
+        return tileset.getLinks()
+                      .stream()
                 .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
                 .findFirst()
                 .map(Link::getHref)
                 .orElseThrow(() -> new RuntimeException("No tile URI template with link relation type 'item' found for Mapbox Vector Tiles."))
-                .replace("{tileMatrixSetId}", tileMatrixSet.getId())
+                .replace("{tileMatrixSetId}", tileset.getTileMatrixSetId())
                 .replace("{tileMatrix}", "{z}")
                 .replace("{tileRow}", "{y}")
                 .replace("{tileCol}", "{x}");

@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -46,7 +47,7 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetMultiCollection extends Endpoint {
+public class EndpointTileSetMultiCollection extends Endpoint implements ConformanceClass {
 
     private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
@@ -59,6 +60,11 @@ public class EndpointTileSetMultiCollection extends Endpoint {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
         this.providers = providers;
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset");
     }
 
     @Override

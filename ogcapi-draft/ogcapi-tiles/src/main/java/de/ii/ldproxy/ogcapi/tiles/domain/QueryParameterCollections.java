@@ -27,7 +27,12 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCollections extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterCollections extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-selection");
+    }
 
     @Override
     public String getName() {

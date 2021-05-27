@@ -7,22 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableTileSets.Builder.class)
-public abstract class TileSets extends PageRepresentation {
-
-    public abstract List<TileSet> getTilesets();
-
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableTilePoint.Builder.class)
+public
+interface TilePoint {
+    List<Double> getCoordinates();
+    Optional<String> getTileMatrix();
 }

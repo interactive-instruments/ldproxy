@@ -24,27 +24,24 @@
         <div class="col-md-10" id="xyzTemplate"></div>
     </div>
 
+    {{#tileJsonLink}}
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{metadataTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#tileJsonLink}}
-                    <li>
-                        <a id="tilejson" href="{{href}}" target="_blank">{{title}}</a>
-                    </li>
-                {{/tileJsonLink}}
-                {{^links}}
-                    <li>{{none}}</li>
-                {{/links}}
+                <li>
+                    <a id="tilejson" href="{{{.}}}?f=tilejson" target="_blank">{{tileJsonTitle}}</a>
+                </li>
             </ul>
         </div>
     </div>
+    {{/tileJsonLink}}
 
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{mapTitle}}</div>
         <div class="col-md-10">
             <div id="map-container" class="map">
-                <small><span id="info" class="info"></small>
+                <small><span id="info" class="info"/></small>
             </div>
         </div>
     </div>

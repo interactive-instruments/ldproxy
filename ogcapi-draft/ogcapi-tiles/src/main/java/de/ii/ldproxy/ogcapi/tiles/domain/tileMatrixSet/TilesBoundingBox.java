@@ -16,8 +16,8 @@ import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableTileMatrixSetBoundingBox.Builder.class)
-public abstract class TileMatrixSetBoundingBox {
+@JsonDeserialize(builder = ImmutableTilesBoundingBox.Builder.class)
+public abstract class TilesBoundingBox {
 
 
     public abstract double[] getLowerLeft();

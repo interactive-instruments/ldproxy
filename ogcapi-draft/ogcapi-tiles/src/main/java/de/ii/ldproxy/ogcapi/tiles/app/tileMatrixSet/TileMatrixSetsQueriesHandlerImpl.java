@@ -75,28 +75,25 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
 
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
-        List<Link> links = new TileMatrixSetsLinksGenerator().generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                true,
-                i18n,
-                requestContext.getLanguage());
+        List<Link> links = new TileMatrixSetsLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
+                                                                            requestContext.getMediaType(),
+                                                                            requestContext.getAlternateMediaTypes(),
+                                                                            true,
+                                                                            i18n,
+                                                                            requestContext.getLanguage());
 
         TileMatrixSets tileMatrixSets = ImmutableTileMatrixSets.builder()
-                                                               .tileMatrixSets(
-                        queryInput.getTileMatrixSets()
-                                .stream()
-                                .map(tileMatrixSet -> ImmutableTileMatrixSetLinks.builder()
-                                                                                 .id(tileMatrixSet.getId())
-                                                                                 .title(tileMatrixSet.getTileMatrixSetData().getTitle())
-                                                                                 .links(vectorTilesLinkGenerator.generateTileMatrixSetsLinks(
-                                                requestContext.getUriCustomizer(),
-                                                tileMatrixSet.getId(),
-                                                i18n,
-                                                requestContext.getLanguage()))
-                                                                                 .build())
-                                .collect(Collectors.toList()))
+                                                               .tileMatrixSets(queryInput.getTileMatrixSets()
+                                                                                         .stream()
+                                                                                         .map(tileMatrixSet -> ImmutableTileMatrixSetLinks.builder()
+                                                                                                                                          .id(tileMatrixSet.getId())
+                                                                                                                                          .title(tileMatrixSet.getTileMatrixSetData().getTitle())
+                                                                                                                                          .links(vectorTilesLinkGenerator.generateTileMatrixSetsLinks(requestContext.getUriCustomizer(),
+                                                                                                                                                                                                      tileMatrixSet.getId(),
+                                                                                                                                                                                                      i18n,
+                                                                                                                                                                                                      requestContext.getLanguage()))
+                                                                                                                                          .build())
+                                                                                         .collect(Collectors.toList()))
                                                                .links(links)
                                                                .build();
 

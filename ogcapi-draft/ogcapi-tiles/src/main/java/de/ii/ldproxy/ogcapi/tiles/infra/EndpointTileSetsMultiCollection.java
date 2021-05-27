@@ -63,8 +63,8 @@ public class EndpointTileSetsMultiCollection extends Endpoint implements Conform
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/dataset-tilesets",
-                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-selection");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
+                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/dataset-tilesets");
     }
 
     @Override

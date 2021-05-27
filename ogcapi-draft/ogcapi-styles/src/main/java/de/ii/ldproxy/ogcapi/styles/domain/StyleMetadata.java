@@ -8,17 +8,14 @@
 package de.ii.ldproxy.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.Metadata2;
+import de.ii.ldproxy.ogcapi.domain.MetadataDates;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import org.immutables.value.Value;
 
-import javax.annotation.Nullable;
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,21 +23,9 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableStyleMetadata.class)
-public abstract class StyleMetadata extends PageRepresentation {
+public abstract class StyleMetadata extends Metadata2 {
 
     public abstract Optional<String> getId();
-
-    public abstract List<String> getKeywords();
-
-    public abstract Optional<String> getPointOfContact();
-
-    public abstract Optional<String> getAccessConstraints();
-
-    public abstract Optional<StyleDates> getDates();
-
-    public abstract Optional<String> getScope();
-
-    public abstract Optional<String> getVersion();
 
     public abstract List<StylesheetMetadata> getStylesheets();
 

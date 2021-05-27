@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
@@ -27,7 +28,8 @@ public abstract class TileMatrixSetData {
 
     public abstract Optional<String> getTitle();
 
-    public abstract Optional<String> getAbstract_();
+    @JsonProperty("abstract")
+    public abstract Optional<String> getDescription();
 
     public abstract List<String> getKeywords();
 
@@ -37,7 +39,7 @@ public abstract class TileMatrixSetData {
 
     public abstract Optional<URI> getWellKnownScaleSet();
 
-    public abstract Optional<TileMatrixSetBoundingBox> getBoundingBox();
+    public abstract Optional<TilesBoundingBox> getBoundingBox();
 
     public abstract List<TileMatrix> getTileMatrices();
 

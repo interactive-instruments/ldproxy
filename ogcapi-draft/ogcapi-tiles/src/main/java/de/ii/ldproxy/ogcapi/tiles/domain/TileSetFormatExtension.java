@@ -26,8 +26,5 @@ public interface TileSetFormatExtension extends GenericFormatExtension {
         return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/tiles/"+TMS_REGEX+"/?$";
     }
 
-    Object getTileSetEntity(OgcApiDataV2 apiData, ApiRequestContext requestContext,
-                            Optional<String> collectionId,
-                            TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
-                            List<Link> links);
+    Object getTileSetEntity(TileSet tileset, OgcApiDataV2 apiData, Optional<String> collectionId, ApiRequestContext requestContext);
 }

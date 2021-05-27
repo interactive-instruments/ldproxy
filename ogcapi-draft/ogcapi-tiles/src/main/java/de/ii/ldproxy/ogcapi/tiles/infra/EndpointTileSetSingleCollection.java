@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -49,7 +50,7 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetSingleCollection extends EndpointSubCollection {
+public class EndpointTileSetSingleCollection extends EndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetSingleCollection.class);
 
@@ -64,6 +65,11 @@ public class EndpointTileSetSingleCollection extends EndpointSubCollection {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
         this.providers = providers;
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset");
     }
 
     @Override

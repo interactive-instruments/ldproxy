@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -83,7 +84,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileMultiCollection extends Endpoint {
+public class EndpointTileMultiCollection extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMultiCollection.class);
 
@@ -110,6 +111,11 @@ public class EndpointTileMultiCollection extends Endpoint {
         this.limitsGenerator = limitsGenerator;
         this.cache = cache;
         this.staticTileProviderStore = staticTileProviderStore;
+    }
+
+    @Override
+    public List<String> getConformanceClassUris() {
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/core");
     }
 
     @Override

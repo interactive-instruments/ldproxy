@@ -41,7 +41,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                         .ensureLastPathSegment("tileMatrixSets")
                                         .removeParameters("f")
                                         .toString())
-                        .rel("tiling-schemes")
+                        .rel("http://www.opengis.net/def/rel/ogc/1.0/tiling-schemes")
                         .title(i18n.get("tileMatrixSetsLink", language))
                         .build())
                 .add(new ImmutableLink.Builder()
@@ -51,7 +51,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                 .ensureLastPathSegment("tiles")
                                 .removeParameters("f")
                                 .toString())
-                        .rel("tiles")
+                        .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector")
                         .title(i18n.get("tilesLink", language))
                         .build())
                 .build();
@@ -68,122 +68,106 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      */
     public List<Link> generateTileMatrixSetsLinks(URICustomizer uriBuilder, String tileMatrixSetId, I18n i18n, Optional<Locale> language) {
 
-
         return ImmutableList.<Link>builder()
                 .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
                                         .ensureLastPathSegment(tileMatrixSetId)
                                         .removeParameters("f")
                                         .toString())
-                        .rel("item")
+                        .rel("self")
                         .title(i18n.get("tileMatrixSetLink", language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
                         .build())
                 .build();
     }
 
     /**
-     * generates the Links in the GeoJSON Tiles
-     *
-     * @param uriBuilder           the URI, split in host, path and query
-     * @param mediaType            the media type
-     * @param alternateMediaType the alternative media type
-     * @param tileMatrixSetId       the id of the tiling scheme of the tile
-     * @param zoomLevel            the zoom level of the tile
-     * @param row                  the row of the tile
-     * @param col                  the col of the tile
-     * @param mvt                  mvt enabled or disabled
-     * @param json                 json enabled or disabled
-     * @param i18n module to get linguistic text
-     * @param language the requested language (optional)
-     * @return
-     */
-    public List<Link> generateGeoJsonTileLinks(URICustomizer uriBuilder, ApiMediaType mediaType,
-                                               ApiMediaType alternateMediaType, String tileMatrixSetId,
-                                               String zoomLevel, String row, String col, boolean mvt,
-                                               boolean json, I18n i18n, Optional<Locale> language) {
-
-        uriBuilder.removeLastPathSegments(3);
-        uriBuilder
-                .ensureNoTrailingSlash()
-                .ensureParameter("f", mediaType.parameter())
-                .ensureLastPathSegments("tiles", "WebMercatorQuad", zoomLevel, row, col);
-
-        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<>();
-
-        if (json) {
-            builder.add(new ImmutableLink.Builder()
-                    .href(uriBuilder
-                            .ensureNoTrailingSlash()
-                            .ensureLastPathSegments("tiles", tileMatrixSetId, zoomLevel, row, col)
-                            .toString())
-                    .rel("self")
-                    .type(mediaType.type()
-                                   .toString())
-                    .title(i18n.get("selfLink", language))
-                    .build());
-        }
-        if (mvt) {
-            builder.add(new ImmutableLink.Builder()
-                    .href(uriBuilder.copy()
-                                    .ensureNoTrailingSlash()
-                                    .ensureLastPathSegments("tiles", tileMatrixSetId, zoomLevel, row, col)
-                                    .removeLastPathSegment("")
-                                    .setParameter("f", "mvt")
-                                    .toString())
-                    .rel("alternate")
-                    .type("application/vnd.mapbox-vector-tile")
-                    .title(i18n.get("alternateLink", language)+" MVT")
-                    .build());
-        }
-        return builder.build();
-    }
-
-
-    /**
-     * generates the URI templates on the page /serviceId/tileMatrixSets/{tileMatrixSetId} and /serviceId/tiles/{tileMatrixSetId}
+     * generates the URI templates on the page .../tile
      *
      * @param uriBuilder        the URI, split in host, path and query
      * @param i18n module to get linguistic text
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<Link> generateTilesLinks(URICustomizer uriBuilder,
-                                         ApiMediaType mediaType,
-                                         List<ApiMediaType> alternateMediaTypes,
-                                         boolean isCollectionTile,
-                                         boolean isMetadata,
-                                         List<ApiMediaType> tileSetFormats,
-                                         List<ApiMediaType> tileFormats,
-                                         I18n i18n,
-                                         Optional<Locale> language) {
+    public List<Link> generateTileSetsLinks(URICustomizer uriBuilder,
+                                            ApiMediaType mediaType,
+                                            List<ApiMediaType> alternateMediaTypes,
+                                            List<ApiMediaType> tileFormats,
+                                            I18n i18n,
+                                            Optional<Locale> language) {
+
+        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
+                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
+
+        return builder.build();
+    }
+
+    /**
+     * generates the URI templates on the page .../tiles/{tileMatrixSetId}
+     *
+     * @param uriBuilder        the URI, split in host, path and query
+     * @param i18n module to get linguistic text
+     * @param language the requested language (optional)
+     * @return a list with links
+     */
+    public List<Link> generateTileSetLinks(URICustomizer uriBuilder,
+                                           ApiMediaType mediaType,
+                                           List<ApiMediaType> alternateMediaTypes,
+                                           List<ApiMediaType> tileFormats,
+                                           I18n i18n,
+                                           Optional<Locale> language) {
 
         final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
                 .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
         tileFormats.forEach(format -> builder.add(new ImmutableLink.Builder()
-                .href(uriBuilder.copy()
-                        .clearParameters()
-                        .removeLastPathSegments(isMetadata ? 1 : 0)
-                        .ensureNoTrailingSlash()
-                        .toString() + "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}?f="+format.parameter())
-                .rel("item")
-                .type(format.type().toString())
-                .title(i18n.get("tilesLinkTemplate"+format.label(), language))
-                .templated(true)
-                .build()));
+                                                          .href(uriBuilder.copy()
+                                                                          .clearParameters()
+                                                                          .ensureNoTrailingSlash()
+                                                                          .toString() + "/{tileMatrix}/{tileRow}/{tileCol}?f="+format.parameter())
+                                                          .rel("item")
+                                                          .type(format.type().toString())
+                                                          .title(i18n.get("tileLinkTemplate"+format.label(), language))
+                                                          .templated(true)
+                                                          .build()));
 
+        return builder.build();
+    }
 
-        if (!isMetadata)
-            tileSetFormats.forEach(format -> builder.add(new ImmutableLink.Builder()
-                    .href(uriBuilder.copy()
-                                    .clearParameters()
-                                    .ensureNoTrailingSlash()
-                                    .toString() + "/{tileMatrixSetId}")
-                    .rel("describedby")
-                    .type(format.type().toString())
-                    .title(i18n.get("tilejsonLink", language)) // TODO
-                    .templated(true)
-                    .build()));
+    /**
+     * generates the URI templates on the page .../tiles/{tileMatrixSetId}
+     *
+     * @param uriBuilder        the URI, split in host, path and query
+     * @param i18n module to get linguistic text
+     * @param language the requested language (optional)
+     * @return a list with links
+     */
+    public List<Link> generateTileSetEmbeddedLinks(URICustomizer uriBuilder,
+                                                   String tileMatrixSetId,
+                                                   List<ApiMediaType> tileFormats,
+                                                   I18n i18n,
+                                                   Optional<Locale> language) {
+
+        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
+                .add(new ImmutableLink.Builder().href(uriBuilder.copy()
+                                                                .clearParameters()
+                                                                .ensureNoTrailingSlash()
+                                                                .ensureLastPathSegment(tileMatrixSetId)
+                                                                .toString())
+                                                .rel("self")
+                                                .title(i18n.get("tileSetLink", language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
+                                                .build());
+
+        tileFormats.forEach(format -> builder.add(new ImmutableLink.Builder()
+                                                          .href(uriBuilder.copy()
+                                                                          .clearParameters()
+                                                                          .ensureNoTrailingSlash()
+                                                                          .ensureLastPathSegment(tileMatrixSetId)
+                                                                          .toString() + "/{tileMatrix}/{tileRow}/{tileCol}?f="+format.parameter())
+                                                          .rel("item")
+                                                          .type(format.type().toString())
+                                                          .title(i18n.get("tileLinkTemplate"+format.label(), language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
+                                                          .templated(true)
+                                                          .build()));
 
         return builder.build();
     }
@@ -207,7 +191,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                 .removeParameters("f")
                                 .toString()
                         )
-                        .rel("tiles")
+                        .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector")
                         .title(i18n.get("tilesLink", language))
                         .build())
                 .build();

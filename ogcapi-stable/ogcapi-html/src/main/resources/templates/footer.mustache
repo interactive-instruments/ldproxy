@@ -71,7 +71,7 @@
 		var tilesUrl{{tileMatrixSet}} = template.replace("{tileMatrixSetId}","{{tileMatrixSet}}").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}");
 
         {{#tileJsonLink}}
-		var tileJsonUrl{{tileMatrixSet}} = "{{href}}".replace("{tileMatrixSetId}","{{tileMatrixSet}}");
+		var tileJsonUrl{{tileMatrixSet}} = "{{.}}?f=tilejson".replace("{tileMatrixSetId}","{{tileMatrixSet}}");
         {{/tileJsonLink}}
 
 		var view{{tileMatrixSet}} = new ol.View({

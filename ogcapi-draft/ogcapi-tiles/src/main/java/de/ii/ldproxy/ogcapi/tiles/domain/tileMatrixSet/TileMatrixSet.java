@@ -35,6 +35,12 @@ public interface TileMatrixSet extends ContentExtension {
     String getId();
 
     /**
+     * fetch the local identifier for the tiling scheme
+     * @return the identifier, e.g. "WebMercatorQuad"
+     */
+    default Optional<String> getURI() { return Optional.empty(); };
+
+    /**
      * fetch a title of the tiling scheme for presentation to humans
      * @return the title, e.g. "Google Maps Compatible for the World"
      */
@@ -46,7 +52,7 @@ public interface TileMatrixSet extends ContentExtension {
      * fetch a description of the tiling scheme for presentation to humans
      * @return the description, e.g. "The most common TileMatrixSet, used in most of the main IT map browsers. It was initially popularized by Google Maps."
      */
-    default Optional<String> getAbstract() { return Optional.empty(); }
+    default Optional<String> getDescription() { return Optional.empty(); }
 
     /**
      * fetch a list of keywords relevant for the tiling scheme

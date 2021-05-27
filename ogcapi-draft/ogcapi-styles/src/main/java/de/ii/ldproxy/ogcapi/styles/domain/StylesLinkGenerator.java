@@ -42,7 +42,7 @@ public class StylesLinkGenerator {
                                         .ensureLastPathSegment("styles")
                                         .removeParameters("f")
                                         .toString())
-                        .rel("styles")
+                        .rel("http://www.opengis.net/def/rel/ogc/1.0/styles")
                         .title(i18n.get("stylesLink",language))
                         .build());
 
@@ -79,7 +79,7 @@ public class StylesLinkGenerator {
                                             .ensureLastPathSegment("styles")
                                             .removeParameters("f")
                                             .toString())
-                            .rel("styles")
+                            .rel("http://www.opengis.net/def/rel/ogc/1.0/styles")
                             .title(i18n.get("stylesLink",language))
                             .build());
 

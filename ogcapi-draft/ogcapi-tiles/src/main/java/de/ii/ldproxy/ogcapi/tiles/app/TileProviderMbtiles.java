@@ -61,8 +61,7 @@ public abstract class TileProviderMbtiles extends TileProvider {
 
     @Override
     @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
+    @Value.Default
     public boolean requiresQuerySupport() { return false; }
 
     @Override

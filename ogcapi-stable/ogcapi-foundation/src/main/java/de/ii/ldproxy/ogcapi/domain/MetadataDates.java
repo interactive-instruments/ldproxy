@@ -5,19 +5,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.styles.domain;
+package de.ii.ldproxy.ogcapi.domain;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(as = ImmutableStyleDates.class)
-public abstract class StyleDates {
+@JsonDeserialize(as = ImmutableMetadataDates.class)
+public abstract class MetadataDates {
 
     public abstract Optional<String> getCreation();
     public abstract Optional<String> getPublication();

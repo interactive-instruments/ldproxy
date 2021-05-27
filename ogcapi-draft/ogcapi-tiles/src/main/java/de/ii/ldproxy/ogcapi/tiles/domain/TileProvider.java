@@ -25,9 +25,12 @@ import org.immutables.value.Value;
 public abstract class TileProvider {
 
     @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
+    @Value.Default
     public boolean requiresQuerySupport() { return true; }
+
+    @JsonIgnore
+    @Value.Default
+    public boolean supportsTilesHints() { return false; }
 
     public abstract TileProvider mergeInto(TileProvider tileProvider);
 }

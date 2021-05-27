@@ -21,7 +21,7 @@ public abstract class TileMatrix {
 
     public String getId() { return String.valueOf(getTileLevel()); }
     public abstract Optional<String> getTitle();
-    public abstract Optional<String> getAbstract();
+    public abstract Optional<String> getDescription();
     public abstract List<String> getKeywords();
     public abstract long getTileWidth();
     public abstract long getTileHeight();
