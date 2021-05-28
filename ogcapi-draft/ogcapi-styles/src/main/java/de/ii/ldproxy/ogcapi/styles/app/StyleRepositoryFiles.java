@@ -301,6 +301,12 @@ public class StyleRepositoryFiles implements StyleRepository {
 
     @Override
     public StyleMetadata getStyleMetadata(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
+        if (getStylesheetMediaTypes(apiData,collectionId, styleId).isEmpty()) {
+            if (collectionId.isEmpty())
+                throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
+            throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API for collection ''{1}''.", styleId, collectionId.get()));
+        }
+
         // derive standard links (self/alternate)
         List<Link> links = defaultLinkGenerator.generateLinks(requestContext.getUriCustomizer(),
                                                               requestContext.getMediaType(),
