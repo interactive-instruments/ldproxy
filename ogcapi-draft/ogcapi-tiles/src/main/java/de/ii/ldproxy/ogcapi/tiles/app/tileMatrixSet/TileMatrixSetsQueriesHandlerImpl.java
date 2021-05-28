@@ -33,6 +33,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
@@ -88,7 +89,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                                          .map(tileMatrixSet -> ImmutableTileMatrixSetLinks.builder()
                                                                                                                                           .id(tileMatrixSet.getId())
                                                                                                                                           .title(tileMatrixSet.getTileMatrixSetData().getTitle())
-                                                                                                                                          .tileMatrixSetURI(tileMatrixSet.getURI())
+                                                                                                                                          .tileMatrixSetURI(tileMatrixSet.getURI().map(URI::toString))
                                                                                                                                           .links(vectorTilesLinkGenerator.generateTileMatrixSetsLinks(requestContext.getUriCustomizer(),
                                                                                                                                                                                                       tileMatrixSet.getId(),
                                                                                                                                                                                                       i18n,

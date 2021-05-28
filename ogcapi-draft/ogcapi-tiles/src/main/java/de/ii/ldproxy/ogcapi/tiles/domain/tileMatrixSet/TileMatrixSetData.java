@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.Link;
@@ -36,7 +37,11 @@ public abstract class TileMatrixSetData {
 
     public abstract String getSupportedCRS();
 
+    // TODO Ignore for now, wait for resolution of https://github.com/opengeospatial/ogcapi-code-sprint-2021-05/issues/38
+    @JsonIgnore
     public abstract Optional<URI> getWellKnownScaleSet();
+
+    public abstract Optional<URI> getTileMatrixSetURI();
 
     public abstract Optional<TilesBoundingBox> getBoundingBox();
 

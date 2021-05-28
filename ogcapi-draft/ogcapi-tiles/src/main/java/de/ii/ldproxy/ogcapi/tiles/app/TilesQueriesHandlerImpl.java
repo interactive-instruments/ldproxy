@@ -625,7 +625,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         builder.tileMatrixSetId(tileMatrixSet.getId());
 
         if (tileMatrixSet.getURI().isPresent())
-            builder.tileMatrixSetURI(tileMatrixSet.getURI());
+            builder.tileMatrixSetURI(tileMatrixSet.getURI().get().toString());
         else
             builder.tileMatrixSet(tileMatrixSet.getTileMatrixSetData());
 

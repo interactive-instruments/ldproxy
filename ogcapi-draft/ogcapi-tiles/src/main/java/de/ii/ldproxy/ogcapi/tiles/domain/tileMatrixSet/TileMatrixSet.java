@@ -38,7 +38,7 @@ public interface TileMatrixSet extends ContentExtension {
      * fetch the local identifier for the tiling scheme
      * @return the identifier, e.g. "WebMercatorQuad"
      */
-    default Optional<String> getURI() { return Optional.empty(); };
+    default Optional<URI> getURI() { return Optional.empty(); };
 
     /**
      * fetch a title of the tiling scheme for presentation to humans

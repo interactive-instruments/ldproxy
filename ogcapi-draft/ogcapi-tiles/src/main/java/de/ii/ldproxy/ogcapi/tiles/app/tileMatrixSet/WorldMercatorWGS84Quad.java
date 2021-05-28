@@ -58,7 +58,7 @@ public class WorldMercatorWGS84Quad extends AbstractTileMatrixSet implements Til
     public Optional<URI> getWellKnownScaleSet() { return Optional.of(URI.create("http://www.opengis.net/def/wkss/OGC/1.0/WorldMercatorWGS84")); }
 
     @Override
-    public Optional<String> getURI() { return Optional.of("http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldMercatorWGS84Quad"); }
+    public Optional<URI> getURI() { return Optional.of(URI.create("http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldMercatorWGS84Quad")); }
 
     @Override
     public int getMaxLevel() { return 24; }
