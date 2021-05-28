@@ -115,7 +115,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/core");
     }
 
     @Override
