@@ -317,7 +317,6 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                                                            .filter(f -> stylesheetExists(apiData, collectionId, styleId, f, true))
                                                                                            .findAny();
         ImmutableStyleMetadata.Builder builder = ImmutableStyleMetadata.builder()
-                                                                       .scope("Style")
                                                                        .id(Optional.ofNullable(styleId))
                                                                        .title(title.orElse(styleId))
                                                                        .stylesheets(stylesheets);

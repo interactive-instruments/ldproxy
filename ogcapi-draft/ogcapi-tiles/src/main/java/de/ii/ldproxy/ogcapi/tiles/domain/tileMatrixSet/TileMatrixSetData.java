@@ -28,7 +28,6 @@ public abstract class TileMatrixSetData {
 
     public abstract Optional<String> getTitle();
 
-    @JsonProperty("abstract")
     public abstract Optional<String> getDescription();
 
     public abstract List<String> getKeywords();

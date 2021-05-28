@@ -14,14 +14,18 @@ public abstract class Metadata2 extends PageRepresentation {
 
     public abstract List<String> getKeywords();
 
+    public abstract Optional<String> getPublisher();
+
     public abstract Optional<String> getPointOfContact();
 
     public abstract Optional<String> getAccessConstraints();
 
+    public abstract Optional<String> getLicense();
+
+    public abstract Optional<String> getAttribution();
+
     public abstract Optional<MetadataDates> getDates();
 
     public abstract Optional<String> getVersion();
-
-    public abstract Optional<String> getScope();
 
 }

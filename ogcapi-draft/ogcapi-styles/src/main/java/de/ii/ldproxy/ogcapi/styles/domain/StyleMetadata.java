@@ -27,6 +27,9 @@ public abstract class StyleMetadata extends Metadata2 {
 
     public abstract Optional<String> getId();
 
+    @Value.Default
+    public String getScope() { return "style"; }
+
     public abstract List<StylesheetMetadata> getStylesheets();
 
     public abstract List<StyleLayer> getLayers();

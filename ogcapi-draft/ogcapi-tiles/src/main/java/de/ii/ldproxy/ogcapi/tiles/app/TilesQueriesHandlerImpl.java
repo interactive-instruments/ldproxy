@@ -11,14 +11,17 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -26,7 +29,13 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilePoint;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileSets;
@@ -34,6 +43,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
@@ -72,10 +82,12 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -98,6 +110,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache tilesCache;
     private final StaticTileProviderStore staticTileProviderStore;
+    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
 
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
@@ -106,7 +119,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires ExtensionRegistry extensionRegistry,
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TilesCache tilesCache,
-                                   @Requires StaticTileProviderStore staticTileProviderStore) {
+                                   @Requires StaticTileProviderStore staticTileProviderStore,
+                                   @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
@@ -117,6 +131,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         this.limitsGenerator = limitsGenerator;
         this.tilesCache = tilesCache;
         this.staticTileProviderStore = staticTileProviderStore;
+        this.schemaGeneratorFeature = schemaGeneratorFeature;
 
         this.queryHandlers = new ImmutableMap.Builder()
                 .put(Query.TILE_SETS, QueryHandler.with(QueryInputTileSets.class, this::getTileSetsResponse))
@@ -629,6 +644,63 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 builder2.addCoordinates(center);
             builder.centerPoint(builder2.build());
         }
+
+        // prepare a map with the JSON schemas of the feature collections used in the style
+        SchemaGeneratorFeature.SCHEMA_TYPE schemaType = SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT;
+        Map<String, JsonSchemaObject> schemaMap = collectionId.isPresent()
+                ? apiData.getCollections()
+                         .get(collectionId.get())
+                         .getExtension(TilesConfiguration.class)
+                         .filter(ExtensionConfiguration::isEnabled)
+                         .map(config -> ImmutableMap.of(collectionId.get(), schemaGeneratorFeature.getSchemaJson(apiData, collectionId.get(), Optional.empty(), schemaType)))
+                         .orElse(ImmutableMap.of())
+                : apiData.getCollections()
+                         .entrySet()
+                         .stream()
+                         .filter(entry -> {
+                             Optional<TilesConfiguration> config = entry.getValue().getExtension(TilesConfiguration.class);
+                             return entry.getValue().getEnabled() &&
+                                     config.isPresent() &&
+                                     config.get().getMultiCollectionEnabledDerived();
+                         })
+                         .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemaGeneratorFeature.getSchemaJson(apiData, entry.getKey(), Optional.empty(), schemaType)))
+                         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        schemaMap.entrySet()
+                 .stream()
+                 .forEach(entry -> {
+                     String collectionId2 = entry.getKey();
+                     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
+                                                                            .get(collectionId2);
+                     JsonSchemaObject schema = entry.getValue();
+                     ImmutableTileLayer.Builder builder2 = ImmutableTileLayer.builder()
+                                                                             .id(collectionId2)
+                                                                             .title(collectionData.getLabel())
+                                                                             .description(collectionData.getDescription())
+                                                                             .dataType(TileSet.DataType.vector);
+
+                     final JsonSchema geometry = schema.getProperties().get("geometry");
+                     if (Objects.nonNull(geometry)) {
+                         String geomAsString = geometry.toString();
+                         boolean point = geomAsString.contains("GeoJSON Point") || geomAsString.contains("GeoJSON MultiPoint");
+                         boolean line = geomAsString.contains("GeoJSON LineString") || geomAsString.contains("GeoJSON MultiLineString");
+                         boolean polygon = geomAsString.contains("GeoJSON Polygon") || geomAsString.contains("GeoJSON MultiPolygon");
+                         if (point && !line && !polygon)
+                             builder2.geometryType(TileLayer.GeometryType.points);
+                         else if (!point && line && !polygon)
+                             builder2.geometryType(TileLayer.GeometryType.lines);
+                         else if (!point && !line && polygon)
+                             builder2.geometryType(TileLayer.GeometryType.polygons);
+                     }
+
+                     final JsonSchemaObject properties = (JsonSchemaObject) schema.getProperties().get("properties");
+                     builder2.propertiesSchema(ImmutableJsonSchemaObject.builder()
+                                                                        .required(properties.getRequired())
+                                                                        .properties(properties.getProperties())
+                                                                        .patternProperties(properties.getPatternProperties())
+                                                                        .build());
+                     builder.addLayers(builder2.build());
+                 });
 
         builder.links(links);
 

@@ -11,9 +11,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileMatrixSetLinks.Builder.class)
 public abstract class TileMatrixSetLinks extends PageRepresentationWithId {
 
+    public abstract Optional<String> getTileMatrixSetURI();
 }
