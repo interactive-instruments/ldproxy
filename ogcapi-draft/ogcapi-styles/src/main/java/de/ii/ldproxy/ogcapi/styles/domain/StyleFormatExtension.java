@@ -146,4 +146,4 @@ public interface StyleFormatExtension extends FormatExtension {
      * @return the derived id
      */
     default Optional<String> analyze(StylesheetContent stylesheetContent, boolean strict) { return Optional.empty(); }
-};
+}

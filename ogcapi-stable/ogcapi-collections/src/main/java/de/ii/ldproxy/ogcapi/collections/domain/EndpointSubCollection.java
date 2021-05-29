@@ -93,7 +93,7 @@ public abstract class EndpointSubCollection extends Endpoint {
                     getRequestContent(apiData, Optional.empty(), subSubPath, method) :
                     getRequestContent(apiData, Optional.of(collectionId), subSubPath, method);
             if (requestContent.isEmpty()) {
-                LOGGER.error("No media type supported for the resource at path '" + path + "'. The " + method.toString() + " method will not be available.");
+                LOGGER.error("No media type supported for the resource at path '" + path + "'. The " + method + " method will not be available.");
                 return null;
             }
             body = new ImmutableApiRequestBody.Builder()

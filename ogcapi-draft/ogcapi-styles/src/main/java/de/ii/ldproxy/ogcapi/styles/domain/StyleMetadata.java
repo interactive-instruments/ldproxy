@@ -68,7 +68,7 @@ public abstract class StyleMetadata extends Metadata2 {
                                                                                                                                           .from(styleSheet.getLink().get())
                                                                                                                                           .href(styleSheet.getLink().get()
                                                                                                                                                           .getHref()
-                                                                                                                                                          .replace("{serviceUrl}", serviceUrl.toString()))
+                                                                                                                                                          .replace("{serviceUrl}", serviceUrl))
                                                                                                                                           .templated(null)
                                                                                                                                           .build()) :
                                                                                                                       styleSheet.getLink())
@@ -87,7 +87,7 @@ public abstract class StyleMetadata extends Metadata2 {
                                                                                                                                       .href(layer.getSampleData()
                                                                                                                                                  .get()
                                                                                                                                                  .getHref()
-                                                                                                                                                 .replace("{serviceUrl}", serviceUrl.toString()))
+                                                                                                                                                 .replace("{serviceUrl}", serviceUrl))
                                                                                                                                       .templated(null)
                                                                                                                                       .build()) :
                                                                                                                   layer.getSampleData())
@@ -98,7 +98,7 @@ public abstract class StyleMetadata extends Metadata2 {
                                                     .map(link -> new ImmutableLink.Builder()
                                                             .from(link)
                                                             .href(link.getHref()
-                                                                      .replace("{serviceUrl}", serviceUrl.toString()))
+                                                                      .replace("{serviceUrl}", serviceUrl))
                                                             .templated(null)
                                                             .build())
                                                     .collect(ImmutableList.toImmutableList()))

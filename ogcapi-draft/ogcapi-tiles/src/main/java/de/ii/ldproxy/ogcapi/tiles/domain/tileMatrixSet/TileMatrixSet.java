@@ -38,7 +38,7 @@ public interface TileMatrixSet extends ContentExtension {
      * fetch the local identifier for the tiling scheme
      * @return the identifier, e.g. "WebMercatorQuad"
      */
-    default Optional<URI> getURI() { return Optional.empty(); };
+    default Optional<URI> getURI() { return Optional.empty(); }
 
     /**
      * fetch a title of the tiling scheme for presentation to humans
@@ -159,7 +159,7 @@ public interface TileMatrixSet extends ContentExtension {
      * In CRS with coordinates expressed in degrees the result is 360/(EquatorialRadius*2*PI).
      * @return the number of meters
      */
-    default double getMetersPerUnit() { return 1.0; };
+    default double getMetersPerUnit() { return 1.0; }
 
     /**
      * fetch the maximum zoom level, typically 24 or less

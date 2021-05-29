@@ -28,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 @Instantiate
 public class StyleFormatQgisQml implements StyleFormatExtension {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(StyleFormatQgisQml.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatQgisQml.class);
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "vnd.qgis.qml"))

@@ -37,7 +37,7 @@ public abstract class MbStyleLayer {
         }
 
         @Override
-        public String toString() { return label; };
+        public String toString() { return label; }
     }
 
     public abstract String getId();

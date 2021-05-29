@@ -22,7 +22,7 @@ import java.util.Optional;
 @Instantiate
 public class QueryParameterDryRunStylesManager extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private Schema schema = new BooleanSchema()._default(false);
+    private final Schema schema = new BooleanSchema()._default(false);
 
     @Override
     public String getId() {

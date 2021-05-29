@@ -24,7 +24,7 @@ public class OgcApiFeaturesGenericMapping extends AbstractOgcApiFeaturesGenericM
         REFERENCE_EMBEDDED(),
         NONE(GML_TYPE.NONE);
 
-        private GML_TYPE[] gmlTypes;
+        private final GML_TYPE[] gmlTypes;
 
         GENERIC_TYPE(GML_TYPE... gmlType) {
             this.gmlTypes = gmlType;

@@ -28,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 @Instantiate
 public class StyleFormatArcGisProLayer implements StyleFormatExtension {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(StyleFormatArcGisProLayer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatArcGisProLayer.class);
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "vnd.esri.lyr"))

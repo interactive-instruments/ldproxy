@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class StylesView extends OgcApiView {
-    private List<StyleEntry> styleEntries;
+    private final List<StyleEntry> styleEntries;
     public String none;
 
     public StylesView(OgcApiDataV2 apiData,

@@ -34,7 +34,7 @@ public class StylesLinkGenerator {
                                                I18n i18n,
                                                Optional<Locale> language) {
 
-        ImmutableList.Builder<Link> builder = ImmutableList.<Link>builder();
+        ImmutableList.Builder<Link> builder = ImmutableList.builder();
 
         builder.add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
@@ -71,7 +71,7 @@ public class StylesLinkGenerator {
                                               I18n i18n,
                                               Optional<Locale> language) {
 
-        ImmutableList.Builder<Link> builder = ImmutableList.<Link>builder();
+        ImmutableList.Builder<Link> builder = ImmutableList.builder();
 
         builder.add(new ImmutableLink.Builder()
                             .href(uriBuilder.copy()
