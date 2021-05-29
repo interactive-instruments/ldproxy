@@ -4,8 +4,8 @@ dependencies {
         exclude module: 'jts-core'
         exclude module: 'jts-io-common'
     }
-    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.1')
-    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.1')
+    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.2-SNAPSHOT')
+    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.2-SNAPSHOT')
 
     embedded (group: 'org.imintel', name: 'mbtiles4j', version: '1.0.6') {
         exclude group: 'org.xerial', module: 'sqlite-jdbc'
@@ -18,5 +18,8 @@ dependencies {
 repositories {
     maven {
         url "https://maven.ecc.no/releases"
+    }
+    maven {
+        url "https://repo.eclipse.org/content/repositories/jts-snapshots"
     }
 }
