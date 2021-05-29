@@ -12,6 +12,9 @@ allprojects {
         maven {
             url "https://maven.ecc.no/releases"
         }
+        maven {
+            url "https://repo.eclipse.org/content/repositories/jts-snapshots"
+        }
     }
 }
 
