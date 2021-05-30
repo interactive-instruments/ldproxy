@@ -250,7 +250,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         long transformerDuration = (System.nanoTime() - transformerStart) / 1000000;
         long processingDuration = (System.nanoTime() - processingStart) / 1000000;
 
-        if (transformerDuration > 200)
+        if (processingDuration > 200)
             LOGGER.debug("Collection {}, tile {}/{}/{}/{} written. Total duration: {}ms, processing: {}ms, feature post-processing: {}ms, average feature post-processing: {}ms, merging: {}ms, encoding: {}ms.",
                          collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
                          transformerDuration, processingDuration, featureDuration/1000000, featureCount==0 ? 0 : featureDuration/featureCount/1000000, mergerDuration, encoderDuration);
