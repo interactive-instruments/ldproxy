@@ -176,20 +176,10 @@ class FeatureMerger {
                                 geom = iter.next();
                                 while (iter.hasNext()) {
                                     // geom = geom.symDifference(iter.next());
-                                    OverlayNG overlay = new OverlayNG(geom, iter.next(), precisionModel, OverlayNG.SYMDIFFERENCE);
-                                    overlay.setStrictMode(true);
-                                    geom = overlay.getResult();
+                                    geom = OverlayNGRobust.overlay(geom, iter.next(), OverlayNG.SYMDIFFERENCE);
                                 }
                             } catch (Exception e) {
-                                try {
-                                    Iterator<Polygon> iter = polygons.iterator();
-                                    geom = iter.next();
-                                    while (iter.hasNext()) {
-                                        geom = OverlayNGRobust.overlay(geom, iter.next(), OverlayNG.SYMDIFFERENCE);
-                                    }
-                                } catch (Exception e2) {
-                                    geom = geometryFactory.createMultiPolygon(polygons.toArray(Polygon[]::new));
-                                }
+                                geom = geometryFactory.createMultiPolygon(polygons.toArray(Polygon[]::new));
                             }
                     }
                     LOGGER.trace("{} grouped by {}: {} polygons", context, values, geom.getNumGeometries());

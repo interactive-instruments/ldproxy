@@ -115,9 +115,12 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private final Set<MvtFeature> mergeFeatures;
 
     private long mergeCount = 0;
+    private final long transformerStart = System.nanoTime();
+    private long processingStart;
+    private Long featureStart = null;
+    private long featureCount = 0;
+    private long featureDuration = 0;
 
-    // TODO The class is getting too complex, factor out separate concerns.
-    //      See https://github.com/interactive-instruments/ldproxy/issues/313.
     public FeatureTransformerTilesMVT(FeatureTransformationContextTiles transformationContext, HttpClient httpClient) {
         super(TilesConfiguration.class,
               transformationContext.getApiData(), transformationContext.getCollectionId(),
@@ -195,6 +198,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     public void onStart(OptionalLong numberReturned, OptionalLong numberMatched) {
 
         LOGGER.trace("Start generating tile for collection {}, tile {}/{}/{}/{}.", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+        processingStart = System.nanoTime();
 
         if (numberReturned.isPresent()) {
             long returned = numberReturned.getAsLong();
@@ -208,6 +212,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     @Override
     public void onEnd() {
 
+        resetFeatureInfo();
+
+        long mergerStart = System.nanoTime();
         if (Objects.nonNull(groupBy) && mergeCount >0) {
             FeatureMerger merger = new FeatureMerger(groupBy, allProperties, properties, geometryFactoryTile, tilePrecisionModel, String.format("Collection %s, tile %s/%d/%d/%d", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol()));
             merger.merge(mergeFeatures)
@@ -223,7 +230,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                       encoder.addFeature(layerName, mergedFeature.getProperties(), geom);
             });
         }
+        long mergerDuration = (System.nanoTime() - mergerStart) / 1000000;
 
+        long encoderStart = System.nanoTime();
         try {
             byte[] mvt = encoder.encode();
             outputStream.write(mvt);
@@ -237,8 +246,18 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         } catch (IOException e) {
             throw new RuntimeException("Error writing output stream.", e);
         }
+        long encoderDuration = (System.nanoTime() - encoderStart) / 1000000;
+        long transformerDuration = (System.nanoTime() - transformerStart) / 1000000;
+        long processingDuration = (System.nanoTime() - processingStart) / 1000000;
 
-        LOGGER.trace("Tile response written.");
+        if (transformerDuration > 200)
+            LOGGER.debug("Collection {}, tile {}/{}/{}/{} written. Total duration: {}ms, processing: {}ms, feature post-processing: {}ms, average feature post-processing: {}ms, merging: {}ms, encoding: {}ms.",
+                         collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
+                         transformerDuration, processingDuration, featureDuration/1000000, featureCount==0 ? 0 : featureDuration/featureCount/1000000, mergerDuration, encoderDuration);
+        else
+            LOGGER.trace("Collection {}, tile {}/{}/{}/{} written. Total duration: {}ms, processing: {}ms, feature post-processing: {}ms, average feature post-processing: {}ms, merging: {}ms, encoding: {}ms.",
+                         collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
+                         transformerDuration, processingDuration, featureDuration/1000000, featureCount==0 ? 0 : featureDuration/featureCount/1000000, mergerDuration, encoderDuration);
     }
 
     @Override
@@ -253,20 +272,23 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         currentId = null;
         currentProperty = null;
         currentProperties = new TreeMap<>();
+        if (Objects.nonNull(featureStart)) {
+            featureCount++;
+            featureDuration += System.nanoTime() - featureStart;
+        }
+        featureStart = System.nanoTime();
     }
 
     @Override
     public void onFeatureEnd() {
 
         if (currentGeometry==null) {
-            resetFeatureInfo();
             return;
         }
 
         try {
             Geometry tileGeometry = TileGeometryUtil.getTileGeometry(currentGeometry, affineTransformation, clipGeometry, reducer, tilePrecisionModel, minimumSizeInPixel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
             if (Objects.isNull(tileGeometry)) {
-                resetFeatureInfo();
                 return;
             }
 
@@ -277,7 +299,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                                           .properties(currentProperties)
                                           .geometry(tileGeometry)
                                           .build());
-                resetFeatureInfo();
                 return;
             }
 
@@ -285,7 +306,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             if (!tileGeometry.isValid()) {
                 LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Size in pixels: {}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), currentGeometry.getArea());
                 if (Objects.nonNull(tilesConfiguration) && Objects.requireNonNullElse(tilesConfiguration.getIgnoreInvalidGeometriesDerived(), false)) {
-                    resetFeatureInfo();
                     return;
                 }
             }
@@ -312,8 +332,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                 LOGGER.debug("Stacktrace:", e);
             }
         }
-
-        resetFeatureInfo();
     }
 
     @Override
