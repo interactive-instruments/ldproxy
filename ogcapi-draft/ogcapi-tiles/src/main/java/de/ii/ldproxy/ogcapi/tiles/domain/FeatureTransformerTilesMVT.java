@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +121,8 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private Long featureStart = null;
     private long featureCount = 0;
     private long featureDuration = 0;
+    private long returned = 0;
+    private long written = 0;
 
     public FeatureTransformerTilesMVT(FeatureTransformationContextTiles transformationContext, HttpClient httpClient) {
         super(TilesConfiguration.class,
@@ -201,10 +204,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         processingStart = System.nanoTime();
 
         if (numberReturned.isPresent()) {
-            long returned = numberReturned.getAsLong();
-            long matched = numberMatched.orElse(-1);
+            returned = numberReturned.getAsLong();
             if (numberMatched.isPresent())
-                LOGGER.trace("numberMatched {}", matched);
+                LOGGER.trace("numberMatched {}", numberMatched.getAsLong());
             LOGGER.trace("numberReturned {}", returned);
         }
     }
@@ -217,8 +219,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         long mergerStart = System.nanoTime();
         if (Objects.nonNull(groupBy) && mergeCount >0) {
             FeatureMerger merger = new FeatureMerger(groupBy, allProperties, properties, geometryFactoryTile, tilePrecisionModel, String.format("Collection %s, tile %s/%d/%d/%d", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol()));
-            merger.merge(mergeFeatures)
-                  .forEach(mergedFeature -> {
+            merger.merge(mergeFeatures).forEach(mergedFeature -> {
                       Geometry geom = mergedFeature.getGeometry();
                       // Geometry is invalid? -> log this information and skip it, if that option is used
                       if (!geom.isValid()) {
@@ -228,6 +229,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                               return;
                       }
                       encoder.addFeature(layerName, mergedFeature.getProperties(), geom);
+                      written++;
             });
         }
         long mergerDuration = (System.nanoTime() - mergerStart) / 1000000;
@@ -246,18 +248,19 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         } catch (IOException e) {
             throw new RuntimeException("Error writing output stream.", e);
         }
-        long encoderDuration = (System.nanoTime() - encoderStart) / 1000000;
-        long transformerDuration = (System.nanoTime() - transformerStart) / 1000000;
-        long processingDuration = (System.nanoTime() - processingStart) / 1000000;
 
-        if (processingDuration > 200)
-            LOGGER.debug("Collection {}, tile {}/{}/{}/{} written. Total duration: {}ms, processing: {}ms, feature post-processing: {}ms, average feature post-processing: {}ms, merging: {}ms, encoding: {}ms.",
-                         collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
-                         transformerDuration, processingDuration, featureDuration/1000000, featureCount==0 ? 0 : featureDuration/featureCount/1000000, mergerDuration, encoderDuration);
-        else
-            LOGGER.trace("Collection {}, tile {}/{}/{}/{} written. Total duration: {}ms, processing: {}ms, feature post-processing: {}ms, average feature post-processing: {}ms, merging: {}ms, encoding: {}ms.",
-                         collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
-                         transformerDuration, processingDuration, featureDuration/1000000, featureCount==0 ? 0 : featureDuration/featureCount/1000000, mergerDuration, encoderDuration);
+        if (LOGGER.isDebugEnabled()) {
+            long encoderDuration = (System.nanoTime() - encoderStart) / 1000000;
+            long transformerDuration = (System.nanoTime() - transformerStart) / 1000000;
+            long processingDuration = (System.nanoTime() - processingStart) / 1000000;
+            String text = String.format("Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms.",
+                                        collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), returned, written,
+                                        transformerDuration, processingDuration, featureDuration / 1000000, featureCount == 0 ? 0 : featureDuration / featureCount / 1000000, mergerDuration, encoderDuration);
+            if (processingDuration > 200)
+                LOGGER.debug(text);
+            else
+                LOGGER.trace(text);
+        }
     }
 
     @Override
@@ -325,6 +328,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                 encoder.addFeature(layerName, currentProperties, tileGeometry, id);
             else
                 encoder.addFeature(layerName, currentProperties, tileGeometry);
+            written++;
 
         } catch (Exception e) {
             LOGGER.error("Error while processing feature {} in tile {}/{}/{}/{} in collection {}. The feature is skipped.", currentId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId);
