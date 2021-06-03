@@ -40,6 +40,8 @@ class FilterParameterSpecification extends Specification {
     @Shared
     boolean json = false // set to true to test CQL JSON, to false to test CQL Text
     @Shared
+    int limit = 250
+    @Shared
     RESTClient restClient = new RESTClient(SUT_URL)
     @Shared
     def allCulturePntFeatures = getRequest(restClient, CULTURE_PNT_PATH, null)
@@ -80,7 +82,7 @@ class FilterParameterSpecification extends Specification {
     @Shared
     def pointFeature4326 = "POINT(" + String.valueOf(lat) + " " + String.valueOf(lon) + ")"
     @Shared
-    def allAxGebaeudefunktion = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, [limit:250])
+    def allAxGebaeudefunktion = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, [limit:limit])
 
     def "Preconditions Daraa"() {
         given: "CulturePnt features in the Daraa dataset"
@@ -1801,14 +1803,14 @@ class FilterParameterSpecification extends Specification {
 
     LinkedHashMap<String, String> getQuery(String filter) {
         return json
-        ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json",limit:250]
-        : [filter:filter,limit:250]
+        ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json",limit:limit]
+        : [filter:filter,limit:limit]
     }
 
     LinkedHashMap<String, String> getQuery4326(String filter) {
         return json
-                ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json","filter-crs":epsg4326,limit:250]
-                : [filter:filter,"filter-crs":epsg4326,limit:250]
+                ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json","filter-crs":epsg4326,limit:limit]
+                : [filter:filter,"filter-crs":epsg4326,limit:limit]
     }
 
     static void assertSuccess(Object response) {
