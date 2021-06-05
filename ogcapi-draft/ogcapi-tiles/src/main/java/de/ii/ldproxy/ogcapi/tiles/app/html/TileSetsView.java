@@ -94,9 +94,8 @@ public class TileSetsView extends OgcApiView {
                                                                        .collect(Collectors.joining(", ")));
 
                     String level = tms.getCenterPoint()
-                                      .map(TilePoint::getTileMatrix)
-                                      .orElse(Optional.of("10"))
-                                      .get();
+                                      .flatMap(TilePoint::getTileMatrix)
+                                      .orElse("10");
                     String lon = tms.getCenterPoint().isPresent() && tms.getCenterPoint().get().getCoordinates().size() >= 2
                             ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
                             : Double.toString(spatialExtent.get().getXmax() * 0.5 + spatialExtent.get().getXmin() * 0.5);
