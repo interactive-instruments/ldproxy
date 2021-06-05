@@ -4,7 +4,7 @@ Das Modul "Features GeoJSON-LD" kann für jede über ldproxy bereitgestellte API
 
 Es ergänzt die GeoJSON-Ausgabe um die folgenden Angaben:
 
-* Einen JSON-LD-Context, auf den aus den GeoJSON-Ausgaben der Ressourcen Features und Feature verwiesen wird. Der Context kann extern liegen oder über die API bereitgestellt werden. Dafür muss im ldproxy-Datenverzeichnis der Context unter dem relativen Pfad `json-ld-contexts/{apiId}/{collectionId}.jsonld` liegen. Der Context muss mindestens die folgenden Einträge enthalten:
+* Einen JSON-LD-Context, auf den aus den GeoJSON-Ausgaben der Ressourcen Features und Feature verwiesen wird. Der Context kann extern liegen oder über die API bereitgestellt werden. Dafür muss im ldproxy-Datenverzeichnis der Context unter dem relativen Pfad `json-ld-contexts/{apiId}/{collectionId}.jsonld` liegen. Statt `{collectionId}.jsonld` kann über `contextFileName` auch ein anderer Dateiname konfiguriert werden. Der Context muss mindestens die folgenden Einträge enthalten:
   * `"@version": 1.1`
   * `"geojson": "https://purl.org/geojson/vocab#"`
   * `"FeatureCollection": "geojson:FeatureCollection"`
@@ -23,6 +23,7 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
+|`contextFileName` |string |`null` |Dateiname des JSON-LD-Context-Dokuments im Verzeichnis `json-ld-contexts/{apiId}`.
 |`context` |string |`null` |Die URI des JSON-LD-Context-Dokuments. Dabei wird `{{serviceUrl}}` durch die Landing-Page-URI der API und `{{collectionId}}` durch die Collection-ID ersetzt. Sofern der Context nicht extern liegt, sollte der Wert "{{serviceUrl}}/collections/{{collectionId}}/context" sein.
 |`types` |array |`[ "geojson:Feature" ]` |Der Wert von "@type" bei den Features der Collection.
 |`idTemplate` |string |`null` |Der Wert von "@id" bei den Features der Collection. Dabei wird `{{serviceUrl}}` durch die Landing-Page-URI der API, `{{collectionId}}` durch die Collection-ID und `{{featureId}}` durch den Wert von "id" ersetzt.

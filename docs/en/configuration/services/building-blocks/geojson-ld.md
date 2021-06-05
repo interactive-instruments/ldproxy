@@ -33,6 +33,7 @@ GeoJSON FeatureCollection and Feature objects are enhanced with additional prope
 
 |Option |Data Type |Default |Description
 | --- | --- | --- | ---
+|`contextFileName` |string |`null` |File name of the JSON-LD context document in the folder `json-ld-contexts/{apiId}`.
 |`context` |string |`null` |URI of the JSON-LD context document. The value should either be an external URI or `{{serviceUrl}}/collections/{{collectionId}}/context` for contexts provided by the API (see below for details). The template may contain `{{serviceUrl}}` (substituted with the API landing page URI) and `{{collectionId}}` (substituted with the collection id).
 |`types` |array |`[ "geojson:Feature" ]` |Value of `@type` that is added to every feature.
 |`idTemplate` |string |`null` |Value of `@id` that is added to every feature. The template may contain `{{serviceUrl}}` (substituted with the API landing page URI), `{{collectionId}}` (substituted with the collection id) and `{{featureId}}` (substituted with the feature id).
