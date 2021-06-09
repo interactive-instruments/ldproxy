@@ -22,11 +22,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Component
 @Provides
 @Instantiate
 public class GeoJsonWriterJsonLd implements GeoJsonWriter {
+
+    List<String> currentTypes;
 
     @Override
     public GeoJsonWriterJsonLd create() {
@@ -48,10 +51,13 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                                                                                   .getExtension(GeoJsonLdConfiguration.class);
 
             if (jsonLdOptions.isPresent() && jsonLdOptions.get().isEnabled()) {
-                writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
-                                                                              .getContext(), ImmutableList.of("geojson:FeatureCollection"));
+                writeContext(transformationContext, jsonLdOptions.get()
+                                                                 .getContext());
+                writeJsonLdType(transformationContext, ImmutableList.of("geojson:FeatureCollection"));
             }
         }
+
+        currentTypes = ImmutableList.of();
 
         // next chain for extensions
         next.accept(transformationContext);
@@ -66,11 +72,30 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                                                                      .getExtension(GeoJsonLdConfiguration.class);
 
         if (jsonLdOptions.isPresent() && jsonLdOptions.get().isEnabled()) {
-            List<String> types = jsonLdOptions.map(GeoJsonLdConfiguration::getTypes)
-                                              .orElse(ImmutableList.of("geojson:Feature"));
+            if (!transformationContext.isFeatureCollection()) {
+                writeContext(transformationContext, jsonLdOptions.get()
+                                                                 .getContext());
+            }
 
-            writeContextAndJsonLdType(transformationContext, jsonLdOptions.get()
-                                                                          .getContext(), types, !transformationContext.isFeatureCollection());
+            currentTypes = jsonLdOptions.map(GeoJsonLdConfiguration::getTypes)
+                                        .orElse(ImmutableList.of("geojson:Feature"));
+
+            if (currentTypes.stream().noneMatch(type -> type.contains("{{type}}"))) {
+                writeJsonLdType(transformationContext, currentTypes);
+                currentTypes = ImmutableList.of();
+            }
+        }
+
+        // next chain for extensions
+        next.accept(transformationContext);
+    }
+
+    @Override
+    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
+                             Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+
+        if (!currentTypes.isEmpty()) {
+            writeJsonLdType(transformationContext, currentTypes);
         }
 
         // next chain for extensions
@@ -100,6 +125,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                                                                  .getCollections()
                                                                  .get(transformationContext.getCollectionId())
                                                                  .getExtension(GeoJsonLdConfiguration.class)
+                                                                 .filter(GeoJsonLdConfiguration::isEnabled)
                                                                  .flatMap(GeoJsonLdConfiguration::getIdTemplate)
                                                                  .map(idTemplate -> {
                                                                      String currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {
@@ -117,27 +143,28 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
                                          .writeStringField("@id", jsonLdId.get());
                 }
             }
+
+            if (currentFeatureProperty.isType() && !currentTypes.isEmpty()) {
+                currentTypes = currentTypes.stream()
+                                           .map(type -> type.replace("{{type}}", currentValue))
+                                           .collect(Collectors.toUnmodifiableList());
+            }
         }
 
         next.accept(transformationContext);
     }
 
-    private void writeContextAndJsonLdType(FeatureTransformationContextGeoJson transformationContext,
-                                           String ldContext,
-                                           List<String> types) throws IOException {
-        writeContextAndJsonLdType(transformationContext, ldContext, types, true);
-    }
-
-    private void writeContextAndJsonLdType(FeatureTransformationContextGeoJson transformationContext,
-                                           String ldContext,
-                                           List<String> types,
-                                           boolean writeContext) throws IOException {
-
-        if (writeContext && Objects.nonNull(ldContext))
+    private void writeContext(FeatureTransformationContextGeoJson transformationContext,
+                              String ldContext) throws IOException {
+        if (Objects.nonNull(ldContext))
             transformationContext.getJson()
                                  .writeStringField("@context",
                                          ldContext.replace("{{serviceUrl}}", transformationContext.getServiceUrl())
                                                   .replace("{{collectionId}}", transformationContext.getCollectionId()));
+    }
+
+    private void writeJsonLdType(FeatureTransformationContextGeoJson transformationContext,
+                                 List<String> types) throws IOException {
 
         if (types.size() == 1) {
             // write @type

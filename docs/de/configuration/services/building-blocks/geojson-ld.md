@@ -25,7 +25,7 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 | --- | --- | --- | ---
 |`contextFileName` |string |`null` |Dateiname des JSON-LD-Context-Dokuments im Verzeichnis `json-ld-contexts/{apiId}`.
 |`context` |string |`null` |Die URI des JSON-LD-Context-Dokuments. Dabei wird `{{serviceUrl}}` durch die Landing-Page-URI der API und `{{collectionId}}` durch die Collection-ID ersetzt. Sofern der Context nicht extern liegt, sollte der Wert "{{serviceUrl}}/collections/{{collectionId}}/context" sein.
-|`types` |array |`[ "geojson:Feature" ]` |Der Wert von "@type" bei den Features der Collection.
+|`types` |array |`[ "geojson:Feature" ]` |Der Wert von "@type" bei den Features der Collection. Dabei wird `{{type}}` durch den Wert der Property mit `role: TYPE` ersetzt.
 |`idTemplate` |string |`null` |Der Wert von "@id" bei den Features der Collection. Dabei wird `{{serviceUrl}}` durch die Landing-Page-URI der API, `{{collectionId}}` durch die Collection-ID und `{{featureId}}` durch den Wert von "id" ersetzt.
 
 Beispiel für die Angaben in der Konfigurationsdatei:

@@ -12,7 +12,7 @@ GeoJSON FeatureCollection and Feature objects are enhanced with additional prope
 |Property |GeoJSON type |Description
 | --- | --- | ---
 |@context |FeatureCollection, Feature | The JSON-LD context, only added to the root object. *Only added if `context` is set in the configuration.*
-|@type |FeatureCollection, Feature | The JSON-LD type. If the root object is a FeatureCollection, adds `@type` with value `geojson:FeatureCollection` to the root object and `@type` with the value set in the configuration to every nested Feature . If the root object is a Feature, adds `@type` with the value set in the configuration.
+|@type |FeatureCollection, Feature | The JSON-LD type. If the root object is a FeatureCollection, adds `@type` with value `geojson:FeatureCollection` to the root object and `@type` with the value set in the configuration to every nested Feature . If the root object is a Feature, adds `@type` with the value set in the configuration.  A value of `{{type}}` will be replaced by the value of the property with `role: TYPE`.
 |@id |Feature |URI based id in addition to the default GeoJSON id. *Only added if `idTemplate` is set in the configuration.*
 
 ### Resources
