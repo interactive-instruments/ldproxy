@@ -19,7 +19,6 @@ import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
-import org.locationtech.jts.geom.util.GeometryFixer;
 import org.locationtech.jts.operation.linemerge.LineMerger;
 import org.locationtech.jts.operation.overlayng.OverlayNG;
 import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
@@ -188,8 +187,8 @@ class FeatureMerger {
                     LOGGER.trace("{} grouped by {}: {} polygons", context, values, geom.getNumGeometries());
                     if (!geom.isValid()) {
                         // TODO: use GeometryFixer from JTS once available
-                        // geom = repairPolygon(geom);
-                        geom = new GeometryFixer(geom).getResult();
+                        // geom = TileGeometryUtil.repairPolygon(geom);
+                        // geom = new GeometryFixer(geom).getResult();
                     }
 
                     if (Objects.isNull(geom) || geom.isEmpty() || geom.getNumGeometries() == 0 || !geom.isValid()) {
@@ -296,7 +295,7 @@ class FeatureMerger {
                     LOGGER.trace("{} grouped by {}: {} line strings", context, values, geom.getNumGeometries());
                     if (!geom.isValid()) {
                         // TODO: use GeometryFixer from JTS once available
-                        geom = new GeometryFixer(geom).getResult();
+                        // geom = new GeometryFixer(geom).getResult();
                     }
 
                     if (geom.isEmpty() || geom.getNumGeometries() == 0 || !geom.isValid()) {

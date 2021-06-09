@@ -16,7 +16,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.util.AffineTransformation;
-import org.locationtech.jts.geom.util.GeometryFixer;
+// import org.locationtech.jts.geom.util.GeometryFixer;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.operation.polygonize.Polygonizer;
@@ -71,8 +71,8 @@ class TileGeometryUtil {
 
         // 5 if the resulting geometry is invalid, try to make it valid
         if (!geom.isValid()) {
-            geom = new GeometryFixer(geom).getResult();
-            // geom = repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0/precisionModel.getScale());
+            // TODO geom = new GeometryFixer(geom).getResult();
+            geom = repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0/precisionModel.getScale());
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
         }
@@ -82,7 +82,7 @@ class TileGeometryUtil {
         if (Objects.isNull(geom) || geom.isEmpty())
             return null;
 
-        /*
+        // TODO remove
         // reduce the geometry to the tile grid
         geom = reduce(geom, reducer, precisionModel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
         if (Objects.isNull(geom) || geom.isEmpty())
@@ -97,8 +97,8 @@ class TileGeometryUtil {
             // try once more
             LOGGER.debug("Polygonal geometry invalid after initial processing. Final attempt to repair.");
 
-            geom = new GeometryFixer(geom).getResult();
-            // geom = repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0/precisionModel.getScale());
+            // TODO geom = new GeometryFixer(geom).getResult();
+            geom = repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0/precisionModel.getScale());
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
 
@@ -117,7 +117,7 @@ class TileGeometryUtil {
             if (Objects.isNull(geom) || geom.isEmpty())
                 return null;
         }
-         */
+        // TODO end remove
 
         return geom;
     }
@@ -213,7 +213,7 @@ class TileGeometryUtil {
         return geom;
     }
 
-    /*
+    // TODO remove
     private static Geometry repairPolygon(Geometry geom, GeometryPrecisionReducer reducer, PrecisionModel precisionModel, int minimumSizeInPixel, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair) {
         geom = repairPolygon(geom, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair, 1.0/precisionModel.getScale());
         // now follow the same steps as for feature geometries
@@ -241,6 +241,7 @@ class TileGeometryUtil {
         return geom;
     }
 
+    // TODO remove
     private static Geometry repairPolygon(Geometry geom, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair, double distance) {
         if (geom instanceof Polygon || geom instanceof MultiPolygon) {
             // TODO update once JTS has a proper makeValid() capability
@@ -291,10 +292,8 @@ class TileGeometryUtil {
 
         return geom;
     }
-    */
 
-
-    /*
+    // TODO remove
     private static void addLinearRing(LinearRing geom, Polygonizer polygonizer) {
         LineString lineString = geom.getFactory().createLineString(geom.getCoordinateSequence());
         if (lineString.isValid() && lineString.isSimple())
@@ -303,6 +302,7 @@ class TileGeometryUtil {
             polygonizer.add(lineString.union(lineString.getFactory().createPoint(lineString.getCoordinateN(0))));
     }
 
+    // TODO remove
     private static void addPolygon(Polygon geom, Polygonizer polygonizer) {
         geom.normalize();
         if (geom.isValid())
@@ -315,6 +315,7 @@ class TileGeometryUtil {
         }
     }
 
+    // TODO remove
     private static Geometry rebuildPolygon(Geometry geom) {
         Polygonizer polygonizer = new Polygonizer(true);
         if (geom instanceof Polygon) {
@@ -343,12 +344,11 @@ class TileGeometryUtil {
                 }
         }
     }
-     */
 
     private static Geometry reduce(Geometry geom, GeometryPrecisionReducer reducer, PrecisionModel precisionModel, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair) {
         try {
             Geometry newGeom = reducer.reduce(geom);
-            /*
+            /* TODO remove
             if (geom instanceof Polygon || geom instanceof MultiPolygon) {
                 double areaChange = Math.abs(newGeom.getArea() - geom.getArea()) / geom.getArea();
                 if (areaChange > maxRelativeAreaChangeInPolygonRepair &&
