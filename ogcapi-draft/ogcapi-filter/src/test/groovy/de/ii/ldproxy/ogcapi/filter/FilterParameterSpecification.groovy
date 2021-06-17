@@ -29,13 +29,18 @@ class FilterParameterSpecification extends Specification {
     static final String CULTURE_PNT = "CulturePnt"
     static final String TRANSPORTATION_GROUND_CRV = "TransportationGroundCrv"
     static final String CULTURE_PNT_PATH = API_PATH_DARAA + "/collections/" + CULTURE_PNT + "/items"
+    static final String API_PATH_GEOINFODOK = "/rest/services/geoinfodok"
+    static final String AX_GEBAEUDEFUNKTION = "ax_gebaeudefunktion"
+    static final String AX_GEBAEUDEFUNKTION_PATH = API_PATH_GEOINFODOK + "/collections/" + AX_GEBAEUDEFUNKTION + "/items"
     static final String GEO_JSON = "application/geo+json";
     static final String JSON = "application/json";
 
     @Shared
     Cql cql = new CqlImpl()
     @Shared
-    boolean json = true // set to true to test CQL JSON, to false to test CQL Text
+    boolean json = false // set to true to test CQL JSON, to false to test CQL Text
+    @Shared
+    int limit = 250
     @Shared
     RESTClient restClient = new RESTClient(SUT_URL)
     @Shared
@@ -76,8 +81,10 @@ class FilterParameterSpecification extends Specification {
             String.valueOf(lat)+" "+String.valueOf(lon-delta)) + "))"
     @Shared
     def pointFeature4326 = "POINT(" + String.valueOf(lat) + " " + String.valueOf(lon) + ")"
+    @Shared
+    def allAxGebaeudefunktion = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, [limit:limit])
 
-    def "Preconditions"() {
+    def "Preconditions Daraa"() {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "Fetch all features"
@@ -85,6 +92,15 @@ class FilterParameterSpecification extends Specification {
         then: "Success and returns JSON"
         assertSuccess(allCulturePntFeatures)
         assertSuccess(collection)
+    }
+
+    def "Preconditions GeoInfoDok"() {
+        given: "AX_Gebaeudefunktion records"
+
+        when: "Fetch all records"
+
+        then: "Success and returns JSON"
+        assertSuccess(allAxGebaeudefunktion)
     }
 
     // Comparison predicates
@@ -1469,10 +1485,285 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<datetime2.responseData.numberReturned; i++) {
             assertFeature(datetime2.responseData.features[i], propertyAndLiteral2Check.get(i))
         }
-
     }
 
-    // Array predicates TODO
+    // Array predicates
+
+    def "Operator acontains"() {
+        given: "Records in the AX_Gebaeudefunktion codelist"
+
+        when: "1. Data is selected using a filter theme.concept ACONTAINS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteral = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme.concept AContainS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> f.properties.theme.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .filter(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+                    .distinct()
+                    .count()==3).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral)
+
+        and: "Returns the same number of records"
+        propertyAndLiteral.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "2. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50] ACONTAINS theme.concept"
+        def propertyAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AContainS theme.concept"))
+        def propertyAndLiteralCheck2 = allAxGebaeudefunktion.responseData.features.stream().filter(f -> f.properties.theme.stream()
+                .map(theme -> theme.concept)
+                .flatMap(List::stream)
+                .noneMatch(concept -> !concept.equals('DLKM') && !concept.equals('Basis-DLM') && !concept.equals('DLM50'))).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteral2.responseData.numberReturned == propertyAndLiteralCheck2.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteral2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral2.responseData.features[i], propertyAndLiteralCheck2.get(i))
+        }
+
+        when: "3. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50'] ACONTAINS ['DLKM', 'Basis-DLM', 'DLM50]"
+        def literalAndLiteral = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AContainS ['DLKM', 'Basis-DLM', 'DLM50']"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndLiteral)
+
+        and: "Returns all records"
+        literalAndLiteral.responseData.numberReturned == allAxGebaeudefunktion.responseData.features.size()
+
+        when: "4. Data is selected using a filter ['DLKM', 'Basis-DLM'] ACONTAINS ['DLKM', 'Basis-DLM', 'DLM50]"
+        def literalAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM'] AContainS ['DLKM', 'Basis-DLM', 'DLM50']"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndLiteral2)
+
+        and: "Returns no records"
+        literalAndLiteral2.responseData.numberReturned == 0
+
+        /* TODO not implemented
+        when: "5. Data is selected using a filter theme.concept"
+        def twoProperties = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme.concept AContainS theme.concept"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(twoProperties)
+
+        and: "Returns all records"
+        twoProperties.responseData.numberReturned == allAxGebaeudefunktion.responseData.numberReturned
+         */
+    }
+
+    def "Operator aequals"() {
+        given: "Records in the AX_Gebaeudefunktion codelist"
+
+        when: "1. Data is selected using a filter theme.concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteral = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme.concept AEqualS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def concepts = f.properties.theme.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .distinct()
+                    .toList()
+            return concepts.size()==3 && concepts.contains('DLKM') && concepts.contains('Basis-DLM') && concepts.contains('DLM50')
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral)
+
+        and: "Returns the same number of records"
+        propertyAndLiteral.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "2. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50] AEQUALS theme.concept"
+        def propertyAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AEQUALS theme.concept"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteral2.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteral2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral2.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "3. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50'] AEQUALS ['DLKM', 'Basis-DLM', 'DLM50]"
+        def literalAndLiteral = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndLiteral)
+
+        and: "Returns all records"
+        literalAndLiteral.responseData.numberReturned == allAxGebaeudefunktion.responseData.features.size()
+
+        when: "4. Data is selected using a filter ['DLKM', 'Basis-DLM'] ACONTAINS ['DLKM', 'Basis-DLM', 'DLM50]"
+        def literalAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM'] AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndLiteral2)
+
+        and: "Returns no records"
+        literalAndLiteral2.responseData.numberReturned == 0
+
+        /* TODO not implemented
+        when: "5. Data is selected using a filter theme.concept"
+        def twoProperties = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme.concept AEQUALS theme.concept"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(twoProperties)
+
+        and: "Returns all records"
+        twoProperties.responseData.numberReturned == allAxGebaeudefunktion.responseData.numberReturned
+         */
+    }
+
+    def "Operator aoverlaps"() {
+        given: "Records in the AX_Gebaeudefunktion codelist"
+
+        when: "1. Data is selected using a filter theme.concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteral = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme.concept AOverlapS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> f.properties.theme.stream()
+                .map(theme -> theme.concept)
+                .flatMap(List::stream)
+                .anyMatch(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral)
+
+        and: "Returns the same number of records"
+        propertyAndLiteral.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "2. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50] AOVERLAPS theme.concept"
+        def propertyAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AOVERLAPS theme.concept"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteral2.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteral2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral2.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "3. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50'] AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50]"
+        def literalAndLiteral = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndLiteral)
+
+        and: "Returns all records"
+        literalAndLiteral.responseData.numberReturned == allAxGebaeudefunktion.responseData.features.size()
+
+        when: "4. Data is selected using a filter ['DLKM', 'Basis-DLM'] AOVERLAPS ['DLM50]"
+        def literalAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM'] AOVERLAPS ['DLM50']"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndLiteral2)
+
+        and: "Returns no records"
+        literalAndLiteral2.responseData.numberReturned == 0
+
+        /* TODO not implemented
+        when: "5. Data is selected using a filter theme.concept"
+        def twoProperties = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme.concept AOVERLAPS theme.concept"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(twoProperties)
+
+        and: "Returns all records"
+        twoProperties.responseData.numberReturned == allAxGebaeudefunktion.responseData.numberReturned
+         */
+    }
+
+    def "Operator containedby"() {
+        given: "Records in the AX_Gebaeudefunktion codelist"
+
+        when: "1. Data is selected using a filter theme.concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteral = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme.concept CONtainEDBY ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> f.properties.theme.stream()
+                .map(theme -> theme.concept)
+                .flatMap(List::stream)
+                .noneMatch(concept -> !concept.equals('DLKM') && !concept.equals('Basis-DLM') && !concept.equals('DLM50'))).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral)
+
+        and: "Returns the same number of records"
+        propertyAndLiteral.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "2. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50] CONTAINEDBY theme.concept"
+        def propertyAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] CONTAINEDBY theme.concept"))
+        def propertyAndLiteralCheck2 = allAxGebaeudefunktion.responseData.features.stream().filter(f -> f.properties.theme.stream()
+                .map(theme -> theme.concept)
+                .flatMap(List::stream)
+                .filter(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+                .distinct()
+                .count()==3).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteral2.responseData.numberReturned == propertyAndLiteralCheck2.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteral2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral2.responseData.features[i], propertyAndLiteralCheck2.get(i))
+        }
+
+        when: "3. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50'] CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"
+        def literalAndLiteral = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndLiteral)
+
+        and: "Returns all records"
+        literalAndLiteral.responseData.numberReturned == allAxGebaeudefunktion.responseData.features.size()
+
+        when: "4. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50'] CONTAINEDBY ['DLKM', 'Basis-DLM']"
+        def literalAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] CONTAINEDBY ['DLKM', 'Basis-DLM']"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndLiteral2)
+
+        and: "Returns no records"
+        literalAndLiteral2.responseData.numberReturned == 0
+
+        /* TODO not implemented
+        when: "5. Data is selected using a filter theme.concept"
+        def twoProperties = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme.concept CONTAINEDBY theme.concept"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(twoProperties)
+
+        and: "Returns all records"
+        twoProperties.responseData.numberReturned == allAxGebaeudefunktion.responseData.numberReturned
+         */
+    }
 
     // Logical operators
 
@@ -1512,14 +1803,14 @@ class FilterParameterSpecification extends Specification {
 
     LinkedHashMap<String, String> getQuery(String filter) {
         return json
-        ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json"]
-        : [filter:filter]
+        ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json",limit:limit]
+        : [filter:filter,limit:limit]
     }
 
     LinkedHashMap<String, String> getQuery4326(String filter) {
         return json
-                ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json","filter-crs":epsg4326]
-                : [filter:filter,"filter-crs":epsg4326]
+                ? [filter:cql.write(cql.read(filter, Cql.Format.TEXT), Cql.Format.JSON).replace("\n",""),"filter-lang":"cql-json","filter-crs":epsg4326,limit:limit]
+                : [filter:filter,"filter-crs":epsg4326,limit:limit]
     }
 
     static void assertSuccess(Object response) {
