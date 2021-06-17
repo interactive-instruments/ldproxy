@@ -76,15 +76,25 @@ pipeline:
     when:
       event: push
 
+  docker-master:
+    image: plugins/docker
+    repo: iide/ldproxy
+    tags: ${DRONE_COMMIT_BRANCH}
+    force_tag: true
+    dockerfile: build/docker/Dockerfile
+    context: build/docker
+    secrets: [ docker_username, docker_password]
+    when:
+      event: push
+      branch: master
+
   docker-release:
     image: plugins/docker
     repo: iide/ldproxy
     auto_tag: true
-    username: $${DOCKER_USER}
-    password: $${DOCKER_PASSWORD}
     dockerfile: build/docker/Dockerfile
     context: build/docker
-    secrets: [ docker_user, docker_password]
+    secrets: [ docker_username, docker_password]
     when:
       event: tag
 
