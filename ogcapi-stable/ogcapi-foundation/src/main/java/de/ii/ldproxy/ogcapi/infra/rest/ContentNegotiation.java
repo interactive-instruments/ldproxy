@@ -133,20 +133,28 @@ public class ContentNegotiation {
     private Optional<ApiMediaType> negotiateMediaType(
             ImmutableSet<ApiMediaType> supportedMediaTypes,
             Request request) {
-        MediaType[] supportedMediaTypesArray = supportedMediaTypes.stream()
-                                                                  .flatMap(this::toTypes)
-                                                                  .distinct()
-                                                                  .toArray(MediaType[]::new);
+        try {
+            MediaType[] supportedMediaTypesArray = supportedMediaTypes.stream()
+                                                                      .flatMap(this::toTypes)
+                                                                      .distinct()
+                                                                      .toArray(MediaType[]::new);
 
-        Variant variant = null;
-        if (supportedMediaTypesArray.length > 0) {
-            variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypesArray)
-                                         .build());
+            Variant variant = null;
+            if (supportedMediaTypesArray.length > 0) {
+                variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypesArray)
+                                                       .build());
+            }
+
+            return Optional.ofNullable(variant)
+                           .map(Variant::getMediaType)
+                           .flatMap(mediaType -> findMatchingOgcApiMediaType(mediaType, supportedMediaTypes));
+        } catch (Exception ex) {
+            LOGGER.error(ex.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace:", ex);
+            }
+            return Optional.empty();
         }
-
-        return Optional.ofNullable(variant)
-                       .map(Variant::getMediaType)
-                       .flatMap(mediaType -> findMatchingOgcApiMediaType(mediaType, supportedMediaTypes));
     }
 
     private Optional<ApiMediaType> findMatchingOgcApiMediaType(MediaType mediaType,
