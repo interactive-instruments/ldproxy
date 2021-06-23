@@ -44,7 +44,8 @@ public interface EndpointExtension extends ApiExtension {
         OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
                                         .orElse(null);
         if (resource!=null) {
-            ApiOperation operation = resource.getOperations().get(method);
+            ApiOperation operation = apiDef.getOperation(resource, method)
+                                           .orElse(null);
             if (operation!=null && operation.getSuccess().isPresent()) {
                 return operation.getSuccess().get()
                         .getContent()
@@ -71,7 +72,8 @@ public interface EndpointExtension extends ApiExtension {
         OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
                                         .orElse(null);
         if (resource != null) {
-            ApiOperation operation = resource.getOperations().get(method);
+            ApiOperation operation = apiDef.getOperation(resource, method)
+                                           .orElse(null);
             if (operation != null && operation.getSuccess().isPresent()) {
                 return operation.getQueryParameters();
             }

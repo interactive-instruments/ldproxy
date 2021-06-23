@@ -133,28 +133,25 @@ public class ContentNegotiation {
     private Optional<ApiMediaType> negotiateMediaType(
             ImmutableSet<ApiMediaType> supportedMediaTypes,
             Request request) {
-        try {
-            MediaType[] supportedMediaTypesArray = supportedMediaTypes.stream()
-                                                                      .flatMap(this::toTypes)
-                                                                      .distinct()
-                                                                      .toArray(MediaType[]::new);
+        MediaType[] supportedMediaTypesArray = supportedMediaTypes.stream()
+                                                                  .flatMap(this::toTypes)
+                                                                  .distinct()
+                                                                  .toArray(MediaType[]::new);
 
-            Variant variant = null;
+        Variant variant = null;
+        try {
             if (supportedMediaTypesArray.length > 0) {
                 variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypesArray)
                                                        .build());
             }
-
-            return Optional.ofNullable(variant)
-                           .map(Variant::getMediaType)
-                           .flatMap(mediaType -> findMatchingOgcApiMediaType(mediaType, supportedMediaTypes));
         } catch (Exception ex) {
-            LOGGER.error(ex.getMessage());
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Stacktrace:", ex);
-            }
-            return Optional.empty();
+            LOGGER.warn("Could not parse request headers during content negotiation. Selecting any media type. Reason: {}", ex.getMessage());
+            return supportedMediaTypes.stream().findAny();
         }
+
+        return Optional.ofNullable(variant)
+                       .map(Variant::getMediaType)
+                       .flatMap(mediaType -> findMatchingOgcApiMediaType(mediaType, supportedMediaTypes));
     }
 
     private Optional<ApiMediaType> findMatchingOgcApiMediaType(MediaType mediaType,
@@ -192,9 +189,14 @@ public class ContentNegotiation {
                 .toArray(Locale[]::new);
 
         Variant variant = null;
-        if (supportedLanguagesArray.length > 0) {
-            variant = request.selectVariant(Variant.languages(supportedLanguagesArray)
-                    .build());
+        try {
+            if (supportedLanguagesArray.length > 0) {
+                variant = request.selectVariant(Variant.languages(supportedLanguagesArray)
+                                                       .build());
+            }
+        } catch (Exception ex) {
+            LOGGER.warn("Could not parse request headers during content negotiation. Selecting any language. Reason: {}", ex.getMessage());
+            return Optional.ofNullable(supportedLanguagesArray[0]);
         }
 
         return Optional.ofNullable(variant)
