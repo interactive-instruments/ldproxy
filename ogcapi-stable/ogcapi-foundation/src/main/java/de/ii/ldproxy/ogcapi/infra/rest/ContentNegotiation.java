@@ -139,9 +139,14 @@ public class ContentNegotiation {
                                                                   .toArray(MediaType[]::new);
 
         Variant variant = null;
-        if (supportedMediaTypesArray.length > 0) {
-            variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypesArray)
-                                         .build());
+        try {
+            if (supportedMediaTypesArray.length > 0) {
+                variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypesArray)
+                                                       .build());
+            }
+        } catch (Exception ex) {
+            LOGGER.warn("Could not parse request headers during content negotiation. Selecting any media type. Reason: {}", ex.getMessage());
+            return supportedMediaTypes.stream().findAny();
         }
 
         return Optional.ofNullable(variant)
@@ -184,9 +189,14 @@ public class ContentNegotiation {
                 .toArray(Locale[]::new);
 
         Variant variant = null;
-        if (supportedLanguagesArray.length > 0) {
-            variant = request.selectVariant(Variant.languages(supportedLanguagesArray)
-                    .build());
+        try {
+            if (supportedLanguagesArray.length > 0) {
+                variant = request.selectVariant(Variant.languages(supportedLanguagesArray)
+                                                       .build());
+            }
+        } catch (Exception ex) {
+            LOGGER.warn("Could not parse request headers during content negotiation. Selecting any language. Reason: {}", ex.getMessage());
+            return Optional.ofNullable(supportedLanguagesArray[0]);
         }
 
         return Optional.ofNullable(variant)
