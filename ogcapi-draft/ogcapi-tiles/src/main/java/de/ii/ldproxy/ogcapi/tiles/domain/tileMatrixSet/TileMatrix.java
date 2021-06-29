@@ -34,14 +34,15 @@ public abstract class TileMatrix {
     public abstract BigDecimal getScaleDenominator();
     @Value.Derived
     public BigDecimal getCellSize() {
-        BigDecimal decimalValue = new BigDecimal(getScaleDenominator().doubleValue() * 0.00028 / getMetersPerUnit().doubleValue());
-        return decimalValue.setScale(SIGNIFICANT_DIGITS - decimalValue.precision() + decimalValue.scale(), RoundingMode.HALF_UP);
+        BigDecimal decimalValue = new BigDecimal(getScaleDenominator().doubleValue() * 0.00028 / getMetersPerUnit());
+        return decimalValue.setScale(SIGNIFICANT_DIGITS - decimalValue.precision() + decimalValue.scale(), RoundingMode.HALF_UP)
+                           .stripTrailingZeros();
     }
     public abstract BigDecimal[] getPointOfOrigin();
     public String getCornerOfOrigin() { return "topLeft"; }
 
     @JsonIgnore
-    public abstract BigDecimal getMetersPerUnit();
+    public abstract double getMetersPerUnit();
 
     @JsonIgnore
     public abstract int getTileLevel();

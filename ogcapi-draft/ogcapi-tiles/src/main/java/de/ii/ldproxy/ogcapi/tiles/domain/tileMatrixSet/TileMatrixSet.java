@@ -280,7 +280,7 @@ public interface TileMatrixSet extends ContentExtension {
                                   .tileHeight(getTileSize())
                                   .matrixWidth(getCols(level))
                                   .matrixHeight(getRows(level))
-                                  .metersPerUnit(getBigDecimal(getMetersPerUnit()))
+                                  .metersPerUnit(getMetersPerUnit())
                                   .scaleDenominator(getBigDecimal(initScaleDenominator / Math.pow(2, level)))
                                   .pointOfOrigin(new BigDecimal[]{ getBigDecimal(bbox.getXmin()), getBigDecimal(bbox.getYmax()) })
                                   .build();
@@ -288,7 +288,8 @@ public interface TileMatrixSet extends ContentExtension {
 
     default BigDecimal getBigDecimal(double value) {
         BigDecimal decimalValue = new BigDecimal(value);
-        return decimalValue.setScale(TileMatrix.SIGNIFICANT_DIGITS - decimalValue.precision() + decimalValue.scale(), RoundingMode.HALF_UP);
+        return decimalValue.setScale(TileMatrix.SIGNIFICANT_DIGITS - decimalValue.precision() + decimalValue.scale(), RoundingMode.HALF_UP)
+                           .stripTrailingZeros();
     }
 
     /**

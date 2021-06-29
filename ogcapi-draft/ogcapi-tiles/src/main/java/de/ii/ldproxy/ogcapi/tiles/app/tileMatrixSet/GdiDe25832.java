@@ -41,7 +41,6 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
     private static final double BBOX_MAX_Y = 6301219.54;
     private static final double BBOX_MAX_X = BBOX_MIN_X + DIFF;
     private static final double BBOX_MIN_Y = BBOX_MAX_Y - DIFF;
-    private static final int BBOX_SCALE = 2;
     private static final BoundingBox BBOX = BoundingBox.of(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
     private static final List<Integer> WIDTH_HEIGHT_PER_LEVEL = new ImmutableList.Builder<Integer>()
             .add(2, 4, 8, 20, 40, 80, 200, 400, 800, 2000, 4000, 8000, 20000, 40000, 80000, 200000)
@@ -106,11 +105,8 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
                                   .matrixWidth(width)
                                   .matrixHeight(height)
                                   .scaleDenominator(getBigDecimal(initScaleDenominator * initialWidth / width))
-                                  .metersPerUnit(new BigDecimal(1.0).setScale(1))
-                                  .pointOfOrigin(new BigDecimal[]{
-                                          new BigDecimal(BBOX_MIN_X).setScale(BBOX_SCALE),
-                                          new BigDecimal(BBOX_MAX_Y).setScale(BBOX_SCALE)
-                                  })
+                                  .metersPerUnit(1.0)
+                                  .pointOfOrigin(new BigDecimal[]{ getBigDecimal(BBOX_MIN_X), getBigDecimal(BBOX_MAX_Y) })
                                   .build();
     }
 }
