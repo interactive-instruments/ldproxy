@@ -52,6 +52,7 @@ public class SchemaGeneratorImpl implements SchemaGenerator {
             case "long":
             case "Long":
                 return new IntegerSchema();
+            case "BigDecimal":
             case "double":
             case "Double":
             case "float":

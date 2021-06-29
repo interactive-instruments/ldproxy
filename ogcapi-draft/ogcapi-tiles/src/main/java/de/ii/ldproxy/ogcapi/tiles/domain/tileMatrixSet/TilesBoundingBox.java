@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 @Value.Immutable
@@ -20,8 +21,8 @@ import java.util.Optional;
 public abstract class TilesBoundingBox {
 
 
-    public abstract double[] getLowerLeft();
-    public abstract double[] getUpperRight();
+    public abstract BigDecimal[] getLowerLeft();
+    public abstract BigDecimal[] getUpperRight();
 
     /**
      * the coordinate reference system that is the basis of this tiling scheme

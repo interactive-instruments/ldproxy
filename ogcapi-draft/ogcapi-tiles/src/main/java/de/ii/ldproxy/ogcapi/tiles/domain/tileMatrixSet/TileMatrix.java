@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +20,8 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileMatrix.Builder.class)
 public abstract class TileMatrix {
+
+    public static final int SIGNIFICANT_DIGITS = 15;
 
     public String getId() { return String.valueOf(getTileLevel()); }
     public abstract Optional<String> getTitle();
@@ -27,15 +31,18 @@ public abstract class TileMatrix {
     public abstract long getTileHeight();
     public abstract long getMatrixWidth();
     public abstract long getMatrixHeight();
-    public abstract double getScaleDenominator();
-    public double getCellSize() {  return getScaleDenominator() * 0.00028 / getMetersPerUnit(); }
-    public abstract double[] getPointOfOrigin();
+    public abstract BigDecimal getScaleDenominator();
+    @Value.Derived
+    public BigDecimal getCellSize() {
+        BigDecimal decimalValue = new BigDecimal(getScaleDenominator().doubleValue() * 0.00028 / getMetersPerUnit().doubleValue());
+        return decimalValue.setScale(SIGNIFICANT_DIGITS - decimalValue.precision() + decimalValue.scale(), RoundingMode.HALF_UP);
+    }
+    public abstract BigDecimal[] getPointOfOrigin();
     public String getCornerOfOrigin() { return "topLeft"; }
 
     @JsonIgnore
-    public abstract double getMetersPerUnit();
+    public abstract BigDecimal getMetersPerUnit();
 
     @JsonIgnore
     public abstract int getTileLevel();
-
 }

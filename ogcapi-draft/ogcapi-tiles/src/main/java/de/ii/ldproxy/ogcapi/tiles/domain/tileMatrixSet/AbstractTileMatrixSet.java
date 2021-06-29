@@ -9,6 +9,8 @@ package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 public abstract class AbstractTileMatrixSet implements TileMatrixSet {
@@ -34,8 +36,10 @@ public abstract class AbstractTileMatrixSet implements TileMatrixSet {
                                          .wellKnownScaleSet(getWellKnownScaleSet())
                                          .boundingBox(ImmutableTilesBoundingBox.builder()
                                                                                .crsEpsg(getCrs())
-                                                                               .lowerLeft(bbox.getXmin(), bbox.getYmin())
-                                                                               .upperRight(bbox.getXmax(), bbox.getYmax())
+                                                                               .lowerLeft(getBigDecimal(bbox.getXmin()),
+                                                                                          getBigDecimal(bbox.getYmin()))
+                                                                               .upperRight(getBigDecimal(bbox.getXmax()),
+                                                                                           getBigDecimal(bbox.getYmax()))
                                                                                .build())
                                          .tileMatrices(getTileMatrices(getMinLevel(), getMaxLevel()))
                                          .build();

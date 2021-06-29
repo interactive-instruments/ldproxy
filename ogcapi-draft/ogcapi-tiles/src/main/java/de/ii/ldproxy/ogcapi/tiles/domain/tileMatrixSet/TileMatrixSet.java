@@ -16,6 +16,8 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -278,10 +280,15 @@ public interface TileMatrixSet extends ContentExtension {
                                   .tileHeight(getTileSize())
                                   .matrixWidth(getCols(level))
                                   .matrixHeight(getRows(level))
-                                  .metersPerUnit(getMetersPerUnit())
-                                  .scaleDenominator(initScaleDenominator / Math.pow(2, level))
-                                  .pointOfOrigin(new double[]{bbox.getXmin(), bbox.getYmax()})
+                                  .metersPerUnit(getBigDecimal(getMetersPerUnit()))
+                                  .scaleDenominator(getBigDecimal(initScaleDenominator / Math.pow(2, level)))
+                                  .pointOfOrigin(new BigDecimal[]{ getBigDecimal(bbox.getXmin()), getBigDecimal(bbox.getYmax()) })
                                   .build();
+    }
+
+    default BigDecimal getBigDecimal(double value) {
+        BigDecimal decimalValue = new BigDecimal(value);
+        return decimalValue.setScale(TileMatrix.SIGNIFICANT_DIGITS - decimalValue.precision() + decimalValue.scale(), RoundingMode.HALF_UP);
     }
 
     /**
