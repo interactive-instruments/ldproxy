@@ -35,13 +35,13 @@ public abstract class TileMatrixSetData {
 
     public abstract List<Link> getLinks();
 
-    public abstract String getSupportedCRS();
+    public abstract String getCrs();
 
     // TODO Ignore for now, wait for resolution of https://github.com/opengeospatial/ogcapi-code-sprint-2021-05/issues/38
     @JsonIgnore
     public abstract Optional<URI> getWellKnownScaleSet();
 
-    public abstract Optional<URI> getTileMatrixSetURI();
+    public abstract Optional<URI> getUri();
 
     public abstract Optional<TilesBoundingBox> getBoundingBox();
 
