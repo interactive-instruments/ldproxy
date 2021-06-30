@@ -183,7 +183,7 @@ class FeatureMerger {
                     }
                     LOGGER.trace("{} grouped by {}: {} polygons", context, values, geom.getNumGeometries());
                     if (Objects.isNull(geom) || geom.isEmpty() || geom.getNumGeometries() == 0 || !geom.isValid()) {
-                        LOGGER.warn("{}: Merged polygon feature grouped by {} has no or an invalid geometry. Using {} unmerged features.", context, values, value.size()+1);
+                        LOGGER.debug("{}: Merged polygon feature grouped by {} has no or an invalid geometry. Using {} unmerged features.", context, values, value.size()+1);
                         result.add(key);
                         value.forEach(result::add);
 
@@ -285,7 +285,7 @@ class FeatureMerger {
                     }
                     LOGGER.trace("{} grouped by {}: {} line strings", context, values, geom.getNumGeometries());
                     if (geom.isEmpty() || geom.getNumGeometries() == 0 || !geom.isValid()) {
-                        LOGGER.warn("{}: Merged line string feature grouped by {} has no or an invalid geometry. Using {} unmerged features.", context, values, value.size());
+                        LOGGER.debug("{}: Merged line string feature grouped by {} has no or an invalid geometry. Using {} unmerged features.", context, values, value.size());
                         result.add(key);
                         value.forEach(result::add);
 

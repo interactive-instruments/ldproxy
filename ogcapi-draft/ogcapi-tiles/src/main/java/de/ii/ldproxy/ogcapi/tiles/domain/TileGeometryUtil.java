@@ -314,7 +314,7 @@ class TileGeometryUtil {
                 double areaChange = Math.abs(newGeom.getArea() - geom.getArea()) / geom.getArea();
                 if (areaChange > maxRelativeAreaChangeInPolygonRepair &&
                         Math.abs(newGeom.getArea() - geom.getArea()) > maxAbsoluteAreaChangeInPolygonRepair) {
-                    LOGGER.warn("Reduce failed, valid={}, initial area {}, new area {}.", newGeom.isValid(), geom.getArea(), newGeom.getArea());
+                    LOGGER.debug("Reduce failed, valid={}, initial area {}, new area {}.", newGeom.isValid(), geom.getArea(), newGeom.getArea());
                     newGeom = GeometryPrecisionReducer.reducePointwise(geom, precisionModel);
                 }
             }
