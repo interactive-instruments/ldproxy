@@ -32,7 +32,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.impl.PackedCoordinateSequenceFactory;
 import org.locationtech.jts.geom.util.AffineTransformation;
-import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +48,6 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
 import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MINIMUM_SIZE_IN_PIXEL;
 
 public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
@@ -71,14 +68,11 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private final TilesConfiguration tilesConfiguration;
     private final VectorTileEncoder encoder;
     private final AffineTransformation affineTransformation;
-    private final double maxRelativeAreaChangeInPolygonRepair;
-    private final double maxAbsoluteAreaChangeInPolygonRepair;
     private final double minimumSizeInPixel;
     private final String layerName;
     private final List<String> properties;
     private final boolean allProperties;
     private final PrecisionModel tilePrecisionModel;
-    private final GeometryPrecisionReducer reducer;
     private final GeometryFactory geometryFactoryWorld;
     private final GeometryFactory geometryFactoryTile;
     private final Pattern separatorPattern;
@@ -131,7 +125,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         this.geometryFactoryWorld = new GeometryFactory();
         this.tilePrecisionModel = new PrecisionModel((double)tileMatrixSet.getTileExtent() / (double)tileMatrixSet.getTileSize());
         this.geometryFactoryTile = new GeometryFactory(tilePrecisionModel);
-        this.reducer = new GeometryPrecisionReducer(tilePrecisionModel);
 
         if (collectionId!=null) {
             tilesConfiguration = transformationContext.getConfiguration();
@@ -144,10 +137,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         this.encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         this.affineTransformation = tile.createTransformNativeToTile();
 
-        this.maxRelativeAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepairDerived()) ?
-                tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepairDerived() : MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
-        this.maxAbsoluteAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepairDerived()) ?
-                tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepairDerived() : MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
         this.minimumSizeInPixel = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMinimumSizeInPixelDerived()) ?
                 tilesConfiguration.getMinimumSizeInPixelDerived() : MINIMUM_SIZE_IN_PIXEL;
 
@@ -275,7 +264,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         }
 
         try {
-            Geometry tileGeometry = TileGeometryUtil.getTileGeometry(currentGeometry, affineTransformation, clipGeometry, reducer, tilePrecisionModel, minimumSizeInPixel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+            Geometry tileGeometry = TileGeometryUtil.getTileGeometry(currentGeometry, affineTransformation, clipGeometry, tilePrecisionModel, minimumSizeInPixel);
             if (Objects.isNull(tileGeometry)) {
                 return;
             }

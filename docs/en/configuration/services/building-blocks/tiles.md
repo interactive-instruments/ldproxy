@@ -49,8 +49,6 @@ Supported tile matrix sets include [WebMercatorQuad](http://docs.opengeospatial.
 |`cache` |string |`FILES` |`FILES` saves each tile as a file in the file system. `MBTILES` saves each tile in an MBTiles file (one MBTiles file per tile set).
 |`limit` |integer |100000 |Maximum number of features contained in a single tile per query.
 |`minimumSizeInPixel`| number |0.5 |Features with line geometries shorter that the given value are excluded from tiles. Features with surface geometries smaller than the square of the given value are excluded from the tiles. The value `0.5` corresponds to half a "pixel" in the used coordinate reference system.
-|`maxRelativeAreaChangeInPolygonRepair` | number |0.1 |Maximum allowed relative change of surface sizes when attempting to fix an invalid surface geometry. The fixed geometry is only used when the condition is met. The value `0.1` means 10%.
-|`maxAbsoluteAreaChangeInPolygonRepair` | number |1.0 |Maximum allowed absolute change of surface sizes when attempting to fix an invalid surface geometry. The fixed geometry is only used when the condition is met. The value `1.0` corresponds to one "pixel" in the used coordinate reference system.
 
 ### Example
 

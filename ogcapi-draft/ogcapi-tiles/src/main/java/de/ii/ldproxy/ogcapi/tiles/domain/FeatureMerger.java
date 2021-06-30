@@ -19,6 +19,7 @@ import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.geom.util.GeometryFixer;
 import org.locationtech.jts.operation.linemerge.LineMerger;
 import org.locationtech.jts.operation.overlayng.OverlayNG;
 import org.slf4j.Logger;
@@ -173,6 +174,8 @@ class FeatureMerger {
                                 Iterator<Polygon> iter = polygons.iterator();
                                 geom = iter.next();
                                 while (iter.hasNext()) {
+                                    // TODO use OverlayNGRobust instead?
+                                    // geom = OverlayNGRobust.overlay(geom, iter.next(), OverlayNG.SYMDIFFERENCE);
                                     OverlayNG overlay = new OverlayNG(geom, iter.next(), precisionModel, OverlayNG.SYMDIFFERENCE);
                                     overlay.setStrictMode(true);
                                     geom = overlay.getResult();
@@ -182,6 +185,10 @@ class FeatureMerger {
                             }
                     }
                     LOGGER.trace("{} grouped by {}: {} polygons", context, values, geom.getNumGeometries());
+                    if (!geom.isValid()) {
+                        geom = new GeometryFixer(geom).getResult();
+                    }
+
                     if (Objects.isNull(geom) || geom.isEmpty() || geom.getNumGeometries() == 0 || !geom.isValid()) {
                         LOGGER.debug("{}: Merged polygon feature grouped by {} has no or an invalid geometry. Using {} unmerged features.", context, values, value.size()+1);
                         result.add(key);
@@ -204,7 +211,6 @@ class FeatureMerger {
                                            .properties(propertiesBuilder.build())
                                            .geometry(geom).build());
                     }
-
                 });
 
         return result.build();
@@ -284,6 +290,10 @@ class FeatureMerger {
                             }
                     }
                     LOGGER.trace("{} grouped by {}: {} line strings", context, values, geom.getNumGeometries());
+                    if (!geom.isValid()) {
+                        geom = new GeometryFixer(geom).getResult();
+                    }
+
                     if (geom.isEmpty() || geom.getNumGeometries() == 0 || !geom.isValid()) {
                         LOGGER.debug("{}: Merged line string feature grouped by {} has no or an invalid geometry. Using {} unmerged features.", context, values, value.size());
                         result.add(key);
