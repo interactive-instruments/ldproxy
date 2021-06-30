@@ -40,7 +40,6 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import de.ii.xtraplatform.streams.domain.Http;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import no.ecc.vectortile.VectorTileDecoder;
@@ -89,14 +88,13 @@ public class TileFormatMVT implements TileFormatExtension {
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
     private final TilesCache tilesCache;
-    private final Http http;
 
-    public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory, @Requires FeaturesQuery queryParser,
-                         @Requires TilesCache tilesCache, @Requires Http http) {
+    public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
+                         @Requires FeaturesQuery queryParser,
+                         @Requires TilesCache tilesCache) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
         this.tilesCache = tilesCache;
-        this.http = http;
     }
 
     @Override
@@ -134,7 +132,7 @@ public class TileFormatMVT implements TileFormatExtension {
     @Override
     public Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContextTiles transformationContext, Optional<Locale> language) {
 
-        return Optional.of(new FeatureTransformerTilesMVT(transformationContext, http.getDefaultClient()));
+        return Optional.of(new FeatureTransformerTilesMVT(transformationContext));
     }
 
     @Override

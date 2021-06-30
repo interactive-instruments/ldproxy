@@ -53,9 +53,6 @@ import org.sqlite.SQLiteJDBCLoader;
 public class CapabilityVectorTiles implements ApiBuildingBlock {
 
     public static final int LIMIT_DEFAULT = 100000;
-    public static final int MAX_POLYGON_PER_TILE_DEFAULT = 10000;
-    public static final int MAX_LINE_STRING_PER_TILE_DEFAULT = 10000;
-    public static final int MAX_POINT_PER_TILE_DEFAULT = 10000;
     public static final double MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR = 0.1;
     public static final double MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR = 1.0;
     public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;
@@ -91,9 +88,6 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                                                                    .zoomLevelsCache(ImmutableMap.of())
                                                                                                    .seeding(ImmutableMap.of())
                                                                                                    .limit(LIMIT_DEFAULT)
-                                                                                                   .maxPolygonPerTileDefault(MAX_POLYGON_PER_TILE_DEFAULT)
-                                                                                                   .maxLineStringPerTileDefault(MAX_LINE_STRING_PER_TILE_DEFAULT)
-                                                                                                   .maxPointPerTileDefault(MAX_POINT_PER_TILE_DEFAULT)
                                                                                                    .singleCollectionEnabled(true)
                                                                                                    .multiCollectionEnabled(true)
                                                                                                    .ignoreInvalidGeometries(false)

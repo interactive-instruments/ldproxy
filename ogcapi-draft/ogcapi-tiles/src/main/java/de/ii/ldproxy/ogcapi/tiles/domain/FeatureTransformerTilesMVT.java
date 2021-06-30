@@ -18,7 +18,6 @@ import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
-import de.ii.xtraplatform.streams.domain.HttpClient;
 import no.ecc.vectortile.VectorTileEncoder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.locationtech.jts.geom.Coordinate;
@@ -41,7 +40,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,9 +52,6 @@ import java.util.Vector;
 import java.util.regex.Pattern;
 
 import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_LINE_STRING_PER_TILE_DEFAULT;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_POINT_PER_TILE_DEFAULT;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_POLYGON_PER_TILE_DEFAULT;
 import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
 import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MINIMUM_SIZE_IN_PIXEL;
 
@@ -67,20 +62,17 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
     private final OutputStream outputStream;
 
-    private final int limit;
     private final String collectionId;
     private final Tile tile;
     private final TileMatrixSet tileMatrixSet;
     private final CrsTransformer crsTransformer;
     private final boolean swapCoordinates;
     private final FeatureTransformationContextTiles transformationContext;
+    // TODO currently unused, remove again?
     private final Map<String, Object> processingParameters;
     private final TilesConfiguration tilesConfiguration;
     private final VectorTileEncoder encoder;
     private final AffineTransformation affineTransformation;
-    private final int polygonLimit;
-    private final int lineStringLimit;
-    private final int pointLimit;
     private final double maxRelativeAreaChangeInPolygonRepair;
     private final double maxAbsoluteAreaChangeInPolygonRepair;
     private final double minimumSizeInPixel;
@@ -109,9 +101,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private final StringBuilder currentValueBuilder = new StringBuilder();
     private FeatureProperty currentProperty = null;
     private String currentPropertyName = null;
-    private final int polygonCount = 0;
-    private final int lineStringCount = 0;
-    private final int pointCount = 0;
     private final Polygon clipGeometry;
     private final Set<MvtFeature> mergeFeatures;
 
@@ -124,13 +113,12 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
     private long returned = 0;
     private long written = 0;
 
-    public FeatureTransformerTilesMVT(FeatureTransformationContextTiles transformationContext, HttpClient httpClient) {
+    public FeatureTransformerTilesMVT(FeatureTransformationContextTiles transformationContext) {
         super(TilesConfiguration.class,
               transformationContext.getApiData(), transformationContext.getCollectionId(),
               transformationContext.getCodelists(), transformationContext.getServiceUrl(),
               transformationContext.isFeatureCollection());
         this.outputStream = transformationContext.getOutputStream();
-        this.limit = transformationContext.getLimit();
         this.crsTransformer = transformationContext.getCrsTransformer()
                                                    .orElse(null);
         this.swapCoordinates = transformationContext.shouldSwapCoordinates();
@@ -158,12 +146,6 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         this.encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         this.affineTransformation = tile.createTransformNativeToTile();
 
-        this.polygonLimit = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxPolygonPerTileDefaultDerived()) ?
-                tilesConfiguration.getMaxPolygonPerTileDefaultDerived() : MAX_POLYGON_PER_TILE_DEFAULT;
-        this.lineStringLimit = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxLineStringPerTileDefaultDerived()) ?
-                tilesConfiguration.getMaxLineStringPerTileDefaultDerived() : MAX_LINE_STRING_PER_TILE_DEFAULT;
-        this.pointLimit = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxPointPerTileDefaultDerived()) ?
-                tilesConfiguration.getMaxPointPerTileDefaultDerived() : MAX_POINT_PER_TILE_DEFAULT;
         this.maxRelativeAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepairDerived()) ?
                 tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepairDerived() : MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
         this.maxAbsoluteAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepairDerived()) ?
@@ -184,10 +166,10 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         final int size = tileMatrixSet.getTileSize();
         final int buffer = 8;
         CoordinateXY[] coords = new CoordinateXY[5];
-        coords[0] = new CoordinateXY(0 - buffer, size + buffer);
-        coords[1] = new CoordinateXY(size + buffer, size + buffer);
-        coords[2] = new CoordinateXY(size + buffer, 0 - buffer);
-        coords[3] = new CoordinateXY(0 - buffer, 0 - buffer);
+        coords[0] = new CoordinateXY(-buffer, size+buffer);
+        coords[1] = new CoordinateXY(size+buffer, size+buffer);
+        coords[2] = new CoordinateXY(size+buffer, -buffer);
+        coords[3] = new CoordinateXY(-buffer, -buffer);
         coords[4] = coords[0];
         this.clipGeometry = geometryFactoryTile.createPolygon(coords);
     }
