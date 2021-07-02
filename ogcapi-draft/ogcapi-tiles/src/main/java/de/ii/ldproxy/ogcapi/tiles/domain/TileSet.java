@@ -34,7 +34,7 @@ public abstract class TileSet extends Metadata2 {
     public abstract Optional<String> getTileMatrixSetDefinition();
 
     public abstract List<TileMatrixSetLimits> getTileMatrixSetLimits();
-    public abstract Optional<TilesBoundingBox> getBoundingBox();
+    public abstract TilesBoundingBox getBoundingBox();
     public abstract Optional<TilePoint> getCenterPoint();
 
     public abstract List<TileLayer> getLayers();

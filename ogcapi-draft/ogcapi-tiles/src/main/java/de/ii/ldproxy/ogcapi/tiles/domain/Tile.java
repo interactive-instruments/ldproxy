@@ -60,7 +60,7 @@ public abstract class Tile {
 
     /**
      *
-     * @return the ids of the collections included as layers in the tile, empty set means all collections
+     * @return the ids of the collections included as layers in the tile, empty list means all collections
      */
     public abstract List<String> getCollectionIds();
 
@@ -88,6 +88,12 @@ public abstract class Tile {
      *         to support generating multi-layer tiles from multiple single-layer tiles
      */
     public abstract boolean getTemporary();
+
+    /**
+     *
+     * @return {@code true}, if the tile is a tile for the /tiles resources
+     */
+    public abstract boolean isDatasetTile();
 
     @Nullable
     @Value.Derived

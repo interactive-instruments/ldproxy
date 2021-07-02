@@ -17,8 +17,10 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
@@ -30,34 +32,15 @@ public abstract class TileProviderMbtiles extends TileProvider {
     @Nullable
     public abstract String getFilename();
 
-    // TODO MBTILES: derive from metadata
     @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
-    public Map<String, MinMax> getZoomLevels() {
-        return ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder()
-                .min(0)
-                .max(14)
-                .getDefault(7)
-                .build());
-    }
+    public abstract Map<String, MinMax> getZoomLevels();
 
-    // TODO MBTILES: derive from metadata
-    @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
-    public String getTileEncoding() {
-        return "MVT";
-    }
-
-    // TODO MBTILES: derive from metadata
     @Nullable
     @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
-    public double[] getCenter() {
-        return new double[]{-1.5, 53.0};
-    }
+    public abstract String getTileEncoding();
+
+    @JsonIgnore
+    public abstract List<Double> getCenter();
 
     @Override
     @JsonIgnore
