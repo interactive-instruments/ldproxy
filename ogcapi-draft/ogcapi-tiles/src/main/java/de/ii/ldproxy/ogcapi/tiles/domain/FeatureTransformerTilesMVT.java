@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -233,7 +231,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         } catch (Exception e) {
             throw new RuntimeException(String.format("Failure to write the tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache.",
                                                      tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
-                                                     tile.getApi().getId(), tile.getOutputFormat().getExtension()), e);
+                                                     tile.getApiData().getId(), tile.getOutputFormat().getExtension()), e);
         }
 
         if (LOGGER.isDebugEnabled()) {

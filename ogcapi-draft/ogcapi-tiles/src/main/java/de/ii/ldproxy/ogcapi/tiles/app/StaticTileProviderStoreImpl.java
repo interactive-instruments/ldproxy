@@ -114,14 +114,14 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
 
     @Override
     public InputStream getTile(Path tileProvider, Tile tile) {
-        String key = String.join("/", tile.getApi().getId(), tile.isDatasetTile() ? CapabilityVectorTiles.DATASET_TILES : tile.getCollectionId());
+        String key = String.join("/", tile.getApiData().getId(), tile.isDatasetTile() ? CapabilityVectorTiles.DATASET_TILES : tile.getCollectionId());
         MbtilesTileset tileset = mbtiles.get(key);
         try {
             return tileset.getTile(tile).orElseThrow(() -> new javax.ws.rs.NotFoundException());
         } catch (Exception e) {
             throw new RuntimeException(String.format("Error accessing tile %d/%d/%d in dataset '%s' in Mbtiles file '%s', format '%s'.",
                                                      tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
-                                                     tile.getApi().getId(), tileProvider.toString(), tile.getOutputFormat().getExtension()), e);
+                                                     tile.getApiData().getId(), tileProvider.toString(), tile.getOutputFormat().getExtension()), e);
         }
     }
 

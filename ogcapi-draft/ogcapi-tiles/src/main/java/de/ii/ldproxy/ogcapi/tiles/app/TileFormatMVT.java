@@ -55,7 +55,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
@@ -155,8 +154,7 @@ public class TileFormatMVT implements TileFormatExtension {
                              .orElse(null) :
                 null;
 
-        String featureTypeId = tile.getApi()
-                                   .getData()
+        String featureTypeId = tile.getApiData()
                                    .getCollections()
                                    .get(collectionId)
                                    .getExtension(FeaturesCoreConfiguration.class)
@@ -184,7 +182,7 @@ public class TileFormatMVT implements TileFormatExtension {
             }
         }
 
-        OgcApiDataV2 apiData = tile.getApi().getData();
+        OgcApiDataV2 apiData = tile.getApiData();
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
         final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
@@ -267,7 +265,7 @@ public class TileFormatMVT implements TileFormatExtension {
                             // maybe the file is still generated, try to wait once before giving up
                             String msg = "Failure to access the single-layer tile {}/{}/{}/{} in dataset '{}', layer '{}', format '{}'. Trying again ...";
                             LOGGER.info(msg, tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
-                                        singleLayerTile.getApi().getId(), collectionId, getExtension());
+                                        singleLayerTile.getApiData().getId(), collectionId, getExtension());
                         } catch (IllegalArgumentException e) {
                             // another problem generating the tile, remove the problematic tile file from the cache
                             try {
@@ -277,7 +275,7 @@ public class TileFormatMVT implements TileFormatExtension {
                             }
                             throw new RuntimeException(String.format("Failure to process the single-layer tile %s/%d/%d/%d in dataset '%s', layer '%s', format '%s'.",
                                                                      tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
-                                                                     singleLayerTile.getApi().getId(), collectionId, getExtension()), e);
+                                                                     singleLayerTile.getApiData().getId(), collectionId, getExtension()), e);
                         }
                     } else {
                         try {

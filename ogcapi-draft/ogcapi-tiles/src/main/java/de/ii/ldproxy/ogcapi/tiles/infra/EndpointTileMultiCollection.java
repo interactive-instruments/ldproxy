@@ -216,7 +216,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                 .findAny()
                 .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
-        TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels, crsTransformerFactory)
+        TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels)
                 .stream()
                 .filter(limits -> limits.getTileMatrix().equals(tileMatrix))
                 .findAny()
@@ -247,7 +247,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
-                    .api(api)
+                    .apiData(apiData)
                     .outputFormat(outputFormat)
                     .temporary(false)
                     .isDatasetTile(true)
@@ -301,7 +301,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                 .tileLevel(level)
                 .tileRow(row)
                 .tileCol(col)
-                .api(api)
+                .apiData(apiData)
                 .temporary(!useCache)
                 .isDatasetTile(true)
                 .featureProvider(featureProvider)

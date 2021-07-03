@@ -69,7 +69,6 @@ public class TilesHelper {
      * @param collectionId the collection, empty = all collections in the dataset
      * @param links links to include in the object
      * @param uriCustomizer optional URI of the resource
-     * @param crsTransformerFactory helper to transform coordinates
      * @param limitsGenerator helper to generate the limits for each zoom level based on the bbox of the data
      * @param schemaGeneratorFeature helper to generate the JSON Schema of the features
      * @return the tile set metadata
@@ -81,7 +80,6 @@ public class TilesHelper {
                                        Optional<String> collectionId,
                                        List<Link> links,
                                        Optional<URICustomizer> uriCustomizer,
-                                       CrsTransformerFactory crsTransformerFactory,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
                                        SchemaGeneratorGeoJson schemaGeneratorFeature) {
 
@@ -100,8 +98,8 @@ public class TilesHelper {
                                                                                                 .ensureLastPathSegments("tileMatrixSets", tileMatrixSet.getId())
                                                                                                 .toString()));
         builder.tileMatrixSetLimits(collectionId.isPresent()
-                                            ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels, crsTransformerFactory)
-                                            : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels, crsTransformerFactory));
+                                            ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
+                                            : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
 
         Optional<BoundingBox> bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
         bbox.ifPresent(boundingBox -> builder.boundingBox(ImmutableTilesBoundingBox.builder()
