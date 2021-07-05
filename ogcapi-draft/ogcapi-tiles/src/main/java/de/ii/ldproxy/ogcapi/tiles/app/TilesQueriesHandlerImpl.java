@@ -11,6 +11,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -20,6 +21,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -45,18 +47,15 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTilesBoundingBox;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -77,20 +76,18 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -111,7 +108,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final EntityRegistry entityRegistry;
     private final ExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
-    private final TileCache tileCache;
+    private final TilesCache tilesCache;
     private final StaticTileProviderStore staticTileProviderStore;
     private final SchemaGeneratorGeoJson schemaGeneratorFeature;
 
@@ -121,7 +118,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires EntityRegistry entityRegistry,
                                    @Requires ExtensionRegistry extensionRegistry,
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                                   @Requires TileCache tileCache,
+                                   @Requires TilesCache tilesCache,
                                    @Requires StaticTileProviderStore staticTileProviderStore,
                                    @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
         this.i18n = i18n;
@@ -132,7 +129,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                         .metrics();
         this.extensionRegistry = extensionRegistry;
         this.limitsGenerator = limitsGenerator;
-        this.tileCache = tileCache;
+        this.tilesCache = tilesCache;
         this.staticTileProviderStore = staticTileProviderStore;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
 
@@ -142,7 +139,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .put(Query.SINGLE_LAYER_TILE, QueryHandler.with(QueryInputTileSingleLayer.class, this::getSingleLayerTileResponse))
                 .put(Query.MULTI_LAYER_TILE, QueryHandler.with(QueryInputTileMultiLayer.class, this::getMultiLayerTileResponse))
                 .put(Query.EMPTY_TILE, QueryHandler.with(QueryInputTileEmpty.class, this::getEmptyTileResponse))
-                .put(Query.TILE_STREAM, QueryHandler.with(QueryInputTileStream.class, this::getTileStreamResponse))
+                .put(Query.TILE_FILE, QueryHandler.with(QueryInputTileFile.class, this::getTileFileResponse))
                 .put(Query.MBTILES_TILE, QueryHandler.with(QueryInputTileMbtilesTile.class, this::getMbtilesTileResponse))
                 .build();
     }
@@ -165,7 +162,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         Optional<FeatureTypeConfigurationOgcApi> featureType = collectionId.map(s -> requestContext.getApi().getData().getCollections().get(s));
         Map<String, MinMax> tileMatrixSetZoomLevels = queryInput.getTileMatrixSetZoomLevels();
-        List<Double> center = queryInput.getCenter();
+        double[] center = queryInput.getCenter();
 
         List<ApiMediaType> tileSetFormats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)
                                                              .stream()
@@ -212,20 +209,17 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                     .collect(Collectors.toUnmodifiableList());
 
         builder.tilesets(tileMatrixSets.stream()
-                                       .map(tileMatrixSet -> TilesHelper.buildTileSet(apiData,
-                                                                                      tileMatrixSet,
-                                                                                      tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
-                                                                                      center,
-                                                                                      collectionId,
-                                                                                      vectorTilesLinkGenerator.generateTileSetEmbeddedLinks(requestContext.getUriCustomizer(),
-                                                                                                                                            tileMatrixSet.getId(),
-                                                                                                                                            tileFormats,
-                                                                                                                                            i18n,
-                                                                                                                                            requestContext.getLanguage()),
-                                                                                      Optional.of(requestContext.getUriCustomizer().copy()),
-                                                                                      crsTransformerFactory,
-                                                                                      limitsGenerator,
-                                                                                      schemaGeneratorFeature))
+                                       .map(tileMatrixSet -> getTileSet(apiData,
+                                                                    tileMatrixSet,
+                                                                    tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
+                                                                    center,
+                                                                    collectionId,
+                                                                    vectorTilesLinkGenerator.generateTileSetEmbeddedLinks(requestContext.getUriCustomizer(),
+                                                                                                               tileMatrixSet.getId(),
+                                                                                                               tileFormats,
+                                                                                                               i18n,
+                                                                                                               requestContext.getLanguage()),
+                                                                    requestContext.getUriCustomizer().copy()))
                                        .collect(Collectors.toUnmodifiableList()));
 
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
@@ -263,12 +257,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                          requestContext.getLanguage());
 
         MinMax zoomLevels = queryInput.getZoomLevels();
-        List<Double> center = queryInput.getCenter();
-        TileSet tileset = TilesHelper.buildTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
-                                                   zoomLevels, center, collectionId, links,
-                                                   Optional.of(requestContext.getUriCustomizer().copy()),
-                                                   crsTransformerFactory, limitsGenerator,
-                                                   schemaGeneratorFeature);
+        double[] center = queryInput.getCenter();
+        TileSet tileset = getTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
+                                     zoomLevels, center,
+                                     collectionId, links,
+                                     requestContext.getUriCustomizer().copy());
         
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
                 .entity(outputFormat.getTileSetEntity(tileset, apiData, collectionId, requestContext))
@@ -316,7 +309,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .apiData(apiData)
                     .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                     .tile(tile)
-                    .tileCache(tileCache)
+                    .tileFile(tilesCache.getFile(tile))
                     .collectionId(collectionId)
                     .ogcApiRequest(requestContext)
                     .crsTransformer(crsTransformer)
@@ -436,17 +429,22 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             // TODO limitation of the current model: all layers have to come from the same feature provider and use the same CRS
 
             Tile tile = singleLayerTileMap.get(collectionId);
+            Path tileFile;
+            try {
+                tileFile = tilesCache.getFile(tile);
+            } catch (IOException e) {
+                throw new RuntimeException("Error accessing the tile cache.", e);
+            }
             ByteArrayOutputStream singleLayerOutputStream = byteArrayMap.get(collectionId);
-            if (!multiLayerTile.getTemporary()) {
+            if (!multiLayerTile.getTemporary() && Files.exists(tileFile)) {
                 // use cached tile
                 try {
-                    Optional<InputStream> tileContent = tileCache.getTile(tile);
-                    if (tileContent.isPresent()) {
-                        ByteStreams.copy(tileContent.get(), singleLayerOutputStream);
+                    if (Files.size(tileFile)>0) {
+                        singleLayerOutputStream.write(Files.readAllBytes(tileFile));
                         singleLayerOutputStream.flush();
-                        continue;
                     }
-                } catch (SQLException | IOException e) {
+                    continue;
+                } catch (IOException e) {
                     // could not read the cache, generate the tile
                 }
             }
@@ -464,7 +462,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                         .apiData(apiData)
                         .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                         .tile(tile)
-                        .tileCache(tileCache)
+                        .tileFile(tilesCache.getFile(tile))
                         .collectionId(collectionId)
                         .ogcApiRequest(requestContext)
                         .crsTransformer(crsTransformer)
@@ -526,13 +524,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         // try to write/update tile in cache, if all collections have been processed
         if (result.isComplete) {
+            Path tileFile;
             try {
-                tileCache.storeTile(multiLayerTile, result.byteArray);
-            } catch (Exception e) {
-                String msg = "Failure to write the multi-layer file of tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache. Reason: {}";
-                LOGGER.info(msg, tileMatrixSet.getId(), tileLevel, tileRow, tileCol, api.getId(), outputFormat.getExtension(), e.getMessage());
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Stracktrace:", e);
+                tileFile = tilesCache.getFile(multiLayerTile);
+            } catch (IOException e) {
+                throw new RuntimeException("Error accessing the tile cache.", e);
+            }
+            if (Files.notExists(tileFile) || Files.isWritable(tileFile)) {
+                try {
+                    Files.write(tileFile, result.byteArray);
+                } catch (IOException e) {
+                    String msg = "Failure to write the multi-layer file of tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache.";
+                    LOGGER.info(msg, tileMatrixSet.getId(), tileLevel, tileRow, tileCol, api.getId(), outputFormat.getExtension());
                 }
             }
         }
@@ -542,9 +545,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .build();
     }
 
-    private Response getTileStreamResponse(QueryInputTileStream queryInput, ApiRequestContext requestContext) {
+    private Response getTileFileResponse(QueryInputTileFile queryInput, ApiRequestContext requestContext) {
 
-        StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(queryInput.getTileContent(), outputStream);
+        StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(new FileInputStream(queryInput.getTileFile().toFile()), outputStream);
 
         List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
                                                                      requestContext.getMediaType(),
@@ -612,6 +615,96 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 throw new IllegalStateException("Feature stream error.", e.getCause());
             }
         };
+    }
+
+    private TileSet getTileSet(OgcApiDataV2 apiData, TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
+                               Optional<String> collectionId, List<Link> links, URICustomizer uriCustomizer) {
+        ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
+                                                           .dataType(TileSet.DataType.vector);
+
+        builder.tileMatrixSetId(tileMatrixSet.getId());
+
+        if (tileMatrixSet.getURI().isPresent())
+            builder.tileMatrixSetURI(tileMatrixSet.getURI().get().toString());
+        else
+            builder.tileMatrixSet(tileMatrixSet.getTileMatrixSetData());
+
+        builder.tileMatrixSetDefinition(uriCustomizer.removeLastPathSegments(collectionId.isPresent() ? 3 : 1)
+                                                     .clearParameters()
+                                                     .ensureLastPathSegments("tileMatrixSets", tileMatrixSet.getId())
+                                                     .toString())
+               .tileMatrixSetLimits(collectionId.isPresent()
+                                            ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels, crsTransformerFactory)
+                                            : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels, crsTransformerFactory));
+
+        if (zoomLevels.getDefault().isPresent() || Objects.nonNull(center)) {
+            ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();
+            zoomLevels.getDefault().ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
+            if (Objects.nonNull(center))
+                builder2.addCoordinates(center);
+            builder.centerPoint(builder2.build());
+        }
+
+        // prepare a map with the JSON schemas of the feature collections used in the style
+        SchemaGeneratorFeature.SCHEMA_TYPE schemaType = SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT;
+        Map<String, JsonSchemaObject> schemaMap = collectionId.isPresent()
+                ? apiData.getCollections()
+                         .get(collectionId.get())
+                         .getExtension(TilesConfiguration.class)
+                         .filter(ExtensionConfiguration::isEnabled)
+                         .map(config -> ImmutableMap.of(collectionId.get(), schemaGeneratorFeature.getSchemaJson(apiData, collectionId.get(), Optional.empty(), schemaType)))
+                         .orElse(ImmutableMap.of())
+                : apiData.getCollections()
+                         .entrySet()
+                         .stream()
+                         .filter(entry -> {
+                             Optional<TilesConfiguration> config = entry.getValue().getExtension(TilesConfiguration.class);
+                             return entry.getValue().getEnabled() &&
+                                     config.isPresent() &&
+                                     config.get().getMultiCollectionEnabledDerived();
+                         })
+                         .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemaGeneratorFeature.getSchemaJson(apiData, entry.getKey(), Optional.empty(), schemaType)))
+                         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        schemaMap.entrySet()
+                 .stream()
+                 .forEach(entry -> {
+                     String collectionId2 = entry.getKey();
+                     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
+                                                                            .get(collectionId2);
+                     JsonSchemaObject schema = entry.getValue();
+                     ImmutableTileLayer.Builder builder2 = ImmutableTileLayer.builder()
+                                                                             .id(collectionId2)
+                                                                             .title(collectionData.getLabel())
+                                                                             .description(collectionData.getDescription())
+                                                                             .dataType(TileSet.DataType.vector);
+
+                     final JsonSchema geometry = schema.getProperties().get("geometry");
+                     if (Objects.nonNull(geometry)) {
+                         String geomAsString = geometry.toString();
+                         boolean point = geomAsString.contains("GeoJSON Point") || geomAsString.contains("GeoJSON MultiPoint");
+                         boolean line = geomAsString.contains("GeoJSON LineString") || geomAsString.contains("GeoJSON MultiLineString");
+                         boolean polygon = geomAsString.contains("GeoJSON Polygon") || geomAsString.contains("GeoJSON MultiPolygon");
+                         if (point && !line && !polygon)
+                             builder2.geometryType(TileLayer.GeometryType.points);
+                         else if (!point && line && !polygon)
+                             builder2.geometryType(TileLayer.GeometryType.lines);
+                         else if (!point && !line && polygon)
+                             builder2.geometryType(TileLayer.GeometryType.polygons);
+                     }
+
+                     final JsonSchemaObject properties = (JsonSchemaObject) schema.getProperties().get("properties");
+                     builder2.propertiesSchema(ImmutableJsonSchemaObject.builder()
+                                                                        .required(properties.getRequired())
+                                                                        .properties(properties.getProperties())
+                                                                        .patternProperties(properties.getPatternProperties())
+                                                                        .build());
+                     builder.addLayers(builder2.build());
+                 });
+
+        builder.links(links);
+
+        return builder.build();
     }
 
     private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {

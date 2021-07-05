@@ -7,30 +7,31 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 
 /**
- * Access to the store static tile providers.
+ * Access to the cache for tile files.
  */
-public interface StaticTileProviderStore {
+public interface TilesCache {
 
     /**
-     * return and if necessary create the directory for the static tile provider store
+     * return and if necessary create the directory for the tiles cache
      * @return the file object of the directory
      */
-    Path getTileProviderStore();
+    Path getTilesStore();
+
 
     /**
-     * return a static tile provider
-     * @param apiData the API
-     * @param filename the filename of the static tile provider
-     * @return the file object of the store
+     * return and if necessary create the directory for the tile files that cannot be cached
+     * @return the file object of the directory
      */
-    Path getTileProvider(OgcApiDataV2 apiData, String filename);
+    Path getTmpDirectory() throws IOException;
+
+    /**
+     * clean-up files that cannot be cached due to the use of parameters
+     */
+    void cleanup();
 
     /**
      * fetch the file object of a tile in the cache
@@ -38,6 +39,6 @@ public interface StaticTileProviderStore {
      * @param tile     the tile
      * @return the file object of the tile in the cache
      */
-    InputStream getTile(Path tileProvider, Tile tile);
+    Path getFile(Tile tile) throws IOException;
 
 }

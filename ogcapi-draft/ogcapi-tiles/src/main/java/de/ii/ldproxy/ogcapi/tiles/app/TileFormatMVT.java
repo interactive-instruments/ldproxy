@@ -26,7 +26,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.cql.domain.And;
@@ -55,8 +55,8 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.sql.SQLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -87,14 +87,14 @@ public class TileFormatMVT implements TileFormatExtension {
     private final Schema schemaTile = new BinarySchema();
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
-    private final TileCache tileCache;
+    private final TilesCache tilesCache;
 
     public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires FeaturesQuery queryParser,
-                         @Requires TileCache tileCache) {
+                         @Requires TilesCache tilesCache) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
-        this.tileCache = tileCache;
+        this.tilesCache = tilesCache;
     }
 
     @Override
@@ -258,6 +258,7 @@ public class TileFormatMVT implements TileFormatExtension {
                 if (!processedCollections.contains(collectionId)) {
                     Tile singleLayerTile = singleLayerTileMap.get(collectionId);
                     ByteArrayOutputStream outputStream = singleLayerByteArrayMap.get(collectionId);
+                    Path tileFile = tilesCache.getFile(singleLayerTile);
                     if (outputStream.size()>0) {
                         try {
                             List<VectorTileDecoder.Feature> features = decoder.decode(outputStream.toByteArray()).asList();
@@ -270,26 +271,14 @@ public class TileFormatMVT implements TileFormatExtension {
                                         singleLayerTile.getApi().getId(), collectionId, getExtension());
                         } catch (IllegalArgumentException e) {
                             // another problem generating the tile, remove the problematic tile file from the cache
-                            try {
-                                tileCache.deleteTile(singleLayerTile);
-                            } catch (SQLException throwables) {
-                                // ignore
-                            }
+                            Files.delete(tileFile);
                             throw new RuntimeException(String.format("Failure to process the single-layer tile %s/%d/%d/%d in dataset '%s', layer '%s', format '%s'.",
                                                                      tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
                                                                      singleLayerTile.getApi().getId(), collectionId, getExtension()), e);
                         }
-                    } else {
-                        try {
-                            if (tileCache.tileIsEmpty(singleLayerTile).orElse(false)) {
-                                // an empty tile, so we are done for this collection
-                                processedCollections.add(collectionId);
-                            }
-                        } catch (Exception e) {
-                            LOGGER.warn("Failed to retrieve tile {}/{}/{}/{} for collection {} from the cache. Reason: {}",
-                                        singleLayerTile.getTileMatrixSet().getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(),
-                                        singleLayerTile.getTileCol(), collectionId, e.getMessage());
-                        }
+                    } else if (Files.exists(tileFile) && Files.size(tileFile)==0) {
+                        // an empty tile, so we are done for this collection
+                        processedCollections.add(collectionId);
                     }
                 }
             }
@@ -312,7 +301,7 @@ public class TileFormatMVT implements TileFormatExtension {
     @Override
     public double getMaxAllowableOffsetNative(Tile tile) {
         double maxAllowableOffsetTileMatrixSet = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-        double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units once we have better CRS support
+        double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units
         return maxAllowableOffsetNative;
     }
 

@@ -15,7 +15,8 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableMinMax.Builder.class)
-public interface MinMax {
+public
+interface MinMax {
     int getMin();
     int getMax();
     Optional<Integer> getDefault();

@@ -7,7 +7,10 @@ dependencies {
     embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.1')
     embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.1')
 
-    embedded (group: 'org.xerial', name: 'sqlite-jdbc', version: '3.36.0')
+    embedded (group: 'org.imintel', name: 'mbtiles4j', version: '1.0.6') {
+        exclude group: 'org.xerial', module: 'sqlite-jdbc'
+    }
+    embedded (group: 'org.xerial', name: 'sqlite-jdbc', version: '3.34.0')
 
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

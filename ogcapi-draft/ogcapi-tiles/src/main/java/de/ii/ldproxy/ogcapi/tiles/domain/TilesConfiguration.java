@@ -30,8 +30,6 @@ import java.util.Objects;
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends ExtensionConfiguration, FeatureTransformations {
 
-    enum TileCacheType { FILES, MBTILES }
-
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
@@ -39,9 +37,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     TileProvider getTileProvider();
 
     List<String> getTileSetEncodings();
-
-    @Nullable
-    TileCacheType getCache();
 
     @Deprecated
     List<String> getTileEncodings();
@@ -57,20 +52,20 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
                 getTileEncodings() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getTileEncodings() :
-                        getTileProvider() instanceof TileProviderMbtiles && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) ?
+                        getTileProvider() instanceof TileProviderMbtiles ?
                                 ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) :
                                 ImmutableList.of();
     }
 
     @Deprecated
     @Nullable
-    List<Double> getCenter();
+    double[] getCenter();
 
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
     @Nullable
-    default List<Double> getCenterDerived() {
+    default double[] getCenterDerived() {
         return Objects.nonNull(getCenter()) ?
                 getCenter() :
                 getTileProvider() instanceof TileProviderFeatures ?
@@ -379,11 +374,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         if (Objects.nonNull(getFilters()))
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
-
-        if (Objects.nonNull(getCenter()))
-            builder.center(getCenter());
-        else if (Objects.nonNull(src.getCenter()))
-            builder.center(src.getCenter());
 
         return builder.build();
     }

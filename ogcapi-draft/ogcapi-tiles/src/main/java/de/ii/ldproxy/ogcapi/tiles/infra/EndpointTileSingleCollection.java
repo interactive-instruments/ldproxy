@@ -27,16 +27,16 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileFile;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileStream;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -64,11 +64,8 @@ import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -92,7 +89,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
     private final TilesQueriesHandler queryHandler;
     private final CrsTransformerFactory crsTransformerFactory;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
-    private final TileCache cache;
+    private final TilesCache cache;
     private final StaticTileProviderStore staticTileProviderStore;
 
     EndpointTileSingleCollection(@Requires FeaturesCoreProviders providers,
@@ -100,7 +97,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                                  @Requires TilesQueriesHandler queryHandler,
                                  @Requires CrsTransformerFactory crsTransformerFactory,
                                  @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                                 @Requires TileCache cache,
+                                 @Requires TilesCache cache,
                                  @Requires StaticTileProviderStore staticTileProviderStore) {
         super(extensionRegistry);
         this.providers = providers;
@@ -262,7 +259,6 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                     .api(api)
                     .outputFormat(outputFormat)
                     .temporary(false)
-                    .isDatasetTile(false)
                     .build();
 
             String mbtilesFilename = ((TileProviderMbtiles) tileProvider).getFilename();
@@ -296,7 +292,6 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                 .tileCol(col)
                 .api(api)
                 .temporary(!useCache)
-                .isDatasetTile(false)
                 .featureProvider(featureProvider)
                 .outputFormat(outputFormat)
                 .build();
@@ -304,22 +299,15 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         // if cache can be used and the tile is cached for the requested format, return the cache
         if (useCache) {
             // get the tile from the cache and return it
-            Optional<InputStream> tileStream = null;
-            try {
-                tileStream = cache.getTile(tile);
-            } catch (Exception e) {
-                LOGGER.warn("Failed to retrieve tile {}/{}/{}/{} for collection {} from the cache. Reason: {}",
-                            tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(),
-                            tile.getTileCol(), collectionId, e.getMessage());
-            }
-            if (tileStream.isPresent()) {
-                TilesQueriesHandler.QueryInputTileStream queryInput = new ImmutableQueryInputTileStream.Builder()
+            java.nio.file.Path tileFile = cache.getFile(tile);
+            if (Files.exists(tileFile)) {
+                TilesQueriesHandler.QueryInputTileFile queryInput = new ImmutableQueryInputTileFile.Builder()
                         .from(getGenericQueryInput(api.getData()))
                         .tile(tile)
-                        .tileContent(tileStream.get())
+                        .tileFile(tileFile)
                         .build();
 
-                return queryHandler.handle(TilesQueriesHandler.Query.TILE_STREAM, queryInput, requestContext);
+                return queryHandler.handle(TilesQueriesHandler.Query.TILE_FILE, queryInput, requestContext);
             }
         }
 
@@ -343,6 +331,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
 
         FeaturesCoreConfiguration coreConfiguration = featureType.getExtension(FeaturesCoreConfiguration.class).get();
 
+        // TODO add caching information
         TilesQueriesHandler.QueryInputTileSingleLayer queryInput = new ImmutableQueryInputTileSingleLayer.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .tile(finalTile)

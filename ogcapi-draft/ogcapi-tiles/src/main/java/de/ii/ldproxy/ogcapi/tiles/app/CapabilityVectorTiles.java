@@ -56,7 +56,6 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
     public static final double MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR = 0.1;
     public static final double MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR = 1.0;
     public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;
-    public static final String DATASET_TILES = "__all__";
 
     private final ExtensionRegistry extensionRegistry;
     private final FeaturesCoreProviders providers;
@@ -81,7 +80,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                                                                                                    .filter(FormatExtension::isEnabledByDefault)
                                                                                                                                    .map(format -> format.getMediaType().label())
                                                                                                                                    .collect(ImmutableList.toImmutableList()))
-                                                                                                   .center(ImmutableList.of(0.0, 0.0))
+                                                                                                   .center(0.0, 0.0)
                                                                                                    .zoomLevels(ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder()
                                                                                                            .min(0)
                                                                                                            .max(23)
@@ -101,7 +100,6 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                                                            .filter(FormatExtension::isEnabledByDefault)
                                                                                            .map(format -> format.getMediaType().label())
                                                                                            .collect(ImmutableList.toImmutableList()))
-                                                        .cache(TilesConfiguration.TileCacheType.FILES)
                                                         .build();
     }
 
@@ -195,9 +193,9 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                 }
             }
 
-            List<Double> center = config.getCenterDerived();
-            if (Objects.nonNull(center) && center.size()!=2)
-                builder.addStrictErrors(MessageFormat.format("The center has been specified in the TILES module configuration of collection ''{1}'', but the array length is ''{0}'', not 2.", center.size(), collectionId));
+            double[] center = config.getCenterDerived();
+            if (Objects.nonNull(center) && center.length!=2)
+                builder.addStrictErrors(MessageFormat.format("The center has been specified in the TILES module configuration of collection ''{1}'', but the array length is ''{0}'', not 2.", center.length, collectionId));
 
             Map<String, MinMax> zoomLevels = config.getZoomLevelsDerived();
             if (Objects.nonNull(zoomLevels)) {
