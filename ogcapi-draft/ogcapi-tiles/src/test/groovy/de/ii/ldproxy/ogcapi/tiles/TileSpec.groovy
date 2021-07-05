@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap
 import de.ii.ldproxy.ogcapi.app.I18nDefault
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
 import de.ii.ldproxy.ogcapi.domain.OgcApi
-import de.ii.ldproxy.ogcapi.tiles.app.TileCacheImpl
+import de.ii.ldproxy.ogcapi.tiles.app.TilesCacheImpl
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile
@@ -134,7 +134,7 @@ class TileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TileCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
+        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TilesCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
 
         then: "it should return the zoom levels of the tiling scheme"
 
@@ -158,7 +158,7 @@ class TileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result= Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TileCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
+        def result= Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TilesCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
 
         then: "it should return the zoom levels of the tiling scheme"
 
@@ -189,7 +189,7 @@ class TileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TileCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
+        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TilesCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
 
         then: "it should return a map with the max and min zoom level of the tiling scheme from the requested collection and an entry with the key \'collection1\' and the value \'true\'"
 
@@ -219,7 +219,7 @@ class TileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TileCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
+        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TilesCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
 
         then: "it should return a map with the max and min zoom level of the requested collection and an entry with the key \'collection2\' and the value \'true\'"
 
@@ -244,7 +244,7 @@ class TileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result = Tile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApi),Mock(FeatureFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(TileCacheImpl),true,Mock(ApiRequestContext),Mock(CrsTransformerFactory),i18n)
+        def result = Tile.checkZoomLevel(zoomLevel,zoomLevelsMap,Mock(OgcApi),Mock(FeatureFormatExtension),collectionId,tilingSchemeId,"application/json","1024","512",false, Mock(TilesCacheImpl),true,Mock(ApiRequestContext),Mock(CrsTransformerFactory),i18n)
 
         then: "it should use the zoom level range of the tiling scheme"
 
@@ -273,7 +273,7 @@ class TileSpec extends Specification{
 
         when: "checkZoomLevel is called"
 
-        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TileCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
+        def result=Tile.checkZoomLevel(zoomLevel, zoomLevelsMap, Mock(OgcApi), Mock(FeatureFormatExtension), collectionId, tilingSchemeId, "application/json", "1024", "512", false, Mock(TilesCacheImpl), true, Mock(ApiRequestContext), Mock(CrsTransformerFactory), i18n)
 
         then: "it should throw a NotFoundException"
 

@@ -343,14 +343,4 @@ public interface TileMatrixSet extends ContentExtension {
         }
         return limits.build();
     }
-
-    /**
-     * convert a row in the XYZ scheme to a row in the TMS scheme
-     * @param level level of the row
-     * @param row row number in the XYZ scheme
-     * @return row number in the TMS scheme
-     */
-    default int getTmsRow(int level, int row) {
-        return getRows(level) - 1 - row;
-    }
 }

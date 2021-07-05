@@ -14,8 +14,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
+import de.ii.ldproxy.ogcapi.tiles.domain.VectorLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -202,7 +201,7 @@ public class MbtilesTileset {
         Optional<InputStream> result = Optional.empty();
         Connection connection = getConnection();
         int level = tile.getTileLevel();
-        int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
+        int row = tile.getTileMatrixSet().getRows(level) - 1 - tile.getTileRow();
         int col = tile.getTileCol();
         String sql = String.format("SELECT tile_data FROM tiles WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
         ResultSet rs = SqlHelper.executeQuery(connection, sql);
@@ -217,7 +216,7 @@ public class MbtilesTileset {
         Optional<Boolean> result = Optional.empty();
         Connection connection = getConnection();
         int level = tile.getTileLevel();
-        int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
+        int row = tile.getTileMatrixSet().getRows(level) - 1 - tile.getTileRow();
         int col = tile.getTileCol();
         String sql = String.format("SELECT tile_id FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
         ResultSet rs = SqlHelper.executeQuery(connection, sql);
@@ -231,7 +230,7 @@ public class MbtilesTileset {
     public boolean tileExists(Tile tile) throws SQLException {
         Connection connection = getConnection();
         int level = tile.getTileLevel();
-        int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
+        int row = tile.getTileMatrixSet().getRows(level) - 1 - tile.getTileRow();
         int col = tile.getTileCol();
         String sql = String.format("SELECT tile_data FROM tiles WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
         boolean exists = SqlHelper.executeQuery(connection, sql).next();
@@ -242,7 +241,7 @@ public class MbtilesTileset {
     public void writeTile(Tile tile, byte[] content) throws SQLException, IOException {
         Connection connection = getConnection();
         int level = tile.getTileLevel();
-        int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
+        int row = tile.getTileMatrixSet().getRows(level) - 1 - tile.getTileRow();
         int col = tile.getTileCol();
         boolean exists = false;
         // do we have an old blob?
@@ -286,7 +285,7 @@ public class MbtilesTileset {
     public void deleteTile(Tile tile) throws SQLException {
         Connection connection = getConnection();
         int level = tile.getTileLevel();
-        int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
+        int row = tile.getTileMatrixSet().getRows(level) - 1 - tile.getTileRow();
         int col = tile.getTileCol();
         String sql = String.format("SELECT tile_id FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
         ResultSet rs = SqlHelper.executeQuery(connection, sql);
@@ -297,24 +296,6 @@ public class MbtilesTileset {
                 SqlHelper.execute(connection, String.format("DELETE FROM tile_blobs WHERE tile_id=%d", tile_id));
             }
         }
-        releaseConnection();
-    }
-
-    public void deleteTiles(TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits) throws SQLException {
-        Connection connection = getConnection();
-        int level = Integer.parseInt(limits.getTileMatrix());
-        String sqlFrom = String.format("FROM tile_map WHERE zoom_level=%d AND tile_row>=%d AND tile_column>=%d AND tile_row<=%d AND tile_column<=%d",
-                                       level,
-                                       tileMatrixSet.getTmsRow(level, limits.getMaxTileRow()), limits.getMinTileCol(),
-                                       tileMatrixSet.getTmsRow(level, limits.getMinTileRow()), limits.getMaxTileCol());
-        ResultSet rs = SqlHelper.executeQuery(connection, String.format("SELECT DISTINCT tile_id %s", sqlFrom));
-        while (rs.next()) {
-            int tile_id = rs.getInt(1);
-            if (tile_id != EMPTY_TILE_ID) {
-                SqlHelper.execute(connection, String.format("DELETE FROM tile_blobs WHERE tile_id=%d", tile_id));
-            }
-        }
-        SqlHelper.execute(connection, String.format("DELETE %s", sqlFrom));
         releaseConnection();
     }
 }

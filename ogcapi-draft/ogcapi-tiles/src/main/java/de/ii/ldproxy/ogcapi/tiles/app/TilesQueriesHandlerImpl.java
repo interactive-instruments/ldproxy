@@ -223,6 +223,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                                                                                             i18n,
                                                                                                                                             requestContext.getLanguage()),
                                                                                       Optional.of(requestContext.getUriCustomizer().copy()),
+                                                                                      crsTransformerFactory,
                                                                                       limitsGenerator,
                                                                                       schemaGeneratorFeature))
                                        .collect(Collectors.toUnmodifiableList()));
@@ -266,7 +267,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         TileSet tileset = TilesHelper.buildTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
                                                    zoomLevels, center, collectionId, links,
                                                    Optional.of(requestContext.getUriCustomizer().copy()),
-                                                   limitsGenerator, schemaGeneratorFeature);
+                                                   crsTransformerFactory, limitsGenerator,
+                                                   schemaGeneratorFeature);
         
         return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
                 .entity(outputFormat.getTileSetEntity(tileset, apiData, collectionId, requestContext))

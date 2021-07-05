@@ -228,7 +228,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                 .findAny()
                 .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
-        TileMatrixSetLimits tileLimits = limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId, tileMatrixSet, zoomLevels)
+        TileMatrixSetLimits tileLimits = limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId, tileMatrixSet, zoomLevels, crsTransformerFactory)
                 .stream()
                 .filter(limits -> limits.getTileMatrix().equals(tileMatrix))
                 .findAny()
@@ -259,7 +259,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
-                    .apiData(apiData)
+                    .api(api)
                     .outputFormat(outputFormat)
                     .temporary(false)
                     .isDatasetTile(false)
@@ -294,7 +294,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                 .tileLevel(level)
                 .tileRow(row)
                 .tileCol(col)
-                .apiData(apiData)
+                .api(api)
                 .temporary(!useCache)
                 .isDatasetTile(false)
                 .featureProvider(featureProvider)

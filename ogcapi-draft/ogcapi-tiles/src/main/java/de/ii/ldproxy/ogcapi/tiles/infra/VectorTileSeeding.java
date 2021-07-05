@@ -29,15 +29,14 @@ import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -55,6 +54,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -189,7 +191,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
-                    .apiData(apiData)
+                    .api(api)
                     .temporary(false)
                     .isDatasetTile(false)
                     .featureProvider(featureProvider)
@@ -307,7 +309,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
-                    .apiData(apiData)
+                    .api(api)
                     .temporary(false)
                     .isDatasetTile(true)
                     .featureProvider(featureProvider)
@@ -467,7 +469,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             for (Map.Entry<String, MinMax> entry : seeding.entrySet()) {
                 TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
                 MinMax zoomLevels = entry.getValue();
-                List<TileMatrixSetLimits> allLimits = limitsGenerator.getTileMatrixSetLimits(api.getData(), tileMatrixSet, zoomLevels);
+                List<TileMatrixSetLimits> allLimits = limitsGenerator.getTileMatrixSetLimits(api.getData(), tileMatrixSet, zoomLevels, crsTransformerFactory);
 
                 for (TileMatrixSetLimits limits : allLimits) {
                     int level = Integer.parseInt(limits.getTileMatrix());
