@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public class OgcApiCollectionsView extends OgcApiView {
     private final List<OgcApiCollection> collections;
-    private boolean showCollectionDescriptions;
+    private final boolean showCollectionDescriptions;
     public final boolean hasGeometry;
     public String dataSourceUrl;
     public String keywords;

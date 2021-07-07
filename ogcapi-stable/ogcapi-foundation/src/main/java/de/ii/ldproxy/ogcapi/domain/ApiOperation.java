@@ -22,6 +22,7 @@ public interface ApiOperation {
     Optional<String> getOperationId();
     List<OgcApiQueryParameter> getQueryParameters();
     Optional<ApiRequestBody> getRequestBody();
+    List<ApiHeader> getHeaders();
     Optional<ApiResponse> getSuccess();
     @Value.Default
     default boolean getHideInOpenAPI() { return false; }

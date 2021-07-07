@@ -32,7 +32,7 @@ The types object has an entry for every feature type with the feature type ident
 |`label` |string | |Label for the schema object, used for example in HTML representations.
 |`description` |string | |Description for the schema object, used for example in HTML representations or JSON Schema.
 |`properties` |object | |Only for `OBJECT` and `OBJECT_ARRAY`. Object with the property names as keys and schema objects as values.
-|`role` |enum |`null` |`ID` has to be set for the property that should be used as the unique feature id. As a rule that should be the first property ion the  `properties` object. Property names cannot contain spaces (" ") or slashes ("/").
+|`role` |enum |`null` |`ID` has to be set for the property that should be used as the unique feature id. As a rule that should be the first property ion the  `properties` object. Property names cannot contain spaces (" ") or slashes ("/"). Set `TYPE` for a property that specifies the type name of the object.
 |`objectType` |string | |Optional name for an object type, used for example in JSON Schema. For properties that should be mapped as links according to *RFC 8288*, use `Link`.
 |`geometryType` |enum | |The specific geometry type for properties with `type: GEOMETRY`. Possible values are simple feature geometry types: `POINT`, `MULTI_POINT`, `LINE_STRING`, `MULTI_LINE_STRING`, `POLYGON`, `MULTI_POLYGON`, `GEOMETRY_COLLECTION` and `ANY`
 

@@ -6,12 +6,16 @@ Das Modul basiert auf den Vorgaben der Konformatitätsklassen *Core*, *Manage st
 
 |Ressource |Pfad |HTTP-Methode |Unterstützte Ein- und Ausgabeformate
 | --- | --- | --- | ---
-|Styles |`/{apiId}/styles` |GET<br>POST |HTML, JSON<br>Mapbox Style, OGC SLD 1.0, OGC SLD 1.1
-|Style |`/{apiId}/styles/{styleId}` |GET<br>PUT<br>DELETE |HTML, Mapbox Style, OGC SLD 1.0, OGC SLD 1.1<br>Mapbox Style, OGC SLD 1.0, OGC SLD 1.1<br>n/a
-|Style metadata |`/{apiId}/styles/{styleId}/metadata` |GET<br>PUT, PATCH |HTML, JSON<br>JSON
+|Styles |`/{baseResource}/styles` |GET<br>POST |HTML, JSON<br>Mapbox Style, OGC SLD 1.0, OGC SLD 1.1
+|Style |`/{baseResource}/styles/{styleId}` |GET<br>PUT<br>DELETE |HTML, Mapbox Style, OGC SLD 1.0, OGC SLD 1.1<br>Mapbox Style, OGC SLD 1.0, OGC SLD 1.1<br>n/a
+|Style metadata |`/{baseResource}/styles/{styleId}/metadata` |GET<br>PUT, PATCH |HTML, JSON<br>JSON
 |Resources |`/{apiId}/resources` |GET |HTML, JSON
 |Resource |`/{apiId}/resources/{resourceId}` |GET<br>PUT<br>DELETE |\*<br>\*<br>n/a
-|Collection |`/{apiId}/collections/{collectionId}` |PATCH |JSON
+
+Style-Collections werden unter den folgenden `{baseResource}` zur Verfügung gestellt:
+
+* `{apiId}`
+* `{apiId}/collection/{collectionId}`
 
 Erlaubte Zeichen für `{styleId}` und `{resourceId}` sind alle Zeichen bis auf den Querstrich ("/").
 
@@ -20,21 +24,20 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
 |`styleEncodings` |array |`[ "Mapbox", "HTML" ]` |Steuert, welche Formate für Stylesheets unterstützt werden sollen. Zur Verfügung stehen Mapbox Style ("Mapbox"), OGC SLD 1.0 ("SLD10"), OGC SLD 1.1 ("SLD11") und HTML ("HTML"). HTML ist ein reines Ausgabeformat im Sinne einer Webmap und wird nur für Styles unterstützt, für die ein Stylesheet im Format Mapbox Style verfügbar ist. Siehe die Konformitätsklassen "Mapbox Style", "OGC SLD 1.0", "OGC SLD 1.1" und "HTML".
-|`styleInfosOnCollection` |boolean |`false` |Steuert, ob in den Collection-Ressourcen Informationen zu den Styles zu diesen Features aufgenommen werden sollen. Siehe die Konformitätsklasse "Style information".
 |`managerEnabled` |boolean |`false` |Steuert, ob die Styles über POST, PUT und DELETE verwaltet werden können. Ist `styleInfosOnCollection` aktiv, dann können auch die Style-Informationen über PATCH erzeugt bzw. aktualisiert werden. Siehe die Konformitätsklasse "Manage styles".
 |`validationEnabled` |boolean |`false` |Steuert, ob bei POST und PUT von Styles die Validierung der Styles über den Query-Parameter `validate` unterstützt werden soll. Siehe die Konformitätsklasse "Validation of styles".
 |`resourcesEnabled` |boolean |`false` |Steuert, ob die API auch beliebige File-Ressourcen, z.B. für Symbole oder Sprites, unterstützen soll. Siehe die Konformitätsklasse "Resources".
 |`resourceManagerEnabled` |boolean |`false` |Steuert, ob die Ressourcen über PUT und DELETE über die API erzeugt und gelöscht werden können sollen. Siehe die Konformitätsklasse "Manage resources".
-|`defaultStyle` |string |`null` |Ist ein Style angegeben, dann wird auf die HTML-Repräsentierung (Webkarte) von der Landing-Page verlinkt. Der Style sollte alle Daten im Datensatz abdecken.
+|`defaultStyle` |string |`null` |Ist ein Style angegeben, dann wird auf die HTML-Repräsentierung (Webkarte) von der Landing-Page verlinkt. Der Style sollte alle Daten im Datensatz abdecken und muss im Format Mapbox Style verfügbar sein.
 |`webmapWithPopup` |boolean |`true` |Steuert, ob bei Webkarten zu Styles im Format Mapbox Style ein Popup mit den Attributen zum obersten Objekt angezeigt werden soll.
 |`webmapWithLayerControl` |boolean |`false` |Steuert, ob bei Webkarten zu Styles im Format Mapbox Style die Layer ein- und ausgeschaltet werden können. Ein- und ausgeschaltet werden können jeweils gebündelt alle Layer zu einer Feature Collection.
 |`layerControlAllLayers` |boolean |`false` |Nur wirksam bei `webmapWithLayerControl: true`. Steuert, ob auch Kartenlayer, die nicht aus den Vector Tiles dieser API, z.B. eine Hintergrundkarte, ein- und ausgeschaltet werden können.
+|`deriveCollectionStyles` |boolean |`false` |Nur wirksam bei Styles im Format Mapbox Style. Steuert, ob die Styles auf der Ebene der Collections aus den Styles aus der übergeordneten Style-Collection abgeleitet werden sollen. Voraussetzung ist, dass der Name der `source` im Stylesheet der `{apiId}` entspricht und der Name der `source-layer` der `{collectionId}`.  
 
 Die Stylesheets, die Style-Metadaten und die Style-Informationen liegen als Dateien im ldproxy-Datenverzeichnis:
 
 * Die Stylesheets müssen unter dem relativen Pfad `styles/{apiId}/{styleId}.{ext}` liegen, wobei `{ext}` entweder "mbs" (für Mapbox), "sld10" (für SLD 1.0) oder "sld11" (für SLD 1.1) sein. Die URIs (Sprites, Glyphs, Source.url, Source.tiles) bei den Mapbox-Styles Links können dabei als Parameter `{serviceUrl}` enthalten.
-* Die Style-Metdaten müssen unter dem relativen Pfad `styles/{apiId}/{styleId}.metadata` liegen. Links können dabei Templates sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
-* Die Style-Informationen müssen unter dem relativen Pfad `style-infos/{apiId}/{collectionId}.json` liegen. Die Links können dabei Templates sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` und `{collectionId}` enthalten.
+* Die Style-Metadaten müssen unter dem relativen Pfad `styles/{apiId}/{styleId}.metadata` liegen. Links können dabei Templates sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
 
 Beispiel für die Angaben in der Konfigurationsdatei:
 
@@ -44,7 +47,7 @@ Beispiel für die Angaben in der Konfigurationsdatei:
   styleEncodings:
   - Mapbox
   - HTML
-  styleInfosOnCollection: true
+  deriveCollectionStyles: true
   managerEnabled: false
   validationEnabled: false
   resourcesEnabled: true
@@ -145,35 +148,5 @@ Beispiel für eine Style-Metadaten-Datei:
       "templated": true
     }
   ]
-}
-```
-
-Beispiel für eine Style-Information-Datei mit einem Style:
-
-```json
-{
-  "styles" : [ {
-    "id" : "kitas",
-    "title" : "Standard-Style für Kindertagesstätten",
-    "description" : "(Hier steht eine Beschreibung des Styles...)",
-    "links" : [ {
-      "rel" : "stylesheet",
-      "type" : "application/vnd.mapbox.style+json",
-      "title" : "Stylesheet im Format 'Mapbox Style'",
-      "href" : "{serviceUrl}/styles/kitas?f=mbs",
-      "templated" : true  
-    }, {
-      "rel" : "map",
-      "title" : "Webkarte mit dem Style",
-      "href" : "{serviceUrl}/styles/kitas?f=html",
-      "templated" : true  
-    }, {
-      "rel" : "describedby",
-      "title" : "Metadaten zum Style",
-      "href" : "{serviceUrl}/styles/kitas/metadata",
-      "templated" : true  
-    } ]
-  } ],
-  "defaultStyle" : "kitas"
 }
 ```

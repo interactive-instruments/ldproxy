@@ -9,29 +9,69 @@ package de.ii.ldproxy.ogcapi.styles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.ByteSource;
+import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.oas30.app.ExtendableOpenApiDefinitionImpl;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import io.swagger.v3.oas.models.media.ObjectSchema;
+import java.util.concurrent.Executors;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.File;
+import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Provides
 @Instantiate
 public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatSld10.class);
+
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "vnd.ogc.sld+xml", ImmutableMap.of("version", "1.0")))
             .label("SLD 1.0")
             .parameter("sld10")
             .build();
+
+    private Optional<Validator> validator;
+
+    public StyleFormatSld10() {
+        validator = Optional.empty();
+    }
+
+    @Validate
+    void onStart() {
+        Executors.newSingleThreadExecutor().submit(() -> {
+            try {
+                SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                Schema schema = factory.newSchema(Resources.getResource(StyleFormatSld10.class, "/schemas/sld10.xsd"));
+
+                this.validator = Optional.ofNullable(schema.newValidator());
+            } catch (SAXException e) {
+                LOGGER.error("StyleFormatSld10 initialization failed: Could not process SLD 1.0 XSD.");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Stacktrace: ", e);
+                }
+            }
+        });
+    }
 
     @Override
     public List<String> getConformanceClassUris() {
@@ -78,7 +118,7 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
 
     @Override
     public String getSpecification() {
-        return "http://www.opengeospatial.org/standards/sld";
+        return "https://www.ogc.org/standards/sld";
     }
 
     @Override
@@ -87,15 +127,22 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public Response getStyleResponse(String styleId, File stylesheet, List<Link> links, OgcApi api, ApiRequestContext requestContext) throws IOException {
-        final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
+    public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
+        return stylesheetContent.getContent();
+    }
 
-        // TODO
+    @Override
+    public Optional<String> analyze(StylesheetContent stylesheetContent, boolean strict) {
 
-        return Response.ok()
-                .entity(content)
-                .type(MEDIA_TYPE.type())
-                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
-                .build();
+        if (strict && validator.isPresent()) {
+            try {
+                validator.get().validate(new StreamSource(ByteSource.wrap(stylesheetContent.getContent()).openStream()));
+            } catch (IOException | SAXException e) {
+                throw new IllegalArgumentException(String.format("The SLD 1.0 stylesheet '%s' is invalid.", stylesheetContent.getDescriptor()), e);
+            }
+        }
+
+        // TODO derive name
+        return Optional.empty();
     }
 }

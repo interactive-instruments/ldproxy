@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -36,7 +37,7 @@ public abstract class MbStyleLayer {
         }
 
         @Override
-        public String toString() { return label; };
+        public String toString() { return label; }
     }
 
     public abstract String getId();
@@ -44,7 +45,7 @@ public abstract class MbStyleLayer {
     // TODO use enum to check that we have a valid value
     public abstract String getType();
 
-    public abstract Optional<Object> getMetadata();
+    public abstract Map<String, Object> getMetadata();
 
     public abstract Optional<String> getSource();
 
@@ -55,9 +56,9 @@ public abstract class MbStyleLayer {
 
     public abstract Optional<Integer> getMaxzoom();
 
-    public abstract Optional<Object> getFilter(); // TODO proper handling of expressions
+    public abstract Optional<Object> getFilter();
 
-    public abstract Optional<Map<String, Object>> getLayout(); // TODO proper handling of layout properties
+    public abstract Map<String, Object> getLayout();
 
-    public abstract Optional<Map<String, Object>> getPaint(); // TODO proper handling of paint properties
+    public abstract Map<String, Object> getPaint();
 }

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles
 
+import de.ii.ldproxy.ogcapi.tiles.infra.EndpointTileSetsSingleCollection
 import spock.lang.Ignore
 import spock.lang.Specification
 

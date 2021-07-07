@@ -40,7 +40,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiRequestDispatcher.class);
 
-    private static final Set<String> NOCONTENT_METHODS = ImmutableSet.of("POST", "PUT", "DELETE");
+    private static final Set<String> NOCONTENT_METHODS = ImmutableSet.of("POST", "PUT", "DELETE", "PATCH");
     private static final ApiMediaType DEFAULT_MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "json"))
             .label("JSON")
@@ -89,7 +89,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
         }
 
         Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
-        List<OgcApiQueryParameter> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath);
+        List<OgcApiQueryParameter> knownParameters = ogcApiEndpoint.getParameters(service.getData(), subPath, method);
         Set<String> unknownParameters = parameters.stream()
                 .filter(parameter -> !knownParameters.stream().filter(param -> param.getName().equalsIgnoreCase(parameter)).findAny().isPresent())
                 .collect(Collectors.toSet());

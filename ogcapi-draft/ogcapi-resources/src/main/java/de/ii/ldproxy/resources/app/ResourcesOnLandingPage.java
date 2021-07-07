@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -52,10 +53,13 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() && stylesExtension.get()
-                                                          .getResourcesEnabled()) {
+        if ((resourcesExtension.isPresent() && resourcesExtension.get()
+                                                                 .isEnabled()) ||
+                (stylesExtension.isPresent() && stylesExtension.get()
+                                                               .getResourcesEnabled())) {
             return true;
         }
         return false;

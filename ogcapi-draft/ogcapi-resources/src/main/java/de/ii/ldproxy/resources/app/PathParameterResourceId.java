@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -64,10 +65,13 @@ public class PathParameterResourceId implements OgcApiPathParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
         Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
 
-        if (stylesExtension.isPresent() && stylesExtension.get()
-                                                          .getResourcesEnabled()) {
+        if ((resourcesExtension.isPresent() && resourcesExtension.get()
+                                                                 .isEnabled()) ||
+                (stylesExtension.isPresent() && stylesExtension.get()
+                                                               .getResourcesEnabled())) {
             return true;
         }
         return false;
@@ -75,6 +79,6 @@ public class PathParameterResourceId implements OgcApiPathParameter {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
+        return ResourcesConfiguration.class;
     }
 }

@@ -46,6 +46,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
@@ -73,9 +74,12 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
         return GeoJsonLdConfiguration.class;
     }
 
-    private java.nio.file.Path getContextPath(String apiId, String collectionId, String extension) {
-        return contextDirectory.resolve(apiId)
-                               .resolve(collectionId + "." + extension);
+    private java.nio.file.Path getContextPath(String apiId, String collectionId, String contextFileName, String extension) {
+        return Objects.nonNull(contextFileName)
+                ? contextDirectory.resolve(apiId)
+                                  .resolve(contextFileName)
+                : contextDirectory.resolve(apiId)
+                                  .resolve(collectionId + "." + extension);
     }
 
     @Path("/{collectionId}/context")
@@ -93,7 +97,8 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                                                          .findFirst()
                                                          .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", apiRequestContext.getMediaType())));
 
-        java.nio.file.Path context = getContextPath(api.getId(), collectionId, format.getMediaType().parameter());
+        Optional<String> contextFileName = api.getData().getCollections().get(collectionId).getExtension(GeoJsonLdConfiguration.class).map(cfg -> cfg.getContextFileName());
+        java.nio.file.Path context = getContextPath(api.getId(), collectionId, contextFileName.orElse(null), format.getMediaType().parameter());
 
         if (!Files.isRegularFile(context)) {
             throw new NotFoundException(String.format("The %s context was not found.", format.getMediaType().label()));

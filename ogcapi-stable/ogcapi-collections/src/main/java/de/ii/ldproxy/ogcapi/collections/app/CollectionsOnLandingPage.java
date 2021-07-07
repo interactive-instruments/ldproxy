@@ -64,14 +64,23 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
         String suffix = (collectionNames.size()>0 && collectionNames.size()<=4) ? " ("+String.join(", ", collectionNames)+")" : "";
 
         landingPageBuilder.addLinks(new ImmutableLink.Builder()
-                        .href(uriCustomizer.copy()
-                                .ensureNoTrailingSlash()
-                                .ensureLastPathSegment("collections")
-                                .removeParameters("f")
-                                .toString())
-                        .rel("data")
-                        .title(i18n.get("dataLink",language) + suffix)
-                        .build());
+                                            .href(uriCustomizer.copy()
+                                                               .ensureNoTrailingSlash()
+                                                               .ensureLastPathSegment("collections")
+                                                               .removeParameters("f")
+                                                               .toString())
+                                            .rel("data")
+                                            .title(i18n.get("dataLink",language) + suffix)
+                                            .build())
+                          .addLinks(new ImmutableLink.Builder()
+                                            .href(uriCustomizer.copy()
+                                                               .ensureNoTrailingSlash()
+                                                               .ensureLastPathSegment("collections")
+                                                               .removeParameters("f")
+                                                               .toString())
+                                            .rel("http://www.opengis.net/def/rel/ogc/1.0/data")
+                                            .title(i18n.get("dataLink",language) + suffix)
+                                            .build());
 
         ImmutableList.Builder<Link> distributionLinks = new ImmutableList.Builder<Link>()
                 .addAll(apiData.getExtension(CollectionsConfiguration.class)

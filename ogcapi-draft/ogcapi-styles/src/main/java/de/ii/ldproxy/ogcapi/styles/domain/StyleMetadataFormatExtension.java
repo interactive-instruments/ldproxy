@@ -7,21 +7,30 @@
  */
 package de.ii.ldproxy.ogcapi.styles.domain;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 
-import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.util.Optional;
+
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+import static de.ii.ldproxy.ogcapi.styles.domain.PathParameterStyleId.STYLE_ID_PATTERN;
 
 public interface StyleMetadataFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^/?styles/[^/]+/metadata/?$";
+        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/?styles/"+STYLE_ID_PATTERN+"/metadata/?$";
     }
 
-    Response getStyleMetadataResponse(StyleMetadata metadata,
-                                      OgcApi api,
-                                      ApiRequestContext requestContext);
+    Object getStyleMetadataEntity(StyleMetadata metadata,
+                                  OgcApiDataV2 apiData,
+                                  Optional<String> collectionId,
+                                  ApiRequestContext requestContext);
 
+    StyleMetadata parse(byte[] content, boolean strict, boolean inStore);
 }

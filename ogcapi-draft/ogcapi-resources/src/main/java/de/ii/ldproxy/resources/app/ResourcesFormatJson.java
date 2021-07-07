@@ -13,7 +13,6 @@ import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.resources.domain.ResourcesFormatExtension;
@@ -65,14 +64,7 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
     }
 
     @Override
-    public Response getResourcesResponse(Resources resources, OgcApi api, ApiRequestContext requestContext) {
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
-
-        return Response.ok(resources)
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .links(includeLinkHeader ? resources.getLinks().stream().map(link -> link.getLink()).toArray(Link[]::new) : null)
-                .build();
+    public Object getResourcesEntity(Resources resources, OgcApiDataV2 apiData, ApiRequestContext requestContext) {
+        return resources;
     }
 }

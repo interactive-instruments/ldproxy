@@ -7,35 +7,101 @@
  */
 package de.ii.ldproxy.ogcapi.styles.domain;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.domain.Metadata2;
+import de.ii.ldproxy.ogcapi.domain.MetadataDates;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableStyleMetadata.class)
-public abstract class StyleMetadata extends PageRepresentation {
+public abstract class StyleMetadata extends Metadata2 {
 
     public abstract Optional<String> getId();
 
-    public abstract Optional<List<String>> getKeywords();
+    @Value.Default
+    public String getScope() { return "style"; }
 
-    public abstract Optional<String> getPointOfContact();
+    public abstract List<StylesheetMetadata> getStylesheets();
 
-    public abstract Optional<String> getAccessConstraints();
+    public abstract List<StyleLayer> getLayers();
 
-    public abstract Optional<StyleDates> getDates();
+    @JsonIgnore
+    public StyleMetadata replaceParameters(String serviceUrl) {
 
-    public abstract Optional<String> getScope();
+        // any template parameters in links?
+        boolean templated = this.getStylesheets()
+                                    .stream()
+                                    .map(styleSheet -> styleSheet.getLink().orElse(null))
+                                    .filter(Objects::nonNull)
+                                    .anyMatch(link -> Objects.requireNonNullElse(link.getTemplated(),false) && link.getHref().matches("^.*\\{serviceUrl\\}.*$")) ||
+                this.getLayers()
+                        .stream()
+                        .map(layer -> layer.getSampleData().orElse(null))
+                        .filter(Objects::nonNull)
+                        .anyMatch(link -> Objects.requireNonNullElse(link.getTemplated(),false) && link.getHref().matches("^.*\\{serviceUrl\\}.*$")) ||
+                this.getLinks()
+                        .stream()
+                        .anyMatch(link -> Objects.requireNonNullElse(link.getTemplated(),false) && link.getHref().matches("^.*\\{serviceUrl\\}.*$"));
 
-    public abstract Optional<String> getVersion();
+        if (!templated)
+            return this;
 
-    public abstract Optional<List<StyleSheet>> getStylesheets();
-
-    public abstract Optional<List<StyleLayer>> getLayers();
+        return ImmutableStyleMetadata.builder()
+                                     .from(this)
+                                     .stylesheets(this.getStylesheets()
+                                                          .stream()
+                                                          .map(styleSheet -> ImmutableStylesheetMetadata.builder()
+                                                                                                        .from(styleSheet)
+                                                                                                        .link(!(styleSheet.getLink().isPresent()) ?
+                                                                                                              Optional.empty() :
+                                                                                                              Objects.requireNonNullElse(styleSheet.getLink().get().getTemplated(), false) ?
+                                                                                                                      Optional.of(new ImmutableLink.Builder()
+                                                                                                                                          .from(styleSheet.getLink().get())
+                                                                                                                                          .href(styleSheet.getLink().get()
+                                                                                                                                                          .getHref()
+                                                                                                                                                          .replace("{serviceUrl}", serviceUrl))
+                                                                                                                                          .templated(null)
+                                                                                                                                          .build()) :
+                                                                                                                      styleSheet.getLink())
+                                                                                                        .build())
+                                                          .collect(ImmutableList.toImmutableList()))
+                                     .layers(this.getLayers()
+                                                     .stream()
+                                                     .map(layer -> ImmutableStyleLayer.builder()
+                                                                                      .from(layer)
+                                                                                      .sampleData(!(layer.getSampleData().isPresent()) ?
+                                                                                                          Optional.empty() :
+                                                                                                          Objects.requireNonNullElse(layer.getSampleData().get().getTemplated(), false) ?
+                                                                                                                  Optional.of(new ImmutableLink.Builder()
+                                                                                                                                      .from(layer.getSampleData()
+                                                                                                                                                 .get())
+                                                                                                                                      .href(layer.getSampleData()
+                                                                                                                                                 .get()
+                                                                                                                                                 .getHref()
+                                                                                                                                                 .replace("{serviceUrl}", serviceUrl))
+                                                                                                                                      .templated(null)
+                                                                                                                                      .build()) :
+                                                                                                                  layer.getSampleData())
+                                                                                      .build())
+                                                     .collect(ImmutableList.toImmutableList()))
+                                     .links(this.getLinks()
+                                                    .stream()
+                                                    .map(link -> new ImmutableLink.Builder()
+                                                            .from(link)
+                                                            .href(link.getHref()
+                                                                      .replace("{serviceUrl}", serviceUrl))
+                                                            .templated(null)
+                                                            .build())
+                                                    .collect(ImmutableList.toImmutableList()))
+                                     .build();
+    }
 }

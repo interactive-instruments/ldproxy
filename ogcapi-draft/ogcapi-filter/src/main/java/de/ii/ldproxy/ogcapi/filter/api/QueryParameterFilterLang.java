@@ -51,6 +51,11 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
     private final Schema schema = new StringSchema()._enum(ImmutableList.of(FILTER_LANG_CQL, FILTER_LANG_JSON))._default(FILTER_LANG_CQL);
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        return schema;
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }

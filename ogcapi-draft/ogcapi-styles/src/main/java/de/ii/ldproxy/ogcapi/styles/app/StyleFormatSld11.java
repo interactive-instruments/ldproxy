@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -18,9 +19,8 @@ import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -78,7 +78,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
 
     @Override
     public String getSpecification() {
-        return "http://www.opengeospatial.org/standards/sld";
+        return "https://www.ogc.org/standards/sld";
     }
 
     @Override
@@ -87,15 +87,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public Response getStyleResponse(String styleId, File stylesheet, List<Link> links, OgcApi api, ApiRequestContext requestContext) throws IOException {
-        final byte[] content = java.nio.file.Files.readAllBytes(stylesheet.toPath());
-
-        // TODO
-
-        return Response.ok()
-                .entity(content)
-                .type(MEDIA_TYPE.type())
-                .links(links.isEmpty() ? null : links.stream().map(link -> link.getLink()).toArray(javax.ws.rs.core.Link[]::new))
-                .build();
+    public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
+        return stylesheetContent.getContent();
     }
 }

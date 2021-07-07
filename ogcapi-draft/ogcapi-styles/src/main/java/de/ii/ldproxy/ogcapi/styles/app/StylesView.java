@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.styles.app;
 import com.google.common.base.Charsets;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.StyleEntry;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -22,7 +22,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class StylesView extends OgcApiView {
-    private List<StyleEntry> styleEntries;
+    private final List<StyleEntry> styleEntries;
     public String none;
 
     public StylesView(OgcApiDataV2 apiData,

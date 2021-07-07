@@ -76,32 +76,15 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     }
 
     @Override
-    public Response getResourceResponse(byte[] resource, String resourceId, OgcApi api, ApiRequestContext requestContext) {
-
-        // TODO: URLConnection content-type guessing doesn't seem to work well, maybe try Apache Tika
-        String contentType = URLConnection.guessContentTypeFromName(resourceId);
-        if (contentType==null) {
-            try {
-                contentType = URLConnection.guessContentTypeFromStream(ByteSource.wrap(resource).openStream());
-            } catch (IOException e) {
-                // nothing we can do here, just take the default
-            }
-        }
-        if (contentType==null || contentType.isEmpty())
-            contentType = "application/octet-stream";
-
-        return Response.ok()
-                .entity(resource)
-                .type(contentType)
-                .header("Content-Disposition", "inline; filename=\""+resourceId+"\"")
-                .build();
+    public Object getResourceEntity(byte[] resource, String resourceId, OgcApiDataV2 apiData, ApiRequestContext requestContext) {
+        return resource;
     }
 
     @Override
-    public Response putResource(Path resourcesStore, byte[] resource, String resourceId, OgcApi api, ApiRequestContext requestContext) throws IOException {
+    public Response putResource(Path resourcesStore, byte[] resource, String resourceId, OgcApiDataV2 apiData, ApiRequestContext requestContext) throws IOException {
 
-        final String datasetId = api.getId();
-        Path apiDir = resourcesStore.resolve(datasetId);
+        final String apiId = apiData.getId();
+        Path apiDir = resourcesStore.resolve(apiId);
         Files.createDirectories(apiDir);
 
         Path resourceFile = apiDir.resolve(resourceId);
@@ -113,6 +96,6 @@ public class ResourceFormatAny implements ResourceFormatExtension {
         }
 
         return Response.noContent()
-                .build();
+                       .build();
     }
 }

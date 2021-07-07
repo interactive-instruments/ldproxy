@@ -33,9 +33,9 @@ public class CapabilityStyles implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableStylesConfiguration.Builder().enabled(false)
-                                                         .styleInfosOnCollection(false)
                                                          .managerEnabled(false)
                                                          .validationEnabled(false)
+                                                         .useIdFromStylesheet(false)
                                                          .resourcesEnabled(false)
                                                          .resourceManagerEnabled(false)
                                                          .styleEncodings(extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
@@ -43,6 +43,7 @@ public class CapabilityStyles implements ApiBuildingBlock {
                                                                                      .filter(FormatExtension::isEnabledByDefault)
                                                                                      .map(format -> format.getMediaType().label())
                                                                                      .collect(ImmutableList.toImmutableList()))
+                                                         .deriveCollectionStyles(false)
                                                          .webmapWithPopup(true)
                                                          .webmapWithLayerControl(false)
                                                          .layerControlAllLayers(false)

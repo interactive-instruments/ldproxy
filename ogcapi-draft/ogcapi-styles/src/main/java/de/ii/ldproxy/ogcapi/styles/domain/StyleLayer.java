@@ -7,18 +7,18 @@
  */
 package de.ii.ldproxy.ogcapi.styles.domain;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.collections.queryables.domain.Queryable;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableStyleLayer.class)
 public abstract class StyleLayer {
 
@@ -28,7 +28,13 @@ public abstract class StyleLayer {
 
     public abstract Optional<String> getType();
 
-    public abstract Optional<List<Queryable>> getAttributes();
+    public abstract Map<String, Object> getAttributes();
 
     public abstract Optional<Link> getSampleData();
+
+    @JsonIgnore
+    @Value.Lazy
+    public Optional<String> getAttributeList() {
+        return getAttributes().isEmpty() ? Optional.empty() : Optional.of(String.join(", ", getAttributes().keySet().stream().sorted().collect(Collectors.toUnmodifiableList())));
+    }
 }

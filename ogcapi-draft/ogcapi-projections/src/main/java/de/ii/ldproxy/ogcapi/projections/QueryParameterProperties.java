@@ -69,6 +69,18 @@ public class QueryParameterProperties extends ApiExtensionCache implements OgcAp
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey("*")) {
+            schemaMap.get(apiHashCode)
+                     .put("*", new ArraySchema().items(new StringSchema()));
+        }
+        return schemaMap.get(apiHashCode).get("*");
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))

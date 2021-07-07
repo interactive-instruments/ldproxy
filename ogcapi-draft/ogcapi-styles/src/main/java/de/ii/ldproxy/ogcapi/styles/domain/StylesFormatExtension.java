@@ -8,20 +8,23 @@
 package de.ii.ldproxy.ogcapi.styles.domain;
 
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 
-import javax.ws.rs.core.Response;
+import java.util.Optional;
+
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 public interface StylesFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^/?styles/?$";
+        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/?styles/?$";
     }
 
-    Response getStylesResponse(Styles styles,
-                               OgcApi api,
-                               ApiRequestContext requestContext);
+    Object getStylesEntity(Styles styles,
+                           OgcApiDataV2 apiData,
+                           Optional<String> collectionId,
+                           ApiRequestContext requestContext);
 
 }

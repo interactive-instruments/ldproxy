@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.styles.domain
 
 import com.google.common.collect.ImmutableList
 import de.ii.ldproxy.ogcapi.domain.AbstractExtensionConfigurationSpec
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink
 import de.ii.ldproxy.ogcapi.domain.MergeBase
 import de.ii.ldproxy.ogcapi.domain.MergeCollection
 import de.ii.ldproxy.ogcapi.domain.MergeMinimal
@@ -21,20 +20,13 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     StylesConfiguration getFull() {
         return new ImmutableStylesConfiguration.Builder()
                 .enabled(true)
-                .styleInfosOnCollection(true)
                 .managerEnabled(true)
                 .validationEnabled(true)
-                .resourcesEnabled(true)
-                .resourceManagerEnabled(true)
                 .webmapWithPopup(true)
                 .webmapWithLayerControl(true)
                 .layerControlAllLayers(true)
-                .mapsEnabled(true)
-                .mbStyleEnabled(true)
-                .sld10Enabled(true)
-                .sld11Enabled(true)
                 .defaultStyle("foo")
-                .addStyleEncodings("foo")
+                .addStyleEncodings("foo", "bar")
                 .build()
     }
 
@@ -53,18 +45,11 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     StylesConfiguration getSimple() {
         return new ImmutableStylesConfiguration.Builder()
                 .enabled(false)
-                .styleInfosOnCollection(false)
                 .managerEnabled(false)
                 .validationEnabled(false)
-                .resourcesEnabled(false)
-                .resourceManagerEnabled(false)
                 .webmapWithPopup(false)
                 .webmapWithLayerControl(false)
                 .layerControlAllLayers(false)
-                .mapsEnabled(false)
-                .mbStyleEnabled(false)
-                .sld10Enabled(false)
-                .sld11Enabled(false)
                 .defaultStyle("bar")
                 .build()
     }

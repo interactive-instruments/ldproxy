@@ -84,6 +84,11 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
     private final Schema schema = new StringSchema();
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        return schema;
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }

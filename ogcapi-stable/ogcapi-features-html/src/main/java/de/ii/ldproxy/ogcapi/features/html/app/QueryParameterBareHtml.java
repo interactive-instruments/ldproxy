@@ -54,6 +54,11 @@ public class QueryParameterBareHtml extends ApiExtensionCache implements OgcApiQ
     }
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        return schema;
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }

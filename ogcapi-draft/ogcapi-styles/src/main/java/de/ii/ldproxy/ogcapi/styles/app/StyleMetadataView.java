@@ -63,9 +63,9 @@ public class StyleMetadataView extends OgcApiView {
                              I18n i18n,
                              Optional<Locale> language) {
         super("styleMetadata.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
-                metadata.getLinks(),
-                null,
-                null);
+              metadata.getLinks(),
+              i18n.get("styleMetadataTitle", language),
+              null);
 
         // TODO the view could be improved
 
@@ -99,6 +99,10 @@ public class StyleMetadataView extends OgcApiView {
         this.requiredTitle = i18n.get ("requiredTitle", language);
         this.mediaTypesTitle = i18n.get ("mediaTypesTitle", language);
         this.thumbnailTitle = i18n.get ("thumbnailTitle", language);
+    }
+
+    public boolean hasLayers() {
+        return !metadata.getLayers().isEmpty();
     }
 
     public Link getThumbnail() {

@@ -34,7 +34,7 @@ public class StylesLinkGenerator {
                                                I18n i18n,
                                                Optional<Locale> language) {
 
-        ImmutableList.Builder<Link> builder = ImmutableList.<Link>builder();
+        ImmutableList.Builder<Link> builder = ImmutableList.builder();
 
         builder.add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
@@ -42,7 +42,7 @@ public class StylesLinkGenerator {
                                         .ensureLastPathSegment("styles")
                                         .removeParameters("f")
                                         .toString())
-                        .rel("styles")
+                        .rel("http://www.opengis.net/def/rel/ogc/1.0/styles")
                         .title(i18n.get("stylesLink",language))
                         .build());
 
@@ -53,6 +53,43 @@ public class StylesLinkGenerator {
                                              .ensureLastPathSegments("styles", defaultStyle.get())
                                              .setParameter("f", "html")
                                              .toString())
+                                .rel("ldp-map")
+                                .title(i18n.get("webmapLink",language))
+                                .build());
+
+        return builder.build();
+    }
+
+    /**
+     * generates the links on the collection page /{serviceId}/collections/{collectionId}?f=json
+     *
+     * @param uriBuilder the URI, split in host, path and query
+     * @return a list with links
+     */
+    public List<Link> generateCollectionLinks(URICustomizer uriBuilder,
+                                              Optional<String> defaultStyle,
+                                              I18n i18n,
+                                              Optional<Locale> language) {
+
+        ImmutableList.Builder<Link> builder = ImmutableList.builder();
+
+        builder.add(new ImmutableLink.Builder()
+                            .href(uriBuilder.copy()
+                                            .ensureNoTrailingSlash()
+                                            .ensureLastPathSegment("styles")
+                                            .removeParameters("f")
+                                            .toString())
+                            .rel("http://www.opengis.net/def/rel/ogc/1.0/styles")
+                            .title(i18n.get("stylesLink",language))
+                            .build());
+
+        if (defaultStyle.isPresent())
+            builder.add(new ImmutableLink.Builder()
+                                .href(uriBuilder.copy()
+                                                .ensureNoTrailingSlash()
+                                                .ensureLastPathSegments("styles", defaultStyle.get())
+                                                .setParameter("f", "html")
+                                                .toString())
                                 .rel("ldp-map")
                                 .title(i18n.get("webmapLink",language))
                                 .build());
@@ -91,18 +128,31 @@ public class StylesLinkGenerator {
                     .build());
         }
 
-        builder.add(new ImmutableLink.Builder()
-                        .href(uriBuilder.copy()
-                                .ensureNoTrailingSlash()
-                                .ensureLastPathSegments("styles", styleId, "metadata")
-                                .removeParameters("f")
-                                .toString()
-                        )
-                        .rel("describedby")
-                        .title(i18n.get("styleMetadataLink",language))
-                        .build());
-
         return builder.build();
+    }
+
+    /**
+     * generates the links for a style on the page /{serviceId}/styles
+     *
+     * @param uriBuilder the URI, split in host, path and query
+     * @param styleId    the ids of the styles
+     * @return a list with links
+     */
+    public Link generateStyleMetadataLink(URICustomizer uriBuilder,
+                                         String styleId,
+                                         I18n i18n,
+                                         Optional<Locale> language) {
+
+        return new ImmutableLink.Builder()
+                            .href(uriBuilder.copy()
+                                            .ensureNoTrailingSlash()
+                                            .ensureLastPathSegments("styles", styleId, "metadata")
+                                            .removeParameters("f")
+                                            .toString()
+                            )
+                            .rel("describedby")
+                            .title(i18n.get("styleMetadataLink",language))
+                            .build();
     }
 
     public Link generateStylesheetLink(URICustomizer uriBuilder,

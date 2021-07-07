@@ -45,7 +45,7 @@ public class CORSFilter implements ContainerResponseFilter {
                         .add("Access-Control-Allow-Origin", "*");
                 responseContext.getHeaders()
                         .add("Access-Control-Allow-Credentials", "true");
-                String headers = "Link, Content-Crs"; // TODO add additional headers
+                String headers = "Link, Content-Crs, Prefer"; // TODO add additional headers
                 if (requestContext.getMethod().equalsIgnoreCase("POST"))
                     headers += ", Location";
                 if (requestContext.getMethod().equalsIgnoreCase("PATCH"))

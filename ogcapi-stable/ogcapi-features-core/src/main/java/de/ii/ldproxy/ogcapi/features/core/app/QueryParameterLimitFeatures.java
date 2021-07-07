@@ -67,6 +67,34 @@ public class QueryParameterLimitFeatures extends ApiExtensionCache implements Og
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        String collectionId = "*";
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+            Schema schema = new IntegerSchema();
+            Optional<Integer> minimumPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
+                                                       .map(FeaturesCoreConfiguration::getMinimumPageSize);
+            if (minimumPageSize.isPresent())
+                schema.minimum(BigDecimal.valueOf(minimumPageSize.get()));
+
+            Optional<Integer> maxPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
+                                                   .map(FeaturesCoreConfiguration::getMaximumPageSize);
+            if (maxPageSize.isPresent())
+                schema.maximum(BigDecimal.valueOf(maxPageSize.get()));
+
+            Optional<Integer> defaultPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
+                                                       .map(FeaturesCoreConfiguration::getDefaultPageSize);
+            if (defaultPageSize.isPresent())
+                schema.setDefault(BigDecimal.valueOf(defaultPageSize.get()));
+
+            schemaMap.get(apiHashCode).put(collectionId, schema);
+        }
+        return schemaMap.get(apiHashCode).get(collectionId);
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))

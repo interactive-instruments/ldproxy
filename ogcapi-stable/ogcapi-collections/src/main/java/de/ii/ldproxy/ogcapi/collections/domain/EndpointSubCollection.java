@@ -37,7 +37,7 @@ public abstract class EndpointSubCollection extends Endpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) ||
+        return super.isEnabledForApi(apiData) &&
                 apiData.getCollections()
                         .values()
                         .stream()
@@ -48,25 +48,41 @@ public abstract class EndpointSubCollection extends Endpoint {
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false);
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false);
+    }
+
+    protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
+                                                 List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers,
+                                                 String collectionId, String subSubPath,
+                                                 String operationSummary, Optional<String> operationDescription, List<String> tags) {
+        return addOperation(apiData, method, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false);
     }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription, List<String> tags,
                                                  boolean hide) {
-        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, hide);
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, hide);
     }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription,
                                                  Optional<ExternalDocumentation> externalDocs, Map<String, List<Example>> examples, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, false);
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, false);
     }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
+                                                 String operationSummary, Optional<String> operationDescription,
+                                                 Optional<ExternalDocumentation> externalDocs, Map<String, List<Example>> examples, List<String> tags,
+                                                 boolean hide) {
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, hide);
+    }
+
+    protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
+                                                 List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers,
+                                                 String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription,
                                                  Optional<ExternalDocumentation> externalDocs, Map<String, List<Example>> examples, List<String> tags,
                                                  boolean hide) {
@@ -77,7 +93,7 @@ public abstract class EndpointSubCollection extends Endpoint {
                     getRequestContent(apiData, Optional.empty(), subSubPath, method) :
                     getRequestContent(apiData, Optional.of(collectionId), subSubPath, method);
             if (requestContent.isEmpty()) {
-                LOGGER.error("No media type supported for the resource at path '" + path + "'. The " + method.toString() + " method will not be available.");
+                LOGGER.error("No media type supported for the resource at path '" + path + "'. The " + method + " method will not be available.");
                 return null;
             }
             body = new ImmutableApiRequestBody.Builder()
@@ -106,17 +122,17 @@ public abstract class EndpointSubCollection extends Endpoint {
         }
         ImmutableApiResponse.Builder responseBuilder = new ImmutableApiResponse.Builder()
                 .statusCode(Endpoint.SUCCESS_STATUS.get(method))
-                .description("The operation was executed successfully.");
+                .description("The operation was executed successfully.")
+                .headers(headers.stream().filter(header -> header.isResponseHeader()).collect(Collectors.toUnmodifiableList()));
         if (!responseContent.isEmpty())
             responseBuilder.content(responseContent);
-        if (method== HttpMethods.POST)
-            responseBuilder.putHeaders("Location",new Header().schema(new StringSchema()).description("The URI of the new resource."));
         ImmutableApiOperation.Builder operationBuilder = new ImmutableApiOperation.Builder()
                 .summary(operationSummary)
                 .description(operationDescription)
                 .externalDocs(externalDocs)
                 .tags(tags)
                 .queryParameters(queryParameters)
+                .headers(headers.stream().filter(header -> header.isRequestHeader()).collect(Collectors.toUnmodifiableList()))
                 .success(responseBuilder.build())
                 .hideInOpenAPI(hide);
         if (body!=null)
@@ -184,6 +200,11 @@ public abstract class EndpointSubCollection extends Endpoint {
                                 .filter(param -> param.isApplicable(apiData, definitionPath, finalCollectionId, method))
                                 .sorted(Comparator.comparing(ParameterExtension::getName))
                                 .collect(ImmutableList.toImmutableList());
+    }
+
+    public ImmutableList<ApiHeader> getHeaders(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
+        // TODO or do we need collection-specific headers?
+        return getHeaders(extensionRegistry, apiData, definitionPath, method);
     }
 
     protected Optional<String> getRepresentativeCollectionId(OgcApiDataV2 apiData) {

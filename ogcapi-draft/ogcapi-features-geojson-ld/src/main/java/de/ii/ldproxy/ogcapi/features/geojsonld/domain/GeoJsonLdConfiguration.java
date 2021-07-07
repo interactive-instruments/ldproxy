@@ -24,6 +24,9 @@ public interface GeoJsonLdConfiguration extends ExtensionConfiguration {
     }
 
     @Nullable
+    String getContextFileName();
+
+    @Nullable
     String getContext();
 
     List<String> getTypes();

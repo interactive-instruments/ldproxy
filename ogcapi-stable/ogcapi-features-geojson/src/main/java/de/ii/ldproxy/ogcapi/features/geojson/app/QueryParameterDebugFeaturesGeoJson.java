@@ -53,6 +53,11 @@ public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache implem
     }
 
     @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        return schema;
+    }
+
+    @Override
     public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }
