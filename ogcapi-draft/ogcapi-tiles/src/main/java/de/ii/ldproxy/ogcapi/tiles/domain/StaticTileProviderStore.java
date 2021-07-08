@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import jdk.jshell.spi.ExecutionControl;
 
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -81,7 +80,6 @@ public interface StaticTileProviderStore extends ApiExtension {
      * @param apiData the API
      * @param filename the filename of the tile set container
      * @return the format
-     * @throws ExecutionControl.NotImplementedException the format of the Mbtiles container is currently not supported
      */
-    String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException, ExecutionControl.NotImplementedException;
+    String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException;
 }

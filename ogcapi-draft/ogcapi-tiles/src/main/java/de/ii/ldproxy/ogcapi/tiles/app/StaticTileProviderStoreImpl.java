@@ -16,7 +16,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import jdk.jshell.spi.ExecutionControl;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -156,13 +155,13 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
     }
 
     @Override
-    public String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException, ExecutionControl.NotImplementedException {
+    public String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException {
         MbtilesTileset tileset = new MbtilesTileset(getTileProvider(apiData, filename));
         MbtilesMetadata.MbtilesFormat format = tileset.getMetadata().getFormat();
         if (format==MbtilesMetadata.MbtilesFormat.pbf)
             return "MVT";
 
         // TODO support bitmap formats
-        throw new ExecutionControl.NotImplementedException(String.format("Mbtiles format '%s' is currently not supported.", format));
+        throw new UnsupportedOperationException(String.format("Mbtiles format '%s' is currently not supported.", format));
     }
 }
