@@ -14,7 +14,6 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 
 /**

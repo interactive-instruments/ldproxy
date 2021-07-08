@@ -9,9 +9,6 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import org.immutables.value.Value;
@@ -20,7 +17,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)

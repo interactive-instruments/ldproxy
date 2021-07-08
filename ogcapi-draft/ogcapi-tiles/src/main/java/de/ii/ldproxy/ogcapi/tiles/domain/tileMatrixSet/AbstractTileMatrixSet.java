@@ -9,8 +9,6 @@ package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Objects;
 
 public abstract class AbstractTileMatrixSet implements TileMatrixSet {
