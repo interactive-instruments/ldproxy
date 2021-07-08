@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
