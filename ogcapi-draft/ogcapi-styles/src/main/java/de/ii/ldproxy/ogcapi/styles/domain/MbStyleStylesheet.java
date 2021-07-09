@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import org.immutables.value.Value;
 
@@ -55,7 +56,7 @@ public abstract class MbStyleStylesheet {
     public abstract List<MbStyleLayer> getLayers();
 
     @JsonIgnore
-    public List<StyleLayer> getLayerMetadata(OgcApiDataV2 apiData, SchemaGeneratorGeoJson schemaGeneratorFeature) {
+    public List<StyleLayer> getLayerMetadata(OgcApiDataV2 apiData, SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
         // prepare a map with the JSON schemas of the feature collections used in the style
         Map<String, JsonSchemaObject> schemaMap = getLayers().stream()
                                                              .filter(layer -> layer.getSource().isPresent() && layer.getSource().get().equals(apiData.getId()))

@@ -5,8 +5,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.collections.schema;
+package de.ii.ldproxy.ogcapi.collections.schema.app;
 
+import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -17,7 +18,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
-import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -49,10 +49,10 @@ public class SchemaFormatJsonSchema implements SchemaFormatExtension {
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(getBuildingBlockConfigurationType())
-                      .map(cfg -> cfg.isEnabled())
+                      .map(ExtensionConfiguration::isEnabled)
                       .orElse(false) &&
                 apiData.getExtension(GeoJsonConfiguration.class)
-                       .map(cfg -> cfg.isEnabled())
+                       .map(ExtensionConfiguration::isEnabled)
                        .orElse(true);
     }
 
@@ -61,12 +61,12 @@ public class SchemaFormatJsonSchema implements SchemaFormatExtension {
         return apiData.getCollections()
                       .get(collectionId)
                       .getExtension(getBuildingBlockConfigurationType())
-                      .map(cfg -> cfg.isEnabled())
+                      .map(ExtensionConfiguration::isEnabled)
                       .orElse(false) &&
                 apiData.getCollections()
                        .get(collectionId)
                        .getExtension(GeoJsonConfiguration.class)
-                       .map(cfg -> cfg.isEnabled())
+                       .map(ExtensionConfiguration::isEnabled)
                        .orElse(true);
     }
 

@@ -5,9 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.collections.schema;
+package de.ii.ldproxy.ogcapi.collections.schema.app;
 
 
+import de.ii.ldproxy.ogcapi.collections.schema.app.SchemaLinkGenerator;
+import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaConfiguration;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
@@ -51,7 +53,7 @@ public class SchemaOnCollection implements CollectionExtension {
                                                      Optional<Locale> language) {
         if (isExtensionEnabled(featureTypeConfiguration, SchemaConfiguration.class) && !isNested) {
             final SchemaLinkGenerator linkGenerator = new SchemaLinkGenerator();
-            collection.addAllLinks(linkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
+            collection.addAllLinks(linkGenerator.generateCollectionLinks(uriCustomizer, featureTypeConfiguration.getLabel(), i18n, language));
         }
 
         return collection;

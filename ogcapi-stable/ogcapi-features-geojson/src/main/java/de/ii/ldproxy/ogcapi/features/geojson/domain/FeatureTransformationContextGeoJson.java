@@ -12,6 +12,8 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
+import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.geojson.app.JsonGeneratorDebug;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
@@ -19,6 +21,7 @@ import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import org.immutables.value.Value;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -130,5 +133,11 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
         public boolean hasMore() {
             return false;
         }
+
+        @Value.Default
+        public List<Link> getCurrentFeatureLinks() { return ImmutableList.of(); }
+
+        @Value.Default
+        public List<Link> getCurrentFeatureCollectionLinks() { return ImmutableList.of(); }
     }
 }

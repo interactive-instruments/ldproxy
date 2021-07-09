@@ -22,6 +22,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -51,14 +52,14 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
         boolean getIncludeLinkHeader();
     }
 
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
     public QueryablesQueriesHandlerImpl(@Requires I18n i18n,
                                         @Requires FeaturesCoreProviders providers,
-                                        @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
+                                        @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
         this.i18n = i18n;
         this.providers = providers;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
