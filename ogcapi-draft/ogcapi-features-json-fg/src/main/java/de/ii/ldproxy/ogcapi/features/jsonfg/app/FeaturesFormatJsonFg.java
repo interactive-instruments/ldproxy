@@ -18,19 +18,16 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -63,22 +60,13 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
             .parameter("json")
             .build();
 
-    // private final FeaturesCoreProviders providers;
-    // private final EntityRegistry entityRegistry;
-    // private final FeaturesCoreValidation featuresCoreValidator;
     private final SchemaGeneratorOpenApi schemaGeneratorFeature;
     private final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
     private final GeoJsonWriterRegistry geoJsonWriterRegistry;
 
-    public FeaturesFormatJsonFg(//@Requires FeaturesCoreProviders providers,
-                                //@Requires EntityRegistry entityRegistry,
-                                //@Requires FeaturesCoreValidation featuresCoreValidator,
-                                @Requires SchemaGeneratorOpenApi schemaGeneratorFeature,
+    public FeaturesFormatJsonFg(@Requires SchemaGeneratorOpenApi schemaGeneratorFeature,
                                 @Requires SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
                                 @Requires GeoJsonWriterRegistry geoJsonWriterRegistry) {
-        // this.providers = providers;
-        // this.entityRegistry = entityRegistry;
-        // this.featuresCoreValidator = featuresCoreValidator;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
         this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
         this.geoJsonWriterRegistry = geoJsonWriterRegistry;
