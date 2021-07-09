@@ -19,7 +19,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.io.IOException;
-import java.lang.annotation.Repeatable;
 import java.util.function.Consumer;
 
 @Component

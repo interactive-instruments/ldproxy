@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ldproxy.ogcapi.features.geojson.app.GeoJsonWriterGeometry
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson
 import de.ii.xtraplatform.features.domain.FeatureProperty

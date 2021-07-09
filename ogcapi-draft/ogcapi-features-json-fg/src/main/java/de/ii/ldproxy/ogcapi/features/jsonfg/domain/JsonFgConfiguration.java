@@ -12,8 +12,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new")
