@@ -40,7 +40,6 @@ public abstract class TileProviderFeatures extends TileProvider {
 
     public abstract Map<String, List<Rule>> getRules();
 
-    @Nullable
     public abstract List<Double> getCenter();
 
     @Nullable
@@ -101,6 +100,11 @@ public abstract class TileProviderFeatures extends TileProvider {
         if (Objects.nonNull(getZoomLevels()))
             getZoomLevels().forEach(mergedZoomLevels::put);
         builder.zoomLevels(mergedZoomLevels);
+
+        if (!getCenter().isEmpty())
+            builder.center(getCenter());
+        else if (!src.getCenter().isEmpty())
+            builder.center(src.getCenter());
 
         Map<String, MinMax> mergedZoomLevelsCache = Objects.nonNull(src.getZoomLevelsCache()) ? Maps.newLinkedHashMap(src.getZoomLevelsCache()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getZoomLevelsCache()))

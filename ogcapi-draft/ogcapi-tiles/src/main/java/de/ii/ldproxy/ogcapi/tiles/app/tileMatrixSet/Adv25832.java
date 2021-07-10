@@ -19,6 +19,7 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.net.URI;
 import java.util.Optional;
@@ -42,7 +43,7 @@ public class Adv25832 extends AbstractTileMatrixSet implements TileMatrixSet {
 
     private final CrsTransformerFactory crsTransformerFactory;
 
-    public Adv25832(CrsTransformerFactory crsTransformerFactory) {
+    public Adv25832(@Requires CrsTransformerFactory crsTransformerFactory) {
         this.crsTransformerFactory = crsTransformerFactory;
     }
 

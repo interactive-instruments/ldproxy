@@ -178,7 +178,7 @@ public class EndpointTransactional extends EndpointSubCollection {
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                               @Context OgcApi service, @Context ApiRequestContext apiRequestContext,
                               @Context HttpServletRequest request, InputStream requestBody) {
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
@@ -197,7 +197,7 @@ public class EndpointTransactional extends EndpointSubCollection {
                             @Context ApiRequestContext apiRequestContext, @Context HttpServletRequest request,
                             InputStream requestBody) {
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
@@ -211,7 +211,7 @@ public class EndpointTransactional extends EndpointSubCollection {
     public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApi service,
                                @PathParam("id") String id, @PathParam("featureid") final String featureId) {
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 

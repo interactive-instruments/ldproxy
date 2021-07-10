@@ -9,8 +9,11 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.app.OgcApiEntity;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
@@ -31,9 +34,11 @@ import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilePoint;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableVectorLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.VectorLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTilesBoundingBox;
@@ -54,6 +59,7 @@ import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.MediaType;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.AbstractMap;
@@ -76,6 +82,7 @@ public class TilesHelper {
      * @param zoomLevels the range of zoom levels
      * @param center the center point
      * @param collectionId the collection, empty = all collections in the dataset
+     * @param dataType vector, map or coverage
      * @param links links to include in the object
      * @param uriCustomizer optional URI of the resource
      * @param limitsGenerator helper to generate the limits for each zoom level based on the bbox of the data
@@ -87,13 +94,14 @@ public class TilesHelper {
                                        MinMax zoomLevels,
                                        List<Double> center,
                                        Optional<String> collectionId,
+                                       TileSet.DataType dataType,
                                        List<Link> links,
                                        Optional<URICustomizer> uriCustomizer,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
                                        SchemaGeneratorGeoJson schemaGeneratorFeature) {
 
         ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
-                                                           .dataType(TileSet.DataType.vector);
+                                                           .dataType(dataType);
 
         builder.tileMatrixSetId(tileMatrixSet.getId());
 
@@ -161,7 +169,7 @@ public class TilesHelper {
                                                                              .id(collectionId2)
                                                                              .title(collectionData.getLabel())
                                                                              .description(collectionData.getDescription())
-                                                                             .dataType(TileSet.DataType.vector);
+                                                                             .dataType(dataType);
 
                      collectionData.getExtension(TilesConfiguration.class)
                                    .map(config -> config.getZoomLevelsDerived().get(tileMatrixSet.getId()))
@@ -311,14 +319,16 @@ public class TilesHelper {
                                                                 .getExtension(FeaturesCoreConfiguration.class)
                                                                 .map(cfg -> cfg.getFeatureType().orElse(featureTypeApi.getId()))
                                                                 .orElse(featureTypeApi.getId());
-                                  FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, featureTypeApi);
-                                  FeatureSchema featureType = featureProvider.getData()
-                                                                             .getTypes()
-                                                                             .get(featureTypeId);
                                   Optional<GeoJsonConfiguration> geoJsonConfiguration = featureTypeApi.getExtension(GeoJsonConfiguration.class);
                                   boolean flatten = geoJsonConfiguration.filter(cfg -> cfg.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && cfg.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
                                                                         .isPresent();
-                                  List<FeatureSchema> properties = flatten ? featureType.getAllNestedProperties() : featureType.getProperties();
+                                  Optional<FeatureSchema> featureType = providers.getFeatureProvider(apiData, featureTypeApi)
+                                                                                 .map(provider -> provider.getData()
+                                                                                                          .getTypes()
+                                                                                                          .get(featureTypeId));
+                                  if (featureType.isEmpty())
+                                      return null;
+                                  List<FeatureSchema> properties = flatten ? featureType.get().getAllNestedProperties() : featureType.get().getProperties();
                                   // maps from the dotted path name to the path name with array brackets
                                   Map<String,String> propertyNameMap = !flatten ? ImmutableMap.of() :
                                           schemaInfo.getPropertyNames(apiData, featureTypeApi.getId(), false, true).stream()

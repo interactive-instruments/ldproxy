@@ -186,7 +186,7 @@ public abstract class MbStyleStylesheet {
                 this.getSources()
                     .values()
                     .stream()
-                    .filter(source -> source instanceof MbStyleVectorSource || source instanceof MbStyleGeojsonSource)
+                    .filter(source -> source instanceof MbStyleVectorSource || source instanceof MbStyleRasterSource || source instanceof MbStyleGeojsonSource)
                     .anyMatch(source ->
                                       (source instanceof MbStyleVectorSource &&
                                               (((MbStyleVectorSource) source).getTiles()
@@ -196,6 +196,14 @@ public abstract class MbStyleStylesheet {
                                                       ((MbStyleVectorSource) source).getUrl()
                                                                                     .orElse("")
                                                                                     .matches("^.*\\{serviceUrl\\}.*$"))) ||
+                                              (source instanceof MbStyleRasterSource &&
+                                                      (((MbStyleRasterSource) source).getTiles()
+                                                                                     .orElse(ImmutableList.of())
+                                                                                     .stream()
+                                                                                     .anyMatch(tilesUri -> tilesUri.matches("^.*\\{serviceUrl\\}.*$")) ||
+                                                              ((MbStyleRasterSource) source).getUrl()
+                                                                                            .orElse("")
+                                                                                            .matches("^.*\\{serviceUrl\\}.*$"))) ||
                                               (source instanceof MbStyleGeojsonSource &&
                                                       (((MbStyleGeojsonSource) source).getData()
                                                                                       .filter(data -> data instanceof String)
@@ -225,6 +233,17 @@ public abstract class MbStyleStylesheet {
                                                                                                                            .url(((MbStyleVectorSource)source).getUrl()
                                                                                                                                                              .map(url -> url.replace("{serviceUrl}", serviceUrl)))
                                                                                                                            .tiles(((MbStyleVectorSource)source).getTiles()
+                                                                                                                                                               .orElse(ImmutableList.of())
+                                                                                                                                                               .stream()
+                                                                                                                                                               .map(tile -> tile.replace("{serviceUrl}", serviceUrl))
+                                                                                                                                                               .collect(Collectors.toList()))
+                                                                                                                           .build();
+                                                                                    else if (source instanceof MbStyleRasterSource)
+                                                                                        return ImmutableMbStyleRasterSource.builder()
+                                                                                                                           .from((MbStyleRasterSource)source)
+                                                                                                                           .url(((MbStyleRasterSource)source).getUrl()
+                                                                                                                                                             .map(url -> url.replace("{serviceUrl}", serviceUrl)))
+                                                                                                                           .tiles(((MbStyleRasterSource)source).getTiles()
                                                                                                                                                                .orElse(ImmutableList.of())
                                                                                                                                                                .stream()
                                                                                                                                                                .map(tile -> tile.replace("{serviceUrl}", serviceUrl))

@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -79,12 +80,15 @@ public class SchemaGeneratorFeatureOpenApi extends SchemaGeneratorFeature implem
             String featureTypeId = apiData.getCollections()
                                           .get(collectionId)
                                           .getExtension(FeaturesCoreConfiguration.class)
+                                          .filter(ExtensionConfiguration::isEnabled)
+                                          .filter(cfg -> cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature) != FeaturesCoreConfiguration.ItemType.unknown)
                                           .map(cfg -> cfg.getFeatureType().orElse(collectionId))
                                           .orElse(collectionId);
-            FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
-            FeatureSchema featureType = featureProvider.getData()
-                                                       .getTypes()
-                                                       .get(featureTypeId);
+            FeatureSchema featureType = providers.getFeatureProvider(apiData, collectionData)
+                                                 .map(provider -> provider.getData()
+                                                                          .getTypes()
+                                                                          .get(featureTypeId))
+                                                 .orElse(null);
             if (Objects.isNull(featureType))
                 // Use an empty object schema as fallback, if we cannot get one from the provider
                 featureType = new ImmutableFeatureSchema.Builder()

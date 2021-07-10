@@ -22,6 +22,7 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -50,7 +51,7 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
 
     private final CrsTransformerFactory crsTransformerFactory;
 
-    public GdiDe25832(CrsTransformerFactory crsTransformerFactory) {
+    public GdiDe25832(@Requires CrsTransformerFactory crsTransformerFactory) {
         this.crsTransformerFactory = crsTransformerFactory;
     }
 

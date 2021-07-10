@@ -36,6 +36,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -247,7 +248,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                 .replace("{tileRow}", tileRow)
                 .replace("{tileCol}", tileCol);
         TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path, Optional.of(collectionId))
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+                                                              .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         if (!requiresQuerySupport) {
             // return a static tile
@@ -263,6 +264,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                     .outputFormat(outputFormat)
                     .temporary(false)
                     .isDatasetTile(false)
+                    .addCollectionIds(collectionId)
                     .build();
 
             String mbtilesFilename = ((TileProviderMbtiles) tileProvider).getFilename();
@@ -280,6 +282,9 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
 
             return queryHandler.handle(TilesQueriesHandler.Query.MBTILES_TILE, queryInput, requestContext);
         }
+
+        if (!(outputFormat instanceof TileFormatWithQuerySupportExtension))
+            throw new RuntimeException(String.format("Unexpected tile format without query support. Found: %s", outputFormat.getClass().getSimpleName()));
 
         FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
@@ -339,7 +344,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
             processingParameters = parameter.transformContext(null, processingParameters, queryParams, api.getData());
         }
 
-        FeatureQuery query = outputFormat.getQuery(tile, allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
+        FeatureQuery query = ((TileFormatWithQuerySupportExtension) outputFormat).getQuery(tile, allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
 
         FeaturesCoreConfiguration coreConfiguration = featureType.getExtension(FeaturesCoreConfiguration.class).get();
 

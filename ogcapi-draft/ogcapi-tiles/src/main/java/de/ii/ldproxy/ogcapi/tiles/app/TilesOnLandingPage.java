@@ -11,10 +11,13 @@ import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -31,12 +34,15 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class VectorTilesOnLandingPage implements LandingPageExtension {
+public class TilesOnLandingPage implements LandingPageExtension {
 
     private final I18n i18n;
+    private final ExtensionRegistry extensionRegistry;
 
-    public VectorTilesOnLandingPage(@Requires I18n i18n) {
+    public TilesOnLandingPage(@Requires I18n i18n,
+                              @Requires ExtensionRegistry extensionRegistry) {
         this.i18n = i18n;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -61,8 +67,17 @@ public class VectorTilesOnLandingPage implements LandingPageExtension {
                                                 Optional<Locale> language) {
 
         if (isEnabledForApi(apiData)) {
-            final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
-            List<Link> links = vectorTilesLinkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
+            Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                                                                   .stream()
+                                                                   .filter(format -> format.isEnabledForApi(apiData))
+                                                                   .map(format -> format.getDataType())
+                                                                   .findAny();
+            if (dataType.isEmpty())
+                // no tile format is enabled
+                return landingPageBuilder;
+
+            final TilesLinkGenerator tilesLinkGenerator = new TilesLinkGenerator();
+            List<Link> links = tilesLinkGenerator.generateLandingPageLinks(uriCustomizer, dataType.get(), i18n, language);
             landingPageBuilder.addAllLinks(links);
         }
         return landingPageBuilder;

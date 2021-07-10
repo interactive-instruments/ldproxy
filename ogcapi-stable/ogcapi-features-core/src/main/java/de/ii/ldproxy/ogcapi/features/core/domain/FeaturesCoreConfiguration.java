@@ -36,7 +36,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
 
     enum DefaultCrs {CRS84, CRS84h}
 
-    enum ItemType {feature, record}
+    enum ItemType {unknown, feature, record}
 
     int MINIMUM_PAGE_SIZE = 1;
     int DEFAULT_PAGE_SIZE = 10;

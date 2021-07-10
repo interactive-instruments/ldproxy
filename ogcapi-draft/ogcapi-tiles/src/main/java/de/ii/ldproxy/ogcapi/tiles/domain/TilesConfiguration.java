@@ -69,7 +69,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Value.Derived
     @JsonIgnore
     default List<Double> getCenterDerived() {
-        return Objects.nonNull(getCenter()) ?
+        return !getCenter().isEmpty() ?
                 getCenter() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getCenter() :

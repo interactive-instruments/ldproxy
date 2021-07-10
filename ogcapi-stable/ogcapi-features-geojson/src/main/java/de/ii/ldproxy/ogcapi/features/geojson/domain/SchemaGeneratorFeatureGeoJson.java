@@ -19,6 +19,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
@@ -157,7 +158,10 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
     private class ContextJsonSchema {
         String objectKey = null;
         List<String> required = new Vector<>();
-        JsonSchema id = null;
+        JsonSchema id = ImmutableJsonSchemaOneOf.builder()
+                                                .addOneOf(ImmutableJsonSchemaString.builder().build())
+                                                .addOneOf(ImmutableJsonSchemaInteger.builder().build())
+                                                .build();
         Map<String, JsonSchema> properties = new TreeMap<>();
         Map<String, JsonSchema> patternProperties = new TreeMap<>();
         JsonSchema geometry = ImmutableJsonSchemaNull.builder()
@@ -195,10 +199,16 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
                                           .getExtension(FeaturesCoreConfiguration.class)
                                           .map(cfg -> cfg.getFeatureType().orElse(collectionId))
                                           .orElse(collectionId);
-            FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
-            FeatureSchema featureType = featureProvider.getData()
-                    .getTypes()
-                    .get(featureTypeId);
+            FeatureSchema featureType = providers.getFeatureProvider(apiData, collectionData)
+                                                 .map(provider -> provider.getData()
+                                                                          .getTypes()
+                                                                          .get(featureTypeId))
+                                                 .orElse(null);
+            if (Objects.isNull(featureType))
+                // Use an empty object schema as fallback, if we cannot get one from the provider
+                featureType = new ImmutableFeatureSchema.Builder().name(featureTypeId)
+                                                                  .type(SchemaBase.Type.OBJECT)
+                                                                  .build();
 
             schemaMapJson.get(apiHashCode)
                          .get(collectionId)

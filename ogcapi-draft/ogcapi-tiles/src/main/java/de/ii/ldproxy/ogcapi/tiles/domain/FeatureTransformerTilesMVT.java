@@ -49,9 +49,9 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MINIMUM_SIZE_IN_PIXEL;
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MINIMUM_SIZE_IN_PIXEL;
 
 public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 

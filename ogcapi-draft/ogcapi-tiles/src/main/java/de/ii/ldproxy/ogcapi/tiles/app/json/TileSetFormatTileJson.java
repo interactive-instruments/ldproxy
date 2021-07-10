@@ -100,10 +100,10 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     private String getTilesUriTemplate(TileSet tileset) {
         return tileset.getLinks()
                       .stream()
-                      .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
+                      .filter(link -> link.getRel().equalsIgnoreCase("item"))
                       .findFirst()
                       .map(Link::getHref)
-                      .orElseThrow(() -> new RuntimeException("No tile URI template with link relation type 'item' found for Mapbox Vector Tiles."))
+                      .orElseThrow(() -> new RuntimeException("No tile URI template with link relation type 'item' found."))
                       .replace("{tileMatrixSetId}", tileset.getTileMatrixSetId())
                       .replace("{tileMatrix}", "{z}")
                       .replace("{tileRow}", "{y}")

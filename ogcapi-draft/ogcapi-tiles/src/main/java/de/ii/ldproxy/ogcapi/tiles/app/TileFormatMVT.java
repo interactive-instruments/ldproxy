@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
@@ -26,7 +25,8 @@ import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.cql.domain.And;
@@ -40,8 +40,6 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import io.swagger.v3.oas.models.media.BinarySchema;
-import io.swagger.v3.oas.models.media.Schema;
 import no.ecc.vectortile.VectorTileDecoder;
 import no.ecc.vectortile.VectorTileEncoder;
 import org.apache.felix.ipojo.annotations.Component;
@@ -66,14 +64,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.LIMIT_DEFAULT;
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.LIMIT_DEFAULT;
 
 @Component
 @Provides
 @Instantiate
-public class TileFormatMVT implements TileFormatExtension {
-
-    public final static String SCHEMA_REF_TILE = "#/components/schemas/TileMVT";
+public class TileFormatMVT implements TileFormatWithQuerySupportExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
 
@@ -83,7 +79,6 @@ public class TileFormatMVT implements TileFormatExtension {
             .parameter("mvt")
             .build();
 
-    private final Schema schemaTile = new BinarySchema();
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
     private final TileCache tileCache;
@@ -115,7 +110,7 @@ public class TileFormatMVT implements TileFormatExtension {
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaTile)
+                    .schema(SCHEMA_TILE)
                     .schemaRef(SCHEMA_REF_TILE)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
@@ -126,6 +121,17 @@ public class TileFormatMVT implements TileFormatExtension {
     @Override
     public String getExtension() {
         return "pbf";
+    }
+
+    @Override
+    public boolean getGzippedInMbtiles() { return true; }
+
+    @Override
+    public boolean getSupportsEmptyTile() { return true; }
+
+    @Override
+    public TileSet.DataType getDataType() {
+        return TileSet.DataType.vector;
     }
 
     @Override
@@ -336,10 +342,5 @@ public class TileFormatMVT implements TileFormatExtension {
      */
     public Object getEmptyTile(Tile tile) {
         return new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent()).encode();
-    }
-
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
     }
 }

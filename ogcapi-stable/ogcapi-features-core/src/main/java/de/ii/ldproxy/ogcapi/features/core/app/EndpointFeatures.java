@@ -41,6 +41,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -369,6 +370,8 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                        .get(collectionId);
 
         FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .filter(ExtensionConfiguration::isEnabled)
+                                                                    .filter(cfg -> cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature) != FeaturesCoreConfiguration.ItemType.unknown)
                                                                     .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
 
         int minimumPageSize = coreConfiguration.getMinimumPageSize();
@@ -381,11 +384,10 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
-
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .collectionId(collectionId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                 .defaultPageSize(Optional.of(defaultPageSize))
                 .showsFeatureSelfLink(showsFeatureSelfLink)
@@ -410,6 +412,8 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                            .get(collectionId);
 
         FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .filter(ExtensionConfiguration::isEnabled)
+                                                                    .filter(cfg -> cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature) != FeaturesCoreConfiguration.ItemType.unknown)
                                                                     .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
         boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
@@ -423,7 +427,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .collectionId(collectionId)
                 .featureId(featureId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                 .includeLinkHeader(includeLinkHeader)
                 .build();

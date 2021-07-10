@@ -26,10 +26,12 @@ import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -50,7 +52,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class CapabilityVectorTiles implements ApiBuildingBlock {
+public class CapabilityTiles implements ApiBuildingBlock {
 
     public static final int LIMIT_DEFAULT = 100000;
     public static final double MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR = 0.1;
@@ -63,8 +65,8 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
     private final FeaturesQuery queryParser;
     private final SchemaInfo schemaInfo;
 
-    public CapabilityVectorTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
-                                 @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo) {
+    public CapabilityTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
+                           @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo) {
         this.extensionRegistry = extensionRegistry;
         this.queryParser = queryParser;
         this.providers = providers;
@@ -76,7 +78,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
 
         return new ImmutableTilesConfiguration.Builder().enabled(false)
                                                         .tileProvider(ImmutableTileProviderFeatures.builder()
-                                                                                                   .tileEncodings(extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                                                                                                   .tileEncodings(extensionRegistry.getExtensionsForType(TileFormatWithQuerySupportExtension.class)
                                                                                                                                    .stream()
                                                                                                                                    .filter(FormatExtension::isEnabledByDefault)
                                                                                                                                    .map(format -> format.getMediaType().label())
@@ -166,7 +168,10 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
             String collectionId = entry.getKey();
             TilesConfiguration config = entry.getValue();
 
-            List<String> featureProperties = schemaInfo.getPropertyNames(providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId)), false);
+            Optional<FeatureSchema> schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
+            List<String> featureProperties = schema.isPresent()
+                    ? schemaInfo.getPropertyNames(schema.get(), false)
+                    : ImmutableList.of();
 
             List<String> formatLabels = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                                                          .stream()

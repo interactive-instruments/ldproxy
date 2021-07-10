@@ -240,21 +240,20 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                                        .get(collectionName);
             Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
             Optional<HtmlConfiguration> htmlConfiguration = collectionData.getExtension(HtmlConfiguration.class);
-            FeatureProviderDataV2 providerData = providers.getFeatureProvider(serviceData, collectionData)
-                                                          .getData();
+            Optional<FeatureProviderDataV2> providerData = providers.getFeatureProvider(serviceData, collectionData)
+                                                          .map(FeatureProvider2::getData);
 
-            Map<String, String> filterableFields = featuresCoreConfiguration
-                                                                 .map(FeaturesCoreConfiguration::getOtherFilterParameters)
-                                                                 .orElse(ImmutableMap.of());
+            Map<String, String> filterableFields = featuresCoreConfiguration.map(FeaturesCoreConfiguration::getOtherFilterParameters)
+                                                                            .orElse(ImmutableMap.of());
 
             Map<String, String> htmlNames = new LinkedHashMap<>();
-            if (featuresCoreConfiguration.isPresent()) {
+            if (featuresCoreConfiguration.isPresent() && providerData.isPresent()) {
                 List<String> featureTypeIds = featuresCoreConfiguration.get().getFeatureTypes();
                 if (featureTypeIds.isEmpty())
                     featureTypeIds = ImmutableList.of(collectionName);
                 featureTypeIds.forEach(featureTypeId -> {
                      //TODO: add function to FeatureSchema instead of using Visitor
-                    providerData.getTypes().get(featureTypeId).accept(new FeatureSchemaToTypeVisitor(featureTypeId)).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
+                    providerData.get().getTypes().get(featureTypeId).accept(new FeatureSchemaToTypeVisitor(featureTypeId)).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
                  });
 
                 //TODO: apply rename transformers
