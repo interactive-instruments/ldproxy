@@ -196,31 +196,29 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
             }
 
             List<Double> center = config.getCenterDerived();
-            if (Objects.nonNull(center) && center.size()!=2)
+            if (center.size()!=0 && center.size()!=2)
                 builder.addStrictErrors(MessageFormat.format("The center has been specified in the TILES module configuration of collection ''{1}'', but the array length is ''{0}'', not 2.", center.size(), collectionId));
 
             Map<String, MinMax> zoomLevels = config.getZoomLevelsDerived();
-            if (Objects.nonNull(zoomLevels)) {
-                for (Map.Entry<String, MinMax> entry2 : zoomLevels.entrySet()) {
-                    String tileMatrixSetId = entry2.getKey();
-                    Optional<TileMatrixSet> tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                             .stream()
-                                                                             .filter(tms -> tms.getId().equals(tileMatrixSetId) && tms.isEnabledForApi(apiData))
-                                                                             .findAny();
-                    if (tileMatrixSet.isEmpty()) {
-                        builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' references a tile matrix set ''{1}'' that is not available in this API.", collectionId, tileMatrixSetId));
-                    } else {
-                        if (tileMatrixSet.get().getMinLevel() > entry2.getValue().getMin()) {
-                            builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to start at level ''{2}'', but the minimum level of the tile matrix set is ''{3}''.", collectionId, tileMatrixSetId, entry2.getValue().getMin(), tileMatrixSet.get().getMinLevel()));
-                        }
-                        if (tileMatrixSet.get().getMaxLevel() < entry2.getValue().getMax()) {
-                            builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to end at level ''{2}'', but the maximum level of the tile matrix set is ''{3}''.", collectionId, tileMatrixSetId, entry2.getValue().getMax(), tileMatrixSet.get().getMaxLevel()));
-                        }
-                        if (entry2.getValue().getDefault().isPresent()) {
-                            Integer defaultLevel = entry2.getValue().getDefault().get();
-                            if (defaultLevel < entry2.getValue().getMin() || defaultLevel > entry2.getValue().getMax()) {
-                                builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' specifies a default level ''{2}'' that is outside of the range [ ''{3}'' : ''{4}'' ].", tileMatrixSetId, defaultLevel, entry2.getValue().getMin(), entry2.getValue().getMax()));
-                            }
+            for (Map.Entry<String, MinMax> entry2 : zoomLevels.entrySet()) {
+                String tileMatrixSetId = entry2.getKey();
+                Optional<TileMatrixSet> tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
+                                                                         .stream()
+                                                                         .filter(tms -> tms.getId().equals(tileMatrixSetId) && tms.isEnabledForApi(apiData))
+                                                                         .findAny();
+                if (tileMatrixSet.isEmpty()) {
+                    builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' references a tile matrix set ''{1}'' that is not available in this API.", collectionId, tileMatrixSetId));
+                } else {
+                    if (tileMatrixSet.get().getMinLevel() > entry2.getValue().getMin()) {
+                        builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to start at level ''{2}'', but the minimum level of the tile matrix set is ''{3}''.", collectionId, tileMatrixSetId, entry2.getValue().getMin(), tileMatrixSet.get().getMinLevel()));
+                    }
+                    if (tileMatrixSet.get().getMaxLevel() < entry2.getValue().getMax()) {
+                        builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to end at level ''{2}'', but the maximum level of the tile matrix set is ''{3}''.", collectionId, tileMatrixSetId, entry2.getValue().getMax(), tileMatrixSet.get().getMaxLevel()));
+                    }
+                    if (entry2.getValue().getDefault().isPresent()) {
+                        Integer defaultLevel = entry2.getValue().getDefault().get();
+                        if (defaultLevel < entry2.getValue().getMin() || defaultLevel > entry2.getValue().getMax()) {
+                            builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' specifies a default level ''{2}'' that is outside of the range [ ''{3}'' : ''{4}'' ].", tileMatrixSetId, defaultLevel, entry2.getValue().getMin(), entry2.getValue().getMax()));
                         }
                     }
                 }

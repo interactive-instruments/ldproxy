@@ -186,7 +186,12 @@ public class MbtilesTileset {
                         builder.type(type);
                         break;
                     case "version":
-                        builder.version(Integer.parseInt(value));
+                        try {
+                            int v = Integer.parseInt(value);
+                            builder.version(v);
+                        } catch (NumberFormatException e) {
+                            builder.version(Float.parseFloat(value));
+                        }
                         break;
                     case "vector_layers":
                         // TODO vector_layers

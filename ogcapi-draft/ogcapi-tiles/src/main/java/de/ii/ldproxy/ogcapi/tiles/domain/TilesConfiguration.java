@@ -63,13 +63,11 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     }
 
     @Deprecated
-    @Nullable
     List<Double> getCenter();
 
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
     default List<Double> getCenterDerived() {
         return Objects.nonNull(getCenter()) ?
                 getCenter() :
@@ -77,7 +75,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
                         ((TileProviderFeatures) getTileProvider()).getCenter() :
                         getTileProvider() instanceof TileProviderMbtiles ?
                                 ((TileProviderMbtiles) getTileProvider()).getCenter() :
-                                null;
+                                ImmutableList.of();
     }
 
     @Deprecated
@@ -380,9 +378,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
 
-        if (Objects.nonNull(getCenter()))
+        if (!getCenter().isEmpty())
             builder.center(getCenter());
-        else if (Objects.nonNull(src.getCenter()))
+        else if (!src.getCenter().isEmpty())
             builder.center(src.getCenter());
 
         return builder.build();
