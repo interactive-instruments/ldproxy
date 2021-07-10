@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -23,7 +22,6 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilePoint;
@@ -42,18 +40,23 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenera
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
-import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.AbstractMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,6 +64,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class TilesHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TilesHelper.class);
 
     //TODO: move to TileSet as static of()
     /**
@@ -70,6 +75,7 @@ public class TilesHelper {
      * @param zoomLevels the range of zoom levels
      * @param center the center point
      * @param collectionId the collection, empty = all collections in the dataset
+     * @param dataType vector, map or coverage
      * @param links links to include in the object
      * @param uriCustomizer optional URI of the resource
      * @param limitsGenerator helper to generate the limits for each zoom level based on the bbox of the data
@@ -81,6 +87,7 @@ public class TilesHelper {
                                        MinMax zoomLevels,
                                        List<Double> center,
                                        Optional<String> collectionId,
+                                       TileSet.DataType dataType,
                                        List<Link> links,
                                        Optional<URICustomizer> uriCustomizer,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
@@ -88,7 +95,7 @@ public class TilesHelper {
                                        EntityRegistry entityRegistry) {
 
         ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
-                                                           .dataType(TileSet.DataType.vector);
+                                                           .dataType(dataType);
 
         builder.tileMatrixSetId(tileMatrixSet.getId());
 
@@ -105,19 +112,20 @@ public class TilesHelper {
                                             ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
                                             : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
 
-        Optional<BoundingBox> bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
-        bbox.ifPresent(boundingBox -> builder.boundingBox(ImmutableTilesBoundingBox.builder()
-                                                                                   .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
-                                                                                              BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
-                                                                                   .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
-                                                                                               BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
-                                                                                   .crsEpsg(OgcCrs.CRS84)
-                                                                                   .build()));
+        BoundingBox boundingBox = (collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent())
+                .orElse(tileMatrixSet.getBoundingBoxCrs84());
+        builder.boundingBox(ImmutableTilesBoundingBox.builder()
+                                                     .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
+                                                                BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
+                                                     .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
+                                                                 BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
+                                                     .crsEpsg(OgcCrs.CRS84)
+                                                     .build());
 
-        if (zoomLevels.getDefault().isPresent() || Objects.nonNull(center)) {
+        if (zoomLevels.getDefault().isPresent() || !center.isEmpty()) {
             ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();
             zoomLevels.getDefault().ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
-            if (Objects.nonNull(center))
+            if (!center.isEmpty())
                 builder2.coordinates(center);
             builder.centerPoint(builder2.build());
         }
@@ -134,8 +142,13 @@ public class TilesHelper {
                                 config.isPresent() &&
                                 config.get().isEnabled();
                         })
-                         .map(collectionData -> ImmutableMap.of(collectionId.get(), schemas.getSchema(
-                             providers.getFeatureSchema(apiData, collectionData), apiData, collectionData, Optional.empty())))
+                         .map(collectionData -> {
+                             Optional<FeatureSchema> schema = providers.getFeatureSchema(apiData, collectionData);
+                             if (schema.isPresent())
+                                return ImmutableMap.of(collectionId.get(), schemas.getSchema(schema.get(), apiData, collectionData, Optional.empty()));
+                             return null;
+                         })
+                         .filter(Objects::nonNull)
                          .orElse(ImmutableMap.of())
                 : apiData.getCollections()
                          .entrySet()
@@ -146,8 +159,13 @@ public class TilesHelper {
                                      config.isPresent() &&
                                      config.get().isMultiCollectionEnabled();
                          })
-                         .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemas.getSchema(
-                             providers.getFeatureSchema(apiData, entry.getValue()), apiData, entry.getValue(), Optional.empty())))
+                         .map(entry -> {
+                             Optional<FeatureSchema> schema = providers.getFeatureSchema(apiData, entry.getValue());
+                             if (schema.isPresent())
+                                 return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemas.getSchema(schema.get(), apiData, entry.getValue(), Optional.empty()));
+                             return null;
+                         })
+                         .filter(Objects::nonNull)
                          .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
         //TODO: replace with SchemaDeriverTileLayers
@@ -163,7 +181,7 @@ public class TilesHelper {
                                                                              .id(collectionId2)
                                                                              .title(collectionData.getLabel())
                                                                              .description(collectionData.getDescription())
-                                                                             .dataType(TileSet.DataType.vector);
+                                                                             .dataType(dataType);
 
                      collectionData.getExtension(TilesConfiguration.class)
                                    .map(config -> config.getZoomLevelsDerived().get(tileMatrixSet.getId()))
@@ -199,6 +217,33 @@ public class TilesHelper {
     }
 
     //TODO: move to TileSet as @Value.Lazy
+    /**
+     * convert a bounding box to a bounding box in another CRS
+     * @param bbox the bounding box in some CRS
+     * @param targetCrs the target CRS
+     * @param crsTransformerFactory the factory for CRS transformations
+     * @return the converted bounding box
+     */
+    public static Optional<BoundingBox> getBoundingBoxInTargetCrs(BoundingBox bbox, EpsgCrs targetCrs,
+                                                                  CrsTransformerFactory crsTransformerFactory) {
+        EpsgCrs sourceCrs = bbox.getEpsgCrs();
+        if (sourceCrs.getCode()== targetCrs.getCode() && sourceCrs.getForceAxisOrder()==targetCrs.getForceAxisOrder())
+            return Optional.of(bbox);
+
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
+        if (transformer.isPresent()) {
+            try {
+                return Optional.ofNullable(transformer.get()
+                                                      .transformBoundingBox(bbox));
+            } catch (CrsTransformationException e) {
+                LOGGER.error(String.format(Locale.US, "Cannot convert bounding box (%f, %f, %f, %f) from %s to %s. Reason: %s", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), sourceCrs, targetCrs, e.getMessage()));
+                return Optional.empty();
+            }
+        }
+        LOGGER.error(String.format(Locale.US, "Cannot convert bounding box (%f, %f, %f, %f) from %s to %s. Reason: no applicable transformer found.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), sourceCrs, targetCrs));
+        return Optional.empty();
+    }
+
     /**
      * derive the bbox as a sequence left, bottom, right, upper
      * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
@@ -291,13 +336,15 @@ public class TilesHelper {
                                                                 .getExtension(FeaturesCoreConfiguration.class)
                                                                 .map(cfg -> cfg.getFeatureType().orElse(featureTypeApi.getId()))
                                                                 .orElse(featureTypeApi.getId());
-                                  FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, featureTypeApi);
-                                  FeatureSchema featureType = featureProvider.getData()
-                                                                             .getTypes()
-                                                                             .get(featureTypeId);
                                   Optional<GeoJsonConfiguration> geoJsonConfiguration = featureTypeApi.getExtension(GeoJsonConfiguration.class);
                                   boolean flatten = geoJsonConfiguration.map(GeoJsonConfiguration::isFlattened).isPresent();
-                                  List<FeatureSchema> properties = flatten ? featureType.getAllNestedProperties() : featureType.getProperties();
+                                  Optional<FeatureSchema> featureType = providers.getFeatureProvider(apiData, featureTypeApi)
+                                                                                 .map(provider -> provider.getData()
+                                                                                                          .getTypes()
+                                                                                                          .get(featureTypeId));
+                                  if (featureType.isEmpty())
+                                      return null;
+                                  List<FeatureSchema> properties = flatten ? featureType.get().getAllNestedProperties() : featureType.get().getProperties();
                                   // maps from the dotted path name to the path name with array brackets
                                   Map<String,String> propertyNameMap = !flatten ? ImmutableMap.of() :
                                           schemaInfo.getPropertyNames(apiData, featureTypeApi.getId(), false, true).stream()
@@ -361,10 +408,10 @@ public class TilesHelper {
                                   });
 
                                   ImmutableVectorLayer.Builder builder = ImmutableVectorLayer.builder()
-                                                                                              .id(featureTypeApi.getId())
-                                                                                              .description(featureTypeApi.getDescription().orElse(""))
-                                                                                              .geometryType(geometryType.get())
-                                                                                              .fields(fieldsBuilder.build());
+                                                                                             .id(featureTypeApi.getId())
+                                                                                             .description(featureTypeApi.getDescription().orElse(""))
+                                                                                             .geometryType(geometryType.get())
+                                                                                             .fields(fieldsBuilder.build());
                                   apiData.getExtension(TilesConfiguration.class, featureTypeApi.getId())
                                          .map(config -> config.getZoomLevelsDerived().get(tileMatrixSetId))
                                          .ifPresent(minmax -> builder.minzoom(minmax.getMin())
@@ -392,5 +439,4 @@ public class TilesHelper {
                 return "String";
         }
     }
-
 }

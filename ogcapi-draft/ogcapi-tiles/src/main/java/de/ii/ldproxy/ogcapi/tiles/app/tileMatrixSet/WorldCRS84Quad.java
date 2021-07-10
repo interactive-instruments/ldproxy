@@ -89,4 +89,7 @@ public class WorldCRS84Quad extends AbstractTileMatrixSet implements TileMatrixS
     public BoundingBox getBoundingBox() {
         return BBOX;
     }
+
+    @Override
+    public BoundingBox getBoundingBoxCrs84() { return BBOX; }
 }

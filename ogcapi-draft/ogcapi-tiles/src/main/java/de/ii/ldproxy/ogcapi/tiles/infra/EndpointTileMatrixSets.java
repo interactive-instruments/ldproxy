@@ -32,6 +32,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableQueryInputTileMa
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsQueriesHandler;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -89,15 +90,20 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        // currently no vector tiles support for WFS backends
-        if (!providers.getFeatureProvider(apiData).supportsHighLoad())
-            return false;
-
-        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
-
-        return extension
-                .filter(TilesConfiguration::isEnabled)
-                .isPresent();
+        Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+            // Tiles are pre-generated as a static tile set
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
+        } else {
+            // Tiles are generated on-demand from a data source
+            if (config.filter(TilesConfiguration::isEnabled)
+                      .isEmpty()) return false;
+            // currently no vector tiles support for WFS backends
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
+        }
     }
 
     @Override

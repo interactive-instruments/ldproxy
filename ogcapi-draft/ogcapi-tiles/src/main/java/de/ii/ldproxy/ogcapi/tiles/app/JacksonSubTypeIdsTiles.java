@@ -20,7 +20,7 @@ import java.util.Map;
 @Component
 @Provides
 @Instantiate
-public class JacksonSubTypeIdsVectorTiles implements JacksonSubTypeIds {
+public class JacksonSubTypeIdsTiles implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()

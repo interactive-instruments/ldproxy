@@ -152,7 +152,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     public Optional<Link> getTiles() {
         return links
                 .stream()
-                .filter(link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector"))
+                .filter(link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
                 .findFirst();
     }
 

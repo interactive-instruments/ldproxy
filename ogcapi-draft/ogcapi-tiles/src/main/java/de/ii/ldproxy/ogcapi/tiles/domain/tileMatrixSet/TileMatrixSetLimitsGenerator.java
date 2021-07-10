@@ -24,6 +24,4 @@ public interface TileMatrixSetLimitsGenerator {
 
     List<TileMatrixSetLimits> getTileMatrixSetLimits(BoundingBox boundingBox, TileMatrixSet tileMatrixSet,
                                                      MinMax tileMatrixRange);
-
-    Optional<BoundingBox> getBoundingBoxInTileMatrixSetCrs(BoundingBox bbox, TileMatrixSet tileMatrixSet);
 }

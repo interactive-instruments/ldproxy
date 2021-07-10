@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.AbstractTileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -44,6 +45,12 @@ public class WebMercatorQuad extends AbstractTileMatrixSet implements TileMatrix
     private static final double BBOX_MIN_Y = -20037508.3427892;
     private static final double BBOX_MAX_Y = 20037508.3427892;
     private static final BoundingBox BBOX = BoundingBox.of(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
+
+    private static final double BBOX_MIN_X_CRS84 = -180.0;
+    private static final double BBOX_MAX_X_CRS84 = 180.0;
+    private static final double BBOX_MIN_Y_CRS84 = -85.0511287798;
+    private static final double BBOX_MAX_Y_CRS84 = 85.0511287798;
+    private static final BoundingBox BBOX_CRS84 = BoundingBox.of(BBOX_MIN_X_CRS84, BBOX_MIN_Y_CRS84, BBOX_MAX_X_CRS84, BBOX_MAX_Y_CRS84, OgcCrs.CRS84);
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -93,5 +100,8 @@ public class WebMercatorQuad extends AbstractTileMatrixSet implements TileMatrix
     public BoundingBox getBoundingBox() {
         return BBOX;
     }
+
+    @Override
+    public BoundingBox getBoundingBoxCrs84() { return BBOX_CRS84; }
 
 }

@@ -219,10 +219,16 @@ public interface TileMatrixSet extends ContentExtension {
     int getInitialHeight();
 
     /**
-     * Fetch the bounding box of the tile matrix set
+     * Fetch the bounding box of the tile matrix set in the CRS of the tile matrix set
      * @return bounding box
      */
     BoundingBox getBoundingBox();
+
+    /**
+     * Fetch the bounding box of the tile matrix set in CRS84
+     * @return bounding box
+     */
+    BoundingBox getBoundingBoxCrs84();
 
     /**
      * validate, whether the row is valid for the zoom level

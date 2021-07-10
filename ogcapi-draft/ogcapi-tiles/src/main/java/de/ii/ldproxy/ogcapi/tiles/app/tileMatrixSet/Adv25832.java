@@ -8,14 +8,18 @@
 package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.app.TilesHelper;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.AbstractTileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 import java.net.URI;
 import java.util.Optional;
@@ -36,6 +40,12 @@ public class Adv25832 extends AbstractTileMatrixSet implements TileMatrixSet {
     private static final double BBOX_MAX_X = BBOX_MIN_X + DIFF;
     private static final double BBOX_MIN_Y = BBOX_MAX_Y - DIFF;
     private static final BoundingBox BBOX = BoundingBox.of(BBOX_MIN_X, BBOX_MIN_Y, BBOX_MAX_X, BBOX_MAX_Y, CRS);
+
+    private final CrsTransformerFactory crsTransformerFactory;
+
+    public Adv25832(@Requires CrsTransformerFactory crsTransformerFactory) {
+        this.crsTransformerFactory = crsTransformerFactory;
+    }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -72,4 +82,10 @@ public class Adv25832 extends AbstractTileMatrixSet implements TileMatrixSet {
 
     @Override
     public BoundingBox getBoundingBox() { return BBOX; }
+
+    @Override
+    public BoundingBox getBoundingBoxCrs84() {
+        return TilesHelper.getBoundingBoxInTargetCrs(BBOX, OgcCrs.CRS84, crsTransformerFactory)
+                          .orElseThrow(() -> new IllegalStateException(String.format("Cannot convert bounding box of tile matrix set '%s' to CRS84.", getId())));
+    }
 }

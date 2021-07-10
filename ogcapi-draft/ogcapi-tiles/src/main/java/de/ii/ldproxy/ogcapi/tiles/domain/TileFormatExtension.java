@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles.domain;
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
@@ -19,12 +20,20 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import io.swagger.v3.oas.models.media.BinarySchema;
+import io.swagger.v3.oas.models.media.Schema;
+
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public interface TileFormatExtension extends FormatExtension {
+
+    String SCHEMA_REF_TILE = "#/components/schemas/Binary";
+    Schema SCHEMA_TILE = new BinarySchema();
 
     @Override
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
@@ -82,21 +91,18 @@ public interface TileFormatExtension extends FormatExtension {
 
     String getExtension();
 
-    byte[] getEmptyTile(Tile tile);
+    default boolean getGzippedInMbtiles() { return false; }
 
-    FeatureQuery getQuery(Tile tile,
-                          List<OgcApiQueryParameter> allowedParameters,
-                          Map<String, String> queryParameters,
-                          TilesConfiguration tilesConfiguration,
-                          URICustomizer uriCustomizer);
+    default boolean getSupportsEmptyTile() { return false; }
 
-    class MultiLayerTileContent {
-        public byte[] byteArray;
-        public boolean isComplete;
+    default byte[] getEmptyTile(Tile tile) {
+        throw new IllegalStateException(String.format("No empty tile available for tile format %s.", this.getClass().getSimpleName()));
     }
 
-    MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, byte[]> singleLayerByteArrayMap) throws IOException;
+    TileSet.DataType getDataType();
 
-    double getMaxAllowableOffsetNative(Tile tile);
-    double getMaxAllowableOffsetCrs84(Tile tile);
+    @Override
+    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return TilesConfiguration.class;
+    }
 }

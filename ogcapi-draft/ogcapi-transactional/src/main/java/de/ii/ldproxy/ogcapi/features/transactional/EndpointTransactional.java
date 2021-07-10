@@ -80,12 +80,16 @@ public class EndpointTransactional extends EndpointSubCollection {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).supportsTransactions();
+        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData)
+                                                          .map(FeatureProvider2::supportsTransactions)
+                                                          .orElse(false);
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return super.isEnabledForApi(apiData, collectionId) && providers.getFeatureProvider(apiData).supportsTransactions();
+        return super.isEnabledForApi(apiData, collectionId) && providers.getFeatureProvider(apiData)
+                                                                        .map(FeatureProvider2::supportsTransactions)
+                                                                        .orElse(false);
     }
 
     @Override
@@ -174,7 +178,7 @@ public class EndpointTransactional extends EndpointSubCollection {
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                               @Context OgcApi service, @Context ApiRequestContext apiRequestContext,
                               @Context HttpServletRequest request, InputStream requestBody) {
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
@@ -193,7 +197,7 @@ public class EndpointTransactional extends EndpointSubCollection {
                             @Context ApiRequestContext apiRequestContext, @Context HttpServletRequest request,
                             InputStream requestBody) {
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
@@ -207,7 +211,7 @@ public class EndpointTransactional extends EndpointSubCollection {
     public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApi service,
                                @PathParam("id") String id, @PathParam("featureid") final String featureId) {
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
