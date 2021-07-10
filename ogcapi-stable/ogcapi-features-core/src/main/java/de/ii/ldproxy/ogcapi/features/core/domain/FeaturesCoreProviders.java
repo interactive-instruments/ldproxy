@@ -16,10 +16,15 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public interface FeaturesCoreProviders {
 
-    FeatureProvider2 getFeatureProvider(OgcApiDataV2 apiData);
+    boolean hasFeatureProvider(OgcApiDataV2 apiData);
+
+    Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData);
+
+    FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData);
 
     FeatureProvider2 getFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
 

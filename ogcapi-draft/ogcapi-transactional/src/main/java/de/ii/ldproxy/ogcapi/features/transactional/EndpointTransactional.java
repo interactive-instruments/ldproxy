@@ -80,12 +80,16 @@ public class EndpointTransactional extends EndpointSubCollection {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).supportsTransactions();
+        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData)
+                                                          .map(FeatureProvider2::supportsTransactions)
+                                                          .orElse(false);
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return super.isEnabledForApi(apiData, collectionId) && providers.getFeatureProvider(apiData).supportsTransactions();
+        return super.isEnabledForApi(apiData, collectionId) && providers.getFeatureProvider(apiData)
+                                                                        .map(FeatureProvider2::supportsTransactions)
+                                                                        .orElse(false);
     }
 
     @Override

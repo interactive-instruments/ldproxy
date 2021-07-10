@@ -121,16 +121,19 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
             // Tiles are pre-generated as a static tile set
-            return config.map(ExtensionConfiguration::isEnabled).orElse(false);
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
                       .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData).supportsHighLoad();
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
         }
     }
 
@@ -266,7 +269,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
             return queryHandler.handle(TilesQueriesHandler.Query.MBTILES_TILE, queryInput, requestContext);
         }
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
 
         List<String> collections = queryParams.containsKey("collections") ?

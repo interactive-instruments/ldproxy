@@ -100,9 +100,10 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        // currently no vector tiles support for WFS backends
+        // no vector tiles support for WFS backends
         if (!providers.getFeatureProvider(apiData)
-                      .supportsHighLoad()) {
+                      .map(FeatureProvider2::supportsHighLoad)
+                      .orElse(false)) {
             return false;
         }
 
@@ -114,6 +115,8 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
         return apiData.getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::isEnabled)
+                      // seeding only for features as tile providers
+                      .filter(config -> !config.getTileProvider().requiresQuerySupport())
                       .filter(config -> !config.getSeedingDerived()
                                                .isEmpty())
                       .isPresent();
@@ -174,7 +177,8 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     private void seedSingleLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats, TaskContext taskContext) throws IOException {
         OgcApiDataV2 apiData = api.getData();
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        // isEnabled checks that we have a feature provider
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         Map<String, Map<String, MinMax>> seedingMap = getSeedingConfig(apiData);
 
         long numberOfTiles = getNumberOfTiles2(api, outputFormats, seedingMap);
@@ -254,7 +258,8 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     private void seedMultiLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats, TaskContext taskContext) throws IOException {
         OgcApiDataV2 apiData = api.getData();
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        // isEnabled checks that we have a feature provider
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
         Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::getMultiCollectionEnabledDerived);
 

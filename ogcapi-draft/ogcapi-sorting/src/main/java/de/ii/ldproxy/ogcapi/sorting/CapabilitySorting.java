@@ -83,7 +83,7 @@ public class CapabilitySorting implements ApiBuildingBlock {
                                                                              .mode(apiValidation);
 
         // check that the feature provider supports sorting
-        FeatureProvider2 provider = providers.getFeatureProvider(apiData);
+        FeatureProvider2 provider = providers.getFeatureProviderOrThrow(apiData);
         if (!provider.supportsSorting())
             builder.addErrors(MessageFormat.format("Sorting is enabled, but the feature provider of the API '{0}' does not support sorting.", provider.getData().getId()));
 

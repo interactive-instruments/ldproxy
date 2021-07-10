@@ -77,7 +77,7 @@ public class CrsSupportImpl implements CrsSupport {
     @Override
     public EpsgCrs getStorageCrs(OgcApiDataV2 apiData,
                                  Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
-        FeatureProvider2 provider = featureTypeConfiguration.isPresent() ? providers.getFeatureProvider(apiData, featureTypeConfiguration.get()) : providers.getFeatureProvider(apiData);
+        FeatureProvider2 provider = featureTypeConfiguration.isPresent() ? providers.getFeatureProvider(apiData, featureTypeConfiguration.get()) : providers.getFeatureProviderOrThrow(apiData);
 
         if (!provider.supportsCrs()) {
             throw new IllegalStateException("Provider has no CRS support.");

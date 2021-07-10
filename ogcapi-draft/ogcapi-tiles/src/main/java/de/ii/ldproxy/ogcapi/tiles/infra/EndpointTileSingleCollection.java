@@ -130,16 +130,19 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         Optional<TilesConfiguration> config = apiData.getCollections()
                                                      .get(collectionId)
                                                      .getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
             // Tiles are pre-generated as a static tile set
-            return config.map(ExtensionConfiguration::isEnabled).orElse(false);
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
                       .filter(TilesConfiguration::getSingleCollectionEnabledDerived)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData).supportsHighLoad();
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
         }
     }
 
@@ -278,7 +281,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
             return queryHandler.handle(TilesQueriesHandler.Query.MBTILES_TILE, queryInput, requestContext);
         }
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
 
         // check, if the cache can be used (no query parameters except f)

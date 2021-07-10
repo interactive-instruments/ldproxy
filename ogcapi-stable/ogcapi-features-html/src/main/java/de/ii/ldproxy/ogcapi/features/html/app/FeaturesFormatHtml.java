@@ -262,7 +262,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             }
 
             featureTypeDataset = createFeatureCollectionView(serviceData, serviceData.getCollections()
-                                                                                     .get(collectionName), uriCustomizer.copy(), filterableFields, htmlNames, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getLayout(serviceData), providers.getFeatureProvider(serviceData));
+                                                                                     .get(collectionName), uriCustomizer.copy(), filterableFields, htmlNames, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getLayout(serviceData), providers.getFeatureProviderOrThrow(serviceData));
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getCollections()
                                                                                         .get(collectionName)

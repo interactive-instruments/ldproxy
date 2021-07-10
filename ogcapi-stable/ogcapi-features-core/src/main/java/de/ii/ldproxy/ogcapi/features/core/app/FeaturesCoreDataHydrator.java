@@ -83,7 +83,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
     @Override
     public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
 
         OgcApiDataV2 data = apiData;
         if (data.isAuto() && data.getCollections()
