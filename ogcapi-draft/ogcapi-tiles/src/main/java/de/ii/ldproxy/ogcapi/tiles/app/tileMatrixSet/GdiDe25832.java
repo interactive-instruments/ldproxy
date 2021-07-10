@@ -9,13 +9,16 @@ package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.app.TilesHelper;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.AbstractTileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -44,6 +47,12 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
     private static final List<Integer> WIDTH_HEIGHT_PER_LEVEL = new ImmutableList.Builder<Integer>()
             .add(2, 4, 8, 20, 40, 80, 200, 400, 800, 2000, 4000, 8000, 20000, 40000, 80000, 200000)
             .build();
+
+    private final CrsTransformerFactory crsTransformerFactory;
+
+    public GdiDe25832(CrsTransformerFactory crsTransformerFactory) {
+        this.crsTransformerFactory = crsTransformerFactory;
+    }
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -80,6 +89,12 @@ public class GdiDe25832 extends AbstractTileMatrixSet implements TileMatrixSet {
 
     @Override
     public BoundingBox getBoundingBox() { return BBOX; }
+
+    @Override
+    public BoundingBox getBoundingBoxCrs84() {
+        return TilesHelper.getBoundingBoxInTargetCrs(BBOX, OgcCrs.CRS84, crsTransformerFactory)
+                          .orElseThrow(() -> new IllegalStateException(String.format("Cannot convert bounding box of tile matrix set '%s' to CRS84.", getId())));
+    }
 
     @Override
     public int getCols(int level) {

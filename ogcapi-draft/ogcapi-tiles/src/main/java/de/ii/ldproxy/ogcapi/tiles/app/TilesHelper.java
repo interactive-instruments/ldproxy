@@ -24,6 +24,7 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
+import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.TileMatrixSetLimitsGeneratorImpl;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilePoint;
@@ -41,16 +42,23 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.AbstractMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,6 +66,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class TilesHelper {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TilesHelper.class);
 
     /**
      * generate the tile set metadata according to the OGC Tile Matrix Set standard (version 2.0.0, draft from June 2021)
@@ -100,19 +110,20 @@ public class TilesHelper {
                                             ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
                                             : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
 
-        Optional<BoundingBox> bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
-        bbox.ifPresent(boundingBox -> builder.boundingBox(ImmutableTilesBoundingBox.builder()
-                                                                                   .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
-                                                                                              BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
-                                                                                   .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
-                                                                                               BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
-                                                                                   .crsEpsg(OgcCrs.CRS84)
-                                                                                   .build()));
+        BoundingBox boundingBox = (collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent())
+                .orElse(tileMatrixSet.getBoundingBoxCrs84());
+        builder.boundingBox(ImmutableTilesBoundingBox.builder()
+                                                     .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
+                                                                BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
+                                                     .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
+                                                                 BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
+                                                     .crsEpsg(OgcCrs.CRS84)
+                                                     .build());
 
-        if (zoomLevels.getDefault().isPresent() || Objects.nonNull(center)) {
+        if (zoomLevels.getDefault().isPresent() || !center.isEmpty()) {
             ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();
             zoomLevels.getDefault().ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
-            if (Objects.nonNull(center))
+            if (!center.isEmpty())
                 builder2.coordinates(center);
             builder.centerPoint(builder2.build());
         }
@@ -183,6 +194,33 @@ public class TilesHelper {
         builder.links(links);
 
         return builder.build();
+    }
+
+    /**
+     * convert a bounding box to a bounding box in another CRS
+     * @param bbox the bounding box in some CRS
+     * @param targetCrs the target CRS
+     * @param crsTransformerFactory the factory for CRS transformations
+     * @return the converted bounding box
+     */
+    public static Optional<BoundingBox> getBoundingBoxInTargetCrs(BoundingBox bbox, EpsgCrs targetCrs,
+                                                                  CrsTransformerFactory crsTransformerFactory) {
+        EpsgCrs sourceCrs = bbox.getEpsgCrs();
+        if (sourceCrs.getCode()== targetCrs.getCode() && sourceCrs.getForceAxisOrder()==targetCrs.getForceAxisOrder())
+            return Optional.of(bbox);
+
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
+        if (transformer.isPresent()) {
+            try {
+                return Optional.ofNullable(transformer.get()
+                                                      .transformBoundingBox(bbox));
+            } catch (CrsTransformationException e) {
+                LOGGER.error(String.format(Locale.US, "Cannot convert bounding box (%f, %f, %f, %f) from %s to %s. Reason: %s", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), sourceCrs, targetCrs, e.getMessage()));
+                return Optional.empty();
+            }
+        }
+        LOGGER.error(String.format(Locale.US, "Cannot convert bounding box (%f, %f, %f, %f) from %s to %s. Reason: no applicable transformer found.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), sourceCrs, targetCrs));
+        return Optional.empty();
     }
 
     /**
@@ -375,5 +413,4 @@ public class TilesHelper {
                 return "String";
         }
     }
-
 }
