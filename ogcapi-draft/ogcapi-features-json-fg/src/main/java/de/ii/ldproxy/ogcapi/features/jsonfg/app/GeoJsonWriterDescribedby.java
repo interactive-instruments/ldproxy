@@ -50,11 +50,17 @@ public class GeoJsonWriterDescribedby implements GeoJsonWriter {
                                                 .getCollections()
                                                 .get(transformationContext.getCollectionId())
                                                 .getLabel();
-            transformationContext.getState().addCurrentFeatureCollectionLinks(new ImmutableLink.Builder().rel("describedby")
-                                                                                                         .href(transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/schemas/collection")
-                                                                                                         .type("application/schema+json")
-                                                                                                         .title(i18n.get("schemaLinkCollection", transformationContext.getLanguage()).replace("{{collection}}", label))
-                                                                                                         .build());
+            transformationContext.getState()
+                                 .addCurrentFeatureCollectionLinks(new ImmutableLink.Builder().rel("describedby")
+                                                                                              .href(transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/schemas/collection")
+                                                                                              .type("application/schema+json")
+                                                                                              .title(i18n.get("schemaLinkCollection", transformationContext.getLanguage()).replace("{{collection}}", label))
+                                                                                              .build(),
+                                                                   new ImmutableLink.Builder().rel("describedby")
+                                                                                              .href("https://geojson.org/schema/FeatureCollection.json")
+                                                                                              .type("application/schema+json")
+                                                                                              .title("This a document is a GeoJSON FeatureCollection") // TODO add i18n
+                                                                                              .build());
         }
 
         // next chain for extensions
@@ -72,6 +78,11 @@ public class GeoJsonWriterDescribedby implements GeoJsonWriter {
                                                                                                .href(transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/schemas/feature")
                                                                                                .type("application/schema+json")
                                                                                                .title(i18n.get("schemaLinkFeature", transformationContext.getLanguage()).replace("{{collection}}", label))
+                                                                                               .build(),
+                                                                    new ImmutableLink.Builder().rel("describedby")
+                                                                                               .href("https://geojson.org/schema/Feature.json")
+                                                                                               .type("application/schema+json")
+                                                                                               .title("This a document is a GeoJSON Feature") // TODO add i18n
                                                                                                .build());
         }
 
