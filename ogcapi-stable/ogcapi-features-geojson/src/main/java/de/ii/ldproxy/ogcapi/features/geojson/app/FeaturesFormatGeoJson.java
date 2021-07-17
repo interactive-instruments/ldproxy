@@ -290,6 +290,7 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
         return Optional.of(new FeatureTransformerGeoJson(ImmutableFeatureTransformationContextGeoJson.builder()
                                                                                                      .from(transformationContext)
                                                                                                      .geoJsonConfig(transformationContext.getApiData().getCollections().get(transformationContext.getCollectionId()).getExtension(GeoJsonConfiguration.class).get())
+                                                                                                     .mediaType(MEDIA_TYPE)
                                                                                                      .prettify(Optional.ofNullable(transformationContext.getOgcApiRequest()
                                                                                                                                                         .getParameters()
                                                                                                                                                         .get("pretty"))

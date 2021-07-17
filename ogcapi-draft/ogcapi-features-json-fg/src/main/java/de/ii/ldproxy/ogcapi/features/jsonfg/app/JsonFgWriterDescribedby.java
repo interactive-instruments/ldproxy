@@ -24,17 +24,17 @@ import java.util.function.Consumer;
 @Component
 @Provides
 @Instantiate
-public class GeoJsonWriterDescribedby implements GeoJsonWriter {
+public class JsonFgWriterDescribedby implements GeoJsonWriter {
 
     private final I18n i18n;
 
-    public GeoJsonWriterDescribedby(@Requires I18n i18n) {
+    public JsonFgWriterDescribedby(@Requires I18n i18n) {
         this.i18n = i18n;
     }
 
     @Override
-    public GeoJsonWriterDescribedby create() {
-        return new GeoJsonWriterDescribedby(i18n);
+    public JsonFgWriterDescribedby create() {
+        return new JsonFgWriterDescribedby(i18n);
     }
 
     @Override
@@ -91,7 +91,8 @@ public class GeoJsonWriterDescribedby implements GeoJsonWriter {
     }
 
     private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-        return transformationContext.getApiData()
+        return transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
+                && transformationContext.getApiData()
                                     .getCollections()
                                     .get(transformationContext.getCollectionId())
                                     .getExtension(JsonFgConfiguration.class)

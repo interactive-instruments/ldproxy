@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 @Component
 @Provides
 @Instantiate
-public class GeoJsonWriterWhen implements GeoJsonWriter {
+public class JsonFgWriterWhen implements GeoJsonWriter {
 
     boolean isEnabled;
     String currentIntervalStart;
@@ -36,8 +36,8 @@ public class GeoJsonWriterWhen implements GeoJsonWriter {
     List<String> currentQueryables;
 
     @Override
-    public GeoJsonWriterWhen create() {
-        return new GeoJsonWriterWhen();
+    public JsonFgWriterWhen create() {
+        return new JsonFgWriterWhen();
     }
 
     @Override
@@ -144,7 +144,8 @@ public class GeoJsonWriterWhen implements GeoJsonWriter {
     }
 
     private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-        return transformationContext.getApiData()
+        return transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
+                && transformationContext.getApiData()
                                     .getCollections()
                                     .get(transformationContext.getCollectionId())
                                     .getExtension(JsonFgConfiguration.class)

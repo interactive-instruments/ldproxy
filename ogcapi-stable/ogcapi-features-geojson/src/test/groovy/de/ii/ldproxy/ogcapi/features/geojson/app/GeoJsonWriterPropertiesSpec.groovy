@@ -252,6 +252,7 @@ class GeoJsonWriterPropertiesSpec extends Specification {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                 .crsTransformer(Optional.ofNullable(crsTransformer))
                 .defaultCrs(OgcCrs.CRS84)
+                .mediaType(FeaturesFormatGeoJson.MEDIA_TYPE)
                 .apiData(new ImmutableOgcApiDataV2.Builder()
                         .id("s")
                         .serviceType("OGC_API")
@@ -263,12 +264,12 @@ class GeoJsonWriterPropertiesSpec extends Specification {
                 .ogcApiRequest(new ApiRequestContext() {
                     @Override
                     ApiMediaType getMediaType() {
-                        return null
+                        return FeaturesFormatGeoJson.MEDIA_TYPE
                     }
 
                     @Override
                     List<ApiMediaType> getAlternateMediaTypes() {
-                        return null
+                        return ImmutableList.of()
                     }
 
                     @Override
