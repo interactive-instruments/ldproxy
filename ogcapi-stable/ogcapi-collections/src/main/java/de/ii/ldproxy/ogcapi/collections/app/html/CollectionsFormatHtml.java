@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.collections.app.html;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.Collections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
@@ -38,10 +39,13 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
             .build();
     private final Schema schema = new StringSchema().example("<html>...</html>");
     private final I18n i18n;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    public CollectionsFormatHtml(@Requires I18n i18n) {
+    public CollectionsFormatHtml(@Requires I18n i18n,
+                                 @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.i18n = i18n;
+        this.metadataRegistry = metadataRegistry;
     }
 
     @Override
@@ -97,8 +101,8 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
                                           .getExtension(HtmlConfiguration.class)
                                           .orElse(null);
 
-        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs,
-                                                                          requestContext.getStaticUrlPrefix(), htmlConfig,
+        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, metadataRegistry.getSpatialExtent(api.getId()).orElse(null),
+                                                                          breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig,
                                                                           isNoIndexEnabledForApi(api.getData()),
                                                                           showCollectionDescriptionsInOverview(api.getData()),
                                                                           i18n, requestContext.getLanguage(),
@@ -141,7 +145,11 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
                                                  .getExtension(HtmlConfiguration.class)
                                                  .orElse(null);
 
-        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection,
+                                                                       metadataRegistry.getSpatialExtent(api.getId(), ogcApiCollection.getId()).orElse(null),
+                                                                       breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig,
+                                                                       isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(),
+                                                                       i18n, requestContext.getLanguage());
 
         return collectionView;
     }

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ArrayListMultimap;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -39,9 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -64,10 +62,14 @@ public class StyleFormatHtml implements StyleFormatExtension {
     private final SchemaGenerator schemaGenerator;
     private final KeyValueStore keyValueStore;
     private final XtraPlatform xtraPlatform;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/htmlSchema";
 
-    public StyleFormatHtml(@Requires SchemaGenerator schemaGenerator, @Requires KeyValueStore keyValueStore,
-                           @Requires XtraPlatform xtraPlatform) {
+    public StyleFormatHtml(@Requires SchemaGenerator schemaGenerator,
+                           @Requires KeyValueStore keyValueStore,
+                           @Requires XtraPlatform xtraPlatform,
+                           @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
+        this.metadataRegistry = metadataRegistry;
         schemaStyle = new StringSchema().example("<html>...</html>");
         this.schemaGenerator = schemaGenerator;
         this.keyValueStore = keyValueStore;
@@ -211,6 +213,6 @@ public class StyleFormatHtml implements StyleFormatExtension {
             }
         }
 
-        return new StyleView(styleUrl, apiData, styleId, popup, layerControl, layerMap.asMap());
+        return new StyleView(styleUrl, apiData, metadataRegistry.getSpatialExtent(apiData.getId()).orElse(null), styleId, popup, layerControl, layerMap.asMap());
     }
 }

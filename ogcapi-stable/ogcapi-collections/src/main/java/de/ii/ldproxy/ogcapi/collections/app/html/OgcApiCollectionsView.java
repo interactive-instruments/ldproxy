@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,7 +41,7 @@ public class OgcApiCollectionsView extends OgcApiView {
     public String none;
     public String moreInformation;
 
-    public OgcApiCollectionsView(OgcApiDataV2 apiData, Collections collections,
+    public OgcApiCollectionsView(OgcApiDataV2 apiData, Collections collections, BoundingBox spatialExtent,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix,
                                  HtmlConfiguration htmlConfig, boolean noIndex, boolean showCollectionDescriptions, I18n i18n, Optional<Locale> language, Optional<String> dataSourceUrl) {
         super("collections.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
@@ -55,7 +56,7 @@ public class OgcApiCollectionsView extends OgcApiView {
         this.showCollectionDescriptions = showCollectionDescriptions;
         this.crs = collections
                 .getCrs();
-        this.hasGeometry = apiData.getSpatialExtent().isPresent();
+        this.hasGeometry = Objects.nonNull(spatialExtent);
 
         if (dataSourceUrl.isPresent()) {
             this.dataSourceUrl = dataSourceUrl.get();

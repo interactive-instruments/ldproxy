@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.common.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.*;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.apache.felix.ipojo.annotations.Component;
@@ -52,9 +53,12 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
     private final ExtensionRegistry extensionRegistry;
     private final I18n i18n;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
-
-    public QueriesHandlerCommonImpl(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    public QueriesHandlerCommonImpl(@Requires CollectionDynamicMetadataRegistry metadataRegistry,
+                                    @Requires ExtensionRegistry extensionRegistry,
+                                    @Requires I18n i18n) {
+        this.metadataRegistry = metadataRegistry;
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
         this.queryHandlers = ImmutableMap.of(
@@ -82,15 +86,13 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                         i18n,
                                                         requestContext.getLanguage());
 
-        Optional<BoundingBox> bbox = apiData.getSpatialExtent();
-        Optional<TemporalExtent> interval = apiData.getTemporalExtent();
-        OgcApiExtent spatialExtent = bbox.isPresent() && interval.isPresent() ?
-                new OgcApiExtent(interval.get().getStart(), interval.get().getEnd(), bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax()) :
-                bbox.isPresent() ?
-                        new OgcApiExtent(bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax()) :
-                        interval.isPresent() ?
-                                new OgcApiExtent(interval.get().getStart(), interval.get().getEnd()) :
-                                null;
+        Optional<BoundingBox> bbox = metadataRegistry.getSpatialExtent(apiData.getId());
+        Optional<TemporalExtent> interval = metadataRegistry.getTemporalExtent(apiData.getId());
+        OgcApiExtent spatialExtent = bbox.isPresent() && interval.isPresent()
+                ? new OgcApiExtent(interval.get().getStart(), interval.get().getEnd(), bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax())
+                : bbox.map(boundingBox -> new OgcApiExtent(boundingBox.getXmin(), boundingBox.getYmin(), boundingBox.getXmax(), boundingBox.getYmax()))
+                      .orElseGet(() -> interval.map(temporalExtent -> new OgcApiExtent(temporalExtent.getStart(), temporalExtent.getEnd()))
+                                               .orElse(null));
 
         ImmutableLandingPage.Builder builder = new ImmutableLandingPage.Builder()
                 .title(apiData.getLabel())

@@ -16,8 +16,13 @@ import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension
 import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataEntry
+import de.ii.ldproxy.ogcapi.common.domain.metadata.MetadataType
 import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.xtraplatform.crs.domain.BoundingBox
+import de.ii.xtraplatform.crs.domain.CrsTransformationException
+import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import io.swagger.v3.oas.models.media.ObjectSchema
 import spock.lang.Specification
@@ -29,7 +34,8 @@ class LandingPageSpec extends Specification {
     static final OgcApiDataV2 datasetData = createDatasetData()
     static OgcApiEntity apiEntity = createDatasetEntity()
     static final ApiRequestContext requestContext = createRequestContext()
-    static QueriesHandlerCommonImpl queryHandler = new QueriesHandlerCommonImpl(createExtensionRegistry(), new I18nDefault())
+    static final CollectionDynamicMetadataRegistry metadataRegistry = createMetadataRegistry()
+    static QueriesHandlerCommonImpl queryHandler = new QueriesHandlerCommonImpl(metadataRegistry, createExtensionRegistry(), new I18nDefault())
 
     def 'Requirement 2 B: landing page response'() {
 
@@ -196,4 +202,56 @@ class LandingPageSpec extends Specification {
         }
     }
 
+    static def createMetadataRegistry() {
+        new CollectionDynamicMetadataRegistry() {
+            @Override
+            void put(String apiId, String collectionId, MetadataType type, CollectionMetadataEntry value) {
+            }
+
+            @Override
+            boolean update(String apiId, String collectionId, MetadataType type, CollectionMetadataEntry delta) {
+                return true
+            }
+
+            @Override
+            boolean remove(String apiId, String collectionId, MetadataType type) {
+                return true
+            }
+
+            @Override
+            Optional<CollectionMetadataEntry> get(String apiId, String collectionId, MetadataType type) {
+                return Optional.empty()
+            }
+
+            @Override
+            Optional<BoundingBox> getSpatialExtent(String apiId) {
+                return Optional.of(BoundingBox.of(-180,-90,180,90,OgcCrs.CRS84))
+            }
+
+            @Override
+            Optional<BoundingBox> getSpatialExtent(String apiId, EpsgCrs targetCrs) throws CrsTransformationException {
+                return Optional.of(BoundingBox.of(-180,-90,180,90,targetCrs))
+            }
+
+            @Override
+            Optional<BoundingBox> getSpatialExtent(String apiId, String collectionId) {
+                return Optional.of(BoundingBox.of(-180,-90,180,90,OgcCrs.CRS84))
+            }
+
+            @Override
+            Optional<BoundingBox> getSpatialExtent(String apiId, String collectionId, EpsgCrs targetCrs) throws CrsTransformationException {
+                return Optional.of(BoundingBox.of(-180,-90,180,90,targetCrs.CRS84))
+            }
+
+            @Override
+            Optional<TemporalExtent> getTemporalExtent(String apiId) {
+                return Optional.of(TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+            }
+
+            @Override
+            Optional<TemporalExtent> getTemporalExtent(String apiId, String collectionId) {
+                return Optional.of(TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+            }
+        }
+    }
 }

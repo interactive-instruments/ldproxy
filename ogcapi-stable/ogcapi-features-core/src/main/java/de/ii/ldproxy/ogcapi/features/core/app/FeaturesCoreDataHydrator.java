@@ -203,6 +203,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
                 .build();
 
+        /* TODO remove
         if (!data.isAutoPersist() && hasMissingBboxes(data)) {
             data = new ImmutableOgcApiDataV2.Builder()
                     .from(data)
@@ -216,6 +217,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                     .collections(computeMissingIntervals(data))
                     .build();
         }
+         */
 
         if (data.isAuto() && data.isAutoPersist()) {
             data = new ImmutableOgcApiDataV2.Builder()
@@ -305,6 +307,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                               .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
+    /* TODO remove
     private boolean hasMissingBboxes(OgcApiDataV2 data) {
         return data.getCollections().values()
                            .stream()
@@ -312,7 +315,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
     }
 
     private boolean hasMissingBbox(OgcApiDataV2 data, String collectionId) {
-        return data.getExtent(collectionId)
+        return data.getExtentFromConfiguration(collectionId)
                           .flatMap(CollectionExtent::getSpatialComputed)
                           .orElse(false);
     }
@@ -354,13 +357,13 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
                                   ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration;
                                   if (entry.getValue()
-                                           .getExtent()
+                                           .getExtentFromConfiguration()
                                            .isPresent()) {
                                       featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                               .from(entry.getValue())
                                               .extent(new ImmutableCollectionExtent.Builder()
                                                       .from(entry.getValue()
-                                                                 .getExtent()
+                                                                 .getExtentFromConfiguration()
                                                                  .get())
                                                       .spatial(boundingBox)
                                                       .build())
@@ -391,7 +394,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
     }
 
     private boolean hasMissingInterval(OgcApiDataV2 data, String collectionId) {
-        return data.getExtent(collectionId)
+        return data.getExtentFromConfiguration(collectionId)
                           .flatMap(CollectionExtent::getTemporalComputed)
                           .orElse(false);
     }
@@ -430,12 +433,12 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                     .end(interval.get().isUnboundedEnd() ? null : interval.get().getEnd().toEpochMilli())
                                     .build();
                             ImmutableFeatureTypeConfigurationOgcApi featureTypeConfiguration;
-                            if (entry.getValue().getExtent().isPresent()) {
+                            if (entry.getValue().getExtentFromConfiguration().isPresent()) {
                                 featureTypeConfiguration = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                         .from(entry.getValue())
                                         .extent(new ImmutableCollectionExtent.Builder()
                                                 .from(entry.getValue()
-                                                        .getExtent()
+                                                        .getExtentFromConfiguration()
                                                         .get())
                                                 .temporal(temporalExtent)
                                                 .build())
@@ -455,4 +458,5 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                 })
                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     }
+     */
 }

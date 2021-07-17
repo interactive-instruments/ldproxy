@@ -16,6 +16,7 @@ import de.ii.xtraplatform.services.domain.GenericView;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -27,14 +28,12 @@ public class StyleView extends GenericView {
     public final boolean layerSwitcher;
     public final String layerIds;
     public final Map<String, String> bbox;
-    private final OgcApiDataV2 apiData;
 
-    public StyleView(String styleUrl, OgcApiDataV2 apiData, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap) {
+    public StyleView(String styleUrl, OgcApiDataV2 apiData, BoundingBox spatialExtent, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap) {
         super("/templates/style", null);
-        this.styleUrl = styleUrl;
         this.apiId = apiData.getId();
         this.styleId = styleId;
-        this.apiData = apiData;
+        this.styleUrl = styleUrl;
         this.popup = popup;
         this.layerSwitcher = layerControl;
         this.layerIds = "{" +
@@ -44,12 +43,10 @@ public class StyleView extends GenericView {
                                           .map(entry -> "\""+entry.getKey()+"\": [ \"" + String.join("\", \"", entry.getValue()) + "\" ]")
                                           .collect(Collectors.toList())) +
                 "}";
-
-        Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
-        this.bbox = spatialExtent.isEmpty() ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent.get().getXmin()),
-                "minLat", Double.toString(spatialExtent.get().getYmin()),
-                "maxLng", Double.toString(spatialExtent.get().getXmax()),
-                "maxLat", Double.toString(spatialExtent.get().getYmax()));
+        this.bbox = Objects.isNull(spatialExtent) ? null : ImmutableMap.of(
+                "minLng", Double.toString(spatialExtent.getXmin()),
+                "minLat", Double.toString(spatialExtent.getYmin()),
+                "maxLng", Double.toString(spatialExtent.getXmax()),
+                "maxLat", Double.toString(spatialExtent.getYmax()));
     }
 }

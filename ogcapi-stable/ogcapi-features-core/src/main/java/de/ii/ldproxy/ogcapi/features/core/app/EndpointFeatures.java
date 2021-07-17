@@ -12,22 +12,12 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
-import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ApiOperation;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentSpatial;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentTemporal;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.MetadataType;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.ParameterExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
@@ -41,6 +31,12 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -73,6 +69,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.extra.Interval;
 
 @Component
 @Provides
@@ -88,6 +85,8 @@ public class EndpointFeatures extends EndpointSubCollection {
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreQueriesHandler queryHandler;
     private final FeaturesCoreValidation featuresCoreValidator;
+    private final CrsTransformerFactory crsTransformerFactory;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
     public EndpointFeatures(@Requires ExtensionRegistry extensionRegistry,
                             @Requires EntityRegistry entityRegistry,
@@ -95,7 +94,9 @@ public class EndpointFeatures extends EndpointSubCollection {
                             @Requires FeaturesQuery ogcApiFeaturesQuery,
                             @Requires FeaturesCoreQueriesHandler queryHandler,
                             @Requires FeaturesCoreValidation featuresCoreValidator,
-                            @Requires SchemaGeneratorOpenApi schemaGeneratorFeature) {
+                            @Requires SchemaGeneratorOpenApi schemaGeneratorFeature,
+                            @Requires CrsTransformerFactory crsTransformerFactory,
+                            @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         super(extensionRegistry);
         this.entityRegistry = entityRegistry;
         this.providers = providers;
@@ -103,6 +104,8 @@ public class EndpointFeatures extends EndpointSubCollection {
         this.queryHandler = queryHandler;
         this.featuresCoreValidator = featuresCoreValidator;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
+        this.crsTransformerFactory = crsTransformerFactory;
+        this.metadataRegistry = metadataRegistry;
     }
 
     @Override
@@ -121,13 +124,45 @@ public class EndpointFeatures extends EndpointSubCollection {
     public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
         ValidationResult result = super.onStartup(apiData, apiValidation);
 
+        // TODO: move somewhere else?
+        // TODO: add capability to reinitialize metadata from the feature data
+        // initialize dynamic collection metadata
+        apiData.getCollections()
+               .entrySet()
+               .forEach(entry -> {
+                   Optional<CollectionExtent> optionalExtent = apiData.getExtentFromConfiguration(entry.getKey());
+
+                   Optional<BoundingBox> optionalBoundingBox;
+                   if (optionalExtent.isEmpty() || optionalExtent.get().getSpatialComputed().orElse(true)) {
+                       try {
+                           optionalBoundingBox = computeBbox(apiData, entry.getKey());
+                       } catch (CrsTransformationException e) {
+                           LOGGER.error("Error while computing spatial extent of collection '{}' while transforming the CRS of the bounding box: {}", entry.getKey(), e.getMessage());
+                           optionalBoundingBox = Optional.empty();
+                       }
+                   } else {
+                       optionalBoundingBox = optionalExtent.get().getSpatial();
+                   }
+                   optionalBoundingBox.ifPresent(bbox -> metadataRegistry.put(apiData.getId(), entry.getKey(), MetadataType.spatialExtent,
+                                                                              CollectionMetadataExtentSpatial.of(bbox)));
+
+                   Optional<TemporalExtent> optionalTemporalExtent;
+                   if (optionalExtent.isEmpty() || optionalExtent.get().getTemporalComputed().orElse(true)) {
+                       optionalTemporalExtent = computeInterval(apiData, entry.getKey());
+                   } else {
+                       optionalTemporalExtent = optionalExtent.get().getTemporal();
+                   }
+                   optionalTemporalExtent.ifPresent(interval -> metadataRegistry.put(apiData.getId(), entry.getKey(), MetadataType.temporalExtent,
+                                                                                     CollectionMetadataExtentTemporal.of(interval)));
+               });
+
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
         if (apiValidation== MODE.NONE)
             return result;
 
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-                .from(result)
-                .mode(apiValidation);
+                                                                             .from(result)
+                                                                             .mode(apiValidation);
 
         Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
 
@@ -429,5 +464,66 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .build();
 
         return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInput, requestContext);
+    }
+
+    private Optional<BoundingBox> computeBbox(OgcApiDataV2 apiData, String collectionId) throws IllegalStateException, CrsTransformationException {
+
+        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
+
+        if (featureProvider.supportsExtents()) {
+            Optional<BoundingBox> spatialExtent = featureProvider.extents()
+                                                                 .getSpatialExtent(collectionId);
+
+            if (spatialExtent.isPresent()) {
+
+                BoundingBox boundingBox = spatialExtent.get();
+                if (!boundingBox.getEpsgCrs()
+                                .equals(OgcCrs.CRS84) &&
+                        !boundingBox.getEpsgCrs()
+                                    .equals(OgcCrs.CRS84h)) {
+                    Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
+                    if (transformer.isPresent()) {
+                        boundingBox = transformer.get()
+                                                 .transformBoundingBox(boundingBox);
+                    }
+                }
+
+                return Optional.of(boundingBox);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<TemporalExtent> computeInterval(OgcApiDataV2 apiData, String collectionId) {
+        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
+
+        if (featureProvider.supportsExtents()) {
+
+            List<String> temporalQueryables = collectionData
+                    .getExtension(FeaturesCoreConfiguration.class)
+                    .flatMap(FeaturesCoreConfiguration::getQueryables)
+                    .map(FeaturesCollectionQueryables::getTemporal)
+                    .orElse(ImmutableList.of());
+
+            if (!temporalQueryables.isEmpty()) {
+                Optional<Interval> interval;
+                if (temporalQueryables.size() >= 2) {
+                    interval = featureProvider.extents()
+                                              .getTemporalExtent(collectionId, temporalQueryables.get(0), temporalQueryables.get(1));
+                } else {
+                    interval = featureProvider.extents()
+                                              .getTemporalExtent(collectionId, temporalQueryables.get(0));
+                }
+                return interval.map(value -> new ImmutableTemporalExtent.Builder()
+                        .start(value.getStart().toEpochMilli())
+                        .end(value.isUnboundedEnd() ? null : value.getEnd().toEpochMilli())
+                        .build());
+
+            }
+        }
+        return Optional.empty();
     }
 }

@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles.app.json;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -34,7 +35,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -70,14 +70,17 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     private final Schema schemaTileJson;
     private final FeaturesCoreProviders providers;
     private final SchemaInfo schemaInfo;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
     public final static String SCHEMA_REF_TILE_JSON = "#/components/schemas/TileJson";
 
     public TileSetFormatTileJson(@Requires SchemaGenerator schemaGenerator,
                                  @Requires FeaturesCoreProviders providers,
-                                 @Requires SchemaInfo schemaInfo) {
+                                 @Requires SchemaInfo schemaInfo,
+                                 @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         schemaTileJson = schemaGenerator.getSchema(TileJson.class);
         this.providers = providers;
         this.schemaInfo = schemaInfo;
+        this.metadataRegistry = metadataRegistry;
     }
 
     @Override
@@ -116,7 +119,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
 
         // TODO: add support for attribution and version (manage revisions to the data)
 
-        Optional<BoundingBox> bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
+        Optional<BoundingBox> bbox = collectionId.isPresent() ? metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get()) : metadataRegistry.getSpatialExtent(apiData.getId());
         bbox.ifPresent(boundingBox -> tileJsonBuilder.bounds(ImmutableList.of(boundingBox.getXmin(), boundingBox.getYmin(), boundingBox.getXmax(), boundingBox.getYmax())));
 
 

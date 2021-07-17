@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
@@ -16,7 +17,6 @@ import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -35,10 +35,14 @@ public class CollectionExtensionFeatures implements CollectionExtension {
 
     private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
-    public CollectionExtensionFeatures(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    public CollectionExtensionFeatures(@Requires ExtensionRegistry extensionRegistry,
+                                       @Requires I18n i18n,
+                                       @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
+        this.metadataRegistry = metadataRegistry;
     }
 
     @Override
@@ -117,8 +121,8 @@ public class CollectionExtensionFeatures implements CollectionExtension {
         boolean hasTemporalQueryable = queryables.map(FeaturesCollectionQueryables::getTemporal)
                                                  .filter(temporal -> !temporal.isEmpty())
                                                  .isPresent();
-        Optional<BoundingBox> spatial = apiData.getSpatialExtent(featureType.getId());
-        Optional<TemporalExtent> temporal = apiData.getTemporalExtent(featureType.getId());
+        Optional<BoundingBox> spatial = metadataRegistry.getSpatialExtent(apiData.getId(), featureType.getId());
+        Optional<TemporalExtent> temporal = metadataRegistry.getTemporalExtent(apiData.getId(), featureType.getId());
         if (hasSpatialQueryable && hasTemporalQueryable && spatial.isPresent() && temporal.isPresent()) {
             collection.extent(new OgcApiExtent(
                     temporal.get()
