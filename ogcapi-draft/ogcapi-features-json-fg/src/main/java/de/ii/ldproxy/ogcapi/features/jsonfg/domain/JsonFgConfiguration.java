@@ -25,7 +25,23 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     Boolean getWhen();
 
     @Nullable
+    Where getWhere();
+
+    @Nullable
     Boolean getDescribedby();
+
+    @Value.Immutable
+    interface Where {
+
+        @Nullable
+        Boolean getEnabled();
+
+        @Nullable
+        String getLowerHeightProperty();
+
+        @Nullable
+        String getUpperHeightProperty();
+    }
 
     @Override
     default Builder getBuilder() {

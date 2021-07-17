@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.geojson.app.JsonGeneratorDebug;
@@ -39,6 +40,8 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     }
 
     public abstract GeoJsonConfiguration getGeoJsonConfig();
+
+    public abstract ApiMediaType getMediaType();
 
     @Value.Default
     protected JsonGenerator getJsonGenerator() {
