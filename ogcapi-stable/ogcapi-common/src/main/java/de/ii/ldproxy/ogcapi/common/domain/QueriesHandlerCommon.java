@@ -5,11 +5,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.domain;
+package de.ii.ldproxy.ogcapi.common.domain;
 
-import org.immutables.value.Value;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
+import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 
-@Value.Immutable
-public abstract class QueryInputGeneric implements QueryInput {
-
+public interface QueriesHandlerCommon extends QueriesHandler<QueriesHandlerCommonImpl.Query> {
 }

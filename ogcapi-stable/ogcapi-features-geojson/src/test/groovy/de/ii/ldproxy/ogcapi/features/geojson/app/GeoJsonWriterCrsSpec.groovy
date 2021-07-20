@@ -24,6 +24,7 @@ import de.ii.xtraplatform.crs.domain.OgcCrs
 import spock.lang.Shared
 import spock.lang.Specification
 
+import javax.ws.rs.core.Request
 import java.nio.charset.StandardCharsets
 
 class GeoJsonWriterCrsSpec extends Specification {
@@ -161,6 +162,11 @@ class GeoJsonWriterCrsSpec extends Specification {
 
                     @Override
                     Map<String, String> getParameters() {
+                        return null
+                    }
+
+                    @Override
+                    Optional<Request> getRequest() {
                         return null
                     }
                 })

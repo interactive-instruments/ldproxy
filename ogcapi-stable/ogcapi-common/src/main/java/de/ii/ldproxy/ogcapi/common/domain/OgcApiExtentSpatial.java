@@ -8,8 +8,16 @@
 package de.ii.ldproxy.ogcapi.common.domain;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.Funnel;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Objects;
 
 
 public class OgcApiExtentSpatial {
@@ -47,4 +55,12 @@ public class OgcApiExtentSpatial {
     public void setCrs(String crs) {
         this.crs = crs;
     }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<OgcApiExtentSpatial> FUNNEL = (from, into) -> {
+        into.putString(from.getCrs(), StandardCharsets.UTF_8);
+        Arrays.stream(from.getBbox())
+              .forEachOrdered(arr -> Arrays.stream(arr)
+                                           .forEachOrdered(val -> into.putDouble(val)));
+    };
 }

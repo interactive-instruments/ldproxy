@@ -20,9 +20,12 @@ import javax.annotation.security.PermitAll;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import java.net.URI;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,14 +66,14 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
     @Path("")
     public EndpointExtension dispatchLandingPageWithoutSlash(@PathParam("entrypoint") String entrypoint, @Context OgcApi service,
-                                                             @Context ContainerRequestContext requestContext) {
-        return dispatch("", service, requestContext);
+                                                             @Context ContainerRequestContext requestContext, @Context Request request) {
+        return dispatch("", service, requestContext, request);
 
     }
 
     @Path("/{entrypoint: [^/]*}")
     public EndpointExtension dispatch(@PathParam("entrypoint") String entrypoint, @Context OgcApi service,
-                                      @Context ContainerRequestContext requestContext) {
+                                      @Context ContainerRequestContext requestContext, @Context Request request) {
 
         String subPath = ((UriRoutingContext) requestContext.getUriInfo()).getFinalMatchingGroup();
         String method = requestContext.getMethod();
@@ -123,6 +126,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
         ApiRequestContext apiRequestContext = new ImmutableRequestContext.Builder()
                 .requestUri(requestContext.getUriInfo()
                                           .getRequestUri())
+                .request(request)
                 .externalUri(getExternalUri())
                 .mediaType(selectedMediaType)
                 .alternateMediaTypes(alternateMediaTypes)

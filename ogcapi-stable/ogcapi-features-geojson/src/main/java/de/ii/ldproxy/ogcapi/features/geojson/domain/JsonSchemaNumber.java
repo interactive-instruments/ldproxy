@@ -8,8 +8,10 @@
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Value.Immutable
@@ -21,4 +23,11 @@ public abstract class JsonSchemaNumber extends JsonSchema {
 
     public abstract Optional<Double> getMinimum();
     public abstract Optional<Double> getMaximum();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaNumber> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        from.getMinimum().ifPresent(val -> into.putDouble(val));
+        from.getMaximum().ifPresent(val -> into.putDouble(val));
+    };
 }

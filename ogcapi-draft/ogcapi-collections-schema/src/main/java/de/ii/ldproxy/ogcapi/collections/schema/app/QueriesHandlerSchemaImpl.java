@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureCollectionGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
@@ -35,10 +36,13 @@ import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -122,7 +126,16 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
                                                                                              .map(link -> link.getHref())
                                                                                              .findAny(), schemaType, getVersion(queryInput.getProfile()));
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = getLastModified(queryInput, api);
+        EntityTag etag = getEtag(jsonSchema, JsonSchema.FUNNEL, outputFormat);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null), null)
                 .entity(outputFormat.getEntity(jsonSchema, collectionId, api, requestContext))
                 .build();
     }

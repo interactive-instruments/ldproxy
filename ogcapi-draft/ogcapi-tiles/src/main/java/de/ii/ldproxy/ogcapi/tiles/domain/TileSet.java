@@ -9,12 +9,16 @@ package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.domain.Metadata2;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,4 +51,30 @@ public abstract class TileSet extends Metadata2 {
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<TileSet> FUNNEL = (from, into) -> {
+        Metadata2.FUNNEL.funnel(from, into);
+        into.putString(from.getDataType().toString(), StandardCharsets.UTF_8);
+        into.putString(from.getTileMatrixSetId(), StandardCharsets.UTF_8);
+        from.getTileMatrixSet().ifPresent(val -> TileMatrixSetData.FUNNEL.funnel(val, into));
+        from.getTileMatrixSetURI().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getTileMatrixSetDefinition().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getBoundingBox().ifPresent(val -> TilesBoundingBox.FUNNEL.funnel(val, into));
+        from.getCenterPoint().ifPresent(val -> TilePoint.FUNNEL.funnel(val, into));
+        from.getTileMatrixSetLimits()
+            .stream()
+            .sorted(Comparator.comparing(TileMatrixSetLimits::getTileMatrix))
+            .forEachOrdered(val -> TileMatrixSetLimits.FUNNEL.funnel(val, into));
+        from.getLayers()
+            .stream()
+            .sorted(Comparator.comparing(TileLayer::getId))
+            .forEachOrdered(val -> TileLayer.FUNNEL.funnel(val, into));
+        from.getExtensions()
+            .keySet()
+            .stream()
+            .sorted()
+            .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
+        // we cannot encode the generic extension object
+    };
 }

@@ -10,12 +10,15 @@ package de.ii.ldproxy.ogcapi.styles.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Metadata2;
 import de.ii.ldproxy.ogcapi.domain.MetadataDates;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -33,6 +36,21 @@ public abstract class StyleMetadata extends Metadata2 {
     public abstract List<StylesheetMetadata> getStylesheets();
 
     public abstract List<StyleLayer> getLayers();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<StyleMetadata> FUNNEL = (from, into) -> {
+        Metadata2.FUNNEL.funnel(from, into);
+        from.getId().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getStylesheets()
+            .stream()
+            .filter(stylesheetMetadata -> stylesheetMetadata.getTitle().isPresent())
+            .sorted(Comparator.comparing(stylesheetMetadata -> stylesheetMetadata.getTitle().get()))
+            .forEachOrdered(val -> StylesheetMetadata.FUNNEL.funnel(val, into));
+        from.getLayers()
+            .stream()
+            .sorted(Comparator.comparing(StyleLayer::getId))
+            .forEachOrdered(val -> StyleLayer.FUNNEL.funnel(val, into));
+    };
 
     @JsonIgnore
     public StyleMetadata replaceParameters(String serviceUrl) {
