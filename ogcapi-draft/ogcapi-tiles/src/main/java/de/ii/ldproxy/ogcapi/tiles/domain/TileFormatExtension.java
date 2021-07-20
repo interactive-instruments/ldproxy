@@ -59,7 +59,7 @@ public interface TileFormatExtension extends FormatExtension {
 
     String getExtension();
 
-    Object getEmptyTile(Tile tile);
+    byte[] getEmptyTile(Tile tile);
 
     FeatureQuery getQuery(Tile tile,
                           List<OgcApiQueryParameter> allowedParameters,

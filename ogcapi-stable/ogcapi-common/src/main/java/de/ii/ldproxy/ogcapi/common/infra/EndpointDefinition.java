@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.common.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableDefinition;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
+import de.ii.ldproxy.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
@@ -104,6 +104,7 @@ public class EndpointDefinition extends Endpoint {
                                      @Context ApiRequestContext ogcApiContext, @PathParam("file") Optional<String> file) {
 
         QueriesHandlerCommonImpl.Definition queryInputApiDefinition = new ImmutableDefinition.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .subPath(file)
                 .build();
 
