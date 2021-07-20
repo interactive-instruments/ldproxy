@@ -5,12 +5,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.features.geojson.app;
+package de.ii.ldproxy.ogcapi.features.core.domain;
 
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+public abstract class SchemaGeneratorFeatureCollection {
 
-import java.util.List;
-
-public interface GeoJsonWriterRegistry {
-    List<GeoJsonWriter> getGeoJsonWriters();
 }

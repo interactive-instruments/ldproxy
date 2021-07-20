@@ -25,6 +25,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
@@ -91,13 +92,13 @@ public class StyleRepositoryFiles implements StyleRepository {
     private final ObjectMapper patchMapperLenient;
     private final ObjectMapper patchMapperStrict;
     private final ObjectMapper metadataMapper;
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
     private final XtraPlatform xtraPlatform;
 
     public StyleRepositoryFiles(@Context BundleContext bundleContext,
                                 @Requires ExtensionRegistry extensionRegistry,
                                 @Requires I18n i18n,
-                                @Requires SchemaGeneratorGeoJson schemaGeneratorFeature,
+                                @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature,
                                 @Requires XtraPlatform xtraPlatform) throws IOException {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");

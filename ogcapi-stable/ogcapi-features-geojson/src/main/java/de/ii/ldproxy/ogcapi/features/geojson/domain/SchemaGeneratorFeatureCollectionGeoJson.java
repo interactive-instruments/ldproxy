@@ -14,14 +14,12 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 
 import java.util.Optional;
 
-public interface SchemaGeneratorFeatureGeoJson extends SchemaGeneratorGeoJson {
+public interface SchemaGeneratorFeatureCollectionGeoJson extends SchemaGeneratorGeoJson {
 
     JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SchemaGeneratorFeature.SCHEMA_TYPE type);
 
     JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SchemaGeneratorFeature.SCHEMA_TYPE type, Optional<VERSION> version);
 
     JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SchemaGeneratorFeature.SCHEMA_TYPE type, VERSION version);
-
-    JsonSchemaObject getSchemaJson(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData, Optional<String> schemaUri, SchemaGeneratorFeature.SCHEMA_TYPE type, VERSION version);
 
 }

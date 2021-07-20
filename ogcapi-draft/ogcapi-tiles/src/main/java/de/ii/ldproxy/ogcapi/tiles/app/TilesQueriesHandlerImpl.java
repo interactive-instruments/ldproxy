@@ -34,6 +34,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileLayer;
@@ -117,7 +118,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TilesCache tilesCache;
     private final StaticTileProviderStore staticTileProviderStore;
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
 
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
@@ -127,7 +128,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TilesCache tilesCache,
                                    @Requires StaticTileProviderStore staticTileProviderStore,
-                                   @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
+                                   @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;

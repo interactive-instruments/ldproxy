@@ -5,23 +5,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.collections.schema;
+package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
-
 @Component
 @Provides
 @Instantiate
-public class CapabilitySchema implements ApiBuildingBlock {
+public class CapabilityJsonFg implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableSchemaConfiguration.Builder().enabled(false)
+        return new ImmutableJsonFgConfiguration.Builder().enabled(false)
+                                                         .when(true)
+                                                         .describedby(true)
                                                          .build();
     }
 

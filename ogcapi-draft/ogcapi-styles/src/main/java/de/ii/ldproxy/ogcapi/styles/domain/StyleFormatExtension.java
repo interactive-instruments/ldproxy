@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 
 import java.util.List;
@@ -123,7 +124,7 @@ public interface StyleFormatExtension extends FormatExtension {
      *
      * @return
      */
-    default List<StyleLayer> deriveLayerMetadata(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, SchemaGeneratorGeoJson schemaGeneratorFeature) {
+    default List<StyleLayer> deriveLayerMetadata(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
         return ImmutableList.of();
     }
 

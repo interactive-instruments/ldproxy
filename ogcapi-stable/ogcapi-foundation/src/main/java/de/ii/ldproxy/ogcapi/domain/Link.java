@@ -89,6 +89,8 @@ public abstract class Link {
             return "HTML";
         else if (mediaType.toLowerCase().split(";")[0].equals("application/flatgeobuf"))
             return "FlatGeobuf";
+        else if (mediaType.toLowerCase().split(";")[0].endsWith("fg+json"))
+            return "JSON-FG";
         else if (mediaType.toLowerCase().split(";")[0].endsWith("+xml"))
             return "XML";
         else if (mediaType.toLowerCase().split(";")[0].endsWith("+json"))

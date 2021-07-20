@@ -25,10 +25,10 @@ import spock.lang.Specification
 
 class SchemaGeneratorFeatureGeoJsonSpec extends Specification {
 
-    @Shared SchemaGeneratorFeatureGeoJson schemaGenerator
+    @Shared SchemaGeneratorFeatureGeoJsonImpl schemaGenerator
 
     def setupSpec() {
-        schemaGenerator = new SchemaGeneratorFeatureGeoJson(null, new EntityRegistryImpl(null), new SchemaInfoImpl(null))
+        schemaGenerator = new SchemaGeneratorFeatureGeoJsonImpl(null, new EntityRegistryImpl(null), new SchemaInfoImpl(null))
     }
 
     def 'Test GeoJSON schema generation for the QUERYABLES type, JSON Schema draft-2019-09'() {

@@ -7,15 +7,18 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
@@ -67,7 +70,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                 else
                     transformationContext.getJson()
                                          .writeStringField("id", currentId);
-                writeLink(transformationContext, currentId);
+                addLinks(transformationContext, currentId);
                 this.currentId = null;
                 this.currentIdIsInteger = false;
             }
@@ -108,7 +111,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                         transformationContext.getJson()
                                              .writeStringField("id", currentValue);
 
-                    writeLink(transformationContext, currentValue);
+                    addLinks(transformationContext, currentValue);
                 }
 
             } else {
@@ -128,26 +131,23 @@ public class GeoJsonWriterId implements GeoJsonWriter {
         next.accept(transformationContext);
     }
 
-    private void writeLink(FeatureTransformationContextGeoJson transformationContext,
-                           String featureId) throws IOException {
+    private void addLinks(FeatureTransformationContextGeoJson transformationContext,
+                          String featureId) throws IOException {
         if (transformationContext.isFeatureCollection() &&
-                transformationContext.getShowsFeatureSelfLink() &&
                 Objects.nonNull(featureId) &&
                 !featureId.isEmpty()) {
-            transformationContext.getJson()
-                                 .writeFieldName("links");
-            transformationContext.getJson()
-                                 .writeStartArray(1);
-            transformationContext.getJson()
-                                 .writeStartObject();
-            transformationContext.getJson()
-                                 .writeStringField("rel", "self");
-            transformationContext.getJson()
-                                 .writeStringField("href", transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/items/" + featureId);
-            transformationContext.getJson()
-                                 .writeEndObject();
-            transformationContext.getJson()
-                                 .writeEndArray();
+            transformationContext.getState().addCurrentFeatureLinks(new ImmutableLink.Builder().rel("self")
+                                                                                        .href(transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/items/" + featureId)
+                                                                                        .build());
+            Optional<String> template = transformationContext.getApiData()
+                                                             .getCollections()
+                                                             .get(transformationContext.getCollectionId())
+                                                             .getPersistentUriTemplate();
+            if (template.isPresent()) {
+                transformationContext.getState().addCurrentFeatureLinks(new ImmutableLink.Builder().rel("canonical")
+                                                                                            .href(StringTemplateFilters.applyTemplate(template.get(), featureId))
+                                                                                            .build());
+            }
         }
     }
 }
