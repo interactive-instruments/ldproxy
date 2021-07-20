@@ -250,6 +250,7 @@ public interface QueriesHandler<T extends QueryIdentifier> {
                              .newHasher()
                              .putObject(entity, funnel)
                              .putString(Objects.nonNull(outputFormat) ? outputFormat.getMediaType().label() : "", StandardCharsets.UTF_8)
+                             .hash()
                              .toString();
         return new EntityTag(etag, true);
     }
