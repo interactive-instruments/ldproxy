@@ -59,7 +59,7 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
                                                                    new ImmutableLink.Builder().rel("describedby")
                                                                                               .href("https://geojson.org/schema/FeatureCollection.json")
                                                                                               .type("application/schema+json")
-                                                                                              .title("This a document is a GeoJSON FeatureCollection") // TODO add i18n
+                                                                                              .title("This document is a GeoJSON FeatureCollection") // TODO add i18n
                                                                                               .build());
         }
 
@@ -82,7 +82,7 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
                                                                     new ImmutableLink.Builder().rel("describedby")
                                                                                                .href("https://geojson.org/schema/Feature.json")
                                                                                                .type("application/schema+json")
-                                                                                               .title("This a document is a GeoJSON Feature") // TODO add i18n
+                                                                                               .title("This document is a GeoJSON Feature") // TODO add i18n
                                                                                                .build());
         }
 
