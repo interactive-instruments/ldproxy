@@ -14,24 +14,17 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 
 @Value.Immutable
-@Value.Style(builder = "new", deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableJsonFgConfiguration.Builder.class)
-public interface JsonFgConfiguration extends ExtensionConfiguration {
-
-    abstract class Builder extends ExtensionConfiguration.Builder {
-    }
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableWhere.Builder.class)
+public interface Where {
 
     @Nullable
-    Boolean getWhen();
+    Boolean getEnabled();
 
     @Nullable
-    Where getWhere();
+    String getLowerHeightProperty();
 
     @Nullable
-    Boolean getDescribedby();
+    String getUpperHeightProperty();
 
-    @Override
-    default Builder getBuilder() {
-        return new ImmutableJsonFgConfiguration.Builder();
-    }
 }
