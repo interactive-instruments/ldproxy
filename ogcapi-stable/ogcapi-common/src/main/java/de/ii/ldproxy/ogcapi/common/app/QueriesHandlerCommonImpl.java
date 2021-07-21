@@ -217,19 +217,15 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         }
 
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        // TODO support ETag
         EntityTag etag = null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext, null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
-                                      null)
-                .entity(outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(),
-                                                                       requestContext))
-                .build();
+        // TODO support headers
+        return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(),
+                                                              requestContext);
     }
 
     private List<LandingPageExtension> getDatasetExtenders() {
