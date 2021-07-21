@@ -71,6 +71,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -290,7 +291,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
             throw new NotAcceptableException("The requested tile format supports only a single layer. Please select only a single collection.");
 
         // check, if the cache can be used (no query parameters except f)
-        boolean useCache = queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f"));
+        boolean useCache = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f")));
 
         Tile multiLayerTile = new ImmutableTile.Builder()
                 .collectionIds(collections)
@@ -318,8 +320,10 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         if (useCache) {
             // get the tile from the cache and return it
             Optional<InputStream> tileStream = Optional.empty();
+            Optional<Date> lastModified = Optional.empty();
             try {
                 tileStream = cache.getTile(multiLayerTile);
+                lastModified = cache.getLastModified(multiLayerTile);
             } catch (Exception e) {
                 LOGGER.warn("Failed to retrieve multi-collection tile {}/{}/{}/{} from the cache. Reason: {}",
                             multiLayerTile.getTileMatrixSet().getId(), multiLayerTile.getTileLevel(), multiLayerTile.getTileRow(),
@@ -330,6 +334,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                         .from(getGenericQueryInput(api.getData()))
                         .tile(multiLayerTile)
                         .tileContent(tileStream.get())
+                        .lastModified(lastModified)
                         .build();
 
                 return queryHandler.handle(TilesQueriesHandler.Query.TILE_STREAM, queryInput, requestContext);
@@ -339,7 +344,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         // don't store the tile in the cache if it is outside the range
         MinMax cacheMinMax = tilesConfiguration.getZoomLevelsDerived()
                                                .get(tileMatrixSetId);
-        Tile finalMultiLayerTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+        Tile finalMultiLayerTile = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin())) ?
                 multiLayerTile :
                 new ImmutableTile.Builder()
                         .from(multiLayerTile)

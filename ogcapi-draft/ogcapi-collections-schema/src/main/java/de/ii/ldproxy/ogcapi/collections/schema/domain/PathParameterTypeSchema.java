@@ -5,13 +5,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.collections.schema;
+package de.ii.ldproxy.ogcapi.collections.schema.domain;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.common.domain.QueryParameterProfile;
+import de.ii.ldproxy.ogcapi.common.domain.PathParameterType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -23,27 +22,33 @@ import java.util.List;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterProfileSchema extends QueryParameterProfile {
+public class PathParameterTypeSchema extends PathParameterType {
 
-    final static List<String> PROFILES = ImmutableList.of("2019-09", "07");
+    final static List<String> TYPES = ImmutableList.of("feature", "collection");
+    final static String SCHEMA_TYPE_PATTERN = "[\\w\\-]+";
 
-    public QueryParameterProfileSchema(@Requires ExtensionRegistry extensionRegistry) {
+    public PathParameterTypeSchema(@Requires ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 
     @Override
     public String getId() {
-        return "profileSchema";
+        return "typeSchema";
     }
 
     @Override
-    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return definitionPath.equals("/collections/{collectionId}/schema");
+    protected boolean isApplicablePath(OgcApiDataV2 apiData, String definitionPath) {
+        return definitionPath.equals("/collections/{collectionId}/schemas/{type}");
     }
 
     @Override
-    protected List<String> getProfiles(OgcApiDataV2 apiData) {
-        return PROFILES;
+    public List<String> getValues(OgcApiDataV2 apiData) {
+        return TYPES;
+    }
+
+    @Override
+    public String getPattern() {
+        return SCHEMA_TYPE_PATTERN;
     }
 
     @Override

@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.common.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputConformance;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
+import de.ii.ldproxy.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
@@ -87,12 +87,8 @@ public class EndpointConformance extends Endpoint {
     public Response getConformanceClasses(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                           @Context ApiRequestContext requestContext) {
 
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
-
         QueriesHandlerCommonImpl.QueryInputConformance queryInput = new ImmutableQueryInputConformance.Builder()
-                .includeLinkHeader(includeLinkHeader)
+                .from(getGenericQueryInput(api.getData()))
                 .build();
 
         return queryHandler.handle(Query.CONFORMANCE_DECLARATION, queryInput, requestContext);

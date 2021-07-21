@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleLayer;
@@ -178,7 +179,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
     public boolean canDeriveMetadata() { return true; }
 
     @Override
-    public List<StyleLayer> deriveLayerMetadata(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, SchemaGeneratorGeoJson schemaGeneratorFeature) {
+    public List<StyleLayer> deriveLayerMetadata(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
         URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         Optional<MbStyleStylesheet> mbStyle = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);

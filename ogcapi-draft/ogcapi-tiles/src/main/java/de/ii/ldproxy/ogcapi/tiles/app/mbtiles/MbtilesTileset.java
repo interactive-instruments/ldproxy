@@ -19,6 +19,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +29,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -68,8 +71,9 @@ public class MbtilesTileset {
             SqlHelper.execute(connection, "CREATE TABLE metadata (name text, value text)");
             SqlHelper.execute(connection, "CREATE TABLE tile_map (zoom_level integer, tile_column integer, tile_row integer, tile_id integer)");
             SqlHelper.execute(connection, "CREATE UNIQUE INDEX tile_index on tile_map (zoom_level, tile_column, tile_row)");
-            SqlHelper.execute(connection, "CREATE TABLE tile_blobs (tile_id integer primary key, tile_data blob)");
+            SqlHelper.execute(connection, "CREATE TABLE tile_blobs (tile_id integer primary key, tile_data blob, last_modified bigint)");
             SqlHelper.execute(connection, "CREATE VIEW tiles AS SELECT zoom_level, tile_column, tile_row, tile_data FROM tile_map INNER JOIN tile_blobs ON tile_map.tile_id = tile_blobs.tile_id");
+            SqlHelper.execute(connection, "CREATE VIEW last_modified AS SELECT zoom_level, tile_column, tile_row, last_modified FROM tile_map INNER JOIN tile_blobs ON tile_map.tile_id = tile_blobs.tile_id");
 
             // populate metadata
             SqlHelper.addMetadata(connection,"name", metadata.getName());
@@ -99,12 +103,13 @@ public class MbtilesTileset {
             }
 
             // create empty MVT tile with rowid=1
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO tile_blobs (tile_id,tile_data) VALUES(?,?)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO tile_blobs (tile_id,tile_data,last_modified) VALUES(?,?,?)");
             statement.setInt(1, EMPTY_TILE_ID);
             ByteArrayOutputStream mvt = new ByteArrayOutputStream(0);
             GZIPOutputStream gzip = new GZIPOutputStream(mvt);
             gzip.close();
             statement.setBytes(2, mvt.toByteArray());
+            statement.setLong(3, Instant.now().getEpochSecond());
             statement.execute();
             statement.close();
 
@@ -213,6 +218,21 @@ public class MbtilesTileset {
         return result;
     }
 
+    public Optional<Date> getLastModified(Tile tile) throws SQLException, IOException {
+        Optional<Date> result = Optional.empty();
+        Connection connection = getConnection();
+        int level = tile.getTileLevel();
+        int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
+        int col = tile.getTileCol();
+        String sql = String.format("SELECT last_modified FROM last_modified WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
+        ResultSet rs = SqlHelper.executeQuery(connection, sql);
+        if (rs.next()) {
+            result = Optional.of(Date.from(Instant.ofEpochSecond(rs.getLong("last_modified"))));
+        }
+        releaseConnection();
+        return result;
+    }
+
     public Optional<Boolean> tileIsEmpty(Tile tile) throws SQLException {
         Optional<Boolean> result = Optional.empty();
         Connection connection = getConnection();
@@ -256,12 +276,13 @@ public class MbtilesTileset {
         // now add the new tile
         int tile_id = EMPTY_TILE_ID;
         if (content.length>0) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO tile_blobs (tile_data) VALUES(?)");
+            PreparedStatement statement = connection.prepareStatement("INSERT INTO tile_blobs (tile_data, last_modified) VALUES(?,?)");
             ByteArrayOutputStream mvt = new ByteArrayOutputStream(content.length);
             GZIPOutputStream gzip = new GZIPOutputStream(mvt);
             gzip.write(content);
             gzip.close();
             statement.setBytes(1, mvt.toByteArray());
+            statement.setLong(2, Instant.now().getEpochSecond());
             statement.execute();
             statement.close();
             rs = SqlHelper.executeQuery(connection, "SELECT last_insert_rowid()");

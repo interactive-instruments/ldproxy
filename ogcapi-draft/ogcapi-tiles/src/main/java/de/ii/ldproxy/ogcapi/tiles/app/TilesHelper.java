@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileLayer;
@@ -80,7 +81,7 @@ public class TilesHelper {
                                        List<Link> links,
                                        Optional<URICustomizer> uriCustomizer,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
-                                       SchemaGeneratorGeoJson schemaGeneratorFeature) {
+                                       SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
 
         ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
                                                            .dataType(TileSet.DataType.vector);

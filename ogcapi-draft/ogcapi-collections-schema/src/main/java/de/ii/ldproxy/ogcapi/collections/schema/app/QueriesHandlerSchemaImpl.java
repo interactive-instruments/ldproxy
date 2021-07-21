@@ -5,9 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.collections.schema;
+package de.ii.ldproxy.ogcapi.collections.schema.app;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.collections.schema.domain.QueriesHandlerSchema;
+import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
@@ -15,14 +17,16 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureCollectionGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -32,10 +36,13 @@ import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -52,15 +59,21 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
         boolean getIncludeLinkHeader();
 
         Optional<String> getProfile();
+
+        String getType();
     }
 
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureCollectionGeoJson schemaGeneratorFeatureCollection;
     private final I18n i18n;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
-    public QueriesHandlerSchemaImpl(@Requires I18n i18n, @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
+    public QueriesHandlerSchemaImpl(@Requires I18n i18n,
+                                    @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature,
+                                    @Requires SchemaGeneratorFeatureCollectionGeoJson schemaGeneratorFeatureCollection) {
         this.i18n = i18n;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
+        this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
         this.queryHandlers = ImmutableMap.of(
                 Query.SCHEMA, QueryHandler.with(QueryInputSchema.class, this::getSchemaResponse)
         );
@@ -82,17 +95,14 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
         OgcApi api = requestContext.getApi();
         OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
-        if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
+        checkCollectionId(apiData, collectionId);
 
-        SchemaFormatExtension outputFormat = api.getOutputFormat(
-                SchemaFormatExtension.class,
-                requestContext.getMediaType(),
-                "/collections/"+collectionId+"/schema",
-                Optional.of(collectionId))
+        SchemaFormatExtension outputFormat = api.getOutputFormat(SchemaFormatExtension.class,
+                                                                 requestContext.getMediaType(),
+                                                                 "/collections/"+collectionId+"/schemas/"+queryInput.getType(),
+                                                                 Optional.of(collectionId))
                                                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        checkCollectionId(api.getData(), collectionId);
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
         List<Link> links =
@@ -104,14 +114,28 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
         boolean flatten = geoJsonConfiguration.filter(geoJsonConfig -> geoJsonConfig.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN &&
                                                                        geoJsonConfig.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
                                               .isPresent();
-        SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
+        SchemaGeneratorFeature.SCHEMA_TYPE schemaType = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
 
-        JsonSchemaObject jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
-                                                                                                       .filter(link -> link.getRel().equals("self"))
-                                                                                                       .map(link -> link.getHref())
-                                                                                                       .findAny(), type, getVersion(queryInput.getProfile()));
+        JsonSchemaObject jsonSchema = queryInput.getType().equals("feature")
+                ? schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
+                                                                                   .filter(link -> link.getRel().equals("self"))
+                                                                                   .map(link -> link.getHref())
+                                                                                   .findAny(), schemaType, getVersion(queryInput.getProfile()))
+                : schemaGeneratorFeatureCollection.getSchemaJson(apiData, collectionId, links.stream()
+                                                                                             .filter(link -> link.getRel().equals("self"))
+                                                                                             .map(link -> link.getHref())
+                                                                                             .findAny(), schemaType, getVersion(queryInput.getProfile()));
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = getLastModified(queryInput, api);
+        EntityTag etag = getEtag(jsonSchema, JsonSchema.FUNNEL, outputFormat);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null), null)
                 .entity(outputFormat.getEntity(jsonSchema, collectionId, api, requestContext))
                 .build();
     }

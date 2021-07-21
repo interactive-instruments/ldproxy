@@ -25,6 +25,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
@@ -62,7 +63,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -88,13 +92,13 @@ public class StyleRepositoryFiles implements StyleRepository {
     private final ObjectMapper patchMapperLenient;
     private final ObjectMapper patchMapperStrict;
     private final ObjectMapper metadataMapper;
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
     private final XtraPlatform xtraPlatform;
 
     public StyleRepositoryFiles(@Context BundleContext bundleContext,
                                 @Requires ExtensionRegistry extensionRegistry,
                                 @Requires I18n i18n,
-                                @Requires SchemaGeneratorGeoJson schemaGeneratorFeature,
+                                @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature,
                                 @Requires XtraPlatform xtraPlatform) throws IOException {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
@@ -154,6 +158,32 @@ public class StyleRepositoryFiles implements StyleRepository {
     }
 
     @Override
+    public Date getStyleLastModified(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) {
+        return getStyleFormatStream(apiData, collectionId)
+                .filter(styleFormat -> stylesheetExists(apiData, collectionId, styleId, styleFormat))
+                .map(styleFormat -> getStylesheetLastModified(apiData, collectionId, styleId, styleFormat, true))
+                .filter(Objects::nonNull)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+    }
+
+    @Override
+    public Date getStylesheetLastModified(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension styleFormat, boolean includeDerived) {
+        // a stylesheet exists, if we have a stylesheet document or if we can derive one
+        File stylesheetFile = getPathStyle(apiData, collectionId, styleId, styleFormat).toFile();
+        if (stylesheetFile.exists())
+            return Date.from(Instant.ofEpochMilli(stylesheetFile.lastModified()));
+
+        if (includeDerived && collectionId.isPresent() && deriveCollectionStylesEnabled(apiData, collectionId.get())) {
+            stylesheetFile = getPathStyle(apiData, Optional.empty(), styleId, styleFormat).toFile();
+            if (stylesheetFile.exists())
+                return Date.from(Instant.ofEpochMilli(stylesheetFile.lastModified()));
+        }
+
+        return null;
+    }
+
+    @Override
     public Styles getStyles(OgcApiDataV2 apiData, Optional<String> collectionId, ApiRequestContext requestContext) {
         File dir = getPathStyles(apiData, collectionId).toFile();
         if (!dir.exists())
@@ -171,6 +201,11 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                   ImmutableStyleEntry.Builder builder = ImmutableStyleEntry.builder()
                                                                                                            .id(styleId)
                                                                                                            .title(getTitle(apiData, collectionId, styleId, requestContext).orElse(styleId));
+
+                                                  Date lastModified = getStyleLastModified(apiData, collectionId, styleId);
+                                                  if (Objects.nonNull(lastModified))
+                                                      builder.lastModified(lastModified);
+
                                                   List<ApiMediaType> mediaTypes = getStylesheetMediaTypes(apiData, collectionId, styleId);
                                                   builder.links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
                                                                                                        styleId,
@@ -201,6 +236,10 @@ public class StyleRepositoryFiles implements StyleRepository {
                                               .collect(Collectors.toList());
         Styles styles = ImmutableStyles.builder()
                                        .styles(styleEntries)
+                                       .lastModified(styleEntries.stream()
+                                                                 .map(StyleEntry::getLastModified)
+                                                                 .map(Optional::get)
+                                                                 .max(Comparator.naturalOrder()))
                                        .links(new DefaultLinksGenerator()
                                                       .generateLinks(requestContext.getUriCustomizer(),
                                                                      requestContext.getMediaType(),
@@ -227,7 +266,8 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                       .map(styleEntry -> deriveCollectionStyleEntry(apiData, styleEntry, collectionId.get(), requestContext))
                                                       .filter(Optional::isPresent)
                                                       .map(Optional::get)
-                                                      .collect(Collectors.toUnmodifiableList())).build();
+                                                      .collect(Collectors.toUnmodifiableList()))
+                              .build();
     }
 
     public boolean stylesheetExists(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension styleFormat) {

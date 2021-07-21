@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
@@ -49,6 +50,7 @@ import java.nio.file.attribute.FileTime;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -77,7 +79,7 @@ public class TileCacheImpl implements TileCache {
     private final Map<String, MbtilesTileset> mbtiles;
     private final CrsTransformerFactory crsTransformerFactory;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
     private final FeaturesCoreProviders providers;
     private final SchemaInfo schemaInfo;
     private final ExtensionRegistry extensionRegistry;
@@ -89,7 +91,7 @@ public class TileCacheImpl implements TileCache {
     public TileCacheImpl(@Context BundleContext bundleContext,
                          @Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                         @Requires SchemaGeneratorGeoJson schemaGeneratorFeature,
+                         @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature,
                          @Requires FeaturesCoreProviders providers,
                          @Requires SchemaInfo schemaInfo,
                          @Requires ExtensionRegistry extensionRegistry,
@@ -235,6 +237,22 @@ public class TileCacheImpl implements TileCache {
                 if (Files.notExists(path))
                     return Optional.empty();
                 return Optional.of(new BufferedInputStream(new FileInputStream(path.toFile())));
+        }
+    }
+
+    @Override
+    public Optional<Date> getLastModified(Tile tile) throws IOException, SQLException {
+        switch (getType(tile)) {
+            case MBTILES:
+                if (!tile.getTemporary())
+                    return getTileset(tile).getLastModified(tile);
+
+            case FILES:
+            default:
+                Path path = getPath(tile);
+                if (Files.notExists(path))
+                    return Optional.empty();
+                return Optional.of(Date.from(Instant.ofEpochMilli(path.toFile().lastModified())));
         }
     }
 

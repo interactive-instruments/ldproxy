@@ -11,9 +11,11 @@ import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Optional;
 
 /**
@@ -38,6 +40,13 @@ public interface TileCache extends ApiExtension {
      * @throws SQLException an error occurred while accessing an Mbtiles file
      */
     Optional<InputStream> getTile(Tile tile) throws IOException, SQLException;
+
+    /**
+     * fetch the timestamp, when a tile was last modified in the cache
+     * @param tile the tile
+     * @return the timestamp of the last change; the result is empty, if the tile is not cached or the timestamp could not be retrieved
+     */
+    Optional<Date> getLastModified(Tile tile) throws IOException, SQLException;
 
     /**
      * checks whether a tile is cached, but contains no features
@@ -80,5 +89,4 @@ public interface TileCache extends ApiExtension {
      * clean-up temporary files that cannot be cached due to the use of parameters
      */
     void cleanup();
-
 }

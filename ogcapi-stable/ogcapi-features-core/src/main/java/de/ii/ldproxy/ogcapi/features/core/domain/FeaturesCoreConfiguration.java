@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -24,12 +26,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCoreConfiguration.Builder.class)
-public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations, CachingConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -68,6 +71,9 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @Nullable
     Integer getMaximumPageSize();
 
+    Set<String> getEmbeddedFeatureLinkRels();
+
+    @Deprecated
     @Nullable
     Boolean getShowsFeatureSelfLink();
 
@@ -266,6 +272,12 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
         Map<String, Integer> mergedCoordinatePrecision = new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getCoordinatePrecision());
         mergedCoordinatePrecision.putAll(getCoordinatePrecision());
         builder.coordinatePrecision(mergedCoordinatePrecision);
+
+        // keep the rels from the parent configuration and just add new rels
+        builder.embeddedFeatureLinkRels(ImmutableSet.<String>builder()
+                                                    .addAll(((FeaturesCoreConfiguration) source).getEmbeddedFeatureLinkRels())
+                                                    .addAll(this.getEmbeddedFeatureLinkRels())
+                                                    .build());
 
         return builder.build();
     }

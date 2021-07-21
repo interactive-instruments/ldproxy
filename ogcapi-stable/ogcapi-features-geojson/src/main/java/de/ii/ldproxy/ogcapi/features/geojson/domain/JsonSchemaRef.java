@@ -10,7 +10,10 @@ package de.ii.ldproxy.ogcapi.features.geojson.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
+
+import java.nio.charset.StandardCharsets;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
@@ -22,4 +25,10 @@ public abstract class JsonSchemaRef extends JsonSchema {
 
     @JsonProperty("$ref")
     public abstract String getRef();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaRef> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        into.putString(from.getRef(), StandardCharsets.UTF_8);
+    };
 }

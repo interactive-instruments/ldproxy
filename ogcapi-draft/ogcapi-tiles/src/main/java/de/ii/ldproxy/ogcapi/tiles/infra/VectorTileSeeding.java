@@ -114,6 +114,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
         return apiData.getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::isEnabled)
+                      .filter(cfg -> cfg.getCache() != TilesConfiguration.TileCacheType.NONE)
                       .filter(config -> !config.getSeedingDerived()
                                                .isEmpty())
                       .isPresent();

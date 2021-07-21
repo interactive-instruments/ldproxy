@@ -107,7 +107,6 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
                                  .writeEndObject();
         }
 
-
         // next chain for extensions
         next.accept(transformationContext);
     }
@@ -116,6 +115,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
                                Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         //TODO if NESTED_OBJECT -> write to buffer until onFeatureEnd, somehow catch id and save to map
+
+        // next chain for extensions
+        next.accept(transformationContext);
     }
 
     protected String getPropertiesFieldName() {
@@ -242,6 +244,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
             writePropertyName(json, currentFeatureProperty.getName(), multiplicities, nestedObjectStrategy, multiplicityStrategy);
             writeValue(json, currentValue, currentFeatureProperty.getType());
         }
+
+        // next chain for extensions
+        next.accept(transformationContext);
     }
 
     private void writePropertyName(JsonGenerator json, String name, List<Integer> multiplicities,

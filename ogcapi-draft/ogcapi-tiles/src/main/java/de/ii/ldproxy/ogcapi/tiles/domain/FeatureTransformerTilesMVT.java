@@ -226,8 +226,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
         try {
             // write/update tile in cache
-            transformationContext.getTileCache()
-                                 .storeTile(tile, mvt);
+            if (!tile.getTemporary())
+                transformationContext.getTileCache()
+                                     .storeTile(tile, mvt);
         } catch (Exception e) {
             throw new RuntimeException(String.format("Failure to write the tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache.",
                                                      tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),

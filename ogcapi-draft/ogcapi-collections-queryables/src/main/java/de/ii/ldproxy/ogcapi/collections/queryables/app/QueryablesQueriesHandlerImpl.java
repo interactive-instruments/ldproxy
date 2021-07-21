@@ -20,8 +20,10 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -31,10 +33,17 @@ import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -51,14 +60,14 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
         boolean getIncludeLinkHeader();
     }
 
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
     public QueryablesQueriesHandlerImpl(@Requires I18n i18n,
                                         @Requires FeaturesCoreProviders providers,
-                                        @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
+                                        @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
         this.i18n = i18n;
         this.providers = providers;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
@@ -106,7 +115,16 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
                                                                                                        .map(link -> link.indexOf("?") == -1 ? link : link.substring(0, link.indexOf("?")))
                                                                                                        .findAny(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES);
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = getLastModified(queryInput, api);
+        EntityTag etag = getEtag(jsonSchema, JsonSchema.FUNNEL, outputFormat);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null), null)
                 .entity(outputFormat.getEntity(jsonSchema, links, collectionId, api, requestContext))
                 .build();
     }

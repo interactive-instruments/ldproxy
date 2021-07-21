@@ -5,11 +5,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.collections.schema;
+package de.ii.ldproxy.ogcapi.collections.schema.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ldproxy.ogcapi.collections.schema.app.ImmutableQueryInputSchema;
+import de.ii.ldproxy.ogcapi.collections.schema.domain.QueriesHandlerSchema;
+import de.ii.ldproxy.ogcapi.collections.schema.app.QueriesHandlerSchemaImpl;
+import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaConfiguration;
+import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -76,7 +81,7 @@ public class EndpointSchema extends EndpointSubCollection {
         ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                 .apiEntrypoint("collections")
                 .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_SCHEMA);
-        String subSubPath = "/schema";
+        String subSubPath = "/schemas/{type}";
         String path = "/collections/{collectionId}" + subSubPath;
         List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
         Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
@@ -107,24 +112,26 @@ public class EndpointSchema extends EndpointSubCollection {
     }
 
     @GET
-    @Path("/{collectionId}/schema")
+    @Path("/{collectionId}/schemas/{type}")
     @Produces("application/schema+json")
     public Response getSchema(@Auth Optional<User> optionalUser,
-                             @Context OgcApi api,
-                             @Context ApiRequestContext requestContext,
-                             @Context UriInfo uriInfo,
-                             @PathParam("collectionId") String collectionId) {
+                              @Context OgcApi api,
+                              @Context ApiRequestContext requestContext,
+                              @Context UriInfo uriInfo,
+                              @PathParam("collectionId") String collectionId,
+                              @PathParam("type") String type) {
 
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
+        String definitionPath = "/collections/{collectionId}/schemas/{type}";
+        checkPathParameter(extensionRegistry, api.getData(), definitionPath, "collectionId", collectionId);
+        checkPathParameter(extensionRegistry, api.getData(), definitionPath, "type", type);
 
         Optional<String> profile = Optional.ofNullable(requestContext.getParameters().get("profile"));
 
         QueriesHandlerSchemaImpl.QueryInputSchema queryInput = new ImmutableQueryInputSchema.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
-                .includeLinkHeader(includeLinkHeader)
                 .profile(profile)
+                .type(type)
                 .build();
 
         return queryHandler.handle(QueriesHandlerSchemaImpl.Query.SCHEMA, queryInput, requestContext);

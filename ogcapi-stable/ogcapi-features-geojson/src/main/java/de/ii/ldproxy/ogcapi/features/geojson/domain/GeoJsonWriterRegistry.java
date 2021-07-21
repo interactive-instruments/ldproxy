@@ -5,9 +5,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.collections.schema;
+package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
+import java.util.List;
 
-public interface QueriesHandlerSchema extends QueriesHandler<QueriesHandlerSchemaImpl.Query> {
+public interface GeoJsonWriterRegistry {
+    List<GeoJsonWriter> getGeoJsonWriters();
 }

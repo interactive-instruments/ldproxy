@@ -135,13 +135,10 @@ public class EndpointStyleMetadataCollection extends EndpointSubCollection {
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}/metadata", "styleId", styleId);
         checkCollectionExists(apiData, collectionId);
 
-        boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
-                                           .map(FoundationConfiguration::getIncludeLinkHeader)
-                                           .orElse(false);
         QueriesHandlerStyles.QueryInputStyle queryInput = new ImmutableQueryInputStyle.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
                 .styleId(styleId)
-                .includeLinkHeader(includeLinkHeader)
                 .build();
 
         return queryHandler.handle(QueriesHandlerStyles.Query.STYLE_METADATA, queryInput, requestContext);

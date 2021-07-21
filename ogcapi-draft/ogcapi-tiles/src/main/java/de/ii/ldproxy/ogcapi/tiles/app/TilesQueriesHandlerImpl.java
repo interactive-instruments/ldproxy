@@ -25,7 +25,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
@@ -35,6 +35,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -61,16 +62,21 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
@@ -94,7 +100,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TileCache tileCache;
     private final StaticTileProviderStore staticTileProviderStore;
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
+    private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
 
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
@@ -104,7 +110,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TileCache tileCache,
                                    @Requires StaticTileProviderStore staticTileProviderStore,
-                                   @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
+                                   @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
@@ -208,8 +214,20 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                                       schemaGeneratorFeature))
                                        .collect(Collectors.toUnmodifiableList()));
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
-                .entity(outputFormat.getTileSetsEntity(builder.build(), collectionId, api, requestContext))
+        TileSets tileSets = builder.build();
+
+        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        EntityTag etag = getEtag(tileSets, TileSets.FUNNEL, outputFormat);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null), null)
+                .entity(outputFormat.getTileSetsEntity(tileSets, collectionId, api, requestContext))
                 .build();
     }
 
@@ -249,7 +267,19 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                    Optional.of(requestContext.getUriCustomizer().copy()),
                                                    limitsGenerator, schemaGeneratorFeature);
         
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        EntityTag etag = getEtag(tileset, TileSet.FUNNEL, outputFormat);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null)
                 .entity(outputFormat.getTileSetEntity(tileset, apiData, collectionId, requestContext))
                 .build();
     }
@@ -350,7 +380,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
             }
 
-            return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+            // internal processing, no need to process headers
+            return prepareSuccessResponse(requestContext.getApi(), requestContext, null)
                     .entity(queryInput.getOutputStream().get())
                     .build();
         }
@@ -370,7 +401,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = Date.from(Instant.now());
+        EntityTag etag = null;
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null), null)
                 .entity(streamingOutput)
                 .build();
     }
@@ -504,7 +546,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         }
 
         // try to write/update tile in cache, if all collections have been processed
-        if (result.isComplete) {
+        if (result.isComplete && !multiLayerTile.getTemporary()) {
             try {
                 tileCache.storeTile(multiLayerTile, result.byteArray);
             } catch (Exception e) {
@@ -516,14 +558,36 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             }
         }
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = Date.from(Instant.now());
+        EntityTag etag = getEtag(result.byteArray);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null)
                 .entity(result.byteArray)
                 .build();
     }
 
     private Response getTileStreamResponse(QueryInputTileStream queryInput, ApiRequestContext requestContext) {
 
-        StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(queryInput.getTileContent(), outputStream);
+        ByteArrayInputStream bais;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            queryInput.getTileContent().transferTo(baos);
+            bais = new ByteArrayInputStream(baos.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read tile from cache.",e);
+        }
+
+        StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(bais, outputStream);
+        bais.reset();
 
         List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
                                                                      requestContext.getMediaType(),
@@ -531,7 +595,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = queryInput.getLastModified()
+                                      .orElse(Date.from(Instant.now()));
+        EntityTag etag = getEtag(bais);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null), null)
                 .entity(streamingOutput)
                 .build();
     }
@@ -546,7 +621,19 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = getLastModified(queryInput.getTileProvider().toFile());
+        EntityTag etag = getEtag(staticTileProviderStore.getTile(queryInput.getTileProvider(), queryInput.getTile()));
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null)
                 .entity(streamingOutput)
                 .build();
     }
@@ -560,7 +647,20 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      requestContext.getLanguage());
 
         Tile tile = queryInput.getTile();
-        return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+
+        Date lastModified = Date.from(Instant.now());
+        EntityTag etag = getEtag(tile.getOutputFormat().getEmptyTile(tile));
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null)
                 .entity(tile.getOutputFormat().getEmptyTile(tile))
                 .build();
     }

@@ -7,6 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import com.google.common.hash.Funnel;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 
 public class OgcApiExtent {
@@ -62,4 +69,11 @@ public class OgcApiExtent {
     public void setTemporal(OgcApiExtentTemporal temporal) {
         this.temporal = Optional.ofNullable(temporal);
     }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<OgcApiExtent> FUNNEL = (from, into) -> {
+        from.getSpatial().ifPresent(val -> OgcApiExtentSpatial.FUNNEL.funnel(val, into));
+        from.getTemporal().ifPresent(val -> OgcApiExtentTemporal.FUNNEL.funnel(val, into));
+    };
+
 }

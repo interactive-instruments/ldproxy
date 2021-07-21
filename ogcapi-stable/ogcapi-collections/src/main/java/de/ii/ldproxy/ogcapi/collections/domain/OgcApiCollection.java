@@ -9,10 +9,13 @@ package de.ii.ldproxy.ogcapi.collections.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,4 +38,23 @@ public abstract class OgcApiCollection extends PageRepresentationWithId {
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<OgcApiCollection> FUNNEL = (from, into) -> {
+        PageRepresentation.FUNNEL.funnel(from, into);
+        from.getExtent().ifPresent(val -> OgcApiExtent.FUNNEL.funnel(val, into));
+        from.getItemType().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getCrs()
+            .stream()
+            .sorted()
+            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getStorageCrs().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getStorageCrsCoordinateEpoch().ifPresent(val -> into.putFloat(val));
+        from.getExtensions()
+            .keySet()
+            .stream()
+            .sorted()
+            .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
+        // we cannot encode the generic extension object
+    };
 }

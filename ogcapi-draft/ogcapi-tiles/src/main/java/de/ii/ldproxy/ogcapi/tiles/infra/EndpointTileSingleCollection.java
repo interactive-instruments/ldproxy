@@ -67,6 +67,7 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -283,7 +284,8 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
 
         // check, if the cache can be used (no query parameters except f)
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
-        boolean useCache = queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f"));
+        boolean useCache = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f")));
 
         Tile tile = new ImmutableTile.Builder()
                 .collectionIds(ImmutableList.of(collectionId))
@@ -301,9 +303,11 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         // if cache can be used and the tile is cached for the requested format, return the cache
         if (useCache) {
             // get the tile from the cache and return it
-            Optional<InputStream> tileStream = null;
+            Optional<InputStream> tileStream = Optional.empty();
+            Optional<Date> lastModified = Optional.empty();
             try {
                 tileStream = cache.getTile(tile);
+                lastModified = cache.getLastModified(tile);
             } catch (Exception e) {
                 LOGGER.warn("Failed to retrieve tile {}/{}/{}/{} for collection {} from the cache. Reason: {}",
                             tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(),
@@ -314,6 +318,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                         .from(getGenericQueryInput(api.getData()))
                         .tile(tile)
                         .tileContent(tileStream.get())
+                        .lastModified(lastModified)
                         .build();
 
                 return queryHandler.handle(TilesQueriesHandler.Query.TILE_STREAM, queryInput, requestContext);
@@ -323,7 +328,8 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         // don't store the tile in the cache if it is outside the range
         MinMax cacheMinMax = tilesConfiguration.getZoomLevelsCacheDerived()
                                                .get(tileMatrixSetId);
-        Tile finalTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+        Tile finalTile = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin())) ?
                 tile :
                 new ImmutableTile.Builder()
                         .from(tile)

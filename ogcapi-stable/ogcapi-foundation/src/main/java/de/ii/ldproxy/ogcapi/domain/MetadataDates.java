@@ -8,8 +8,10 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Value.Immutable
@@ -22,4 +24,14 @@ public abstract class MetadataDates {
     public abstract Optional<String> getRevision();
     public abstract Optional<String> getValidTill();
     public abstract Optional<String> getReceivedOn();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<MetadataDates> FUNNEL = (from, into) -> {
+        from.getCreation().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getPublication().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getRevision().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getValidTill().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getReceivedOn().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+    };
+
 }

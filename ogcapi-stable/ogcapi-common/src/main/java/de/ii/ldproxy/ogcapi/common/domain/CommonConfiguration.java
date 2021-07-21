@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import java.util.List;
@@ -19,7 +20,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableCommonConfiguration.Builder.class)
-public interface CommonConfiguration extends ExtensionConfiguration {
+public interface CommonConfiguration extends ExtensionConfiguration, CachingConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {
 
