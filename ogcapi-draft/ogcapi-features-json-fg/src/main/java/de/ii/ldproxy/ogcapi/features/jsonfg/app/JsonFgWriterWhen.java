@@ -146,11 +146,11 @@ public class JsonFgWriterWhen implements GeoJsonWriter {
     private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
         return transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
                 && transformationContext.getApiData()
-                                    .getCollections()
-                                    .get(transformationContext.getCollectionId())
-                                    .getExtension(JsonFgConfiguration.class)
-                                    .filter(JsonFgConfiguration::isEnabled)
-                                    .filter(JsonFgConfiguration::getWhen)
-                                    .isPresent();
+                                        .getCollections()
+                                        .get(transformationContext.getCollectionId())
+                                        .getExtension(JsonFgConfiguration.class)
+                                        .filter(JsonFgConfiguration::isEnabled)
+                                        .filter(JsonFgConfiguration::getWhen)
+                                        .isPresent();
     }
 }
