@@ -117,6 +117,11 @@ public abstract class TileProviderFeatures extends TileProvider {
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
 
+        if (Objects.nonNull(getCenter()))
+            builder.center(getCenter());
+        else if (Objects.nonNull(src.getCenter()))
+            builder.center(src.getCenter());
+
         return builder.build();
     }
 }
