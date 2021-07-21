@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import org.immutables.value.Value;
@@ -29,7 +30,8 @@ public abstract class TileProviderMbtiles extends TileProvider {
     public abstract String getFilename();
 
     @JsonIgnore
-    public abstract Map<String, MinMax> getZoomLevels();
+    @Value.Default
+    public Map<String, MinMax> getZoomLevels() { return ImmutableMap.of(); }
 
     @Nullable
     @JsonIgnore

@@ -88,6 +88,8 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                                                                            .build()))
                                                                                                    .zoomLevelsCache(ImmutableMap.of())
                                                                                                    .seeding(ImmutableMap.of())
+                                                                                                   .filters(ImmutableMap.of())
+                                                                                                   .rules(ImmutableMap.of())
                                                                                                    .limit(LIMIT_DEFAULT)
                                                                                                    .singleCollectionEnabled(true)
                                                                                                    .multiCollectionEnabled(true)

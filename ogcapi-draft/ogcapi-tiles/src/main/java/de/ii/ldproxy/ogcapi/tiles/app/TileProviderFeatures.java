@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
@@ -30,15 +31,20 @@ public abstract class TileProviderFeatures extends TileProvider {
 
     public abstract List<String> getTileEncodings();
 
-    public abstract Map<String, MinMax> getZoomLevels();
+    @Value.Default
+    public Map<String, MinMax> getZoomLevels() { return ImmutableMap.of(); }
 
-    public abstract Map<String, MinMax> getZoomLevelsCache();
+    @Value.Default
+    public Map<String, MinMax> getZoomLevelsCache() { return ImmutableMap.of(); }
 
-    public abstract Map<String, MinMax> getSeeding();
+    @Value.Default
+    public Map<String, MinMax> getSeeding() { return ImmutableMap.of(); }
 
-    public abstract Map<String, List<PredefinedFilter>> getFilters();
+    @Value.Default
+    public Map<String, List<PredefinedFilter>> getFilters() { return ImmutableMap.of(); }
 
-    public abstract Map<String, List<Rule>> getRules();
+    @Value.Default
+    public Map<String, List<Rule>> getRules() { return ImmutableMap.of(); }
 
     @Nullable
     public abstract List<Double> getCenter();
