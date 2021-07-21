@@ -36,6 +36,7 @@ public abstract class TileProviderMbtiles extends TileProvider {
     public abstract String getTileEncoding();
 
     @JsonIgnore
+    @Nullable
     public abstract List<Double> getCenter();
 
     @Override
