@@ -597,7 +597,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         Date lastModified = queryInput.getLastModified()
                                       .orElse(Date.from(Instant.now()));
-        EntityTag etag = getEtag(bais);
+        EntityTag etag = getEtag(bais.readAllBytes());
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
