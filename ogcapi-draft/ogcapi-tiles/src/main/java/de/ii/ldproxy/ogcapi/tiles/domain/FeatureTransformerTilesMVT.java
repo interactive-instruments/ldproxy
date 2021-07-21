@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -217,18 +215,24 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         long mergerDuration = (System.nanoTime() - mergerStart) / 1000000;
 
         long encoderStart = System.nanoTime();
+        byte[] mvt;
         try {
-            byte[] mvt = encoder.encode();
+            mvt = encoder.encode();
             outputStream.write(mvt);
             outputStream.flush();
-
-            // write/update tile in cache
-            Path tileFile = transformationContext.getTileFile();
-            if (Files.notExists(tileFile) || Files.isWritable(tileFile)) {
-                Files.write(tileFile, mvt);
-            }
         } catch (IOException e) {
             throw new RuntimeException("Error writing output stream.", e);
+        }
+
+        try {
+            // write/update tile in cache
+            if (!tile.getTemporary())
+                transformationContext.getTileCache()
+                                     .storeTile(tile, mvt);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Failure to write the tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache.",
+                                                     tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
+                                                     tile.getApiData().getId(), tile.getOutputFormat().getExtension()), e);
         }
 
         if (LOGGER.isDebugEnabled()) {

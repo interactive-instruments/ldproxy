@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;

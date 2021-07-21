@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -60,7 +60,7 @@ public abstract class Tile {
 
     /**
      *
-     * @return the ids of the collections included as layers in the tile, empty set means all collections
+     * @return the ids of the collections included as layers in the tile, empty list means all collections
      */
     public abstract List<String> getCollectionIds();
 
@@ -68,7 +68,7 @@ public abstract class Tile {
      *
      * @return the API that produces the tile
      */
-    public abstract OgcApi getApi();
+    public abstract OgcApiDataV2 getApiData();
 
     /**
      *
@@ -88,6 +88,12 @@ public abstract class Tile {
      *         to support generating multi-layer tiles from multiple single-layer tiles
      */
     public abstract boolean getTemporary();
+
+    /**
+     *
+     * @return {@code true}, if the tile is a tile for the /tiles resources
+     */
+    public abstract boolean isDatasetTile();
 
     @Nullable
     @Value.Derived

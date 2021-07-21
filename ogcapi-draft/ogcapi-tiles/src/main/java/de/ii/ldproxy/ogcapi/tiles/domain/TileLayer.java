@@ -12,13 +12,10 @@ import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.domain.Metadata2;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.Optional;
 
 @Value.Immutable
@@ -47,7 +44,7 @@ public abstract class TileLayer extends Metadata2 {
 
     public abstract Optional<JsonSchemaObject> getPropertiesSchema();
 
-    // this is for map tiles, so we do not support this for now
+    // this is for map tiles, so we do not support the following for now:
     // public abstract Optional<StyleEntry> getStyle();
 
     @SuppressWarnings("UnstableApiUsage")

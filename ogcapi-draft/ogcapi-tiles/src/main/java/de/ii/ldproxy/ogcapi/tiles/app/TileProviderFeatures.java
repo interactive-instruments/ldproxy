@@ -10,14 +10,10 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -45,7 +41,7 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract Map<String, List<Rule>> getRules();
 
     @Nullable
-    public abstract double[] getCenter();
+    public abstract List<Double> getCenter();
 
     @Nullable
     public abstract Integer getLimit();
@@ -120,6 +116,11 @@ public abstract class TileProviderFeatures extends TileProvider {
         if (Objects.nonNull(getFilters()))
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
+
+        if (Objects.nonNull(getCenter()))
+            builder.center(getCenter());
+        else if (Objects.nonNull(src.getCenter()))
+            builder.center(src.getCenter());
 
         return builder.build();
     }
