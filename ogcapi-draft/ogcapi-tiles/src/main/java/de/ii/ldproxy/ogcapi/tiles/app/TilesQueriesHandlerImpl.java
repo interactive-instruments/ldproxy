@@ -65,6 +65,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -577,17 +578,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     private Response getTileStreamResponse(QueryInputTileStream queryInput, ApiRequestContext requestContext) {
 
-        ByteArrayInputStream bais;
+        byte[] content;
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            queryInput.getTileContent().transferTo(baos);
-            bais = new ByteArrayInputStream(baos.toByteArray());
+            content = queryInput.getTileContent().readAllBytes();
         } catch (IOException e) {
             throw new RuntimeException("Could not read tile from cache.",e);
         }
 
-        StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(bais, outputStream);
-        bais.reset();
+
+        StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(new ByteArrayInputStream(content), outputStream);
 
         List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
                                                                      requestContext.getMediaType(),
@@ -597,7 +596,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         Date lastModified = queryInput.getLastModified()
                                       .orElse(Date.from(Instant.now()));
-        EntityTag etag = getEtag(bais.readAllBytes());
+        EntityTag etag = getEtag(content);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

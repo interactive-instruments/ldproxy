@@ -230,6 +230,7 @@ public class TileCacheImpl implements TileCache {
             case MBTILES:
                 if (!tile.getTemporary())
                     return getTileset(tile).getTile(tile);
+                return Optional.empty();
 
             case FILES:
             default:
