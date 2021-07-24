@@ -5,19 +5,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.features.geojson.app
+package de.ii.ldproxy.ogcapi.features.jsonfg.app
 
 import com.google.common.collect.ImmutableList
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi
+import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
 import de.ii.ldproxy.ogcapi.domain.OgcApi
 import de.ii.ldproxy.ogcapi.domain.URICustomizer
+import de.ii.ldproxy.ogcapi.features.geojson.app.FeaturesFormatGeoJson
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ModifiableStateGeoJson
+import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableFeatureTransformationContextJsonFgExtension
+import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration
+import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs
@@ -27,7 +33,7 @@ import spock.lang.Specification
 import javax.ws.rs.core.Request
 import java.nio.charset.StandardCharsets
 
-class GeoJsonWriterCrsSpec extends Specification {
+class JsonFgWriterCrsSpec extends Specification {
 
     @Shared EpsgCrs DEFAULT_CRS = OgcCrs.CRS84
     @Shared EpsgCrs OTHER_CRS = EpsgCrs.of(4258)
@@ -37,7 +43,9 @@ class GeoJsonWriterCrsSpec extends Specification {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
         boolean isCollection = true
         EpsgCrs crs = DEFAULT_CRS
-        String expected = "{ }"
+        String expected = "{" + System.lineSeparator() +
+                "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
+                "}"
 
         when:
         runTransformer(outputStream, isCollection, crs)
@@ -47,13 +55,13 @@ class GeoJsonWriterCrsSpec extends Specification {
         actual == expected
     }
 
-    def "GeoJson writer CRS middleware for FeatureCollections if target is not WGS84"() {
+    def "JsonFg writer CRS middleware for FeatureCollections if target is not WGS84"() {
         given:
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
         boolean isCollection = true
         EpsgCrs crs = OTHER_CRS
         String expected = "{" + System.lineSeparator() +
-                "  \"crs\" : \"http://www.opengis.net/def/crs/EPSG/0/4258\"" + System.lineSeparator() +
+                "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
         when:
@@ -65,12 +73,14 @@ class GeoJsonWriterCrsSpec extends Specification {
     }
 
 
-    def "GeoJson writer CRS middleware for single Features if target is WGS84"() {
+    def "JsonFg writer CRS middleware for single Features if target is WGS84"() {
         given:
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
         boolean isCollection = false
         EpsgCrs crs = DEFAULT_CRS
-        String expected = "{ }"
+        String expected = "{" + System.lineSeparator() +
+                "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
+                "}"
 
         when:
         runTransformer(outputStream, isCollection, crs)
@@ -80,13 +90,13 @@ class GeoJsonWriterCrsSpec extends Specification {
         actual == expected
     }
 
-    def "GeoJson writer CRS middleware for single Features if target is not WGS84"() {
+    def "JsonFg writer CRS middleware for single Features if target is not WGS84"() {
         given:
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream()
         boolean isCollection = false
         EpsgCrs crs = OTHER_CRS
         String expected = "{" + System.lineSeparator() +
-                "  \"crs\" : \"http://www.opengis.net/def/crs/EPSG/0/4258\"" + System.lineSeparator() +
+                "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
         when:
@@ -100,11 +110,11 @@ class GeoJsonWriterCrsSpec extends Specification {
     private void runTransformer(ByteArrayOutputStream outputStream, boolean isCollection, EpsgCrs crs) throws IOException, URISyntaxException {
         outputStream.reset()
         FeatureTransformationContextGeoJson transformationContext = createTransformationContext(outputStream, isCollection, crs)
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterCrs()))
+        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new JsonFgWriterCrs()))
 
         transformationContext.getJson()
                 .writeStartObject()
-        transformer.onStart(OptionalLong.empty(), OptionalLong.empty())
+        transformer.onStart(OptionalLong.of(0L), OptionalLong.empty())
         transformer.onFeatureStart(null)
         transformationContext.getJson()
                 .writeEndObject()
@@ -121,12 +131,24 @@ class GeoJsonWriterCrsSpec extends Specification {
         return ImmutableFeatureTransformationContextGeoJson.builder()
                 .crsTransformer(Optional.ofNullable(crsTransformer))
                 .defaultCrs(OgcCrs.CRS84)
-                .mediaType(FeaturesFormatGeoJson.MEDIA_TYPE)
+                .mediaType(FeaturesFormatJsonFg.MEDIA_TYPE)
+                .putExtensions("jsonfg", ImmutableFeatureTransformationContextJsonFgExtension.builder()
+                                .crsTransformerWhere(Optional.ofNullable(crsTransformer))
+                                .crs(crs)
+                                .build())
                 .apiData(new ImmutableOgcApiDataV2.Builder()
-                        .id("s")
+                        .id("foo")
                         .serviceType("OGC_API")
+                        .putCollections("bar", new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                .id("bar")
+                                .label("Bar")
+                                .addExtensions(new ImmutableJsonFgConfiguration.Builder()
+                                        .enabled(true)
+                                        .refSys(true)
+                                        .build())
+                                .build())
                         .build())
-                .collectionId("xyz")
+                .collectionId("bar")
                 .outputStream(outputStream)
                 .links(ImmutableList.of())
                 .isFeatureCollection(isCollection)

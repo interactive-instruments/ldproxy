@@ -108,7 +108,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
         if (transformationContext.getState()
                                  .getCurrentFeatureProperty()
                                  .isPresent()
-                || transformationContext.getState()
+                && transformationContext.getState()
                                         .getCurrentValue()
                                         .isPresent()) {
 

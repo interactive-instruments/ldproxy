@@ -16,13 +16,17 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ldproxy.ogcapi.features.geojson.app.FeaturesFormatGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.app.JsonGeneratorDebug;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -41,7 +45,13 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
 
     public abstract GeoJsonConfiguration getGeoJsonConfig();
 
-    public abstract ApiMediaType getMediaType();
+    @Value.Default
+    public ApiMediaType getMediaType() { return FeaturesFormatGeoJson.MEDIA_TYPE; }
+
+    @Value.Default
+    public Boolean getSuppressGeometry() { return false; }
+
+    public abstract Map<String, Object> getExtensions();
 
     @Value.Default
     protected JsonGenerator getJsonGenerator() {
