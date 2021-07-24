@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration;
-import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableWhere;
+import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableWhereConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -23,10 +23,12 @@ public class CapabilityJsonFg implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableJsonFgConfiguration.Builder().enabled(false)
-                                                         .when(true)
-                                                         .where(new ImmutableWhere.Builder().enabled(false)
-                                                                                            .build())
                                                          .describedby(true)
+                                                         .when(true)
+                                                         .refSys(true)
+                                                         .where(new ImmutableWhereConfiguration.Builder().enabled(true)
+                                                                                                         .alwaysIncludeGeoJsonGeometry(false)
+                                                                                                         .build())
                                                          .build();
     }
 

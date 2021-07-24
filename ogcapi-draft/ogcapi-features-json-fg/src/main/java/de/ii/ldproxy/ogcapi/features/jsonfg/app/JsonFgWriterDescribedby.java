@@ -19,6 +19,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 @Component
@@ -27,6 +28,7 @@ import java.util.function.Consumer;
 public class JsonFgWriterDescribedby implements GeoJsonWriter {
 
     private final I18n i18n;
+    boolean isEnabled;
 
     public JsonFgWriterDescribedby(@Requires I18n i18n) {
         this.i18n = i18n;
@@ -45,7 +47,9 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
 
     @Override
     public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (isEnabled(transformationContext) && transformationContext.isFeatureCollection()) {
+        isEnabled = isEnabled(transformationContext);
+
+        if (isEnabled && transformationContext.isFeatureCollection()) {
             String label = transformationContext.getApiData()
                                                 .getCollections()
                                                 .get(transformationContext.getCollectionId())
@@ -69,7 +73,7 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
 
     @Override
     public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (isEnabled(transformationContext) && !transformationContext.isFeatureCollection()) {
+        if (isEnabled && !transformationContext.isFeatureCollection()) {
             String label = transformationContext.getApiData()
                                                 .getCollections()
                                                 .get(transformationContext.getCollectionId())
@@ -91,13 +95,14 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
     }
 
     private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-        return transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
-                && transformationContext.getApiData()
+        return transformationContext.getApiData()
                                     .getCollections()
                                     .get(transformationContext.getCollectionId())
                                     .getExtension(JsonFgConfiguration.class)
                                     .filter(JsonFgConfiguration::isEnabled)
-                                    .filter(JsonFgConfiguration::getDescribedby)
+                                    .filter(cfg -> Objects.requireNonNullElse(cfg.getDescribedby(), false))
+                                    .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.describedby) ||
+                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
                                     .isPresent()
                 && transformationContext.getApiData()
                                         .getCollections()
@@ -105,5 +110,6 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
                                         .getExtension(SchemaConfiguration.class)
                                         .filter(SchemaConfiguration::isEnabled)
                                         .isPresent();
+
     }
 }

@@ -144,13 +144,14 @@ public class JsonFgWriterWhen implements GeoJsonWriter {
     }
 
     private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-        return transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
-                && transformationContext.getApiData()
-                                        .getCollections()
-                                        .get(transformationContext.getCollectionId())
-                                        .getExtension(JsonFgConfiguration.class)
-                                        .filter(JsonFgConfiguration::isEnabled)
-                                        .filter(JsonFgConfiguration::getWhen)
-                                        .isPresent();
+        return transformationContext.getApiData()
+                                    .getCollections()
+                                    .get(transformationContext.getCollectionId())
+                                    .getExtension(JsonFgConfiguration.class)
+                                    .filter(JsonFgConfiguration::isEnabled)
+                                    .filter(cfg -> Objects.requireNonNullElse(cfg.getWhen(),false))
+                                    .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.when) ||
+                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+                                    .isPresent();
     }
 }

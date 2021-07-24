@@ -48,7 +48,16 @@ public interface FeatureTransformationContext {
 
     Optional<CrsTransformer> getCrsTransformer();
 
+    Optional<EpsgCrs> getSourceCrs();
+
     EpsgCrs getDefaultCrs();
+
+    @Value.Derived
+    default EpsgCrs getTargetCrs() {
+        if (getCrsTransformer().isPresent())
+            return getCrsTransformer().get().getTargetCrs();
+        return getSourceCrs().orElse(getDefaultCrs());
+    };
 
     List<Link> getLinks();
 

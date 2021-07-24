@@ -69,9 +69,10 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
     @Override
     public void onCoordinates(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.getState()
-                                 .getCurrentGeometryType()
-                                 .isPresent()
+        if (!transformationContext.getSuppressGeometry()
+                && transformationContext.getState()
+                                        .getCurrentGeometryType()
+                                        .isPresent()
                 && transformationContext.getState()
                                         .getCoordinatesWriterBuilder()
                                         .isPresent()
