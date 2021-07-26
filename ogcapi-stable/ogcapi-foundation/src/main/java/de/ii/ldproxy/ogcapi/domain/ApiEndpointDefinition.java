@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Value.Immutable
 public abstract class ApiEndpointDefinition {
@@ -234,6 +235,13 @@ public abstract class ApiEndpointDefinition {
                             case "POST":
                                 pathItem.post(op);
                                 isMutation = true;
+                                if (operation.getRequestBody().isPresent()) {
+                                    Set<javax.ws.rs.core.MediaType> mediaTypes = operation.getRequestBody().get().getContent().keySet();
+                                    if (mediaTypes.size()==1 && mediaTypes.iterator().next().equals(javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED_TYPE)) {
+                                        isMutation = false;
+                                        status406 = true;
+                                    }
+                                }
                                 break;
                             case "PUT":
                                 pathItem.put(op);
