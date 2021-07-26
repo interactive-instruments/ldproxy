@@ -106,7 +106,7 @@ public abstract class EndpointSubCollection extends Endpoint {
                                                                               .schemaRef("#/components/schemas/anyString")
                                                                               .build());
             body = new ImmutableApiRequestBody.Builder()
-                    .description("The query parameters endoded in the request body.")
+                    .description("The query parameters of the GET request encoded in the request body.")
                     .content(requestContent)
                     .build();
         } else if (method== HttpMethods.POST || method== HttpMethods.PUT || method== HttpMethods.PATCH) {
