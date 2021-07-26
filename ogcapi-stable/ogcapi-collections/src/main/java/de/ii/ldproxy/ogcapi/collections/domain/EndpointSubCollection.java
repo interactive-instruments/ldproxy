@@ -48,28 +48,34 @@ public abstract class EndpointSubCollection extends Endpoint {
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false);
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false, false);
+    }
+
+    protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, boolean postUrlencoded,
+                                                 List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
+                                                 String operationSummary, Optional<String> operationDescription, List<String> tags) {
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false, postUrlencoded);
     }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers,
                                                  String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false);
+        return addOperation(apiData, method, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, false, false);
     }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription, List<String> tags,
                                                  boolean hide) {
-        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, hide);
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, Optional.empty(), ImmutableMap.of(), tags, hide, false);
     }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription,
                                                  Optional<ExternalDocumentation> externalDocs, Map<String, List<Example>> examples, List<String> tags) {
-        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, false);
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, false, false);
     }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
@@ -77,7 +83,7 @@ public abstract class EndpointSubCollection extends Endpoint {
                                                  String operationSummary, Optional<String> operationDescription,
                                                  Optional<ExternalDocumentation> externalDocs, Map<String, List<Example>> examples, List<String> tags,
                                                  boolean hide) {
-        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, hide);
+        return addOperation(apiData, method, queryParameters, ImmutableList.of(), collectionId, subSubPath, operationSummary, operationDescription, externalDocs, examples, tags, hide, false);
     }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
@@ -85,10 +91,25 @@ public abstract class EndpointSubCollection extends Endpoint {
                                                  String collectionId, String subSubPath,
                                                  String operationSummary, Optional<String> operationDescription,
                                                  Optional<ExternalDocumentation> externalDocs, Map<String, List<Example>> examples, List<String> tags,
-                                                 boolean hide) {
+                                                 boolean hide, boolean postUrlencoded) {
         final String path = "/collections/"+collectionId+subSubPath;
         ApiRequestBody body = null;
-        if (method== HttpMethods.POST || method== HttpMethods.PUT || method== HttpMethods.PATCH) {
+        if (method== HttpMethods.POST && postUrlencoded) {
+            Map<MediaType, ApiMediaTypeContent> requestContent =
+                    ImmutableMap.of(MediaType.APPLICATION_FORM_URLENCODED_TYPE,
+                                    new ImmutableApiMediaTypeContent.Builder().ogcApiMediaType(new ImmutableApiMediaType.Builder()
+                                                                                                                    .type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
+                                                                                                                    .label("Form")
+                                                                                                                    .parameter("form")
+                                                                                                                    .build())
+                                                                              .schema(new StringSchema())
+                                                                              .schemaRef("#/components/schemas/anyString")
+                                                                              .build());
+            body = new ImmutableApiRequestBody.Builder()
+                    .description("The query parameters endoded in the request body.")
+                    .content(requestContent)
+                    .build();
+        } else if (method== HttpMethods.POST || method== HttpMethods.PUT || method== HttpMethods.PATCH) {
             Map<MediaType, ApiMediaTypeContent> requestContent = collectionId.startsWith("{") ?
                     getRequestContent(apiData, Optional.empty(), subSubPath, method) :
                     getRequestContent(apiData, Optional.of(collectionId), subSubPath, method);
@@ -102,10 +123,13 @@ public abstract class EndpointSubCollection extends Endpoint {
                     .build();
         }
         Map<MediaType, ApiMediaTypeContent> responseContent = collectionId.startsWith("{") ?
-                getContent(apiData, Optional.empty(), subSubPath, method) :
-                getContent(apiData, Optional.of(collectionId), subSubPath, method);
+                getContent(apiData, Optional.empty(), subSubPath, postUrlencoded ? HttpMethods.GET : method) :
+                getContent(apiData, Optional.of(collectionId), subSubPath, postUrlencoded ? HttpMethods.GET : method);
         if (method== HttpMethods.GET && responseContent.isEmpty()) {
             LOGGER.error("No media type supported for the resource at path '" + path + "'. The GET method will not be available.");
+            return null;
+        } else if (method== HttpMethods.POST && postUrlencoded && responseContent.isEmpty()) {
+            LOGGER.error("No media type supported for the resource at path '" + path + "'. The POST method will not be available.");
             return null;
         }
         if (!examples.isEmpty()) {

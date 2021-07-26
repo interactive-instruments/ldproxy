@@ -19,7 +19,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
@@ -29,7 +28,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.ParameterExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -38,6 +36,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
+import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -48,7 +47,26 @@ import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.models.media.Schema;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -60,19 +78,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
@@ -231,18 +236,18 @@ public class EndpointFeatures extends EndpointSubCollection {
                 "The `limit` parameter may be used to control the subset of the selected features that should be returned in the response, " +
                 "the page size. Each page may include information about the number of selected and returned features (`numberMatched` " +
                 "and `numberReturned`) as well as links to support paging (link relation `next`).",
-            "FEATURES");
+            "FEATURES", true);
 
         generateDefinition(apiData, definitionBuilder, allQueryParameters, "/items/{featureId}",
             "retrieve a feature in the feature collection '",
-            "Fetch the feature with id `{featureId}`.", "FEATURE");
+            "Fetch the feature with id `{featureId}`.", "FEATURE", false);
 
         return definitionBuilder.build();
     }
 
     private void generateDefinition(OgcApiDataV2 apiData, Builder definitionBuilder,
         ImmutableList<OgcApiQueryParameter> allQueryParameters, String subSubPath, String summary, String description,
-        String logPrefix) {
+        String logPrefix, boolean postUrlencoded) {
 
         String path = "/collections/{collectionId}" + subSubPath;
         List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -259,13 +264,16 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         if (explode) {
             for (String collectionId : collectionIdParam.getValues(apiData)) {
+                postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                                                          .map(FeaturesCoreConfiguration::getSupportPostOnItems)
+                                                          .orElse(false);
                 Stream<OgcApiQueryParameter> queryParameters = allQueryParameters.stream()
                     .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
 
                 generateCollectionDefinition(apiData, definitionBuilder, subSubPath, path,
                     pathParameters,
                     queryParameters, collectionId,
-                    summary, description, logPrefix);
+                    summary, description, logPrefix, postUrlencoded);
 
                 // since the generation is quite expensive, check if the startup was interrupted
                 // after every collection
@@ -280,21 +288,28 @@ public class EndpointFeatures extends EndpointSubCollection {
 
             if (representativeCollectionId.isPresent()) {
                 String collectionId = representativeCollectionId.get();
+                postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                                                          .map(FeaturesCoreConfiguration::getSupportPostOnItems)
+                                                          .orElse(false);
                 queryParameters = allQueryParameters.stream()
                     .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
+            } else {
+                postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class)
+                                                          .map(FeaturesCoreConfiguration::getSupportPostOnItems)
+                                                          .orElse(false);
             }
 
             generateCollectionDefinition(apiData, definitionBuilder, subSubPath, path,
                 pathParameters,
                 queryParameters, "{collectionId}",
-                summary, description, logPrefix);
+                summary, description, logPrefix, postUrlencoded);
         }
     }
 
     private void generateCollectionDefinition(OgcApiDataV2 apiData, Builder definitionBuilder,
         String subSubPath, String path, List<OgcApiPathParameter> pathParameters,
         Stream<OgcApiQueryParameter> queryParameters, String collectionId,
-        String summary, String description, String logPrefix) {
+        String summary, String description, String logPrefix, boolean postUrlencoded) {
 
         final List<OgcApiQueryParameter> queryParameters1 = path.equals("/collections/{collectionId}/items")
             ? getQueryParametersWithQueryables(queryParameters, apiData, collectionId, logPrefix)
@@ -311,6 +326,15 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         if (operation != null)
             resourceBuilder.putOperations("GET", operation);
+
+        if (postUrlencoded) {
+            operation = addOperation(apiData, HttpMethods.POST, true, ImmutableList.of(),
+                                     collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+
+            if (operation != null)
+                resourceBuilder.putOperations("POST", operation);
+
+        }
 
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
     }
@@ -378,6 +402,45 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
+
+        FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
+                .from(getGenericQueryInput(api.getData()))
+                .collectionId(collectionId)
+                .query(query)
+                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
+                .defaultPageSize(Optional.of(defaultPageSize))
+                .showsFeatureSelfLink(showsFeatureSelfLink)
+                .build();
+
+        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURES, queryInput, requestContext);
+    }
+
+    @POST
+    @Path("/{collectionId}/items")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    public Response getItems(@Auth Optional<User> optionalUser,
+                             @Context OgcApi api,
+                             @Context ApiRequestContext requestContext,
+                             @Context UriInfo uriInfo,
+                             @PathParam("collectionId") String collectionId,
+                             @RequestBody MultivaluedMap<String,String> parameters) {
+        checkCollectionExists(api.getData(), collectionId);
+
+        FeatureTypeConfigurationOgcApi collectionData = api.getData()
+                                                           .getCollections()
+                                                           .get(collectionId);
+
+        FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
+
+        int minimumPageSize = coreConfiguration.getMinimumPageSize();
+        int defaultPageSize = coreConfiguration.getDefaultPageSize();
+        int maxPageSize = coreConfiguration.getMaximumPageSize();
+        boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
+
+        List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), allowedParameters);
 
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))
