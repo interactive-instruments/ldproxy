@@ -14,10 +14,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -28,7 +28,7 @@ import java.util.Objects;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public interface TilesConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface TilesConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }

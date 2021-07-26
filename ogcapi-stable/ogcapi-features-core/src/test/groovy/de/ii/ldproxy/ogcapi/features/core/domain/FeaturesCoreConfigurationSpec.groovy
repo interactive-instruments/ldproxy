@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.domain
 
 import com.google.common.collect.ImmutableMap
 import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
 class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<FeaturesCoreConfiguration>, MergeMinimal<FeaturesCoreConfiguration>, MergeSimple<FeaturesCoreConfiguration>, MergeMap<FeaturesCoreConfiguration>, MergeNested<FeaturesCoreConfiguration> {

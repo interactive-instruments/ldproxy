@@ -35,7 +35,11 @@ public interface FeatureTransformationContext {
         FEATURE_END,
         PROPERTY,
         COORDINATES,
-        GEOMETRY_END
+        GEOMETRY_END,
+        ARRAY_START,
+        OBJECT_START,
+        OBJECT_END,
+        ARRAY_END
     }
 
     OgcApiDataV2 getApiData();

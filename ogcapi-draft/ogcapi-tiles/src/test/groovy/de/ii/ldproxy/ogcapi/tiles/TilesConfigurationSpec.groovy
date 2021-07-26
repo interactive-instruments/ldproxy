@@ -16,12 +16,12 @@ import de.ii.ldproxy.ogcapi.domain.MergeMap
 import de.ii.ldproxy.ogcapi.domain.MergeMinimal
 import de.ii.ldproxy.ogcapi.domain.MergeNested
 import de.ii.ldproxy.ogcapi.domain.MergeSimple
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutablePropertyTransformation
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutablePredefinedFilter
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableRule
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilesConfiguration
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
 class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<TilesConfiguration>, MergeMinimal<TilesConfiguration>, MergeSimple<TilesConfiguration>, MergeCollection<TilesConfiguration>, MergeMap<TilesConfiguration>, MergeNested<TilesConfiguration> {

@@ -330,7 +330,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
             List<FeaturePropertySchemaTransformer> schemaTransformations = getSchemaTransformations(processedFeatureProperty);
             for (FeaturePropertySchemaTransformer schemaTransformer : schemaTransformations) {
-                processedFeatureProperty = schemaTransformer.transform(processedFeatureProperty);
+                //processedFeatureProperty = schemaTransformer.transform(processedFeatureProperty);
             }
         }
 

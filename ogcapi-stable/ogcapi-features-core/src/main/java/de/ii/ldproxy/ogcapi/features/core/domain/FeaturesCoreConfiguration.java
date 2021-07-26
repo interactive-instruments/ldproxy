@@ -16,6 +16,8 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -29,7 +31,7 @@ import java.util.stream.Collectors;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCoreConfiguration.Builder.class)
-public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface FeaturesCoreConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }

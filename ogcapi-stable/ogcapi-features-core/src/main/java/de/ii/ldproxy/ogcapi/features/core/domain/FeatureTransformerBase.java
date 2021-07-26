@@ -8,11 +8,13 @@
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
@@ -30,8 +32,8 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureTransformerBase.class);
 
-    final private Optional<FeatureTransformations> coreTransformations;
-    final private Optional<FeatureTransformations> buildingBlockTransformations;
+    final private Optional<PropertyTransformations> coreTransformations;
+    final private Optional<PropertyTransformations> buildingBlockTransformations;
     final private Map<String, Codelist> codelists;
     final private String serviceUrl;
     final private boolean isFeatureCollection;
@@ -39,7 +41,7 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
     public enum NESTED_OBJECTS {NEST, FLATTEN}
     public enum MULTIPLICITY {ARRAY, SUFFIX}
 
-    public <T extends ExtensionConfiguration & FeatureTransformations> FeatureTransformerBase(Class<T> buildingBlockConfigurationClass,
+    public <T extends ExtensionConfiguration & PropertyTransformations> FeatureTransformerBase(Class<T> buildingBlockConfigurationClass,
                                                                                               OgcApiDataV2 apiData,
                                                                                               String collectionId,
                                                                                               Map<String, Codelist> codelists,
@@ -65,13 +67,14 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
                                      .replaceAll("\\[[^\\]]*\\]", "");
         if (coreTransformations.isPresent()) {
             valueTransformations = coreTransformations.get()
-                                                      .getValueTransformations(codelists, serviceUrl)
+                                                      .getValueTransformations(codelists,
+                                                          ImmutableMap.of("serviceUrl", serviceUrl))
                                                       .get(tkey);
         }
         if (buildingBlockTransformations.isPresent()) {
             if (Objects.nonNull(valueTransformations)) {
                 List<FeaturePropertyValueTransformer> moreTransformations = buildingBlockTransformations.get()
-                                                                                                        .getValueTransformations(codelists, serviceUrl)
+                                                                                                        .getValueTransformations(codelists, ImmutableMap.of("serviceUrl", serviceUrl))
                                                                                                         .get(tkey);
                 if (Objects.nonNull(moreTransformations)) {
                     valueTransformations = Stream.of(valueTransformations, moreTransformations)
@@ -80,7 +83,7 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
                 }
             } else {
                 valueTransformations = buildingBlockTransformations.get()
-                                                                   .getValueTransformations(codelists, serviceUrl)
+                                                                   .getValueTransformations(codelists, ImmutableMap.of("serviceUrl", serviceUrl))
                                                                    .get(tkey);
             }
         }
@@ -94,13 +97,15 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
                                      .replaceAll("\\[[^\\]]*\\]", "");
         if (coreTransformations.isPresent()) {
             schemaTransformations = coreTransformations.get()
-                                                       .getSchemaTransformations(isFeatureCollection)
+                                                       .getSchemaTransformations(isFeatureCollection
+                                                       )
                                                        .get(tkey);
         }
         if (buildingBlockTransformations.isPresent()) {
             if (Objects.nonNull(schemaTransformations)) {
                 List<FeaturePropertySchemaTransformer> moreTransformations = buildingBlockTransformations.get()
-                                                                                                         .getSchemaTransformations(false)
+                                                                                                         .getSchemaTransformations(false
+                                                                                                         )
                                                                                                          .get(tkey);
                 if (Objects.nonNull(moreTransformations)) {
                     schemaTransformations = Stream.of(schemaTransformations, moreTransformations)
@@ -109,7 +114,8 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
                 }
             } else {
                 schemaTransformations = buildingBlockTransformations.get()
-                                                                    .getSchemaTransformations(isFeatureCollection)
+                                                                    .getSchemaTransformations(isFeatureCollection
+                                                                    )
                                                                     .get(tkey);
             }
         }

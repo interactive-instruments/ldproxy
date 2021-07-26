@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.FeatureType;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
@@ -74,7 +75,7 @@ public abstract class FeatureTransformerSimpleFeature extends FeatureTransformer
     private FeatureProperty currentProperty = null;
     private String currentPropertyName = null;
 
-    public <T extends ExtensionConfiguration & FeatureTransformations> FeatureTransformerSimpleFeature(Class<T> buildingBlockConfigurationClass,
+    public <T extends ExtensionConfiguration & PropertyTransformations> FeatureTransformerSimpleFeature(Class<T> buildingBlockConfigurationClass,
                                                                                                        OgcApiDataV2 apiData,
                                                                                                        String collectionId,
                                                                                                        Map<String, Codelist> codelists,
@@ -123,7 +124,7 @@ public abstract class FeatureTransformerSimpleFeature extends FeatureTransformer
 
             List<FeaturePropertySchemaTransformer> schemaTransformations = getSchemaTransformations(processedFeatureProperty);
             for (FeaturePropertySchemaTransformer schemaTransformer : schemaTransformations) {
-                processedFeatureProperty = schemaTransformer.transform(processedFeatureProperty);
+                //processedFeatureProperty = schemaTransformer.transform(processedFeatureProperty);
             }
         }
 

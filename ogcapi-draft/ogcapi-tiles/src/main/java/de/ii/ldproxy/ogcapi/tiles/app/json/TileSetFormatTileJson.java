@@ -22,7 +22,6 @@ import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileJson;
@@ -42,12 +41,6 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +48,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.MediaType;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
@@ -167,8 +165,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                             .getTypes()
                             .get(featureTypeId);
                     Optional<GeoJsonConfiguration> geoJsonConfiguration = featureTypeApi.getExtension(GeoJsonConfiguration.class);
-                    boolean flatten = geoJsonConfiguration.filter(cfg -> cfg.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && cfg.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                    .isPresent();
+                    boolean flatten = geoJsonConfiguration.filter(GeoJsonConfiguration::isFlattened).isPresent();
                     List<FeatureSchema> properties = flatten ? featureType.getAllNestedProperties() : featureType.getProperties();
                     // maps from the dotted path name to the path name with array brackets
                     Map<String,String> propertyNameMap = !flatten ? ImmutableMap.of() :

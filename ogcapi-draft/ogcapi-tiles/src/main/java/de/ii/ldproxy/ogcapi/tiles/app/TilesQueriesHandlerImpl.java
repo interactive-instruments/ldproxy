@@ -60,6 +60,7 @@ import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureStream2;
+import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
@@ -342,7 +343,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                             requestContext.getLanguage());
 
                     if (featureTransformer.isPresent()) {
-                        FeatureStream2.Result result = featureStream.runWith(featureTransformer.get())
+                        ResultOld result = featureStream.runWith(featureTransformer.get())
                                                                     .toCompletableFuture()
                                                                     .join();
                         if (result.getError()
@@ -492,7 +493,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     Optional<FeatureTransformer2> featureTransformer = outputFormat.getFeatureTransformer(transformationContext, requestContext.getLanguage());
 
                     if (featureTransformer.isPresent()) {
-                        FeatureStream2.Result result = featureStream.runWith(featureTransformer.get())
+                        ResultOld result = featureStream.runWith(featureTransformer.get())
                                                                     .toCompletableFuture()
                                                                     .join();
                         if (result.getError()
@@ -596,7 +597,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         return outputStream -> {
             try {
-                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
+                ResultOld result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
                                                                      .toCompletableFuture()
                                                                      .join();
                 timer.stop();

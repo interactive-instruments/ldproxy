@@ -7,12 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
+import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
@@ -30,7 +37,7 @@ public interface FeatureFormatExtension extends FormatExtension {
         return false;
     }
 
-    default boolean canTransformFeatures() {
+    default boolean canEncodeFeatures() {
         return false;
     }
 
@@ -42,4 +49,34 @@ public interface FeatureFormatExtension extends FormatExtension {
         return Optional.empty();
     }
 
+    default Optional<FeatureTokenEncoder<byte[], ?>> getFeatureEncoder(
+      FeatureTransformationContext transformationContext,
+      Optional<Locale> language) {
+        return Optional.empty();
+    }
+
+    default Optional<PropertyTransformations> getPropertyTransformations(FeatureTypeConfigurationOgcApi collectionData) {
+
+        Map<String, PropertyTransformation> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
+            .map(FeaturesCoreConfiguration::getTransformations)
+            .orElse(ImmutableMap.of());
+
+        Map<String, PropertyTransformation> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
+            .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
+            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration).getTransformations())
+            .orElse(ImmutableMap.of());
+
+        Map<String, PropertyTransformation> propertyTransformations = new LinkedHashMap<>(coreTransformations);
+
+        formatTransformations.forEach((key, propertyTransformation) -> {
+            propertyTransformations.putIfAbsent(key, propertyTransformation);
+            propertyTransformations.computeIfPresent(key, (key2, corePropertyTransformation) -> propertyTransformation.mergeInto(corePropertyTransformation));
+        });
+
+        if (propertyTransformations.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(() -> propertyTransformations);
+    }
 }

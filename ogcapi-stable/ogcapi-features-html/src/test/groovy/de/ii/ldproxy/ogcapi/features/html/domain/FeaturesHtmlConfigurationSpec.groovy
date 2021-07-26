@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.features.html.domain
 
 import com.google.common.collect.ImmutableMap
 import de.ii.ldproxy.ogcapi.domain.*
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutablePropertyTransformation
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
 class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<FeaturesHtmlConfiguration>, MergeMinimal<FeaturesHtmlConfiguration>, MergeSimple<FeaturesHtmlConfiguration>, MergeMap<FeaturesHtmlConfiguration>, MergeNested<FeaturesHtmlConfiguration> {

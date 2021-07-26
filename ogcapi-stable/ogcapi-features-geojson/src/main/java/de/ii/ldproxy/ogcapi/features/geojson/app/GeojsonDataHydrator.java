@@ -15,10 +15,16 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase.MULTIPLICITY;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase.NESTED_OBJECTS;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import java.util.Optional;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -86,6 +92,21 @@ public class GeojsonDataHydrator implements OgcApiDataHydratorExtension {
                                                                                  .from(config)
                                                                                  .transformations(config.normalizeTransformationKeys(buildingBlock,collectionId))
                                                                                  .build();
+
+                                                                     //backwards compatibility
+                                                                     if (config.getNestedObjectStrategy() == NESTED_OBJECTS.FLATTEN
+                                                                         && config.getMultiplicityStrategy() == MULTIPLICITY.SUFFIX
+                                                                         && (!config.getTransformations().containsKey(PropertyTransformations.WILDCARD)
+                                                                         || config.getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isEmpty())) {
+                                                                       PropertyTransformation transformation = new ImmutablePropertyTransformation.Builder()
+                                                                           .flatten(Optional.ofNullable(config.getSeparator()).orElse("."))
+                                                                           .build();
+                                                                       if (config.getTransformations().containsKey(PropertyTransformations.WILDCARD)) {
+                                                                         config.getTransformations().put(PropertyTransformations.WILDCARD, transformation.mergeInto(config.getTransformations().get(PropertyTransformations.WILDCARD)));
+                                                                       } else {
+                                                                         config.getTransformations().put(PropertyTransformations.WILDCARD, transformation);
+                                                                       }
+                                                                     }
 
                                                                      return new AbstractMap.SimpleImmutableEntry<>(collectionId, config);
                                                                  })

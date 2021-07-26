@@ -29,7 +29,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.ParameterExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
