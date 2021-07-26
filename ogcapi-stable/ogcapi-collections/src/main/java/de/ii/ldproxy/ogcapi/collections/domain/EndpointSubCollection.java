@@ -145,7 +145,7 @@ public abstract class EndpointSubCollection extends Endpoint {
                     });
         }
         ImmutableApiResponse.Builder responseBuilder = new ImmutableApiResponse.Builder()
-                .statusCode(Endpoint.SUCCESS_STATUS.get(method))
+                .statusCode(postUrlencoded ? Endpoint.SUCCESS_STATUS.get(HttpMethods.GET) : Endpoint.SUCCESS_STATUS.get(method))
                 .description("The operation was executed successfully.")
                 .headers(headers.stream().filter(header -> header.isResponseHeader()).collect(Collectors.toUnmodifiableList()));
         if (!responseContent.isEmpty())
