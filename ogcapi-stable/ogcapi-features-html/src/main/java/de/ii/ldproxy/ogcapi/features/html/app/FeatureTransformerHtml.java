@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.legacy.MicrodataGeometryMapping;
@@ -98,7 +98,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
                                                                                        .getCollections()
                                                                                        .get(transformationContext.getCollectionId());
 
-        Optional<FeatureTransformations> baseTransformations = featureTypeConfiguration
+        Optional<PropertyTransformations> baseTransformations = featureTypeConfiguration
                 .getExtension(FeaturesCoreConfiguration.class)
                 .map(coreConfiguration -> coreConfiguration);
 
@@ -251,7 +251,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
             this.dataset.breadCrumbs.get(dataset.breadCrumbs.size() - 1).label = currentFeature.name;
         }
 
-        dataset.features.add(currentFeature);
+        //dataset.features.add(currentFeature);
         currentFeature = null;
 
         /* TODO move to nearby module in community repo
@@ -369,9 +369,9 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
                                      .replaceAll("\\[[^\\]]*\\]", "");
         if (transformations.containsKey(tkey)) {
 
-            Optional<ValueDTO> transformedProperty = property.values.size()>0 ?
+            Optional<ValueDTO> transformedProperty = /*property.values.size()>0 ?
                     transformations.get(tkey)
-                                   .transform(property.values.get(0), featureProperty) :
+                                   .transform(property.values.get(0), featureProperty) :*/
                     Optional.empty();
 
             if (transformedProperty.isPresent()) {
@@ -424,7 +424,7 @@ public class FeatureTransformerHtml implements FeatureTransformer2 {
                                      .replaceAll("\\[[^\\]]*\\]", "");
         if (transformations.containsKey(tkey)) {
 
-            boolean shouldSkipProperty = !transformations.get(tkey).transform(featureProperty).isPresent();
+            boolean shouldSkipProperty = false;//!transformations.get(tkey).transform(featureProperty).isPresent();
 
             if (shouldSkipProperty) {
                 return;

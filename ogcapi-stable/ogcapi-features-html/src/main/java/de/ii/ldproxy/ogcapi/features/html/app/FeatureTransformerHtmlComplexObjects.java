@@ -11,7 +11,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.legacy.MicrodataGeometryMapping;
@@ -213,7 +213,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                                                                                        .getCollections()
                                                                                        .get(transformationContext.getCollectionId());
 
-        Optional<FeatureTransformations> baseTransformations = featureTypeConfiguration
+        Optional<PropertyTransformations> baseTransformations = featureTypeConfiguration
                 .getExtension(FeaturesCoreConfiguration.class)
                 .map(coreConfiguration -> coreConfiguration);
 
@@ -361,7 +361,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
             this.dataset.title = currentFeature.name;
             this.dataset.breadCrumbs.get(dataset.breadCrumbs.size() - 1).label = currentFeature.name;
         }
-        dataset.features.add(currentFeature);
+        //dataset.features.add(currentFeature);
         currentFeature = null;
     }
 
@@ -393,8 +393,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
         String key = featureProperty.getName().replaceAll("\\[[^\\]]*\\]", "");
         if (transformations.containsKey(key)) {
 
-            Optional<FeatureProperty> htmlProperty = transformations.get(key)
-                                                                    .transform(featureProperty);
+            Optional<FeatureProperty> htmlProperty = Optional.empty();//transformations.get(key).transform(featureProperty);
 
             // if !isPresent, property was dropped by remove transformer
             if (htmlProperty.isPresent()) {
@@ -505,8 +504,7 @@ public class FeatureTransformerHtmlComplexObjects implements FeatureTransformer2
                                      .replaceAll("\\[[^\\]]*\\]", "");
         if (transformations.containsKey(tkey)) {
 
-            Optional<ValueDTO> transformedProperty = transformations.get(tkey)
-                                                                    .transform(new ValueDTO(), featureProperty);
+            Optional<ValueDTO> transformedProperty = Optional.empty();//transformations.get(tkey).transform(new ValueDTO(), featureProperty);
 
             if (!transformedProperty.isPresent()) {
                 return;

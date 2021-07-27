@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.DatasetView;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.xtraplatform.features.domain.Feature;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class FeatureCollectionView extends DatasetView {
     private URI uri;
     public List<NavigationDTO> pagination;
     public List<NavigationDTO> metaPagination;
-    public List<ObjectDTO> features;
+    public List<FeatureHtml> features;
     public boolean hideMap = true; // set to "hide"; change to "false" when we see a geometry
     public PropertyDTO links;
     public Set<Map.Entry<String, String>> filterFields;

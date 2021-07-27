@@ -10,9 +10,8 @@ package de.ii.ldproxy.ogcapi.features.html.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.html.app.HtmlPropertyTransformations;
 import de.ii.ldproxy.ogcapi.features.html.app.ImmutableHtmlPropertyTransformations;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -26,7 +25,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new", attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableFeaturesHtmlConfiguration.Builder.class)
-public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   abstract class Builder extends ExtensionConfiguration.Builder {
 
@@ -47,12 +46,13 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Featu
   Map<String, PropertyTransformation> getTransformations();
 
   default Map<String, HtmlPropertyTransformations> getTransformations(
-      Optional<FeatureTransformations> baseTransformations,
+      Optional<PropertyTransformations> baseTransformations,
       Map<String, Codelist> codelists,
       String serviceUrl, boolean isOverview) {
     Map<String, ImmutableHtmlPropertyTransformations.Builder> mapBuilder = new LinkedHashMap<>();
 
-    baseTransformations.ifPresent(base -> base.getSchemaTransformations(isOverview)
+    baseTransformations.ifPresent(base -> base.getSchemaTransformations(isOverview
+    )
         .forEach((propertyName, schemaTransformers) -> {
           mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
           mapBuilder.get(propertyName)
@@ -66,14 +66,14 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Featu
               .addAllSchemaTransformers(schemaTransformers);
         });
 
-    baseTransformations.ifPresent(base -> base.getValueTransformations(codelists, serviceUrl)
+    baseTransformations.ifPresent(base -> base.getValueTransformations(codelists, ImmutableMap.of("serviceUrl", serviceUrl))
         .forEach((propertyName, valueTransformers) -> {
           mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
           mapBuilder.get(propertyName)
               .addAllValueTransformers(valueTransformers);
         }));
 
-    this.getValueTransformations(codelists, serviceUrl)
+    this.getValueTransformations(codelists, ImmutableMap.of("serviceUrl", serviceUrl))
         .forEach((propertyName, valueTransformers) -> {
           mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
           mapBuilder.get(propertyName)
@@ -100,7 +100,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Featu
         .from(this);
 
     Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(
-        ((FeaturesHtmlConfiguration) source).getTransformations());
+        ((PropertyTransformations) source).getTransformations());
     getTransformations().forEach((key, transformation) -> {
       if (mergedTransformations.containsKey(key)) {
         mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));

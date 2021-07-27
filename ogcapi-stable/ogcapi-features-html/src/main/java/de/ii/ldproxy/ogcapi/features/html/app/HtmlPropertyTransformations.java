@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
@@ -30,8 +31,8 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
         return wrapper.value;
     }
 
-    public Optional<FeatureProperty> transform(FeatureProperty schema) {
-        FeatureProperty transformedSchema = schema;
+    public Optional<FeatureSchema> transform(FeatureSchema schema) {
+        FeatureSchema transformedSchema = schema;
 
         for (FeaturePropertySchemaTransformer schemaTransformer : getSchemaTransformers()) {
             transformedSchema = schemaTransformer.transform(transformedSchema);
@@ -63,7 +64,7 @@ public abstract class HtmlPropertyTransformations implements FeaturePropertyTran
     }
 
     @Override
-    public Optional<ValueDTO> transform(ValueDTO wrapper, FeatureProperty transformedSchema,
+    public Optional<ValueDTO> transform(ValueDTO wrapper, FeatureSchema transformedSchema,
                                                   String transformedValue) {
         if (Objects.isNull(transformedSchema)) {
             return Optional.empty();
