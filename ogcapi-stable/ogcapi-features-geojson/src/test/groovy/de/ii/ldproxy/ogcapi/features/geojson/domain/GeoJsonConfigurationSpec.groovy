@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.MergeMinimal
 import de.ii.ldproxy.ogcapi.domain.MergeNested
 import de.ii.ldproxy.ogcapi.domain.MergeSimple
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutablePropertyTransformation
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
 class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<GeoJsonConfiguration>, MergeMinimal<GeoJsonConfiguration>, MergeSimple<GeoJsonConfiguration>, MergeMap<GeoJsonConfiguration>, MergeNested<GeoJsonConfiguration> {

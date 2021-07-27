@@ -8,16 +8,9 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
-import de.ii.ldproxy.ogcapi.domain.OgcApi
-import de.ii.ldproxy.ogcapi.domain.URICustomizer
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ModifiableStateGeoJson
+import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.features.geojson.domain.*
+import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.OgcCrs
 
 import java.nio.charset.StandardCharsets
@@ -28,8 +21,10 @@ class GeoJsonWriterSetupUtil {
         return new String(outputStream.toByteArray(), StandardCharsets.UTF_8)
     }
 
-    static FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, boolean isCollection) throws URISyntaxException {
-        return ImmutableFeatureTransformationContextGeoJson.builder()
+    static EncodingAwareContextGeoJson createTransformationContext(OutputStream outputStream, boolean isCollection, CrsTransformer crsTransformer = null) throws URISyntaxException {
+
+        FeatureTransformationContextGeoJson transformationContext =  ImmutableFeatureTransformationContextGeoJson.builder()
+                .crsTransformer(Optional.ofNullable(crsTransformer))
                 .defaultCrs(OgcCrs.CRS84)
                 .apiData(new ImmutableOgcApiDataV2.Builder()
                         .id("s")
@@ -91,9 +86,10 @@ class GeoJsonWriterSetupUtil {
                 .maxAllowableOffset(0)
                 .isHitsOnly(false)
                 .state(ModifiableStateGeoJson.create())
-                .geoJsonConfig(new ImmutableGeoJsonConfiguration.Builder().enabled(true).nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST).multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY).useFormattedJsonOutput(true).build())
+                .geoJsonConfig(new ImmutableGeoJsonConfiguration.Builder().enabled(true).useFormattedJsonOutput(true).build())
                 .build()
 
+        return ModifiableEncodingAwareContextGeoJson.create().setEncoding(transformationContext)
     }
 
 }

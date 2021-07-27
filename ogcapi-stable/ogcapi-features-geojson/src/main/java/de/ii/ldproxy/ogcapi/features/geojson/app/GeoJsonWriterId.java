@@ -7,16 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 
 /**
  * @author zahnen
@@ -40,113 +40,88 @@ public class GeoJsonWriterId implements GeoJsonWriter {
         return 10;
     }
 
-    private void reset() {
-        this.currentId = null;
-        this.writeAtFeatureEnd = false;
-    }
-
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext,
-                        Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        reset();
-
-        next.accept(transformationContext);
-    }
-
-    @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
-                             Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(EncodingAwareContextGeoJson context,
+                             Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
         if (writeAtFeatureEnd) {
             this.writeAtFeatureEnd = false;
 
             if (Objects.nonNull(currentId)) {
                 if (currentIdIsInteger)
-                    transformationContext.getJson()
-                                         .writeNumberField("id", Long.valueOf(currentId));
+                    context.encoding().getJson()
+                                         .writeNumberField("id", Long.parseLong(currentId));
                 else
-                    transformationContext.getJson()
+                    context.encoding().getJson()
                                          .writeStringField("id", currentId);
-                writeLink(transformationContext, currentId);
+                writeLink(context, currentId);
                 this.currentId = null;
                 this.currentIdIsInteger = false;
             }
         }
 
-        // next chain for extensions
-        next.accept(transformationContext);
-
+        next.accept(context);
     }
 
     @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
-                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.getState()
-                                 .getCurrentFeatureProperty()
-                                 .isPresent()
-                || transformationContext.getState()
-                                        .getCurrentValue()
-                                        .isPresent()) {
+    public void onValue(EncodingAwareContextGeoJson context,
+                           Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
-            final FeatureProperty currentFeatureProperty = transformationContext.getState()
-                                                                                .getCurrentFeatureProperty()
-                                                                                .get();
-            String currentValue = transformationContext.getState()
-                                                       .getCurrentValue()
-                                                       .get();
+        if (context.schema().isPresent() && Objects.nonNull(context.value())) {
+            FeatureSchema currentSchema = context.schema().get();
 
-            if (currentFeatureProperty.isId()) {
-                boolean isInteger = (currentFeatureProperty.getType() == FeatureProperty.Type.INTEGER);
+            if (currentSchema.isId()) {
+                String id = context.value();
+
+                boolean isInteger = context.valueType() == Type.INTEGER;
                 if (writeAtFeatureEnd) {
-                    currentId = currentValue;
+                    currentId = id;
                     currentIdIsInteger = isInteger;
                 } else {
                     if (isInteger)
-                        transformationContext.getJson()
-                                             .writeNumberField("id", Long.valueOf(currentValue));
+                        context.encoding().getJson()
+                            .writeNumberField("id", Long.parseLong(id));
                     else
-                        transformationContext.getJson()
-                                             .writeStringField("id", currentValue);
+                        context.encoding().getJson()
+                            .writeStringField("id", id);
 
-                    writeLink(transformationContext, currentValue);
+                    writeLink(context, id);
                 }
-
             } else {
                 this.writeAtFeatureEnd = true;
             }
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onCoordinates(FeatureTransformationContextGeoJson transformationContext,
-                              Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onCoordinates(EncodingAwareContextGeoJson context,
+                              Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         this.writeAtFeatureEnd = true;
 
-        // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
-    private void writeLink(FeatureTransformationContextGeoJson transformationContext,
+    private void writeLink(EncodingAwareContextGeoJson context,
                            String featureId) throws IOException {
-        if (transformationContext.isFeatureCollection() &&
-                transformationContext.getShowsFeatureSelfLink() &&
+        if (context.encoding().isFeatureCollection() &&
+                context.encoding().getShowsFeatureSelfLink() &&
                 Objects.nonNull(featureId) &&
                 !featureId.isEmpty()) {
-            transformationContext.getJson()
+            context.encoding().getJson()
                                  .writeFieldName("links");
-            transformationContext.getJson()
+            context.encoding().getJson()
                                  .writeStartArray(1);
-            transformationContext.getJson()
+            context.encoding().getJson()
                                  .writeStartObject();
-            transformationContext.getJson()
+            context.encoding().getJson()
                                  .writeStringField("rel", "self");
-            transformationContext.getJson()
-                                 .writeStringField("href", transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/items/" + featureId);
-            transformationContext.getJson()
+            context.encoding().getJson()
+                                 .writeStringField("href", context.encoding().getServiceUrl() + "/collections/" + context.encoding().getCollectionId() + "/items/" + featureId);
+            context.encoding().getJson()
                                  .writeEndObject();
-            transformationContext.getJson()
+            context.encoding().getJson()
                                  .writeEndArray();
         }
     }

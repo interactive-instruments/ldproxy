@@ -7,11 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
-import de.ii.ldproxy.ogcapi.features.geojson.app.FeatureWriterGeoJson;
+import de.ii.ldproxy.ogcapi.features.core.domain.EncodingAwareContext;
+import org.immutables.value.Value.Modifiable;
 
-/**
- * @author zahnen
- */
-public interface GeoJsonWriter extends FeatureWriterGeoJson<EncodingAwareContextGeoJson> {
-    GeoJsonWriter create();
+@Modifiable
+public interface EncodingAwareContextGeoJson extends EncodingAwareContext<FeatureTransformationContextGeoJson> {
+
 }

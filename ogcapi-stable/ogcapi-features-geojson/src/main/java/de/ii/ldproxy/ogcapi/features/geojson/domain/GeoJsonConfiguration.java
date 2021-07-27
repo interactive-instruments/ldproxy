@@ -7,34 +7,42 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase.MULTIPLICITY;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase.NESTED_OBJECTS;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import org.immutables.value.Value;
-
+import java.util.Optional;
 import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
-public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    @Deprecated(since = "3.1.0")
     @Nullable
     FeatureTransformerBase.NESTED_OBJECTS getNestedObjectStrategy();
 
+    @Deprecated(since = "3.1.0")
     @Nullable
     FeatureTransformerBase.MULTIPLICITY getMultiplicityStrategy();
 
+    @Deprecated(since = "3.1.0")
     @Nullable
     Boolean getUseFormattedJsonOutput();
 
+    @Deprecated(since = "3.1.0")
     @Nullable
     String getSeparator();
 
@@ -50,7 +58,7 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureTra
             .from(this);
 
         Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(
-            ((GeoJsonConfiguration) source).getTransformations());
+            ((PropertyTransformations) source).getTransformations());
         getTransformations().forEach((key, transformation) -> {
             if (mergedTransformations.containsKey(key)) {
                 mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
@@ -58,8 +66,17 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureTra
                 mergedTransformations.put(key, transformation);
             }
         });
+
         builder.transformations(mergedTransformations);
 
         return builder.build();
+    }
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isFlattened() {
+        return getTransformations().containsKey(PropertyTransformations.WILDCARD)
+            && getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isPresent();
     }
 }
