@@ -30,12 +30,12 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
 
   PropertyHtml itemProp(String itemProp);
 
-  @Value.Derived
+  @Value.Lazy
   default String getSchemaOrgItemType() {
     return getItemType()
         .filter(itemType -> itemType.startsWith("http://schema.org/"))
         .map(itemType -> itemType.substring(18))
-        .orElse(null);
+        .orElse("");
   }
 
   @Value.Default
@@ -43,12 +43,12 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
     return getSchema().flatMap(FeatureSchema::getLabel).orElse(getSchema().map(FeatureSchema::getName).orElse(""));
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean hasValues() {
     return isValue() || (isArray() && getNestedProperties().stream().anyMatch(PropertyBase::isValue));
   }
 
-  @Value.Derived
+  @Value.Lazy
   default List<PropertyHtml> getValues() {
     return isValue()
         ? ImmutableList.of(this)
@@ -57,53 +57,53 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
             : ImmutableList.of();
   }
 
-  @Value.Derived
+  @Value.Lazy
   default String getFirstValue() {
     return hasValues() ? getValues().get(0).getValue() : null;
   }
 
-  @Value.Derived
+  @Value.Lazy
   default List<PropertyHtml> getObjects() {
     return getNestedProperties().stream().filter(property -> !property.isValue() && property.getSchema().filter(
         SchemaBase::isGeometry).isEmpty()).collect(Collectors.toList());
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isInArray() {
     return getParent().isPresent() && getParent().get().isArray();
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isFirstObject() {
     return getParent().isPresent() && getParent().get().isArray() && Objects
         .equals(getParent().get().getNestedProperties().get(0), this);
   }
 
-  @Value.Derived
+  @Value.Lazy
   @Override
   default boolean isObject() {
     return PropertyBase.super.isObject() && getSchema().filter(
         SchemaBase::isGeometry).isEmpty();
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isNull() {
     return Objects.isNull(getValue());
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isHtml() {
     return Objects.nonNull(getValue()) && getValue().startsWith("<") && (getValue().endsWith(">")
         || getValue().endsWith(">\n")) && getValue().contains("</");
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isUrl() {
     return Objects.nonNull(getValue()) && (getValue().startsWith("http://") || getValue()
         .startsWith("https://"));
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isImageUrl() {
     return Objects.nonNull(getValue()) && isUrl() && (getValue().toLowerCase()
         .endsWith(".png") || getValue().toLowerCase()
@@ -112,39 +112,39 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
         .endsWith(".gif"));
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isLevel1() {
     return getPropertyPath().size()==1;
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isLevel2() {
     return getPropertyPath().size()==2;
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isLevel3() {
     return getPropertyPath().size()==3;
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isLevel4() {
     return getPropertyPath().size()==4;
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean isLevel5() {
     return getPropertyPath().size()==5;
   }
 
-  @Value.Derived
+  @Value.Lazy
   default boolean hasGeometry() {
     return getNestedProperties().stream().anyMatch(property -> property.getSchema().filter(
         SchemaBase::isGeometry).isPresent())
         || getNestedProperties().stream().anyMatch(PropertyHtml::hasGeometry);
   }
 
-  @Value.Derived
+  @Value.Lazy
   default Optional<PropertyHtml> getGeometry() {
     return getNestedProperties().stream()
         .filter(property -> property.getSchema().filter(SchemaBase::isGeometry).isPresent())

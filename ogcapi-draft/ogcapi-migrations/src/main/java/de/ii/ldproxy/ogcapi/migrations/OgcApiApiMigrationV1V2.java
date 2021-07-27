@@ -209,7 +209,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                         }
                                                                                     });
 
-                                                                                    newHtmlConfiguration.itemLabelFormat(itemLabelFormat[0]);
+                                                                                    newHtmlConfiguration.featureTitleTemplate(itemLabelFormat[0]);
                                                                                 });
 
 

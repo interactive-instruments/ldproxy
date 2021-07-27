@@ -30,14 +30,10 @@
 {{#objects}}
 {{^isFirstObject}}
 <div class="row my-1">
-<div class="col-md-12 {{#isLevel1}}pl-4x {{/isLevel1}}{{#isLevel2}}pl-5 {{/isLevel2}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}object-separator text-truncate">
-&mdash;&mdash;&mdash;
-</div>
+<div class="col-md-12 {{#isLevel1}}pl-4x {{/isLevel1}}{{#isLevel2}}pl-5 {{/isLevel2}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}object-separator text-truncate">&mdash;&mdash;&mdash;</div>
 </div>
 {{/isFirstObject}}
 {{> property}}
 {{/objects}}
 {{/isArray}}
 {{/hasValues}}
-
-

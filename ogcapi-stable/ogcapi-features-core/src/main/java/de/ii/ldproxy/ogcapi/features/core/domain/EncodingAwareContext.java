@@ -9,7 +9,8 @@ package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import de.ii.xtraplatform.features.domain.FeatureEventHandler.ModifiableContext;
 
-public interface EncodingAwareContext<T extends FeatureTransformationContext> extends
+public interface
+EncodingAwareContext<T extends FeatureTransformationContext> extends
     ModifiableContext {
 
   T encoding();

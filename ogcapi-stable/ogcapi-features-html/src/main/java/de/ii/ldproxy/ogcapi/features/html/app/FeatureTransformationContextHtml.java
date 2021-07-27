@@ -9,11 +9,11 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
-import de.ii.xtraplatform.codelists.domain.Codelist;
-import io.dropwizard.views.ViewRenderer;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
+import java.util.Objects;
 import org.immutables.value.Value;
 
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -21,16 +21,19 @@ import java.util.Optional;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-public abstract class FeatureTransformationContextHtml implements FeatureTransformationContext {
+public interface FeatureTransformationContextHtml extends FeatureTransformationContext {
 
-    public abstract FeatureCollectionView getFeatureTypeDataset();
+    FeatureCollectionView collection();
 
-    public abstract Map<String, Codelist> getCodelists();
-
-    public abstract ViewRenderer getMustacheRenderer();
+    MustacheRenderer mustacheRenderer();
 
     @Value.Derived
-    public FeaturesHtmlConfiguration getHtmlConfiguration() {
+    default boolean isSchemaOrgEnabled() {
+        return Objects.equals(htmlConfiguration().getSchemaOrgEnabled(), true);
+    }
+
+    @Value.Derived
+    default FeaturesHtmlConfiguration featuresHtmlConfiguration() {
         Optional<FeaturesHtmlConfiguration> collectionHtmlConfiguration = Optional.ofNullable(getApiData().getCollections()
                                                                                                   .get(getCollectionId()))
                                                                           .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(FeaturesHtmlConfiguration.class));
@@ -40,6 +43,25 @@ public abstract class FeatureTransformationContextHtml implements FeatureTransfo
         }
 
         Optional<FeaturesHtmlConfiguration> baseHtmlConfiguration = getApiData().getExtension(FeaturesHtmlConfiguration.class);
+
+        if (baseHtmlConfiguration.isPresent()) {
+            return baseHtmlConfiguration.get();
+        }
+
+        return null;
+    }
+
+    @Value.Derived
+    default HtmlConfiguration htmlConfiguration() {
+        Optional<HtmlConfiguration> collectionHtmlConfiguration = Optional.ofNullable(getApiData().getCollections()
+            .get(getCollectionId()))
+            .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(HtmlConfiguration.class));
+
+        if (collectionHtmlConfiguration.isPresent()) {
+            return collectionHtmlConfiguration.get();
+        }
+
+        Optional<HtmlConfiguration> baseHtmlConfiguration = getApiData().getExtension(HtmlConfiguration.class);
 
         if (baseHtmlConfiguration.isPresent()) {
             return baseHtmlConfiguration.get();

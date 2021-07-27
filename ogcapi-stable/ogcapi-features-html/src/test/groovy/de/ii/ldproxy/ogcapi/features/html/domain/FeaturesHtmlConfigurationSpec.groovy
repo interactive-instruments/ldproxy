@@ -19,8 +19,7 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
         return new ImmutableFeaturesHtmlConfiguration.Builder()
                 .enabled(true)
                 .layout(FeaturesHtmlConfiguration.LAYOUT.CLASSIC)
-                .schemaOrgEnabled(true)
-                .itemLabelFormat("foo")
+                .featureTitleTemplate("foo")
                 .putTransformations("foo", new ImmutablePropertyTransformation.Builder().rename("bar").build())
                 .build()
     }
@@ -41,8 +40,7 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
         return new ImmutableFeaturesHtmlConfiguration.Builder()
                 .enabled(false)
                 .layout(FeaturesHtmlConfiguration.LAYOUT.COMPLEX_OBJECTS)
-                .schemaOrgEnabled(false)
-                .itemLabelFormat("bar")
+                .featureTitleTemplate("bar")
                 .build()
     }
 

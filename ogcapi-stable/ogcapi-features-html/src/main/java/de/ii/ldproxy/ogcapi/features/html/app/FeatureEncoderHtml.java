@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -22,8 +23,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, FeatureHtml, byte[]> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderHtml.class);
 
   private final FeatureTransformationContextHtml transformationContext;
 
@@ -43,28 +48,105 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
   @Override
   public void onStart(ModifiableContext context) {
+    if (transformationContext.isFeatureCollection() && context.metadata().getNumberReturned().isPresent()) {
+      long returned = context.metadata().getNumberReturned().getAsLong();
+      long matched = context.metadata().getNumberMatched().orElse(-1);
+
+      long pages = Math.max(transformationContext.getPage(), 0);
+      if (returned > 0 && matched > -1) {
+        pages = Math.max(pages, matched / transformationContext.getLimit() + (matched % transformationContext.getLimit() > 0 ? 1 : 0));
+      }
+
+      LOGGER.debug("numberMatched {}", matched);
+      LOGGER.debug("numberReturned {}", returned);
+      LOGGER.debug("pageSize {}", transformationContext.getLimit());
+      LOGGER.debug("page {}", transformationContext.getPage());
+      LOGGER.debug("pages {}", pages);
+
+
+      ImmutableList.Builder<NavigationDTO> pagination = new ImmutableList.Builder<>();
+      ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();
+      if (transformationContext.getPage() > 1) {
+        pagination
+            .add(new NavigationDTO("«", String.format("limit=%d&offset=%d", transformationContext.getLimit(), 0)))
+            .add(new NavigationDTO("‹", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() - transformationContext.getLimit())));
+        metaPagination
+            .add(new NavigationDTO("prev", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() - transformationContext.getLimit())));
+      } else {
+        pagination
+            .add(new NavigationDTO("«"))
+            .add(new NavigationDTO("‹"));
+      }
+
+      if (matched > -1) {
+        long from = Math.max(1, transformationContext.getPage() - 2);
+        long to = Math.min(pages, from + 4);
+        if (to == pages) {
+          from = Math.max(1, to - 4);
+        }
+        for (long i = from; i <= to; i++) {
+          if (i == transformationContext.getPage()) {
+            pagination.add(new NavigationDTO(String.valueOf(i), true));
+          } else {
+            pagination.add(new NavigationDTO(String.valueOf(i), String.format("limit=%d&offset=%d", transformationContext.getLimit(), (i - 1) * transformationContext.getLimit())));
+          }
+        }
+
+        if (transformationContext.getPage() < pages) {
+          pagination
+              .add(new NavigationDTO("›", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() + transformationContext.getLimit())))
+              .add(new NavigationDTO("»", String.format("limit=%d&offset=%d", transformationContext.getLimit(), (pages - 1) * transformationContext.getLimit())));
+          metaPagination
+              .add(new NavigationDTO("next", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() + transformationContext.getLimit())));
+        } else {
+          pagination
+              .add(new NavigationDTO("›"))
+              .add(new NavigationDTO("»"));
+        }
+      } else {
+        int from = Math.max(1, transformationContext.getPage() - 2);
+        int to = transformationContext.getPage();
+        for (int i = from; i <= to; i++) {
+          if (i == transformationContext.getPage()) {
+            pagination.add(new NavigationDTO(String.valueOf(i), true));
+          } else {
+            pagination.add(new NavigationDTO(String.valueOf(i), String.format("limit=%d&offset=%d", transformationContext.getLimit(), (i - 1) * transformationContext.getLimit())));
+          }
+        }
+        if (returned >= transformationContext.getLimit()) {
+          pagination
+              .add(new NavigationDTO("›", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() + transformationContext.getLimit())));
+          metaPagination
+              .add(new NavigationDTO("next", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() + transformationContext.getLimit())));
+        } else {
+          pagination
+              .add(new NavigationDTO("›"));
+        }
+      }
+
+      transformationContext.collection().pagination = pagination.build();
+      transformationContext.collection().metaPagination = metaPagination.build();
+
+    } else if (transformationContext.isFeatureCollection()) {
+      LOGGER.error("Pagination not supported by feature provider, the number of matched items was not provided.");
+    }
   }
 
   @Override
   public void onFeature(FeatureHtml feature) {
-    transformationContext.getHtmlConfiguration().getItemLabelFormat().ifPresent(label -> transformationContext.getFeatureTypeDataset().name = label);
+    transformationContext.featuresHtmlConfiguration().getFeatureTitleTemplate().ifPresent(label -> transformationContext.collection().name = label);
 
     //TODO
-    if (feature.hasObjects()) {
-      transformationContext.getFeatureTypeDataset().complexObjects = true;
-      transformationContext.getFeatureTypeDataset().classic = false;
-    } else {
-      transformationContext.getFeatureTypeDataset().complexObjects = false;
-      transformationContext.getFeatureTypeDataset().classic = true;
+    if (!feature.hasObjects()) {
       feature.getProperties().forEach(propertyHtml -> propertyHtml.name(propertyHtml.getSchema().map(
           FeatureSchema::getName).orElseGet(propertyHtml::getName)).propertyPath(ImmutableList.of(propertyHtml.getName())));
     }
 
-    if (transformationContext.getFeatureTypeDataset().hideMap && feature.hasGeometry()) {
-      transformationContext.getFeatureTypeDataset().hideMap = false;
+    if (transformationContext.collection().hideMap && feature.hasGeometry()) {
+      transformationContext.collection().hideMap = false;
     }
 
-    Optional<String> itemLabelFormat = transformationContext.getHtmlConfiguration().getItemLabelFormat();
+    Optional<String> itemLabelFormat = transformationContext.featuresHtmlConfiguration().getFeatureTitleTemplate();
     if (itemLabelFormat.isPresent()) {
       feature.name(StringTemplateFilters.applyTemplate(itemLabelFormat.get(),
           pathString -> feature.findPropertyByPath(pathString).map(PropertyHtml::getFirstValue)));
@@ -79,15 +161,18 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     }
 
     if (!transformationContext.isFeatureCollection()) {
-      transformationContext.getFeatureTypeDataset().title = feature.getName();
-      transformationContext.getFeatureTypeDataset().breadCrumbs.get(transformationContext.getFeatureTypeDataset().breadCrumbs.size() - 1).label = feature.getName();
+      transformationContext.collection().title = feature.getName();
+      transformationContext.collection().breadCrumbs.get(transformationContext.collection().breadCrumbs.size() - 1).label = feature.getName();
+    } else {
+      feature.inCollection(true);
     }
 
-    if (transformationContext.getHtmlConfiguration().getSchemaOrgEnabled()) {
+    if (transformationContext.isSchemaOrgEnabled()) {
       feature.itemType("http://schema.org/Place");
+      feature.getId().ifPresent(id -> id.itemProp("url"));
     }
 
-    transformationContext.getFeatureTypeDataset().features.add(feature);
+    transformationContext.collection().features.add(feature);
   }
 
   @Override
@@ -97,7 +182,7 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     OutputStreamWriter writer = new OutputStreamWriter(new OutputStreamToByteConsumer(this::push));
 
     try {
-      ((MustacheRenderer)transformationContext.getMustacheRenderer()).render(transformationContext.getFeatureTypeDataset(), writer);
+      ((MustacheRenderer)transformationContext.mustacheRenderer()).render(transformationContext.collection(), writer);
       writer.flush();
     } catch (IOException e) {
       throw new IllegalStateException(e);

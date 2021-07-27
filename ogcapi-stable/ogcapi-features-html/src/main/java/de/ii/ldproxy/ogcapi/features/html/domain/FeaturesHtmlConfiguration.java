@@ -7,15 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.domain;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.ldproxy.ogcapi.features.html.app.HtmlPropertyTransformations;
-import de.ii.ldproxy.ogcapi.features.html.app.ImmutableHtmlPropertyTransformations;
-import de.ii.xtraplatform.codelists.domain.Codelist;
-import java.util.AbstractMap;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -32,61 +29,53 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   }
 
   enum LAYOUT {CLASSIC, COMPLEX_OBJECTS}
+  enum POSITION {AUTO, TOP, RIGHT}
 
+  @Deprecated(since = "3.1.0")
   @Nullable
   LAYOUT getLayout();
 
-  // TODO duplicate from HtmlConfiguration
   @Nullable
-  Boolean getSchemaOrgEnabled();
+  POSITION getMapPosition();
 
-  Optional<String> getItemLabelFormat();
+  @JsonAlias("itemLabelFormat")
+  Optional<String> getFeatureTitleTemplate();
+
+  @Value.Check
+  default FeaturesHtmlConfiguration backwardsCompatibility() {
+    if (getLayout() == LAYOUT.CLASSIC
+      && (!getTransformations().containsKey(PropertyTransformations.WILDCARD)
+          || getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isEmpty())) {
+      Map<String, PropertyTransformation> transformations = new LinkedHashMap<>(getTransformations());
+
+        PropertyTransformation transformation = new ImmutablePropertyTransformation.Builder()
+            .flatten(".")
+            .build();
+        if (transformations.containsKey(PropertyTransformations.WILDCARD)) {
+          transformations.put(PropertyTransformations.WILDCARD, transformation.mergeInto(transformations.get(PropertyTransformations.WILDCARD)));
+        } else {
+          transformations.put(PropertyTransformations.WILDCARD, transformation);
+        }
+
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+            .from(this)
+            .mapPosition(POSITION.RIGHT)
+            .transformations(transformations)
+            .build();
+    }
+
+    if (getLayout() == LAYOUT.COMPLEX_OBJECTS && getMapPosition() != POSITION.TOP) {
+      return new ImmutableFeaturesHtmlConfiguration.Builder()
+          .from(this)
+          .mapPosition(POSITION.TOP)
+          .build();
+    }
+
+    return this;
+  }
 
   @Override
   Map<String, PropertyTransformation> getTransformations();
-
-  default Map<String, HtmlPropertyTransformations> getTransformations(
-      Optional<PropertyTransformations> baseTransformations,
-      Map<String, Codelist> codelists,
-      String serviceUrl, boolean isOverview) {
-    Map<String, ImmutableHtmlPropertyTransformations.Builder> mapBuilder = new LinkedHashMap<>();
-
-    baseTransformations.ifPresent(base -> base.getSchemaTransformations(isOverview
-    )
-        .forEach((propertyName, schemaTransformers) -> {
-          mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
-          mapBuilder.get(propertyName)
-              .addAllSchemaTransformers(schemaTransformers);
-        }));
-
-    this.getSchemaTransformations(isOverview)
-        .forEach((propertyName, schemaTransformers) -> {
-          mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
-          mapBuilder.get(propertyName)
-              .addAllSchemaTransformers(schemaTransformers);
-        });
-
-    baseTransformations.ifPresent(base -> base.getValueTransformations(codelists, ImmutableMap.of("serviceUrl", serviceUrl))
-        .forEach((propertyName, valueTransformers) -> {
-          mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
-          mapBuilder.get(propertyName)
-              .addAllValueTransformers(valueTransformers);
-        }));
-
-    this.getValueTransformations(codelists, ImmutableMap.of("serviceUrl", serviceUrl))
-        .forEach((propertyName, valueTransformers) -> {
-          mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
-          mapBuilder.get(propertyName)
-              .addAllValueTransformers(valueTransformers);
-        });
-
-    return mapBuilder.entrySet()
-        .stream()
-        .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
-            .build()))
-        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-
-  }
 
   @Override
   default Builder getBuilder() {

@@ -46,6 +46,41 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     @Nullable
     String getSeparator();
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isFlattened() {
+        return getTransformations().containsKey(PropertyTransformations.WILDCARD)
+            && getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isPresent();
+    }
+
+    @Value.Check
+    default GeoJsonConfiguration backwardsCompatibility() {
+        if (getNestedObjectStrategy() == NESTED_OBJECTS.FLATTEN
+            && getMultiplicityStrategy() == MULTIPLICITY.SUFFIX
+            && (!getTransformations().containsKey(PropertyTransformations.WILDCARD)
+            || getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isEmpty())) {
+
+            Map<String, PropertyTransformation> transformations = new LinkedHashMap<>(getTransformations());
+
+            PropertyTransformation transformation = new ImmutablePropertyTransformation.Builder()
+                .flatten(Optional.ofNullable(getSeparator()).orElse("."))
+                .build();
+            if (transformations.containsKey(PropertyTransformations.WILDCARD)) {
+                transformations.put(PropertyTransformations.WILDCARD, transformation.mergeInto(transformations.get(PropertyTransformations.WILDCARD)));
+            } else {
+                transformations.put(PropertyTransformations.WILDCARD, transformation);
+            }
+
+            return new ImmutableGeoJsonConfiguration.Builder()
+                .from(this)
+                .transformations(transformations)
+                .build();
+        }
+
+        return this;
+    }
+
     @Override
     default Builder getBuilder() {
         return new ImmutableGeoJsonConfiguration.Builder();
@@ -70,13 +105,5 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
         builder.transformations(mergedTransformations);
 
         return builder.build();
-    }
-
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    default boolean isFlattened() {
-        return getTransformations().containsKey(PropertyTransformations.WILDCARD)
-            && getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isPresent();
     }
 }
