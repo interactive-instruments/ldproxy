@@ -1,9 +1,27 @@
-
 dependencies {
     provided project(":ogcapi-common")
     provided project(":ogcapi-collections")
 
     embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.1')
+    embedded (group: 'org.postgresql', name: 'postgresql', version: '42.2.23')
 
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+}
+
+jar {
+    manifest {
+        instructionFirst 'Import-Package', "!waffle.windows.auth"
+        instructionFirst 'Import-Package', "!waffle.windows.auth.impl"
+        instructionFirst 'Import-Package', "!org.hibernate"
+        instructionFirst 'Import-Package', "!org.hibernate.service"
+        instructionFirst 'Import-Package', "!org.hibernate.service.spi"
+        instructionFirst 'Import-Package', "!org.hibernate.engine.jdbc.connections.spi"
+        instructionFirst 'Import-Package', "!com.sun.jna"
+        instructionFirst 'Import-Package', "!com.sun.jna.win32"
+        instructionFirst 'Import-Package', "!com.sun.jna.platform.win32"
+        instructionFirst 'Import-Package', "!io.prometheus.client"
+        instructionFirst 'Import-Package', "!com.sun.jna.ptr"
+        instructionFirst 'Import-Package', "!org.osgi.service.jdbc"
+        instructionFirst 'Import-Package', "!io.micrometer.core.instrument"
+    }
 }
