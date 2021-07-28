@@ -38,7 +38,7 @@ public interface CollectionMetadataLastModified extends CollectionMetadataEntry 
             throw new IllegalStateException(String.format("Instance of CollectionMetadataEntry has invalid value. Expected 'CollectionMetadataLastModified', found '%s'", delta.getClass().getSimpleName()));
 
         Instant deltaInstant = ((CollectionMetadataLastModified) delta).getValue();
-        if (this.getValue().isAfter(deltaInstant))
+        if (!this.getValue().isBefore(deltaInstant))
             return Optional.empty();
 
         return Optional.of(delta);

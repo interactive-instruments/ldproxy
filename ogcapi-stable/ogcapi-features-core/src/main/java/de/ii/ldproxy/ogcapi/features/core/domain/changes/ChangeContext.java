@@ -14,6 +14,7 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.immutables.value.Value;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ public interface ChangeContext {
     enum Operation { INSERT, UPDATE, DELETE }
 
     @Value.Default
-    default Instant getModified() { return Instant.now(); }
+    default Instant getModified() { return Instant.now().truncatedTo(ChronoUnit.SECONDS); }
 
     OgcApiDataV2 getApiData();
     String getCollectionId();

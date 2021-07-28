@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -74,6 +75,7 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
     private final ExtensionRegistry extensionRegistry;
     private final FeaturesCoreProviders providers;
     private final Map<Integer, Map<String, Connection>> connections;
+    private final Map<Integer, Map<String, Listener>> listeners;
     private final ScheduledExecutorService executorService;
     private final FeatureChangeActionsRegistry featureChangeActionRegistry;
 
@@ -85,7 +87,8 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
                                @Requires FeaturesCoreProviders providers) {
         this.extensionRegistry = extensionRegistry;
         this.providers = providers;
-        this.connections = new HashMap<>();
+        this.connections = new ConcurrentHashMap<>();
+        this.listeners = new ConcurrentHashMap<>();
         this.executorService = new ScheduledThreadPoolExecutor(1);
         this.featureChangeActionRegistry = featureChangeActionRegistry;
     }
@@ -130,42 +133,49 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
         ImmutableValidationResult.Builder resultBuilder = ImmutableValidationResult.builder()
                                                                                    .mode(apiValidation);
         int key = apiData.hashCode();
-        Map<String, Connection> apiConnections = new HashMap<>();
+        Map<String, Connection> apiConnections = new ConcurrentHashMap<>();
         connections.put(key, apiConnections);
+        Map<String, Listener> apiListeners = new ConcurrentHashMap<>();
+        listeners.put(key, apiListeners);
         for (Map.Entry<String, FeatureTypeConfigurationOgcApi> entry : apiData.getCollections().entrySet()) {
-            List<Listener> listeners = getPsqlListeners(apiData, entry.getKey());
-            listeners.stream()
-                     .forEach(listener -> {
-                         FeatureProviderDataV2 providerData = providers.getFeatureProvider(apiData, entry.getValue()).getData();
-                         if (providerData.getFeatureProviderType().equals("SQL")) {
-                             try {
-                                 String host = listener.getHost();
-                                 String database = listener.getDatabase();
-                                 String user = listener.getUser();
-                                 String password = listener.getPassword();
-                                 // TODO currently the dialect is not accessible via ProviderData or from other modules
-                                 // if (providerData.getDialect().equals(ConnectionInfoSql.Dialect.PGIS)) {
-                                     Class.forName("org.postgresql.Driver");
-                                     String url = "jdbc:postgresql://" + host + "/" + database;
-                                     Connection conn = DriverManager.getConnection(url, user, password);
-                                     Statement stmt = conn.createStatement();
-                                     stmt.execute("LISTEN " + listener.getChannel());
-                                     stmt.close();
-                                     connections.get(key).put(entry.getKey(), conn);
-                                 // } else {
-                                 //    resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but has an SQL feature provider that does not support the PostgreSQL dialect.", entry.getKey()));
-                                 // }
-                             } catch (ClassNotFoundException e) {
-                                 resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but the PostgreSQL driver was not found.", entry.getKey()));
-                             } catch (SQLException e) {
-                                 resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but an SQL error occurred while initializing: %s", entry.getKey(), e.getMessage()));
-                             }
-                         } else {
-                             resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but has an incompatible feature provider type '%s'.", entry.getKey(), providerData.getFeatureProviderType()));
-                         }
-                     });
+            getPsqlListeners(apiData, entry.getKey())
+                    .stream()
+                    .forEach(listener -> {
+                        FeatureProviderDataV2 providerData = providers.getFeatureProvider(apiData, entry.getValue()).getData();
+                        // TODO currently the dialect is not accessible via ProviderData or from other modules
+                        // if (!providerData.getDialect().equals(ConnectionInfoSql.Dialect.PGIS)) {
+                        //    resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but has an SQL feature provider that does not support the PostgreSQL dialect.", entry.getKey()));
+                        // } else
+                        if (providerData.getFeatureProviderType().equals("SQL")) {
+                            try {
+                                connections.get(key).put(entry.getKey(), getConnection(listener));
+                                listeners.get(key).put(entry.getKey(), listener);
+                                LOGGER.info("PostgreSQL listener active to retrieve notifications for collection '{}'.", entry.getKey());
+                            } catch (ClassNotFoundException e) {
+                                resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but the PostgreSQL driver was not found.", entry.getKey()));
+                            } catch (SQLException e) {
+                                resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but an SQL error occurred while initializing: %s", entry.getKey(), e.getMessage()));
+                            }
+                        } else {
+                            resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but has an incompatible feature provider type '%s'.", entry.getKey(), providerData.getFeatureProviderType()));
+                        }
+                    });
         }
         return resultBuilder.build();
+    }
+
+    private Connection getConnection(Listener listener) throws ClassNotFoundException, SQLException {
+        String host = listener.getHost();
+        String database = listener.getDatabase();
+        String user = listener.getUser();
+        String password = listener.getPassword();
+        Class.forName("org.postgresql.Driver");
+        String url = "jdbc:postgresql://" + host + "/" + database;
+        Connection conn = DriverManager.getConnection(url, user, password);
+        Statement stmt = conn.createStatement();
+        stmt.execute("LISTEN " + listener.getChannel());
+        stmt.close();
+        return conn;
     }
 
     @Override
@@ -192,13 +202,27 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
                                               if (notifications != null) {
                                                   for (int i=0; i<notifications.length; i++) {
                                                       LOGGER.trace("Feature change notification received: " + notifications[i].getName() + "; " + notifications[i].getParameter());
-                                                      processFeatureChangeActions(api.getData(), notifications[i]);
+                                                      processFeatureChangeActions(api.getData(), entry.getKey(), notifications[i]);
                                                   }
                                               }
                                           } catch (SQLException e) {
-                                              LOGGER.error("Failure to retrieve notifications for collection {}: {}", entry.getKey(), e.getMessage());
-                                              if (LOGGER.isDebugEnabled()) {
-                                                  LOGGER.debug("Stacktrace: ", e);
+                                              try {
+                                                  if (entry.getValue().isValid(1)) {
+                                                      // assume a temporary issue
+                                                      LOGGER.debug("Temporary failure to retrieve notifications for collection '{}': {}", entry.getKey(), e.getMessage());
+                                                  } else {
+                                                      // try to establish a new connection
+                                                      LOGGER.debug("Lost connection to retrieve notifications for collection '{}': {}", entry.getKey(), e.getMessage());
+                                                      connections.get(key).put(entry.getKey(), getConnection(listeners.get(key).get(entry.getKey())));
+                                                      LOGGER.info("PostgreSQL listener restarted to retrieve notifications for collection '{}'.", entry.getKey());
+                                                  }
+                                              } catch (SQLException | ClassNotFoundException e2) {
+                                                  LOGGER.error("Removing listener after connection failures to retrieve notifications for collection '{}': {}", entry.getKey(), e2.getMessage());
+                                                  if (LOGGER.isDebugEnabled()) {
+                                                      LOGGER.debug("Stacktrace: ", e);
+                                                  }
+                                                  connections.get(key).remove(entry.getKey());
+                                                  listeners.get(key).remove(entry.getKey());
                                               }
                                           }
                                       });
@@ -248,7 +272,7 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
         });
     }
 
-    private void processFeatureChangeActions(OgcApiDataV2 apiData, PGNotification notification) {
+    private void processFeatureChangeActions(OgcApiDataV2 apiData, String collectionId, PGNotification notification) {
 
         if (Objects.isNull(featureChangeActions)) {
             featureChangeActions = featureChangeActionRegistry.getFeatureChangeActions()
@@ -279,8 +303,7 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
             try {
                 ChangeContext changeContext = new ImmutableChangeContext.Builder().operation(operation)
                                                                                   .apiData(apiData)
-                                                                                  // TODO map from table name to collectionId
-                                                                                  .collectionId(list.get(1))
+                                                                                  .collectionId(collectionId)
                                                                                   // TODO handle NULLs in the following
                                                                                   .featureIds(ImmutableList.of(list.get(2)))
                                                                                   .interval(TemporalExtent.of(Instant.parse(list.get(3)).toEpochMilli(),
