@@ -78,6 +78,7 @@ public class TilesHelper {
                                        MinMax zoomLevels,
                                        List<Double> center,
                                        Optional<String> collectionId,
+                                       Optional<BoundingBox> bbox,
                                        List<Link> links,
                                        Optional<URICustomizer> uriCustomizer,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
@@ -101,7 +102,6 @@ public class TilesHelper {
                                             ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
                                             : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
 
-        Optional<BoundingBox> bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
         bbox.ifPresent(boundingBox -> builder.boundingBox(ImmutableTilesBoundingBox.builder()
                                                                                    .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
                                                                                               BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))

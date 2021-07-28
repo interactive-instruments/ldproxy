@@ -8,12 +8,12 @@
 package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesTileset;
@@ -84,6 +84,7 @@ public class TileCacheImpl implements TileCache {
     private final SchemaInfo schemaInfo;
     private final ExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
     /**
      * set data directory
@@ -95,7 +96,8 @@ public class TileCacheImpl implements TileCache {
                          @Requires FeaturesCoreProviders providers,
                          @Requires SchemaInfo schemaInfo,
                          @Requires ExtensionRegistry extensionRegistry,
-                         @Requires TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator) throws IOException {
+                         @Requires TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator,
+                         @Requires CollectionDynamicMetadataRegistry metadataRegistry) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.cacheStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
                                .resolve(TILES_DIR_NAME);
@@ -106,6 +108,7 @@ public class TileCacheImpl implements TileCache {
         this.schemaInfo = schemaInfo;
         this.extensionRegistry = extensionRegistry;
         this.tileMatrixSetLimitsGenerator = tileMatrixSetLimitsGenerator;
+        this.metadataRegistry = metadataRegistry;
         Files.createDirectories(cacheStore);
 
         mbtiles = new HashMap<>();
@@ -314,9 +317,9 @@ public class TileCacheImpl implements TileCache {
             MinMax levels = tileset.getValue();
 
             BoundingBox bbox = boundingBox.orElseGet(() -> collectionId.isEmpty()
-                    ? apiData.getSpatialExtent()
+                    ? metadataRegistry.getSpatialExtent(apiData.getId())
                              .orElse(tileMatrixSet.getBoundingBox())
-                    : apiData.getSpatialExtent(collectionId.get())
+                    : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get())
                              .orElse(tileMatrixSet.getBoundingBox()));
 
             // first the dataset tiles
@@ -435,6 +438,9 @@ public class TileCacheImpl implements TileCache {
                                                                    config.getZoomLevelsDerived().get(tileMatrixSetId),
                                                                    config.getCenterDerived(),
                                                                    collectionId,
+                                                                   collectionId.isEmpty()
+                                                                           ? metadataRegistry.getSpatialExtent(apiData.getId())
+                                                                           : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get()),
                                                                    ImmutableList.of(),
                                                                    Optional.empty(),
                                                                    limitsGenerator,

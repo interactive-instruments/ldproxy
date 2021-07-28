@@ -12,6 +12,7 @@ import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
@@ -65,7 +66,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -102,6 +102,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final TileCache tileCache;
     private final StaticTileProviderStore staticTileProviderStore;
     private final SchemaGeneratorFeatureGeoJson schemaGeneratorFeature;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
@@ -111,7 +112,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TileCache tileCache,
                                    @Requires StaticTileProviderStore staticTileProviderStore,
-                                   @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
+                                   @Requires SchemaGeneratorFeatureGeoJson schemaGeneratorFeature,
+                                   @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
@@ -123,6 +125,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         this.tileCache = tileCache;
         this.staticTileProviderStore = staticTileProviderStore;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
+        this.metadataRegistry = metadataRegistry;
 
         this.queryHandlers = new ImmutableMap.Builder()
                 .put(Query.TILE_SETS, QueryHandler.with(QueryInputTileSets.class, this::getTileSetsResponse))
@@ -205,6 +208,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                                       tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
                                                                                       center,
                                                                                       collectionId,
+                                                                                      collectionId.isEmpty()
+                                                                                              ? metadataRegistry.getSpatialExtent(apiData.getId())
+                                                                                              : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get()),
                                                                                       vectorTilesLinkGenerator.generateTileSetEmbeddedLinks(requestContext.getUriCustomizer(),
                                                                                                                                             tileMatrixSet.getId(),
                                                                                                                                             tileFormats,
@@ -264,8 +270,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         MinMax zoomLevels = queryInput.getZoomLevels();
         List<Double> center = queryInput.getCenter();
         TileSet tileset = TilesHelper.buildTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
-                                                   zoomLevels, center, collectionId, links,
-                                                   Optional.of(requestContext.getUriCustomizer().copy()),
+                                                   zoomLevels, center, collectionId,
+                                                   collectionId.isEmpty()
+                                                           ? metadataRegistry.getSpatialExtent(apiData.getId())
+                                                           : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get()),
+                                                   links, Optional.of(requestContext.getUriCustomizer().copy()),
                                                    limitsGenerator, schemaGeneratorFeature);
         
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
