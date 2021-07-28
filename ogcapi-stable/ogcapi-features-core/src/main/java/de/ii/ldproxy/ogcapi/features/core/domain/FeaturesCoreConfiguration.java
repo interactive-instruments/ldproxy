@@ -89,6 +89,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @Override
     Map<String, PropertyTransformation> getTransformations();
 
+    List<Listener> getListeners();
+
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary

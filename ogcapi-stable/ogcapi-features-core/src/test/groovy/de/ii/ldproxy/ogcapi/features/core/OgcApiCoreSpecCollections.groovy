@@ -19,7 +19,11 @@ import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollectionsConfiguration
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection
 import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollection
 import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollections
+import de.ii.ldproxy.ogcapi.common.app.metadata.CollectionDynamicMetadataRegistryImpl
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableCommonConfiguration
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataEntry
+import de.ii.ldproxy.ogcapi.common.domain.metadata.MetadataType
 import de.ii.ldproxy.ogcapi.domain.ApiExtension
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent
@@ -34,6 +38,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableRequestContext
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent
 import de.ii.ldproxy.ogcapi.domain.OgcApi
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent
 import de.ii.ldproxy.ogcapi.features.core.app.CollectionExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.app.CollectionsExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension
@@ -42,9 +47,14 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfigurat
 import de.ii.ldproxy.ogcapi.html.domain.ImmutableHtmlConfiguration
 import de.ii.ldproxy.ogcapi.json.domain.ImmutableJsonConfiguration
 import de.ii.xtraplatform.crs.domain.BoundingBox
+import de.ii.xtraplatform.crs.domain.CrsTransformationException
+import de.ii.xtraplatform.crs.domain.CrsTransformer
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory
+import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import spock.lang.Specification
 
+import javax.measure.unit.Unit
 import javax.ws.rs.core.MediaType
 import java.util.stream.Collectors
 
@@ -203,7 +213,7 @@ class OgcApiCoreSpecCollections extends Specification {
                 }
 
                 if (extensionType == CollectionExtension.class) {
-                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault())
+                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault(), createMetadataRegistry())
                     return ImmutableList.of((T) collectionExtension)
                 }
 
@@ -307,6 +317,59 @@ class OgcApiCoreSpecCollections extends Specification {
 
     static def createCollectionEndpoint() {
         return new EndpointCollection(registry, ogcApiQueriesHandlerCollections)
+    }
+
+    static def createMetadataRegistry() {
+        new CollectionDynamicMetadataRegistry() {
+            @Override
+            void put(String apiId, String collectionId, MetadataType type, CollectionMetadataEntry value) {
+            }
+
+            @Override
+            boolean update(String apiId, String collectionId, MetadataType type, CollectionMetadataEntry delta) {
+                return true
+            }
+
+            @Override
+            boolean remove(String apiId, String collectionId, MetadataType type) {
+                return true
+            }
+
+            @Override
+            Optional<CollectionMetadataEntry> get(String apiId, String collectionId, MetadataType type) {
+                return Optional.empty()
+            }
+
+            @Override
+            Optional<BoundingBox> getSpatialExtent(String apiId) {
+                return Optional.of(BoundingBox.of(-180,-90,180,90,OgcCrs.CRS84))
+            }
+
+            @Override
+            Optional<BoundingBox> getSpatialExtent(String apiId, EpsgCrs targetCrs) throws CrsTransformationException {
+                return Optional.of(BoundingBox.of(-180,-90,180,90,targetCrs))
+            }
+
+            @Override
+            Optional<BoundingBox> getSpatialExtent(String apiId, String collectionId) {
+                return Optional.of(BoundingBox.of(-180,-90,180,90,OgcCrs.CRS84))
+            }
+
+            @Override
+            Optional<BoundingBox> getSpatialExtent(String apiId, String collectionId, EpsgCrs targetCrs) throws CrsTransformationException {
+                return Optional.of(BoundingBox.of(-180,-90,180,90,targetCrs.CRS84))
+            }
+
+            @Override
+            Optional<TemporalExtent> getTemporalExtent(String apiId) {
+                return Optional.of(TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+            }
+
+            @Override
+            Optional<TemporalExtent> getTemporalExtent(String apiId, String collectionId) {
+                return Optional.of(TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+            }
+        }
     }
 
 }

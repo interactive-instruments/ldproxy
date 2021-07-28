@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -28,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * This class is responsible for generating a list of tileMatrixSetLimits in json responses for /tiles and /collections/{collectionsId}/tiles requests.
@@ -39,9 +42,12 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileMatrixSetLimitsGeneratorImpl.class);
     private final CrsTransformerFactory crsTransformerFactory;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
-    public TileMatrixSetLimitsGeneratorImpl(@Requires CrsTransformerFactory crsTransformerFactory) {
+    public TileMatrixSetLimitsGeneratorImpl(@Requires CrsTransformerFactory crsTransformerFactory,
+                                            @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.crsTransformerFactory = crsTransformerFactory;
+        this.metadataRegistry = metadataRegistry;
     }
 
     /**
@@ -55,9 +61,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
     public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiDataV2 data, String collectionId,
                                                                       TileMatrixSet tileMatrixSet, MinMax tileMatrixRange) {
 
-        Optional<BoundingBox> bbox = data.getSpatialExtent(collectionId);
-        if (bbox.isPresent())
-            bbox = getBoundingBoxInTileMatrixSetCrs(bbox.get(), tileMatrixSet);
+        Optional<BoundingBox> bbox = metadataRegistry.getSpatialExtent(data.getId(), collectionId);
 
         if (bbox.isEmpty()) {
             LOGGER.error("Cannot generate tile matrix set limits.");
@@ -78,9 +82,12 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
     public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDataV2 data, TileMatrixSet tileMatrixSet,
                                                             MinMax tileMatrixRange) {
 
-        Optional<BoundingBox> bbox = data.getSpatialExtent();
-        if (bbox.isPresent())
-            bbox = getBoundingBoxInTileMatrixSetCrs(bbox.get(), tileMatrixSet);
+        Optional<BoundingBox> bbox = Optional.empty();
+        try {
+            bbox = metadataRegistry.getSpatialExtent(data.getId(), tileMatrixSet.getCrs());
+        } catch (CrsTransformationException e) {
+            LOGGER.error(String.format("Error converting bounding box to CRS %s.", tileMatrixSet.getCrs()));
+        }
 
         if (bbox.isEmpty()) {
             LOGGER.error("Cannot generate tile matrix set limits.");
@@ -103,7 +110,6 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         Optional<BoundingBox> bbox = getBoundingBoxInTileMatrixSetCrs(boundingBox, tileMatrixSet);
 
         if (bbox.isEmpty()) {
-            LOGGER.error("Cannot generate tile matrix set limits.");
             return ImmutableList.of();
         }
 
@@ -114,7 +120,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
     public Optional<BoundingBox> getBoundingBoxInTileMatrixSetCrs(BoundingBox bbox, TileMatrixSet tileMatrixSet) {
         EpsgCrs sourceCrs = bbox.getEpsgCrs();
         EpsgCrs targetCrs = tileMatrixSet.getCrs();
-        if (sourceCrs.getCode()== targetCrs.getCode() && sourceCrs.getForceAxisOrder()==targetCrs.getForceAxisOrder())
+        if (sourceCrs.getCode()==targetCrs.getCode() && sourceCrs.getForceAxisOrder()==targetCrs.getForceAxisOrder())
             return Optional.of(bbox);
 
         Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);

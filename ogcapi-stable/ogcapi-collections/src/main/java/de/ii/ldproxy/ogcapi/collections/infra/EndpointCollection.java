@@ -106,7 +106,7 @@ public class EndpointCollection extends EndpointSubCollection {
                 }
             }
 
-            Optional<CollectionExtent> extent = apiData.getExtent(collectionData.getId());
+            Optional<CollectionExtent> extent = apiData.getExtentFromConfiguration(collectionData.getId());
             if (extent.isPresent()) {
                 Optional<BoundingBox> spatial = extent.get().getSpatial();
                 if (spatial.isPresent() && Objects.nonNull(spatial.get())) {

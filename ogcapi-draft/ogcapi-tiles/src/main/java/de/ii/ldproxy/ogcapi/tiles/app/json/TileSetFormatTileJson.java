@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.app.json;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -48,14 +49,17 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     private final Schema schemaTileJson;
     private final FeaturesCoreProviders providers;
     private final SchemaInfo schemaInfo;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
     public final static String SCHEMA_REF_TILE_JSON = "#/components/schemas/TileJson";
 
     public TileSetFormatTileJson(@Requires SchemaGenerator schemaGenerator,
                                  @Requires FeaturesCoreProviders providers,
-                                 @Requires SchemaInfo schemaInfo) {
+                                 @Requires SchemaInfo schemaInfo,
+                                 @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         schemaTileJson = schemaGenerator.getSchema(TileJson.class);
         this.providers = providers;
         this.schemaInfo = schemaInfo;
+        this.metadataRegistry = metadataRegistry;
     }
 
     @Override

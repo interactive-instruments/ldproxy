@@ -12,16 +12,19 @@ import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -46,10 +49,13 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
 
     private final ExtensionRegistry extensionRegistry;
     private final I18n i18n;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
-    public TileSetsFormatHtml(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    public TileSetsFormatHtml(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n,
+                              @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
+        this.metadataRegistry = metadataRegistry;
     }
 
     @Override
@@ -125,9 +131,11 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                                                  .orElse(null);
 
         Map<String, TileMatrixSet> tileMatrixSets = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                .stream()
-                .collect(Collectors.toMap(TileMatrixSet::getId, tms -> tms));
+                                                                     .stream()
+                                                                     .collect(Collectors.toMap(TileMatrixSet::getId, tms -> tms));
 
-        return new TileSetsView(api.getData(), tiles, collectionId, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        Optional<BoundingBox> optionalBbox = collectionId.isEmpty() ? metadataRegistry.getSpatialExtent(api.getId()) : metadataRegistry.getSpatialExtent(api.getId(), collectionId.get());
+        Optional<TemporalExtent> optionalInterval = collectionId.isEmpty() ? metadataRegistry.getTemporalExtent(api.getId()) : metadataRegistry.getTemporalExtent(api.getId(), collectionId.get());
+        return new TileSetsView(api.getData(), collectionId, optionalBbox.orElse(null), optionalInterval.orElse(null), tiles, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 }

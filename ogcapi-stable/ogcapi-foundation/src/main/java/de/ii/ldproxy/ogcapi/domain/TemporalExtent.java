@@ -8,6 +8,9 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -15,6 +18,12 @@ import javax.annotation.Nullable;
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableTemporalExtent.Builder.class)
 public interface TemporalExtent {
+
+    static TemporalExtent of(Long start, Long end) {
+        return new ImmutableTemporalExtent.Builder().start(start)
+                                                    .end(end)
+                                                    .build();
+    }
 
     @Value.Default
     @Nullable

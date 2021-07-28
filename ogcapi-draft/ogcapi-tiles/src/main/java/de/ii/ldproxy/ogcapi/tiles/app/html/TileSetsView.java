@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -47,11 +48,13 @@ public class TileSetsView extends OgcApiView {
     public boolean withOlMap;
     public boolean spatialSearch;
     public Map<String, String> bbox;
-    public Map<String, String> temporalExtent;
+    public Map<String, String> interval;
 
     public TileSetsView(OgcApiDataV2 apiData,
-                        TileSets tiles,
                         Optional<String> collectionId,
+                        BoundingBox spatialExtent,
+                        TemporalExtent temporalExtent,
+                        TileSets tiles,
                         Map<String, TileMatrixSet> tileMatrixSets,
                         List<NavigationDTO> breadCrumbs,
                         String urlPrefix,
@@ -67,14 +70,12 @@ public class TileSetsView extends OgcApiView {
                 tiles.getDescription()
                      .orElse(""));
 
-        Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
-        this.bbox = spatialExtent.map(boundingBox -> ImmutableMap.of(
-                "minLng", Double.toString(boundingBox.getXmin()),
-                "minLat", Double.toString(boundingBox.getYmin()),
-                "maxLng", Double.toString(boundingBox.getXmax()),
-                "maxLat", Double.toString(boundingBox.getYmax())))
-                                  .orElse(null);
-        this.tileCollections = spatialExtent.isPresent() ? tiles.getTilesets()
+        this.bbox = Objects.isNull(spatialExtent) ? null : ImmutableMap.of(
+                "minLng", Double.toString(spatialExtent.getXmin()),
+                "minLat", Double.toString(spatialExtent.getYmin()),
+                "maxLng", Double.toString(spatialExtent.getXmax()),
+                "maxLat", Double.toString(spatialExtent.getYmax()));
+        this.tileCollections = Objects.nonNull(spatialExtent) ? tiles.getTilesets()
                 .stream()
                 .map(tms -> {
                     String tmsId = tms.getTileMatrixSetId();
@@ -98,10 +99,10 @@ public class TileSetsView extends OgcApiView {
                                       .orElse("10");
                     String lon = tms.getCenterPoint().isPresent() && tms.getCenterPoint().get().getCoordinates().size() >= 2
                             ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
-                            : Double.toString(spatialExtent.get().getXmax() * 0.5 + spatialExtent.get().getXmin() * 0.5);
+                            : Double.toString(spatialExtent.getXmax() * 0.5 + spatialExtent.getXmin() * 0.5);
                     String lat = tms.getCenterPoint().isPresent() && tms.getCenterPoint().get().getCoordinates().size() >= 2
                             ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
-                            : Double.toString(spatialExtent.get().getYmax() * 0.5 + spatialExtent.get().getYmin() * 0.5);
+                            : Double.toString(spatialExtent.getYmax() * 0.5 + spatialExtent.getYmin() * 0.5);
 
                     return new ImmutableMap.Builder<String,String>()
                             .put("tileMatrixSet",tmsId)
@@ -150,30 +151,19 @@ public class TileSetsView extends OgcApiView {
         this.withOlMap = true;
         this.spatialSearch = false;
 
-        Long[] interval = apiData.getCollections()
-                .values()
-                .stream()
-                .filter(featureTypeConfiguration -> collectionId.isEmpty() || Objects.equals(featureTypeConfiguration.getId(), collectionId.get()))
-                .map(featureType -> apiData.getTemporalExtent(featureType.getId()))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
-                .reduce((longs, longs2) -> new Long[]{
-                        longs[0]==null || longs2[0]==null ? null : Math.min(longs[0], longs2[0]),
-                        longs[1]==null || longs2[1]==null ? null : Math.max(longs[1], longs2[1])})
-                .orElse(null);
+        Long[] interval = Objects.isNull(temporalExtent) ? null : new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()};
         if (interval==null)
-            this.temporalExtent = null;
-        else if (interval[0]==null && interval[1]==null)
-            this.temporalExtent = ImmutableMap.of();
-        else if (interval[0]==null)
-            this.temporalExtent = ImmutableMap.of(
+            this.interval = null;
+        else if (interval[0]==Long.MIN_VALUE && interval[1]==Long.MAX_VALUE)
+            this.interval = ImmutableMap.of();
+        else if (interval[0]==Long.MIN_VALUE)
+            this.interval = ImmutableMap.of(
                     "end", interval[1].toString());
-        else if (interval[1]==null)
-            this.temporalExtent = ImmutableMap.of(
+        else if (interval[1]==Long.MAX_VALUE)
+            this.interval = ImmutableMap.of(
                     "start", interval[0].toString());
         else
-            this.temporalExtent = ImmutableMap.of(
+            this.interval = ImmutableMap.of(
                     "start", interval[0].toString(),
                     "end", interval[1].toString());
     }
