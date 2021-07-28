@@ -84,21 +84,10 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
   @Override
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-    ImmutableFeaturesHtmlConfiguration.Builder builder = new ImmutableFeaturesHtmlConfiguration.Builder()
+    return new ImmutableFeaturesHtmlConfiguration.Builder()
         .from(source)
-        .from(this);
-
-    Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(
-        ((PropertyTransformations) source).getTransformations());
-    getTransformations().forEach((key, transformation) -> {
-      if (mergedTransformations.containsKey(key)) {
-        mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
-      } else {
-        mergedTransformations.put(key, transformation);
-      }
-    });
-    builder.transformations(mergedTransformations);
-
-    return builder.build();
+        .from(this)
+        .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations())
+        .build();
   }
 }

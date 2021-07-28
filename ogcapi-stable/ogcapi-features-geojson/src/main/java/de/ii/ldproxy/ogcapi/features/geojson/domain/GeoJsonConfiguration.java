@@ -88,22 +88,10 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
 
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        ImmutableGeoJsonConfiguration.Builder builder = new ImmutableGeoJsonConfiguration.Builder()
+        return new ImmutableGeoJsonConfiguration.Builder()
             .from(source)
-            .from(this);
-
-        Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(
-            ((PropertyTransformations) source).getTransformations());
-        getTransformations().forEach((key, transformation) -> {
-            if (mergedTransformations.containsKey(key)) {
-                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
-            } else {
-                mergedTransformations.put(key, transformation);
-            }
-        });
-
-        builder.transformations(mergedTransformations);
-
-        return builder.build();
+            .from(this)
+            .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations())
+            .build();
     }
 }

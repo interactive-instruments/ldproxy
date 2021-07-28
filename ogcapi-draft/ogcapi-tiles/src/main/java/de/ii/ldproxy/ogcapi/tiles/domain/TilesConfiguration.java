@@ -317,7 +317,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
         ImmutableTilesConfiguration.Builder builder = ((ImmutableTilesConfiguration.Builder) source.getBuilder())
                 .from(source)
-                .from(this);
+                .from(this)
+            .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations());
 
         TilesConfiguration src = (TilesConfiguration) source;
 
@@ -339,16 +340,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
             }
         });
         builder.tileSetEncodings(tileSetEncodings);
-
-        Map<String, PropertyTransformation> mergedTransformations = Objects.nonNull(src.getTransformations()) ? Maps.newLinkedHashMap(src.getTransformations()) : Maps.newLinkedHashMap();
-        getTransformations().forEach((key, transformation) -> {
-            if (mergedTransformations.containsKey(key)) {
-                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
-            } else {
-                mergedTransformations.put(key, transformation);
-            }
-        });
-        builder.transformations(mergedTransformations);
 
         Map<String, MinMax> mergedSeeding = Objects.nonNull(src.getSeeding()) ? Maps.newLinkedHashMap(src.getSeeding()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getSeeding()))

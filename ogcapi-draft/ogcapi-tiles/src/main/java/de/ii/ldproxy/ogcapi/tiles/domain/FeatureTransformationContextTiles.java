@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import org.immutables.value.Value;
@@ -44,7 +45,7 @@ public abstract class FeatureTransformationContextTiles implements FeatureTransf
             if (Objects.isNull(configuration)) {
                 configuration = baseConfiguration.get();
             } else {
-                configuration = (TilesConfiguration) configuration.mergeInto(baseConfiguration.get());
+                configuration = (TilesConfiguration) configuration.mergeInto((ExtensionConfiguration) baseConfiguration.get());
             }
         }
 

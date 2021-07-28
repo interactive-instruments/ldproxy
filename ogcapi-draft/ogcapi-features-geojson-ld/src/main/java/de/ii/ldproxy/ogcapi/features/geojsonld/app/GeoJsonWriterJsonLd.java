@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.geojsonld.app;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -17,6 +18,7 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -112,21 +114,19 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
 
             if (currentSchema.isId()) {
 
+                Map<String, String> substitutions = ImmutableMap.of(
+                    "featureId", currentValue,
+                    "serviceUrl", context.encoding().getServiceUrl(),
+                    "collectionId", context.encoding().getCollectionId()
+                );
+
                 Optional<String> jsonLdId = context.encoding().getApiData()
                                                                  .getCollections()
                                                                  .get(context.encoding().getCollectionId())
                                                                  .getExtension(GeoJsonLdConfiguration.class)
                                                                  .filter(GeoJsonLdConfiguration::isEnabled)
                                                                  .flatMap(GeoJsonLdConfiguration::getIdTemplate)
-                                                                 .map(idTemplate -> {
-                                                                     String currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {
-                                                                     }, "featureId");
-                                                                     currentUri = StringTemplateFilters.applyTemplate(currentUri, context.encoding().getServiceUrl(), isHtml -> {
-                                                                     }, "serviceUrl");
-                                                                     currentUri = StringTemplateFilters.applyTemplate(currentUri, context.encoding().getCollectionId(), isHtml -> {
-                                                                     }, "collectionId");
-                                                                     return currentUri;
-                                                                 });
+                                                                 .map(idTemplate -> StringTemplateFilters.applyTemplate(idTemplate, substitutions::get));
 
 
                 if (jsonLdId.isPresent()) {

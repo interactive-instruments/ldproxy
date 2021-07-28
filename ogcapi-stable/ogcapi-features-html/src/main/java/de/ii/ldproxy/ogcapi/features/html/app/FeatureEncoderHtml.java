@@ -149,7 +149,7 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     Optional<String> itemLabelFormat = transformationContext.featuresHtmlConfiguration().getFeatureTitleTemplate();
     if (itemLabelFormat.isPresent()) {
       feature.name(StringTemplateFilters.applyTemplate(itemLabelFormat.get(),
-          pathString -> feature.findPropertyByPath(pathString).map(PropertyHtml::getFirstValue)));
+          pathString -> feature.findPropertyByPath(pathString).map(PropertyHtml::getFirstValue).orElse(null)));
     }
 
     //TODO: generalize as schema/value transformer

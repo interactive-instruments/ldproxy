@@ -245,18 +245,10 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
 
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        ImmutableFeaturesCoreConfiguration.Builder builder = new ImmutableFeaturesCoreConfiguration.Builder().from(source)
-                                                                                                             .from(this);
-
-        Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getTransformations());
-        getTransformations().forEach((key, transformation) -> {
-            if (mergedTransformations.containsKey(key)) {
-                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
-            } else {
-                mergedTransformations.put(key, transformation);
-            }
-        });
-        builder.transformations(mergedTransformations);
+        ImmutableFeaturesCoreConfiguration.Builder builder = new ImmutableFeaturesCoreConfiguration.Builder()
+            .from(source)
+            .from(this)
+            .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations());
 
         if (getQueryables().isPresent() && ((FeaturesCoreConfiguration) source).getQueryables()
                                                                                .isPresent()) {

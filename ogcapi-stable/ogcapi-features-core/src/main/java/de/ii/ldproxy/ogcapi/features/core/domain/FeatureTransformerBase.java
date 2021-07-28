@@ -18,6 +18,7 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertySchemaTransformer;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyValueTransformer;
+import java.time.ZoneId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,14 +68,14 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
                                      .replaceAll("\\[[^\\]]*\\]", "");
         if (coreTransformations.isPresent()) {
             valueTransformations = coreTransformations.get()
-                                                      .getValueTransformations(codelists,
+                                                      .getValueTransformations(codelists, Optional.empty(),
                                                           ImmutableMap.of("serviceUrl", serviceUrl))
                                                       .get(tkey);
         }
         if (buildingBlockTransformations.isPresent()) {
             if (Objects.nonNull(valueTransformations)) {
                 List<FeaturePropertyValueTransformer> moreTransformations = buildingBlockTransformations.get()
-                                                                                                        .getValueTransformations(codelists, ImmutableMap.of("serviceUrl", serviceUrl))
+                                                                                                        .getValueTransformations(codelists, Optional.empty(), ImmutableMap.of("serviceUrl", serviceUrl))
                                                                                                         .get(tkey);
                 if (Objects.nonNull(moreTransformations)) {
                     valueTransformations = Stream.of(valueTransformations, moreTransformations)
@@ -83,7 +84,7 @@ public abstract class FeatureTransformerBase implements FeatureTransformer2 {
                 }
             } else {
                 valueTransformations = buildingBlockTransformations.get()
-                                                                   .getValueTransformations(codelists, ImmutableMap.of("serviceUrl", serviceUrl))
+                                                                   .getValueTransformations(codelists, Optional.empty(), ImmutableMap.of("serviceUrl", serviceUrl))
                                                                    .get(tkey);
             }
         }
