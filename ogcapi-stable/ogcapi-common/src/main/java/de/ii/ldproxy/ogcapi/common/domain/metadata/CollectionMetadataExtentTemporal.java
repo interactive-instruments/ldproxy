@@ -13,7 +13,9 @@ import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import org.immutables.value.Value;
 
 import javax.annotation.Nonnull;
+import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true)
@@ -34,18 +36,24 @@ public interface CollectionMetadataExtentTemporal extends CollectionMetadataEntr
     TemporalExtent getValue();
 
     @Override
-    default CollectionMetadataEntry updateWith(CollectionMetadataEntry delta) {
-        if (Objects.isNull(delta))
-            return this;
+    default Optional<CollectionMetadataEntry> updateWith(CollectionMetadataEntry delta) {
+        if (Objects.isNull(delta) || Objects.isNull(delta.getValue()))
+            return Optional.empty();
+        if (Objects.isNull(getValue()))
+            return Optional.of(delta);
         if (!(delta instanceof CollectionMetadataExtentTemporal))
             throw new IllegalStateException(String.format("Instance of CollectionMetadataEntry has invalid value. Expected 'CollectionMetadataExtentTemporal', found '%s'", delta.getClass().getSimpleName()));
-;
-        return CollectionMetadataExtentTemporal.of(union(this.getValue(), (TemporalExtent) delta.getValue()));
-    }
 
-    private static TemporalExtent union(@Nonnull TemporalExtent int1, @Nonnull TemporalExtent int2) {
-        return new ImmutableTemporalExtent.Builder().start(Objects.isNull(int1.getStart()) ? null : Objects.isNull(int2.getStart()) ? null : Math.min(int1.getStart(), int2.getStart()))
-                                                    .end(Objects.isNull(int1.getEnd()) ? null : Objects.isNull(int2.getEnd()) ? null : Math.max(int1.getEnd(), int2.getEnd()))
-                                                    .build();
+        TemporalExtent deltaExtent = ((CollectionMetadataExtentTemporal) delta).getValue();
+        long currentStart = Objects.requireNonNullElse(getValue().getStart(), Long.MIN_VALUE);
+        long currentEnd = Objects.requireNonNullElse(getValue().getEnd(), Long.MAX_VALUE);
+        long deltaStart = Objects.requireNonNullElse(getValue().getStart(), Long.MIN_VALUE);
+        long deltaEnd = Objects.requireNonNullElse(getValue().getEnd(), Long.MAX_VALUE);
+
+        if (currentStart <= deltaStart && currentEnd >= deltaEnd)
+            return Optional.empty();
+
+        return Optional.of(CollectionMetadataExtentTemporal.of(TemporalExtent.of(Math.min(currentStart, deltaStart),
+                                                                                 Math.max(currentEnd, deltaEnd))));
     }
 }

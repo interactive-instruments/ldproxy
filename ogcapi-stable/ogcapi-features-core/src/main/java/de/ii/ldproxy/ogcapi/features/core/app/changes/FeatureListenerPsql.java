@@ -5,9 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.features.core.app;
+package de.ii.ldproxy.ogcapi.features.core.app.changes;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -15,12 +17,16 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiBackgroundTask;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.Listener;
-import de.ii.xtraplatform.feature.provider.sql.app.FeatureProviderSql;
-import de.ii.xtraplatform.feature.provider.sql.domain.ConnectionInfoSql;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.ldproxy.ogcapi.features.core.domain.changes.ChangeContext;
+import de.ii.ldproxy.ogcapi.features.core.domain.changes.FeatureChangeAction;
+import de.ii.ldproxy.ogcapi.features.core.domain.changes.FeatureChangeActionsRegistry;
+import de.ii.ldproxy.ogcapi.features.core.domain.changes.ImmutableChangeContext;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -39,14 +45,23 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.SortedSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.consumerMayThrow;
 
 @Component
 @Provides
@@ -60,13 +75,19 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
     private final FeaturesCoreProviders providers;
     private final Map<Integer, Map<String, Connection>> connections;
     private final ScheduledExecutorService executorService;
+    private final FeatureChangeActionsRegistry featureChangeActionRegistry;
+
+    // determine when needed; if already set in the constructor, the component fails to load
+    private SortedSet<FeatureChangeAction> featureChangeActions = null;
 
     public FeatureListenerPsql(@Requires ExtensionRegistry extensionRegistry,
+                               @Requires FeatureChangeActionsRegistry featureChangeActionRegistry,
                                @Requires FeaturesCoreProviders providers) {
         this.extensionRegistry = extensionRegistry;
         this.providers = providers;
         this.connections = new HashMap<>();
         this.executorService = new ScheduledThreadPoolExecutor(1);
+        this.featureChangeActionRegistry = featureChangeActionRegistry;
     }
 
     @Override
@@ -151,7 +172,7 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
     public void run(OgcApi api, TaskContext taskContext) {
         executorService.scheduleWithFixedDelay(
                 () -> {
-                    LOGGER.debug("Executing PostgreSQL Listener for API " + api.getId());
+                    LOGGER.trace("Executing PostgreSQL Listener for API " + api.getId());
 
                     int key = api.getData().hashCode();
                     Map<String, Connection> apiConnections = connections.get(key);
@@ -170,8 +191,8 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
                                               PGNotification notifications[] = ((PGConnection) conn).getNotifications();
                                               if (notifications != null) {
                                                   for (int i=0; i<notifications.length; i++) {
-                                                      // TODO start chain
-                                                      LOGGER.debug("Feature change notification received: " + notifications[i].getName() + "; " + notifications[i].getParameter());
+                                                      LOGGER.trace("Feature change notification received: " + notifications[i].getName() + "; " + notifications[i].getParameter());
+                                                      processFeatureChangeActions(api.getData(), notifications[i]);
                                                   }
                                               }
                                           } catch (SQLException e) {
@@ -182,10 +203,8 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
                                           }
                                       });
                     }
-
-
                 },
-                20,
+                15,
                 5,
                 TimeUnit.SECONDS);
     }
@@ -218,5 +237,67 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
                        .stream()
                        .filter(listener -> listener.getType().equals("PSQL"))
                        .collect(Collectors.toUnmodifiableList());
+    }
+
+    private Consumer<ChangeContext> executePipeline(final Iterator<FeatureChangeAction> actionsIterator) {
+        return consumerMayThrow(nextChangeContext -> {
+            if (actionsIterator.hasNext()) {
+                actionsIterator.next()
+                               .onEvent(nextChangeContext, this.executePipeline(actionsIterator));
+            }
+        });
+    }
+
+    private void processFeatureChangeActions(OgcApiDataV2 apiData, PGNotification notification) {
+
+        if (Objects.isNull(featureChangeActions)) {
+            featureChangeActions = featureChangeActionRegistry.getFeatureChangeActions()
+                                                              .stream()
+                                                              .map(FeatureChangeAction::create)
+                                                              .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.comparingInt(FeatureChangeAction::getSortPriority)));
+        }
+
+        if (featureChangeActions.isEmpty())
+            return;
+
+        List<String> list = Splitter.on(",").trimResults().splitToList(notification.getParameter());
+        if (list.size()<9) {
+            // ignore incomplete notification
+            LOGGER.warn("Could not parse a PostgreSQL change notification, the notification is ignored: the notification is incomplete '{}'", list);
+            return;
+        }
+
+        ChangeContext.Operation operation =  list.get(0).equalsIgnoreCase("insert")
+                ? ChangeContext.Operation.INSERT
+                : list.get(0).equalsIgnoreCase("update")
+                ? ChangeContext.Operation.UPDATE
+                : list.get(0).equalsIgnoreCase("delete")
+                ? ChangeContext.Operation.DELETE
+                : null;
+
+        if (Objects.nonNull(operation)) {
+            try {
+                ChangeContext changeContext = new ImmutableChangeContext.Builder().operation(operation)
+                                                                                  .apiData(apiData)
+                                                                                  // TODO map from table name to collectionId
+                                                                                  .collectionId(list.get(1))
+                                                                                  // TODO handle NULLs in the following
+                                                                                  .featureIds(ImmutableList.of(list.get(2)))
+                                                                                  .interval(TemporalExtent.of(Instant.parse(list.get(3)).toEpochMilli(),
+                                                                                                              Instant.parse(list.get(4)).toEpochMilli()))
+                                                                                  .boundingBox(BoundingBox.of(Double.parseDouble(list.get(5)),
+                                                                                                              Double.parseDouble(list.get(6)),
+                                                                                                              Double.parseDouble(list.get(7)),
+                                                                                                              Double.parseDouble(list.get(8)),
+                                                                                                              OgcCrs.CRS84))
+                                                                                  .build();
+                LOGGER.trace("Executing pipeline: {}, {}, {}, {}", changeContext.getOperation(), changeContext.getFeatureIds(), changeContext.getInterval(), changeContext.getBoundingBox());
+                executePipeline(featureChangeActions.iterator()).accept(changeContext);
+            } catch (Exception e) {
+                LOGGER.warn("Could not parse a PostgreSQL change notification, the notification is ignored: {}", e.getMessage());
+            }
+        } else {
+            LOGGER.warn("Could not parse a PostgreSQL change notification, the notification is ignored: unknown operation '{}'", list.get(0));
+        }
     }
 }

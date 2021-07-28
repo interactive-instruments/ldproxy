@@ -9,12 +9,11 @@ package de.ii.ldproxy.ogcapi.common.domain.metadata;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.immutables.value.Value;
 
-import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true)
@@ -34,24 +33,27 @@ public interface CollectionMetadataExtentSpatial extends CollectionMetadataEntry
     BoundingBox getValue();
 
     @Override
-    default CollectionMetadataEntry updateWith(CollectionMetadataEntry delta) {
-        if (Objects.isNull(delta))
-            return this;
+    default Optional<CollectionMetadataEntry> updateWith(CollectionMetadataEntry delta) {
+        if (Objects.isNull(delta) || Objects.isNull(delta.getValue()))
+            return Optional.empty();
+        if (Objects.isNull(getValue()))
+            return Optional.of(delta);
         if (!(delta instanceof CollectionMetadataExtentSpatial))
             throw new IllegalStateException(String.format("Instance of CollectionMetadataEntry has invalid value. Expected 'CollectionMetadataExtentSpatial', found '%s'", delta.getClass().getSimpleName()));
 ;
-        return CollectionMetadataExtentSpatial.of(union(this.getValue(), (BoundingBox) delta.getValue()));
-    }
+        BoundingBox deltaExtent = ((CollectionMetadataExtentSpatial) delta).getValue();
+        if (this.getValue().getEpsgCrs().getCode() != deltaExtent.getEpsgCrs().getCode()
+                || this.getValue().getEpsgCrs().getForceAxisOrder() != deltaExtent.getEpsgCrs().getForceAxisOrder())
+            throw new IllegalStateException("Both bounding boxes must have the same CRS.");
 
-    private static BoundingBox union(@Nonnull BoundingBox bbox1, @Nonnull BoundingBox bbox2) {
-        if (bbox1.getEpsgCrs().getCode() != bbox2.getEpsgCrs().getCode() || bbox1.getEpsgCrs().getForceAxisOrder() != bbox2.getEpsgCrs().getForceAxisOrder())
-        throw new IllegalStateException("Both bounding boxes must have the same CRS.");
+        if (getValue().getXmin() <= deltaExtent.getXmin() && getValue().getYmin() <= deltaExtent.getYmin()
+                && getValue().getXmax() >= deltaExtent.getXmax() && getValue().getYmax() >= deltaExtent.getYmax())
+            return Optional.empty();
 
-        return new ImmutableBoundingBox.Builder().xmin(Math.min(bbox1.getXmin(), bbox2.getXmin()))
-                                                 .ymin(Math.min(bbox1.getYmin(), bbox2.getYmin()))
-                                                 .xmax(Math.max(bbox1.getXmax(), bbox2.getXmax()))
-                                                 .ymax(Math.max(bbox1.getYmax(), bbox2.getYmax()))
-                                                 .epsgCrs(bbox1.getEpsgCrs())
-                                                 .build();
+        return Optional.of(CollectionMetadataExtentSpatial.of(BoundingBox.of(Math.min(getValue().getXmin(), deltaExtent.getXmin()),
+                                                                             Math.min(getValue().getYmin(), deltaExtent.getYmin()),
+                                                                             Math.max(getValue().getXmax(), deltaExtent.getXmax()),
+                                                                             Math.max(getValue().getYmax(), deltaExtent.getYmax()),
+                                                                             OgcCrs.CRS84)));
     }
 }

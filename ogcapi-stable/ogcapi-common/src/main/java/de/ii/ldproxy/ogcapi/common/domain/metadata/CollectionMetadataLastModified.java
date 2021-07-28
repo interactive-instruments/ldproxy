@@ -13,6 +13,7 @@ import org.immutables.value.Value;
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true)
@@ -28,16 +29,18 @@ public interface CollectionMetadataLastModified extends CollectionMetadataEntry 
     Instant getValue();
 
     @Override
-    default CollectionMetadataEntry updateWith(CollectionMetadataEntry delta) {
-        if (Objects.isNull(delta))
-            return this;
+    default Optional<CollectionMetadataEntry> updateWith(CollectionMetadataEntry delta) {
+        if (Objects.isNull(delta) || Objects.isNull(delta.getValue()))
+            return Optional.empty();
+        if (Objects.isNull(getValue()))
+            return Optional.of(delta);
         if (!(delta instanceof CollectionMetadataLastModified))
             throw new IllegalStateException(String.format("Instance of CollectionMetadataEntry has invalid value. Expected 'CollectionMetadataLastModified', found '%s'", delta.getClass().getSimpleName()));
-;
-        return CollectionMetadataLastModified.of(union(this.getValue(), ((CollectionMetadataLastModified) delta).getValue()));
-    }
 
-    private static Instant union(@Nonnull Instant instant1, @Nonnull Instant instant2) {
-        return instant1.isAfter(instant2) ? instant1 : instant2;
+        Instant deltaInstant = ((CollectionMetadataLastModified) delta).getValue();
+        if (this.getValue().isAfter(deltaInstant))
+            return Optional.empty();
+
+        return Optional.of(delta);
     }
 }

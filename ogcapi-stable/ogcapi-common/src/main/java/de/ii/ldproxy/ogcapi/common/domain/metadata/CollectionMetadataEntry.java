@@ -7,10 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain.metadata;
 
+import java.util.Optional;
+
 public interface CollectionMetadataEntry {
 
     Object getValue();
 
-    CollectionMetadataEntry updateWith(CollectionMetadataEntry delta);
+    Optional<CollectionMetadataEntry> updateWith(CollectionMetadataEntry delta);
 
 }

@@ -64,10 +64,12 @@ public class CollectionDynamicMetadataRegistryImpl implements CollectionDynamicM
             return false;
         }
 
-        CollectionMetadataEntry updated = current.updateWith(delta);
-        typeMap.put(type, updated);
-        LOGGER.debug("Metadata '{}' of collection '{}' updated to {}.", type, collectionId, updated.getValue().toString());
-        return true;
+        Optional<CollectionMetadataEntry> updated = current.updateWith(delta);
+        updated.ifPresentOrElse(value -> {
+            typeMap.put(type, value);
+            LOGGER.debug("Metadata '{}' of collection '{}' updated to {}.", type, collectionId, value.getValue().toString());
+        }, () -> LOGGER.trace("Metadata '{}' of collection '{}' unchanged as {}", type, collectionId, current.getValue().toString()));
+        return updated.isPresent();
     }
 
     @Override
