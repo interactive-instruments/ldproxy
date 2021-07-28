@@ -56,6 +56,8 @@ import spock.lang.Specification
 
 import javax.measure.unit.Unit
 import javax.ws.rs.core.MediaType
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.stream.Collectors
 
 class OgcApiCoreSpecCollections extends Specification {
@@ -368,6 +370,16 @@ class OgcApiCoreSpecCollections extends Specification {
             @Override
             Optional<TemporalExtent> getTemporalExtent(String apiId, String collectionId) {
                 return Optional.of(TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+            }
+
+            @Override
+            Optional<Instant> getLastModified(String apiId) {
+                return Optional.of(Instant.now().truncatedTo(ChronoUnit.SECONDS))
+            }
+
+            @Override
+            Optional<Instant> getLastModified(String apiId, String collectionId) {
+                return Optional.of(Instant.now().truncatedTo(ChronoUnit.SECONDS))
             }
         }
     }

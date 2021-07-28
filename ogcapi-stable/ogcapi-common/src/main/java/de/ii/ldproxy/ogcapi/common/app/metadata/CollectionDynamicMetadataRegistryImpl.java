@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.common.app.metadata;
 
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentSpatial;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentTemporal;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataLastModified;
 import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataEntry;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
@@ -27,6 +28,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -164,6 +166,24 @@ public class CollectionDynamicMetadataRegistryImpl implements CollectionDynamicM
         return Optional.ofNullable(getTypeMap(apiId, collectionId).get(MetadataType.temporalExtent))
                        .map(CollectionMetadataExtentTemporal.class::cast)
                        .map(CollectionMetadataExtentTemporal::getValue);
+    }
+
+    @Override
+    public Optional<Instant> getLastModified(String apiId) {
+        return getApiMap(apiId).entrySet()
+                               .stream()
+                               .map(entry -> entry.getValue().get(MetadataType.lastModified))
+                               .filter(Objects::nonNull)
+                               .map(CollectionMetadataLastModified.class::cast)
+                               .map(CollectionMetadataLastModified::getValue)
+                               .max(Instant::compareTo);
+    }
+
+    @Override
+    public Optional<Instant> getLastModified(String apiId, String collectionId) {
+        return Optional.ofNullable(getTypeMap(apiId, collectionId).get(MetadataType.lastModified))
+                       .map(CollectionMetadataLastModified.class::cast)
+                       .map(CollectionMetadataLastModified::getValue);
     }
 
     private Map<MetadataType, CollectionMetadataEntry> getTypeMap(String apiId, String collectionId) {

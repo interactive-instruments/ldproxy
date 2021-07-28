@@ -208,9 +208,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                                       tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
                                                                                       center,
                                                                                       collectionId,
-                                                                                      collectionId.isEmpty()
-                                                                                              ? metadataRegistry.getSpatialExtent(apiData.getId())
-                                                                                              : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get()),
+                                                                                      metadataRegistry.getSpatialExtent(apiData.getId(), collectionId),
                                                                                       vectorTilesLinkGenerator.generateTileSetEmbeddedLinks(requestContext.getUriCustomizer(),
                                                                                                                                             tileMatrixSet.getId(),
                                                                                                                                             tileFormats,
@@ -271,9 +269,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         List<Double> center = queryInput.getCenter();
         TileSet tileset = TilesHelper.buildTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
                                                    zoomLevels, center, collectionId,
-                                                   collectionId.isEmpty()
-                                                           ? metadataRegistry.getSpatialExtent(apiData.getId())
-                                                           : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get()),
+                                                   metadataRegistry.getSpatialExtent(apiData.getId(), collectionId),
                                                    links, Optional.of(requestContext.getUriCustomizer().copy()),
                                                    limitsGenerator, schemaGeneratorFeature);
         

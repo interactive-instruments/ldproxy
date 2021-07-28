@@ -11,7 +11,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.I18n;
@@ -77,17 +77,20 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
     private final MetricRegistry metricRegistry;
     private final EntityRegistry entityRegistry;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
     public FeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
                                           @Requires CrsTransformerFactory crsTransformerFactory,
                                           @Requires Dropwizard dropwizard,
-                                          @Requires EntityRegistry entityRegistry) {
+                                          @Requires EntityRegistry entityRegistry,
+                                          @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
 
         this.metricRegistry = dropwizard.getEnvironment()
                                         .metrics();
+        this.metadataRegistry = metadataRegistry;
 
         this.queryHandlers = ImmutableMap.of(
                 Query.FEATURES, QueryHandler.with(QueryInputFeatures.class, this::getItemsResponse),
@@ -246,8 +249,16 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
-        Date lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
-        EntityTag etag = isCollection ? null : getEtag(lastModified);
+        Date lastModified;
+        EntityTag etag;
+        Optional<Date> lastModifiedFromMetadata = metadataRegistry.getLastModified(api.getId(), collectionId).map(Date::from);
+        if (lastModifiedFromMetadata.isPresent()) {
+            lastModified = lastModifiedFromMetadata.get();
+            etag = getEtag(lastModified);
+        } else {
+            lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
+            etag = isCollection ? null : getEtag(lastModified);
+        }
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

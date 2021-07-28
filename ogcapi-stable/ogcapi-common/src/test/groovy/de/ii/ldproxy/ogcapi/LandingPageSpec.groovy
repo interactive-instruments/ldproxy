@@ -34,6 +34,8 @@ import spock.lang.Specification
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Request
 import javax.ws.rs.core.SecurityContext
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class LandingPageSpec extends Specification {
 
@@ -257,6 +259,16 @@ class LandingPageSpec extends Specification {
             @Override
             Optional<TemporalExtent> getTemporalExtent(String apiId, String collectionId) {
                 return Optional.of(TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+            }
+
+            @Override
+            Optional<Instant> getLastModified(String apiId) {
+                return Optional.of(Instant.now().truncatedTo(ChronoUnit.SECONDS))
+            }
+
+            @Override
+            Optional<Instant> getLastModified(String apiId, String collectionId) {
+                return Optional.of(Instant.now().truncatedTo(ChronoUnit.SECONDS))
             }
         }
     }

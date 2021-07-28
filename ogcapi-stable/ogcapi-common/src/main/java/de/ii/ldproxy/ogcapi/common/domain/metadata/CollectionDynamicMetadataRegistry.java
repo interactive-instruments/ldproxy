@@ -12,6 +12,7 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 
+import java.time.Instant;
 import java.util.Optional;
 
 public interface CollectionDynamicMetadataRegistry {
@@ -107,4 +108,39 @@ public interface CollectionDynamicMetadataRegistry {
      * @return the temporal extent in the Gregorian calendar
      */
     Optional<TemporalExtent> getTemporalExtent(String apiId, String collectionId);
+
+    /**
+     * Determine timestamp of the last modification of all collections in the dataset.
+     *
+     * @param apiId the ID of the API
+     * @return the temporal extent in the Gregorian calendar
+     */
+    Optional<Instant> getLastModified(String apiId);
+
+    /**
+     * Determine timestamp of the last modification in a collection.
+     *
+     * @param apiId the ID of the API
+     * @param collectionId the name of the feature type
+     * @return the temporal extent in the Gregorian calendar
+     */
+    Optional<Instant> getLastModified(String apiId, String collectionId);
+
+    // convenience methods
+
+    default Optional<BoundingBox> getSpatialExtent(String apiId, Optional<String> collectionId) {
+        return collectionId.isPresent()
+                ? getSpatialExtent(apiId, collectionId.get())
+                : getSpatialExtent(apiId);
+    }
+    default Optional<TemporalExtent> getTemporalExtent(String apiId, Optional<String> collectionId) {
+        return collectionId.isPresent()
+                ? getTemporalExtent(apiId, collectionId.get())
+                : getTemporalExtent(apiId);
+    }
+    default Optional<Instant> getLastModified(String apiId, Optional<String> collectionId) {
+        return collectionId.isPresent()
+                ? getLastModified(apiId, collectionId.get())
+                : getLastModified(apiId);
+    }
 }

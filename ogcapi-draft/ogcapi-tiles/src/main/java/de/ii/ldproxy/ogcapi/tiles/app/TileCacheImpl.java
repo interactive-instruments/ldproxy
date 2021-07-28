@@ -316,11 +316,8 @@ public class TileCacheImpl implements TileCache {
             TileMatrixSet tileMatrixSet = getTileMatrixSetById(tileset.getKey());
             MinMax levels = tileset.getValue();
 
-            BoundingBox bbox = boundingBox.orElseGet(() -> collectionId.isEmpty()
-                    ? metadataRegistry.getSpatialExtent(apiData.getId())
-                             .orElse(tileMatrixSet.getBoundingBox())
-                    : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get())
-                             .orElse(tileMatrixSet.getBoundingBox()));
+            BoundingBox bbox = boundingBox.orElseGet(() -> metadataRegistry.getSpatialExtent(apiData.getId(), collectionId)
+                                                                           .orElse(tileMatrixSet.getBoundingBox()));
 
             // first the dataset tiles
             deleteTiles(apiData, Optional.empty(), tileMatrixSet, levels, bbox);
@@ -438,9 +435,7 @@ public class TileCacheImpl implements TileCache {
                                                                    config.getZoomLevelsDerived().get(tileMatrixSetId),
                                                                    config.getCenterDerived(),
                                                                    collectionId,
-                                                                   collectionId.isEmpty()
-                                                                           ? metadataRegistry.getSpatialExtent(apiData.getId())
-                                                                           : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get()),
+                                                                   metadataRegistry.getSpatialExtent(apiData.getId(), collectionId),
                                                                    ImmutableList.of(),
                                                                    Optional.empty(),
                                                                    limitsGenerator,

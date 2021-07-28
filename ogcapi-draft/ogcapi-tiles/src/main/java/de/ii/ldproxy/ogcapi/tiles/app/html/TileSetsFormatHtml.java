@@ -134,8 +134,8 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                                                                      .stream()
                                                                      .collect(Collectors.toMap(TileMatrixSet::getId, tms -> tms));
 
-        Optional<BoundingBox> optionalBbox = collectionId.isEmpty() ? metadataRegistry.getSpatialExtent(api.getId()) : metadataRegistry.getSpatialExtent(api.getId(), collectionId.get());
-        Optional<TemporalExtent> optionalInterval = collectionId.isEmpty() ? metadataRegistry.getTemporalExtent(api.getId()) : metadataRegistry.getTemporalExtent(api.getId(), collectionId.get());
+        Optional<BoundingBox> optionalBbox = metadataRegistry.getSpatialExtent(api.getId(), collectionId);
+        Optional<TemporalExtent> optionalInterval = metadataRegistry.getTemporalExtent(api.getId(), collectionId);
         return new TileSetsView(api.getData(), collectionId, optionalBbox.orElse(null), optionalInterval.orElse(null), tiles, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 }
