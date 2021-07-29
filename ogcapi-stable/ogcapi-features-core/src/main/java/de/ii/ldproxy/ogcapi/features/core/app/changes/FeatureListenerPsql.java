@@ -287,7 +287,7 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
         List<String> list = Splitter.on(",").trimResults().splitToList(notification.getParameter());
         if (list.size()<9) {
             // ignore incomplete notification
-            LOGGER.warn("Could not parse a PostgreSQL change notification, the notification is ignored: the notification is incomplete '{}'", list);
+            LOGGER.warn("Could not parse a PostgreSQL change notification, the notification is incomplete and ignored: '{}'", notification.getParameter());
             return;
         }
 
