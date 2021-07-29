@@ -296,11 +296,11 @@ public class TileCacheImpl implements TileCache {
     @Override
     public void deleteTiles(OgcApiDataV2 apiData, Optional<String> collectionId,
                             Optional<String> tileMatrixSetId, Optional<BoundingBox> boundingBox) throws IOException, SQLException {
-        LOGGER.info("Purging tile cache for collection '{}', tiling scheme '{}', bounding box '{}'",
-                    collectionId.orElse("*"), tileMatrixSetId.orElse("*"),
-                    boundingBox.isEmpty() ? "*" : String.format(Locale.US, "%f,%f,%f,%f",
-                                                                boundingBox.get().getXmin(), boundingBox.get().getYmin(),
-                                                                boundingBox.get().getXmax(), boundingBox.get().getYmax()));
+        LOGGER.debug("Purging tile cache for collection '{}', tiling scheme '{}', bounding box '{}'",
+                     collectionId.orElse("*"), tileMatrixSetId.orElse("*"),
+                     boundingBox.isEmpty() ? "*" : String.format(Locale.US, "%f,%f,%f,%f",
+                                                                 boundingBox.get().getXmin(), boundingBox.get().getYmin(),
+                                                                 boundingBox.get().getXmax(), boundingBox.get().getYmax()));
 
         Optional<TilesConfiguration> config = collectionId.isEmpty()
                 ? apiData.getExtension(TilesConfiguration.class)
@@ -527,7 +527,7 @@ public class TileCacheImpl implements TileCache {
         MbtilesTileset tileset = getOrInitTileset(apiData, collectionId, tileMatrixSet);
         List<TileMatrixSetLimits> limitsList = getLimits(apiData, tileMatrixSet, levels, collectionId, bbox);
         for (TileMatrixSetLimits limits : limitsList) {
-            LOGGER.debug("Deleting tiles from Mbtiles cache: API {}, collection {}, tiles {}/{}/{}-{}/{}-{}, TMS rows {}-{}",
+            LOGGER.trace("Deleting tiles from Mbtiles cache: API {}, collection {}, tiles {}/{}/{}-{}/{}-{}, TMS rows {}-{}",
                          apiData.getId(), collectionId.orElse("all"), tileMatrixSet.getId(),
                          limits.getTileMatrix(), limits.getMinTileRow(), limits.getMaxTileRow(),
                          limits.getMinTileCol(), limits.getMaxTileCol(),
@@ -541,7 +541,7 @@ public class TileCacheImpl implements TileCache {
                                   TileMatrixSet tileMatrixSet, MinMax levels, BoundingBox bbox) throws SQLException, IOException {
         List<TileMatrixSetLimits> limitsList = getLimits(apiData, tileMatrixSet, levels, collectionId, bbox);
         for (TileMatrixSetLimits limits : limitsList) {
-            LOGGER.debug("Deleting tiles from file cache: API {}, collection {}, tiles {}/{}/{}-{}/{}-{}, extensions {}",
+            LOGGER.trace("Deleting tiles from file cache: API {}, collection {}, tiles {}/{}/{}-{}/{}-{}, extensions {}",
                          apiData.getId(), collectionId.orElse("all"), tileMatrixSet.getId(),
                          limits.getTileMatrix(), limits.getMinTileRow(), limits.getMaxTileRow(),
                          limits.getMinTileCol(), limits.getMaxTileCol(),
