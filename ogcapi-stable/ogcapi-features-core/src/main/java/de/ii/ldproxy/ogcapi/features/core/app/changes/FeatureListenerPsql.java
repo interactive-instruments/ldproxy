@@ -25,6 +25,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.changes.ChangeContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.changes.FeatureChangeAction;
 import de.ii.ldproxy.ogcapi.features.core.domain.changes.FeatureChangeActionsRegistry;
 import de.ii.ldproxy.ogcapi.features.core.domain.changes.ImmutableChangeContext;
+import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
@@ -40,6 +41,7 @@ import org.postgresql.PGNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -304,15 +306,9 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
                 ChangeContext changeContext = new ImmutableChangeContext.Builder().operation(operation)
                                                                                   .apiData(apiData)
                                                                                   .collectionId(collectionId)
-                                                                                  // TODO handle NULLs in the following
-                                                                                  .featureIds(ImmutableList.of(list.get(2)))
-                                                                                  .interval(TemporalExtent.of(Instant.parse(list.get(3)).toEpochMilli(),
-                                                                                                              Instant.parse(list.get(4)).toEpochMilli()))
-                                                                                  .boundingBox(BoundingBox.of(Double.parseDouble(list.get(5)),
-                                                                                                              Double.parseDouble(list.get(6)),
-                                                                                                              Double.parseDouble(list.get(7)),
-                                                                                                              Double.parseDouble(list.get(8)),
-                                                                                                              OgcCrs.CRS84))
+                                                                                  .featureIds(parseFeatureId(list.get(2)))
+                                                                                  .interval(parseInterval(list.subList(3, 5)))
+                                                                                  .boundingBox(parseBbox(list.subList(5, 9)))
                                                                                   .build();
                 LOGGER.trace("Executing pipeline: {}, {}, {}, {}", changeContext.getOperation(), changeContext.getFeatureIds(), changeContext.getInterval(), changeContext.getBoundingBox());
                 executePipeline(featureChangeActions.iterator()).accept(changeContext);
@@ -321,6 +317,59 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
             }
         } else {
             LOGGER.warn("Could not parse a PostgreSQL change notification, the notification is ignored: unknown operation '{}'", list.get(0));
+        }
+    }
+
+    @Nonnull
+    private static List<String> parseFeatureId(String featureId) {
+        if (featureId.isEmpty() || featureId.equalsIgnoreCase("NULL"))
+            return ImmutableList.of();
+
+        return ImmutableList.of(featureId);
+    }
+
+    @Nonnull
+    private static Optional<TemporalExtent> parseInterval(List<String> interval) {
+        if (interval.get(0).isEmpty()) {
+        // ignore
+        } else if (interval.get(1).isEmpty()) {
+            try {
+                Long instant = parseTimestamp(interval.get(0));
+                if (Objects.nonNull(instant))
+                    return Optional.of(TemporalExtent.of(instant,instant));
+            } catch (Exception e) {
+                // ignore
+            }
+        } else {
+            try {
+                Long begin = parseTimestamp(interval.get(0));
+                Long end = parseTimestamp(interval.get(1));
+                return Optional.of(TemporalExtent.of(begin,end));
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static Long parseTimestamp(String timestamp) {
+        try {
+            return Instant.parse(timestamp).toEpochMilli();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Nonnull
+    private static Optional<BoundingBox> parseBbox(List<String> bbox) {
+        try {
+            return Optional.of(BoundingBox.of(Double.parseDouble(bbox.get(0)),
+                                              Double.parseDouble(bbox.get(1)),
+                                              Double.parseDouble(bbox.get(2)),
+                                              Double.parseDouble(bbox.get(3)),
+                                              OgcCrs.CRS84));
+        } catch (Exception e) {
+            return Optional.empty();
         }
     }
 }
