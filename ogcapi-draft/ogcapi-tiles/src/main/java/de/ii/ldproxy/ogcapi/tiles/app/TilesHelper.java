@@ -102,13 +102,18 @@ public class TilesHelper {
                                             ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
                                             : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
 
-        bbox.ifPresent(boundingBox -> builder.boundingBox(ImmutableTilesBoundingBox.builder()
-                                                                                   .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
-                                                                                              BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
-                                                                                   .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
-                                                                                               BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
-                                                                                   .crsEpsg(OgcCrs.CRS84)
-                                                                                   .build()));
+        bbox.ifPresentOrElse(boundingBox -> builder.boundingBox(ImmutableTilesBoundingBox.builder()
+                                                                                         .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
+                                                                                                    BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
+                                                                                         .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
+                                                                                                     BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
+                                                                                         .crsEpsg(OgcCrs.CRS84)
+                                                                                         .build()),
+                             () -> builder.boundingBox(ImmutableTilesBoundingBox.builder()
+                                                                                .lowerLeft(new BigDecimal(-180), new BigDecimal(-90))
+                                                                                .upperRight(new BigDecimal(180), new BigDecimal(90))
+                                                                                .crsEpsg(OgcCrs.CRS84)
+                                                                                .build()));
 
         if (zoomLevels.getDefault().isPresent() || Objects.nonNull(center)) {
             ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();

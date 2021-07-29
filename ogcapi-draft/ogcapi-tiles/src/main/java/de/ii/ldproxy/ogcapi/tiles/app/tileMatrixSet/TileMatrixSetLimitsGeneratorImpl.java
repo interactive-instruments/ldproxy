@@ -64,7 +64,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         Optional<BoundingBox> bbox = metadataRegistry.getSpatialExtent(data.getId(), collectionId);
 
         if (bbox.isEmpty()) {
-            LOGGER.error("Cannot generate tile matrix set limits.");
+            LOGGER.debug("Cannot generate tile matrix set limits without a bounding box. The extent information may not yet be available.");
             return ImmutableList.of();
         }
 
@@ -90,7 +90,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         }
 
         if (bbox.isEmpty()) {
-            LOGGER.error("Cannot generate tile matrix set limits.");
+            LOGGER.debug("Cannot generate tile matrix set limits without a bounding box. The extent information may not yet be available.");
             return ImmutableList.of();
         }
 
