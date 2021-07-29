@@ -53,7 +53,7 @@ public class CollectionDynamicMetadataRegistryImpl implements CollectionDynamicM
     public void put(String apiId, String collectionId, MetadataType type, CollectionMetadataEntry value) {
         Map<MetadataType, CollectionMetadataEntry> typeMap = getTypeMap(apiId, collectionId);
         typeMap.put(type, value);
-        LOGGER.info("Metadata '{}' of collection '{}' initialized as {}.", type, collectionId, value.getValue().toString());
+        LOGGER.debug("Metadata '{}' of collection '{}' initialized as {}.", type, collectionId, value.getValue().toString());
     }
 
     @Override
@@ -77,7 +77,7 @@ public class CollectionDynamicMetadataRegistryImpl implements CollectionDynamicM
     @Override
     public boolean remove(String apiId, String collectionId, MetadataType type) {
         Map<MetadataType, CollectionMetadataEntry> typeMap = getTypeMap(apiId, collectionId);
-        LOGGER.info("Metadata '{}' of collection '{}' removed.", type, collectionId);
+        LOGGER.debug("Metadata '{}' of collection '{}' removed.", type, collectionId);
         return Objects.nonNull(typeMap.remove(type));
     }
 
