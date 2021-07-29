@@ -51,7 +51,7 @@ public class CollectionDynamicMetadataRegistryImpl implements CollectionDynamicM
     public void put(String apiId, String collectionId, MetadataType type, CollectionMetadataEntry value) {
         Map<MetadataType, CollectionMetadataEntry> typeMap = getTypeMap(apiId, collectionId);
         typeMap.put(type, value);
-        LOGGER.debug("Metadata '{}' of collection '{}' added as {}.", type, collectionId, value.getValue().toString());
+        LOGGER.debug("Metadata '{}' of collection '{}' in API '{}' added as {}.", type, collectionId, apiId, value.getValue().toString());
     }
 
     @Override
@@ -60,22 +60,22 @@ public class CollectionDynamicMetadataRegistryImpl implements CollectionDynamicM
         CollectionMetadataEntry current = typeMap.get(type);
         if (Objects.isNull(current)) {
             typeMap.put(type, delta);
-            LOGGER.debug("Metadata '{}' of collection '{}' changed to {}.", type, collectionId, delta.getValue().toString());
+            LOGGER.debug("Metadata '{}' of collection '{}' in API '{}' changed to {}.", type, collectionId, apiId, delta.getValue().toString());
             return false;
         }
 
         Optional<CollectionMetadataEntry> updated = current.updateWith(delta);
         updated.ifPresentOrElse(value -> {
             typeMap.put(type, value);
-            LOGGER.debug("Metadata '{}' of collection '{}' updated to {}.", type, collectionId, value.getValue().toString());
-        }, () -> LOGGER.trace("Metadata '{}' of collection '{}' unchanged as {}", type, collectionId, current.getValue().toString()));
+            LOGGER.debug("Metadata '{}' of collection '{}' in API '{}' updated to {}.", type, collectionId, apiId, value.getValue().toString());
+        }, () -> LOGGER.trace("Metadata '{}' of collection '{}' in API '{}' unchanged as {}", type, collectionId, apiId, current.getValue().toString()));
         return updated.isPresent();
     }
 
     @Override
     public boolean remove(String apiId, String collectionId, MetadataType type) {
         Map<MetadataType, CollectionMetadataEntry> typeMap = getTypeMap(apiId, collectionId);
-        LOGGER.debug("Metadata '{}' of collection '{}' removed.", type, collectionId);
+        LOGGER.debug("Metadata '{}' of collection '{}' in API '{}' removed.", type, collectionId, apiId);
         return Objects.nonNull(typeMap.remove(type));
     }
 
