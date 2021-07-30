@@ -5,11 +5,11 @@
 Unterstützt werden derzeit die folgenden Standards bzw. aktuelle Entwürfe von zukünftigen Standards:
 
 * [OGC API - Features - Part 1: Core, Version 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0)
-* [OGC API - Features - Part 2: Coordinate Reference Systems by Reference, Entwurf](http://docs.opengeospatial.org/DRAFTS/18-058.html)
-* [OGC API - Features - Part 3: Common Query Language, Entwurf](http://docs.opengeospatial.org/DRAFTS/19-079.html)
-* [OGC API - Features - Part 4: Simple Transactions, Entwurf](http://docs.opengeospatial.org/DRAFTS/20-002.html)
-* [OGC API - Tiles - Part 1: Core, Entwurf](https://htmlpreview.github.io/?https://github.com/opengeospatial/OGC-API-Tiles/blob/master/core/standard/OAPI_Tiles.html)
-* [OGC API - Styles, Entwurf](http://docs.opengeospatial.org/DRAFTS/20-009.html)
+* [OGC API - Features - Part 2: Coordinate Reference Systems by Reference 1.0](http://www.opengis.net/doc/IS/ogcapi-features-2/1.0)
+* [OGC API - Features - Part 3: Filtering and the Common Query Language (CQL), Entwurf](https://docs.ogc.org/DRAFTS/19-079r1.html)
+* [OGC API - Features - Part 4: Create, Replace, Update and Delete, Entwurf](https://docs.ogc.org/DRAFTS/20-002.html)
+* [OGC API - Tiles - Part 1: Core, Entwurf](https://docs.ogc.org/DRAFTS/20-057.html)
+* [OGC API - Styles, Entwurf](https://docs.ogc.org/DRAFTS/20-009.html)
 
 Die in ldproxy implementierte Funktionalität weicht bei Entwürfen aufgrund der dynamischen Entwicklung teilweise von der in den aktuellen Entwürfen beschriebenen Spezifikation ab.
 
