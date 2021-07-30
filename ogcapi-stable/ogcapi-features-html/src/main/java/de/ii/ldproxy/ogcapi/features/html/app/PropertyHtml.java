@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerFlatten;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,7 +41,9 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
 
   @Value.Default
   default String getName() {
-    return getSchema().flatMap(FeatureSchema::getLabel).orElse(getSchema().map(FeatureSchema::getName).orElse(""));
+    return isFlattened()
+    ? getSchema().map(FeatureSchema::getName).orElse("")
+    : getSchema().flatMap(FeatureSchema::getLabel).orElse(getSchema().map(FeatureSchema::getName).orElse(""));
   }
 
   @Value.Lazy
@@ -114,27 +117,27 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
 
   @Value.Lazy
   default boolean isLevel1() {
-    return getPropertyPath().size()==1;
+    return isFlattened() || getLevel() == 1;
   }
 
   @Value.Lazy
   default boolean isLevel2() {
-    return getPropertyPath().size()==2;
+    return !isFlattened() && getLevel() == 2;
   }
 
   @Value.Lazy
   default boolean isLevel3() {
-    return getPropertyPath().size()==3;
+    return !isFlattened() && getLevel() == 3;
   }
 
   @Value.Lazy
   default boolean isLevel4() {
-    return getPropertyPath().size()==4;
+    return !isFlattened() && getLevel() == 4;
   }
 
   @Value.Lazy
   default boolean isLevel5() {
-    return getPropertyPath().size()==5;
+    return !isFlattened() && getLevel() >= 5;
   }
 
   @Value.Lazy
@@ -154,6 +157,11 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
             .filter(Optional::isPresent)
             .map(Optional::get)
             .findFirst());
+  }
+
+  @Value.Lazy
+  default boolean isFlattened() {
+    return getTransformed().containsKey(FeaturePropertyTransformerFlatten.TYPE);
   }
 
   Splitter PATH_SPLITTER = Splitter.on('.').omitEmptyStrings();

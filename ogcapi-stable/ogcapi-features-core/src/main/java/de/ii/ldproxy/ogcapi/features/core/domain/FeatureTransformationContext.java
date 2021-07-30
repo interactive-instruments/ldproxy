@@ -8,10 +8,13 @@
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -113,6 +116,12 @@ public interface FeatureTransformationContext {
                                  .toString();
     }
 
+    @Value.Derived
+    @Value.Auxiliary
+    default Optional<FeatureTypeConfigurationOgcApi> getCollection() {
+        return Optional.ofNullable(getApiData().getCollections().get(getCollectionId()));
+    }
+
     // TODO: to geometry simplification module
     @Value.Default
     default double getMaxAllowableOffset() {
@@ -143,5 +152,11 @@ public interface FeatureTransformationContext {
         public abstract List<Integer> getCurrentMultiplicity();
 
         public abstract Optional<String> getCurrentValue();
+    }
+
+    default <T extends ExtensionConfiguration> T getConfiguration(Class<T> clazz) {
+        return Optional.ofNullable(getApiData().getCollections().get(getCollectionId()))
+            .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(clazz))
+            .or(() -> getApiData().getExtension(clazz)).orElseThrow();
     }
 }

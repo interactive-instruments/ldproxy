@@ -12,7 +12,6 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
@@ -26,7 +25,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, FeatureHtml, byte[]> {
+public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, FeatureHtml> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderHtml.class);
 
@@ -48,13 +47,15 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
   @Override
   public void onStart(ModifiableContext context) {
-    if (transformationContext.isFeatureCollection() && context.metadata().getNumberReturned().isPresent()) {
+    if (transformationContext.isFeatureCollection() && context.metadata().getNumberReturned()
+        .isPresent()) {
       long returned = context.metadata().getNumberReturned().getAsLong();
       long matched = context.metadata().getNumberMatched().orElse(-1);
 
       long pages = Math.max(transformationContext.getPage(), 0);
       if (returned > 0 && matched > -1) {
-        pages = Math.max(pages, matched / transformationContext.getLimit() + (matched % transformationContext.getLimit() > 0 ? 1 : 0));
+        pages = Math.max(pages, matched / transformationContext.getLimit() + (
+            matched % transformationContext.getLimit() > 0 ? 1 : 0));
       }
 
       LOGGER.debug("numberMatched {}", matched);
@@ -63,15 +64,19 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       LOGGER.debug("page {}", transformationContext.getPage());
       LOGGER.debug("pages {}", pages);
 
-
       ImmutableList.Builder<NavigationDTO> pagination = new ImmutableList.Builder<>();
       ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();
       if (transformationContext.getPage() > 1) {
         pagination
-            .add(new NavigationDTO("«", String.format("limit=%d&offset=%d", transformationContext.getLimit(), 0)))
-            .add(new NavigationDTO("‹", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() - transformationContext.getLimit())));
+            .add(new NavigationDTO("«",
+                String.format("limit=%d&offset=%d", transformationContext.getLimit(), 0)))
+            .add(new NavigationDTO("‹",
+                String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                    transformationContext.getOffset() - transformationContext.getLimit())));
         metaPagination
-            .add(new NavigationDTO("prev", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() - transformationContext.getLimit())));
+            .add(new NavigationDTO("prev",
+                String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                    transformationContext.getOffset() - transformationContext.getLimit())));
       } else {
         pagination
             .add(new NavigationDTO("«"))
@@ -88,16 +93,24 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
           if (i == transformationContext.getPage()) {
             pagination.add(new NavigationDTO(String.valueOf(i), true));
           } else {
-            pagination.add(new NavigationDTO(String.valueOf(i), String.format("limit=%d&offset=%d", transformationContext.getLimit(), (i - 1) * transformationContext.getLimit())));
+            pagination.add(new NavigationDTO(String.valueOf(i),
+                String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                    (i - 1) * transformationContext.getLimit())));
           }
         }
 
         if (transformationContext.getPage() < pages) {
           pagination
-              .add(new NavigationDTO("›", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() + transformationContext.getLimit())))
-              .add(new NavigationDTO("»", String.format("limit=%d&offset=%d", transformationContext.getLimit(), (pages - 1) * transformationContext.getLimit())));
+              .add(new NavigationDTO("›",
+                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                      transformationContext.getOffset() + transformationContext.getLimit())))
+              .add(new NavigationDTO("»",
+                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                      (pages - 1) * transformationContext.getLimit())));
           metaPagination
-              .add(new NavigationDTO("next", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() + transformationContext.getLimit())));
+              .add(new NavigationDTO("next",
+                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                      transformationContext.getOffset() + transformationContext.getLimit())));
         } else {
           pagination
               .add(new NavigationDTO("›"))
@@ -110,59 +123,60 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
           if (i == transformationContext.getPage()) {
             pagination.add(new NavigationDTO(String.valueOf(i), true));
           } else {
-            pagination.add(new NavigationDTO(String.valueOf(i), String.format("limit=%d&offset=%d", transformationContext.getLimit(), (i - 1) * transformationContext.getLimit())));
+            pagination.add(new NavigationDTO(String.valueOf(i),
+                String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                    (i - 1) * transformationContext.getLimit())));
           }
         }
         if (returned >= transformationContext.getLimit()) {
           pagination
-              .add(new NavigationDTO("›", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() + transformationContext.getLimit())));
+              .add(new NavigationDTO("›",
+                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                      transformationContext.getOffset() + transformationContext.getLimit())));
           metaPagination
-              .add(new NavigationDTO("next", String.format("limit=%d&offset=%d", transformationContext.getLimit(), transformationContext.getOffset() + transformationContext.getLimit())));
+              .add(new NavigationDTO("next",
+                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+                      transformationContext.getOffset() + transformationContext.getLimit())));
         } else {
           pagination
               .add(new NavigationDTO("›"));
         }
       }
 
-      transformationContext.collection().pagination = pagination.build();
-      transformationContext.collection().metaPagination = metaPagination.build();
+      transformationContext.collectionView().pagination = pagination.build();
+      transformationContext.collectionView().metaPagination = metaPagination.build();
 
     } else if (transformationContext.isFeatureCollection()) {
-      LOGGER.error("Pagination not supported by feature provider, the number of matched items was not provided.");
+      LOGGER.error(
+          "Pagination not supported by feature provider, the number of matched items was not provided.");
     }
   }
 
   @Override
   public void onFeature(FeatureHtml feature) {
-    transformationContext.featuresHtmlConfiguration().getFeatureTitleTemplate().ifPresent(label -> transformationContext.collection().name = label);
-
-    //TODO
-    if (!feature.hasObjects()) {
-      feature.getProperties().forEach(propertyHtml -> propertyHtml.name(propertyHtml.getSchema().map(
-          FeatureSchema::getName).orElseGet(propertyHtml::getName)).propertyPath(ImmutableList.of(propertyHtml.getName())));
+    if (transformationContext.collectionView().hideMap && feature.hasGeometry()) {
+      transformationContext.collectionView().hideMap = false;
     }
 
-    if (transformationContext.collection().hideMap && feature.hasGeometry()) {
-      transformationContext.collection().hideMap = false;
-    }
-
-    Optional<String> itemLabelFormat = transformationContext.featuresHtmlConfiguration().getFeatureTitleTemplate();
-    if (itemLabelFormat.isPresent()) {
-      feature.name(StringTemplateFilters.applyTemplate(itemLabelFormat.get(),
-          pathString -> feature.findPropertyByPath(pathString).map(PropertyHtml::getFirstValue).orElse(null)));
-    }
+    transformationContext.featuresHtmlConfiguration()
+        .getFeatureTitleTemplate()
+        .ifPresent(template -> feature.name(StringTemplateFilters.applyTemplate(template,
+            pathString -> feature.findPropertyByPath(pathString).map(PropertyHtml::getFirstValue)
+                .orElse(null))));
 
     //TODO: generalize as schema/value transformer
     transformLinks(feature.getProperties());
 
     //TODO: generalize as value transformer
     if (transformationContext.getI18n().isPresent()) {
-      translateBooleans(feature.getProperties(), transformationContext.getI18n().get(), transformationContext.getLanguage());
+      translateBooleans(feature.getProperties(), transformationContext.getI18n().get(),
+          transformationContext.getLanguage());
     }
 
     if (!transformationContext.isFeatureCollection()) {
-      transformationContext.collection().title = feature.getName();
-      transformationContext.collection().breadCrumbs.get(transformationContext.collection().breadCrumbs.size() - 1).label = feature.getName();
+      transformationContext.collectionView().title = feature.getName();
+      transformationContext.collectionView().breadCrumbs.get(
+          transformationContext.collectionView().breadCrumbs.size() - 1).label = feature.getName();
     } else {
       feature.inCollection(true);
     }
@@ -172,7 +186,7 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       feature.getId().ifPresent(id -> id.itemProp("url"));
     }
 
-    transformationContext.collection().features.add(feature);
+    transformationContext.collectionView().features.add(feature);
   }
 
   @Override
@@ -182,7 +196,8 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     OutputStreamWriter writer = new OutputStreamWriter(new OutputStreamToByteConsumer(this::push));
 
     try {
-      ((MustacheRenderer)transformationContext.mustacheRenderer()).render(transformationContext.collection(), writer);
+      ((MustacheRenderer) transformationContext.mustacheRenderer()).render(
+          transformationContext.collectionView(), writer);
       writer.flush();
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -193,37 +208,39 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     for (int i = 0; i < properties.size(); i++) {
       PropertyHtml property = properties.get(i);
       if (property.isObject()
-        && property.getSchema()
-            .flatMap(schema -> schema.getObjectType()
-                .filter(objectType -> Objects.equals(objectType, "Link")))
-            .isPresent()) {
+          && property.getSchema()
+          .flatMap(schema -> schema.getObjectType()
+              .filter(objectType -> Objects.equals(objectType, "Link")))
+          .isPresent()) {
 
-          String href = property.getNestedProperties().stream()
-              .filter(valueProperty -> valueProperty.getSchema()
-                  .filter(schema -> schema.getName().equals("href")).isPresent())
-              .findFirst()
-              .flatMap(valueProperty -> Optional.ofNullable(valueProperty.getValue()))
-              .orElse("");
-          String title = property.getNestedProperties().stream()
-              .filter(valueProperty -> valueProperty.getSchema()
-                  .filter(schema -> schema.getName().equals("title")).isPresent())
-              .findFirst()
-              .flatMap(valueProperty -> Optional.ofNullable(valueProperty.getValue()))
-              .orElse("Link");
+        String href = property.getNestedProperties().stream()
+            .filter(valueProperty -> valueProperty.getSchema()
+                .filter(schema -> schema.getName().equals("href")).isPresent())
+            .findFirst()
+            .flatMap(valueProperty -> Optional.ofNullable(valueProperty.getValue()))
+            .orElse("");
+        String title = property.getNestedProperties().stream()
+            .filter(valueProperty -> valueProperty.getSchema()
+                .filter(schema -> schema.getName().equals("title")).isPresent())
+            .findFirst()
+            .flatMap(valueProperty -> Optional.ofNullable(valueProperty.getValue()))
+            .orElse("Link");
 
-          property.type(PropertyBase.Type.VALUE);
-          property.value(String.format("<a href=\"%s\">%s</a>", href, title));
+        property.type(PropertyBase.Type.VALUE);
+        property.value(String.format("<a href=\"%s\">%s</a>", href, title));
       } else {
         transformLinks(property.getNestedProperties());
       }
     }
   }
 
-  private void translateBooleans(List<PropertyHtml> properties, I18n i18n, Optional<Locale> language) {
+  private void translateBooleans(List<PropertyHtml> properties, I18n i18n,
+      Optional<Locale> language) {
     for (PropertyHtml property : properties) {
       if (property.isValue()) {
         if (Objects.nonNull(property.getValue())
-            && property.getSchema().filter(schema -> schema.getType() == Type.BOOLEAN).isPresent()) {
+            && property.getSchema().filter(schema -> schema.getType() == Type.BOOLEAN)
+            .isPresent()) {
           if (property.getValue().matches("[fF](alse|ALSE)?|0")) {
             property.value(i18n.get("false", language));
           } else if (property.getValue().matches("[tT](rue|RUE)?|[\\-\\+]?1")) {

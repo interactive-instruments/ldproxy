@@ -23,7 +23,7 @@ import java.util.Optional;
 @Value.Style(deepImmutablesDetection = true)
 public interface FeatureTransformationContextHtml extends FeatureTransformationContext {
 
-    FeatureCollectionView collection();
+    FeatureCollectionView collectionView();
 
     MustacheRenderer mustacheRenderer();
 
@@ -34,39 +34,11 @@ public interface FeatureTransformationContextHtml extends FeatureTransformationC
 
     @Value.Derived
     default FeaturesHtmlConfiguration featuresHtmlConfiguration() {
-        Optional<FeaturesHtmlConfiguration> collectionHtmlConfiguration = Optional.ofNullable(getApiData().getCollections()
-                                                                                                  .get(getCollectionId()))
-                                                                          .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(FeaturesHtmlConfiguration.class));
-
-        if (collectionHtmlConfiguration.isPresent()) {
-            return collectionHtmlConfiguration.get();
-        }
-
-        Optional<FeaturesHtmlConfiguration> baseHtmlConfiguration = getApiData().getExtension(FeaturesHtmlConfiguration.class);
-
-        if (baseHtmlConfiguration.isPresent()) {
-            return baseHtmlConfiguration.get();
-        }
-
-        return null;
+        return getConfiguration(FeaturesHtmlConfiguration.class);
     }
 
     @Value.Derived
     default HtmlConfiguration htmlConfiguration() {
-        Optional<HtmlConfiguration> collectionHtmlConfiguration = Optional.ofNullable(getApiData().getCollections()
-            .get(getCollectionId()))
-            .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(HtmlConfiguration.class));
-
-        if (collectionHtmlConfiguration.isPresent()) {
-            return collectionHtmlConfiguration.get();
-        }
-
-        Optional<HtmlConfiguration> baseHtmlConfiguration = getApiData().getExtension(HtmlConfiguration.class);
-
-        if (baseHtmlConfiguration.isPresent()) {
-            return baseHtmlConfiguration.get();
-        }
-
-        return null;
+        return getConfiguration(HtmlConfiguration.class);
     }
 }
