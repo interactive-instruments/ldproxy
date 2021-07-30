@@ -275,7 +275,7 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     }
 
     @Override
-    public Optional<FeatureTokenEncoder<byte[], ?>> getFeatureEncoder(
+    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
         FeatureTransformationContext transformationContext,
         Optional<Locale> language) {
 

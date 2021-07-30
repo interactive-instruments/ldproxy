@@ -37,7 +37,6 @@ import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureSchemaToTypeVisitor;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -219,7 +218,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     }
 
     @Override
-    public Optional<FeatureTokenEncoder<byte[], ?>> getFeatureEncoder(
+    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
         FeatureTransformationContext transformationContext, Optional<Locale> language) {
         OgcApiDataV2 serviceData = transformationContext.getApiData();
         String collectionName = transformationContext.getCollectionId();
@@ -275,7 +274,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
         ImmutableFeatureTransformationContextHtml transformationContextHtml = ImmutableFeatureTransformationContextHtml.builder()
             .from(transformationContext)
-            .collection(featureTypeDataset)
+            .collectionView(featureTypeDataset)
             .codelists(entityRegistry.getEntitiesForType(Codelist.class)
                 .stream()
                 .collect(Collectors.toMap(c -> c.getId(), c -> c)))

@@ -49,7 +49,7 @@ public interface FeatureFormatExtension extends FormatExtension {
         return Optional.empty();
     }
 
-    default Optional<FeatureTokenEncoder<byte[], ?>> getFeatureEncoder(
+    default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
       FeatureTransformationContext transformationContext,
       Optional<Locale> language) {
         return Optional.empty();

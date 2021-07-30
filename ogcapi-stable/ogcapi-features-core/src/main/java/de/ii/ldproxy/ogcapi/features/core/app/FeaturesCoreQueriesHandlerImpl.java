@@ -36,14 +36,13 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSourceStream;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.Result;
-import de.ii.xtraplatform.features.domain.FeatureStream2;
 import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
+import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -244,14 +243,14 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             ImmutableFeatureTransformationContextGeneric transformationContextGeneric = transformationContext
                 .outputStream(new OutputStreamToByteConsumer())
                 .build();
-            FeatureTokenEncoder<byte[], ?> encoder = outputFormat
+            FeatureTokenEncoder<?> encoder = outputFormat
                 .getFeatureEncoder(transformationContextGeneric, requestContext.getLanguage()).get();
 
             Optional<PropertyTransformations> propertyTransformations = outputFormat
                 .getPropertyTransformations(api.getData().getCollections().get(collectionId))
                 .map(pt -> pt.withSubstitutions(ImmutableMap.of("serviceUrl", transformationContextGeneric.getServiceUrl())));
 
-            streamingOutput = stream3(featureStream, !isCollection, encoder, propertyTransformations);
+            streamingOutput = stream(featureStream, !isCollection, encoder, propertyTransformations);
         } else {
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
@@ -267,58 +266,23 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .build();
     }
 
-    private StreamingOutput stream3(FeatureStream featureTransformStream, boolean failIfEmpty,
-        final FeatureTokenEncoder<byte[], ?> encoder,
+    private StreamingOutput stream(FeatureStream featureTransformStream, boolean failIfEmpty,
+        final FeatureTokenEncoder<?> encoder,
         Optional<PropertyTransformations> propertyTransformations) {
         Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class, "stream"))
             .time();
 
         return outputStream -> {
-
-            //TODO: merge encoder and sink via TransformerCustomSink/FeatureTokenSink
-            //TODO: fuse FeatureTokenEncoder<byte[]> with Sink.outputStream
-            Sink<byte[], Void> sink = Sink.outputStream(outputStream);
+            SinkTransformed<Object, byte[]> featureSink = encoder.to(Sink.outputStream(outputStream));
 
             try {
-                Result result = featureTransformStream.runWith(encoder, sink, propertyTransformations)
+                Result result = featureTransformStream.runWith(featureSink, propertyTransformations)
                     .toCompletableFuture()
                     .join();
                 timer.stop();
 
                 if (result.getError()
                     .isPresent()) {
-                    processStreamError(result.getError().get());
-                    // the connection has been lost, typically the client has cancelled the request, log on debug level
-                    LOGGER.debug("Request cancelled due to lost connection.");
-                }
-
-                if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException("The requested feature does not exist.");
-                }
-
-            } catch (CompletionException e) {
-                if (e.getCause() instanceof WebApplicationException) {
-                    throw (WebApplicationException) e.getCause();
-                }
-                throw new IllegalStateException("Feature stream error.", e.getCause());
-            }
-        };
-    }
-
-    private StreamingOutput stream(FeatureStream2 featureTransformStream, boolean failIfEmpty,
-                                   final Function<OutputStream, FeatureTransformer2> featureTransformer) {
-        Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class, "stream"))
-                                            .time();
-
-        return outputStream -> {
-            try {
-                ResultOld result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                                                     .toCompletableFuture()
-                                                                     .join();
-                timer.stop();
-
-                if (result.getError()
-                          .isPresent()) {
                     processStreamError(result.getError().get());
                     // the connection has been lost, typically the client has cancelled the request, log on debug level
                     LOGGER.debug("Request cancelled due to lost connection.");
