@@ -30,6 +30,7 @@ public class CapabilityGeoJson implements ApiBuildingBlock {
                                                           .multiplicityStrategy(FeatureTransformerBase.MULTIPLICITY.ARRAY)
                                                           .useFormattedJsonOutput(false)
                                                           .separator(".")
+                                                          .includeEmptyObjects(false)
                                                           .build();
     }
 

@@ -73,7 +73,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
             if (currentSchema.isId()) {
                 String id = context.value();
 
-                boolean isInteger = context.valueType() == Type.INTEGER;
+                boolean isInteger = currentSchema.getType() == Type.INTEGER;
                 if (writeAtFeatureEnd) {
                     currentId = id;
                     currentIdIsInteger = isInteger;

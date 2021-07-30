@@ -9,11 +9,14 @@ package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.apache.felix.ipojo.annotations.Component;
@@ -33,6 +36,11 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   private static final Logger LOGGER = LoggerFactory.getLogger(GeoJsonWriterProperties.class);
 
   private boolean currentStarted;
+  private final List<String> nestingStack;
+
+  public GeoJsonWriterProperties() {
+    this.nestingStack = new ArrayList<>();
+  }
 
   @Override
   public GeoJsonWriterProperties create() {
@@ -67,6 +75,8 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         .isPresent()) {
       FeatureSchema schema = context.schema().get();
 
+      openObjectsIfNecessary(context.encoding());
+
       context.encoding().getJson().writeArrayFieldStart(schema.getName());
     }
 
@@ -81,11 +91,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         .isPresent()) {
       FeatureSchema schema = context.schema().get();
 
-      if (schema.isArray()) {
-        context.encoding().getJson().writeStartObject();
-      } else {
-        context.encoding().getJson().writeObjectFieldStart(schema.getName());
-      }
+      openObject(context.encoding(), context.schema().get());
     }
 
     next.accept(context);
@@ -97,7 +103,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     if (context.schema()
         .filter(FeatureSchema::isObject)
         .isPresent()) {
-      context.encoding().getJson().writeEndObject();
+      closeObject(context.encoding());
     }
 
     next.accept(context);
@@ -133,6 +139,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
       if (schema.isArray()) {
         writeValue(json, value, schema.getValueType().orElse(Type.STRING));
       } else {
+        openObjectsIfNecessary(context.encoding());
         json.writeFieldName(schema.getName());
         writeValue(json, value, schema.getType());
       }
@@ -198,6 +205,43 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         }
       default:
         json.writeString(value);
+    }
+  }
+
+  private void openObject(FeatureTransformationContextGeoJson encoding, FeatureSchema schema) throws IOException {
+    if (encoding.includeEmptyObjects()) {
+      if (schema.isArray()) {
+          encoding.getJson().writeStartObject();
+      } else {
+        encoding.getJson().writeObjectFieldStart(schema.getName());
+      }
+    } else {
+      if (schema.isArray()) {
+          nestingStack.add("O");
+      } else {
+          nestingStack.add(schema.getName());
+      }
+    }
+  }
+
+  private void closeObject(FeatureTransformationContextGeoJson encoding) throws IOException {
+    if (encoding.includeEmptyObjects() || nestingStack.isEmpty()) {
+      encoding.getJson().writeEndObject();
+    } else {
+      nestingStack.remove(nestingStack.size()-1);
+    }
+  }
+
+  private void openObjectsIfNecessary(FeatureTransformationContextGeoJson encoding) throws IOException {
+    if (!encoding.includeEmptyObjects() && !nestingStack.isEmpty()) {
+      for (String obj : nestingStack) {
+        if ("O".equals(obj)) {
+          encoding.getJson().writeStartObject();
+        } else {
+          encoding.getJson().writeObjectFieldStart(obj);
+        }
+      }
+      nestingStack.clear();
     }
   }
 }
