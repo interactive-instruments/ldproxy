@@ -359,7 +359,7 @@ class OgcApiCoreSpecCollections extends Specification {
 
             @Override
             Optional<BoundingBox> getSpatialExtent(String apiId, String collectionId, EpsgCrs targetCrs) throws CrsTransformationException {
-                return Optional.of(BoundingBox.of(-180,-90,180,90,targetCrs.CRS84))
+                return Optional.of(BoundingBox.of(-180,-90,180,90,targetCrs))
             }
 
             @Override
@@ -374,12 +374,12 @@ class OgcApiCoreSpecCollections extends Specification {
 
             @Override
             Optional<Instant> getLastModified(String apiId) {
-                return Optional.of(Instant.now().truncatedTo(ChronoUnit.SECONDS))
+                return Optional.of(Instant.now())
             }
 
             @Override
             Optional<Instant> getLastModified(String apiId, String collectionId) {
-                return Optional.of(Instant.now().truncatedTo(ChronoUnit.SECONDS))
+                return Optional.of(Instant.now())
             }
 
             @Override
