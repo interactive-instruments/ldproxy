@@ -17,7 +17,7 @@ import java.util.Optional;
 
 public interface CollectionDynamicMetadataRegistry {
 
-    // TODO This has to be in Common, not Collections, because we also include the extent information on the landing page
+    // This has to be in Common, not Collections, because we also include the extent information on the landing page
 
     /**
      * set a metadata value for a collection
@@ -113,7 +113,7 @@ public interface CollectionDynamicMetadataRegistry {
      * Determine timestamp of the last modification of all collections in the dataset.
      *
      * @param apiId the ID of the API
-     * @return the temporal extent in the Gregorian calendar
+     * @return the timestamp
      */
     Optional<Instant> getLastModified(String apiId);
 
@@ -122,9 +122,26 @@ public interface CollectionDynamicMetadataRegistry {
      *
      * @param apiId the ID of the API
      * @param collectionId the name of the feature type
-     * @return the temporal extent in the Gregorian calendar
+     * @return the timestamp
      */
     Optional<Instant> getLastModified(String apiId, String collectionId);
+
+    /**
+     * Determine the number of items in all collections in the dataset.
+     *
+     * @param apiId the ID of the API
+     * @return the number of items
+     */
+    Optional<Long> getItemCount(String apiId);
+
+    /**
+     * Determine the number of items in a collection.
+     *
+     * @param apiId the ID of the API
+     * @param collectionId the name of the feature type
+     * @return the number of items
+     */
+    Optional<Long> getItemCount(String apiId, String collectionId);
 
     // convenience methods
 
@@ -142,5 +159,10 @@ public interface CollectionDynamicMetadataRegistry {
         return collectionId.isPresent()
                 ? getLastModified(apiId, collectionId.get())
                 : getLastModified(apiId);
+    }
+    default Optional<Long> getItemCount(String apiId, Optional<String> collectionId) {
+        return collectionId.isPresent()
+                ? getItemCount(apiId, collectionId.get())
+                : getItemCount(apiId);
     }
 }

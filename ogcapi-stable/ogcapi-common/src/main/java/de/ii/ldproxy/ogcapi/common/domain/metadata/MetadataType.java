@@ -7,4 +7,4 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain.metadata;
 
-public enum MetadataType {spatialExtent, temporalExtent, lastModified}
+public enum MetadataType {spatialExtent, temporalExtent, lastModified, count}

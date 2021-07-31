@@ -381,6 +381,16 @@ class OgcApiCoreSpecCollections extends Specification {
             Optional<Instant> getLastModified(String apiId, String collectionId) {
                 return Optional.of(Instant.now().truncatedTo(ChronoUnit.SECONDS))
             }
+
+            @Override
+            Optional<Long> getItemCount(String apiId) {
+                return 0
+            }
+
+            @Override
+            Optional<Long> getItemCount(String apiId, String collectionId) {
+                return 0
+            }
         }
     }
 

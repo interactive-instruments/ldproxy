@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.app.metadata;
 
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataCount;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentSpatial;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentTemporal;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataLastModified;
@@ -184,6 +185,24 @@ public class CollectionDynamicMetadataRegistryImpl implements CollectionDynamicM
         return Optional.ofNullable(getTypeMap(apiId, collectionId).get(MetadataType.lastModified))
                        .map(CollectionMetadataLastModified.class::cast)
                        .map(CollectionMetadataLastModified::getValue);
+    }
+
+    @Override
+    public Optional<Long> getItemCount(String apiId) {
+        return getApiMap(apiId).entrySet()
+                               .stream()
+                               .map(entry -> entry.getValue().get(MetadataType.count))
+                               .filter(Objects::nonNull)
+                               .map(CollectionMetadataCount.class::cast)
+                               .map(CollectionMetadataCount::getValue)
+                               .reduce(Long::sum);
+    }
+
+    @Override
+    public Optional<Long> getItemCount(String apiId, String collectionId) {
+        return Optional.ofNullable(getTypeMap(apiId, collectionId).get(MetadataType.count))
+                       .map(CollectionMetadataCount.class::cast)
+                       .map(CollectionMetadataCount::getValue);
     }
 
     private Map<MetadataType, CollectionMetadataEntry> getTypeMap(String apiId, String collectionId) {
