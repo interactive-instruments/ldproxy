@@ -41,7 +41,7 @@ public class VectorTilesOnLandingPage implements LandingPageExtension {
 
         return extension
                 .filter(TilesConfiguration::isEnabled)
-                .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                .filter(TilesConfiguration::isMultiCollectionEnabled)
                 .isPresent();
     }
 

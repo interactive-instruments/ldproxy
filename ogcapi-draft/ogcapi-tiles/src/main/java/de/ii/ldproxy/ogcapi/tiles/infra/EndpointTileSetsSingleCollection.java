@@ -98,7 +98,7 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
             // Tiles are pre-generated as a static tile set
             return config.map(ExtensionConfiguration::isEnabled).orElse(false);
         } else {
-            if (config.filter(TilesConfiguration::getSingleCollectionEnabledDerived)
+            if (config.filter(TilesConfiguration::isSingleCollectionEnabled)
                       .isEmpty()) 
                 return false;
             // Tiles are generated on-demand from a data source;

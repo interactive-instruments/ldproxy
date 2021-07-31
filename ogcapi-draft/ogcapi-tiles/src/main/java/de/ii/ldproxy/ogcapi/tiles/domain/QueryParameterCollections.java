@@ -81,7 +81,7 @@ public class QueryParameterCollections extends ApiExtensionCache implements OgcA
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-        return config.isPresent() && config.get().getMultiCollectionEnabledDerived() && config.get().getTileProvider().requiresQuerySupport();
+        return config.isPresent() && config.get().isMultiCollectionEnabled() && config.get().getTileProvider().requiresQuerySupport();
     }
 
     @Override

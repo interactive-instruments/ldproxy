@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -57,11 +58,32 @@ public abstract class TileProviderFeatures extends TileProvider {
     @Nullable
     public abstract Boolean getSingleCollectionEnabled();
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isSingleCollectionEnabled() {
+        return Objects.equals(getSingleCollectionEnabled(), true);
+    }
+
     @Nullable
     public abstract Boolean getMultiCollectionEnabled();
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isMultiCollectionEnabled() {
+        return Objects.equals(getMultiCollectionEnabled(), true);
+    }
+
     @Nullable
     public abstract Boolean getIgnoreInvalidGeometries();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isIgnoreInvalidGeometries() {
+        return Objects.equals(getIgnoreInvalidGeometries(), true);
+    }
 
     @Nullable
     public abstract Double getMaxRelativeAreaChangeInPolygonRepair();
