@@ -28,6 +28,7 @@ import io.swagger.v3.oas.models.media.ObjectSchema
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
+import java.time.Instant
 
 class LandingPageSpec extends Specification {
 
@@ -240,7 +241,7 @@ class LandingPageSpec extends Specification {
 
             @Override
             Optional<BoundingBox> getSpatialExtent(String apiId, String collectionId, EpsgCrs targetCrs) throws CrsTransformationException {
-                return Optional.of(BoundingBox.of(-180,-90,180,90,targetCrs.CRS84))
+                return Optional.of(BoundingBox.of(-180,-90,180,90,targetCrs))
             }
 
             @Override
@@ -251,6 +252,26 @@ class LandingPageSpec extends Specification {
             @Override
             Optional<TemporalExtent> getTemporalExtent(String apiId, String collectionId) {
                 return Optional.of(TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+            }
+
+            @Override
+            Optional<Instant> getLastModified(String apiId) {
+                return Optional.of(Instant.now())
+            }
+
+            @Override
+            Optional<Instant> getLastModified(String apiId, String collectionId) {
+                return Optional.of(Instant.now())
+            }
+
+            @Override
+            Optional<Long> getItemCount(String apiId) {
+                return 0
+            }
+
+            @Override
+            Optional<Long> getItemCount(String apiId, String collectionId) {
+                return 0
             }
         }
     }

@@ -12,6 +12,17 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataCount;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.CollectionExtent;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentSpatial;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentTemporal;
@@ -37,8 +48,10 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -125,35 +138,52 @@ public class EndpointFeatures extends EndpointSubCollection {
         ValidationResult result = super.onStartup(apiData, apiValidation);
 
         // TODO: move somewhere else?
-        // TODO: add capability to reinitialize metadata from the feature data
+        // TODO: add capability to periodically reinitialize metadata from the feature data (to account for lost notifications,
+        //       because extent changes because of deletes are not taken into account, etc.)
         // initialize dynamic collection metadata
         apiData.getCollections()
                .entrySet()
                .forEach(entry -> {
-                   Optional<CollectionExtent> optionalExtent = apiData.getExtentFromConfiguration(entry.getKey());
+                   final String collectionId = entry.getKey();
+                   final Optional<CollectionExtent> optionalExtent = apiData.getExtentFromConfiguration(collectionId);
 
                    Optional<BoundingBox> optionalBoundingBox;
                    if (optionalExtent.isEmpty() || optionalExtent.get().getSpatialComputed().orElse(true)) {
                        try {
-                           optionalBoundingBox = computeBbox(apiData, entry.getKey());
+                           optionalBoundingBox = computeBbox(apiData, collectionId);
                        } catch (CrsTransformationException e) {
-                           LOGGER.error("Error while computing spatial extent of collection '{}' while transforming the CRS of the bounding box: {}", entry.getKey(), e.getMessage());
+                           LOGGER.error("Error while computing spatial extent of collection '{}' while transforming the CRS of the bounding box: {}", collectionId, e.getMessage());
                            optionalBoundingBox = Optional.empty();
                        }
                    } else {
                        optionalBoundingBox = optionalExtent.get().getSpatial();
                    }
-                   optionalBoundingBox.ifPresent(bbox -> metadataRegistry.put(apiData.getId(), entry.getKey(), MetadataType.spatialExtent,
+                   optionalBoundingBox.ifPresent(bbox -> metadataRegistry.put(apiData.getId(), collectionId, MetadataType.spatialExtent,
                                                                               CollectionMetadataExtentSpatial.of(bbox)));
 
                    Optional<TemporalExtent> optionalTemporalExtent;
                    if (optionalExtent.isEmpty() || optionalExtent.get().getTemporalComputed().orElse(true)) {
-                       optionalTemporalExtent = computeInterval(apiData, entry.getKey());
+                       optionalTemporalExtent = computeInterval(apiData, collectionId);
                    } else {
                        optionalTemporalExtent = optionalExtent.get().getTemporal();
                    }
-                   optionalTemporalExtent.ifPresent(interval -> metadataRegistry.put(apiData.getId(), entry.getKey(), MetadataType.temporalExtent,
+                   optionalTemporalExtent.ifPresent(interval -> metadataRegistry.put(apiData.getId(), collectionId, MetadataType.temporalExtent,
                                                                                      CollectionMetadataExtentTemporal.of(interval)));
+
+                   final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+                   final FeatureProvider2 provider = providers.getFeatureProvider(apiData, collectionData);
+                   if (provider.supportsQueries()) {
+                       final String featureTypeId = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                  .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                                                  .orElse(collectionId);
+                       final FeatureQuery query = ImmutableFeatureQuery.builder()
+                                                                       .type(featureTypeId)
+                                                                       .build();
+                       // TODO getFeatureCount() currently always returns 0, so for now we should not use this metadata element
+                       final long count = ((FeatureQueries) provider).getFeatureCount(query);
+                       metadataRegistry.put(apiData.getId(), collectionId, MetadataType.count,
+                                            CollectionMetadataCount.of(count));
+                   }
                });
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested

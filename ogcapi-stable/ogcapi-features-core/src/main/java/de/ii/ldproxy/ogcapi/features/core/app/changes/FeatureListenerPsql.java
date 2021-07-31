@@ -331,8 +331,9 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
     @Nonnull
     private static Optional<TemporalExtent> parseInterval(List<String> interval) {
         if (interval.get(0).isEmpty()) {
-        // ignore
+            // no instant or interval, ignore
         } else if (interval.get(1).isEmpty()) {
+            // an instant
             try {
                 Long instant = parseTimestamp(interval.get(0));
                 if (Objects.nonNull(instant))
@@ -341,6 +342,7 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
                 // ignore
             }
         } else {
+            // an interval
             try {
                 Long begin = parseTimestamp(interval.get(0));
                 Long end = parseTimestamp(interval.get(1));
