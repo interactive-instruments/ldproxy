@@ -8,10 +8,8 @@
 package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.io.ByteStreams;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -21,7 +19,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -34,6 +31,7 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
+import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilePoint;
@@ -59,41 +57,39 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureStream2;
-import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureStream;
+import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
+import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
+import de.ii.xtraplatform.streams.domain.Reactive.Sink;
+import de.ii.xtraplatform.streams.domain.Reactive.SinkReducedTransformed;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.MessageFormat;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.MessageFormat;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.CompletionException;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import static com.codahale.metrics.MetricRegistry.name;
 
 @Component
 @Instantiate
@@ -304,7 +300,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                             .map(cfg -> cfg.getFeatureType().orElse(collectionId))
                                             .orElse(collectionId);
 
-        ImmutableFeatureTransformationContextTiles.Builder transformationContext;
+        FeatureTransformationContextTiles transformationContext;
         try {
             transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
                     .apiData(apiData)
@@ -325,69 +321,28 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .fields(query.getFields())
                     .limit(query.getLimit())
                     .offset(0)
-                    .i18n(i18n);
+                    .i18n(i18n)
+                    .outputStream(new OutputStreamToByteConsumer()/*TODO*/)
+                    .build();
         } catch (Exception e) {
             throw new RuntimeException("Error building the tile transformation context.", e);
         }
 
-        if (queryInput.getOutputStream().isPresent()) {
+        Optional<FeatureTokenEncoder<?>> encoder = outputFormat.getFeatureEncoder(transformationContext);
 
-            // do not stream as a response
-            if (outputFormat.canTransformFeatures()) {
-                FeatureStream2 featureStream = featureProvider.queries()
-                        .getFeatureStream2(query);
+        if (outputFormat.canTransformFeatures() && encoder.isPresent()) {
 
-                try {
-                    Optional<FeatureTransformer2> featureTransformer = outputFormat.getFeatureTransformer(
-                            transformationContext.outputStream(queryInput.getOutputStream().get()).build(),
-                            requestContext.getLanguage());
+            FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
 
-                    if (featureTransformer.isPresent()) {
-                        ResultOld result = featureStream.runWith(featureTransformer.get())
-                                                                    .toCompletableFuture()
-                                                                    .join();
-                        if (result.getError()
-                                  .isPresent()) {
-                            processStreamError(result.getError().get());
-                            // the connection has been lost, typically the client has cancelled the request, log on debug level
-                            LOGGER.debug("Request cancelled due to lost connection.");
-                        }
-                    } else {
-                        throw new IllegalStateException("Could not acquire FeatureTransformer.");
-                    }
-                } catch (CompletionException e) {
-                    if (e.getCause() instanceof WebApplicationException) {
-                        throw (WebApplicationException) e.getCause();
-                    }
-                    throw new IllegalStateException("Feature stream error.", e.getCause());
-                }
-            } else {
-                throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
-            }
+            ResultReduced<byte[]> result = generateTile(featureStream, encoder.get(),
+                transformationContext, outputFormat);
 
             return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
-                    .entity(queryInput.getOutputStream().get())
-                    .build();
-        }
-
-        // streaming output as response
-        StreamingOutput streamingOutput;
-        if (outputFormat.canTransformFeatures()) {
-            FeatureStream2 featureStream = featureProvider.queries()
-                    .getFeatureStream2(query);
-
-            streamingOutput = stream(featureStream,
-                    outputStream -> outputFormat.getFeatureTransformer(
-                            transformationContext.outputStream(outputStream).build(),
-                            requestContext.getLanguage())
-                            .get());
+                .entity(result.reduced())
+                .build();
         } else {
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
-
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
-                .entity(streamingOutput)
-                .build();
     }
 
     private Response getMultiLayerTileResponse(QueryInputTileMultiLayer queryInput, ApiRequestContext requestContext) {
@@ -423,8 +378,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
-        Map<String, ByteArrayOutputStream> byteArrayMap = collectionIds.stream()
-                .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> new ByteArrayOutputStream()));
+        Map<String, byte[]> byteArrayMap = new HashMap<>();
 
         for (String collectionId : collectionIds) {
             // TODO limitation of the current model: all layers have to come from the same feature provider and use the same CRS
@@ -436,13 +390,12 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             } catch (IOException e) {
                 throw new RuntimeException("Error accessing the tile cache.", e);
             }
-            ByteArrayOutputStream singleLayerOutputStream = byteArrayMap.get(collectionId);
+
             if (!multiLayerTile.getTemporary() && Files.exists(tileFile)) {
                 // use cached tile
                 try {
                     if (Files.size(tileFile)>0) {
-                        singleLayerOutputStream.write(Files.readAllBytes(tileFile));
-                        singleLayerOutputStream.flush();
+                        byteArrayMap.put(collectionId, Files.readAllBytes(tileFile));
                     }
                     continue;
                 } catch (IOException e) {
@@ -479,37 +432,23 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                         .limit(query.getLimit())
                         .offset(0)
                         .i18n(i18n)
-                        .outputStream(singleLayerOutputStream)
+                        .outputStream(new OutputStreamToByteConsumer()/*TODO*/)
                         .build();
             } catch (Exception e) {
                 throw new RuntimeException("Error building the tile transformation context.", e);
             }
 
-            if (outputFormat.canTransformFeatures()) {
-                FeatureStream2 featureStream = featureProvider.queries()
-                        .getFeatureStream2(query);
+            Optional<FeatureTokenEncoder<?>> encoder = outputFormat.getFeatureEncoder(transformationContext);
 
-                try {
-                    Optional<FeatureTransformer2> featureTransformer = outputFormat.getFeatureTransformer(transformationContext, requestContext.getLanguage());
+            if (outputFormat.canTransformFeatures() && encoder.isPresent()) {
 
-                    if (featureTransformer.isPresent()) {
-                        ResultOld result = featureStream.runWith(featureTransformer.get())
-                                                                    .toCompletableFuture()
-                                                                    .join();
-                        if (result.getError()
-                                  .isPresent()) {
-                            processStreamError(result.getError().get());
-                            // the connection has been lost, typically the client has cancelled the request, log on debug level
-                            LOGGER.debug("Request cancelled due to lost connection.");
-                        }
-                    } else {
-                        throw new IllegalStateException("Could not acquire FeatureTransformer.");
-                    }
-                } catch (CompletionException e) {
-                    if (e.getCause() instanceof WebApplicationException) {
-                        throw (WebApplicationException) e.getCause();
-                    }
-                    throw new IllegalStateException("Feature stream error.", e.getCause());
+                FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
+
+                ResultReduced<byte[]> result = generateTile(featureStream, encoder.get(),
+                    transformationContext, outputFormat);
+
+                if (result.isSuccess()) {
+                    byteArrayMap.put(collectionId, result.reduced());
                 }
             } else {
                 throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
@@ -590,34 +529,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .build();
     }
 
-    private StreamingOutput stream(FeatureStream2 featureTransformStream,
-                                   final Function<OutputStream, FeatureTransformer2> featureTransformer) {
-        Timer.Context timer = metricRegistry.timer(name(TilesQueriesHandlerImpl.class, "stream"))
-                                            .time();
-
-        return outputStream -> {
-            try {
-                ResultOld result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                                                     .toCompletableFuture()
-                                                                     .join();
-                timer.stop();
-
-                if (result.getError()
-                          .isPresent()) {
-                    processStreamError(result.getError().get());
-                    // the connection has been lost, typically the client has cancelled the request, log on debug level
-                    LOGGER.debug("Request cancelled due to lost connection.");
-                }
-
-            } catch (CompletionException e) {
-                if (e.getCause() instanceof WebApplicationException) {
-                    throw (WebApplicationException) e.getCause();
-                }
-                throw new IllegalStateException("Feature stream error.", e.getCause());
-            }
-        };
-    }
-
     private TileSet getTileSet(OgcApiDataV2 apiData, TileMatrixSet tileMatrixSet, MinMax zoomLevels, double[] center,
                                Optional<String> collectionId, List<Link> links, URICustomizer uriCustomizer) {
         ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
@@ -662,7 +573,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                              Optional<TilesConfiguration> config = entry.getValue().getExtension(TilesConfiguration.class);
                              return entry.getValue().getEnabled() &&
                                      config.isPresent() &&
-                                     config.get().getMultiCollectionEnabledDerived();
+                                     config.get().isMultiCollectionEnabled();
                          })
                          .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemaGeneratorFeature.getSchemaJson(apiData, entry.getKey(), Optional.empty(), schemaType)))
                          .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -713,5 +624,50 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .filter(tms -> tms.getId().equals(tileMatrixSetId))
                     .findAny()
                     .orElseThrow(() -> new ServerErrorException("TileMatrixSet not found: "+tileMatrixSetId, 500));
+    }
+
+    private ResultReduced<byte[]> generateTile(
+        FeatureStream featureStream,
+        FeatureTokenEncoder<?> encoder,
+        FeatureTransformationContextTiles transformationContext,
+        TileFormatExtension outputFormat) {
+
+        Optional<PropertyTransformations> propertyTransformations = transformationContext.getCollection()
+                .flatMap(collection -> outputFormat.getPropertyTransformations(collection,
+                    ImmutableMap.of("serviceUrl", transformationContext.getServiceUrl())));
+
+        SinkReducedTransformed<Object, byte[], byte[]> featureSink = encoder.to(Sink.reduceByteArray());
+
+        try {
+            ResultReduced<byte[]> result = featureStream.runWith(featureSink, propertyTransformations)
+                .toCompletableFuture()
+                .join();
+
+            if (result.isSuccess()) {
+                //if (!result.isEmpty()) {
+                    try {
+                        // write/update tile in cache
+                        Path tileFile = transformationContext.tileFile();
+                        if (Files.notExists(tileFile) || Files.isWritable(tileFile)) {
+                            Files.write(tileFile, result.reduced());
+                        }
+                    } catch (IOException e) {
+                        //ignore
+                    }
+                //}
+            } else {
+                processStreamError(result.getError().get());
+                // the connection has been lost, typically the client has cancelled the request, log on debug level
+                LOGGER.debug("Request cancelled due to lost connection.");
+            }
+
+            return result;
+
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof WebApplicationException) {
+                throw (WebApplicationException) e.getCause();
+            }
+            throw new IllegalStateException("Feature stream error.", e.getCause());
+        }
     }
 }

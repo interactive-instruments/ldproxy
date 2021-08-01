@@ -5,12 +5,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.tiles.domain;
+package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
-import de.ii.ldproxy.ogcapi.tiles.app.TileFormatMVT;
+import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMvtFeature.Builder;
+import de.ii.ldproxy.ogcapi.tiles.domain.MvtFeature;
+import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
+import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
@@ -50,10 +55,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.regex.Pattern;
-
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MINIMUM_SIZE_IN_PIXEL;
 
 public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
 
@@ -123,9 +124,9 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                                                    .orElse(null);
         this.swapCoordinates = transformationContext.shouldSwapCoordinates();
         this.transformationContext = transformationContext;
-        this.processingParameters = transformationContext.getProcessingParameters();
+        this.processingParameters = transformationContext.processingParameters();
         this.collectionId = transformationContext.getCollectionId();
-        this.tile = transformationContext.getTile();
+        this.tile = transformationContext.tile();
         this.tileMatrixSet = tile.getTileMatrixSet();
         this.properties = transformationContext.getFields();
         this.allProperties = properties.contains("*");
@@ -136,22 +137,19 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         this.reducer = new GeometryPrecisionReducer(tilePrecisionModel);
 
         if (collectionId!=null) {
-            tilesConfiguration = transformationContext.getConfiguration();
+            tilesConfiguration = transformationContext.tilesConfiguration();
             layerName = collectionId;
         } else {
-            tilesConfiguration = transformationContext.getConfiguration();
+            tilesConfiguration = transformationContext.tilesConfiguration();
             layerName = "layer";
         }
 
         this.encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         this.affineTransformation = tile.createTransformNativeToTile();
 
-        this.maxRelativeAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepairDerived()) ?
-                tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepairDerived() : MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
-        this.maxAbsoluteAreaChangeInPolygonRepair = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepairDerived()) ?
-                tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepairDerived() : MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
-        this.minimumSizeInPixel = Objects.nonNull(tilesConfiguration) && Objects.nonNull(tilesConfiguration.getMinimumSizeInPixelDerived()) ?
-                tilesConfiguration.getMinimumSizeInPixelDerived() : MINIMUM_SIZE_IN_PIXEL;
+        this.maxRelativeAreaChangeInPolygonRepair = tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepairDerived();
+        this.maxAbsoluteAreaChangeInPolygonRepair = tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepairDerived();
+        this.minimumSizeInPixel = tilesConfiguration.getMinimumSizeInPixelDerived();
 
         final Map<String, List<Rule>> rules = Objects.nonNull(tilesConfiguration) ? tilesConfiguration.getRulesDerived() : ImmutableMap.of();
         this.groupBy = (Objects.nonNull(rules) && rules.containsKey(tileMatrixSet.getId())) ?
@@ -207,7 +205,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
                       if (!geom.isValid()) {
                           LOGGER.info("A merged feature in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Properties: {}", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), mergedFeature.getProperties());
                           if (Objects.nonNull(tilesConfiguration) &&
-                              Objects.requireNonNullElse(tilesConfiguration.getIgnoreInvalidGeometriesDerived(),false))
+                              Objects.requireNonNullElse(tilesConfiguration.isIgnoreInvalidGeometriesDerived(),false))
                               return;
                       }
                       encoder.addFeature(layerName, mergedFeature.getProperties(), geom);
@@ -223,7 +221,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             outputStream.flush();
 
             // write/update tile in cache
-            Path tileFile = transformationContext.getTileFile();
+            Path tileFile = transformationContext.tileFile();
             if (Files.notExists(tileFile) || Files.isWritable(tileFile)) {
                 Files.write(tileFile, mvt);
             }
@@ -272,14 +270,15 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
         }
 
         try {
-            Geometry tileGeometry = TileGeometryUtil.getTileGeometry(currentGeometry, affineTransformation, clipGeometry, reducer, tilePrecisionModel, minimumSizeInPixel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+            Geometry tileGeometry = TileGeometryUtil
+                .getTileGeometry(currentGeometry, affineTransformation, clipGeometry, reducer, tilePrecisionModel, minimumSizeInPixel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
             if (Objects.isNull(tileGeometry)) {
                 return;
             }
 
             // if polygons have to be merged, store them for now and process at the end
             if (Objects.nonNull(groupBy) && tileGeometry.getGeometryType().contains("Polygon")) {
-                mergeFeatures.add(new ImmutableMvtFeature.Builder()
+                mergeFeatures.add(new Builder()
                                           .id(++mergeCount)
                                           .properties(currentProperties)
                                           .geometry(tileGeometry)
@@ -290,7 +289,7 @@ public class FeatureTransformerTilesMVT extends FeatureTransformerBase {
             // Geometry is invalid -> log this information and skip it, if that option is used
             if (!tileGeometry.isValid()) {
                 LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Size in pixels: {}.", currentId, collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), currentGeometry.getArea());
-                if (Objects.nonNull(tilesConfiguration) && Objects.requireNonNullElse(tilesConfiguration.getIgnoreInvalidGeometriesDerived(), false)) {
+                if (Objects.nonNull(tilesConfiguration) && Objects.requireNonNullElse(tilesConfiguration.isIgnoreInvalidGeometriesDerived(), false)) {
                     return;
                 }
             }

@@ -7,16 +7,22 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
+import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,7 +36,7 @@ public interface TileFormatExtension extends FormatExtension {
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::getEnabled)
-                      .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                      .filter(TilesConfiguration::isMultiCollectionEnabled)
                       .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                       .isPresent();
     }
@@ -41,7 +47,7 @@ public interface TileFormatExtension extends FormatExtension {
                       .get(collectionId)
                       .getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::getEnabled)
-                      .filter(TilesConfiguration::getSingleCollectionEnabledDerived)
+                      .filter(TilesConfiguration::isSingleCollectionEnabled)
                       .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                       .isPresent();
     }
@@ -55,7 +61,42 @@ public interface TileFormatExtension extends FormatExtension {
 
     default boolean canTransformFeatures() { return false; }
 
-    Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContextTiles transformationContext, Optional<Locale> language);
+    default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+        FeatureTransformationContextTiles transformationContext) {
+        return Optional.empty();
+    }
+
+    default Optional<PropertyTransformations> getPropertyTransformations(
+        FeatureTypeConfigurationOgcApi collectionData) {
+
+        Map<String, PropertyTransformation> coreTransformations = collectionData.getExtension(
+            FeaturesCoreConfiguration.class)
+            .map(FeaturesCoreConfiguration::getTransformations)
+            .orElse(ImmutableMap.of());
+
+        Map<String, PropertyTransformation> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
+            .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
+            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration).getTransformations())
+            .orElse(ImmutableMap.of());
+
+        Map<String, PropertyTransformation> propertyTransformations = new LinkedHashMap<>(coreTransformations);
+
+        formatTransformations.forEach((key, propertyTransformation) -> {
+            propertyTransformations.putIfAbsent(key, propertyTransformation);
+            propertyTransformations.computeIfPresent(key, (key2, corePropertyTransformation) -> propertyTransformation.mergeInto(corePropertyTransformation));
+        });
+
+        if (propertyTransformations.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(() -> propertyTransformations);
+    }
+
+    default Optional<PropertyTransformations> getPropertyTransformations(
+        FeatureTypeConfigurationOgcApi collectionData, Map<String, String> substitutions) {
+        return getPropertyTransformations(collectionData).map(propertyTransformations -> propertyTransformations.withSubstitutions(substitutions));
+    }
 
     String getExtension();
 
@@ -72,7 +113,7 @@ public interface TileFormatExtension extends FormatExtension {
         public boolean isComplete;
     }
 
-    MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException;
+    MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, byte[]> singleLayerByteArrayMap) throws IOException;
 
     double getMaxAllowableOffsetNative(Tile tile);
     double getMaxAllowableOffsetCrs84(Tile tile);

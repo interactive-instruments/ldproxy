@@ -6,10 +6,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package de.ii.ldproxy.ogcapi.tiles.domain;
+package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import de.ii.ldproxy.ogcapi.tiles.domain.MvtFeature;
 import org.locationtech.jts.geom.Geometry;
 
 import java.util.HashMap;

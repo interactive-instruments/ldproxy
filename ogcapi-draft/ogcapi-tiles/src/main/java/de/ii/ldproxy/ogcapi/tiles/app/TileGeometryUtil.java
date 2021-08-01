@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.tiles.domain;
+package de.ii.ldproxy.ogcapi.tiles.app;
 
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
@@ -31,11 +31,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
-class TileGeometryUtil {
+public class TileGeometryUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileGeometryUtil.class);
 
-    static Geometry getTileGeometry(Geometry geom, AffineTransformation affineTransformation, Geometry clipGeometry, GeometryPrecisionReducer reducer, PrecisionModel precisionModel, double minimumSizeInPixel, double maxRelativeAreaChangeInPolygonRepair, double maxAbsoluteAreaChangeInPolygonRepair) {
+    public static Geometry getTileGeometry(Geometry geom, AffineTransformation affineTransformation,
+        Geometry clipGeometry, GeometryPrecisionReducer reducer, PrecisionModel precisionModel,
+        double minimumSizeInPixel, double maxRelativeAreaChangeInPolygonRepair,
+        double maxAbsoluteAreaChangeInPolygonRepair) {
 
         // The following changes are applied:
         // 1. The coordinates are converted to the tile coordinate system (0/0 is top left, 256/256 is bottom right)

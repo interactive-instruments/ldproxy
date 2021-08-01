@@ -21,7 +21,6 @@ import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
-import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformerTilesMVT;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
@@ -38,7 +37,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -59,7 +58,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -130,9 +128,9 @@ public class TileFormatMVT implements TileFormatExtension {
     }
 
     @Override
-    public Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContextTiles transformationContext, Optional<Locale> language) {
-
-        return Optional.of(new FeatureTransformerTilesMVT(transformationContext));
+    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+        FeatureTransformationContextTiles transformationContext) {
+        return Optional.of(new FeatureEncoderMVT(transformationContext));
     }
 
     @Override
@@ -166,8 +164,8 @@ public class TileFormatMVT implements TileFormatExtension {
                                                                           .type(featureTypeId)
                                                                           .limit(Objects.requireNonNullElse(tilesConfiguration.getLimitDerived(),LIMIT_DEFAULT))
                                                                           .offset(0)
-                                                                          .crs(tile.getTileMatrixSet().getCrs())
-                                                                          .maxAllowableOffset(getMaxAllowableOffsetNative(tile));
+                                                                          .crs(tile.getTileMatrixSet().getCrs());
+                                                                          //.maxAllowableOffset(getMaxAllowableOffsetNative(tile));
 
         final Map<String, List<Rule>> rules = tilesConfiguration.getRulesDerived();
         if (!queryParameters.containsKey("properties") && (Objects.nonNull(rules) && rules.containsKey(tileMatrixSetId))) {
@@ -248,7 +246,7 @@ public class TileFormatMVT implements TileFormatExtension {
     }
 
     @Override
-    public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException {
+    public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, byte[]> singleLayerByteArrayMap) throws IOException {
         VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         VectorTileDecoder decoder = new VectorTileDecoder();
         Set<String> processedCollections = new TreeSet<>();
@@ -257,11 +255,11 @@ public class TileFormatMVT implements TileFormatExtension {
             for (String collectionId : singleLayerTileMap.keySet()) {
                 if (!processedCollections.contains(collectionId)) {
                     Tile singleLayerTile = singleLayerTileMap.get(collectionId);
-                    ByteArrayOutputStream outputStream = singleLayerByteArrayMap.get(collectionId);
+                    byte[] tileBytes = singleLayerByteArrayMap.get(collectionId);
                     Path tileFile = tilesCache.getFile(singleLayerTile);
-                    if (outputStream.size()>0) {
+                    if (Objects.nonNull(tileBytes) && tileBytes.length>0) {
                         try {
-                            List<VectorTileDecoder.Feature> features = decoder.decode(outputStream.toByteArray()).asList();
+                            List<VectorTileDecoder.Feature> features = decoder.decode(tileBytes).asList();
                             features.forEach(feature -> encoder.addFeature(feature.getLayerName(),feature.getAttributes(),feature.getGeometry(),feature.getId()));
                             processedCollections.add(collectionId);
                         } catch (IOException e) {

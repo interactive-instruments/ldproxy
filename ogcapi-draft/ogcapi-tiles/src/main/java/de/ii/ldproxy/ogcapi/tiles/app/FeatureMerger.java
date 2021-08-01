@@ -6,12 +6,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package de.ii.ldproxy.ogcapi.tiles.domain;
+package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMvtFeature.Builder;
+import de.ii.ldproxy.ogcapi.tiles.domain.MvtFeature;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
@@ -33,7 +35,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformerTilesMVT.NULL;
+import static de.ii.ldproxy.ogcapi.tiles.app.FeatureTransformerTilesMVT.NULL;
 
 class FeatureMerger {
 
@@ -152,7 +154,8 @@ class FeatureMerger {
                     ImmutableSet.Builder<Polygon> polygonBuilder = new ImmutableSet.Builder<>();
                     polygonBuilder.addAll(value.stream()
                                                .map(MvtFeature::getGeometry)
-                                               .map(g -> g instanceof MultiPolygon ? TileGeometryUtil.splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
+                                               .map(g -> g instanceof MultiPolygon ? TileGeometryUtil
+                                                   .splitMultiPolygon((MultiPolygon) g) : ImmutableList.of(g))
                                                .flatMap(Collection::stream)
                                                .map(Polygon.class::cast)
                                                .collect(Collectors.toSet()));
@@ -199,7 +202,7 @@ class FeatureMerger {
                                                             .allMatch(f -> f.getProperties().containsKey(prop.getKey()) && f.getProperties().get(prop.getKey()).equals(prop.getValue())))
                                                     .forEach(prop -> propertiesBuilder.put(prop.getKey(), prop.getValue()));
 
-                        result.add(new ImmutableMvtFeature.Builder()
+                        result.add(new Builder()
                                            .id(key.getId())
                                            .properties(propertiesBuilder.build())
                                            .geometry(geom).build());
@@ -301,7 +304,7 @@ class FeatureMerger {
                                                             .allMatch(f -> f.getProperties().containsKey(prop.getKey()) && f.getProperties().get(prop.getKey()).equals(prop.getValue())))
                                                     .forEach(prop -> propertiesBuilder.put(prop.getKey(), prop.getValue()));
 
-                        result.add(new ImmutableMvtFeature.Builder()
+                        result.add(new Builder()
                                            .id(key.getId())
                                            .properties(propertiesBuilder.build())
                                            .geometry(geom).build());
