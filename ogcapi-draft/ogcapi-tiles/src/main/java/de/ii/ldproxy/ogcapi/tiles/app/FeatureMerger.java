@@ -35,11 +35,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.ogcapi.tiles.app.FeatureTransformerTilesMVT.NULL;
 
 class FeatureMerger {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureMerger.class);
+
+    static final String NULL = "__NULL__";
 
     private final List<String> groupBy;
     private final boolean allProperties;

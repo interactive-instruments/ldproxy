@@ -18,10 +18,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase.MULTIPLICITY;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase.NESTED_OBJECTS;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
@@ -31,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 

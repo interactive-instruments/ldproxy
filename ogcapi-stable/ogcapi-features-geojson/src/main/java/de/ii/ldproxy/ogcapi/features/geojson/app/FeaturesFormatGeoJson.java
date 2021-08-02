@@ -22,7 +22,6 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
@@ -151,9 +150,9 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
             String collectionId = entry.getKey();
             GeoJsonConfiguration config = entry.getValue();
 
-            if (config.getNestedObjectStrategy() == FeatureTransformerBase.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() != FeatureTransformerBase.MULTIPLICITY.SUFFIX) {
+            if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.SUFFIX) {
                 builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
-            } else if (config.getNestedObjectStrategy() == FeatureTransformerBase.NESTED_OBJECTS.NEST && config.getMultiplicityStrategy() != FeatureTransformerBase.MULTIPLICITY.ARRAY) {
+            } else if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.NEST && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.ARRAY) {
                 builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
             }
 

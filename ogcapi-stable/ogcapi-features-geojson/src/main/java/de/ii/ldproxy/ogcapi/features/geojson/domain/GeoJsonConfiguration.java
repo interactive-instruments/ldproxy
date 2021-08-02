@@ -10,9 +10,6 @@ package de.ii.ldproxy.ogcapi.features.geojson.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase.MULTIPLICITY;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase.NESTED_OBJECTS;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -27,16 +24,20 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
 public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
-    abstract class Builder extends ExtensionConfiguration.Builder {
+  enum NESTED_OBJECTS {NEST, FLATTEN}
+
+  enum MULTIPLICITY {ARRAY, SUFFIX}
+
+  abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
     @Deprecated(since = "3.1.0")
     @Nullable
-    FeatureTransformerBase.NESTED_OBJECTS getNestedObjectStrategy();
+    NESTED_OBJECTS getNestedObjectStrategy();
 
     @Deprecated(since = "3.1.0")
     @Nullable
-    FeatureTransformerBase.MULTIPLICITY getMultiplicityStrategy();
+    MULTIPLICITY getMultiplicityStrategy();
 
     @Deprecated(since = "3.1.0")
     @Nullable

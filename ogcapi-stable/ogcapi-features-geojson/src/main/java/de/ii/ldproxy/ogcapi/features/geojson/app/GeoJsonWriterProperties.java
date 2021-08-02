@@ -155,10 +155,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   protected boolean shouldSkipProperty(EncodingAwareContextGeoJson context) {
     return !hasMappingAndValue(context)
         || (context.schema().get().isId()
-        || context.inGeometry()
-        //TODO: move to TransformerProjections
-        || !propertyIsInFields(context,
-        String.join(".", context.schema().get().getFullPath())));
+        || context.inGeometry());
   }
 
   protected boolean hasMappingAndValue(EncodingAwareContextGeoJson context) {
@@ -166,18 +163,6 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         .filter(FeatureSchema::isValue)
         .isPresent()
         && Objects.nonNull(context.value());
-  }
-
-  protected boolean propertyIsInFields(EncodingAwareContextGeoJson context,
-      String... properties) {
-    return context.encoding().getFields()
-        .isEmpty()
-        || context.encoding().getFields()
-        .contains("*")
-        || context.encoding().getFields()
-        .stream()
-        .anyMatch(field -> Arrays.asList(properties)
-            .contains(field));
   }
 
   //TODO: centralize value type mappings (either as transformer or as part of context)

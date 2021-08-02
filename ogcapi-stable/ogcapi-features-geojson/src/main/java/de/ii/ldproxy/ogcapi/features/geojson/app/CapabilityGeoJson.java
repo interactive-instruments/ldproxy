@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -26,8 +26,10 @@ public class CapabilityGeoJson implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableGeoJsonConfiguration.Builder().enabled(true)
-                                                          .nestedObjectStrategy(FeatureTransformerBase.NESTED_OBJECTS.NEST)
-                                                          .multiplicityStrategy(FeatureTransformerBase.MULTIPLICITY.ARRAY)
+                                                          .nestedObjectStrategy(
+                                                              GeoJsonConfiguration.NESTED_OBJECTS.NEST)
+                                                          .multiplicityStrategy(
+                                                              GeoJsonConfiguration.MULTIPLICITY.ARRAY)
                                                           .useFormattedJsonOutput(false)
                                                           .separator(".")
                                                           .includeEmptyObjects(false)

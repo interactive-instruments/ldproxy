@@ -14,7 +14,6 @@ import de.ii.ldproxy.ogcapi.domain.MergeMap
 import de.ii.ldproxy.ogcapi.domain.MergeMinimal
 import de.ii.ldproxy.ogcapi.domain.MergeNested
 import de.ii.ldproxy.ogcapi.domain.MergeSimple
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
@@ -24,8 +23,8 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
     GeoJsonConfiguration getFull() {
         return new ImmutableGeoJsonConfiguration.Builder()
                 .enabled(true)
-                .nestedObjectStrategy(FeatureTransformerBase.NESTED_OBJECTS.NEST)
-                .multiplicityStrategy(FeatureTransformerBase.MULTIPLICITY.ARRAY)
+                .nestedObjectStrategy(GeoJsonConfiguration.NESTED_OBJECTS.NEST)
+                .multiplicityStrategy(GeoJsonConfiguration.MULTIPLICITY.ARRAY)
                 .useFormattedJsonOutput(true)
                 .separator(".")
                 .putTransformations("foo", new ImmutablePropertyTransformation.Builder().rename("bar").build())
@@ -47,8 +46,8 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
     GeoJsonConfiguration getSimple() {
         return new ImmutableGeoJsonConfiguration.Builder()
                 .enabled(false)
-                .nestedObjectStrategy(FeatureTransformerBase.NESTED_OBJECTS.FLATTEN)
-                .multiplicityStrategy(FeatureTransformerBase.MULTIPLICITY.SUFFIX)
+                .nestedObjectStrategy(GeoJsonConfiguration.NESTED_OBJECTS.FLATTEN)
+                .multiplicityStrategy(GeoJsonConfiguration.MULTIPLICITY.SUFFIX)
                 .useFormattedJsonOutput(false)
                 .separator("-")
                 .build()
