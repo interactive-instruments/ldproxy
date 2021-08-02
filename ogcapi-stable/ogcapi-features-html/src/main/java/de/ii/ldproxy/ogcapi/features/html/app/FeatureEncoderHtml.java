@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -160,9 +161,14 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
     transformationContext.featuresHtmlConfiguration()
         .getFeatureTitleTemplate()
-        .ifPresent(template -> feature.name(StringTemplateFilters.applyTemplate(template,
-            pathString -> feature.findPropertyByPath(pathString).map(PropertyHtml::getFirstValue)
-                .orElse(null))));
+        .ifPresent(template -> {
+          Function<String, String> lookup = pathString -> feature.findPropertyByPath(pathString).map(PropertyHtml::getFirstValue)
+              .orElse(null);
+          String name = StringTemplateFilters.applyTemplate(template, lookup);
+          if (Objects.nonNull(name) && !name.isEmpty()) {
+            feature.name(name);
+          }
+        });
 
     //TODO: generalize as schema/value transformer
     transformLinks(feature.getProperties());
@@ -207,7 +213,7 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
   private void transformLinks(List<PropertyHtml> properties) {
     for (int i = 0; i < properties.size(); i++) {
       PropertyHtml property = properties.get(i);
-      if (property.isObject()
+      if ((property.isObject() || property.isArray())
           && property.getSchema()
           .flatMap(schema -> schema.getObjectType()
               .filter(objectType -> Objects.equals(objectType, "Link")))
