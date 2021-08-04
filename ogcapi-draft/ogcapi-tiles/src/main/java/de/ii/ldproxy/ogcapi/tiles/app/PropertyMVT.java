@@ -48,7 +48,7 @@ public interface PropertyMVT extends PropertyBase<PropertyMVT, FeatureSchema> {
             case MULTI_POINT:
               return getJtsMultiPoint(geometryFactory);
             case LINE_STRING:
-              return getJtsLineString(geometryFactory);
+              return getJtsLineString(geometryFactory, true);
             case MULTI_LINE_STRING:
               return getJtsMultiLineString(geometryFactory);
             case POLYGON:
@@ -72,8 +72,8 @@ public interface PropertyMVT extends PropertyBase<PropertyMVT, FeatureSchema> {
     return getJtsCoordinateArrayAsGeometry(geometryFactory::createMultiPointFromCoords, true);
   }
 
-  default Optional<LineString> getJtsLineString(GeometryFactory geometryFactory) {
-    return getJtsCoordinateArrayAsGeometry(geometryFactory::createLineString, true);
+  default Optional<LineString> getJtsLineString(GeometryFactory geometryFactory, boolean isTopLevel) {
+    return getJtsCoordinateArrayAsGeometry(geometryFactory::createLineString, isTopLevel);
   }
 
   default Optional<LinearRing> getJtsLinearRing(GeometryFactory geometryFactory) {
@@ -81,7 +81,7 @@ public interface PropertyMVT extends PropertyBase<PropertyMVT, FeatureSchema> {
   }
 
   default Optional<MultiLineString> getJtsMultiLineString(GeometryFactory geometryFactory) {
-    LineString[] lineStrings = getJtsGeometryArray(arrayProperty -> arrayProperty.getJtsLineString(geometryFactory), LineString[]::new);
+    LineString[] lineStrings = getJtsGeometryArray(arrayProperty -> arrayProperty.getJtsLineString(geometryFactory, false), LineString[]::new);
     return lineStrings.length == 0
         ? Optional.empty()
         : Optional.of(geometryFactory.createMultiLineString(lineStrings));
