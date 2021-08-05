@@ -47,9 +47,6 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     @Nullable
     String getSeparator();
 
-    @Nullable
-    Boolean includeEmptyObjects();
-
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary

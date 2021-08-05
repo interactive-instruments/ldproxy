@@ -68,11 +68,6 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
         return getGeoJsonConfig().getUseFormattedJsonOutput() == true;
     }
 
-    @Value.Derived
-    public boolean includeEmptyObjects() {
-        return Objects.equals(getGeoJsonConfig().includeEmptyObjects(), true);
-    }
-
     //TODO: to state
     private TokenBuffer tokenBuffer;
     protected TokenBuffer getJsonBuffer() {

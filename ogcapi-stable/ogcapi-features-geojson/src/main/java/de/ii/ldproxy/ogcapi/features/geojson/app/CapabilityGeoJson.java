@@ -32,7 +32,6 @@ public class CapabilityGeoJson implements ApiBuildingBlock {
                                                               GeoJsonConfiguration.MULTIPLICITY.ARRAY)
                                                           .useFormattedJsonOutput(false)
                                                           .separator(".")
-                                                          .includeEmptyObjects(false)
                                                           .build();
     }
 
