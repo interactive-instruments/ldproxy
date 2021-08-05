@@ -59,6 +59,12 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
     @Override
     public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         isEnabled = isEnabled(transformationContext);
+
+        next.accept(transformationContext);
+    }
+
+    @Override
+    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
         if (isEnabled)
             reset(transformationContext);
 
