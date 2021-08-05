@@ -32,6 +32,7 @@ There are some [general rules](general-rules.md) that apply to all modules.
 |[Filter / CQL](filter.md) |FILTER |draft |No |Enables CQL filters for resources *Features* and *Vector Tiles*
 |[Geometry Simplification](geometry-simplification.md) |GEOMETRY_SIMPLIFICATION |draft |No |Enables simplification of geometries according to Douglas-Peucker for resources *Features* and *Feature*
 |[Projections](projections.md) |PROJECTIONS |draft |No |Enables limitation of returned feature properties for resources *Features*, *Feature* and *Vector Tiles*
+|[Sorting](sorting.md) |SORTING |draft |No |Enables the option for sorting the returned features at the *Features* resource
 |[Styles](styles.md) |STYLES |draft |No |Enables support for styles (*Mapbox Style* oder *SLD*) and related resources (symbols, sprites)
 |[Vector Tiles](tiles.md) |TILES |draft |No |Enables support for vector tiles (*Mapbox Vector Tiles*) for the whole dataset and/or single collections
 |[Simple Transactions](transactional.md) |TRANSACTIONAL |draft |No |Enables feature mutations using HTTP methods POST/PUT/DELETE/PATCH
