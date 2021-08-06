@@ -26,6 +26,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
@@ -36,7 +37,6 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.FeatureSchemaToTypeVisitor;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -45,6 +45,7 @@ import de.ii.xtraplatform.streams.domain.Http;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.Map.Entry;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -57,7 +58,6 @@ import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -247,22 +247,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                 .map(FeaturesCoreConfiguration::getOtherFilterParameters)
                 .orElse(ImmutableMap.of());
 
-            Map<String, String> htmlNames = new LinkedHashMap<>();
-            if (featuresCoreConfiguration.isPresent()) {
-                List<String> featureTypeIds = featuresCoreConfiguration.get().getFeatureTypes();
-                if (featureTypeIds.isEmpty())
-                    featureTypeIds = ImmutableList.of(collectionName);
-                featureTypeIds.forEach(featureTypeId -> {
-                    //TODO: add function to FeatureSchema instead of using Visitor
-                    providerData.getTypes().get(featureTypeId).accept(new FeatureSchemaToTypeVisitor(featureTypeId)).getProperties().keySet().forEach(property -> htmlNames.putIfAbsent(property, property));
-                });
-
-                //TODO: apply rename transformers
-                //Map<String, List<FeaturePropertyTransformation>> transformations = htmlConfiguration.getTransformations();
-            }
-
             featureTypeDataset = createFeatureCollectionView(serviceData, serviceData.getCollections()
-                .get(collectionName), uriCustomizer.copy(), filterableFields, htmlNames, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getMapPosition(serviceData));
+                .get(collectionName), uriCustomizer.copy(), filterableFields, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getMapPosition(serviceData));
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getCollections()
                 .get(collectionName)
@@ -287,13 +273,13 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     }
 
     private FeatureCollectionView createFeatureCollectionView(OgcApiDataV2 apiData,
-                                                              FeatureTypeConfigurationOgcApi featureType,
-                                                              URICustomizer uriCustomizer,
-                                                              Map<String, String> filterableFields,
-                                                              Map<String, String> htmlNames, String staticUrlPrefix,
-                                                              boolean bare, Optional<Locale> language,
-                                                              boolean noIndex,
-                                                              FeaturesHtmlConfiguration.POSITION mapPosition) {
+        FeatureTypeConfigurationOgcApi featureType,
+        URICustomizer uriCustomizer,
+        Map<String, String> filterableFields,
+        String staticUrlPrefix,
+        boolean bare, Optional<Locale> language,
+        boolean noIndex,
+        POSITION mapPosition) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -309,16 +295,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         featureTypeDataset.temporalExtent = apiData.getTemporalExtent(featureType.getId()).orElse(null);
         apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
-        featureTypeDataset.filterFields = filterableFields.entrySet()
-                                                          .stream()
-                                                          .map(entry -> {
-                                                              if (htmlNames.containsKey(entry.getValue())) {
-                                                                  //entry.setValue(htmlNames.get(entry.getValue()));
-                                                                  return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), htmlNames.get(entry.getValue()));
-                                                              }
-                                                              return entry;
-                                                          })
-                                                          .collect(ImmutableSet.toImmutableSet());
+        featureTypeDataset.filterFields = filterableFields.entrySet();
+
         featureTypeDataset.uriBuilder = uriCustomizer.copy()
                                                      .ensureParameter("f", MEDIA_TYPE.parameter());
         featureTypeDataset.uriBuilderWithFOnly = uriCustomizer.copy()
