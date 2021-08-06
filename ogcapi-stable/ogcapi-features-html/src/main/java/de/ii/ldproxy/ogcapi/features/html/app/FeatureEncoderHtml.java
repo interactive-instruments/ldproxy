@@ -170,9 +170,6 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
           }
         });
 
-    //TODO: generalize as schema/value transformer
-    transformLinks(feature.getProperties());
-
     //TODO: generalize as value transformer
     if (transformationContext.getI18n().isPresent()) {
       translateBooleans(feature.getProperties(), transformationContext.getI18n().get(),

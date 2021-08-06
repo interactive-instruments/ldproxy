@@ -41,6 +41,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @JsonAlias("itemLabelFormat")
   Optional<String> getFeatureTitleTemplate();
 
+  @Override
+  Map<String, PropertyTransformation> getTransformations();
+
   @Value.Check
   default FeaturesHtmlConfiguration backwardsCompatibility() {
     if (getLayout() == LAYOUT.CLASSIC
@@ -74,8 +77,32 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
     return this;
   }
 
-  @Override
-  Map<String, PropertyTransformation> getTransformations();
+  String LINK_WILDCARD = "*{objectType=Link}";
+
+  @Value.Check
+  default FeaturesHtmlConfiguration transformLinks() {
+    if (!getTransformations().containsKey(LINK_WILDCARD)
+        || getTransformations().get(LINK_WILDCARD).getReduceStringFormat().isEmpty()) {
+
+      Map<String, PropertyTransformation> transformations = new LinkedHashMap<>(getTransformations());
+
+      PropertyTransformation transformation = new ImmutablePropertyTransformation.Builder()
+          .reduceStringFormat("<a href=\"{{href}}\">{{title}}</a>")
+          .build();
+      if (transformations.containsKey(LINK_WILDCARD)) {
+        transformations.put(LINK_WILDCARD, transformation.mergeInto(transformations.get(LINK_WILDCARD)));
+      } else {
+        transformations.put(LINK_WILDCARD, transformation);
+      }
+
+      return new ImmutableFeaturesHtmlConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
+    }
+
+    return this;
+  }
 
   @Override
   default Builder getBuilder() {
