@@ -319,7 +319,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         Stream<OgcApiQueryParameter> generalList, OgcApiDataV2 apiData, String collectionId, String logPrefix) {
 
         Optional<FeaturesCoreConfiguration> coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
-        final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getOtherFilterParameters)
+        final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
             .orElse(ImmutableMap.of());
 
         Map<String, PropertyTransformation> transformations;

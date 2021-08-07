@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
@@ -45,7 +44,6 @@ import de.ii.xtraplatform.streams.domain.Http;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import java.util.Map.Entry;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -244,7 +242,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                 .getData();
 
             Map<String, String> filterableFields = featuresCoreConfiguration
-                .map(FeaturesCoreConfiguration::getOtherFilterParameters)
+                .map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
                 .orElse(ImmutableMap.of());
 
             featureTypeDataset = createFeatureCollectionView(serviceData, serviceData.getCollections()

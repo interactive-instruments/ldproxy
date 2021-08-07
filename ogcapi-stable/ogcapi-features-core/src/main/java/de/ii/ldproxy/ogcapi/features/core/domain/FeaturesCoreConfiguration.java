@@ -139,11 +139,13 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default Map<String, String> getOtherFilterParameters() {
+    default Map<String, String> getQOrOtherFilterParameters() {
         if (getQueryables().isPresent()) {
             FeaturesCollectionQueryables queryables = getQueryables().get();
             Map<String, String> parameters = new LinkedHashMap<>();
 
+            queryables.getQ()
+                      .forEach(property -> parameters.put(property, property));
             queryables.getOther()
                       .forEach(property -> parameters.put(property, property));
 
