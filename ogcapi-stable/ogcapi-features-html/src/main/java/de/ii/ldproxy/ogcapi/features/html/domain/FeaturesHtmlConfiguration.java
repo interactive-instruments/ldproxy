@@ -14,6 +14,7 @@ import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformat
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -42,23 +43,17 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   Optional<String> getFeatureTitleTemplate();
 
   @Override
-  Map<String, PropertyTransformation> getTransformations();
+  Map<String, List<PropertyTransformation>> getTransformations();
 
   @Value.Check
   default FeaturesHtmlConfiguration backwardsCompatibility() {
     if (getLayout() == LAYOUT.CLASSIC
-      && (!getTransformations().containsKey(PropertyTransformations.WILDCARD)
-          || getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isEmpty())) {
-      Map<String, PropertyTransformation> transformations = new LinkedHashMap<>(getTransformations());
-
-        PropertyTransformation transformation = new ImmutablePropertyTransformation.Builder()
-            .flatten(".")
-            .build();
-        if (transformations.containsKey(PropertyTransformations.WILDCARD)) {
-          transformations.put(PropertyTransformations.WILDCARD, transformation.mergeInto(transformations.get(PropertyTransformations.WILDCARD)));
-        } else {
-          transformations.put(PropertyTransformations.WILDCARD, transformation);
-        }
+      && (!hasTransformation(PropertyTransformations.WILDCARD, transformations ->
+        transformations.getFlatten().isPresent()))) {
+      Map<String, List<PropertyTransformation>> transformations = withTransformation(PropertyTransformations.WILDCARD,
+          new ImmutablePropertyTransformation.Builder()
+          .flatten(".")
+          .build());
 
         return new ImmutableFeaturesHtmlConfiguration.Builder()
             .from(this)
@@ -81,19 +76,12 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
   @Value.Check
   default FeaturesHtmlConfiguration transformLinks() {
-    if (!getTransformations().containsKey(LINK_WILDCARD)
-        || getTransformations().get(LINK_WILDCARD).getReduceStringFormat().isEmpty()) {
+    if (!hasTransformation(LINK_WILDCARD, transformation -> transformation.getReduceStringFormat().isPresent())) {
 
-      Map<String, PropertyTransformation> transformations = new LinkedHashMap<>(getTransformations());
-
-      PropertyTransformation transformation = new ImmutablePropertyTransformation.Builder()
+      Map<String, List<PropertyTransformation>> transformations = withTransformation(LINK_WILDCARD,
+          new ImmutablePropertyTransformation.Builder()
           .reduceStringFormat("<a href=\"{{href}}\">{{title}}</a>")
-          .build();
-      if (transformations.containsKey(LINK_WILDCARD)) {
-        transformations.put(LINK_WILDCARD, transformation.mergeInto(transformations.get(LINK_WILDCARD)));
-      } else {
-        transformations.put(LINK_WILDCARD, transformation);
-      }
+          .build());
 
       return new ImmutableFeaturesHtmlConfiguration.Builder()
           .from(this)

@@ -199,9 +199,11 @@ public class EndpointFeatures extends EndpointSubCollection {
                                               .collect(Collectors.toUnmodifiableSet());
         for (Map.Entry<String, FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
             String collectionId = entry.getKey();
-            for (Map.Entry<String, PropertyTransformation> entry2 : entry.getValue().getTransformations().entrySet()) {
+            for (Map.Entry<String, List<PropertyTransformation>> entry2 : entry.getValue().getTransformations().entrySet()) {
                 String property = entry2.getKey();
-                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+                for (PropertyTransformation transformation: entry2.getValue()) {
+                    builder = transformation.validate(builder, collectionId, property, codelists);
+                }
             }
         }
 
@@ -322,7 +324,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getOtherFilterParameters)
             .orElse(ImmutableMap.of());
 
-        Map<String, PropertyTransformation> transformations;
+        Map<String, List<PropertyTransformation>> transformations;
         if (coreConfiguration.isPresent()) {
             transformations = coreConfiguration.get().getTransformations();
             // TODO

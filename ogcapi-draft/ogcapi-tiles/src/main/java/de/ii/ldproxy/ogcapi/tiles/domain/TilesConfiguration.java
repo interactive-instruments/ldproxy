@@ -397,19 +397,12 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
 
     @Value.Check
     default TilesConfiguration alwaysFlatten() {
-        if (!getTransformations().containsKey(PropertyTransformations.WILDCARD)
-            || getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isEmpty()) {
+        if (!hasTransformation(PropertyTransformations.WILDCARD, transformation -> transformation.getFlatten().isPresent())) {
 
-            Map<String, PropertyTransformation> transformations = new LinkedHashMap<>(getTransformations());
-
-            PropertyTransformation transformation = new ImmutablePropertyTransformation.Builder()
+            Map<String, List<PropertyTransformation>> transformations = withTransformation(PropertyTransformations.WILDCARD,
+                new ImmutablePropertyTransformation.Builder()
                 .flatten(".")
-                .build();
-            if (transformations.containsKey(PropertyTransformations.WILDCARD)) {
-                transformations.put(PropertyTransformations.WILDCARD, transformation.mergeInto(transformations.get(PropertyTransformations.WILDCARD)));
-            } else {
-                transformations.put(PropertyTransformations.WILDCARD, transformation);
-            }
+                .build());
 
             return new ImmutableTilesConfiguration.Builder()
                 .from(this)

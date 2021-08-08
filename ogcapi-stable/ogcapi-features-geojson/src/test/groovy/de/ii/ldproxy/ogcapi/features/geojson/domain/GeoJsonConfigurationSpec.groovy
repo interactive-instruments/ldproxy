@@ -27,7 +27,7 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
                 .multiplicityStrategy(GeoJsonConfiguration.MULTIPLICITY.ARRAY)
                 .useFormattedJsonOutput(true)
                 .separator(".")
-                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().rename("bar").build())
+                .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
                 .build()
     }
 
@@ -64,7 +64,7 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
     @Override
     GeoJsonConfiguration getMap() {
         return new ImmutableGeoJsonConfiguration.Builder()
-                .putTransformations("bar", new ImmutablePropertyTransformation.Builder().rename("foo").build())
+                .putTransformations("bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()])
                 .build()
     }
 
@@ -73,8 +73,8 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
         return new ImmutableGeoJsonConfiguration.Builder()
                 .from(getFull())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").build(),
-                        "bar", new ImmutablePropertyTransformation.Builder().rename("foo").build()
+                        "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
+                        "bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()]
                 ))
                 .build()
     }
@@ -82,7 +82,7 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
     @Override
     GeoJsonConfiguration getNested() {
         return new ImmutableGeoJsonConfiguration.Builder()
-                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().codelist("cl").build())
+                .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().codelist("cl").build()])
                 .build()
     }
 
@@ -91,7 +91,10 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
         return new ImmutableGeoJsonConfiguration.Builder()
                 .from(getFull())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").codelist("cl").build()
+                        "foo", [
+                        new ImmutablePropertyTransformation.Builder().rename("bar").build(),
+                        new ImmutablePropertyTransformation.Builder().codelist("cl").build()
+                        ]
                 ))
                 .build()
     }

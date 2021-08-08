@@ -69,28 +69,16 @@ public interface TileFormatExtension extends FormatExtension {
     default Optional<PropertyTransformations> getPropertyTransformations(
         FeatureTypeConfigurationOgcApi collectionData) {
 
-        Map<String, PropertyTransformation> coreTransformations = collectionData.getExtension(
-            FeaturesCoreConfiguration.class)
-            .map(FeaturesCoreConfiguration::getTransformations)
-            .orElse(ImmutableMap.of());
+        Optional<PropertyTransformations> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
+            .map(featuresCoreConfiguration -> ((PropertyTransformations)featuresCoreConfiguration));
 
-        Map<String, PropertyTransformation> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
+        Optional<PropertyTransformations> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
             .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
-            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration).getTransformations())
-            .orElse(ImmutableMap.of());
+            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration));
 
-        Map<String, PropertyTransformation> propertyTransformations = new LinkedHashMap<>(coreTransformations);
 
-        formatTransformations.forEach((key, propertyTransformation) -> {
-            propertyTransformations.putIfAbsent(key, propertyTransformation);
-            propertyTransformations.computeIfPresent(key, (key2, corePropertyTransformation) -> propertyTransformation.mergeInto(corePropertyTransformation));
-        });
-
-        if (propertyTransformations.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(() -> propertyTransformations);
+        return formatTransformations.map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
+            .or(() -> coreTransformations);
     }
 
     default Optional<PropertyTransformations> getPropertyTransformations(

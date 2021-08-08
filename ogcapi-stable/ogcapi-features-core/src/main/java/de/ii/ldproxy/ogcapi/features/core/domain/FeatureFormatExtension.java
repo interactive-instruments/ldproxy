@@ -18,9 +18,13 @@ import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.collections.ListUtils;
 
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 import static de.ii.ldproxy.ogcapi.features.core.app.PathParameterFeatureIdFeatures.FEATURE_ID_PATTERN;
@@ -57,26 +61,15 @@ public interface FeatureFormatExtension extends FormatExtension {
 
     default Optional<PropertyTransformations> getPropertyTransformations(FeatureTypeConfigurationOgcApi collectionData) {
 
-        Map<String, PropertyTransformation> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
-            .map(FeaturesCoreConfiguration::getTransformations)
-            .orElse(ImmutableMap.of());
+        Optional<PropertyTransformations> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
+            .map(featuresCoreConfiguration -> ((PropertyTransformations)featuresCoreConfiguration));
 
-        Map<String, PropertyTransformation> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
+        Optional<PropertyTransformations> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
             .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
-            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration).getTransformations())
-            .orElse(ImmutableMap.of());
+            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration));
 
-        Map<String, PropertyTransformation> propertyTransformations = new LinkedHashMap<>(coreTransformations);
 
-        formatTransformations.forEach((key, propertyTransformation) -> {
-            propertyTransformations.putIfAbsent(key, propertyTransformation);
-            propertyTransformations.computeIfPresent(key, (key2, corePropertyTransformation) -> propertyTransformation.mergeInto(corePropertyTransformation));
-        });
-
-        if (propertyTransformations.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return Optional.of(() -> propertyTransformations);
+        return formatTransformations.map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
+        .or(() -> coreTransformations);
     }
 }

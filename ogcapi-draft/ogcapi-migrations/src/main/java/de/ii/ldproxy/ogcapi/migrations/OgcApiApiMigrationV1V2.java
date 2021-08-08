@@ -155,7 +155,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                 newCoreConfiguration.featureType(collection.getId())
                                                                                                     .queryables(queryables);
 
-                                                                                Map<String, PropertyTransformation> coreTransformations = getCoreTransformations(entityData.getFeatureProvider()
+                                                                                Map<String, List<PropertyTransformation>> coreTransformations = getCoreTransformations(entityData.getFeatureProvider()
                                                                                                                                                                            .getMappings()
                                                                                                                                                                            .get(collection.getId()));
 
@@ -185,7 +185,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                 htmlConfiguration.ifPresent(newHtmlConfiguration::from);
 
 
-                                                                                Map<String, PropertyTransformation> htmlTransformations = getHtmlTransformations(entityData.getFeatureProvider()
+                                                                                Map<String, List<PropertyTransformation>> htmlTransformations = getHtmlTransformations(entityData.getFeatureProvider()
                                                                                                                                                                            .getMappings()
                                                                                                                                                                            .get(collection.getId()));
 
@@ -199,10 +199,10 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
                                                                                     final String[] itemLabelFormat = {htmlName1};
 
                                                                                     htmlTransformations.forEach((key, value) -> {
-                                                                                        if (value.getRename()
-                                                                                                 .isPresent()) {
-                                                                                            String rename = String.format("{{%s}}", value.getRename()
-                                                                                                                                         .get());
+                                                                                        if (value.stream().anyMatch(transformation -> transformation.getRename()
+                                                                                                 .isPresent())) {
+                                                                                            String rename = String.format("{{%s}}", value.stream().filter(transformation -> transformation.getRename()
+                                                                                                    .isPresent()).findFirst().get());
                                                                                             if (itemLabelFormat[0].contains(rename)) {
                                                                                                 itemLabelFormat[0] = itemLabelFormat[0].replace(rename, String.format("{{%s}}", key));
                                                                                             }
@@ -504,9 +504,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
         return Optional.ofNullable(name[0]);
     }
 
-    private Map<String, PropertyTransformation> getHtmlTransformations(FeatureTypeMapping featureTypeMapping) {
+    private Map<String, List<PropertyTransformation>> getHtmlTransformations(FeatureTypeMapping featureTypeMapping) {
 
-        Map<String, PropertyTransformation> transformations = new LinkedHashMap<>();
+        Map<String, List<PropertyTransformation>> transformations = new LinkedHashMap<>();
 
         featureTypeMapping.getMappings()
                           .values()
@@ -558,7 +558,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
 
                               if (hasTransformations) {
                                   transformations.put(general.getName()
-                                                             .replaceAll("\\[[^\\]]+?\\]", "[]"), builder.build());
+                                                             .replaceAll("\\[[^\\]]+?\\]", "[]"), ImmutableList.of(builder.build()));
                               }
                           });
 
@@ -593,9 +593,9 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
         return isJsonLd ? Optional.of(builder.build()) : Optional.empty();
     }
 
-    private Map<String, PropertyTransformation> getCoreTransformations(FeatureTypeMapping featureTypeMapping) {
+    private Map<String, List<PropertyTransformation>> getCoreTransformations(FeatureTypeMapping featureTypeMapping) {
 
-        Map<String, PropertyTransformation> transformations = new LinkedHashMap<>();
+        Map<String, List<PropertyTransformation>> transformations = new LinkedHashMap<>();
 
         featureTypeMapping.getMappings()
                           .values()
@@ -630,7 +630,7 @@ public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, Ogc
 
                               if (hasTransformations) {
                                   transformations.put(general.getName()
-                                                             .replaceAll("\\[[^\\]]+?\\]", "[]"), builder.build());
+                                                             .replaceAll("\\[[^\\]]+?\\]", "[]"), ImmutableList.of(builder.build()));
                               }
                           });
 

@@ -14,6 +14,7 @@ import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformat
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -51,27 +52,19 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     @Value.Derived
     @Value.Auxiliary
     default boolean isFlattened() {
-        return getTransformations().containsKey(PropertyTransformations.WILDCARD)
-            && getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isPresent();
+        return hasTransformation(PropertyTransformations.WILDCARD, transformation -> transformation.getFlatten().isPresent());
     }
 
     @Value.Check
     default GeoJsonConfiguration backwardsCompatibility() {
         if (getNestedObjectStrategy() == NESTED_OBJECTS.FLATTEN
             && getMultiplicityStrategy() == MULTIPLICITY.SUFFIX
-            && (!getTransformations().containsKey(PropertyTransformations.WILDCARD)
-            || getTransformations().get(PropertyTransformations.WILDCARD).getFlatten().isEmpty())) {
+            && !isFlattened()) {
 
-            Map<String, PropertyTransformation> transformations = new LinkedHashMap<>(getTransformations());
-
-            PropertyTransformation transformation = new ImmutablePropertyTransformation.Builder()
+            Map<String, List<PropertyTransformation>> transformations = withTransformation(PropertyTransformations.WILDCARD,
+                new ImmutablePropertyTransformation.Builder()
                 .flatten(Optional.ofNullable(getSeparator()).orElse("."))
-                .build();
-            if (transformations.containsKey(PropertyTransformations.WILDCARD)) {
-                transformations.put(PropertyTransformations.WILDCARD, transformation.mergeInto(transformations.get(PropertyTransformations.WILDCARD)));
-            } else {
-                transformations.put(PropertyTransformations.WILDCARD, transformation);
-            }
+                .build());
 
             return new ImmutableGeoJsonConfiguration.Builder()
                 .from(this)

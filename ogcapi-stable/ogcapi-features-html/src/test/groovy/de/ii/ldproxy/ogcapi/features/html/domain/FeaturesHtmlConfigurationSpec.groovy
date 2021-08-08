@@ -20,7 +20,7 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
                 .enabled(true)
                 .layout(FeaturesHtmlConfiguration.LAYOUT.CLASSIC)
                 .featureTitleTemplate("foo")
-                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().rename("bar").build())
+                .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
                 .build()
     }
 
@@ -50,9 +50,9 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
                 .from(getFull())
                 .from(getSimple())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").build(),
-                        "*{objectType=Link}", new ImmutablePropertyTransformation.Builder().reduceStringFormat("<a href=\"{{href}}\">{{title}}</a>").build(),
-                        "*", new ImmutablePropertyTransformation.Builder().flatten(".").build()
+                        "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
+                        "*{objectType=Link}", [new ImmutablePropertyTransformation.Builder().reduceStringFormat("<a href=\"{{href}}\">{{title}}</a>").build()],
+                        "*", [new ImmutablePropertyTransformation.Builder().flatten(".").build()]
                 ))
                 .build()
     }
@@ -60,7 +60,7 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
     @Override
     FeaturesHtmlConfiguration getMap() {
         return new ImmutableFeaturesHtmlConfiguration.Builder()
-                .putTransformations("bar", new ImmutablePropertyTransformation.Builder().rename("foo").build())
+                .putTransformations("bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()])
                 .build()
     }
 
@@ -69,8 +69,8 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
         return new ImmutableFeaturesHtmlConfiguration.Builder()
                 .from(getFull())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").build(),
-                        "bar", new ImmutablePropertyTransformation.Builder().rename("foo").build()
+                        "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
+                        "bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()]
                 ))
                 .build()
     }
@@ -78,7 +78,7 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
     @Override
     FeaturesHtmlConfiguration getNested() {
         return new ImmutableFeaturesHtmlConfiguration.Builder()
-                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().codelist("cl").build())
+                .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().codelist("cl").build()])
                 .build()
     }
 
@@ -87,7 +87,10 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
         return new ImmutableFeaturesHtmlConfiguration.Builder()
                 .from(getFull())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").codelist("cl").build()
+                        "foo", [
+                        new ImmutablePropertyTransformation.Builder().rename("bar").build(),
+                        new ImmutablePropertyTransformation.Builder().codelist("cl").build()
+                        ]
                 ))
                 .build()
     }

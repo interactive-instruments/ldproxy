@@ -80,7 +80,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     Map<String, Integer> getCoordinatePrecision();
 
     @Override
-    Map<String, PropertyTransformation> getTransformations();
+    Map<String, List<PropertyTransformation>> getTransformations();
 
     @JsonIgnore
     @Value.Derived

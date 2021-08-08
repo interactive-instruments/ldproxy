@@ -177,9 +177,11 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                               .collect(Collectors.toUnmodifiableSet());
         for (Map.Entry<String, FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
             String collectionId = entry.getKey();
-            for (Map.Entry<String, PropertyTransformation> entry2 : entry.getValue().getTransformations().entrySet()) {
+            for (Map.Entry<String, List<PropertyTransformation>> entry2 : entry.getValue().getTransformations().entrySet()) {
                 String property = entry2.getKey();
-                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+                for (PropertyTransformation transformation: entry2.getValue()) {
+                    builder = transformation.validate(builder, collectionId, property, codelists);
+                }
             }
         }
 
