@@ -2105,12 +2105,12 @@ class FilterParameterSpecification extends Specification {
             assertFeature(propertyAndLiteralNestedPosition.responseData.features[i], propertyAndLiteralNestedPositionCheck.get(i))
         }
 
-        when: "1d. Data is selected using a nested filter theme[position() IN (2,3)].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"
-        def propertyAndLiteralNestedPosition2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position() in (2,3)].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"))
+        when: "1d. Data is selected using a nested filter theme[position() BETWEEN 2 AND 3].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position() between 2 and 3].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"))
         def propertyAndLiteralNestedPosition2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
             def themes = (List) f.properties.theme
             def selectedThemes = IntStream.range(0, themes.size())
-                    .filter(i -> i>0)
+                    .filter(i -> i>0 && i<3)
                     .mapToObj(i-> themes.get(i))
                     .toList()
             if (selectedThemes.size()==0)
