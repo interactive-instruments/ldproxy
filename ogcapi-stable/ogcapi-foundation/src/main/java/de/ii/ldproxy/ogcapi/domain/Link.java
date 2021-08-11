@@ -34,6 +34,10 @@ public abstract class Link {
 
     @Nullable
     @XmlAttribute
+    public abstract String getAnchor();
+
+    @Nullable
+    @XmlAttribute
     public abstract String getTitle();
 
     @XmlAttribute
