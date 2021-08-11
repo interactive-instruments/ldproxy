@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.jsonfg.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
@@ -28,7 +29,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    enum OPTION { describedby, featureTypes, when, where, refSys }
+    enum OPTION { describedby, featureTypes, when, where, refSys, links }
 
     @Nullable
     Boolean getWhen();
@@ -44,6 +45,9 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
 
     @Nullable
     List<String> getFeatureTypes();
+
+    @Nullable
+    List<Link> getLinks();
 
     List<OPTION> getIncludeInGeoJson();
 
