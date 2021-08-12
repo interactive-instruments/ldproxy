@@ -134,12 +134,9 @@ public class EndpointStylesCollection extends EndpointSubCollection implements C
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles", "collectionId", collectionId);
         checkCollectionExists(apiData, collectionId);
 
-        boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
-                                           .map(FoundationConfiguration::getIncludeLinkHeader)
-                                           .orElse(false);
         QueriesHandlerStyles.QueryInputStyles queryInput = new ImmutableQueryInputStyles.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
-                .includeLinkHeader(includeLinkHeader)
                 .build();
 
         return queryHandler.handle(QueriesHandlerStyles.Query.STYLES, queryInput, requestContext);

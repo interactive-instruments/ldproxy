@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -93,6 +94,28 @@ public interface StyleRepository {
      * @return {@code true}, if the stylesheet exists
      */
     boolean stylesheetExists(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension styleFormat, boolean includeDerived);
+
+    /**
+     * determine date of last change to any stylesheet of the style; this includes root stylesheets from
+     * which a collection stylesheet will be derived
+     * @param apiData information about the API
+     * @param collectionId the optional collection, or empty for a style collection at root level
+     * @param styleId the identifier of the style in the style collection
+     * @return the date or {@code null}, if no stylesheet is found
+     */
+    Date getStyleLastModified(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId);
+
+    /**
+     * determine date of last change to a stylesheet of the style; this includes root stylesheets from
+     * which a collection stylesheet will be derived
+     * @param apiData information about the API
+     * @param collectionId the optional collection, or empty for a style collection at root level
+     * @param styleId the identifier of the style in the style collection
+     * @param styleFormat the style encoding
+     * @param includeDerived controls, if styles/stylesheets are included that are derived on-the-fly
+     * @return the date or {@code null}, if no stylesheet is found
+     */
+    Date getStylesheetLastModified(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, StyleFormatExtension styleFormat, boolean includeDerived);
 
     /**
      * fetches a stylesheet

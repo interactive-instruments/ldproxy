@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCoreConfiguration.Builder.class)
-public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations, CachingConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }

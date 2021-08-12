@@ -8,6 +8,7 @@
 package de.ii.ldproxy.resources.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
@@ -16,7 +17,7 @@ import javax.annotation.Nullable;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableResourcesConfiguration.Builder.class)
-public interface ResourcesConfiguration extends ExtensionConfiguration {
+public interface ResourcesConfiguration extends ExtensionConfiguration, CachingConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }

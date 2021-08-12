@@ -8,9 +8,13 @@
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.Optional;
 
 @Value.Immutable
@@ -19,4 +23,10 @@ import java.util.Optional;
 public abstract class TileMatrixSetLinks extends PageRepresentationWithId {
 
     public abstract Optional<String> getTileMatrixSetURI();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<TileMatrixSetLinks> FUNNEL = (from, into) -> {
+        PageRepresentationWithId.FUNNEL.funnel(from, into);
+        from.getTileMatrixSetURI().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+    };
 }

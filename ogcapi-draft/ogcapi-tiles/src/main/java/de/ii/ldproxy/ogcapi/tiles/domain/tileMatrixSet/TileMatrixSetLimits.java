@@ -8,7 +8,11 @@
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
 import org.immutables.value.Value;
+
+import java.nio.charset.StandardCharsets;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -19,4 +23,13 @@ public abstract class TileMatrixSetLimits {
     public abstract Integer getMaxTileRow();
     public abstract Integer getMinTileCol();
     public abstract Integer getMaxTileCol();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<TileMatrixSetLimits> FUNNEL = (from, into) -> {
+        into.putString(from.getTileMatrix(), StandardCharsets.UTF_8);
+        into.putInt(from.getMinTileRow());
+        into.putInt(from.getMaxTileRow());
+        into.putInt(from.getMinTileCol());
+        into.putInt(from.getMaxTileCol());
+    };
 }

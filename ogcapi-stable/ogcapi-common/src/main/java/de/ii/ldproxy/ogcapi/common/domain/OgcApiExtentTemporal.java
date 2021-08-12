@@ -8,9 +8,12 @@
 package de.ii.ldproxy.ogcapi.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.hash.Funnel;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class OgcApiExtentTemporal {
@@ -53,4 +56,12 @@ public class OgcApiExtentTemporal {
     public void setTrs(String trs) {
         this.trs = trs;
     }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<OgcApiExtentTemporal> FUNNEL = (from, into) -> {
+        into.putString(from.getTrs(), StandardCharsets.UTF_8);
+        Arrays.stream(from.getInterval())
+              .forEachOrdered(arr -> Arrays.stream(arr)
+                                           .forEachOrdered(val -> into.putString(Objects.requireNonNullElse(val, ".."), StandardCharsets.UTF_8)));
+    };
 }

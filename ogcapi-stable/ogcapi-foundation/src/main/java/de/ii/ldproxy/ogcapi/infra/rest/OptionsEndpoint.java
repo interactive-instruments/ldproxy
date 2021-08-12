@@ -103,6 +103,7 @@ public class OptionsEndpoint implements EndpointExtension {
         return Response
                 .ok(String.join(", ", supportedMethods))
                 .allow(supportedMethods)
+                // TODO add variants
                 .header("Access-Control-Allow-Origin","*") // TODO * not allowed with credentials
                 .header("Access-Control-Allow-Credentials","true")
                 .header("Access-Control-Allow-Methods", String.join(", ", supportedMethods))
