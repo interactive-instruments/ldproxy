@@ -60,7 +60,7 @@ public abstract class TileSet extends Metadata2 {
         from.getTileMatrixSet().ifPresent(val -> TileMatrixSetData.FUNNEL.funnel(val, into));
         from.getTileMatrixSetURI().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getTileMatrixSetDefinition().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getBoundingBox().ifPresent(val -> TilesBoundingBox.FUNNEL.funnel(val, into));
+        TilesBoundingBox.FUNNEL.funnel(from.getBoundingBox(), into);
         from.getCenterPoint().ifPresent(val -> TilePoint.FUNNEL.funnel(val, into));
         from.getTileMatrixSetLimits()
             .stream()
