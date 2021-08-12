@@ -16,6 +16,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -81,6 +82,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     interface QueryInputTileSets extends QueryInput {
 
         Optional<String> getCollectionId();
+        @Nullable
         List<Double> getCenter();
         Map<String, MinMax> getTileMatrixSetZoomLevels();
     }
@@ -90,6 +92,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
         Optional<String> getCollectionId();
         String getTileMatrixSetId();
+        @Nullable
         List<Double> getCenter();
         MinMax getZoomLevels();
     }
