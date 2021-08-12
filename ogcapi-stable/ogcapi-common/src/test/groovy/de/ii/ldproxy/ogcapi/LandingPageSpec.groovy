@@ -25,17 +25,10 @@ import de.ii.xtraplatform.crs.domain.CrsTransformationException
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import io.swagger.v3.oas.models.media.ObjectSchema
-import org.glassfish.jersey.internal.MapPropertiesDelegate
-import org.glassfish.jersey.internal.PropertiesDelegate
-import org.glassfish.jersey.server.ApplicationHandler
-import org.glassfish.jersey.server.ContainerRequest
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Request
-import javax.ws.rs.core.SecurityContext
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 
 class LandingPageSpec extends Specification {
 

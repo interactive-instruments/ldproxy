@@ -16,11 +16,9 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +41,6 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
         Tile getTile();
         InputStream getTileContent();
-        Optional<Date> getLastModified();
     }
 
     @Value.Immutable

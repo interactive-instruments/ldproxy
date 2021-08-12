@@ -590,7 +590,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             throw new RuntimeException("Could not read tile from cache.",e);
         }
 
-
         StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(new ByteArrayInputStream(content), outputStream);
 
         List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
