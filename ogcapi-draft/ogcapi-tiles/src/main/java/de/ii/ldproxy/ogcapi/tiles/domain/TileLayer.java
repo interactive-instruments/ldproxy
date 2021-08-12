@@ -47,7 +47,7 @@ public abstract class TileLayer extends Metadata2 {
 
     public abstract Optional<JsonSchemaObject> getPropertiesSchema();
 
-    // this is for map tiles, so we do not support this for now
+    // this is for map tiles, so we do not support the following for now:
     // public abstract Optional<StyleEntry> getStyle();
 
     @SuppressWarnings("UnstableApiUsage")

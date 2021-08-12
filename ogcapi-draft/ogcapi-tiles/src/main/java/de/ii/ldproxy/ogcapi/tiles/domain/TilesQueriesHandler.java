@@ -16,8 +16,10 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
 
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,7 +28,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     @Override
     Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();
 
-    enum Query implements QueryIdentifier {TILE_SETS, TILE_SET, SINGLE_LAYER_TILE, MULTI_LAYER_TILE, TILE_FILE, EMPTY_TILE, MBTILES_TILE}
+    enum Query implements QueryIdentifier {TILE_SETS, TILE_SET, SINGLE_LAYER_TILE, MULTI_LAYER_TILE, TILE_STREAM, EMPTY_TILE, MBTILES_TILE}
 
     @Value.Immutable
     interface QueryInputTileEmpty extends QueryInput {
@@ -35,10 +37,10 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     }
 
     @Value.Immutable
-    interface QueryInputTileFile extends QueryInput {
+    interface QueryInputTileStream extends QueryInput {
 
         Tile getTile();
-        Path getTileFile();
+        InputStream getTileContent();
     }
 
     @Value.Immutable
@@ -79,7 +81,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     interface QueryInputTileSets extends QueryInput {
 
         Optional<String> getCollectionId();
-        double[] getCenter();
+        List<Double> getCenter();
         Map<String, MinMax> getTileMatrixSetZoomLevels();
     }
 
@@ -88,7 +90,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
         Optional<String> getCollectionId();
         String getTileMatrixSetId();
-        double[] getCenter();
+        List<Double> getCenter();
         MinMax getZoomLevels();
     }
 
