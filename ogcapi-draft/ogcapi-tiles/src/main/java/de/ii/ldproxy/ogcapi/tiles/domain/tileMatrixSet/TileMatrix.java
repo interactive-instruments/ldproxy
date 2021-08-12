@@ -9,11 +9,17 @@ package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
@@ -46,4 +52,23 @@ public abstract class TileMatrix {
 
     @JsonIgnore
     public abstract int getTileLevel();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<TileMatrix> FUNNEL = (from, into) -> {
+        into.putString(from.getId(), StandardCharsets.UTF_8);
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getKeywords()
+            .stream()
+            .sorted()
+            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        into.putLong(from.getTileWidth());
+        into.putLong(from.getTileHeight());
+        into.putLong(from.getMatrixWidth());
+        into.putLong(from.getMatrixHeight());
+        into.putDouble(from.getScaleDenominator().doubleValue());
+        Arrays.stream(from.getPointOfOrigin())
+              .forEachOrdered(val -> into.putDouble(val.doubleValue()));
+        into.putString(from.getCornerOfOrigin(), StandardCharsets.UTF_8);
+    };
 }

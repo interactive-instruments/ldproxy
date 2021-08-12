@@ -14,6 +14,8 @@ import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
@@ -39,6 +41,9 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileLayer;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.VectorLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTilesBoundingBox;
@@ -60,6 +65,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.AbstractMap;
@@ -128,10 +134,10 @@ public class TilesHelper {
                                                      .crsEpsg(OgcCrs.CRS84)
                                                      .build());
 
-        if (zoomLevels.getDefault().isPresent() || !center.isEmpty()) {
+        if (zoomLevels.getDefault().isPresent() || Objects.nonNull(center)) {
             ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();
             zoomLevels.getDefault().ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
-            if (!center.isEmpty())
+            if (Objects.nonNull(center))
                 builder2.coordinates(center);
             builder.centerPoint(builder2.build());
         }

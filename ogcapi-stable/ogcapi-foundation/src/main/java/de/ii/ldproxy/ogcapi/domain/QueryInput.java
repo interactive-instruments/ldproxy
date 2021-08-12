@@ -9,9 +9,18 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import org.immutables.value.Value;
 
+import java.util.Date;
+import java.util.Optional;
+
 public interface QueryInput {
 
     // general output options
     @Value.Default
     default boolean getIncludeLinkHeader() { return false; }
+
+    Optional<Date> getLastModified();
+
+    Optional<Date> getExpires();
+
+    Optional<String> getCacheControl();
 }

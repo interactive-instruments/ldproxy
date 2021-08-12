@@ -32,11 +32,14 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -99,7 +102,16 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                .links(links)
                                                                .build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = getLastModified(queryInput, api);
+        EntityTag etag = getEtag(tileMatrixSets, TileMatrixSets.FUNNEL, outputFormat);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null), null)
                 .entity(outputFormat.getTileMatrixSetsEntity(tileMatrixSets, api, requestContext))
                 .build();
     }
@@ -130,7 +142,16 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                         .links(links)
                                                                         .build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
+        Date lastModified = getLastModified(queryInput, api);
+        EntityTag etag = getEtag(tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null), null)
                 .entity(outputFormat.getTileMatrixSetEntity(tileMatrixSetData, api, requestContext))
                 .build();
     }

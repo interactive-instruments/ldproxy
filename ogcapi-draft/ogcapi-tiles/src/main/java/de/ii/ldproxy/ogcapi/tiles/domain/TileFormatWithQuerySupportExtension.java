@@ -34,7 +34,7 @@ public interface TileFormatWithQuerySupportExtension extends TileFormatExtension
 
     Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContextTiles transformationContext, Optional<Locale> language);
 
-    Object getEmptyTile(Tile tile);
+    byte[] getEmptyTile(Tile tile);
 
     FeatureQuery getQuery(Tile tile,
                           List<OgcApiQueryParameter> allowedParameters,

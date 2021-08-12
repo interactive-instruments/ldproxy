@@ -136,15 +136,12 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
     public Response getCollections(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                    @Context ApiRequestContext requestContext) {
 
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
         List<Link> additionalLinks = api.getData().getExtension(CollectionsConfiguration.class)
                                         .map(CollectionsConfiguration::getAdditionalLinks)
                                         .orElse(ImmutableList.of());
 
         QueriesHandlerCollectionsImpl.QueryInputCollections queryInput = new ImmutableQueryInputCollections.Builder()
-                .includeLinkHeader(includeLinkHeader)
+                .from(getGenericQueryInput(api.getData()))
                 .additionalLinks(additionalLinks)
                 .build();
 

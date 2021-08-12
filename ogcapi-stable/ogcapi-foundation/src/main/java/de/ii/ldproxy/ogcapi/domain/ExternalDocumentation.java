@@ -9,8 +9,12 @@ package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
@@ -19,4 +23,10 @@ import java.util.Optional;
 public abstract class ExternalDocumentation {
     public abstract Optional<String> getDescription();
     public abstract String getUrl();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<ExternalDocumentation> FUNNEL = (from, into) -> {
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        into.putString(from.getUrl(), StandardCharsets.UTF_8);
+    };
 }

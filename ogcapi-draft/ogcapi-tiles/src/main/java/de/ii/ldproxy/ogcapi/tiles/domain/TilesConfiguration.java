@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
 import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
@@ -28,7 +29,7 @@ import java.util.Objects;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public interface TilesConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface TilesConfiguration extends ExtensionConfiguration, FeatureTransformations, CachingConfiguration {
 
     enum TileCacheType { FILES, MBTILES }
 
@@ -63,13 +64,15 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     }
 
     @Deprecated
+    @Nullable
     List<Double> getCenter();
 
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
+    @Nullable
     default List<Double> getCenterDerived() {
-        return !getCenter().isEmpty() ?
+        return Objects.nonNull(getCenter()) ?
                 getCenter() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getCenter() :
@@ -378,9 +381,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
 
-        if (!getCenter().isEmpty())
+        if (Objects.nonNull(getCenter()))
             builder.center(getCenter());
-        else if (!src.getCenter().isEmpty())
+        else if (Objects.nonNull(src.getCenter()))
             builder.center(src.getCenter());
 
         return builder.build();

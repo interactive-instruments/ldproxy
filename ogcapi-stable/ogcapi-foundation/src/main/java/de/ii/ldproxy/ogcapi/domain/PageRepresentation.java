@@ -8,11 +8,16 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -23,6 +28,9 @@ public abstract class PageRepresentation {
     public abstract Optional<String> getDescription();
 
     public abstract List<Link> getLinks();
+
+    @JsonIgnore
+    public abstract Optional<Date> getLastModified();
 
     @JsonIgnore
     public abstract List<Map<String, Object>> getSections();
@@ -45,4 +53,15 @@ public abstract class PageRepresentation {
     public boolean getSectionsFirst() {
         return false;
     }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<PageRepresentation> FUNNEL = (from, into) -> {
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getLinks()
+            .stream()
+            .sorted(Comparator.comparing(Link::getHref))
+            .forEachOrdered(link -> into.putString(link.getHref(), StandardCharsets.UTF_8)
+                                        .putString(Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
+    };
 }

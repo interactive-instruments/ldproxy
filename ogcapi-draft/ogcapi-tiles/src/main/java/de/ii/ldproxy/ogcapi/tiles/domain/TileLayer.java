@@ -8,11 +8,17 @@
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.domain.Metadata2;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.Optional;
 
 @Value.Immutable
@@ -44,4 +50,21 @@ public abstract class TileLayer extends Metadata2 {
     // this is for map tiles, so we do not support the following for now:
     // public abstract Optional<StyleEntry> getStyle();
 
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<TileLayer> FUNNEL = (from, into) -> {
+        Metadata2.FUNNEL.funnel(from, into);
+        into.putString(from.getId(), StandardCharsets.UTF_8);
+        into.putString(from.getDataType().toString(), StandardCharsets.UTF_8);
+        from.getFeatureType().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getGeometryType().ifPresent(val -> into.putString(val.toString(), StandardCharsets.UTF_8));
+        from.getTheme().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getMinTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getMaxTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getMinCellSize().ifPresent(into::putDouble);
+        from.getMaxCellSize().ifPresent(into::putDouble);
+        from.getMinScaleDenominator().ifPresent(into::putDouble);
+        from.getMaxScaleDenominator().ifPresent(into::putDouble);
+        from.getBoundingBox().ifPresent(val -> TilesBoundingBox.FUNNEL.funnel(val, into));
+        from.getPropertiesSchema().ifPresent(val -> JsonSchema.FUNNEL.funnel(val, into));
+    };
 }

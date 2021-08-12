@@ -36,6 +36,7 @@ public abstract class TileProviderMbtiles extends TileProvider {
     public abstract String getTileEncoding();
 
     @JsonIgnore
+    @Nullable
     public abstract List<Double> getCenter();
 
     @Override
@@ -48,9 +49,15 @@ public abstract class TileProviderMbtiles extends TileProvider {
         if (Objects.isNull(src) || !(src instanceof TileProviderMbtiles))
             return this;
 
-        return ImmutableTileProviderMbtiles.builder()
-                                           .from((TileProviderMbtiles) src)
-                                           .from(this)
-                                           .build();
+        ImmutableTileProviderMbtiles.Builder builder = ImmutableTileProviderMbtiles.builder()
+                                                                                   .from((TileProviderMbtiles) src)
+                                                                                   .from(this);
+
+        if (Objects.nonNull(getCenter()))
+            builder.center(getCenter());
+        else if (Objects.nonNull(((TileProviderMbtiles)src).getCenter()))
+            builder.center(((TileProviderMbtiles)src).getCenter());
+
+        return builder.build();
     }
 }

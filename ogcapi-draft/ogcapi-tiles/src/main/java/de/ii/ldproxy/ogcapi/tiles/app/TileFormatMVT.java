@@ -340,7 +340,7 @@ public class TileFormatMVT implements TileFormatWithQuerySupportExtension {
      *
      * @param tile            the tile
      */
-    public Object getEmptyTile(Tile tile) {
+    public byte[] getEmptyTile(Tile tile) {
         return new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent()).encode();
     }
 }

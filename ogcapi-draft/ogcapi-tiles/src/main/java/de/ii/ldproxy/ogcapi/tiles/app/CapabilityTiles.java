@@ -201,7 +201,7 @@ public class CapabilityTiles implements ApiBuildingBlock {
             }
 
             List<Double> center = config.getCenterDerived();
-            if (center.size()!=0 && center.size()!=2)
+            if (Objects.nonNull(center) && center.size()!=2)
                 builder.addStrictErrors(MessageFormat.format("The center has been specified in the TILES module configuration of collection ''{1}'', but the array length is ''{0}'', not 2.", center.size(), collectionId));
 
             Map<String, MinMax> zoomLevels = config.getZoomLevelsDerived();

@@ -152,7 +152,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
         List<Number> center = tileset.getMetadata().getCenter();
         if (center.size()>=2)
             return ImmutableList.of(center.get(0).doubleValue(), center.get(1).doubleValue());
-        return ImmutableList.of();
+        return null;
     }
 
     @Override
@@ -170,7 +170,6 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
         else if (format==MbtilesMetadata.MbtilesFormat.tiff)
             return "TIFF";
 
-        // TODO support bitmap formats
         throw new UnsupportedOperationException(String.format("Mbtiles format '%s' is currently not supported.", format));
     }
 }

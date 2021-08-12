@@ -26,6 +26,7 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureProperty
 import spock.lang.Shared
 import spock.lang.Specification
 
+import javax.ws.rs.core.Request
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 
@@ -293,6 +294,11 @@ class GeoJsonWriterPropertiesSpec extends Specification {
 
                     @Override
                     Map<String, String> getParameters() {
+                        return null
+                    }
+
+                    @Override
+                    Optional<Request> getRequest() {
                         return null
                     }
                 })

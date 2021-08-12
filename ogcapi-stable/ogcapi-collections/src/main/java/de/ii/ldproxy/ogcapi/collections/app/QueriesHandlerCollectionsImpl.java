@@ -10,10 +10,12 @@ package de.ii.ldproxy.ogcapi.collections.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.Collections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -33,10 +35,13 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Component
@@ -119,9 +124,19 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                                                                                Optional.empty())
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        ImmutableCollections responseObject = collections.build();
+        Collections responseObject = collections.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null)
+        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        EntityTag etag = getEtag(responseObject, Collections.FUNNEL, outputFormatExtension);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null)
                 .entity(outputFormatExtension.getCollectionsEntity(responseObject, requestContext.getApi(), requestContext))
                 .build();
 
@@ -168,9 +183,20 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                     requestContext.getLanguage());
         }
 
-        ImmutableOgcApiCollection responseObject = ogcApiCollection.build();
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null)
-                .entity(outputFormatExtension.getCollectionEntity(ogcApiCollection.build(), api, requestContext))
+        OgcApiCollection responseObject = ogcApiCollection.build();
+
+        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        EntityTag etag = getEtag(responseObject, OgcApiCollection.FUNNEL, outputFormatExtension);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null)
+                .entity(outputFormatExtension.getCollectionEntity(responseObject, api, requestContext))
                 .build();
     }
 
