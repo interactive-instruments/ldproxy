@@ -135,6 +135,7 @@ public class EndpointResource extends Endpoint {
     public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApi api,
                                 @Context ApiRequestContext requestContext) {
         QueriesHandlerResources.QueryInputResource queryInput = ImmutableQueryInputResource.builder()
+                                                                                           .from(getGenericQueryInput(api.getData()))
                                                                                            .resourceId(resourceId)
                                                                                            .build();
 

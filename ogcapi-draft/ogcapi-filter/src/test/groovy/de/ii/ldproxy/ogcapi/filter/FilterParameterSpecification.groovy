@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.filter
 
 import de.ii.xtraplatform.cql.app.CqlImpl
 import de.ii.xtraplatform.cql.domain.Cql
+import java.util.stream.IntStream
 import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
@@ -1512,6 +1513,114 @@ class FilterParameterSpecification extends Specification {
             assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
         }
 
+        when: "1a. Data is selected using a nested filter theme[scheme='profile'].concept ACONTAINS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNested = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[scheme='profile'].concept AContainS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = f.properties.theme.stream()
+                    .filter(theme -> theme.scheme.equals('profile'))
+                    .toList()
+            if (themes.size()==0)
+                return false
+            return themes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .filter(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+                    .distinct()
+                    .count()==3
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNested)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNested.responseData.numberReturned == propertyAndLiteralNestedCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNested.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNested.responseData.features[i], propertyAndLiteralNestedCheck.get(i))
+        }
+
+        when: "1b. Data is selected using a nested filter theme[scheme<>'profile'].concept ACONTAINS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNested2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[scheme<>'profile'].concept AContainS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNested2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = f.properties.theme.stream()
+                    .filter(theme -> !theme.scheme.equals('profile'))
+                    .toList()
+            if (themes.size()==0)
+                return false
+            return themes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .filter(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+                    .distinct()
+                    .count()==3
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNested2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNested2.responseData.numberReturned == propertyAndLiteralNested2Check.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNested2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNested2.responseData.features[i], propertyAndLiteralNested2Check.get(i))
+        }
+
+        when: "1c. Data is selected using a nested filter theme[position()=1].concept ACONTAINS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position()=1].concept AContainS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedPositionCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = (List) f.properties.theme
+            if (themes.size()==0)
+                return false
+            return themes.get(0)
+                    .getAt("concept")
+                    .stream()
+                    .filter(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+                    .distinct()
+                    .count()==3
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNestedPosition)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNestedPosition.responseData.numberReturned == propertyAndLiteralNestedPositionCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNestedPosition.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNestedPosition.responseData.features[i], propertyAndLiteralNestedPositionCheck.get(i))
+        }
+
+        when: "1d. Data is selected using a nested filter theme[position()>1].concept ACONTAINS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position()>1].concept AContainS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedPosition2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = (List) f.properties.theme
+            def selectedThemes = IntStream.range(0, themes.size())
+                    .filter(i -> i>0)
+                    .mapToObj(i-> themes.get(i))
+                    .toList()
+            if (selectedThemes.size()==0)
+                return false
+            return selectedThemes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .filter(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+                    .distinct()
+                    .count()==3
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNestedPosition2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNestedPosition2.responseData.numberReturned == propertyAndLiteralNestedPosition2Check.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNestedPosition2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNestedPosition2.responseData.features[i], propertyAndLiteralNestedPosition2Check.get(i))
+        }
+
         when: "2. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50] ACONTAINS theme.concept"
         def propertyAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AContainS theme.concept"))
         def propertyAndLiteralCheck2 = allAxGebaeudefunktion.responseData.features.stream().filter(f -> f.properties.theme.stream()
@@ -1585,6 +1694,114 @@ class FilterParameterSpecification extends Specification {
             assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
         }
 
+        when: "1a. Data is selected using a nested filter theme[scheme='profile'].concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNested = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[scheme='profile'].concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = f.properties.theme.stream()
+                    .filter(theme -> theme.scheme.equals('profile'))
+                    .toList()
+            if (themes.size()==0)
+                return false
+            def concepts = themes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .distinct()
+                    .toList()
+            return concepts.size()==3 && concepts.contains('DLKM') && concepts.contains('Basis-DLM') && concepts.contains('DLM50')
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNested)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNested.responseData.numberReturned == propertyAndLiteralNestedCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNested.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNested.responseData.features[i], propertyAndLiteralNestedCheck.get(i))
+        }
+
+        when: "1b. Data is selected using a nested filter theme[scheme<>'profile'].concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNested2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[scheme<>'profile'].concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNested2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = f.properties.theme.stream()
+                    .filter(theme -> !theme.scheme.equals('profile'))
+                    .toList()
+            if (themes.size()==0)
+                return false
+            def concepts = themes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .distinct()
+                    .toList()
+            return concepts.size()==3 && concepts.contains('DLKM') && concepts.contains('Basis-DLM') && concepts.contains('DLM50')
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNested2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNested2.responseData.numberReturned == propertyAndLiteralNested2Check.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNested2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNested2.responseData.features[i], propertyAndLiteralNested2Check.get(i))
+        }
+
+        when: "1c. Data is selected using a nested filter theme[position()=1].concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position()=1].concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedPositionCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = (List) f.properties.theme
+            if (themes.size()==0)
+                return false
+            def concepts = themes.get(0)
+                    .getAt("concept")
+                    .stream()
+                    .distinct()
+                    .toList()
+            return concepts.size()==3 && concepts.contains('DLKM') && concepts.contains('Basis-DLM') && concepts.contains('DLM50')
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNestedPosition)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNestedPosition.responseData.numberReturned == propertyAndLiteralNestedPositionCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNestedPosition.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNestedPosition.responseData.features[i], propertyAndLiteralNestedPositionCheck.get(i))
+        }
+
+        when: "1d. Data is selected using a nested filter theme[position()>1].concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position()>1].concept AEQUALS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedPosition2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = (List) f.properties.theme
+            def selectedThemes = IntStream.range(0, themes.size())
+                    .filter(i -> i>0)
+                    .mapToObj(i-> themes.get(i))
+                    .toList()
+            if (selectedThemes.size()==0)
+                return false
+            def concepts = selectedThemes.stream()
+                    .map(theme -> theme.concept)
+                    .stream()
+                    .distinct()
+                    .toList()
+            return concepts.size()==3 && concepts.contains('DLKM') && concepts.contains('Basis-DLM') && concepts.contains('DLM50')
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNestedPosition2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNestedPosition2.responseData.numberReturned == propertyAndLiteralNestedPosition2Check.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNestedPosition2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNestedPosition2.responseData.features[i], propertyAndLiteralNestedPosition2Check.get(i))
+        }
+
         when: "2. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50] AEQUALS theme.concept"
         def propertyAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AEQUALS theme.concept"))
 
@@ -1650,6 +1867,106 @@ class FilterParameterSpecification extends Specification {
             assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
         }
 
+        when: "1a. Data is selected using a nested filter theme[scheme='profile'].concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNested = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[scheme='profile'].concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = f.properties.theme.stream()
+                    .filter(theme -> theme.scheme.equals('profile'))
+                    .toList()
+            if (themes.size()==0)
+                return false
+            return themes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .anyMatch(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNested)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNested.responseData.numberReturned == propertyAndLiteralNestedCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNested.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNested.responseData.features[i], propertyAndLiteralNestedCheck.get(i))
+        }
+
+        when: "1b. Data is selected using a nested filter theme[scheme<>'profile'].concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNested2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[scheme<>'profile'].concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNested2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = f.properties.theme.stream()
+                    .filter(theme -> !theme.scheme.equals('profile'))
+                    .toList()
+            if (themes.size()==0)
+                return false
+            return themes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .anyMatch(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNested2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNested2.responseData.numberReturned == propertyAndLiteralNested2Check.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNested2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNested2.responseData.features[i], propertyAndLiteralNested2Check.get(i))
+        }
+
+        when: "1c. Data is selected using a nested filter theme[position()=1].concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position()=1].concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedPositionCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = (List) f.properties.theme
+            if (themes.size()==0)
+                return false
+            return themes.get(0)
+                    .getAt("concept")
+                    .stream()
+                    .anyMatch(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNestedPosition)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNestedPosition.responseData.numberReturned == propertyAndLiteralNestedPositionCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNestedPosition.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNestedPosition.responseData.features[i], propertyAndLiteralNestedPositionCheck.get(i))
+        }
+
+        when: "1d. Data is selected using a nested filter theme[position()>1].concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position()>1].concept AOVERLAPS ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedPosition2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = (List) f.properties.theme
+            def selectedThemes = IntStream.range(0, themes.size())
+                    .filter(i -> i>0)
+                    .mapToObj(i-> themes.get(i))
+                    .toList()
+            if (selectedThemes.size()==0)
+                return false
+            return selectedThemes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .anyMatch(concept -> concept.equals('DLKM') || concept.equals('Basis-DLM') || concept.equals('DLM50'))
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNestedPosition2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNestedPosition2.responseData.numberReturned == propertyAndLiteralNestedPosition2Check.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNestedPosition2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNestedPosition2.responseData.features[i], propertyAndLiteralNestedPosition2Check.get(i))
+        }
+
         when: "2. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50] AOVERLAPS theme.concept"
         def propertyAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("['DLKM', 'Basis-DLM', 'DLM50'] AOVERLAPS theme.concept"))
 
@@ -1713,6 +2030,106 @@ class FilterParameterSpecification extends Specification {
         and: "Returns the same records arrays"
         for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
             assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "1a. Data is selected using a nested filter theme[scheme='profile'].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNested = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[scheme='profile'].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = f.properties.theme.stream()
+                    .filter(theme -> theme.scheme.equals('profile'))
+                    .toList()
+            if (themes.size()==0)
+                return false
+            return themes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .noneMatch(concept -> !concept.equals('DLKM') && !concept.equals('Basis-DLM') && !concept.equals('DLM50'))
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNested)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNested.responseData.numberReturned == propertyAndLiteralNestedCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNested.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNested.responseData.features[i], propertyAndLiteralNestedCheck.get(i))
+        }
+
+        when: "1b. Data is selected using a nested filter theme[scheme<>'profile'].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNested2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[scheme<>'profile'].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNested2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = f.properties.theme.stream()
+                    .filter(theme -> !theme.scheme.equals('profile'))
+                    .toList()
+            if (themes.size()==0)
+                return false
+            return themes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .noneMatch(concept -> !concept.equals('DLKM') && !concept.equals('Basis-DLM') && !concept.equals('DLM50'))
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNested2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNested2.responseData.numberReturned == propertyAndLiteralNested2Check.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNested2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNested2.responseData.features[i], propertyAndLiteralNested2Check.get(i))
+        }
+
+        when: "1c. Data is selected using a nested filter theme[position() IN (1)].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position() IN (1)].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedPositionCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = (List) f.properties.theme
+            if (themes.size()==0)
+                return false
+            return  themes.get(0)
+                    .getAt("concept")
+                    .stream()
+                    .noneMatch(concept -> !concept.equals('DLKM') && !concept.equals('Basis-DLM') && !concept.equals('DLM50'))
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNestedPosition)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNestedPosition.responseData.numberReturned == propertyAndLiteralNestedPositionCheck.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNestedPosition.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNestedPosition.responseData.features[i], propertyAndLiteralNestedPositionCheck.get(i))
+        }
+
+        when: "1d. Data is selected using a nested filter theme[position() BETWEEN 2 AND 3].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"
+        def propertyAndLiteralNestedPosition2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("theme[position() between 2 and 3].concept CONTAINEDBY ['DLKM', 'Basis-DLM', 'DLM50']"))
+        def propertyAndLiteralNestedPosition2Check = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
+            def themes = (List) f.properties.theme
+            def selectedThemes = IntStream.range(0, themes.size())
+                    .filter(i -> i>0 && i<3)
+                    .mapToObj(i-> themes.get(i))
+                    .toList()
+            if (selectedThemes.size()==0)
+                return false
+            return selectedThemes.stream()
+                    .map(theme -> theme.concept)
+                    .flatMap(List::stream)
+                    .noneMatch(concept -> !concept.equals('DLKM') && !concept.equals('Basis-DLM') && !concept.equals('DLM50'))
+        }).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralNestedPosition2)
+
+        and: "Returns the same number of records"
+        propertyAndLiteralNestedPosition2.responseData.numberReturned == propertyAndLiteralNestedPosition2Check.size()
+
+        and: "Returns the same records arrays"
+        for (int i=0; i<propertyAndLiteralNestedPosition2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralNestedPosition2.responseData.features[i], propertyAndLiteralNestedPosition2Check.get(i))
         }
 
         when: "2. Data is selected using a filter ['DLKM', 'Basis-DLM', 'DLM50] CONTAINEDBY theme.concept"

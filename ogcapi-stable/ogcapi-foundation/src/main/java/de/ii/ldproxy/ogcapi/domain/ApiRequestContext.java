@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Request;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,4 +28,6 @@ public interface ApiRequestContext {
     String getStaticUrlPrefix();
 
     Map<String,String> getParameters();
+
+    Optional<Request> getRequest();
 }

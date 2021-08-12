@@ -9,8 +9,10 @@ package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,4 +27,15 @@ public abstract class JsonSchemaInteger extends JsonSchema {
     public abstract Optional<Long> getMaximum();
     @JsonProperty("enum")
     public abstract List<Integer> getEnums();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaInteger> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        from.getMinimum().ifPresent(val -> into.putLong(val));
+        from.getMaximum().ifPresent(val -> into.putLong(val));
+        from.getEnums()
+            .stream()
+            .sorted()
+            .forEachOrdered(val -> into.putInt(val));
+    };
 }

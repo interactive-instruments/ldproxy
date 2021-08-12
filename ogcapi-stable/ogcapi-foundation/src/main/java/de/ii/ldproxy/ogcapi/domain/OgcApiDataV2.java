@@ -80,6 +80,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public abstract Optional<CollectionExtent> getDefaultExtent();
 
+    public abstract Optional<Caching> getDefaultCaching();
+
     @Value.Default
     public MODE getApiValidation() {
         return MODE.NONE;
