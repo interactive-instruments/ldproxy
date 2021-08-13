@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaBoolean;
 import org.immutables.value.Value;
 
 @Value.Immutable

@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-composite' version '3.5.1'
+    id 'de.interactive_instruments.xtraplatform-composite' version '3.5.2'
 }
 task d {
     dependsOn gradle.includedBuild('xtraplatform-core').task(':xtraplatform-dropwizard:dependencyUpdates')
@@ -7,5 +7,11 @@ task d {
 //TODO: should be triggered by assemble, but is not
 task m {
     dependsOn gradle.includedBuild('ldproxy').task(':ldproxy-manager:assemble')
+}
+task c {
+    dependsOn gradle.includedBuild('ldproxy').task(':check')
+}
+task t {
+    dependsOn gradle.includedBuild('ogcapi-stable').task(':ogcapi-features-geojson:test')
 }
 

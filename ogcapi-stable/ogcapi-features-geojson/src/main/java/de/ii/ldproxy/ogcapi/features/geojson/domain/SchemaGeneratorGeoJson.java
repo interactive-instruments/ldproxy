@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
 import java.util.Optional;
 
 public interface SchemaGeneratorGeoJson {
@@ -23,5 +24,4 @@ public interface SchemaGeneratorGeoJson {
 
     JsonSchemaObject getSchemaJson(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData, Optional<String> schemaUri, SchemaGeneratorFeature.SCHEMA_TYPE type, VERSION version);
 
-    public enum VERSION {V201909, V7}
 }

@@ -7,15 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaNull;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonDeserialize(as = ImmutableJsonSchemaNull.class)
-public abstract class JsonSchemaNull extends JsonSchema {
+@Value.Style(deepImmutablesDetection = true)
+public abstract class JsonSchemaRefV7 extends JsonSchemaRef {
 
-    public final String getType() { return "null"; }
-
+    @JsonIgnore
+    @Value.Auxiliary
+    public String getDefsName() {
+        return "definitions";
+    }
 }

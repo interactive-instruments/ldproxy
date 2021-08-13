@@ -27,16 +27,3 @@ apply from: '../license-report.gradle'
 task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
 task testAll { dependsOn subprojects*.tasks*.findByPath('test') }
 tasks.publish { dependsOn subprojects*.tasks*.findByPath('publish') }
-
-//TODO: M5 breaks extensions of AbstractExtensionConfigurationSpec
-subprojects {
-  dependencies {
-    testImplementation('org.spockframework:spock-core') {
-        version {
-            strictly '2.0-M4-groovy-3.0'
-        }
-    }
-
-  }
-}
-

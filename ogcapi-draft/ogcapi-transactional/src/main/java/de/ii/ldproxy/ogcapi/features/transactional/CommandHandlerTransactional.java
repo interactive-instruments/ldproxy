@@ -11,7 +11,7 @@ import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
-import de.ii.xtraplatform.features.geojson.domain.FeatureTokenDecoderGeoJson;
+import de.ii.xtraplatform.features.json.domain.FeatureTokenDecoderGeoJson;
 import de.ii.xtraplatform.streams.domain.Reactive.Source;
 import java.io.InputStream;
 import java.net.URI;

@@ -20,6 +20,8 @@ import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import java.text.MessageFormat;
@@ -111,13 +113,13 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
                 .build();
     }
 
-    private Optional<SchemaGeneratorGeoJson.VERSION> getVersion(Optional<String> profile) {
+    private Optional<VERSION> getVersion(Optional<String> profile) {
         if (profile.isEmpty())
             return Optional.empty();
         else if (profile.get().equals("2019-09"))
-            return Optional.of(SchemaGeneratorGeoJson.VERSION.V201909);
+            return Optional.of(JsonSchemaDocument.VERSION.V201909);
         else if (profile.get().equals("07"))
-            return Optional.of(SchemaGeneratorGeoJson.VERSION.V7);
+            return Optional.of(JsonSchemaDocument.VERSION.V7);
 
         return Optional.empty();
     }

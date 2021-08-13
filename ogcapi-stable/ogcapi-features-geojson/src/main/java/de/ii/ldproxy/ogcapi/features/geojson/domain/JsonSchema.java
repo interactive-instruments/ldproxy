@@ -7,10 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NONE)
@@ -28,4 +30,15 @@ public abstract class JsonSchema {
 
     public abstract Optional<String> getTitle();
     public abstract Optional<String> getDescription();
+
+    @JsonIgnore
+    @Value.Auxiliary
+    public abstract Optional<String> getName();
+
+    @JsonIgnore
+    @Value.Default
+    @Value.Auxiliary
+    public boolean isRequired() {
+        return false;
+    }
 }

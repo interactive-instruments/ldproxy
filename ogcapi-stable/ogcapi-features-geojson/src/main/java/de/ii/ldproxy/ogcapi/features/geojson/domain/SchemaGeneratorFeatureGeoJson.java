@@ -21,25 +21,34 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaArray;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaBoolean;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaInteger;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaNull;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaNumber;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaOneOf;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaRef;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaString;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.AbstractMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
@@ -158,8 +167,8 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
         String objectKey = null;
         List<String> required = new Vector<>();
         JsonSchema id = null;
-        Map<String, JsonSchema> properties = new TreeMap<>();
-        Map<String, JsonSchema> patternProperties = new TreeMap<>();
+        Map<String, JsonSchema> properties = new LinkedHashMap<>();
+        Map<String, JsonSchema> patternProperties = new LinkedHashMap<>();
         JsonSchema geometry = ImmutableJsonSchemaNull.builder()
                                                      .build();
         Set<FeatureSchema> definitions = new HashSet<>();
@@ -167,7 +176,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
 
     @Override
     public JsonSchemaObject getSchemaJson(OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, SCHEMA_TYPE type) {
-        return getSchemaJson(apiData, collectionId, schemaUri, type, VERSION.V201909);
+        return getSchemaJson(apiData, collectionId, schemaUri, type, JsonSchemaDocument.VERSION.V201909);
     }
 
     @Override
@@ -270,7 +279,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
         }
 
         ImmutableJsonSchemaObject.Builder builder = ImmutableJsonSchemaObject.builder();
-        if (version==VERSION.V201909) {
+        /*if (version==VERSION.V201909) {
             builder.schema("https://json-schema.org/draft/2019-09/schema")
                    .defs(definitionsMapBuilder.build());
         } else if (version==VERSION.V7) {
@@ -293,12 +302,12 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
                                                 .add("Feature")
                                                 .build())
                                         .build())
-                                .put("id", featureContext.id)
                                 .put("links", ImmutableJsonSchemaArray.builder()
                                         .items(ImmutableJsonSchemaRef.builder()
                                                 .ref("#/" + getDefinitionsToken(version) + "/Link")
                                                 .build())
                                         .build())
+                                .put("id", featureContext.id)
                                 .put("geometry", featureContext.geometry)
                                 .put("properties", ImmutableJsonSchemaObject.builder()
                                         .required(ImmutableList.<String>builder()
@@ -315,7 +324,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
             builder.defs(definitionsMapBuilder.build());
         } else if (version==VERSION.V7) {
             builder.definitions(definitionsMapBuilder.build());
-        }
+        }*/
 
         return builder.build();
     }
@@ -340,12 +349,19 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
 
             // TODO state either date or date-time, but we need a way to determine what it is
             //      validators will ignore this informaton as it isn't a well-known format value
+            case DATE:
+                return ImmutableJsonSchemaString.builder()
+                    .format("date")
+                    .title(label)
+                    .description(description)
+                    .build();
+
             case DATETIME:
                 return ImmutableJsonSchemaString.builder()
-                                                .format("date-time,date")
-                                                .title(label)
-                                                .description(description)
-                                                .build();
+                    .format("date-time")
+                    .title(label)
+                    .description(description)
+                    .build();
 
             case STRING:
                 return ImmutableJsonSchemaString.builder()
@@ -507,6 +523,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
                           case STRING:
                           case BOOLEAN:
                           case DATETIME:
+                          case DATE:
                               jsonSchema = getJsonSchemaForLiteralType(propType, label, description);
                               break;
                           case VALUE_ARRAY:
@@ -517,7 +534,7 @@ public class SchemaGeneratorFeatureGeoJson extends SchemaGeneratorFeature implem
                               // ignore intermediate objects in flattening mode, only process leaf properties
                               if (type==SCHEMA_TYPE.RETURNABLES) {
                                   jsonSchema = ImmutableJsonSchemaRef.builder()
-                                                                     .ref("#/"+getDefinitionsToken(version)+"/"+property.getObjectType().orElse(getFallbackTypeName(property)))
+                                                                     .objectType(property.getObjectType().orElse(getFallbackTypeName(property)))
                                                                      .build();
                                   context.definitions.add(property);
                               }

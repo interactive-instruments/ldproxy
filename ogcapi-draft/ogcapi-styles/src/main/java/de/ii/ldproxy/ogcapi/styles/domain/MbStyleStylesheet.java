@@ -14,14 +14,12 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import org.immutables.value.Value;
 
-import java.net.URI;
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
