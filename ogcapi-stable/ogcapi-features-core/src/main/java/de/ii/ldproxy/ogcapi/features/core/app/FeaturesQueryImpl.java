@@ -352,7 +352,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     private Optional<CqlPredicate> timeToCql(String timeField, String timeValue) {
         // valid values: timestamp or time interval;
         // this includes open intervals indicated by ".." (see ISO 8601-2);
-        // accept also unknown ("") with the same interpretation
+        // accept also unknown ("") with the same interpretation;
+        // in addition, "now" is accepted for the current time
 
         TemporalLiteral temporalLiteral;
         try {

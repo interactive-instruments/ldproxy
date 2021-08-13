@@ -39,7 +39,7 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
                 .maxRelativeAreaChangeInPolygonRepair(1)
                 .maxAbsoluteAreaChangeInPolygonRepair(1)
                 .minimumSizeInPixel(1)
-                .center(1)
+                .center(ImmutableList.<Double>of(1))
                 .addTileEncodings("foo")
                 .addTileSetEncodings("foo")
                 .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
@@ -94,7 +94,7 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     @Override
     TilesConfiguration getCollection() {
         return new ImmutableTilesConfiguration.Builder()
-                .center(1, 2)
+                .center(ImmutableList.<Double>of(1, 2))
                 .addTileEncodings("foo", "bar")
                 .addTileSetEncodings("bar")
                 .build()
@@ -104,7 +104,7 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     TilesConfiguration getCollectionFullMerged() {
         return new ImmutableTilesConfiguration.Builder()
                 .from(getFull())
-                .center(1, 2)
+                .center(ImmutableList.<Double>of(1, 2))
                 .tileEncodings(ImmutableList.of(
                         "foo",
                         "bar"

@@ -41,7 +41,7 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract Map<String, List<Rule>> getRules();
 
     @Nullable
-    public abstract double[] getCenter();
+    public abstract List<Double> getCenter();
 
     @Nullable
     public abstract Integer getLimit();
@@ -137,6 +137,11 @@ public abstract class TileProviderFeatures extends TileProvider {
         if (Objects.nonNull(getFilters()))
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
+
+        if (Objects.nonNull(getCenter()))
+            builder.center(getCenter());
+        else if (Objects.nonNull(src.getCenter()))
+            builder.center(src.getCenter());
 
         return builder.build();
     }

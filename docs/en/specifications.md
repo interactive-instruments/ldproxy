@@ -5,13 +5,13 @@
 The following published standards and drafts of future standards for geospatial Web APIs or HTTP APIs are implemented in ldproxy:
 
 * [OGC API - Features - Part 1: Core, Version 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0)
-* [OGC API - Features - Part 2: Coordinate Reference Systems by Reference, draft](http://docs.opengeospatial.org/DRAFTS/18-058.html)
-* [OGC API - Features - Part 3: Common Query Language, draft](http://docs.opengeospatial.org/DRAFTS/19-079.html)
-* [OGC API - Features - Part 4: Simple Transactions, draft](http://docs.opengeospatial.org/DRAFTS/20-002.html)
-* [OGC API - Tiles - Part 1: Core, draft](https://htmlpreview.github.io/?https://github.com/opengeospatial/OGC-API-Tiles/blob/master/core/standard/OAPI_Tiles.html)
-* [OGC API - Styles, draft](http://docs.opengeospatial.org/DRAFTS/20-009.html)
+* [OGC API - Features - Part 2: Coordinate Reference Systems by Reference 1.0](http://www.opengis.net/doc/IS/ogcapi-features-2/1.0)
+* [OGC API - Features - Part 3: Filtering and the Common Query Language (CQL), draft](https://docs.ogc.org/DRAFTS/19-079r1.html)
+* [OGC API - Features - Part 4: Create, Replace, Update and Delete, draft](https://docs.ogc.org/DRAFTS/20-002.html)
+* [OGC API - Tiles - Part 1: Core, draft](https://docs.ogc.org/DRAFTS/20-057.html)
+* [OGC API - Styles, draft](https://docs.ogc.org/DRAFTS/20-009.html)
 
-The functionality implemented in lproxy differs in some cases from the current draft specifications since the drafts are changing.
+The functionality implemented in lproxy differs from the current draft specifications since the drafts are changing.
 
 Additionally, several ldproxy extensions are supported for which no official drafts are available at this time.
 

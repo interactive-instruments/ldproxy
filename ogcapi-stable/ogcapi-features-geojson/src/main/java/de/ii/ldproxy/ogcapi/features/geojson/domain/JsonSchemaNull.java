@@ -8,8 +8,10 @@
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaNull;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
+
+import java.nio.charset.StandardCharsets;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
@@ -18,4 +20,8 @@ public abstract class JsonSchemaNull extends JsonSchema {
 
     public final String getType() { return "null"; }
 
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaNull> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+    };
 }

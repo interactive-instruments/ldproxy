@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.*
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.OgcCrs
 
+import javax.ws.rs.core.Request
 import java.nio.charset.StandardCharsets
 
 class GeoJsonWriterSetupUtil {
@@ -78,6 +79,11 @@ class GeoJsonWriterSetupUtil {
 
                     @Override
                     Map<String, String> getParameters() {
+                        return null
+                    }
+
+                    @Override
+                    Optional<Request> getRequest() {
                         return null
                     }
                 })

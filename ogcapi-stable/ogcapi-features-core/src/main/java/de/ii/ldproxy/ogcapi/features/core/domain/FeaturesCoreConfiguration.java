@@ -12,26 +12,26 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCoreConfiguration.Builder.class)
-public interface FeaturesCoreConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface FeaturesCoreConfiguration extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }

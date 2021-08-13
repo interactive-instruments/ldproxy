@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import java.nio.file.Path;
 import java.util.Map;
 import org.immutables.value.Value;
 
@@ -21,9 +20,7 @@ public interface FeatureTransformationContextTiles extends FeatureTransformation
 
   Tile tile();
 
-  Path tileFile();
-
-  CrsTransformerFactory getCrsTransformerFactory();
+  TileCache getTileCache();
 
   @Value.Lazy
   default TilesConfiguration tilesConfiguration() {

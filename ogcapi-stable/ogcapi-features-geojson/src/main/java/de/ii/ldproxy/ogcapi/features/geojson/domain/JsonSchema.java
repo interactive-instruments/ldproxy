@@ -10,7 +10,11 @@ package de.ii.ldproxy.ogcapi.features.geojson.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.hash.Funnel;
+import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -24,12 +28,34 @@ import org.immutables.value.Value;
         @JsonSubTypes.Type(value = JsonSchemaObject.class, name = "object"),
         @JsonSubTypes.Type(value = JsonSchemaArray.class, name = "array"),
         @JsonSubTypes.Type(value = JsonSchemaNull.class, name = "null"),
-        @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$ref")
+        @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$ref"),
+        @JsonSubTypes.Type(value = JsonSchemaOneOf.class, name = "oneOf")
 })
-public abstract class JsonSchema {
+public abstract class JsonSchema extends PageRepresentation {
 
-    public abstract Optional<String> getTitle();
-    public abstract Optional<String> getDescription();
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchema> FUNNEL = (from, into) -> {
+        PageRepresentation.FUNNEL.funnel(from, into);
+        if (from instanceof JsonSchemaString)
+            JsonSchemaString.FUNNEL.funnel((JsonSchemaString) from, into);
+        else if (from instanceof JsonSchemaNumber)
+            JsonSchemaNumber.FUNNEL.funnel((JsonSchemaNumber) from, into);
+        else if (from instanceof JsonSchemaInteger)
+            JsonSchemaInteger.FUNNEL.funnel((JsonSchemaInteger) from, into);
+        else if (from instanceof JsonSchemaBoolean)
+            JsonSchemaBoolean.FUNNEL.funnel((JsonSchemaBoolean) from, into);
+        else if (from instanceof JsonSchemaObject)
+            JsonSchemaObject.FUNNEL.funnel((JsonSchemaObject) from, into);
+        else if (from instanceof JsonSchemaArray)
+            JsonSchemaArray.FUNNEL.funnel((JsonSchemaArray) from, into);
+        else if (from instanceof JsonSchemaNull)
+            JsonSchemaNull.FUNNEL.funnel((JsonSchemaNull) from, into);
+        else if (from instanceof JsonSchemaRef)
+            JsonSchemaRef.FUNNEL.funnel((JsonSchemaRef) from, into);
+        else if (from instanceof JsonSchemaOneOf)
+            JsonSchemaOneOf.FUNNEL.funnel((JsonSchemaOneOf) from, into);
+    };
+
 
     @JsonIgnore
     @Value.Auxiliary

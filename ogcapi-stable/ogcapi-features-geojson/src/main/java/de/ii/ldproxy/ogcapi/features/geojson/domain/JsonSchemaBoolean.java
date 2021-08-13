@@ -8,8 +8,10 @@
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaBoolean;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
+
+import java.nio.charset.StandardCharsets;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
@@ -18,4 +20,8 @@ public abstract class JsonSchemaBoolean extends JsonSchema {
 
     public final String getType() { return "boolean"; }
 
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaBoolean> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+    };
 }

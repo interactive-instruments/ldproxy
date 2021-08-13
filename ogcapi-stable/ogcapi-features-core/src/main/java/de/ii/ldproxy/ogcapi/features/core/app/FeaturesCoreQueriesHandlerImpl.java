@@ -11,6 +11,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.I18n;
@@ -54,12 +55,15 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
@@ -130,7 +134,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 Optional.of(collectionId))
                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
+        return getItemsResponse(api, requestContext, collectionId, queryInput, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
                 queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
@@ -159,11 +163,11 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), false, persistentUri, outputFormat, false, Optional.empty(),
+        return getItemsResponse(api, requestContext, collectionId, queryInput, query, queryInput.getFeatureProvider(), false, persistentUri, outputFormat, false, Optional.empty(),
                 false, queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
-    private Response getItemsResponse(OgcApi api, ApiRequestContext requestContext, String collectionId,
+    private Response getItemsResponse(OgcApi api, ApiRequestContext requestContext, String collectionId, QueryInput queryInput,
                                       FeatureQuery query, FeatureProvider2 featureProvider, boolean isCollection,
                                       String canonicalUri,
                                       FeatureFormatExtension outputFormat,
@@ -182,7 +186,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         if (featureProvider.supportsCrs()) {
             EpsgCrs sourceCrs = featureProvider.crs()
                                                .getNativeCrs();
-            //TODO: warmup on service start
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
             swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
                                                                           .needsCoordinateSwap();
@@ -255,13 +258,23 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
+        Date lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
+        EntityTag etag = isCollection ? null : getEtag(lastModified);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        // TODO support lastModified and etag from the content, in particular for a single feature
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
         // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
 
-        return prepareSuccessResponse(api, requestContext, includeLinkHeader ? links.stream()
-                                                                                    .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
-                                                                                    .collect(ImmutableList.toImmutableList()) :
-                                                                                null, targetCrs)
+        return prepareSuccessResponse(requestContext.getApi(), requestContext, includeLinkHeader ? links.stream()
+                                                                                                        .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
+                                                                                                        .collect(ImmutableList.toImmutableList()) : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      targetCrs)
                 .entity(streamingOutput)
                 .build();
     }

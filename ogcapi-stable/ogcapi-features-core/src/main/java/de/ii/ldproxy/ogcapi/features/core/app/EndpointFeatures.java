@@ -377,21 +377,18 @@ public class EndpointFeatures extends EndpointSubCollection {
         int defaultPageSize = coreConfiguration.getDefaultPageSize();
         int maxPageSize = coreConfiguration.getMaximumPageSize();
         boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
 
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
                 .query(query)
                 .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                 .defaultPageSize(Optional.of(defaultPageSize))
                 .showsFeatureSelfLink(showsFeatureSelfLink)
-                .includeLinkHeader(includeLinkHeader)
                 .build();
 
         return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURES, queryInput, requestContext);
@@ -414,22 +411,21 @@ public class EndpointFeatures extends EndpointSubCollection {
         FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
                                                                     .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
-
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items/{featureId}", collectionId);
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, toFlatMap(uriInfo.getQueryParameters()), allowedParameters, featureId);
 
-        FeaturesCoreQueriesHandler.QueryInputFeature queryInput = new ImmutableQueryInputFeature.Builder()
+
+        ImmutableQueryInputFeature.Builder queryInputBuilder = new ImmutableQueryInputFeature.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
                 .featureId(featureId)
                 .query(query)
                 .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
-                .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
-                .includeLinkHeader(includeLinkHeader)
-                .build();
+                .defaultCrs(coreConfiguration.getDefaultEpsgCrs());
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInput, requestContext);
+        if (Objects.nonNull(coreConfiguration.getCaching()) && Objects.nonNull(coreConfiguration.getCaching().getCacheControlItems()))
+            queryInputBuilder.cacheControl(coreConfiguration.getCaching().getCacheControlItems());
+
+        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInputBuilder.build(), requestContext);
     }
 }

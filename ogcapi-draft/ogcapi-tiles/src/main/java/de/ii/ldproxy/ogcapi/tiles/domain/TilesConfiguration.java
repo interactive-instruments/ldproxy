@@ -17,13 +17,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,7 +33,9 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public interface TilesConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface TilesConfiguration extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
+
+    enum TileCacheType { FILES, MBTILES }
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -42,6 +44,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     TileProvider getTileProvider();
 
     List<String> getTileSetEncodings();
+
+    @Nullable
+    TileCacheType getCache();
 
     @Deprecated
     List<String> getTileEncodings();
@@ -57,20 +62,20 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                 getTileEncodings() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getTileEncodings() :
-                        getTileProvider() instanceof TileProviderMbtiles ?
+                        getTileProvider() instanceof TileProviderMbtiles && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) ?
                                 ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) :
                                 ImmutableList.of();
     }
 
     @Deprecated
     @Nullable
-    double[] getCenter();
+    List<Double> getCenter();
 
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
     @Nullable
-    default double[] getCenterDerived() {
+    default List<Double> getCenterDerived() {
         return Objects.nonNull(getCenter()) ?
                 getCenter() :
                 getTileProvider() instanceof TileProviderFeatures ?
@@ -358,6 +363,11 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
         if (Objects.nonNull(getFilters()))
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
+
+        if (Objects.nonNull(getCenter()))
+            builder.center(getCenter());
+        else if (Objects.nonNull(src.getCenter()))
+            builder.center(src.getCenter());
 
         return builder.build();
     }

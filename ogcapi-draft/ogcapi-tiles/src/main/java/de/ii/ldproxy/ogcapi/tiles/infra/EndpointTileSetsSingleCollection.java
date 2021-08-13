@@ -167,7 +167,7 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
         return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
     }
 
-    private double[] getCenter(OgcApiDataV2 data) {
+    private List<Double> getCenter(OgcApiDataV2 data) {
         TilesConfiguration tilesConfiguration = data.getExtension(TilesConfiguration.class).get();
         return tilesConfiguration.getCenterDerived();
     }

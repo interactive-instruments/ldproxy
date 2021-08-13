@@ -12,9 +12,4 @@ import org.immutables.value.Value;
 @Value.Immutable
 public abstract class QueryInputGeneric implements QueryInput {
 
-    @Override
-    @Value.Default
-    public boolean getIncludeLinkHeader() {
-        return false;
-    }
 }

@@ -132,11 +132,8 @@ public class EndpointResources extends Endpoint {
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getResources(@Context OgcApi api, @Context ApiRequestContext requestContext) {
         OgcApiDataV2 apiData = api.getData();
-        boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
-                                           .map(FoundationConfiguration::getIncludeLinkHeader)
-                                           .orElse(false);
         QueriesHandlerResources.QueryInputResources queryInput = ImmutableQueryInputResources.builder()
-                                                                                             .includeLinkHeader(includeLinkHeader)
+                                                                                             .from(getGenericQueryInput(api.getData()))
                                                                                              .build();
 
         return queryHandler.handle(QueriesHandlerResources.Query.RESOURCES, queryInput, requestContext);

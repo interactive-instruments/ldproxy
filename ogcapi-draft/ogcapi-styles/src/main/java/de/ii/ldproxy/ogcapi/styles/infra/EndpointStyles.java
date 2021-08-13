@@ -92,12 +92,8 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getStyles(@Context OgcApi api, @Context ApiRequestContext requestContext) {
-        OgcApiDataV2 apiData = api.getData();
-        boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
-                                           .map(FoundationConfiguration::getIncludeLinkHeader)
-                                           .orElse(false);
         QueriesHandlerStyles.QueryInputStyles queryInput = new ImmutableQueryInputStyles.Builder()
-                .includeLinkHeader(includeLinkHeader)
+                .from(getGenericQueryInput(api.getData()))
                 .build();
 
         return queryHandler.handle(QueriesHandlerStyles.Query.STYLES, queryInput, requestContext);

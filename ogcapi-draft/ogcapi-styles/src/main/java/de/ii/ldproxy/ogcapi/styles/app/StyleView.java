@@ -38,11 +38,11 @@ public class StyleView extends GenericView {
         this.popup = popup;
         this.layerSwitcher = layerControl;
         this.layerIds = "{" +
-                String.join(", ", layerMap.entrySet()
-                                          .stream()
-                                          .sorted(Comparator.comparing(Map.Entry::getKey))
-                                          .map(entry -> "\""+entry.getKey()+"\": [ \"" + String.join("\", \"", entry.getValue()) + "\" ]")
-                                          .collect(Collectors.toList())) +
+                layerMap.entrySet()
+                        .stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .map(entry -> "\""+entry.getKey()+"\": [ \"" + String.join("\", \"", entry.getValue()) + "\" ]")
+                        .collect(Collectors.joining(", ")) +
                 "}";
 
         Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();

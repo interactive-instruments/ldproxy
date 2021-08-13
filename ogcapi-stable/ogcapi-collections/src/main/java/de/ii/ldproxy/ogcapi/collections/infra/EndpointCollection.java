@@ -208,18 +208,14 @@ public class EndpointCollection extends EndpointSubCollection {
             throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
         }
 
-        boolean includeLinkHeader = api.getData()
-                                       .getExtension(FoundationConfiguration.class)
-                                       .map(FoundationConfiguration::getIncludeLinkHeader)
-                                       .orElse(false);
         List<Link> additionalLinks = api.getData()
                                         .getCollections()
                                         .get(collectionId)
                                         .getAdditionalLinks();
 
         QueriesHandlerCollectionsImpl.QueryInputFeatureCollection queryInput = new ImmutableQueryInputFeatureCollection.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
-                .includeLinkHeader(includeLinkHeader)
                 .additionalLinks(additionalLinks)
                 .build();
 

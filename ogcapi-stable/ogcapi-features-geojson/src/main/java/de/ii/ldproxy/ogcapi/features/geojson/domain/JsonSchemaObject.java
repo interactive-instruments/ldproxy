@@ -8,11 +8,11 @@
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
-import org.immutables.value.Value;
-
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
@@ -25,4 +25,22 @@ public abstract class JsonSchemaObject extends JsonSchema {
     public abstract Map<String, JsonSchema> getProperties();
     public abstract Map<String, JsonSchema> getPatternProperties();
 
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaObject> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        from.getRequired()
+            .stream()
+            .sorted()
+            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getProperties()
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByKey())
+            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
+        from.getPatternProperties()
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByKey())
+            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
+    };
 }

@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -71,4 +73,28 @@ public abstract class JsonSchemaDocument extends JsonSchemaObject {
 
     }
 
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaDocument> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        from.getRequired()
+            .stream()
+            .sorted()
+            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getProperties()
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByKey())
+            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
+        from.getPatternProperties()
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByKey())
+            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
+        into.putString(from.getSchema(), StandardCharsets.UTF_8);
+        from.getId().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getDefinitions().entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByKey())
+            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
+    };
 }

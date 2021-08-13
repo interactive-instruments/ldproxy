@@ -224,5 +224,4 @@ class GeoJsonWriterPropertiesSpec extends Specification {
                 .mapToObj{i -> value}
                 .collect(Collectors.toList()))
     }
-
 }

@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.common.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputLandingPage;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommon;
+import de.ii.ldproxy.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
@@ -22,7 +22,6 @@ import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FoundationValidator;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
@@ -120,15 +119,12 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
     public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                    @Context ApiRequestContext requestContext) {
 
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
         List<Link> additionalLinks = api.getData().getExtension(CommonConfiguration.class)
                                         .map(CommonConfiguration::getAdditionalLinks)
                                         .orElse(ImmutableList.of());
 
         QueriesHandlerCommonImpl.QueryInputLandingPage queryInput = new ImmutableQueryInputLandingPage.Builder()
-                .includeLinkHeader(includeLinkHeader)
+                .from(getGenericQueryInput(api.getData()))
                 .additionalLinks(additionalLinks)
                 .build();
 
