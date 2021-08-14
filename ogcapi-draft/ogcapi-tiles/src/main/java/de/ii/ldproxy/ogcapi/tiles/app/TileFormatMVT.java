@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
 import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.LIMIT_DEFAULT;
 
 import com.google.common.collect.ImmutableMap;
@@ -181,9 +182,7 @@ public class TileFormatMVT implements TileFormatExtension {
         OgcApiDataV2 apiData = tile.getApiData();
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
-        final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
-                .map(FeaturesCoreConfiguration::getAllFilterParameters)
-                .orElse(ImmutableMap.of());
+        final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
 
         Set<String> filterParameters = ImmutableSet.of();
         for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -200,7 +199,7 @@ public class TileFormatMVT implements TileFormatExtension {
             parameter.transformQuery(collectionData, queryBuilder, queryParameters, apiData);
         }
 
-        CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(filterableFields.get("bbox"), tile.getBoundingBox()));
+        CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(filterableFields.get(PARAMETER_BBOX), tile.getBoundingBox()));
         if (predefFilter != null || !filters.isEmpty()) {
             Optional<CqlFilter> otherFilter = Optional.empty();
             Optional<CqlFilter> configFilter = Optional.empty();

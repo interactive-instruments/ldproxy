@@ -46,8 +46,10 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 
+import java.util.HashMap;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -133,9 +135,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                               int minimumPageSize,
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters,
                                               List<OgcApiQueryParameter> allowedParameters) {
-        final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
-                                                                   .map(FeaturesCoreConfiguration::getAllFilterParameters)
-                                                                   .orElse(ImmutableMap.of());
+        final Map<String, String> filterableFields = getFilterableFields(apiData, collectionData);
+
         final List<String> qFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
                                                    .map(FeaturesCoreConfiguration::getQProperties)
                                                    .orElse(ImmutableList.of());
@@ -205,6 +206,33 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         }
 
         return processCoordinatePrecision(queryBuilder, coreConfiguration).build();
+    }
+
+    @Override
+    public Map<String, String> getFilterableFields(OgcApiDataV2 apiData,
+        FeatureTypeConfigurationOgcApi collectionData) {
+        Map<String, String> queryables = new LinkedHashMap<>(collectionData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(FeaturesCoreConfiguration::getAllFilterParameters)
+            .orElse(ImmutableMap.of()));
+
+        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData);
+
+        featureSchema.getPrimaryGeometry()
+            .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
+
+        featureSchema.getPrimaryInterval()
+            .ifPresentOrElse(
+                interval -> queryables.put(PARAMETER_DATETIME, String.format("%s%s%s",
+                    interval.first().getFullPathAsString(),
+                    DATETIME_INTERVAL_SEPARATOR,
+                    interval.second().getFullPathAsString())),
+                () -> featureSchema.getPrimaryInstant()
+                    .ifPresent(instant -> queryables.put(PARAMETER_DATETIME, instant.getFullPathAsString())));
+
+        return ImmutableMap.<String, String>builder()
+            .putAll(queryables)
+            .build();
     }
 
     @Override

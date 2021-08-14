@@ -288,9 +288,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                     // try to convert the filter to CQL-text
                                     String expression = filter.getFilter().get();
                                     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-                                    final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
-                                                                                               .map(FeaturesCoreConfiguration::getAllFilterParameters)
-                                                                                               .orElse(ImmutableMap.of());
+                                    final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
                                     try {
                                         queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
                                     } catch (Exception e) {
