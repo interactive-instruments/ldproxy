@@ -111,6 +111,10 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     //(immutables attributeBuilder does not work with maps yet)
     public abstract BuildableMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getCollections();
 
+    public Optional<FeatureTypeConfigurationOgcApi> getCollectionData(String collectionId) {
+        return Optional.ofNullable(getCollections().get(collectionId));
+    }
+
     @Override
     @Value.Derived
     public boolean isLoading() {

@@ -24,7 +24,6 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileSets;
@@ -206,7 +205,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                                                                requestContext.getLanguage()),
                                                                                       Optional.of(requestContext.getUriCustomizer().copy()),
                                                                                       limitsGenerator,
-                                                                                      providers))
+                                                                                      providers, entityRegistry))
                                        .collect(Collectors.toUnmodifiableList()));
 
         TileSets tileSets = builder.build();
@@ -260,7 +259,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         TileSet tileset = TilesHelper.buildTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
                                                    zoomLevels, center, collectionId, links,
                                                    Optional.of(requestContext.getUriCustomizer().copy()),
-                                                   limitsGenerator, providers);
+                                                   limitsGenerator, providers, entityRegistry);
         
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
         EntityTag etag = getEtag(tileset, TileSet.FUNNEL, outputFormat);

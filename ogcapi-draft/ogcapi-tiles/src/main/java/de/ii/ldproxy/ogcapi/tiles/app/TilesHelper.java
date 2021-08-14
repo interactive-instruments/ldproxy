@@ -40,6 +40,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -48,6 +49,7 @@ import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.AbstractMap;
@@ -82,7 +84,8 @@ public class TilesHelper {
                                        List<Link> links,
                                        Optional<URICustomizer> uriCustomizer,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
-                                       FeaturesCoreProviders providers) {
+                                       FeaturesCoreProviders providers,
+                                       EntityRegistry entityRegistry) {
 
         ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
                                                            .dataType(TileSet.DataType.vector);
@@ -120,16 +123,19 @@ public class TilesHelper {
         }
 
         // prepare a map with the JSON schemas of the feature collections used in the style
-        JsonSchemaCache schemas = (schema, collectionData, schemaUri, version) -> (JsonSchemaDocument) schema
-            .accept(new WithTransformationsApplied(ImmutableMap.of("*", new ImmutablePropertyTransformation.Builder().flatten(".").build())))
-            .accept(new SchemaDeriverReturnables(version, schemaUri, collectionData.getLabel(), Optional.empty(), ImmutableList.of()));
+        JsonSchemaCache schemas = new SchemaCacheTileSet(() -> entityRegistry.getEntitiesForType(
+            Codelist.class));
 
         Map<String, JsonSchemaDocument> schemaMap = collectionId.isPresent()
-                ? apiData.getCollections()
-                         .get(collectionId.get())
-                         .getExtension(TilesConfiguration.class)
-                         .filter(ExtensionConfiguration::isEnabled)
-                         .map(config -> ImmutableMap.of(collectionId.get(), schemas.getSchema(apiData, collectionId.get(), Optional.empty(), providers)))
+                ? apiData.getCollectionData(collectionId.get())
+                        .filter(collectionData -> {
+                            Optional<TilesConfiguration> config = collectionData.getExtension(TilesConfiguration.class);
+                            return collectionData.getEnabled() &&
+                                config.isPresent() &&
+                                config.get().isEnabled();
+                        })
+                         .map(collectionData -> ImmutableMap.of(collectionId.get(), schemas.getSchema(
+                             providers.getFeatureSchema(apiData, collectionData), apiData, collectionData, Optional.empty())))
                          .orElse(ImmutableMap.of())
                 : apiData.getCollections()
                          .entrySet()
@@ -140,7 +146,8 @@ public class TilesHelper {
                                      config.isPresent() &&
                                      config.get().isMultiCollectionEnabled();
                          })
-                         .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemas.getSchema(apiData, entry.getKey(), Optional.empty(), providers)))
+                         .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemas.getSchema(
+                             providers.getFeatureSchema(apiData, entry.getValue()), apiData, entry.getValue(), Optional.empty())))
                          .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
         //TODO: replace with SchemaDeriverTileLayers

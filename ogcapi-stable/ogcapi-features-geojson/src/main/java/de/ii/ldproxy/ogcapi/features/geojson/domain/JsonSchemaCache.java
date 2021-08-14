@@ -18,60 +18,40 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public interface JsonSchemaCache {
+public abstract class JsonSchemaCache {
 
-  default JsonSchemaDocument getSchemaWithCache(
-      OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri,
-      FeaturesCoreProviders providers,
-      ConcurrentMap<Integer, ConcurrentMap<String, ConcurrentMap<VERSION, JsonSchemaDocument>>> cache) {
-    return getSchemaWithCache(apiData, collectionId, schemaUri, VERSION.current(), providers, cache);
+  private final ConcurrentMap<Integer, ConcurrentMap<String, ConcurrentMap<VERSION, JsonSchemaDocument>>> cache;
+
+  protected JsonSchemaCache() {
+    this.cache = new ConcurrentHashMap<>();
   }
 
-  default JsonSchemaDocument getSchemaWithCache(
-      OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, VERSION version,
-      FeaturesCoreProviders providers,
-      ConcurrentMap<Integer, ConcurrentMap<String, ConcurrentMap<VERSION, JsonSchemaDocument>>> cache) {
+  public final JsonSchemaDocument getSchema(FeatureSchema featureSchema, OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      Optional<String> schemaUri) {
+    return getSchema(featureSchema, apiData, collectionData, schemaUri, VERSION.current());
+  }
+
+  public final JsonSchemaDocument getSchema(FeatureSchema featureSchema, OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      Optional<String> schemaUri, VERSION version) {
     int apiHashCode = apiData.hashCode();
     if (!cache.containsKey(apiHashCode)) {
       cache.put(apiHashCode, new ConcurrentHashMap<>());
     }
-    if (!cache.get(apiHashCode).containsKey(collectionId)) {
-      cache.get(apiHashCode).put(collectionId, new ConcurrentHashMap<>());
+    if (!cache.get(apiHashCode).containsKey(collectionData.getId())) {
+      cache.get(apiHashCode).put(collectionData.getId(), new ConcurrentHashMap<>());
     }
-    if (!cache.get(apiHashCode).get(collectionId).containsKey(version)) {
+    if (!cache.get(apiHashCode).get(collectionData.getId()).containsKey(version)) {
       cache.get(apiHashCode)
-          .get(collectionId)
-          .put(version, getSchema(apiData, collectionId, schemaUri, version, providers));
+          .get(collectionData.getId())
+          .put(version, deriveSchema(featureSchema, apiData, collectionData, schemaUri, version));
     }
 
-    return cache.get(apiHashCode).get(collectionId).get(version);
+    return cache.get(apiHashCode).get(collectionData.getId()).get(version);
   }
 
-  default JsonSchemaDocument getSchema(
-      OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri,
-      FeaturesCoreProviders providers) {
-    return getSchema(apiData, collectionId, schemaUri, VERSION.current(), providers);
-  }
-
-  default JsonSchemaDocument getSchema(
-      OgcApiDataV2 apiData, String collectionId, Optional<String> schemaUri, VERSION version,
-      FeaturesCoreProviders providers) {
-    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
-        .get(collectionId);
-    String featureTypeId = apiData.getCollections()
-        .get(collectionId)
-        .getExtension(FeaturesCoreConfiguration.class)
-        .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-        .orElse(collectionId);
-    FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
-    FeatureSchema featureType = featureProvider.getData()
-        .getTypes()
-        .get(featureTypeId);
-
-    return deriveSchema(featureType, collectionData, schemaUri, version);
-  }
-
-  JsonSchemaDocument deriveSchema(FeatureSchema schema,
+  protected abstract JsonSchemaDocument deriveSchema(FeatureSchema schema, OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData, Optional<String> schemaUri, VERSION version);
 
 }

@@ -15,7 +15,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesTileset;
@@ -29,7 +28,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import java.io.BufferedInputStream;
@@ -78,6 +77,7 @@ public class TileCacheImpl implements TileCache {
     private final FeaturesCoreProviders providers;
     private final SchemaInfo schemaInfo;
     private final ExtensionRegistry extensionRegistry;
+    private final EntityRegistry entityRegistry;
     private final TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator;
 
     /**
@@ -88,6 +88,7 @@ public class TileCacheImpl implements TileCache {
                          @Requires FeaturesCoreProviders providers,
                          @Requires SchemaInfo schemaInfo,
                          @Requires ExtensionRegistry extensionRegistry,
+                         @Requires EntityRegistry entityRegistry,
                          @Requires TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.cacheStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
@@ -96,6 +97,7 @@ public class TileCacheImpl implements TileCache {
         this.providers = providers;
         this.schemaInfo = schemaInfo;
         this.extensionRegistry = extensionRegistry;
+        this.entityRegistry = entityRegistry;
         this.tileMatrixSetLimitsGenerator = tileMatrixSetLimitsGenerator;
         Files.createDirectories(cacheStore);
 
@@ -412,7 +414,8 @@ public class TileCacheImpl implements TileCache {
                                                                    ImmutableList.of(),
                                                                    Optional.empty(),
                                                                    limitsGenerator,
-                                                                   providers);
+                                                                   providers,
+                                                                   entityRegistry);
 
                 // convert to Mbtiles metadata
                 // TODO support attribution, type, version

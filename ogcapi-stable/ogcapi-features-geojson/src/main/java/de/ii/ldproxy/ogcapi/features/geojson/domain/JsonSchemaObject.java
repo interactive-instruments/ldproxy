@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +22,7 @@ public abstract class JsonSchemaObject extends JsonSchema {
 
     public final String getType() { return "object"; }
 
+    @JsonProperty("required")
     public abstract List<String> getRequired();
     public abstract Map<String, JsonSchema> getProperties();
     public abstract Map<String, JsonSchema> getPatternProperties();
