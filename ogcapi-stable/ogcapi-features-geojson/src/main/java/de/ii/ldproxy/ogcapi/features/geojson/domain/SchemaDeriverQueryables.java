@@ -27,7 +27,7 @@ public class SchemaDeriverQueryables extends SchemaDeriverJsonSchema {
   }
 
   @Override
-  protected void visitFeatureSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
+  protected void adjustRootSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
       Map<String, JsonSchema> defs,
       List<String> required, JsonSchemaDocument.Builder builder) {
     properties.forEach((propertyName, propertySchema) -> {

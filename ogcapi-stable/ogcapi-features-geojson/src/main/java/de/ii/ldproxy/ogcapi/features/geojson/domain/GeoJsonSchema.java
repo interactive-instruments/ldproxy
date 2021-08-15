@@ -107,6 +107,16 @@ public interface GeoJsonSchema {
           .build())
       .build();
 
+  JsonSchemaObject LINK_JSON = ImmutableJsonSchemaObject.builder()
+                                                                         .putProperties("href", ImmutableJsonSchemaString.builder()
+                                                                                                                         .format("uri-reference")
+                                                                                                                         .build())
+                                                                         .putProperties("rel", ImmutableJsonSchemaString.builder().build())
+                                                                         .putProperties("type", ImmutableJsonSchemaString.builder().build())
+                                                                         .putProperties("title", ImmutableJsonSchemaString.builder().build())
+                                                                         .addRequired("href")
+                                                                         .build();
+
   static JsonSchemaString getEnum(String value) {
     return ImmutableJsonSchemaString.builder()
         .addEnums(value)

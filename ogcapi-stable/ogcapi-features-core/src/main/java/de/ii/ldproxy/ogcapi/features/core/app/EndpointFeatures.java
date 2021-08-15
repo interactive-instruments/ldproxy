@@ -19,7 +19,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
@@ -330,12 +329,17 @@ public class EndpointFeatures extends EndpointSubCollection {
             // TODO
         }
 
+        Optional<FeatureTypeConfigurationOgcApi> collectionData = apiData
+            .getCollectionData(collectionId);
+        Optional<FeatureSchema> featureSchema = collectionData
+            .map(cd -> providers.getFeatureSchema(apiData, cd));
+
         List<OgcApiQueryParameter> build = Stream.concat(
             generalList,
             filterableFields.keySet().stream()
                 .map(field -> {
-                    Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData,
-                        collectionId, field);
+                    Optional<Schema<?>> schema2 = featureSchema.flatMap(fs -> schemaGeneratorFeature.getQueryable(fs,
+                        collectionData.get(), field));
                     if (schema2.isEmpty()) {
                         LOGGER.warn(
                             "Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",

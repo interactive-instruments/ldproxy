@@ -13,6 +13,7 @@ import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableSchemaConstraints
 import de.ii.xtraplatform.features.domain.SchemaBase
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry
 import de.ii.xtraplatform.store.app.entities.EntityRegistryImpl
 import io.swagger.v3.oas.models.media.ArraySchema
@@ -26,7 +27,7 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
     @Shared SchemaGeneratorFeatureOpenApi schemaGenerator
 
     def setupSpec() {
-        schemaGenerator = new SchemaGeneratorFeatureOpenApi(null, new EntityRegistryImpl(null), new SchemaInfoImpl())
+        schemaGenerator = new SchemaGeneratorFeatureOpenApi(null, new EntityRegistryImpl(null))
     }
 
     def 'Test Open API schema generation for QUERYABLES type'() {
@@ -34,10 +35,14 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
         FeatureSchema featureSchema = new ImmutableFeatureSchema.Builder()
                 .name("test-name")
                 .description("foobar")
-                .putPropertyMap("property1", new ImmutableFeatureSchema.Builder()
+                .putPropertyMap("date", new ImmutableFeatureSchema.Builder()
                         .name("date")
                         .type(SchemaBase.Type.DATETIME)
                         .build())
+                .putPropertyMap("string", new ImmutableFeatureSchema.Builder()
+                    .name("string")
+                    .type(SchemaBase.Type.STRING)
+                    .build())
                 .type(SchemaBase.Type.OBJECT)
                 .build()
         FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
@@ -50,25 +55,21 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
                         .build())
                 .build()
         when:
-        Schema schema = schemaGenerator.getSchemaOpenApi(featureSchema, collectionData, SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES)
+        Optional<Schema<?>> schema = schemaGenerator.getQueryable(featureSchema, collectionData, "date")
         then:
-        Objects.nonNull(schema)
-        schema.getTitle() == "test-label"
-        schema.getDescription() == "foobar"
-        schema.getType() == "object"
-        schema.getProperties().get("date").getType() == "string"
-        schema.getProperties().get("date").getFormat() == "date-time"
+        schema.isPresent()
+        schema.get().getType() == "string"
+        schema.get().getFormat() == "date-time"
     }
 
     def 'Test Open API schema generation for the RETURNABLES type'() {
         given:
-        FeatureSchema featureSchema = getSchemaObjectReturnables()
         FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                 .id("id")
                 .label("foo")
                 .build()
         when:
-        Schema schema = schemaGenerator.getSchemaOpenApi(featureSchema, collectionData, SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES)
+        Schema schema = schemaGenerator.getSchema(FEATURE_SCHEMA, collectionData)
         then:
         Objects.nonNull(schema)
         schema.getRequired() == ["type", "geometry", "properties"]
@@ -88,8 +89,7 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
         properties.getProperties().get("links").getType() == "array"
         properties.getProperties().get("links").getMinItems() == 1
         properties.getProperties().get("links").getMaxItems() == 5
-        (properties.getProperties().get("links") as ArraySchema).getItems().getTitle() == "foo"
-        (properties.getProperties().get("links") as ArraySchema).getItems().getDescription() == "bar"
+        (properties.getProperties().get("links") as ArraySchema).getItems().get$ref() == "#/components/schemas/Link"
         properties.getProperties().get("datetime").getType() == "string"
         properties.getProperties().get("datetime").getFormat() == "date-time"
         properties.getProperties().get("datetime").getTitle() == "foo"
@@ -128,13 +128,12 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
     }
 
     def 'Test Open API schema generation for the RETURNABLES_FLAT type'() {
-        FeatureSchema featureSchema = getSchemaObjectReturnables()
         FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                 .id("id")
                 .label("foo")
                 .build()
         when:
-        Schema schema = schemaGenerator.getSchemaOpenApi(featureSchema, collectionData, SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT)
+        Schema schema = schemaGenerator.getSchema(FEATURE_SCHEMA_FLAT, collectionData)
         then:
         Objects.nonNull(schema)
         schema.getRequired() == ["type", "geometry", "properties"]
@@ -186,8 +185,8 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
         Objects.nonNull(schema.getProperties().get("geometry"))
     }
 
-    FeatureSchema getSchemaObjectReturnables() {
-        return new ImmutableFeatureSchema.Builder()
+    static final FeatureSchema FEATURE_SCHEMA =
+        new ImmutableFeatureSchema.Builder()
                 .name("test-name")
                 .description("bar")
                 .putPropertyMap("ID", new ImmutableFeatureSchema.Builder()
@@ -322,6 +321,10 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
                         .build())
                 .type(SchemaBase.Type.OBJECT)
                 .build()
-    }
 
+    static final FeatureSchema FEATURE_SCHEMA_FLAT =
+            new ImmutableFeatureSchema.Builder()
+                .from(FEATURE_SCHEMA)
+                .addTransformations(new ImmutablePropertyTransformation.Builder().flatten(".").build())
+                .build()
 }

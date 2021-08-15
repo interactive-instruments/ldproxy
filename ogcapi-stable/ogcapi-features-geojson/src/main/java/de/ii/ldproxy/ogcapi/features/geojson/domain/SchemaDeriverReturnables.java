@@ -12,11 +12,6 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase.Role;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaArray;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaRef;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaRefV7;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaString;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
@@ -35,7 +30,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
   }
 
   @Override
-  protected void visitObjectSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
+  protected void adjustObjectSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
       List<String> required, ImmutableJsonSchemaObject.Builder builder) {
 
     builder.properties(properties);
@@ -43,7 +38,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
   }
 
   @Override
-  protected JsonSchema visitGeometry(FeatureSchema schema, JsonSchema jsonSchema) {
+  protected JsonSchema adjustGeometry(FeatureSchema schema, JsonSchema jsonSchema) {
     boolean required = schema.getConstraints().flatMap(SchemaConstraints::getRequired)
         .orElse(false);
 
@@ -55,7 +50,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
   }
 
   @Override
-  protected void visitFeatureSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
+  protected void adjustRootSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
       Map<String, JsonSchema> defs,
       List<String> required, JsonSchemaDocument.Builder builder) {
 
@@ -69,7 +64,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
 
     defs.forEach((name, def) -> {
       if ("Link".equals(name)) {
-        builder.putDefinitions("Link", SchemaGeneratorFeatureGeoJson.LINK_JSON);
+        builder.putDefinitions("Link", GeoJsonSchema.LINK_JSON);
       } else {
         builder.putDefinitions(name, def);
       }
@@ -87,12 +82,12 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
         .ifPresent(jsonSchema -> builder.putProperties("id", jsonSchema));
 
     findByRole(properties, Role.PRIMARY_GEOMETRY)
+        .or(() -> findByRole(properties, SECONDARY_GEOMETRY))
         .ifPresentOrElse(
             jsonSchema -> builder.putProperties("geometry", jsonSchema),
             () -> builder.putProperties("geometry", GeoJsonSchema.NULL));
 
-    Map<String, JsonSchema> propertiesWithoutRoles = withoutRoles(properties, Role.ID,
-        Role.PRIMARY_GEOMETRY);
+    Map<String, JsonSchema> propertiesWithoutRoles = withoutRoles(properties);
 
     builder.putProperties("properties", ImmutableJsonSchemaObject.builder()
         .required(required)
@@ -124,25 +119,4 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  //TODO: nested
-  private Map<String, JsonSchema> withoutRoles(Map<String, JsonSchema> properties, Role... roles) {
-    return properties.entrySet()
-        .stream()
-        .filter(entry -> entry.getValue().getName().filter(name -> Arrays.stream(roles).noneMatch(role -> nameHasRole(name, role))).isPresent())
-        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
-
-  private Optional<JsonSchema> findByRole(Map<String, JsonSchema> properties, Role role) {
-    return properties.values().stream()
-        .flatMap(jsonSchema -> {
-          if (jsonSchema instanceof JsonSchemaObject) {
-            return ((JsonSchemaObject) jsonSchema).getProperties()
-                .values()
-                .stream();
-          }
-          return Stream.of(jsonSchema);
-        })
-        .filter(jsonSchema -> jsonSchema.getName().filter(name -> nameHasRole(name, role)).isPresent())
-        .findFirst();
-  }
 }

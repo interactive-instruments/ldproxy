@@ -298,7 +298,7 @@ class SchemaDeriverJsonSpec extends Specification {
                                             .build())
                                     .build())
                             .build())
-                    .putDefinitions("Link", SchemaGeneratorFeatureGeoJson.LINK_JSON)
+                    .putDefinitions("Link", GeoJsonSchema.LINK_JSON)
                     .putDefinitions(SchemaDeriverJsonSchema.getObjectType(getProperty(FEATURE_SCHEMA, "objects").get()), ImmutableJsonSchemaObject.builder()
                             .title("foo")
                             .description("bar")
