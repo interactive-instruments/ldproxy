@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.features.geojson.app;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -26,7 +27,8 @@ import org.apache.felix.ipojo.annotations.Provides;
 public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
     private boolean geometryOpen;
-    private boolean hasGeometry;
+    private boolean hasPrimaryGeometry;
+    private FeatureSchema primaryGeometryProperty;
 
     @Override
     public GeoJsonWriterGeometry create() {
@@ -39,16 +41,33 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     }
 
     @Override
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        this.primaryGeometryProperty = context.schema().flatMap(SchemaBase::getPrimaryGeometry).orElse(null);
+    }
+
+    @Override
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        this.hasPrimaryGeometry = false;
+    }
+
+    @Override
     public void onObjectStart(EncodingAwareContextGeoJson context,
         Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (context.schema()
             .filter(SchemaBase::isGeometry)
             .isPresent()
             && context.geometryType().isPresent()) {
-            context.encoding().stopBuffering();
+            if (context.schema().get().equals(primaryGeometryProperty)) {
+                this.hasPrimaryGeometry = true;
+                context.encoding().stopBuffering();
 
-            context.encoding().getJson()
-                .writeFieldName("geometry");
+                context.encoding().getJson()
+                       .writeFieldName("geometry");
+            } else {
+                context.encoding().getJson()
+                       .writeFieldName(context.schema().get().getName());
+            }
+
             context.encoding().getJson()
                 .writeStartObject();
             context.encoding().getJson()
@@ -57,12 +76,9 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
                 .writeFieldName("coordinates");
 
             this.geometryOpen = true;
-            this.hasGeometry = true;
         } else {
             startBufferingIfNecessary(context);
         }
-
-
 
         next.accept(context);
     }
@@ -101,7 +117,10 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
             .isPresent()
             && geometryOpen) {
 
-            context.encoding().stopBuffering();
+            boolean stopBuffering = context.schema().get().equals(primaryGeometryProperty);
+            if (stopBuffering) {
+                context.encoding().stopBuffering();
+            }
 
             this.geometryOpen = false;
 
@@ -109,7 +128,9 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
             context.encoding().getJson()
                 .writeEndObject();
 
-            context.encoding().flushBuffer();
+            if (stopBuffering) {
+                context.encoding().flushBuffer();
+            }
         }
 
         next.accept(context);
@@ -133,7 +154,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
         // write null geometry if none was written for this feature
-        if (!hasGeometry) {
+        if (!hasPrimaryGeometry) {
             context.encoding().stopBuffering();
 
             // null geometry
@@ -144,15 +165,14 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
             context.encoding().flushBuffer();
         }
-        this.hasGeometry = false;
 
         next.accept(context);
     }
 
     private void startBufferingIfNecessary(EncodingAwareContextGeoJson context) {
-        if (!geometryOpen && !hasGeometry && !context.encoding().getState()
-            .isBuffering()) {
-            // buffer properties until geometry arrives
+        if (!geometryOpen && !hasPrimaryGeometry && !context.encoding().getState()
+                                                            .isBuffering()) {
+            // buffer properties until primary geometry arrives
             try {
                 context.encoding().startBuffering();
             } catch (IOException e) {
