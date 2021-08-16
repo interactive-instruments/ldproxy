@@ -222,10 +222,10 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
       String text = String.format("Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms.",
           collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), context.metadata().getNumberReturned().orElse(0), written,
           transformerDuration, processingDuration, featureDuration / 1000000, featureCount == 0 ? 0 : featureDuration / featureCount / 1000000, mergerDuration, encoderDuration);
-      //if (processingDuration > 200)
+      if (processingDuration > 200)
         LOGGER.debug(text);
-      //else
-      //  LOGGER.trace(text);
+      else
+        LOGGER.trace(text);
     }
   }
 }
