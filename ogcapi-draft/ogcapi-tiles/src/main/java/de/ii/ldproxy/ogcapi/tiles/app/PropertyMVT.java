@@ -40,7 +40,8 @@ public interface PropertyMVT extends PropertyBase<PropertyMVT, FeatureSchema> {
   }
 
   default Optional<Geometry> getJtsGeometry(GeometryFactory geometryFactory) {
-    return getSchema().flatMap(FeatureSchema::getGeometryType)
+
+    return getGeometryType() // getSchema().flatMap(FeatureSchema::getGeometryType)
         .flatMap(geometryType -> {
           switch (geometryType) {
             case POINT:
