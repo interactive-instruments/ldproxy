@@ -28,7 +28,6 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
     private boolean geometryOpen;
     private boolean hasPrimaryGeometry;
-    private FeatureSchema primaryGeometryProperty;
 
     @Override
     public GeoJsonWriterGeometry create() {
@@ -38,11 +37,6 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     @Override
     public int getSortPriority() {
         return 30;
-    }
-
-    @Override
-    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        this.primaryGeometryProperty = context.schema().flatMap(SchemaBase::getPrimaryGeometry).orElse(null);
     }
 
     @Override
@@ -57,7 +51,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
             .filter(SchemaBase::isGeometry)
             .isPresent()
             && context.geometryType().isPresent()) {
-            if (context.schema().get().equals(primaryGeometryProperty)) {
+            if (context.schema().get().isPrimaryGeometry()) {
                 this.hasPrimaryGeometry = true;
                 context.encoding().stopBuffering();
 
@@ -117,7 +111,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
             .isPresent()
             && geometryOpen) {
 
-            boolean stopBuffering = context.schema().get().equals(primaryGeometryProperty);
+            boolean stopBuffering = context.schema().get().isPrimaryGeometry();
             if (stopBuffering) {
                 context.encoding().stopBuffering();
             }
