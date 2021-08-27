@@ -1,7 +1,7 @@
 {{#hasValues}}
 <div class="row my-1">
-<div class="col-md-{{#hasObjects}}4{{/hasObjects}}{{^hasObjects}}6{{/hasObjects}} {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate">{{name}}</div>
-<div class="col-md-{{#hasObjects}}8{{/hasObjects}}{{^hasObjects}}6{{/hasObjects}}">
+<div class="col-md-{{#isMapRight}}6{{/isMapRight}}{{^isMapRight}}4{{/isMapRight}} {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate">{{name}}</div>
+<div class="col-md-{{#isMapRight}}6{{/isMapRight}}{{^isMapRight}}8{{/isMapRight}}">
 <ul class="list-unstyled">
 {{#values}}
 {{^isNull}}

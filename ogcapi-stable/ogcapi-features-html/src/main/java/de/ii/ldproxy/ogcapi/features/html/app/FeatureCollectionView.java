@@ -79,11 +79,11 @@ public class FeatureCollectionView extends DatasetView {
     }
 
     public boolean isMapTop() {
-        return mapPosition == POSITION.TOP || (mapPosition == POSITION.AUTO && (features.isEmpty() || features.get(0).hasObjects()));
+        return mapPosition == POSITION.TOP || (mapPosition == POSITION.AUTO && (features.isEmpty() || features.stream().anyMatch(FeatureHtml::hasObjects)));
     }
 
     public boolean isMapRight() {
-        return mapPosition == POSITION.RIGHT || (mapPosition == POSITION.AUTO && !features.isEmpty() && !features.get(0).hasObjects());
+        return mapPosition == POSITION.RIGHT || (mapPosition == POSITION.AUTO && !features.isEmpty() && features.stream().noneMatch(FeatureHtml::hasObjects));
     }
 
     public Optional<String> getCanonicalUrl() throws URISyntaxException {
