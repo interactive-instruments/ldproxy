@@ -14,7 +14,6 @@ abstract class AbstractExtensionConfigurationSpec extends Specification{
 
     abstract def getUseCases()
 
-    @Unroll //TODO: should not be needed, spock 2.0 unrolls by default
     def "merge #usecase"() {
 
         when: "#when"

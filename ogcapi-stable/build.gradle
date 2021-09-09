@@ -16,6 +16,17 @@ dependencies {
     bundle subprojects
 }
 
+//TODO: workaround for bug in version 2.1
+subprojects {
+    dependencies {
+        testImplementation('com.athaydes:spock-reports') {
+            version {
+                strictly '2.0-groovy-3.0'
+            }
+        }
+    }
+}
+
 apply from: '../immutables.gradle'
 
 apply from: '../license-headers.gradle'
