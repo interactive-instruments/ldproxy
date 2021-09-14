@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
@@ -16,11 +19,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.osgi.framework.BundleContext;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -32,9 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.osgi.framework.BundleContext;
 
 /**
  * Access tiles in Mbtiles files.
@@ -69,7 +68,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
         if (config.isPresent()
                 && config.get().isEnabled()
-                && config.get().getMultiCollectionEnabledDerived()
+                && config.get().isMultiCollectionEnabled()
                 && config.get().getTileProvider() instanceof TileProviderMbtiles) {
             TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
             Path path = getTileProvider(apiData, provider.getFilename());
@@ -85,7 +84,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
             config = apiData.getExtension(TilesConfiguration.class, collectionId);
             if (config.isPresent()
                     && config.get().isEnabled()
-                    && config.get().getSingleCollectionEnabledDerived()
+                    && config.get().isSingleCollectionEnabled()
                     && config.get().getTileProvider() instanceof TileProviderMbtiles) {
                 TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
                 Path path = getTileProvider(apiData, provider.getFilename());

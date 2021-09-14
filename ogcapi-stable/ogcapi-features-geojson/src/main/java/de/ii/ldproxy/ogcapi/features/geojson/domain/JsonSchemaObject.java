@@ -10,15 +10,10 @@ package de.ii.ldproxy.ogcapi.features.geojson.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.domain.Metadata2;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
@@ -27,19 +22,10 @@ public abstract class JsonSchemaObject extends JsonSchema {
 
     public final String getType() { return "object"; }
 
+    @JsonProperty("required")
     public abstract List<String> getRequired();
     public abstract Map<String, JsonSchema> getProperties();
     public abstract Map<String, JsonSchema> getPatternProperties();
-
-    // Only use the following in JSON Schema documents, not in embedded schemas
-    @JsonProperty("$schema")
-    public abstract Optional<String> getSchema();
-    @JsonProperty("$id")
-    public abstract Optional<String> getId();
-    @JsonProperty("$defs")
-    public abstract Optional<Map<String, JsonSchema>> getDefs();
-    @JsonProperty("definitions")
-    public abstract Optional<Map<String, JsonSchema>> getDefinitions();
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<JsonSchemaObject> FUNNEL = (from, into) -> {
@@ -58,11 +44,5 @@ public abstract class JsonSchemaObject extends JsonSchema {
             .stream()
             .sorted(Map.Entry.comparingByKey())
             .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
-        from.getSchema().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getId().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getDefs().ifPresent(val -> val.entrySet()
-                                           .stream()
-                                           .sorted(Map.Entry.comparingByKey())
-                                           .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into)));
     };
 }

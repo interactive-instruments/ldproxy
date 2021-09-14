@@ -11,15 +11,15 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.media.Schema;
 
 public interface SchemaGeneratorCollectionOpenApi {
-    String getSchemaReferenceOpenApi();
+    String getSchemaReference();
 
-    Schema getSchemaOpenApi();
+    Schema<?> getSchema();
 
-    String getSchemaReferenceOpenApi(String collectionId, SchemaGeneratorFeature.SCHEMA_TYPE type);
+    String getSchemaReference(String collectionId);
 
-    Schema getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, SchemaGeneratorFeature.SCHEMA_TYPE type);
+    Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId);
 
-    String getSchemaReferenceByName(String name, SchemaGeneratorFeature.SCHEMA_TYPE type);
+    String getSchemaReferenceForName(String name);
 
-    Schema getSchemaOpenApiForName(String name, SchemaGeneratorFeature.SCHEMA_TYPE type);
+    Schema<?> getSchemaForName(String name);
 }

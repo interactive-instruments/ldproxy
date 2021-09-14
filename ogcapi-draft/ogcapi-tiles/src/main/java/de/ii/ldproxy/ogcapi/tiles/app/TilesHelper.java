@@ -16,14 +16,14 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaObject;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilePoint;
@@ -40,13 +40,16 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
-
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.AbstractMap;
@@ -59,6 +62,7 @@ import java.util.stream.Collectors;
 
 public class TilesHelper {
 
+    //TODO: move to TileSet as static of()
     /**
      * generate the tile set metadata according to the OGC Tile Matrix Set standard (version 2.0.0, draft from June 2021)
      * @param apiData the API
@@ -69,7 +73,7 @@ public class TilesHelper {
      * @param links links to include in the object
      * @param uriCustomizer optional URI of the resource
      * @param limitsGenerator helper to generate the limits for each zoom level based on the bbox of the data
-     * @param schemaGeneratorFeature helper to generate the JSON Schema of the features
+     * @param providers helper to access feature providers
      * @return the tile set metadata
      */
     public static TileSet buildTileSet(OgcApiDataV2 apiData,
@@ -80,7 +84,8 @@ public class TilesHelper {
                                        List<Link> links,
                                        Optional<URICustomizer> uriCustomizer,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
-                                       SchemaGeneratorGeoJson schemaGeneratorFeature) {
+                                       FeaturesCoreProviders providers,
+                                       EntityRegistry entityRegistry) {
 
         ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
                                                            .dataType(TileSet.DataType.vector);
@@ -118,13 +123,19 @@ public class TilesHelper {
         }
 
         // prepare a map with the JSON schemas of the feature collections used in the style
-        SchemaGeneratorFeature.SCHEMA_TYPE schemaType = SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT;
-        Map<String, JsonSchemaObject> schemaMap = collectionId.isPresent()
-                ? apiData.getCollections()
-                         .get(collectionId.get())
-                         .getExtension(TilesConfiguration.class)
-                         .filter(ExtensionConfiguration::isEnabled)
-                         .map(config -> ImmutableMap.of(collectionId.get(), schemaGeneratorFeature.getSchemaJson(apiData, collectionId.get(), Optional.empty(), schemaType)))
+        JsonSchemaCache schemas = new SchemaCacheTileSet(() -> entityRegistry.getEntitiesForType(
+            Codelist.class));
+
+        Map<String, JsonSchemaDocument> schemaMap = collectionId.isPresent()
+                ? apiData.getCollectionData(collectionId.get())
+                        .filter(collectionData -> {
+                            Optional<TilesConfiguration> config = collectionData.getExtension(TilesConfiguration.class);
+                            return collectionData.getEnabled() &&
+                                config.isPresent() &&
+                                config.get().isEnabled();
+                        })
+                         .map(collectionData -> ImmutableMap.of(collectionId.get(), schemas.getSchema(
+                             providers.getFeatureSchema(apiData, collectionData), apiData, collectionData, Optional.empty())))
                          .orElse(ImmutableMap.of())
                 : apiData.getCollections()
                          .entrySet()
@@ -133,11 +144,13 @@ public class TilesHelper {
                              Optional<TilesConfiguration> config = entry.getValue().getExtension(TilesConfiguration.class);
                              return entry.getValue().getEnabled() &&
                                      config.isPresent() &&
-                                     config.get().getMultiCollectionEnabledDerived();
+                                     config.get().isMultiCollectionEnabled();
                          })
-                         .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemaGeneratorFeature.getSchemaJson(apiData, entry.getKey(), Optional.empty(), schemaType)))
+                         .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), schemas.getSchema(
+                             providers.getFeatureSchema(apiData, entry.getValue()), apiData, entry.getValue(), Optional.empty())))
                          .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
+        //TODO: replace with SchemaDeriverTileLayers
         schemaMap.entrySet()
                  .stream()
                  .forEach(entry -> {
@@ -145,7 +158,7 @@ public class TilesHelper {
                      FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                                                                             .get(collectionId2);
 
-                     JsonSchemaObject schema = entry.getValue();
+                     JsonSchemaDocument schema = entry.getValue();
                      ImmutableTileLayer.Builder builder2 = ImmutableTileLayer.builder()
                                                                              .id(collectionId2)
                                                                              .title(collectionData.getLabel())
@@ -185,6 +198,7 @@ public class TilesHelper {
         return builder.build();
     }
 
+    //TODO: move to TileSet as @Value.Lazy
     /**
      * derive the bbox as a sequence left, bottom, right, upper
      * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
@@ -198,6 +212,7 @@ public class TilesHelper {
                                 bbox.getUpperRight()[1].doubleValue());
     }
 
+    //TODO: move to TileSet as @Value.Lazy
     /**
      * derive the minimum zoom level
      * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
@@ -211,6 +226,7 @@ public class TilesHelper {
                       .min(Integer::compareTo);
     }
 
+    //TODO: move to TileSet as @Value.Lazy
     /**
      * derive the maximum zoom level
      * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
@@ -224,6 +240,7 @@ public class TilesHelper {
                       .max(Integer::compareTo);
     }
 
+    //TODO: move to TileSet as @Value.Lazy
     /**
      * derive the default view as longitude, latitude, zoom level
      * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
@@ -249,6 +266,7 @@ public class TilesHelper {
         return ImmutableList.of(centerLon, centerLat, defaultZoomLevel);
     }
 
+    //TODO: replace with SchemaDeriverVectorLayer and move to VectorLayer as static of()
     /**
      * generate the tile set metadata according to the TileJSON spec
      * @param apiData the API
@@ -278,8 +296,7 @@ public class TilesHelper {
                                                                              .getTypes()
                                                                              .get(featureTypeId);
                                   Optional<GeoJsonConfiguration> geoJsonConfiguration = featureTypeApi.getExtension(GeoJsonConfiguration.class);
-                                  boolean flatten = geoJsonConfiguration.filter(cfg -> cfg.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && cfg.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                                        .isPresent();
+                                  boolean flatten = geoJsonConfiguration.map(GeoJsonConfiguration::isFlattened).isPresent();
                                   List<FeatureSchema> properties = flatten ? featureType.getAllNestedProperties() : featureType.getProperties();
                                   // maps from the dotted path name to the path name with array brackets
                                   Map<String,String> propertyNameMap = !flatten ? ImmutableMap.of() :

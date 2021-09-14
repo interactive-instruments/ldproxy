@@ -19,7 +19,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
@@ -29,7 +28,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.ParameterExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -199,9 +198,11 @@ public class EndpointFeatures extends EndpointSubCollection {
                                               .collect(Collectors.toUnmodifiableSet());
         for (Map.Entry<String, FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
             String collectionId = entry.getKey();
-            for (Map.Entry<String, PropertyTransformation> entry2 : entry.getValue().getTransformations().entrySet()) {
+            for (Map.Entry<String, List<PropertyTransformation>> entry2 : entry.getValue().getTransformations().entrySet()) {
                 String property = entry2.getKey();
-                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+                for (PropertyTransformation transformation: entry2.getValue()) {
+                    builder = transformation.validate(builder, collectionId, property, codelists);
+                }
             }
         }
 
@@ -319,21 +320,26 @@ public class EndpointFeatures extends EndpointSubCollection {
         Stream<OgcApiQueryParameter> generalList, OgcApiDataV2 apiData, String collectionId, String logPrefix) {
 
         Optional<FeaturesCoreConfiguration> coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
-        final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getOtherFilterParameters)
+        final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
             .orElse(ImmutableMap.of());
 
-        Map<String, PropertyTransformation> transformations;
+        Map<String, List<PropertyTransformation>> transformations;
         if (coreConfiguration.isPresent()) {
             transformations = coreConfiguration.get().getTransformations();
             // TODO
         }
 
+        Optional<FeatureTypeConfigurationOgcApi> collectionData = apiData
+            .getCollectionData(collectionId);
+        Optional<FeatureSchema> featureSchema = collectionData
+            .map(cd -> providers.getFeatureSchema(apiData, cd));
+
         List<OgcApiQueryParameter> build = Stream.concat(
             generalList,
             filterableFields.keySet().stream()
                 .map(field -> {
-                    Optional<Schema> schema2 = schemaGeneratorFeature.getSchemaOpenApi(apiData,
-                        collectionId, field);
+                    Optional<Schema<?>> schema2 = featureSchema.flatMap(fs -> schemaGeneratorFeature.getQueryable(fs,
+                        collectionData.get(), field));
                     if (schema2.isEmpty()) {
                         LOGGER.warn(
                             "Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",

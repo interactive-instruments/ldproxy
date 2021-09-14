@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -25,36 +28,25 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
-import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStylesheetMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyles;
+import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStylesheetMetadata;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
-import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
-import de.ii.ldproxy.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.Styles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -73,9 +65,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Context;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
@@ -91,20 +91,23 @@ public class StyleRepositoryFiles implements StyleRepository {
     private final ObjectMapper patchMapperLenient;
     private final ObjectMapper patchMapperStrict;
     private final ObjectMapper metadataMapper;
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
     private final XtraPlatform xtraPlatform;
+    private final FeaturesCoreProviders providers;
+    private final EntityRegistry entityRegistry;
 
     public StyleRepositoryFiles(@Context BundleContext bundleContext,
                                 @Requires ExtensionRegistry extensionRegistry,
                                 @Requires I18n i18n,
-                                @Requires SchemaGeneratorGeoJson schemaGeneratorFeature,
-                                @Requires XtraPlatform xtraPlatform) throws IOException {
+                                @Requires XtraPlatform xtraPlatform,
+                                @Requires FeaturesCoreProviders providers,
+                                @Requires EntityRegistry entityRegistry) throws IOException {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
-        this.schemaGeneratorFeature = schemaGeneratorFeature;
         this.xtraPlatform = xtraPlatform;
+        this.providers = providers;
+        this.entityRegistry = entityRegistry;
         this.defaultLinkGenerator = new DefaultLinksGenerator();
         java.nio.file.Files.createDirectories(stylesStore);
         this.patchMapperLenient = new ObjectMapper();
@@ -366,7 +369,7 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                                        .title(title.orElse(styleId))
                                                                        .stylesheets(stylesheets);
         if (format.isPresent()) {
-            builder.layers(format.get().deriveLayerMetadata(getStylesheet(apiData, collectionId, styleId, format.get(), requestContext, true), apiData, schemaGeneratorFeature));
+            builder.layers(format.get().deriveLayerMetadata(getStylesheet(apiData, collectionId, styleId, format.get(), requestContext, true), apiData, providers, entityRegistry));
         }
         StyleMetadata metadata = builder.build();
 

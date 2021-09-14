@@ -95,7 +95,7 @@ public class EndpointTileSetSingleCollection extends EndpointSubCollection imple
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
-                      .filter(TilesConfiguration::getSingleCollectionEnabledDerived)
+                      .filter(TilesConfiguration::isSingleCollectionEnabled)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
             return providers.getFeatureProvider(apiData).supportsHighLoad();

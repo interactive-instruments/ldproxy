@@ -235,7 +235,6 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             TilesQueriesHandler.QueryInputTileSingleLayer queryInput = new ImmutableQueryInputTileSingleLayer.Builder()
                     .tile(tile)
                     .query(query)
-                    .outputStream(new ByteArrayOutputStream())
                     .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                     .build();
 
@@ -256,7 +255,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         OgcApiDataV2 apiData = api.getData();
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
-        Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::getMultiCollectionEnabledDerived);
+        Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::isMultiCollectionEnabled);
 
         if (tilesConfiguration.isPresent()) {
             Map<String, MinMax> seedingConfig = tilesConfiguration.get()
@@ -286,7 +285,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                                                 })
                                                 .filter(collection -> {
                                                     Optional<TilesConfiguration> layerConfiguration = collection.getExtension(TilesConfiguration.class);
-                                                    if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().getMultiCollectionEnabledDerived())
+                                                    if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().isMultiCollectionEnabled())
                                                         return false;
                                                     MinMax levels = layerConfiguration.get().getZoomLevelsDerived().get(tileMatrixSet.getId());
                                                     return !Objects.nonNull(levels) || (levels.getMax() >= level && levels.getMin() <= level);
@@ -377,7 +376,6 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                     .tile(multiLayerTile)
                     .singleLayerTileMap(singleLayerTileMap)
                     .queryMap(queryMap)
-                    .outputStream(new ByteArrayOutputStream())
                     .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                     .build();
 

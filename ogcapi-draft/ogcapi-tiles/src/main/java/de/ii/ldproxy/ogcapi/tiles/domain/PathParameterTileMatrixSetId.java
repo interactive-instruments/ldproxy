@@ -60,7 +60,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     public List<String> getValues(OgcApiDataV2 apiData) {
         List<String> tmsSetMultiCollection = apiData.getExtension(TilesConfiguration.class)
                                                     .filter(TilesConfiguration::isEnabled)
-                                                    .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                                                    .filter(TilesConfiguration::isMultiCollectionEnabled)
                                                     .map(TilesConfiguration::getZoomLevelsDerived)
                                                     .map(Map::keySet)
                                                     .orElse(ImmutableSet.of())

@@ -60,7 +60,7 @@ public class VectorTilesOnCollection implements CollectionExtension {
         final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
 
         if (!isNested && isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class) &&
-            isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class, TilesConfiguration::getSingleCollectionEnabledDerived)) {
+            isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class, TilesConfiguration::isSingleCollectionEnabled)) {
             collection.addAllLinks(vectorTilesLinkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
         }
 

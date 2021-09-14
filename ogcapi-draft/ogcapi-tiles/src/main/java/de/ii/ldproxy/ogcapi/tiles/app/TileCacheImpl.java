@@ -7,12 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.CACHE_DIR;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesTileset;
@@ -26,18 +28,9 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,9 +49,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.CACHE_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Context;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Access to the cache for tile files.
@@ -75,34 +73,31 @@ public class TileCacheImpl implements TileCache {
     private final Path cacheStore;
     private long lastCleanup = System.currentTimeMillis();
     private final Map<String, MbtilesTileset> mbtiles;
-    private final CrsTransformerFactory crsTransformerFactory;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
     private final FeaturesCoreProviders providers;
     private final SchemaInfo schemaInfo;
     private final ExtensionRegistry extensionRegistry;
+    private final EntityRegistry entityRegistry;
     private final TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator;
 
     /**
      * set data directory
      */
     public TileCacheImpl(@Context BundleContext bundleContext,
-                         @Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                         @Requires SchemaGeneratorGeoJson schemaGeneratorFeature,
                          @Requires FeaturesCoreProviders providers,
                          @Requires SchemaInfo schemaInfo,
                          @Requires ExtensionRegistry extensionRegistry,
+                         @Requires EntityRegistry entityRegistry,
                          @Requires TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.cacheStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
                                .resolve(TILES_DIR_NAME);
-        this.crsTransformerFactory = crsTransformerFactory;
         this.limitsGenerator = limitsGenerator;
-        this.schemaGeneratorFeature = schemaGeneratorFeature;
         this.providers = providers;
         this.schemaInfo = schemaInfo;
         this.extensionRegistry = extensionRegistry;
+        this.entityRegistry = entityRegistry;
         this.tileMatrixSetLimitsGenerator = tileMatrixSetLimitsGenerator;
         Files.createDirectories(cacheStore);
 
@@ -126,7 +121,7 @@ public class TileCacheImpl implements TileCache {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
         if (config.isPresent()
                 && config.get().isEnabled()
-                && config.get().getMultiCollectionEnabledDerived()
+                && config.get().isMultiCollectionEnabled()
                 && config.get().getTileProvider() instanceof TileProviderFeatures) {
             TilesConfiguration.TileCacheType cacheType = config.get().getCache();
             Set<String> tileMatrixSetIds = config.get().getZoomLevelsDerived().keySet();
@@ -419,7 +414,8 @@ public class TileCacheImpl implements TileCache {
                                                                    ImmutableList.of(),
                                                                    Optional.empty(),
                                                                    limitsGenerator,
-                                                                   schemaGeneratorFeature);
+                                                                   providers,
+                                                                   entityRegistry);
 
                 // convert to Mbtiles metadata
                 // TODO support attribution, type, version

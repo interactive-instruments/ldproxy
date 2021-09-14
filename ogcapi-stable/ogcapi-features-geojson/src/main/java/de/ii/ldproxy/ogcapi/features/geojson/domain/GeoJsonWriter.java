@@ -12,6 +12,6 @@ import de.ii.ldproxy.ogcapi.features.geojson.app.FeatureWriterGeoJson;
 /**
  * @author zahnen
  */
-public interface GeoJsonWriter extends FeatureWriterGeoJson<FeatureTransformationContextGeoJson> {
+public interface GeoJsonWriter extends FeatureWriterGeoJson<EncodingAwareContextGeoJson> {
     GeoJsonWriter create();
 }

@@ -127,7 +127,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
-                      .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                      .filter(TilesConfiguration::isMultiCollectionEnabled)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
             return providers.getFeatureProvider(apiData).supportsHighLoad();
@@ -278,7 +278,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                         .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
                         .filter(collection -> {
                             Optional<TilesConfiguration> layerConfiguration = collection.getExtension(TilesConfiguration.class);
-                            if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().getMultiCollectionEnabledDerived())
+                            if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().isMultiCollectionEnabled())
                                 return false;
                             MinMax levels = layerConfiguration.get().getZoomLevelsDerived().get(tileMatrixSetId);
                             return !Objects.nonNull(levels) || (levels.getMax() >= level && levels.getMin() <= level);

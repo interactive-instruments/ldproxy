@@ -8,23 +8,14 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
-import de.ii.ldproxy.ogcapi.domain.OgcApi
-import de.ii.ldproxy.ogcapi.domain.URICustomizer
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ModifiableStateGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureEncoderGeoJson
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import spock.lang.Shared
 import spock.lang.Specification
 
-import javax.ws.rs.core.Request
 import java.nio.charset.StandardCharsets
 
 class GeoJsonWriterCrsSpec extends Specification {
@@ -99,89 +90,20 @@ class GeoJsonWriterCrsSpec extends Specification {
 
     private void runTransformer(ByteArrayOutputStream outputStream, boolean isCollection, EpsgCrs crs) throws IOException, URISyntaxException {
         outputStream.reset()
-        FeatureTransformationContextGeoJson transformationContext = createTransformationContext(outputStream, isCollection, crs)
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterCrs()))
-
-        transformationContext.getJson()
-                .writeStartObject()
-        transformer.onStart(OptionalLong.empty(), OptionalLong.empty())
-        transformer.onFeatureStart(null)
-        transformationContext.getJson()
-                .writeEndObject()
-        transformer.onEnd()
-    }
-
-    private FeatureTransformationContextGeoJson createTransformationContext(OutputStream outputStream, boolean isCollection, EpsgCrs crs) throws URISyntaxException {
         CrsTransformer crsTransformer = null
         if (Objects.nonNull(crs)) {
             crsTransformer = Mock()
             crsTransformer.getTargetCrs() >> crs
         }
+        EncodingAwareContextGeoJson context = GeoJsonWriterSetupUtil.createTransformationContext(outputStream, isCollection, crsTransformer)
+        FeatureEncoderGeoJson encoder = new FeatureEncoderGeoJson(context.encoding(), ImmutableList.of(new GeoJsonWriterCrs()));
 
-        return ImmutableFeatureTransformationContextGeoJson.builder()
-                .crsTransformer(Optional.ofNullable(crsTransformer))
-                .defaultCrs(OgcCrs.CRS84)
-                .apiData(new ImmutableOgcApiDataV2.Builder()
-                        .id("s")
-                        .serviceType("OGC_API")
-                        .build())
-                .collectionId("xyz")
-                .outputStream(outputStream)
-                .links(ImmutableList.of())
-                .isFeatureCollection(isCollection)
-                .ogcApiRequest(new ApiRequestContext() {
-                    @Override
-                    ApiMediaType getMediaType() {
-                        return null
-                    }
-
-                    @Override
-                    List<ApiMediaType> getAlternateMediaTypes() {
-                        return null
-                    }
-
-                    @Override
-                    Optional<Locale> getLanguage() {
-                        return Optional.empty()
-                    }
-
-                    @Override
-                    OgcApi getApi() {
-                        return null
-                    }
-
-                    @Override
-                    URICustomizer getUriCustomizer() {
-                        return new URICustomizer()
-                    }
-
-                    @Override
-                    String getStaticUrlPrefix() {
-                        return null
-                    }
-
-                    @Override
-                    Map<String, String> getParameters() {
-                        return null
-                    }
-
-                    @Override
-                    Optional<Request> getRequest() {
-                        return null
-                    }
-                })
-                .limit(10)
-                .offset(20)
-                .maxAllowableOffset(0)
-                .isHitsOnly(false)
-                .state(ModifiableStateGeoJson.create())
-                .geoJsonConfig(new ImmutableGeoJsonConfiguration.Builder()
-                        .enabled(true)
-                        .nestedObjectStrategy(FeatureTransformerGeoJson.NESTED_OBJECTS.NEST)
-                        .multiplicityStrategy(FeatureTransformerGeoJson.MULTIPLICITY.ARRAY)
-                        .useFormattedJsonOutput(true)
-                        .build())
-                .build()
-
+        context.encoding().getJson()
+                .writeStartObject()
+        encoder.onStart(context)
+        encoder.onFeatureStart(context)
+        context.encoding().getJson()
+                .writeEndObject()
+        encoder.onEnd(context)
     }
 }

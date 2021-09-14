@@ -7,22 +7,22 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
-
-import java.io.ByteArrayOutputStream;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-
-import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 public interface TileFormatExtension extends FormatExtension {
 
@@ -30,7 +30,7 @@ public interface TileFormatExtension extends FormatExtension {
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::getEnabled)
-                      .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                      .filter(TilesConfiguration::isMultiCollectionEnabled)
                       .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                       .isPresent();
     }
@@ -41,7 +41,7 @@ public interface TileFormatExtension extends FormatExtension {
                       .get(collectionId)
                       .getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::getEnabled)
-                      .filter(TilesConfiguration::getSingleCollectionEnabledDerived)
+                      .filter(TilesConfiguration::isSingleCollectionEnabled)
                       .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                       .isPresent();
     }
@@ -55,7 +55,30 @@ public interface TileFormatExtension extends FormatExtension {
 
     default boolean canTransformFeatures() { return false; }
 
-    Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContextTiles transformationContext, Optional<Locale> language);
+    default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+        FeatureTransformationContextTiles transformationContext) {
+        return Optional.empty();
+    }
+
+    default Optional<PropertyTransformations> getPropertyTransformations(
+        FeatureTypeConfigurationOgcApi collectionData) {
+
+        Optional<PropertyTransformations> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
+            .map(featuresCoreConfiguration -> ((PropertyTransformations)featuresCoreConfiguration));
+
+        Optional<PropertyTransformations> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
+            .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
+            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration));
+
+
+        return formatTransformations.map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
+            .or(() -> coreTransformations);
+    }
+
+    default Optional<PropertyTransformations> getPropertyTransformations(
+        FeatureTypeConfigurationOgcApi collectionData, Map<String, String> substitutions) {
+        return getPropertyTransformations(collectionData).map(propertyTransformations -> propertyTransformations.withSubstitutions(substitutions));
+    }
 
     String getExtension();
 
@@ -72,7 +95,7 @@ public interface TileFormatExtension extends FormatExtension {
         public boolean isComplete;
     }
 
-    MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException;
+    MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, byte[]> singleLayerByteArrayMap) throws IOException;
 
     double getMaxAllowableOffsetNative(Tile tile);
     double getMaxAllowableOffsetCrs84(Tile tile);

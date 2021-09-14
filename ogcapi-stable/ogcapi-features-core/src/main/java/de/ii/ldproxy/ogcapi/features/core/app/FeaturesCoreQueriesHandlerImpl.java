@@ -35,9 +35,15 @@ import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSourceStream;
-import de.ii.xtraplatform.features.domain.FeatureStream2;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureStream;
+import de.ii.xtraplatform.features.domain.FeatureStream.Result;
+import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
+import de.ii.xtraplatform.streams.domain.Reactive.Sink;
+import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -233,13 +239,21 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             streamingOutput = stream2(featureStream, !isCollection, outputStream -> outputFormat.getFeatureConsumer(transformationContext.outputStream(outputStream)
                                                                                                                                          .build())
                                                                                                 .get());
-        } else if (outputFormat.canTransformFeatures()) {
-            FeatureStream2 featureStream = featureProvider.queries()
-                                                          .getFeatureStream2(query);
+        } else if (outputFormat.canEncodeFeatures()) {
+            FeatureStream featureStream = featureProvider.queries()
+                                                          .getFeatureStream(query);
 
-            streamingOutput = stream(featureStream, !isCollection, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream)
-                                                                                                                                           .build(), requestContext.getLanguage())
-                                                                                               .get());
+            ImmutableFeatureTransformationContextGeneric transformationContextGeneric = transformationContext
+                .outputStream(new OutputStreamToByteConsumer())
+                .build();
+            FeatureTokenEncoder<?> encoder = outputFormat
+                .getFeatureEncoder(transformationContextGeneric, requestContext.getLanguage()).get();
+
+            Optional<PropertyTransformations> propertyTransformations = outputFormat
+                .getPropertyTransformations(api.getData().getCollections().get(collectionId))
+                .map(pt -> pt.withSubstitutions(ImmutableMap.of("serviceUrl", transformationContextGeneric.getServiceUrl())));
+
+            streamingOutput = stream(featureStream, !isCollection, encoder, propertyTransformations);
         } else {
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
@@ -265,20 +279,23 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .build();
     }
 
-    private StreamingOutput stream(FeatureStream2 featureTransformStream, boolean failIfEmpty,
-                                   final Function<OutputStream, FeatureTransformer2> featureTransformer) {
+    private StreamingOutput stream(FeatureStream featureTransformStream, boolean failIfEmpty,
+        final FeatureTokenEncoder<?> encoder,
+        Optional<PropertyTransformations> propertyTransformations) {
         Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class, "stream"))
-                                            .time();
+            .time();
 
         return outputStream -> {
+            SinkTransformed<Object, byte[]> featureSink = encoder.to(Sink.outputStream(outputStream));
+
             try {
-                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                                                     .toCompletableFuture()
-                                                                     .join();
+                Result result = featureTransformStream.runWith(featureSink, propertyTransformations)
+                    .toCompletableFuture()
+                    .join();
                 timer.stop();
 
                 if (result.getError()
-                          .isPresent()) {
+                    .isPresent()) {
                     processStreamError(result.getError().get());
                     // the connection has been lost, typically the client has cancelled the request, log on debug level
                     LOGGER.debug("Request cancelled due to lost connection.");
@@ -301,7 +318,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                                     final Function<OutputStream, FeatureConsumer> featureTransformer) {
         return outputStream -> {
             try {
-                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
+                ResultOld result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
                                                                      .toCompletableFuture()
                                                                      .join();
                 if (result.getError()
