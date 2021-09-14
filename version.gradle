@@ -2,4 +2,4 @@ ext {
     versionSuffix = (project.hasProperty('branch') && project.getProperty('branch') != 'master' ? ('-' + project.getProperty('branch')) : '') + (project.findProperty('snapshot') == 'true' ? '-SNAPSHOT' : '')
 }
 
-version = '3.0.0' + versionSuffix
+version = '3.1.0' + versionSuffix
