@@ -186,7 +186,6 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
     if (transformationContext.isSchemaOrgEnabled()) {
       feature.itemType("http://schema.org/Place");
-      feature.getId().ifPresent(id -> id.itemProp("url"));
     }
 
     transformationContext.collectionView().features.add(feature);
