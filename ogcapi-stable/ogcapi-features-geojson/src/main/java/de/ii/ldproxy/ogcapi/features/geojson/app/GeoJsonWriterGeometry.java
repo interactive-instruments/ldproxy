@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.features.geojson.app;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -48,7 +47,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     public void onObjectStart(EncodingAwareContextGeoJson context,
         Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (context.schema()
-            .filter(SchemaBase::isGeometry)
+            .filter(SchemaBase::isSpatial)
             .isPresent()
             && context.geometryType().isPresent()) {
             if (context.schema().get().isPrimaryGeometry()) {
@@ -107,7 +106,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     public void onObjectEnd(EncodingAwareContextGeoJson context,
         Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (context.schema()
-            .filter(SchemaBase::isGeometry)
+            .filter(SchemaBase::isSpatial)
             .isPresent()
             && geometryOpen) {
 

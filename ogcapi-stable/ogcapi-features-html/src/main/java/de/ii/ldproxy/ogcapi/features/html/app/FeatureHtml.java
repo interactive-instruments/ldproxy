@@ -61,20 +61,20 @@ public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
   @Value.Lazy
   default boolean hasObjects() {
     return getProperties().stream().anyMatch(property -> !property.isValue() && property.getSchema().filter(
-        SchemaBase::isGeometry).isEmpty());
+        SchemaBase::isSpatial).isEmpty());
   }
 
   @Value.Lazy
   default boolean hasGeometry() {
     return getProperties().stream().anyMatch(property -> property.getSchema().filter(
-        SchemaBase::isGeometry).isPresent())
+        SchemaBase::isSpatial).isPresent())
         || getProperties().stream().anyMatch(PropertyHtml::hasGeometry);
   }
 
   @Value.Lazy
   default Optional<PropertyHtml> getGeometry() {
     return getProperties().stream()
-        .filter(property -> property.getSchema().filter(SchemaBase::isGeometry).isPresent())
+        .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isPresent())
         .findFirst()
         .or(() -> getProperties().stream()
             .map(property -> property.getGeometry())
@@ -158,7 +158,7 @@ public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
         .filter(property -> Objects.equals(property.getPropertyPath(), path))
         .findFirst()
         .or(() -> getProperties().stream()
-            .filter(property -> property.getSchema().filter(SchemaBase::isGeometry).isEmpty())
+            .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
             .map(property -> property.findPropertyByPath(path))
             .filter(Optional::isPresent)
             .map(Optional::get)
