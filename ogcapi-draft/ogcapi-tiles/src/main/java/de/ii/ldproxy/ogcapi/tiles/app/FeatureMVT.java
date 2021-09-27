@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import de.ii.xtraplatform.features.domain.FeatureBase;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -15,7 +14,6 @@ import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -86,7 +84,7 @@ public interface FeatureMVT extends FeatureBase<PropertyMVT, FeatureSchema> {
   default Optional<PropertyMVT> getGeometry() {
     return getProperties().stream()
         .filter(property -> property.getSchema()
-            .filter(SchemaBase::isGeometry)
+            .filter(SchemaBase::isSpatial)
             .isPresent())
         .findFirst();
   }
