@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -15,9 +16,14 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -32,6 +38,8 @@ import java.util.concurrent.ConcurrentMap;
 @Provides
 @Instantiate
 public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
+
+    private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
 
     private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaCache = new ConcurrentHashMap<>();
     private final FeaturesCoreProviders providers;
@@ -91,12 +99,21 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
     @Override
     public Optional<Schema<?>> getQueryable(FeatureSchema featureSchema,
         FeatureTypeConfigurationOgcApi collectionData, String propertyName) {
-        SchemaDeriverOpenApi schemaDeriverQueryables = new SchemaDeriverOpenApiQueryables(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class), ImmutableList.of(propertyName));
+        WithTransformationsApplied schemaFlattener = new WithTransformationsApplied(
+            ImmutableMap.of(PropertyTransformations.WILDCARD, new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
-        Schema<?> schema = featureSchema.accept(schemaDeriverQueryables);
+        String flatteningSeparator = schemaFlattener.getFlatteningSeparator(featureSchema).orElse(DEFAULT_FLATTENING_SEPARATOR);
 
-        if (schema.getProperties().containsKey(propertyName)) {
-            return Optional.ofNullable((Schema<?>) schema.getProperties().get(propertyName));
+        String queryableWithSeparator = Objects.equals(flatteningSeparator, DEFAULT_FLATTENING_SEPARATOR)
+            ? propertyName
+            : propertyName.replaceAll(Pattern.quote(DEFAULT_FLATTENING_SEPARATOR), flatteningSeparator);
+
+        SchemaDeriverOpenApi schemaDeriverQueryables = new SchemaDeriverOpenApiQueryables(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class), ImmutableList.of(queryableWithSeparator));
+
+        Schema<?> schema = featureSchema.accept(schemaFlattener).accept(schemaDeriverQueryables);
+
+        if (schema.getProperties().containsKey(queryableWithSeparator)) {
+            return Optional.ofNullable((Schema<?>) schema.getProperties().get(queryableWithSeparator));
         }
 
         return Optional.empty();
