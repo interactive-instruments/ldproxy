@@ -32,10 +32,8 @@ public class CapabilityHtml implements ApiBuildingBlock {
                                                        .legalUrl("")
                                                        .privacyName("Privacy notice")
                                                        .privacyUrl("")
-                                                       .leafletUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-                                                       .leafletAttribution("&copy; <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors")
-                                                       .openLayersUrl("https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-                                                       .openLayersAttribution("&copy; <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors")
+                                                       .mapBackgroundUrl("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+                                                       .mapAttribution("&copy; <a href=\"http://osm.org/copyright\">OpenStreetMap</a> contributors")
                                                        .footerText("")
                                                        .build();
     }

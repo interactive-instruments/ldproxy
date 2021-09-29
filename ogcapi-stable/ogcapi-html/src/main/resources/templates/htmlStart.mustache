@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{{#noIndex}}
+<meta name="robots" content="noindex" />
+{{/noIndex}}
+{{#googleSiteVerification}}
+<meta name="google-site-verification" content="{{.}}" />
+{{/googleSiteVerification}}
+<title>{{title}}</title>
+<meta name="description" content="{{description}}">
+{{#keywords}}
+<meta name="keywords" content="{{.}}">
+{{/keywords}}
+
+{{#canonicalUrl}}<link rel="canonical" href="{{.}}"/>{{/canonicalUrl}}
+{{#metaPagination}}{{#url}}<link rel="{{label}}" href="{{path}}{{#queryWithout}}limit,offset{{/queryWithout}}{{.}}"/>{{/url}}{{/metaPagination}}
+
+{{> style-common}}
+
+{{> schemaOrg}}
+
+</head>

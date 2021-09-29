@@ -81,20 +81,4 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
                        .build();
     }
 
-    @Override
-    public Response getStaticAsset(String path) {
-
-            final URL url = path.endsWith("favicon.ico") ? bundleContext.getBundle()
-                                                                        .getResource("img/favicon.ico") : bundleContext.getBundle()
-                                                                                                                       .getResource(path);
-
-            MediaType mediaType = path.endsWith(".css") ? new MediaType("text", "css", "utf-8") : path.endsWith(".js") ? new MediaType("application", "javascript", "utf-8") : new MediaType("image", "x-icon");
-
-            return Response.ok((StreamingOutput) output -> Resources.asByteSource(url)
-                                                                    .copyTo(output))
-                           .type(mediaType)
-                           .build();
-
-    }
-
 }

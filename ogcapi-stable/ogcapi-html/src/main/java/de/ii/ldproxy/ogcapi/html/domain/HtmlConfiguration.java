@@ -45,14 +45,24 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getPrivacyUrl();
 
     @Nullable
+    String getMapBackgroundUrl();
+
+    @Nullable
+    String getMapAttribution();
+
+    @Deprecated(since = "3.1.0")
+    @Nullable
     String getLeafletUrl();
 
+    @Deprecated(since = "3.1.0")
     @Nullable
     String getLeafletAttribution();
 
+    @Deprecated(since = "3.1.0")
     @Nullable
     String getOpenLayersUrl();
 
+    @Deprecated(since = "3.1.0")
     @Nullable
     String getOpenLayersAttribution();
 

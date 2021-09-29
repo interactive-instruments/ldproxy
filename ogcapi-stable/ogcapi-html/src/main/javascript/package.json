@@ -1,0 +1,51 @@
+{
+  "name": "@ogcapi/html",
+  "version": "1.0.0",
+  "author": "interactive instruments GmbH",
+  "license": "MPL-2.0",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "webpack-dev-server --mode development",
+    "build": "webpack --mode production",
+    "test": "mocha",
+    "lint": "eslint --cache --format codeframe --ext mjs,jsx,js src test",
+    "storybook": "start-storybook -p 6006 --docs --ci",
+    "build-storybook": "build-storybook --docs"
+  },
+  "dependencies": {
+    "@mapbox/geojson-extent": "^1.0.1",
+    "bootstrap": "^4.6.0",
+    "maplibre-gl": "^1.15.2",
+    "prop-types": "^15.7.2",
+    "react": "^16",
+    "react-dom": "^16",
+    "react-maplibre-ui": "^2.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7",
+    "@mdx-js/react": "^1.6.22",
+    "@neutrinojs/airbnb": "^9.3.0",
+    "@neutrinojs/mocha": "^9.3.0",
+    "@neutrinojs/react": "^9.3.0",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
+    "@storybook/addon-docs": "^6.3.8",
+    "@storybook/addon-essentials": "^6.3.8",
+    "@storybook/addon-links": "^6.3.8",
+    "@storybook/react": "^6.3.8",
+    "@xtraplatform/neutrino": "^2.0.0",
+    "eslint": "^7",
+    "eslint-plugin-babel": "*",
+    "mocha": "^8",
+    "neutrino": "^9.3.0",
+    "pnp-webpack-plugin": "^1.6.4",
+    "react-refresh": "^0.9.0",
+    "webpack": "^4",
+    "webpack-cli": "^3",
+    "webpack-dev-server": "^3"
+  },
+  "resolutions": {
+    "react-maplibre-ui/maplibre-gl": "1.15.2",
+    "react-maplibre-ui": "patch:react-maplibre-ui@npm:2.0.0#.yarn/patches/react-maplibre-ui-npm-2.0.0-641e2a759e"
+  }
+}
