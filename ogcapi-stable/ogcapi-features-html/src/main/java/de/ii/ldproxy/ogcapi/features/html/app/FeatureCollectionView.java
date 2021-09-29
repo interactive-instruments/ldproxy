@@ -14,6 +14,11 @@ import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ldproxy.ogcapi.html.domain.DatasetView;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableSource;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.features.domain.Feature;
 import org.apache.http.NameValuePair;
@@ -59,6 +64,7 @@ public class FeatureCollectionView extends DatasetView {
     public boolean spatialSearch;
     public boolean schemaOrgFeatures;
     public FeaturesHtmlConfiguration.POSITION mapPosition;
+    public MapClient mapClient;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
                                  String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
@@ -70,6 +76,20 @@ public class FeatureCollectionView extends DatasetView {
         this.persistentUri = persistentUri;
         this.schemaOrgFeatures = Objects.nonNull(htmlConfig) && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
         this.mapPosition = mapPosition;
+
+        this.uriBuilder = new URICustomizer(uri);
+        this.mapClient = new ImmutableMapClient.Builder()
+            .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
+            .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
+                .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+            //TODO .bounds(bbox)
+            .data(new ImmutableSource.Builder()
+                .type(TYPE.geojson)
+                .url(uriBuilder.removeParameters("f").ensureParameter("f", "json").toString())
+                .build())
+            .popup(Popup.HOVER_ID)
+            .build();
     }
 
     @Override
