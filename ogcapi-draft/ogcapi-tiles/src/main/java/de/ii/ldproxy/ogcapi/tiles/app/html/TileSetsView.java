@@ -199,6 +199,9 @@ public class TileSetsView extends OgcApiView {
               .map(layer -> new SimpleImmutableEntry<>(layer.getId(), layer.getGeometryType().get().name()))
               .collect(ImmutableSetMultimap.toImmutableSetMultimap(Map.Entry::getKey, Map.Entry::getValue));
 
+          //TODO: set styleUrl if appropriate (the style is automatically adjusted in JS to use the given data)
+          Optional<String> styleUrl = Optional.empty();
+
           this.mapClient = new ImmutableMapClient.Builder()
               .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
@@ -211,6 +214,7 @@ public class TileSetsView extends OgcApiView {
                 .build())
               .bounds(bbox)
               .popup(Popup.CLICK_PROPERTIES)
+              .styleUrl(styleUrl)
               .build();
         } else if (tiles.getTilesets().size() > 1) {
           //TODO: OpenLayers

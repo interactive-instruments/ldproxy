@@ -76,8 +76,11 @@ public class FeatureCollectionView extends DatasetView {
         this.persistentUri = persistentUri;
         this.schemaOrgFeatures = Objects.nonNull(htmlConfig) && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
         this.mapPosition = mapPosition;
-
         this.uriBuilder = new URICustomizer(uri);
+
+        //TODO: set styleUrl if appropriate (the style is automatically adjusted in JS to use the given data)
+        Optional<String> styleUrl = Optional.empty();
+
         this.mapClient = new ImmutableMapClient.Builder()
             .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
                 .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
@@ -89,6 +92,7 @@ public class FeatureCollectionView extends DatasetView {
                 .url(uriBuilder.removeParameters("f").ensureParameter("f", "json").toString())
                 .build())
             .popup(Popup.HOVER_ID)
+            .styleUrl(styleUrl)
             .build();
     }
 
