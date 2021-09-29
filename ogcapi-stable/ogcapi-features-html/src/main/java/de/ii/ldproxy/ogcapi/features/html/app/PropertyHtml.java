@@ -68,7 +68,7 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
   @Value.Lazy
   default List<PropertyHtml> getObjects() {
     return getNestedProperties().stream().filter(property -> !property.isValue() && property.getSchema().filter(
-        SchemaBase::isGeometry).isEmpty()).collect(Collectors.toList());
+        SchemaBase::isSpatial).isEmpty()).collect(Collectors.toList());
   }
 
   @Value.Lazy
@@ -86,7 +86,7 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
   @Override
   default boolean isObject() {
     return PropertyBase.super.isObject() && getSchema().filter(
-        SchemaBase::isGeometry).isEmpty();
+        SchemaBase::isSpatial).isEmpty();
   }
 
   @Value.Lazy
@@ -143,14 +143,14 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
   @Value.Lazy
   default boolean hasGeometry() {
     return getNestedProperties().stream().anyMatch(property -> property.getSchema().filter(
-        SchemaBase::isGeometry).isPresent())
+        SchemaBase::isSpatial).isPresent())
         || getNestedProperties().stream().anyMatch(PropertyHtml::hasGeometry);
   }
 
   @Value.Lazy
   default Optional<PropertyHtml> getGeometry() {
     return getNestedProperties().stream()
-        .filter(property -> property.getSchema().filter(SchemaBase::isGeometry).isPresent())
+        .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isPresent())
         .findFirst()
         .or(() -> getNestedProperties().stream()
             .map(PropertyHtml::getGeometry)
@@ -175,7 +175,7 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
         .filter(property -> Objects.equals(property.getPropertyPath(), path))
         .findFirst()
         .or(() -> getNestedProperties().stream()
-            .filter(property -> property.getSchema().filter(SchemaBase::isGeometry).isEmpty())
+            .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
             .map(property -> property.findPropertyByPath(path))
             .filter(Optional::isPresent)
             .map(Optional::get)
