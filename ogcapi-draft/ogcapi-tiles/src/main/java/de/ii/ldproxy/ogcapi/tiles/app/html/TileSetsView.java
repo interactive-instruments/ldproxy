@@ -10,20 +10,32 @@ package de.ii.ldproxy.ogcapi.tiles.app.html;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Multimap;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableSource;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
+import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.WebMercatorQuad;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -48,6 +60,8 @@ public class TileSetsView extends OgcApiView {
     public boolean spatialSearch;
     public Map<String, String> bbox;
     public Map<String, String> temporalExtent;
+    public final MapClient mapClient;
+    public final String xyzTemplate;
 
     public TileSetsView(OgcApiDataV2 apiData,
                         TileSets tiles,
@@ -176,5 +190,33 @@ public class TileSetsView extends OgcApiView {
             this.temporalExtent = ImmutableMap.of(
                     "start", interval[0].toString(),
                     "end", interval[1].toString());
+
+        this.xyzTemplate = tilesUrl.replace("{tileMatrixSetId}","WebMercatorQuad").replace("{tileMatrix}","{z}").replace("{tileRow}","{y}").replace("{tileCol}","{x}");
+
+        if (tiles.getTilesets().size() == 1 && Objects.equals(tiles.getTilesets().get(0).getTileMatrixSetId(), WebMercatorQuad.ID)) {
+          Multimap<String, String> layers = tiles.getTilesets().get(0).getLayers().stream()
+              .filter(layer -> layer.getDataType() == DataType.vector && layer.getGeometryType().isPresent())
+              .map(layer -> new SimpleImmutableEntry<>(layer.getId(), layer.getGeometryType().get().name()))
+              .collect(ImmutableSetMultimap.toImmutableSetMultimap(Map.Entry::getKey, Map.Entry::getValue));
+
+          this.mapClient = new ImmutableMapClient.Builder()
+              .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                  .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
+              .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
+                  .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+              .data(new ImmutableSource.Builder()
+                .type(TYPE.vector)
+                .url(xyzTemplate)
+                .putAllLayers(layers)
+                .build())
+              .bounds(bbox)
+              .popup(Popup.CLICK_PROPERTIES)
+              .build();
+        } else if (tiles.getTilesets().size() > 1) {
+          //TODO: OpenLayers
+          this.mapClient = null;
+        } else {
+          this.mapClient = null;
+        }
     }
 }
