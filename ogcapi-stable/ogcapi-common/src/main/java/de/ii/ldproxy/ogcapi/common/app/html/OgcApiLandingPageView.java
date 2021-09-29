@@ -19,6 +19,9 @@ import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableStyle;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 
 import java.util.List;
@@ -51,6 +54,7 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
     public String attributionTitle;
     public String none;
     public boolean isDataset;
+    public MapClient mapClient;
 
     public OgcApiLandingPageView(OgcApiDataV2 apiData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
@@ -62,7 +66,8 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
                 apiLandingPage.getDescription()
                               .orElse(null),
                 uriCustomizer,
-                apiLandingPage.getExtent());
+                apiLandingPage.getExtent(),
+                language);
         this.apiLandingPage = apiLandingPage;
 
         this.spatialSearch = false;
@@ -92,6 +97,16 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
         this.externalDocsTitle = i18n.get ("externalDocsTitle", language);
         this.attributionTitle = i18n.get ("attributionTitle", language);
         this.none = i18n.get ("none", language);
+        this.mapClient = new ImmutableMapClient.Builder()
+            .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
+            .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
+                .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+            .bounds(Optional.ofNullable(this.getBbox()))
+            .drawBounds(true)
+            .isInteractive(false)
+            .defaultStyle(new ImmutableStyle.Builder().color("red").build())
+            .build();
     }
 
     public List<Link> getDistributionLinks() {
