@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ldproxy.ogcapi.html.domain.DatasetView;
@@ -68,7 +69,8 @@ public class FeatureCollectionView extends DatasetView {
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
                                  String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
-                                 I18n i18n, Locale language, FeaturesHtmlConfiguration.POSITION mapPosition) {
+                                 I18n i18n, Locale language, FeaturesHtmlConfiguration.POSITION mapPosition,
+                                 MapClient.Type mapClientType, String styleUrl) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
@@ -78,22 +80,27 @@ public class FeatureCollectionView extends DatasetView {
         this.mapPosition = mapPosition;
         this.uriBuilder = new URICustomizer(uri);
 
-        //TODO: set styleUrl if appropriate (the style is automatically adjusted in JS to use the given data)
-        Optional<String> styleUrl = Optional.empty();
-
-        this.mapClient = new ImmutableMapClient.Builder()
-            .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
-                .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
-            .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
-            //TODO .bounds(bbox)
-            .data(new ImmutableSource.Builder()
-                .type(TYPE.geojson)
-                .url(uriBuilder.removeParameters("f").ensureParameter("f", "json").toString())
-                .build())
-            .popup(Popup.HOVER_ID)
-            .styleUrl(styleUrl)
-            .build();
+        if (mapClientType.equals(MapClient.Type.MAP_LIBRE)) {
+            this.mapClient = new ImmutableMapClient.Builder()
+                    .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                                           .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
+                    .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
+                                         .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+                    //TODO .bounds(bbox)
+                    .data(new ImmutableSource.Builder()
+                                  .type(TYPE.geojson)
+                                  .url(uriBuilder.removeParameters("f").ensureParameter("f", "json").toString())
+                                  .build())
+                    .popup(Popup.HOVER_ID)
+                    .styleUrl(Optional.ofNullable(styleUrl))
+                    .build();
+        } else if (mapClientType.equals(MapClient.Type.CESIUM)) {
+            //TODO: Cesium
+            this.mapClient = null;
+        } else {
+            LOGGER.error("Configuration error: {} is not a supported map client for the HTML representation of features.", mapClientType);
+            this.mapClient = null;
+        }
     }
 
     @Override

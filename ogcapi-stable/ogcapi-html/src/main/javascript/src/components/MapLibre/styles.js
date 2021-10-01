@@ -80,7 +80,7 @@ const polygonLayers = (color, opacity, fillOpacity, outlineWidth) => [
         },
     },
     {
-        id: 'polgygons-outline',
+        id: 'polygons-outline',
         type: 'line',
         source: 'data',
         layout: {
@@ -98,7 +98,7 @@ const polygonLayers = (color, opacity, fillOpacity, outlineWidth) => [
 const withFilter = (layers, geometryType) =>
     layers.map((layer) => ({
         ...layer,
-        filter: ['match', ['geometry-type'], [geometryType], true, false],
+        filter: ['==', '$type', geometryType],
     }));
 
 export const geoJsonLayers = ({
@@ -132,12 +132,13 @@ export const geoJsonLayers = ({
     });
 };
 
-const withSource = (layers, source) =>
+const withSourceAndFilter = (layers, source, geometryType) =>
     layers.map((layer) => ({
         ...layer,
         id: `${source}_${layer.id}`,
         'source-layer': source,
-    }));
+        filter: ['==', '$type', geometryType],
+   }));
 
 export const vectorLayers = (
     source,
@@ -147,19 +148,22 @@ export const vectorLayers = (
     geometryTypes.flatMap((geometryType) => {
         switch (geometryType) {
             case 'points':
-                return withSource(
+                return withSourceAndFilter(
                     circleLayers(color, opacity, circleRadius),
-                    source
+                    source,
+                    'Point'
                 );
             case 'lines':
-                return withSource(
+                return withSourceAndFilter(
                     lineLayers(color, opacity, lineWidth),
-                    source
+                    source,
+                    'LineString'
                 );
             case 'polygons':
-                return withSource(
+                return withSourceAndFilter(
                     polygonLayers(color, opacity, fillOpacity, outlineWidth),
-                    source
+                    source,
+                    'Polygon'
                 );
             default:
                 return [];

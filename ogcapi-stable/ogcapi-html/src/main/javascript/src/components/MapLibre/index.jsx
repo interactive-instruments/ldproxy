@@ -93,8 +93,8 @@ MapLibre.defaultProps = {
     backgroundUrl: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-    center: [10.45, 51.16],
-    zoom: 5,
+    center: [0, 0],
+    zoom: 0,
     bounds: null,
     interactive: true,
     hash: false,

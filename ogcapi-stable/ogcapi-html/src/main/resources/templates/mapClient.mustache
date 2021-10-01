@@ -3,7 +3,9 @@
   globalThis._map = {
       container: 'map',
       interactive: {{interactive}},
-      //hash: {{hash}},
+    {{#hash}}
+      hash: {{.}},
+    {{/hash}}
     {{#styleUrl}}
       styleUrl: '{{{.}}}',
     {{/styleUrl}}

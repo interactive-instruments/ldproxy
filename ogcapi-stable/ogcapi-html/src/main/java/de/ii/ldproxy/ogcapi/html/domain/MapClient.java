@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.html.domain;
 
 import com.google.common.collect.Multimap;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -33,12 +35,13 @@ public interface MapClient {
 
   Optional<String> getAttribution();
 
+  @Value.Default
+  default boolean getHash()  { return false; }
+
   Optional<Map<String, String>> getBounds();
 
   @Value.Default
-  default boolean drawBounds() {
-    return false;
-  }
+  default boolean drawBounds() { return false; }
 
   @Value.Default
   default boolean isInteractive() {
@@ -65,7 +68,7 @@ public interface MapClient {
 
     String getUrl();
 
-    Multimap<String, String> getLayers();
+    Multimap<String, List<String>> getLayers();
   }
 
   @Value.Immutable

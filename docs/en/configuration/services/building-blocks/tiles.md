@@ -51,6 +51,8 @@ Supported tile matrix sets include [WebMercatorQuad](http://docs.opengeospatial.
 |`minimumSizeInPixel`| number |0.5 |Features with line geometries shorter that the given value are excluded from tiles. Features with surface geometries smaller than the square of the given value are excluded from the tiles. The value `0.5` corresponds to half a "pixel" in the used coordinate reference system.
 |`maxRelativeAreaChangeInPolygonRepair` | number |0.1 |Maximum allowed relative change of surface sizes when attempting to fix an invalid surface geometry. The fixed geometry is only used when the condition is met. The value `0.1` means 10%.
 |`maxAbsoluteAreaChangeInPolygonRepair` | number |1.0 |Maximum allowed absolute change of surface sizes when attempting to fix an invalid surface geometry. The fixed geometry is only used when the condition is met. The value `1.0` corresponds to one "pixel" in the used coordinate reference system.
+|`mapClientType` |enum |`MAP_LIBRE` |The map client library to use to display tile sets in the HTML representation. The default is MapLibre GL (`MAP_LIBRE`), which requires that the `WebMercatorQuad` tiling scheme is used in one of the tile sets and it will only display tiles in that tiling scheme. WIP: OpenLayers (`OPEN_LAYERS`) can be used for tile sets in other tiling schemes.
+|`style` |string |`null` |An optional URL template of a Mapbox style to use for the map in the HTML representation of a tile sets resource. The template may contain `{{serviceUrl}}` (substituted with the API landing page URI) and `{{collectionId}}` (substituted with the collection id). If no style is set, a simple default style is used. The value is ignore, if the map client is not MapLibre.
 
 ### Example
 

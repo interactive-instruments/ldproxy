@@ -51,7 +51,7 @@ const setStyleVector = (
         .then((style) => {
             let dataStyle = style;
 
-            if (sourceUrl && sourceLayers) {
+            if (sourceUrl) {
                 const newSources = {};
                 Object.keys(style.sources).forEach((source) => {
                     if (style.sources[source].type === 'vector') {
@@ -74,7 +74,7 @@ const setStyleVector = (
                         (layer) =>
                             layer.type === 'raster' ||
                             (layer['source-layer'] &&
-                                sourceLayers.includes(layer['source-layer']))
+                                (sourceLayers.length === 0 || sourceLayers.includes(layer['source-layer'])))
                     ),
                 };
             }
