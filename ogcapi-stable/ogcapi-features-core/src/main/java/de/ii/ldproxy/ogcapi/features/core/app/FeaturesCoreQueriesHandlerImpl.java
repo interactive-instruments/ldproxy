@@ -223,7 +223,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .limit(query.getLimit())
                 .offset(query.getOffset())
                 .maxAllowableOffset(query.getMaxAllowableOffset())
-                .geometryPrecision(query.getGeometryPrecision())
+                .geometryPrecision(query.getGeometryPrecision().get(0))
                 .shouldSwapCoordinates(swapCoordinates)
                 .isHitsOnlyIfMore(onlyHitsIfMore)
                 .showsFeatureSelfLink(showsFeatureSelfLink);
