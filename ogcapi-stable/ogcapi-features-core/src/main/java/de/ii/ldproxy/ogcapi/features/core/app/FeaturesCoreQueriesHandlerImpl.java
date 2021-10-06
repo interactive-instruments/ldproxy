@@ -276,7 +276,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                                       queryInput.getExpires().orElse(null),
                                       targetCrs,
                                       true,
-                                      String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().parameter()))
+                                      String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().fileExtension()))
                 .entity(streamingOutput)
                 .build();
     }

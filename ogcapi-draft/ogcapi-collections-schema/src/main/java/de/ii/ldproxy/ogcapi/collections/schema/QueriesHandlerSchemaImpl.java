@@ -132,7 +132,7 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("%s.schema.%s", collectionId, outputFormat.getMediaType().parameter()))
+                                      String.format("%s.schema.%s", collectionId, outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getEntity(schema, collectionId, api, requestContext))
                 .build();
     }

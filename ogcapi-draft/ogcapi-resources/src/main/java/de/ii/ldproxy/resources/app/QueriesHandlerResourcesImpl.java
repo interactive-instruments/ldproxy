@@ -144,7 +144,7 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("resources.%s", format.getMediaType().parameter()))
+                                      String.format("resources.%s", format.getMediaType().fileExtension()))
                 .entity(format.getResourcesEntity(resources, apiData, requestContext))
                 .build();
     }

@@ -129,7 +129,7 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("%s.queryables.%s", collectionId, outputFormat.getMediaType().parameter()))
+                                      String.format("%s.queryables.%s", collectionId, outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getEntity(schema, links, collectionId, api, requestContext))
                 .build();
     }

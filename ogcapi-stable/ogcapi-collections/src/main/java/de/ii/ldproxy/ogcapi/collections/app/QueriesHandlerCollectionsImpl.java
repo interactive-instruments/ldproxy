@@ -138,7 +138,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("collections.%s", outputFormatExtension.getMediaType().parameter()))
+                                      String.format("collections.%s", outputFormatExtension.getMediaType().fileExtension()))
                 .entity(outputFormatExtension.getCollectionsEntity(responseObject, requestContext.getApi(), requestContext))
                 .build();
 
@@ -199,7 +199,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("%s.%s", collectionId, outputFormatExtension.getMediaType().parameter()))
+                                      String.format("%s.%s", collectionId, outputFormatExtension.getMediaType().fileExtension()))
                 .entity(outputFormatExtension.getCollectionEntity(responseObject, api, requestContext))
                 .build();
     }

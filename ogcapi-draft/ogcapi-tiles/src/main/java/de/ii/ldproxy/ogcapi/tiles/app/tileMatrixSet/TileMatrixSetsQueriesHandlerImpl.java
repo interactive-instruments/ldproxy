@@ -114,7 +114,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("tileMatrixSets.%s", outputFormat.getMediaType().parameter()))
+                                      String.format("tileMatrixSets.%s", outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getTileMatrixSetsEntity(tileMatrixSets, api, requestContext))
                 .build();
     }
@@ -157,7 +157,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("%s.%s", tileMatrixSetId, outputFormat.getMediaType().parameter()))
+                                      String.format("%s.%s", tileMatrixSetId, outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getTileMatrixSetEntity(tileMatrixSetData, api, requestContext))
                 .build();
     }

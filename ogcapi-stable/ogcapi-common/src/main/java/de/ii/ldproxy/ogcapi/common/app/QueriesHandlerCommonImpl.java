@@ -141,7 +141,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("landing-page.%s", outputFormatExtension.getMediaType().parameter()))
+                                      String.format("landing-page.%s", outputFormatExtension.getMediaType().fileExtension()))
                 .entity(entity)
                 .build();
     }
@@ -199,7 +199,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("conformance-declaration.%s", outputFormatExtension.getMediaType().parameter()))
+                                      String.format("conformance-declaration.%s", outputFormatExtension.getMediaType().fileExtension()))
                 .entity(entity)
                 .build();
     }

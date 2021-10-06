@@ -98,7 +98,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("styles.%s", format.getMediaType().parameter()))
+                                      String.format("styles.%s", format.getMediaType().fileExtension()))
                 .entity(format.getStylesEntity(styles, apiData, collectionId, requestContext))
                 .build();
     }
@@ -170,7 +170,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().parameter()))
+                                      String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().fileExtension()))
                 .entity(format.getStyleMetadataEntity(metadata, apiData, collectionId, requestContext))
                 .build();
     }
