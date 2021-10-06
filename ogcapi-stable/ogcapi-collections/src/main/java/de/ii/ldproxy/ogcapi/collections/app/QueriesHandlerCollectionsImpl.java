@@ -132,11 +132,13 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("collections.%s", outputFormatExtension.getMediaType().parameter()))
                 .entity(outputFormatExtension.getCollectionsEntity(responseObject, requestContext.getApi(), requestContext))
                 .build();
 
@@ -191,11 +193,13 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s.%s", collectionId, outputFormatExtension.getMediaType().parameter()))
                 .entity(outputFormatExtension.getCollectionEntity(responseObject, api, requestContext))
                 .build();
     }

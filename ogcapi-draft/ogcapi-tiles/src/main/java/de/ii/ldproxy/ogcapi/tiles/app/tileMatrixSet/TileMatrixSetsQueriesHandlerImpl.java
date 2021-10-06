@@ -108,10 +108,13 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("tileMatrixSets.%s", outputFormat.getMediaType().parameter()))
                 .entity(outputFormat.getTileMatrixSetsEntity(tileMatrixSets, api, requestContext))
                 .build();
     }
@@ -148,10 +151,13 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.%s", tileMatrixSetId, outputFormat.getMediaType().parameter()))
                 .entity(outputFormat.getTileMatrixSetEntity(tileMatrixSetData, api, requestContext))
                 .build();
     }

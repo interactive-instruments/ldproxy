@@ -138,10 +138,13 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("resources.%s", format.getMediaType().parameter()))
                 .entity(format.getResourcesEntity(resources, apiData, requestContext))
                 .build();
     }
@@ -190,13 +193,15 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, null,
+        return prepareSuccessResponse(requestContext, null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      resourceId)
                 .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
                 .type(contentType)
-                .header("Content-Disposition", "inline; filename=\""+resourceId+"\"")
                 .build();
     }
 }
