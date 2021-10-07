@@ -283,7 +283,8 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
 
         // check, if the cache can be used (no query parameters except f)
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
-        boolean useCache = queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f"));
+        boolean useCache = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f")));
 
         Tile tile = new ImmutableTile.Builder()
                 .collectionIds(ImmutableList.of(collectionId))
@@ -323,7 +324,8 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         // don't store the tile in the cache if it is outside the range
         MinMax cacheMinMax = tilesConfiguration.getZoomLevelsCacheDerived()
                                                .get(tileMatrixSetId);
-        Tile finalTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+        Tile finalTile = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin())) ?
                 tile :
                 new ImmutableTile.Builder()
                         .from(tile)

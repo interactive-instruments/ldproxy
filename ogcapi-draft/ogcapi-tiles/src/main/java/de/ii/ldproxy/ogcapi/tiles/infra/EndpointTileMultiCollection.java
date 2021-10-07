@@ -290,7 +290,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
             throw new NotAcceptableException("The requested tile format supports only a single layer. Please select only a single collection.");
 
         // check, if the cache can be used (no query parameters except f)
-        boolean useCache = queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f"));
+        boolean useCache = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f")));
 
         Tile multiLayerTile = new ImmutableTile.Builder()
                 .collectionIds(collections)
@@ -339,7 +340,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         // don't store the tile in the cache if it is outside the range
         MinMax cacheMinMax = tilesConfiguration.getZoomLevelsDerived()
                                                .get(tileMatrixSetId);
-        Tile finalMultiLayerTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+        Tile finalMultiLayerTile = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin())) ?
                 multiLayerTile :
                 new ImmutableTile.Builder()
                         .from(multiLayerTile)
