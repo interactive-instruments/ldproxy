@@ -11,7 +11,7 @@ The API based on the configuration described on this page is available at [https
 This description assumes that the following preparation steps have been completed.
 
 * ldproxy has been [deployed](deployment.md). All file paths on this page are relative to the data directory of the deployment.
-* A PostgreSQL deployment (version 9.6 or later) with PostGIS (version 2.4 or later) are availble.
+* A PostgreSQL deployment (version 9.6 or later) with PostGIS (version 2.4 or later) is availble.
 
 ## Step 1: Getting the data
 
@@ -26,6 +26,7 @@ The following assumes that the database is available at `localhost`, at the defa
 First, create a database `vineyards` and add PostGIS as an extension. You will have to enter the password when requested by PostgreSQL.
 
 ```bash
+dropdb -Upostgres -W -hlocalhost -p5432 vineyards
 createdb -Upostgres -W -hlocalhost -p5432 vineyards
 psql -Upostgres -W -hlocalhost -p5432 -dvineyards  -c "create extension postgis;"
 ```
@@ -49,6 +50,22 @@ ldproxy configuration options are documented in detail in the [configuration gui
 
 To start an API, we need two files, one for the data provider at the backend and one for the configuration of the API. We only need to declare the minimum information in order to tell ldproxy where to find the data. ldproxy then analyses the data and creates a basic configuration.
 
+### The global configuration
+
+Create a file `cfg.yml` with the following contents:
+
+```yaml
+---
+logging:
+  level: 'OFF'
+  appenders:
+    - type: console
+  loggers:
+    de.ii: INFO
+```
+
+See the configuration guide for more information about the options.
+
 ### The data provider
 
 Create a file at path `store/entities/providers/vineyards.yml` with the following contents:
@@ -66,20 +83,20 @@ connectionInfo:
   user: postgres
   password: <base64-encoded-password>
   dialect: PGIS
-  pathSyntax:
-    defaultPrimaryKey: ogc_fid
-    defaultSortKey: ogc_fid
+sourcePathDefaults:
+  primaryKey: ogc_fid
+  sortKey: ogc_fid
 auto: true
 autoPersist: true
 ```
 
 Notes:
 
-* `id` has to be the same as the filename.
+* `id` has to be the same as the filename without the file extension.
 * `connectionInfo/host` has to be the address of the database as seen from the docker container. For example, that value has to be `host.docker.internal` instead of `localhost` on macOS, if the database is on the same machine.
 * `connectionInfo/user` is the account name for the access.
 * `connectionInfo/password` has to be the base64-encoded password of the user.
-* `connectionInfo/pathSyntax` identifies the column in feature tables to use for sorting and selecting rows. If the data was loaded with GDAL, the value will be `ogc_fid`.
+* `sourcePathDefaults` identifies the columns in feature tables that are used for selecting rows (`primaryKey`) and sorting (`sortKey`). If the data was loaded with GDAL, the value will be `ogc_fid`.
 * All other values have to be as stated above. See the configuration guide for more information about the options.
 * `auto` and `autoPersist` will derive the CRS used in the dataset plus the available feature schemas and update the file with the derived configuration.
 
@@ -97,7 +114,7 @@ autoPersist: true
 
 Notes:
 
-* `id` has to be the same as the filename.
+* `id` has to be the same as the filename without the file extension.
 * All other values have to be as stated above. See the configuration guide for more information about the options.
 * `auto` and `autoPersist` will use the feature provider of the same name as well as default API configuration and initialize the file with an updated configuration.
 
@@ -109,20 +126,20 @@ Restart ldproxy so that the new API is loaded. To restart, submit the following 
 docker restart ldproxy
 ```
 
-You can monitor the start-up in the log file (`log/xtraplatform.log`) and you should see something like:
+You can monitor the start-up in the log file (`docker logs -f ldproxy`) and you should see something like:
 
 ```text
-INFO  [2020-09-20 13:57:45,872] Starting ldproxy 2.0.x
-INFO  [2020-09-20 13:58:00,439] Started web server at http://localhost:7080
-INFO  [2020-09-20 13:58:01,866] Store mode: READ_WRITE
-INFO  [2020-09-20 13:58:01,866] Store location: /ldproxy/data/store
-INFO  [2020-09-20 13:58:12,121] Feature provider with id 'vineyards' is in auto mode, generating configuration ...
-INFO  [2020-09-20 13:58:12,862] Entity of type 'providers' with id 'vineyards' is in autoPersist mode, generated configuration was saved.
-INFO  [2020-09-20 13:58:12,862] Feature provider with id 'vineyards' is in auto mode, generating configuration ...
-INFO  [2020-09-20 13:58:13,330] Service with id 'vineyards' is in auto mode, generating configuration ...
-INFO  [2020-09-20 13:58:13,481] Entity of type 'services' with id 'vineyards' is in autoPersist mode, generated configuration was saved.
-INFO  [2020-09-20 13:58:13,939] Feature provider with id 'vineyards' started successfully.
-INFO  [2020-09-20 13:58:13,958] Service with id 'vineyards' started successfully.
+INFO  [2021-10-09 13:39:37,058]                          - --------------------------------------------------  
+INFO  [2021-10-09 13:39:37,059]                          - Starting ldproxy 3.0.0  
+INFO  [2021-10-09 13:39:52,960]                          - Started web server at http://localhost:7080  
+INFO  [2021-10-09 13:40:11,084]                          - Store mode: READ_WRITE  
+INFO  [2021-10-09 13:40:11,084]                          - Store location: /ldproxy/data/store  
+INFO  [2021-10-09 13:40:21,358]                vineyards - Feature provider with id 'vineyards' is in auto mode, generating configuration ...  
+INFO  [2021-10-09 13:40:22,530]                vineyards - Entity of type 'providers' with id 'vineyards' is in autoPersist mode, generated configuration was saved.  
+INFO  [2021-10-09 13:40:22,802]                vineyards - Service with id 'vineyards' is in auto mode, generating configuration ...  
+INFO  [2021-10-09 13:40:22,975]                vineyards - Entity of type 'services' with id 'vineyards' is in autoPersist mode, generated configuration was saved.  
+INFO  [2021-10-09 13:40:23,471]                vineyards - Feature provider with id 'vineyards' started successfully. (min connections=8, max connections=8, stream capacity=8)  
+INFO  [2021-10-09 13:40:23,671]                vineyards - Service with id 'vineyards' started successfully.  
 ```
 
 Congratulations, you are now ready to use the API, just open the [landing page](http://localhost:7080/rest/services/vineyards) or the [vineyards features](http://localhost:7080/rest/services/vineyards/collections/vineyards/items).
@@ -132,26 +149,22 @@ Have a look at the updated configuration files. They should like the following, 
 ```yaml
 ---
 id: vineyards
-createdAt: 1600610292030
-lastModified: 1600610292030
+createdAt: 1633786821320
+lastModified: 1633786821320
 entityStorageVersion: 2
 providerType: FEATURE
 featureProviderType: SQL
-connectionInfo:
-  host: localhost
-  database: vineyards
-  user: postgres
-  password: <base64-encoded-password>
-  dialect: PGIS
-  computeNumberMatched: true
-  pathSyntax:
-    defaultPrimaryKey: ogc_fid
-    defaultSortKey: ogc_fid
-    junctionTablePattern: .+_2_.+
-    junctionTableFlag: '{junction}'
 nativeCrs:
   code: 25832
   forceAxisOrder: NONE
+connectionInfo:
+  database: vineyards
+  host: localhost
+  user: postgres
+  password: <base64-encoded-password>
+sourcePathDefaults:
+  primaryKey: ogc_fid
+  sortKey: ogc_fid
 types:
   vineyards:
     sourcePath: /vineyards
@@ -163,7 +176,7 @@ types:
         role: ID
       wlg_nr:
         sourcePath: wlg_nr
-        type: INTEGER
+        type: STRING
       datum:
         sourcePath: datum
         type: DATETIME
@@ -209,8 +222,8 @@ types:
 ```yaml
 ---
 id: vineyards
-createdAt: 1600610292106
-lastModified: 1600610292106
+createdAt: 1633786821339
+lastModified: 1633786821339
 entityStorageVersion: 2
 label: vineyards
 serviceType: OGC_API
@@ -219,14 +232,13 @@ collections:
     id: vineyards
     label: vineyards
     enabled: true
-    extent:
-      spatialComputed: true
     api:
     - buildingBlock: FEATURES_CORE
-      enabled: true
       queryables:
         spatial:
         - wkb_geometry
+        temporal:
+        - datum
 ```
 
 ## Step 4: Finetuning the API configuration
@@ -261,24 +273,35 @@ We have updated the title of the API and added a short description:
 
 ```yaml
 label: Vineyards in Rhineland-Palatinate, Germany
-description: 'Have you ever wondered where the wine that you are drinking comes from? If the wine comes from the wine-growing regions Mosel, Nahe, Rheinhessen, Pfalz, Ahr, or Mittelrhein you can find this information in this API that implements multiple <a href="https://ogcapi.ogc.org/" target="_blank">OGC API standards</a>.
+description: 'Have you ever wondered where the wine that you are drinking comes from? If the wine comes from the wine-growing regions Mosel, Nahe, Rheinhessen, Pfalz, Ahr, or Mittelrhein you can find this information in this API.
 <br><br>
-The dataset shared by this API is the vineyard register (Weinbergsrolle) of Rhineland-Palatinate, available under an open-data license. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP).
+The dataset shared by this API is the vineyard register (Weinbergsrolle) of Rhineland-Palatinate, available under an open-data license. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
 <br>
-<small>© Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" target="_blank">weinlagen.lwk-rlp.de</a>; <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" target="_blank">Regelungen zu Gewährleistung und Haftung</a></small>'
+<small>© Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=''http://weinlagen.lwk-rlp.de/'' target=''_blank''>weinlagen.lwk-rlp.de</a>; <a href=''http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html'' target=''_blank''>Regelungen zu Gewährleistung und Haftung</a></small>'
 ```
 
-We have added contact information for the API provider and the applicable license:
+We have added contact information for the API provider and the dataset creator as well as the applicable license and attribution information:
 
 ```yaml
 metadata:
-  contactName: Clemens Portele, interactive instruments GmbH
-  contactEmail: portele@interactive-instruments.de
+  contactName: Jane Doe
+  contactEmail: doe@example.com
+  creatorName: Landwirtschaftskammer Rheinland-Pfalz
+  creatorUrl: https://www.lwk-rlp.de/
+  publisherName: Acme Inc.
+  publisherUrl: https://www.example.com/
   licenseName: Datenlizenz Deutschland - Namensnennung - Version 2.0
   licenseUrl: https://www.govdata.de/dl-de/by-2-0
+  attribution: '&copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" class="link0" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" class="link0" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
 ```
 
 If you set up a local copy, please use your own contact details.
+
+When starting, the API will not be validated first by ldproxy:
+
+```yaml
+apiValidation: NONE
+```
 
 We have added links to a website with more information and the data sources:
 
@@ -334,17 +357,21 @@ The CRS building block configuration below adds support for the following coordi
 
 The following configuration parameters change how the API resources are presented in the web browser:
 
+* `noIndexEnabled` signals to harvesters to not index the pages of the API.
+* `schemaOrgEnabled` adds [schema.org](https://schema.org/) markup to HTML pages.
 * `collectionDescriptionsInOverview` shows the description of each feature collection in the page at `/collections`.
-* We add links to legal and privacy notices in the footer and link to the pages from interactive instruments. If you set up a local copy, please link to your own pages.
-* ldproxy uses both Leaflet and OpenLayers for maps. We set the URLs for the background map as well as the proper data attribution. For the background map we use the TopPlus maps of the German mapping authorities instead of the default (OpenStreetMap).
+* We add links to legal and privacy notices in the footer and link to hypothetical pages. If you set up a local copy, please link to your own pages.
+* ldproxy currently uses both Leaflet and OpenLayers for maps. We set the URLs for the background map as well as the proper data attribution. For the background map we use the TopPlus maps of the German mapping authorities instead of the default (OpenStreetMap).
 
 ```yaml
 - buildingBlock: HTML
+  noIndexEnabled: true
+  schemaOrgEnabled: true
   collectionDescriptionsInOverview: true
   legalName: Legal notice
-  legalUrl: https://www.interactive-instruments.de/en/about/impressum/
+  legalUrl: https://www.example.com/legal
   privacyName: Privacy notice
-  privacyUrl: https://www.interactive-instruments.de/en/about/datenschutzerklarung/
+  privacyUrl: https://www.example.com/privacy
   leafletUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
   leafletAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
     f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
@@ -357,20 +384,34 @@ The following configuration parameters change how the API resources are presente
 
 #### Support CQL filter expressions
 
-The following building block configuration activates filter expressions using CQL (text and json):
+The following building block configurations activate
+
+* a JSON schema resource for the vineyard features;
+* the publication of queryable properties in order to filter the dataset;
+* filter expressions using CQL2 (text and json);
+* the capability to return only selected properties; and
+* the capability to simplify geometries in responses using a Douglas-Peucker algorithm.
 
 ```yaml
+- buildingBlock: SCHEMA
+  enabled: true
+- buildingBlock: QUERYABLES
+  enabled: true
 - buildingBlock: FILTER
   enabled: true
+- buildingBlock: PROJECTIONS
+  enabled: true
+- buildingBlock: GEOMETRY_SIMPLIFICATION
+  enabled: true    
 ```
 
 #### Enable vector tiles
 
 The following building block configuration activates support for vector tiles for the dataset:
 
-* Vector tiles will be available for the [most commonly used tiling scheme](https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/) for the zoom levels 6 to 16.
+* Vector tiles will be available for the [most commonly used tiling scheme](https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/) for the zoom levels 5 to 16.
 * The recommended default zoom level for maps is 8 with a center at 7.35°E, 49.8°N.
-* The server will pre-cache tiles for the zoom levels 6 to 10.
+* The server will pre-cache tiles for the zoom levels 5 to 11.
 
 ```yaml
 - buildingBlock: TILES
@@ -378,13 +419,13 @@ The following building block configuration activates support for vector tiles fo
   multiCollectionEnabled: true
   zoomLevels:
     WebMercatorQuad:
-      min: 6
+      min: 5
       max: 16
       default: 8
   seeding:
     WebMercatorQuad:
-      min: 6
-      max: 10
+      min: 5
+      max: 11
   center:
   - 7.35
   - 49.8
@@ -411,64 +452,79 @@ Copy the sample style [`default`](https://github.com/interactive-instruments/ldp
 
 #### Update the vineyards collection
 
-In addition to the configuration of the API modules, we want to finetune the representation of the feature data in the since feature collection `vineyards`. The configuration below makes the following changes:
+In addition to the configuration of the API modules, we want to finetune the representation of the feature data in the feature collection `vineyards`. The configuration below makes the following changes:
 
-* Add a title and description for the collection.
 * Identify the spatial, temporal and regular properties that can be used in filters (in query parameters or in CQL expressions).
-* Always hide the `ogc_fid` and `gid` properties and hide the `village_info` field in HTML.
-* Hide the search field attributes and the date in the HTML overviews, only show them on the pages for a single feature.
 * Use a decimal point in area values and map "k. A." to "unknown.
-* Use the vineyard name as the feature title in HTML.
+* Use the searchfield2 attribute as the label of the vineyard features in HTML.
+* Hide the `village_info` field in HTML.
+* Hide the searchfield1 attribute and the date in the HTML overviews, only show them on the pages for a single feature.
+* Aggregate vineyards on smaller scales.
+
+Note that the title and description for the collection are inherited from the feature type defined in the provider configuration.
 
 ```yaml
 collections:
   vineyards:
     id: vineyards
-    label: Vineyards
-    description: 'The vineyard register constitutes the authorized list of names of single vineyards, vineyards clusters (Großlagen), sub-regions (Bereiche) and wine-growing regions (Anbaugebiete) for the protected designation of origin for wines in the German state Rhineland-Palatinate. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
-    <br>
-    The data for each vineyard includes the vineyard register number, the wine-growing region, the sub-region, the vineyard cluster, the name of the single vineyard, the village(s), the cadastral district(s) and the area with vines in hectares. The six-digit vineyard register number contains in the first digit the wine-growing region, in the second digit the sub-region, in the third and fourth digit the vineyard cluster and in the fifth and sixth digit the single vineyard.'
+    label: vineyards
     enabled: true
-    extent:
-      spatialComputed: true
     api:
     - buildingBlock: FEATURES_CORE
       enabled: true
+      itemType: feature
       queryables:
         spatial:
         - geometry
         temporal:
         - date
-        other:
-        - registerId
+        q:
         - name
-        - area_ha
         - region
         - subregion
         - cluster
         - village
         - searchfield1
         - searchfield2
+        other:
+        - registerId
+        - area_ha
       transformations:
         area_ha:
-          null: 'k. A.'
-          stringFormat: '{{value | replace:'','':''.''}}'
-        ogc_fid:
-          remove: ALWAYS
-        gid:
-          remove: ALWAYS
+          stringFormat: '{{value | replace:''k. A.'':''unknown'' | replace:'','':''.''}}'
     - buildingBlock: FEATURES_HTML
-      itemLabelFormat: '{{name}}'
+      itemLabelFormat: '{{searchfield2}}'
       transformations:
         village_info:
           remove: ALWAYS
         searchfield1:
           remove: OVERVIEW
-        searchfield2:
-          remove: OVERVIEW
         date:
           remove: OVERVIEW
           dateFormat: dd/MM/yyyy
+    - buildingBlock: TILES
+      rules:
+        WebMercatorQuad:
+        - min: 5
+          max: 7
+          merge: true
+          groupBy:
+          - region
+        - min: 8
+          max: 8
+          merge: true
+          groupBy:
+          - region
+          - subregion
+        - min: 9
+          max: 9
+          merge: true
+          groupBy:
+          - region
+          - subregion
+          - cluster
+    - buildingBlock: STYLES
+      enabled: false
 ```
 
 ## Step 5: Global configuration
@@ -480,7 +536,7 @@ If the server will be available to other, configure the `externalUrl` in the `cf
 store:
   mode: READ_ONLY
 server:
-  externalUrl: https://demo.ldproxy.net
+  externalUrl: https://www.example.com
 logging:
   level: 'OFF'
   appenders:
