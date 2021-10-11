@@ -12,6 +12,7 @@ import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.LIMIT_DEFAULT
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
@@ -36,8 +37,10 @@ import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Intersects;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -54,6 +57,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
+import javax.measure.IncommensurableException;
+import javax.measure.Unit;
 import javax.ws.rs.core.MediaType;
 import no.ecc.vectortile.VectorTileDecoder;
 import no.ecc.vectortile.VectorTileEncoder;
@@ -84,13 +89,19 @@ public class TileFormatMVT implements TileFormatExtension {
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
     private final TileCache tileCache;
+    private final CrsSupport crsSupport;
+    private final CrsInfo crsInfo;
 
     public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires FeaturesQuery queryParser,
-                         @Requires TileCache tileCache) {
+                         @Requires TileCache tileCache,
+                         @Requires CrsSupport crsSupport,
+                         @Requires CrsInfo crsInfo) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
         this.tileCache = tileCache;
+        this.crsSupport = crsSupport;
+        this.crsInfo = crsInfo;
     }
 
     @Override
@@ -161,8 +172,8 @@ public class TileFormatMVT implements TileFormatExtension {
                                                                           .type(featureTypeId)
                                                                           .limit(Objects.requireNonNullElse(tilesConfiguration.getLimitDerived(),LIMIT_DEFAULT))
                                                                           .offset(0)
-                                                                          .crs(tile.getTileMatrixSet().getCrs());
-                                                                          //.maxAllowableOffset(getMaxAllowableOffsetNative(tile));
+                                                                          .crs(tile.getTileMatrixSet().getCrs())
+                                                                          .maxAllowableOffset(getMaxAllowableOffsetNative(tile));
 
         final Map<String, List<Rule>> rules = tilesConfiguration.getRulesDerived();
         if (!queryParameters.containsKey("properties") && (Objects.nonNull(rules) && rules.containsKey(tileMatrixSetId))) {
@@ -304,8 +315,16 @@ public class TileFormatMVT implements TileFormatExtension {
 
     @Override
     public double getMaxAllowableOffsetNative(Tile tile) {
-        double maxAllowableOffsetTileMatrixSet = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-        double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units once we have better CRS support
+        double maxAllowableOffsetNative;
+        double maxAllowableOffsetCrs84 = getMaxAllowableOffsetCrs84(tile);
+        Unit<?> crs84Unit = crsInfo.getUnit(OgcCrs.CRS84);
+        EpsgCrs nativeCrs = crsSupport.getStorageCrs(tile.getApiData(), Optional.empty());
+        Unit<?> nativeCrsUnit = crsInfo.getUnit(nativeCrs);
+        try {
+            maxAllowableOffsetNative = crs84Unit.getConverterToAny(nativeCrsUnit).convert(maxAllowableOffsetCrs84);
+        } catch (IncommensurableException e) {
+            throw new RuntimeException(String.format("Failed to convert max allowable offset to native units (%s) from %s", nativeCrsUnit.getName(), crs84Unit.getName()));
+        }
         return maxAllowableOffsetNative;
     }
 

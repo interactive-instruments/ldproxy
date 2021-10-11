@@ -12,6 +12,8 @@ dependencies {
     embedded (group: 'org.xerial', name: 'sqlite-jdbc', version: '3.36.0')
 
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+
+    implementation group: 'javax.measure', name: 'unit-api', version: '1.0'
 }
 
 repositories {
