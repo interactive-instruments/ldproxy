@@ -67,6 +67,7 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
     private final I18n i18n;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
     private final JsonSchemaCache schemaCache;
+    private final JsonSchemaCache schemaCacheCollection;
 
     public QueriesHandlerSchemaImpl(@Requires I18n i18n, @Requires FeaturesCoreProviders providers, @Requires EntityRegistry entityRegistry) {
         this.i18n = i18n;
@@ -76,6 +77,7 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
         );
         this.schemaCache = new SchemaCacheReturnables(() -> entityRegistry.getEntitiesForType(
             Codelist.class));
+        this.schemaCacheCollection = new SchemaCacheReturnablesCollection();
     }
 
     @Override
@@ -116,9 +118,11 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
 
         FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData);
 
-        // TODO queryInput.getType().equals("feature") -> feature schema, else feature collcection schema
-        JsonSchemaDocument schema = schemaCache
-            .getSchema(featureSchema, apiData, collectionData, schemaUri, getVersion(queryInput.getProfile()));
+        JsonSchemaDocument schema = null;
+        if (queryInput.getType().equals("feature"))
+            schema = schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri, getVersion(queryInput.getProfile()));
+        else if (queryInput.getType().equals("collection"))
+            schema = schemaCacheCollection.getSchema(featureSchema, apiData, collectionData, schemaUri, getVersion(queryInput.getProfile()));
 
         Date lastModified = getLastModified(queryInput, api);
         EntityTag etag = getEtag(schema, JsonSchema.FUNNEL, outputFormat);
