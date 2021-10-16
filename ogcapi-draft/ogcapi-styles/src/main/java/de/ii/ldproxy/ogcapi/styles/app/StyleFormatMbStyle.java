@@ -23,8 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorFeatureGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleLayer;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
@@ -32,17 +31,9 @@ import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleLayer;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -50,6 +41,13 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.MediaType;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
@@ -179,14 +177,17 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
     public boolean canDeriveMetadata() { return true; }
 
     @Override
-    public List<StyleLayer> deriveLayerMetadata(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, SchemaGeneratorFeatureGeoJson schemaGeneratorFeature) {
+    public List<StyleLayer> deriveLayerMetadata(StylesheetContent stylesheetContent,
+        OgcApiDataV2 apiData,
+        FeaturesCoreProviders providers,
+        EntityRegistry entityRegistry) {
         URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         Optional<MbStyleStylesheet> mbStyle = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
         if (mbStyle.isEmpty())
             return ImmutableList.of();
 
-        return mbStyle.get().getLayerMetadata(apiData, schemaGeneratorFeature);
+        return mbStyle.get().getLayerMetadata(apiData, providers, entityRegistry);
     }
 
     @Override

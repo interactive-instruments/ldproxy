@@ -121,13 +121,9 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
 
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
-
         QueryablesQueriesHandlerImpl.QueryInputQueryables queryInput = new ImmutableQueryInputQueryables.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
-                .includeLinkHeader(includeLinkHeader)
                 .build();
 
         return queryHandler.handle(QueryablesQueriesHandlerImpl.Query.QUERYABLES, queryInput, requestContext);

@@ -8,13 +8,14 @@
 package de.ii.ldproxy.ogcapi.collections.schema.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableSchemaConfiguration.Builder.class)
-public interface SchemaConfiguration extends ExtensionConfiguration {
+public interface SchemaConfiguration extends ExtensionConfiguration, CachingConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }

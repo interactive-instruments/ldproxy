@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
+import de.ii.ldproxy.ogcapi.features.core.domain.EncodingAwareContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 
 import java.io.IOException;
@@ -15,51 +16,71 @@ import java.util.function.Consumer;
 /**
  * @author zahnen
  */
-public interface FeatureWriterGeoJson<T extends FeatureTransformationContext> {
+public interface FeatureWriterGeoJson<T extends EncodingAwareContext<?>> {
 
     int getSortPriority();
 
-    default void onEvent(T transformationContext, Consumer<T> next) throws IOException {
-        switch (transformationContext.getState().getEvent()) {
+    default void onEvent(T context, Consumer<T> next) throws IOException {
+        switch (context.encoding().getState().getEvent()) {
             case START:
-                onStart(transformationContext, next);
+                onStart(context, next);
                 break;
             case END:
-                onEnd(transformationContext, next);
+                onEnd(context, next);
                 break;
             case FEATURE_START:
-                onFeatureStart(transformationContext, next);
+                onFeatureStart(context, next);
                 break;
             case FEATURE_END:
                 // first close the properties object and then the feature object
-                onPropertiesEnd(transformationContext, next);
-                onFeatureEnd(transformationContext, next);
+                onPropertiesEnd(context, next);
+                onFeatureEnd(context, next);
                 break;
             case PROPERTY:
-                onProperty(transformationContext, next);
+                onValue(context, next);
                 break;
             case COORDINATES:
-                onCoordinates(transformationContext, next);
+                onCoordinates(context, next);
                 break;
             case GEOMETRY_END:
-                onGeometryEnd(transformationContext, next);
+                onGeometryEnd(context, next);
+                break;
+            case ARRAY_START:
+                onArrayStart(context, next);
+                break;
+            case OBJECT_START:
+                onObjectStart(context, next);
+                break;
+            case OBJECT_END:
+                onObjectEnd(context, next);
+                break;
+            case ARRAY_END:
+                onArrayEnd(context, next);
                 break;
         }
     }
 
-    default void onStart(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+    default void onStart(T context, Consumer<T> next) throws IOException {next.accept(context);}
 
-    default void onEnd(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+    default void onEnd(T context, Consumer<T> next) throws IOException {next.accept(context);}
 
-    default void onFeatureStart(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+    default void onFeatureStart(T context, Consumer<T> next) throws IOException {next.accept(context);}
 
-    default void onPropertiesEnd(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+    default void onPropertiesEnd(T context, Consumer<T> next) throws IOException {next.accept(context);}
 
-    default void onFeatureEnd(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+    default void onFeatureEnd(T context, Consumer<T> next) throws IOException {next.accept(context);}
 
-    default void onProperty(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+    default void onArrayStart(T context, Consumer<T> next) throws IOException {next.accept(context);}
 
-    default void onCoordinates(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+    default void onObjectStart(T context, Consumer<T> next) throws IOException {next.accept(context);}
 
-    default void onGeometryEnd(T transformationContext, Consumer<T> next) throws IOException {next.accept(transformationContext);}
+    default void onObjectEnd(T context, Consumer<T> next) throws IOException {next.accept(context);}
+
+    default void onArrayEnd(T context, Consumer<T> next) throws IOException {next.accept(context);}
+
+    default void onValue(T context, Consumer<T> next) throws IOException {next.accept(context);}
+
+    default void onCoordinates(T context, Consumer<T> next) throws IOException {next.accept(context);}
+
+    default void onGeometryEnd(T context, Consumer<T> next) throws IOException {next.accept(context);}
 }

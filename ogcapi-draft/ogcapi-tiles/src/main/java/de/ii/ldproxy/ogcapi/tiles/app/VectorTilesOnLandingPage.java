@@ -7,10 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
-import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -41,7 +45,7 @@ public class VectorTilesOnLandingPage implements LandingPageExtension {
 
         return extension
                 .filter(TilesConfiguration::isEnabled)
-                .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                .filter(TilesConfiguration::isMultiCollectionEnabled)
                 .isPresent();
     }
 

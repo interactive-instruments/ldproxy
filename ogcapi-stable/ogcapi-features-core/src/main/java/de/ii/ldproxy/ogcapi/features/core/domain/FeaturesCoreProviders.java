@@ -16,6 +16,7 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public interface FeaturesCoreProviders {
 
@@ -25,8 +26,7 @@ public interface FeaturesCoreProviders {
 
     default FeatureSchema getFeatureSchema(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
         String featureTypeId = featureType.getExtension(FeaturesCoreConfiguration.class)
-                                          .map(cfg -> cfg.getFeatureType()
-                                                         .orElse(featureType.getId()))
+                                          .flatMap(FeaturesCoreConfiguration::getFeatureType)
                                           .orElse(featureType.getId());
         FeatureProvider2 featureProvider = getFeatureProvider(apiData, featureType);
         return featureProvider.getData().getTypes().get(featureTypeId);
@@ -34,20 +34,14 @@ public interface FeaturesCoreProviders {
 
     default Map<String, FeatureSchema> getFeatureSchemas(OgcApiDataV2 apiData) {
         return apiData.getCollections()
-                      .entrySet()
+                      .values()
                       .stream()
-                      .map(entry -> {
-                          FeatureTypeConfigurationOgcApi featureType = entry.getValue();
-                          String featureTypeId = featureType.getExtension(FeaturesCoreConfiguration.class)
-                                                            .map(cfg -> cfg.getFeatureType()
-                                                                           .orElse(featureType.getId()))
-                                                            .orElse(featureType.getId());
-                          FeatureProvider2 featureProvider = getFeatureProvider(apiData, featureType);
-                          FeatureSchema schema = featureProvider.getData().getTypes().get(featureTypeId);
-                          if (Objects.isNull(schema))
-                              return null;
+                      .map(collectionData -> {
+                        FeatureSchema schema = getFeatureSchema(apiData, collectionData);
+                        if (Objects.isNull(schema))
+                          return null;
 
-                          return new AbstractMap.SimpleImmutableEntry<>(featureType.getId(), schema);
+                        return new AbstractMap.SimpleImmutableEntry<>(collectionData.getId(), schema);
                       })
                       .filter(Objects::nonNull)
                       .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));

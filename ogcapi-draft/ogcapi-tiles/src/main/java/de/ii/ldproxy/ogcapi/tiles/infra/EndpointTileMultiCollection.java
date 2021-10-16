@@ -29,16 +29,16 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileEmpty;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileFile;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMultiLayer;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileStream;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -69,7 +69,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -94,7 +94,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
     private final TilesQueriesHandler queryHandler;
     private final CrsTransformerFactory crsTransformerFactory;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
-    private final TilesCache cache;
+    private final TileCache cache;
     private final StaticTileProviderStore staticTileProviderStore;
 
     EndpointTileMultiCollection(@Requires FeaturesCoreProviders providers,
@@ -102,7 +102,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                                 @Requires TilesQueriesHandler queryHandler,
                                 @Requires CrsTransformerFactory crsTransformerFactory,
                                 @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                                @Requires TilesCache cache,
+                                @Requires TileCache cache,
                                 @Requires StaticTileProviderStore staticTileProviderStore) {
         super(extensionRegistry);
         this.providers = providers;
@@ -127,7 +127,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
-                      .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                      .filter(TilesConfiguration::isMultiCollectionEnabled)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
             return providers.getFeatureProvider(apiData).supportsHighLoad();
@@ -213,7 +213,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                 .findAny()
                 .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
-        TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels, crsTransformerFactory)
+        TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels)
                 .stream()
                 .filter(limits -> limits.getTileMatrix().equals(tileMatrix))
                 .findAny()
@@ -244,9 +244,10 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
-                    .api(api)
+                    .apiData(apiData)
                     .outputFormat(outputFormat)
                     .temporary(false)
+                    .isDatasetTile(true)
                     .build();
 
             String mbtilesFilename = ((TileProviderMbtiles) tileProvider).getFilename();
@@ -277,7 +278,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                         .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
                         .filter(collection -> {
                             Optional<TilesConfiguration> layerConfiguration = collection.getExtension(TilesConfiguration.class);
-                            if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().getMultiCollectionEnabledDerived())
+                            if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().isMultiCollectionEnabled())
                                 return false;
                             MinMax levels = layerConfiguration.get().getZoomLevelsDerived().get(tileMatrixSetId);
                             return !Objects.nonNull(levels) || (levels.getMax() >= level && levels.getMin() <= level);
@@ -297,8 +298,9 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                 .tileLevel(level)
                 .tileRow(row)
                 .tileCol(col)
-                .api(api)
+                .apiData(apiData)
                 .temporary(!useCache)
+                .isDatasetTile(true)
                 .featureProvider(featureProvider)
                 .outputFormat(outputFormat)
                 .build();
@@ -315,15 +317,22 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         // if cache can be used and the tile is cached for the requested format, return the cache
         if (useCache) {
             // get the tile from the cache and return it
-            java.nio.file.Path tileFile = cache.getFile(multiLayerTile);
-            if (Files.exists(tileFile)) {
-                TilesQueriesHandler.QueryInputTileFile queryInput = new ImmutableQueryInputTileFile.Builder()
+            Optional<InputStream> tileStream = Optional.empty();
+            try {
+                tileStream = cache.getTile(multiLayerTile);
+            } catch (Exception e) {
+                LOGGER.warn("Failed to retrieve multi-collection tile {}/{}/{}/{} from the cache. Reason: {}",
+                            multiLayerTile.getTileMatrixSet().getId(), multiLayerTile.getTileLevel(), multiLayerTile.getTileRow(),
+                            multiLayerTile.getTileCol(), e.getMessage());
+            }
+            if (tileStream.isPresent()) {
+                TilesQueriesHandler.QueryInputTileStream queryInput = new ImmutableQueryInputTileStream.Builder()
                         .from(getGenericQueryInput(api.getData()))
                         .tile(multiLayerTile)
-                        .tileFile(tileFile)
+                        .tileContent(tileStream.get())
                         .build();
 
-                return queryHandler.handle(TilesQueriesHandler.Query.TILE_FILE, queryInput, requestContext);
+                return queryHandler.handle(TilesQueriesHandler.Query.TILE_STREAM, queryInput, requestContext);
             }
         }
 
@@ -341,6 +350,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                                                           .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> new ImmutableTile.Builder()
                         .from(finalMultiLayerTile)
                         .collectionIds(ImmutableList.of(collectionId))
+                        .isDatasetTile(false)
                         .build()));
 
         // first execute the information that is passed as processing parameters (e.g., "properties")

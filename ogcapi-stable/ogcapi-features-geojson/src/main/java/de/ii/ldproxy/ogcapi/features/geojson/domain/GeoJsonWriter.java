@@ -10,6 +10,6 @@ package de.ii.ldproxy.ogcapi.features.geojson.domain;
 /**
  * @author zahnen
  */
-public interface GeoJsonWriter extends FeatureWriterGeoJson<FeatureTransformationContextGeoJson> {
+public interface GeoJsonWriter extends FeatureWriterGeoJson<EncodingAwareContextGeoJson> {
     GeoJsonWriter create();
 }

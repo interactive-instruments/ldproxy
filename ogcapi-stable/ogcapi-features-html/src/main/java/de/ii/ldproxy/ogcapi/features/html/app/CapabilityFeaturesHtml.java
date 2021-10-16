@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ldproxy.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -26,8 +26,7 @@ public class CapabilityFeaturesHtml implements ApiBuildingBlock {
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFeaturesHtmlConfiguration.Builder().enabled(true)
-                                                       .schemaOrgEnabled(true)
-                                                       .layout(FeaturesHtmlConfiguration.LAYOUT.CLASSIC)
+                                                       .mapPosition(POSITION.AUTO)
                                                        .build();
     }
 

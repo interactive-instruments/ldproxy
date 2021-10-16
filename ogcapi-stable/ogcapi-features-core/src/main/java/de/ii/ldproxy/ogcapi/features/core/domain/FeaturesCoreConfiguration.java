@@ -13,13 +13,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,11 +27,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCoreConfiguration.Builder.class)
-public interface FeaturesCoreConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface FeaturesCoreConfiguration extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -83,7 +85,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     Map<String, Integer> getCoordinatePrecision();
 
     @Override
-    Map<String, PropertyTransformation> getTransformations();
+    Map<String, List<PropertyTransformation>> getTransformations();
 
     @JsonIgnore
     @Value.Derived
@@ -142,7 +144,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default Map<String, String> getOtherFilterParameters() {
+    default Map<String, String> getQOrOtherFilterParameters() {
         if (getQueryables().isPresent()) {
             FeaturesCollectionQueryables queryables = getQueryables().get();
             Map<String, String> parameters = new LinkedHashMap<>();
@@ -248,18 +250,10 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Featu
 
     @Override
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        ImmutableFeaturesCoreConfiguration.Builder builder = new ImmutableFeaturesCoreConfiguration.Builder().from(source)
-                                                                                                             .from(this);
-
-        Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getTransformations());
-        getTransformations().forEach((key, transformation) -> {
-            if (mergedTransformations.containsKey(key)) {
-                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
-            } else {
-                mergedTransformations.put(key, transformation);
-            }
-        });
-        builder.transformations(mergedTransformations);
+        ImmutableFeaturesCoreConfiguration.Builder builder = new ImmutableFeaturesCoreConfiguration.Builder()
+            .from(source)
+            .from(this)
+            .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations());
 
         if (getQueryables().isPresent() && ((FeaturesCoreConfiguration) source).getQueryables()
                                                                                .isPresent()) {

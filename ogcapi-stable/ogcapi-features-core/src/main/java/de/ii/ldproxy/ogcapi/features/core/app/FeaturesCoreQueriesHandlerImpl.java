@@ -11,6 +11,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.I18n;
@@ -34,9 +35,15 @@ import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSourceStream;
-import de.ii.xtraplatform.features.domain.FeatureStream2;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureStream;
+import de.ii.xtraplatform.features.domain.FeatureStream.Result;
+import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
+import de.ii.xtraplatform.streams.domain.Reactive.Sink;
+import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -48,12 +55,15 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
@@ -124,7 +134,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 Optional.of(collectionId))
                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
+        return getItemsResponse(api, requestContext, collectionId, queryInput, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
                 queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
@@ -153,11 +163,11 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        return getItemsResponse(api, requestContext, collectionId, query, queryInput.getFeatureProvider(), false, persistentUri, outputFormat, false, Optional.empty(),
+        return getItemsResponse(api, requestContext, collectionId, queryInput, query, queryInput.getFeatureProvider(), false, persistentUri, outputFormat, false, Optional.empty(),
                 false, queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
-    private Response getItemsResponse(OgcApi api, ApiRequestContext requestContext, String collectionId,
+    private Response getItemsResponse(OgcApi api, ApiRequestContext requestContext, String collectionId, QueryInput queryInput,
                                       FeatureQuery query, FeatureProvider2 featureProvider, boolean isCollection,
                                       String canonicalUri,
                                       FeatureFormatExtension outputFormat,
@@ -231,42 +241,63 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             streamingOutput = stream2(featureStream, !isCollection, outputStream -> outputFormat.getFeatureConsumer(transformationContext.outputStream(outputStream)
                                                                                                                                          .build())
                                                                                                 .get());
-        } else if (outputFormat.canTransformFeatures()) {
-            FeatureStream2 featureStream = featureProvider.queries()
-                                                          .getFeatureStream2(query);
+        } else if (outputFormat.canEncodeFeatures()) {
+            FeatureStream featureStream = featureProvider.queries()
+                                                          .getFeatureStream(query);
 
-            streamingOutput = stream(featureStream, !isCollection, outputStream -> outputFormat.getFeatureTransformer(transformationContext.outputStream(outputStream)
-                                                                                                                                           .build(), requestContext.getLanguage())
-                                                                                               .get());
+            ImmutableFeatureTransformationContextGeneric transformationContextGeneric = transformationContext
+                .outputStream(new OutputStreamToByteConsumer())
+                .build();
+            FeatureTokenEncoder<?> encoder = outputFormat
+                .getFeatureEncoder(transformationContextGeneric, requestContext.getLanguage()).get();
+
+            Optional<PropertyTransformations> propertyTransformations = outputFormat
+                .getPropertyTransformations(api.getData().getCollections().get(collectionId))
+                .map(pt -> pt.withSubstitutions(ImmutableMap.of("serviceUrl", transformationContextGeneric.getServiceUrl())));
+
+            streamingOutput = stream(featureStream, !isCollection, encoder, propertyTransformations);
         } else {
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
+        Date lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
+        EntityTag etag = isCollection ? null : getEtag(lastModified);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        // TODO support lastModified and etag from the content, in particular for a single feature
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
         // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
 
-        return prepareSuccessResponse(api, requestContext, includeLinkHeader ? links.stream()
-                                                                                    .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
-                                                                                    .collect(ImmutableList.toImmutableList()) :
-                                                                                null, targetCrs)
+        return prepareSuccessResponse(requestContext.getApi(), requestContext, includeLinkHeader ? links.stream()
+                                                                                                        .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
+                                                                                                        .collect(ImmutableList.toImmutableList()) : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      targetCrs)
                 .entity(streamingOutput)
                 .build();
     }
 
-    private StreamingOutput stream(FeatureStream2 featureTransformStream, boolean failIfEmpty,
-                                   final Function<OutputStream, FeatureTransformer2> featureTransformer) {
+    private StreamingOutput stream(FeatureStream featureTransformStream, boolean failIfEmpty,
+        final FeatureTokenEncoder<?> encoder,
+        Optional<PropertyTransformations> propertyTransformations) {
         Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class, "stream"))
-                                            .time();
+            .time();
 
         return outputStream -> {
+            SinkTransformed<Object, byte[]> featureSink = encoder.to(Sink.outputStream(outputStream));
+
             try {
-                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                                                     .toCompletableFuture()
-                                                                     .join();
+                Result result = featureTransformStream.runWith(featureSink, propertyTransformations)
+                    .toCompletableFuture()
+                    .join();
                 timer.stop();
 
                 if (result.getError()
-                          .isPresent()) {
+                    .isPresent()) {
                     processStreamError(result.getError().get());
                     // the connection has been lost, typically the client has cancelled the request, log on debug level
                     LOGGER.debug("Request cancelled due to lost connection.");
@@ -289,7 +320,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                                     final Function<OutputStream, FeatureConsumer> featureTransformer) {
         return outputStream -> {
             try {
-                FeatureStream2.Result result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
+                ResultOld result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
                                                                      .toCompletableFuture()
                                                                      .join();
                 if (result.getError()

@@ -9,16 +9,21 @@ package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TileMatrixSetLimitsGenerator {
 
     List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiDataV2 data, String collectionId,
-                                                               TileMatrixSet tileMatrixSet, MinMax tileMatrixRange,
-                                                               CrsTransformerFactory crsTransformation);
+                                                               TileMatrixSet tileMatrixSet, MinMax tileMatrixRange);
 
     List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDataV2 data, TileMatrixSet tileMatrixSet,
-                                                     MinMax tileMatrixRange, CrsTransformerFactory crsTransformerFactory);
+                                                     MinMax tileMatrixRange);
+
+    List<TileMatrixSetLimits> getTileMatrixSetLimits(BoundingBox boundingBox, TileMatrixSet tileMatrixSet,
+                                                     MinMax tileMatrixRange);
+
+    Optional<BoundingBox> getBoundingBoxInTileMatrixSetCrs(BoundingBox bbox, TileMatrixSet tileMatrixSet);
 }

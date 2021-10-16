@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex" />
     <title>Exception</title>
-    <link rel="shortcut icon" type="image/x-icon" href="{{urlPrefix}}/app/img/favicon.ico">
+    {{#urlPrefix}}
+    <link rel="shortcut icon" type="image/x-icon" href="{{.}}/app/img/favicon.ico">
+    <link rel="stylesheet" href="{{.}}/app/css/app4.css"/>
+    {{/urlPrefix}}
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{urlPrefix}}/app/css/app4.css"/>
 </head>
 <body>
 

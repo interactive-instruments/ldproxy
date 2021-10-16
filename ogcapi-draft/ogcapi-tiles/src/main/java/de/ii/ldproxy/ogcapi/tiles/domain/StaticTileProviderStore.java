@@ -7,16 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
+import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Access to the store static tile providers.
  */
-public interface StaticTileProviderStore {
+public interface StaticTileProviderStore extends ApiExtension {
 
     /**
      * return and if necessary create the directory for the static tile provider store
@@ -40,4 +43,43 @@ public interface StaticTileProviderStore {
      */
     InputStream getTile(Path tileProvider, Tile tile);
 
+    /**
+     * fetch the minzoom value from the metadata in the tile set container
+     * @param apiData the API
+     * @param filename the filename of the tile set container
+     * @return the minzoom value
+     */
+    Optional<Integer> getMinzoom(OgcApiDataV2 apiData, String filename) throws SQLException;
+
+    /**
+     * fetch the maxzoom value from the metadata in the tile set container
+     * @param apiData the API
+     * @param filename the filename of the tile set container
+     * @return the maxzoom value
+     */
+    Optional<Integer> getMaxzoom(OgcApiDataV2 apiData, String filename) throws SQLException;
+
+    /**
+     * fetch the zoom level of the default view from the metadata in the tile set container
+     * @param apiData the API
+     * @param filename the filename of the tile set container
+     * @return the zoom level
+     */
+    Optional<Integer> getDefaultzoom(OgcApiDataV2 apiData, String filename) throws SQLException;
+
+    /**
+     * fetch the location of the default view from the metadata in the tile set container
+     * @param apiData the API
+     * @param filename the filename of the tile set container
+     * @return the location as longitude, latitude
+     */
+    List<Double> getCenter(OgcApiDataV2 apiData, String filename) throws SQLException;
+
+    /**
+     * fetch the format of the tiles from the metadata in the tile set container
+     * @param apiData the API
+     * @param filename the filename of the tile set container
+     * @return the format
+     */
+    String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException;
 }

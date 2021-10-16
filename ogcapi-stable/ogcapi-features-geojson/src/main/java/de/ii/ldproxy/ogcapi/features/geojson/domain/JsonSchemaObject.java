@@ -9,11 +9,11 @@ package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
@@ -22,18 +22,27 @@ public abstract class JsonSchemaObject extends JsonSchema {
 
     public final String getType() { return "object"; }
 
+    @JsonProperty("required")
     public abstract List<String> getRequired();
     public abstract Map<String, JsonSchema> getProperties();
     public abstract Map<String, JsonSchema> getPatternProperties();
 
-    // Only use the following in JSON Schema documents, not in embedded schemas
-    @JsonProperty("$schema")
-    public abstract Optional<String> getSchema();
-    @JsonProperty("$id")
-    public abstract Optional<String> getId();
-    @JsonProperty("$defs")
-    public abstract Optional<Map<String, JsonSchema>> getDefs();
-    @JsonProperty("definitions")
-    public abstract Optional<Map<String, JsonSchema>> getDefinitions();
-
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaObject> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        from.getRequired()
+            .stream()
+            .sorted()
+            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getProperties()
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByKey())
+            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
+        from.getPatternProperties()
+            .entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByKey())
+            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
+    };
 }
