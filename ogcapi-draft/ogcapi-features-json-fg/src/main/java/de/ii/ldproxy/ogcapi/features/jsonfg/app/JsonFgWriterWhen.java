@@ -11,10 +11,12 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -29,11 +31,12 @@ import java.util.function.Consumer;
 @Instantiate
 public class JsonFgWriterWhen implements GeoJsonWriter {
 
+    static public String JSON_KEY = "when";
+
     boolean isEnabled;
     String currentIntervalStart;
     String currentIntervalEnd;
     String currentInstant;
-    List<String> currentQueryables;
 
     @Override
     public JsonFgWriterWhen create() {
@@ -46,46 +49,39 @@ public class JsonFgWriterWhen implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        isEnabled = isEnabled(transformationContext);
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        isEnabled = isEnabled(context);
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
-                               Consumer<FeatureTransformationContextGeoJson> next) {
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) {
         if (isEnabled) {
             currentIntervalStart = null;
             currentIntervalEnd = null;
             currentInstant = null;
-            currentQueryables = transformationContext.getApiData()
-                                                           .getCollections()
-                                                           .get(transformationContext.getCollectionId())
-                                                           .getExtension(FeaturesCoreConfiguration.class)
-                                                           .filter(FeaturesCoreConfiguration::isEnabled)
-                                                           .flatMap(cfg -> cfg.getQueryables().map(FeaturesCollectionQueryables::getTemporal))
-                                                           .orElse(ImmutableList.of());
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
-                             Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        next.accept(context);
+
         if (isEnabled) {
             if (Objects.nonNull(currentInstant)) {
-                JsonGenerator json = transformationContext.getJson();
-                json.writeFieldName("when");
+                JsonGenerator json = context.encoding().getJson();
+                json.writeFieldName(JSON_KEY);
                 json.writeStartObject();
                 json.writeStringField("instant", currentInstant);
                 json.writeEndObject();
             } else if (Objects.nonNull(currentIntervalStart) || Objects.nonNull(currentIntervalEnd)) {
-                JsonGenerator json = transformationContext.getJson();
-                json.writeFieldName("when");
+                JsonGenerator json = context.encoding().getJson();
+                json.writeFieldName(JSON_KEY);
                 json.writeStartObject();
                 json.writeArrayFieldStart("interval");
                 if (Objects.nonNull(currentIntervalStart))
@@ -100,58 +96,36 @@ public class JsonFgWriterWhen implements GeoJsonWriter {
                 json.writeEndObject();
             }
         }
-
-        // next chain for extensions
-        next.accept(transformationContext);
     }
 
     @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
-                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onValue(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (isEnabled
-                && !currentQueryables.isEmpty()
-                && transformationContext.getState()
-                                        .getCurrentFeatureProperty()
-                                        .isPresent()
-                && transformationContext.getState()
-                                        .getCurrentValue()
-                                        .isPresent()) {
-
-            final FeatureProperty currentFeatureProperty = transformationContext.getState()
-                                                                                .getCurrentFeatureProperty()
-                                                                                .get();
-            final String currentPropertyName = currentFeatureProperty.getName();
-
-            final String currentValue = transformationContext.getState()
-                                                       .getCurrentValue()
-                                                       .get();
-
-            // TODO this is too simple and only works for simple data, but it is sufficient for the T17 data
-            //      and this should be straightforward with the updated feature transformers
-            if (currentQueryables.contains(currentPropertyName)) {
-                if (currentQueryables.get(0).equals(currentPropertyName)) {
-                    if (currentQueryables.size()==1)
-                        currentInstant = currentValue;
-                    else
-                        currentIntervalStart = currentValue;
-                } else if (currentQueryables.get(1).equals(currentPropertyName)) {
-                    currentIntervalEnd = currentValue;
-                }
-            }
+                && context.schema()
+                          .filter(FeatureSchema::isValue)
+                          .isPresent()
+                && Objects.nonNull(context.value())) {
+            final FeatureSchema schema = context.schema().get();
+            if (schema.isPrimaryInstant())
+                currentInstant = context.value();
+            else if (schema.isPrimaryIntervalStart())
+                currentIntervalStart = context.value();
+            else if (schema.isPrimaryIntervalEnd())
+                currentIntervalEnd = context.value();
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
-    private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-        return transformationContext.getApiData()
+    private boolean isEnabled(EncodingAwareContextGeoJson context) {
+        return context.encoding().getApiData()
                                     .getCollections()
-                                    .get(transformationContext.getCollectionId())
+                                    .get(context.encoding().getCollectionId())
                                     .getExtension(JsonFgConfiguration.class)
                                     .filter(JsonFgConfiguration::isEnabled)
                                     .filter(cfg -> Objects.requireNonNullElse(cfg.getWhen(),false))
                                     .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.when) ||
-                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+                                            context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
                                     .isPresent();
     }
 }

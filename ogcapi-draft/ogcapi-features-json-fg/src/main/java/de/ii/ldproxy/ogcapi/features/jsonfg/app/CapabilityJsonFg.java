@@ -25,7 +25,7 @@ public class CapabilityJsonFg implements ApiBuildingBlock {
         return new ImmutableJsonFgConfiguration.Builder().enabled(false)
                                                          .describedby(true)
                                                          .when(true)
-                                                         .refSys(true)
+                                                         .coordRefSys(true)
                                                          .where(new ImmutableWhereConfiguration.Builder().enabled(true)
                                                                                                          .alwaysIncludeGeoJsonGeometry(false)
                                                                                                          .build())

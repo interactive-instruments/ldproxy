@@ -7,12 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.jsonfg.domain
 
-import com.google.common.collect.ImmutableMap
+
 import de.ii.ldproxy.ogcapi.domain.*
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformerBase
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutablePropertyTransformation
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
 
 @SuppressWarnings('ClashingTraitMethods')
 class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<JsonFgConfiguration>, MergeMinimal<JsonFgConfiguration>, MergeSimple<JsonFgConfiguration>, MergeMap<JsonFgConfiguration>, MergeNested<JsonFgConfiguration> {
@@ -21,14 +17,13 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     JsonFgConfiguration getFull() {
         return new ImmutableJsonFgConfiguration.Builder()
                 .enabled(true)
-                .addFeatureTypes("foo")
+                .addFeatureType("foo")
                 .describedby(true)
                 .when(true)
-                .refSys(true)
+                .coordRefSys(true)
                 .where(new ImmutableWhereConfiguration.Builder()
                         .enabled(true)
                         .alwaysIncludeGeoJsonGeometry(true)
-                        .maxAllowableOffsetGeometry(0.001)
                         .build())
                 .build()
     }
@@ -48,7 +43,7 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     JsonFgConfiguration getSimple() {
         return new ImmutableJsonFgConfiguration.Builder()
                 .enabled(true)
-                .addFeatureTypes("bar")
+                .addFeatureType("bar")
                 .build()
     }
 
@@ -56,15 +51,14 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     JsonFgConfiguration getSimpleFullMerged() {
         return new ImmutableJsonFgConfiguration.Builder()
                 .enabled(true)
-                .addFeatureTypes("bar")
+                .addFeatureType("bar")
                 .describedby(true)
                 .when(true)
                 .where(new ImmutableWhereConfiguration.Builder()
                         .enabled(true)
                         .alwaysIncludeGeoJsonGeometry(true)
-                        .maxAllowableOffsetGeometry(0.001)
                         .build())
-                .refSys(true)
+                .coordRefSys(true)
                 .build()
     }
 
@@ -85,7 +79,6 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .where(new ImmutableWhereConfiguration.Builder()
                         .enabled(false)
                         .alwaysIncludeGeoJsonGeometry(false)
-                        .maxAllowableOffsetGeometry(0.002)
                         .build())
                 .build()
     }
@@ -94,14 +87,13 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     JsonFgConfiguration getNestedFullMerged() {
         return new ImmutableJsonFgConfiguration.Builder()
                 .enabled(true)
-                .addFeatureTypes("foo")
+                .addFeatureType("foo")
                 .describedby(true)
                 .when(true)
-                .refSys(true)
+                .coordRefSys(true)
                 .where(new ImmutableWhereConfiguration.Builder()
                         .enabled(false)
                         .alwaysIncludeGeoJsonGeometry(false)
-                        .maxAllowableOffsetGeometry(0.002)
                         .build())
                 .build()
     }

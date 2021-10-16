@@ -18,23 +18,17 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.jsonfg.domain.FeatureTransformationContextJsonFgExtension;
-import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableFeatureTransformationContextJsonFgExtension;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.WhereConfiguration;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -45,8 +39,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
 import javax.ws.rs.core.MediaType;
 import java.util.Comparator;
 import java.util.Locale;
@@ -128,19 +120,14 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
                                   .iterator()
                                   .next();
         }
+        // TODO support JSON-FG extensions
         if (!collectionId.equals("{collectionId}")) {
-            Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
-                                                                         .get(collectionId)
-                                                                         .getExtension(GeoJsonConfiguration.class);
-            boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                  .isPresent();
-            SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
             if (path.matches("/collections/[^//]+/items/?")) {
-                schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId, type);
-                schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId, type);
+                schemaRef = schemaGeneratorFeatureCollection.getSchemaReference(collectionId);
+                schema = schemaGeneratorFeatureCollection.getSchema(apiData, collectionId);
             } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-                schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
-                schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
+                schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
+                schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
             }
         }
         return new ImmutableApiMediaTypeContent.Builder()
@@ -168,15 +155,9 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
                                       .next();
             }
             if (!collectionId.equals("{collectionId}")) {
-            // TODO change to MUTABLES
-            Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
-                                                                         .get(collectionId)
-                                                                         .getExtension(GeoJsonConfiguration.class);
-            boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                  .isPresent();
-            SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
-                schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
-                schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
+                //TODO: implement getMutablesSchema with SchemaDeriverOpenApiMutables
+                schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
+                schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
             }
             return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schema)
@@ -194,13 +175,13 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
     }
 
     @Override
-    public boolean canTransformFeatures() {
+    public boolean canEncodeFeatures() {
         return true;
     }
 
     @Override
-    public Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContext transformationContext,
-                                                               Optional<Locale> language) {
+    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(FeatureTransformationContext transformationContext,
+                                                              Optional<Locale> language) {
 
         // TODO support language
         ImmutableSortedSet<GeoJsonWriter> geoJsonWriters = geoJsonWriterRegistry.getGeoJsonWriters()
@@ -226,68 +207,19 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
                                                                                .filter(value -> Objects.equals(value, "true"))
                                                                                .isPresent());
 
-        Optional<CrsTransformer> crsTransformerWhere = transformationContext.getCrsTransformer();
-        FeatureTransformationContextJsonFgExtension extension = ImmutableFeatureTransformationContextJsonFgExtension.builder()
-                                                                                                                    .crsTransformerWhere(crsTransformerWhere)
-                                                                                                                    .geometryPrecisionWhere(transformationContext.getGeometryPrecision())
-                                                                                                                    .maxAllowableOffsetWhere(transformationContext.getMaxAllowableOffset())
-                                                                                                                    .shouldSwapCoordinatesWhere(transformationContext.shouldSwapCoordinates())
-                                                                                                                    .suppressWhere(transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs()))
-                                                                                                                    .crs(transformationContext.getTargetCrs())
-                                                                                                                    .build();
-        transformationContextJsonFgBuilder.putExtensions("jsonfg", extension);
-
-        Optional<CrsTransformer> crsTransformerGeometry = Optional.empty();
-        boolean swapCoordinatesGeometry = false;
-        if (transformationContext.getSourceCrs().isPresent()) {
-            EpsgCrs sourceCrsGeometry = transformationContext.getSourceCrs().get();
-            EpsgCrs targetCrsGeometry = transformationContext.getDefaultCrs();
-            crsTransformerGeometry = crsTransformerFactory.getTransformer(sourceCrsGeometry, targetCrsGeometry);
-            swapCoordinatesGeometry = crsTransformerGeometry.isPresent() && crsTransformerGeometry.get()
-                                                                                                  .needsCoordinateSwap();
-        }
-
-        int precisionGeometry = transformationContext.getApiData()
-                                                     .getExtension(FeaturesCoreConfiguration.class, transformationContext.getCollectionId())
-                                                     .map(cfg -> Objects.requireNonNullElse(cfg.getCoordinatePrecision()
-                                                                                               .get("degree"), 7))
-                                                     .orElse(7);
-
-        Double maxAllowableOffsetGeometry = transformationContext.getApiData()
-                                                                 .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
-                                                                 .map(cfg -> cfg.getWhere().getMaxAllowableOffsetGeometry())
-                                                                 .orElse(null);
-
         // the GeoJSON "geometry" member is included, if and only if
         // - the value of "where" and "geometry" are identical in which case "geometry" is used or
         // - the collection is configured to always include the GeoJSON "geometry" member
-        boolean includeGeometry = transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs());
-        if (!includeGeometry) {
-            Optional<WhereConfiguration> whereConfig = transformationContext.getApiData()
-                                                                            .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
-                                                                            .map(JsonFgConfiguration::getWhere);
-            if (whereConfig.isPresent()) {
-                includeGeometry = Objects.requireNonNullElse(whereConfig.get().getAlwaysIncludeGeoJsonGeometry(), false);
-            }
-        }
+        boolean includePrimaryGeometry = transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs())
+                || transformationContext.getApiData()
+                                        .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
+                                        .map(JsonFgConfiguration::getWhere)
+                                        .map(WhereConfiguration::getAlwaysIncludeGeoJsonGeometry)
+                                        .orElse(false);
+        transformationContextJsonFgBuilder.suppressPrimaryGeometry(!includePrimaryGeometry)
+                                          .forceDefaultCrs(true);
 
-
-        if (Objects.isNull(maxAllowableOffsetGeometry)) {
-            maxAllowableOffsetGeometry = transformationContext.getMaxAllowableOffset();
-            Unit<?> unit = crsTransformerFactory.getCrsUnit(transformationContext.getTargetCrs());
-            if (unit.equals(SI.METRE)) {
-                // metre per degree at the equator
-                maxAllowableOffsetGeometry /= 111319.4908;
-            }
-        }
-
-        transformationContextJsonFgBuilder.crsTransformer(crsTransformerGeometry)
-                                          .geometryPrecision(precisionGeometry)
-                                          .maxAllowableOffset(maxAllowableOffsetGeometry)
-                                          .shouldSwapCoordinates(swapCoordinatesGeometry)
-                                          .suppressGeometry(!includeGeometry);
-
-        return Optional.of(new FeatureTransformerGeoJson(transformationContextJsonFgBuilder.build(), geoJsonWriters));
+        return Optional.of(new FeatureEncoderGeoJson(transformationContextJsonFgBuilder.build(), geoJsonWriters));
     }
 
 }

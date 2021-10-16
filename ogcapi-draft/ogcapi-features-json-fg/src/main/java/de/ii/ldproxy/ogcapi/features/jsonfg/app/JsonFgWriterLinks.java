@@ -13,17 +13,21 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -38,6 +42,7 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
     boolean isEnabled;
     List<Link> links;
     List<Link> currentLinks;
+    Map<String,String> currentMap = new HashMap<>();
 
     @Override
     public JsonFgWriterLinks create() {
@@ -50,12 +55,12 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        isEnabled = isEnabled(transformationContext);
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        isEnabled = isEnabled(context.encoding());
         if (isEnabled) {
-            links = transformationContext.getApiData()
+            links = context.encoding().getApiData()
                                          .getCollections()
-                                         .get(transformationContext.getCollectionId())
+                                         .get(context.encoding().getCollectionId())
                                          .getExtension(JsonFgConfiguration.class)
                                          .filter(JsonFgConfiguration::isEnabled)
                                          .map(JsonFgConfiguration::getLinks)
@@ -63,72 +68,64 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
-                               Consumer<FeatureTransformationContextGeoJson> next) {
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) {
         if (isEnabled) {
             currentLinks = links.stream()
                                 .map(link -> {
-                                    link = replace(link, "serviceUrl", transformationContext.getServiceUrl());
                                     if (hasTemplate(link))
                                         return link;
-                                    transformationContext.getState().addCurrentFeatureLinks(link);
+                                    context.encoding().getState().addCurrentFeatureLinks(link);
                                     return null;
                                 })
                                 .filter(Objects::nonNull)
                                 .collect(ImmutableList.toImmutableList());
+            currentMap.clear();
+            currentMap.put("serviceUrl", context.encoding().getServiceUrl());
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
-                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onValue(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (isEnabled
                 && !currentLinks.isEmpty()
-                && transformationContext.getState()
-                                        .getCurrentFeatureProperty()
-                                        .isPresent()
-                && transformationContext.getState()
-                                        .getCurrentValue()
-                                        .isPresent()) {
+                && context.schema()
+                          .filter(FeatureSchema::isValue)
+                          .isPresent()
+                && Objects.nonNull(context.value())) {
 
-            final FeatureProperty currentFeatureProperty = transformationContext.getState()
-                                                                                .getCurrentFeatureProperty()
-                                                                                .get();
-            final String currentPropertyName = currentFeatureProperty.getName();
-
-            final String currentValue = transformationContext.getState()
-                                                       .getCurrentValue()
-                                                       .get();
-
-            currentLinks = currentLinks.stream()
-                                       .map(link -> {
-                                           link = replace(link, currentPropertyName, currentValue);
-                                           if (hasTemplate(link))
-                                               return link;
-                                           if (!link.getHref().isEmpty() && !link.getRel().isEmpty())
-                                               transformationContext.getState().addCurrentFeatureLinks(link);
-                                           return null;
-                                       })
-                                       .filter(Objects::nonNull)
-                                       .collect(ImmutableList.toImmutableList());
+            final FeatureSchema schema = context.schema().get();
+            currentMap.put(schema.getFullPathAsString(), context.value());
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
-    private Link replace(Link link, String param, String value) {
-        if (hasTemplate(link, param)) {
-            final String href = StringTemplateFilters.applyTemplate(link.getHref(), value, isHtml -> {}, param);
-            final String rel = StringTemplateFilters.applyTemplate(link.getRel(), value, isHtml -> {}, param);
+    @Override
+    public void onPropertiesEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (isEnabled) {
+            currentLinks.forEach(link -> {
+                link = replace(link);
+                if (!hasTemplate(link) && !link.getHref().isEmpty() && !link.getRel().isEmpty())
+                    context.encoding().getState().addCurrentFeatureLinks(link);
+            });
+        }
+
+        next.accept(context);
+    }
+
+    private Link replace(Link link) {
+        if (hasTemplate(link)) {
+            final String href = StringTemplateFilters.applyTemplate(link.getHref(), isHtml -> {}, currentMap::get);
+            final String rel = StringTemplateFilters.applyTemplate(link.getRel(), isHtml -> {}, currentMap::get);
             final String title = Objects.nonNull(link.getTitle())
-                    ? StringTemplateFilters.applyTemplate(link.getTitle(), value, isHtml -> {}, param)
+                    ? StringTemplateFilters.applyTemplate(link.getTitle(), isHtml -> {}, currentMap::get)
                     : null;
             link = new ImmutableLink.Builder().from(link)
                                               .href(href)
@@ -139,17 +136,10 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
         return link;
     }
 
-    private boolean hasTemplate(Link link, String param) {
-        final String templateParam = OPEN_TEMPLATE + param + CLOSE_TEMPLATE;
-        final String templateParam2 = OPEN_TEMPLATE + param + " ";
-        return link.getHref().contains(templateParam)
-                || Objects.requireNonNullElse(link.getTitle(),"").contains(templateParam)
-                || link.getHref().contains(templateParam2)
-                || Objects.requireNonNullElse(link.getTitle(),"").contains(templateParam2);
-    }
-
     private boolean hasTemplate(Link link) {
-        return link.getHref().contains(OPEN_TEMPLATE) || Objects.requireNonNullElse(link.getTitle(),"").contains(OPEN_TEMPLATE);
+        return link.getHref().contains(OPEN_TEMPLATE)
+                || Objects.requireNonNullElse(link.getTitle(),"").contains(OPEN_TEMPLATE)
+                || Objects.requireNonNullElse(link.getRel(),"").contains(OPEN_TEMPLATE);
     }
 
     private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {

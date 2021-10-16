@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaConfiguration;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
@@ -46,19 +47,19 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        isEnabled = isEnabled(transformationContext);
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        isEnabled = isEnabled(context.encoding());
 
-        if (isEnabled && transformationContext.isFeatureCollection()) {
-            String label = transformationContext.getApiData()
+        if (isEnabled && context.encoding().isFeatureCollection()) {
+            String label = context.encoding().getApiData()
                                                 .getCollections()
-                                                .get(transformationContext.getCollectionId())
+                                                .get(context.encoding().getCollectionId())
                                                 .getLabel();
-            transformationContext.getState()
+            context.encoding().getState()
                                  .addCurrentFeatureCollectionLinks(new ImmutableLink.Builder().rel("describedby")
-                                                                                              .href(transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/schemas/collection")
+                                                                                              .href(context.encoding().getServiceUrl() + "/collections/" + context.encoding().getCollectionId() + "/schemas/collection")
                                                                                               .type("application/schema+json")
-                                                                                              .title(i18n.get("schemaLinkCollection", transformationContext.getLanguage()).replace("{{collection}}", label))
+                                                                                              .title(i18n.get("schemaLinkCollection", context.encoding().getLanguage()).replace("{{collection}}", label))
                                                                                               .build(),
                                                                    new ImmutableLink.Builder().rel("describedby")
                                                                                               .href("https://geojson.org/schema/FeatureCollection.json")
@@ -68,20 +69,20 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (isEnabled && !transformationContext.isFeatureCollection()) {
-            String label = transformationContext.getApiData()
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (isEnabled && !context.encoding().isFeatureCollection()) {
+            String label = context.encoding().getApiData()
                                                 .getCollections()
-                                                .get(transformationContext.getCollectionId())
+                                                .get(context.encoding().getCollectionId())
                                                 .getLabel();
-            transformationContext.getState().addCurrentFeatureLinks(new ImmutableLink.Builder().rel("describedby")
-                                                                                               .href(transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/schemas/feature")
+            context.encoding().getState().addCurrentFeatureLinks(new ImmutableLink.Builder().rel("describedby")
+                                                                                               .href(context.encoding().getServiceUrl() + "/collections/" + context.encoding().getCollectionId() + "/schemas/feature")
                                                                                                .type("application/schema+json")
-                                                                                               .title(i18n.get("schemaLinkFeature", transformationContext.getLanguage()).replace("{{collection}}", label))
+                                                                                               .title(i18n.get("schemaLinkFeature", context.encoding().getLanguage()).replace("{{collection}}", label))
                                                                                                .build(),
                                                                     new ImmutableLink.Builder().rel("describedby")
                                                                                                .href("https://geojson.org/schema/Feature.json")
@@ -91,7 +92,7 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {

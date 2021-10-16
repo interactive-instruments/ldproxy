@@ -29,6 +29,7 @@ class JsonFgWriterCrsSpec extends Specification {
         boolean isCollection = true
         EpsgCrs crs = DEFAULT_CRS
         String expected = "{" + System.lineSeparator() +
+                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"," + System.lineSeparator() +
                 "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
@@ -46,6 +47,7 @@ class JsonFgWriterCrsSpec extends Specification {
         boolean isCollection = true
         EpsgCrs crs = OTHER_CRS
         String expected = "{" + System.lineSeparator() +
+                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"," + System.lineSeparator() +
                 "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
@@ -64,6 +66,7 @@ class JsonFgWriterCrsSpec extends Specification {
         boolean isCollection = false
         EpsgCrs crs = DEFAULT_CRS
         String expected = "{" + System.lineSeparator() +
+                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"," + System.lineSeparator() +
                 "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
@@ -81,6 +84,7 @@ class JsonFgWriterCrsSpec extends Specification {
         boolean isCollection = false
         EpsgCrs crs = OTHER_CRS
         String expected = "{" + System.lineSeparator() +
+                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"," + System.lineSeparator() +
                 "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
@@ -99,7 +103,7 @@ class JsonFgWriterCrsSpec extends Specification {
             crsTransformer = Mock()
             crsTransformer.getTargetCrs() >> crs
         }
-        EncodingAwareContextGeoJson context = GeoJsonWriterSetupUtil.createTransformationContext(outputStream, isCollection, crsTransformer)
+        EncodingAwareContextGeoJson context = JsonFgWriterSetupUtil.createTransformationContext(outputStream, isCollection, crsTransformer)
         FeatureEncoderGeoJson encoder = new FeatureEncoderGeoJson(context.encoding(), ImmutableList.of(new JsonFgWriterCrs()));
 
         context.encoding().getJson()

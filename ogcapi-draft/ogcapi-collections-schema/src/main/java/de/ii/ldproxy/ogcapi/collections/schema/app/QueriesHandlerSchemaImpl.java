@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.collections.schema.app;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.collections.schema.SchemaCacheReturnables;
 import de.ii.ldproxy.ogcapi.collections.schema.domain.QueriesHandlerSchema;
 import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;

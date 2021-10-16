@@ -8,9 +8,9 @@
 package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.ldproxy.ogcapi.features.jsonfg.domain.FeatureTransformationContextJsonFgExtension;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.apache.felix.ipojo.annotations.Component;
@@ -26,6 +26,8 @@ import java.util.function.Consumer;
 @Instantiate
 public class JsonFgWriterCrs implements GeoJsonWriter {
 
+    static public String JSON_KEY = "coordRefSys";
+
     boolean isEnabled;
 
     @Override
@@ -39,36 +41,31 @@ public class JsonFgWriterCrs implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext,
-                        Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        isEnabled = isEnabled(transformationContext);
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        isEnabled = isEnabled(context.encoding());
 
-        if (isEnabled && transformationContext.isFeatureCollection()) {
-            FeatureTransformationContextJsonFgExtension jsonfg = (FeatureTransformationContextJsonFgExtension) transformationContext.getExtensions().get("jsonfg");
-            if (Objects.nonNull(jsonfg)) {
-                writeCrs(transformationContext.getJson(), jsonfg.getCrs());
-            }
+        if (isEnabled && context.encoding().isFeatureCollection()) {
+            writeCrs(context.encoding().getJson(), context.encoding().getTargetCrs());
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
-                               Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (isEnabled && !transformationContext.isFeatureCollection()) {
-            FeatureTransformationContextJsonFgExtension jsonfg = (FeatureTransformationContextJsonFgExtension) transformationContext.getExtensions().get("jsonfg");
-            if (Objects.nonNull(jsonfg)) {
-                writeCrs(transformationContext.getJson(), jsonfg.getCrs());
-            }
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (isEnabled && !context.encoding().isFeatureCollection()) {
+            writeCrs(context.encoding().getJson(), context.encoding().getTargetCrs());
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     private void writeCrs(JsonGenerator json, EpsgCrs crs) throws IOException {
+        json.writeStringField(JSON_KEY, crs.toUriString());
+
+        // TODO temporary additional member to support T17 clients, remove
         json.writeStringField("coord-ref-sys", crs.toUriString());
     }
 
@@ -76,8 +73,8 @@ public class JsonFgWriterCrs implements GeoJsonWriter {
         return transformationContext.getApiData()
                                     .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
                                     .filter(JsonFgConfiguration::isEnabled)
-                                    .filter(cfg -> Objects.requireNonNullElse(cfg.getRefSys(),false))
-                                    .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.refSys) ||
+                                    .filter(cfg -> Objects.requireNonNullElse(cfg.getCoordRefSys(), false))
+                                    .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.coordRefSys) ||
                                             transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
                                     .isPresent();
     }

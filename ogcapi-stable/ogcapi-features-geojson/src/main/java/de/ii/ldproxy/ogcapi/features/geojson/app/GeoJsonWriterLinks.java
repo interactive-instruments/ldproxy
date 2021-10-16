@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureLinksGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -57,26 +58,25 @@ public class GeoJsonWriterLinks implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         reset();
 
-        if (transformationContext.isFeatureCollection()) {
-            // TODO move isLastPage up to Wfs3Service
-            OptionalLong numberReturned = transformationContext.getState()
-                                                               .getNumberReturned();
-            boolean isLastPage = numberReturned.orElse(0) < transformationContext.getLimit();
+        if (context.encoding().isFeatureCollection()) {
+            OptionalLong numberReturned = context.metadata().getNumberReturned();
+            boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
 
             // initialize with the standard resource links for the collection,
             // but filter out "next" link, if we are on the last page
-            transformationContext.getState().setCurrentFeatureCollectionLinks(transformationContext.getLinks()
-                                                                                                   .stream()
-                                                                                                   .filter(link -> !((isLastPage && Objects.equals(link.getRel(), "next"))))
-                                                                                                   .collect(Collectors.toUnmodifiableList()));
+            context.encoding().getState().setCurrentFeatureCollectionLinks(context.encoding()
+                                                                                  .getLinks()
+                                                                                  .stream()
+                                                                                  .filter(link -> !((isLastPage && Objects.equals(link.getRel(), "next"))))
+                                                                                  .collect(Collectors.toUnmodifiableList()));
 
             // cache the link relation types to include for embedded features
-            featureRels = transformationContext.getApiData()
+            featureRels = context.encoding().getApiData()
                                                .getCollections()
-                                               .get(transformationContext.getCollectionId())
+                                               .get(context.encoding().getCollectionId())
                                                .getExtension(FeaturesCoreConfiguration.class)
                                                .map(cfg -> {
                                                    boolean addSelf = cfg.getShowsFeatureSelfLink();
@@ -91,52 +91,51 @@ public class GeoJsonWriterLinks implements GeoJsonWriter {
                                                .orElse(ImmutableSet.of());
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.isFeatureCollection()) {
-            this.writeLinksIfAny(transformationContext.getJson(), transformationContext.getState()
-                                                                                       .getCurrentFeatureCollectionLinks());
+    public void onEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (context.encoding().isFeatureCollection()) {
+            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getState().getCurrentFeatureCollectionLinks());
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.isFeatureCollection()) {
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (context.encoding().isFeatureCollection()) {
 
             // initialize empty for embedded features
-            transformationContext.getState().setCurrentFeatureLinks(ImmutableList.of());
+            context.encoding().getState().setCurrentFeatureLinks(ImmutableList.of());
         } else {
 
             // initialize with the standard resource links for the feature
-            transformationContext.getState().setCurrentFeatureLinks(transformationContext.getLinks());
+            context.encoding().getState().setCurrentFeatureLinks(context.encoding().getLinks());
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.isFeatureCollection()) {
+    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (context.encoding().isFeatureCollection()) {
             // write links of the embedded feature
-            this.writeLinksIfAny(transformationContext.getJson(), transformationContext.getState()
+            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getState()
                                                                                        .getCurrentFeatureLinks()
                                                                                        .stream()
                                                                                        .filter(link -> featureRels.contains(link.getRel()))
                                                                                        .collect(Collectors.toUnmodifiableList()));
         } else {
-            this.writeLinksIfAny(transformationContext.getJson(), transformationContext.getState()
+            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getState()
                                                                                        .getCurrentFeatureLinks());
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     private void writeLinksIfAny(JsonGenerator json, List<Link> links) throws IOException {

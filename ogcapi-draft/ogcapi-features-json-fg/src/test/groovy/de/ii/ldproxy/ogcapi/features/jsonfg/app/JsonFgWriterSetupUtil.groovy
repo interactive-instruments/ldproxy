@@ -5,18 +5,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.features.geojson.app
+package de.ii.ldproxy.ogcapi.features.jsonfg.app
 
 import com.google.common.collect.ImmutableList
 import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.features.geojson.app.FeaturesFormatGeoJson
 import de.ii.ldproxy.ogcapi.features.geojson.domain.*
+import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.OgcCrs
 
 import javax.ws.rs.core.Request
 import java.nio.charset.StandardCharsets
 
-class GeoJsonWriterSetupUtil {
+class JsonFgWriterSetupUtil {
 
     static String asString(ByteArrayOutputStream outputStream) {
         return new String(outputStream.toByteArray(), StandardCharsets.UTF_8)
@@ -27,21 +29,11 @@ class GeoJsonWriterSetupUtil {
         FeatureTransformationContextGeoJson transformationContext =  ImmutableFeatureTransformationContextGeoJson.builder()
                 .crsTransformer(Optional.ofNullable(crsTransformer))
                 .defaultCrs(OgcCrs.CRS84)
-                .mediaType(FeaturesFormatGeoJson.MEDIA_TYPE)
+                .mediaType(FeaturesFormatJsonFg.MEDIA_TYPE)
                 .apiData(new ImmutableOgcApiDataV2.Builder()
                         .id("s")
                         .serviceType("OGC_API")
-                /*.featureProvider(new ImmutableFeatureProviderDataTransformer.Builder()
-                        .providerType("WFS")
-                        .connectorType("HTTP")
-                                                                .connectionInfo(new ImmutableConnectionInfoWfsHttp.Builder()
-                                                                                                              .uri(new URI("http://localhost"))
-                                                                                                              .method(ConnectionInfoWfsHttp.METHOD.GET)
-                                                                                                              .version("2.0.0")
-                                                                                                              .gmlVersion("3.2.1")
-                                                                                                              .build())
-                                                                .nativeCrs(new EpsgCrs())
-                                                                .build())*/
+                        .addExtensions(new ImmutableJsonFgConfiguration.Builder().enabled(true).coordRefSys(true).build())
                         .build())
                 .collectionId("xyz")
                 .outputStream(outputStream)
@@ -50,7 +42,7 @@ class GeoJsonWriterSetupUtil {
                 .ogcApiRequest(new ApiRequestContext() {
                     @Override
                     ApiMediaType getMediaType() {
-                        return FeaturesFormatGeoJson.MEDIA_TYPE
+                        return FeaturesFormatJsonFg.MEDIA_TYPE
 
                     }
 

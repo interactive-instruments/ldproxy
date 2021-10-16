@@ -22,9 +22,6 @@ public interface WhereConfiguration {
     Boolean getEnabled();
 
     @Nullable
-    Double getMaxAllowableOffsetGeometry();
-
-    @Nullable
     Boolean getAlwaysIncludeGeoJsonGeometry();
 
     default WhereConfiguration mergeInto(WhereConfiguration src) {
@@ -33,11 +30,6 @@ public interface WhereConfiguration {
 
         ImmutableWhereConfiguration.Builder builder = new ImmutableWhereConfiguration.Builder().from(src)
                                                                                                .from(this);
-
-        if (Objects.nonNull(getMaxAllowableOffsetGeometry()))
-            builder.maxAllowableOffsetGeometry(getMaxAllowableOffsetGeometry());
-        else if (Objects.nonNull(src.getMaxAllowableOffsetGeometry()))
-            builder.maxAllowableOffsetGeometry(src.getMaxAllowableOffsetGeometry());
 
         return builder.build();
     }}

@@ -9,16 +9,17 @@ package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,7 +31,12 @@ import java.util.stream.Collectors;
 @Instantiate
 public class JsonFgWriterFeatureType implements GeoJsonWriter {
 
+    final static String OPEN_TEMPLATE = "{{";
+    static public String JSON_KEY = "featureType";
+
     boolean isEnabled;
+    List<String> types;
+    boolean templated;
     List<String> writeAtEnd;
 
     @Override
@@ -44,72 +50,69 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        isEnabled = isEnabled(transformationContext);
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        isEnabled = isEnabled(context.encoding());
+
+        types = isEnabled
+                ? context.encoding()
+                                    .getApiData()
+                                    .getExtension(JsonFgConfiguration.class, context.encoding().getCollectionId())
+                                    .map(JsonFgConfiguration::getFeatureType)
+                                    .orElse(ImmutableList.of())
+                : ImmutableList.of();
+        templated = types.stream()
+                         .anyMatch(type -> type.contains(OPEN_TEMPLATE));
         writeAtEnd = ImmutableList.of();
 
+        if (isEnabled && !templated && context.encoding().isFeatureCollection()) {
+            writeTypes(context.encoding(), types);
+        }
+
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
-                               Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (isEnabled) {
-            Optional<JsonFgConfiguration> config = transformationContext.getApiData().getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId());
-            if (config.isPresent()) {
-                List<String> types = config.get().getFeatureTypes();
-                if (!types.isEmpty()) {
-                    if (types.stream()
-                             .anyMatch(type -> type.contains("{{type}}"))) {
-                        writeAtEnd = types;
-                    } else {
-                        writeTypes(transformationContext, types);
-                    }
-                }
+            if (templated)
+                writeAtEnd = types;
+            else if (!context.encoding().isFeatureCollection() || true /* TODO temporary override to support T17 clients, remove */) {
+                writeTypes(context.encoding(), types);
             }
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
-                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onValue(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (!writeAtEnd.isEmpty()
-                && transformationContext.getState()
-                                 .getCurrentFeatureProperty()
-                                 .isPresent()
-                && transformationContext.getState()
-                                        .getCurrentValue()
-                                        .isPresent()) {
+                && context.schema()
+                          .filter(FeatureSchema::isValue)
+                          .isPresent()
+                && Objects.nonNull(context.value())) {
 
-            final FeatureProperty currentFeatureProperty = transformationContext.getState()
-                                                                                .getCurrentFeatureProperty()
-                                                                                .get();
-            String currentValue = transformationContext.getState()
-                                                       .getCurrentValue()
-                                                       .get();
-
-            if (currentFeatureProperty.isType()) {
+            final FeatureSchema schema = context.schema().get();
+            if (schema.isType()) {
                 writeAtEnd = writeAtEnd.stream()
-                                       .map(type -> type.replace("{{type}}", currentValue))
+                                       .map(type -> type.replace("{{type}}", context.value()))
                                        .collect(Collectors.toUnmodifiableList());
             }
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (!writeAtEnd.isEmpty()) {
-            writeTypes(transformationContext, writeAtEnd);
+            writeTypes(context.encoding(), writeAtEnd);
             writeAtEnd = ImmutableList.of();
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
@@ -118,8 +121,8 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
                                     .get(transformationContext.getCollectionId())
                                     .getExtension(JsonFgConfiguration.class)
                                     .filter(JsonFgConfiguration::isEnabled)
-                                    .filter(cfg -> Objects.nonNull(cfg.getFeatureTypes()) && !cfg.getFeatureTypes().isEmpty())
-                                    .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.featureTypes) ||
+                                    .filter(cfg -> Objects.nonNull(cfg.getFeatureType()) && !cfg.getFeatureType().isEmpty())
+                                    .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.featureType) ||
                                             transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
                                     .isPresent();
     }
@@ -131,9 +134,9 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
 
         JsonGenerator json = transformationContext.getJson();
         if (types.size()==1)
-            json.writeStringField("featureType", types.get(0));
+            json.writeStringField(JSON_KEY, types.get(0));
         else {
-            json.writeFieldName("featureType");
+            json.writeFieldName(JSON_KEY);
             json.writeStartArray(types.size());
             for (String t: types)
                 if (!t.contains("{{type}}"))

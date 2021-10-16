@@ -49,7 +49,10 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     public ApiMediaType getMediaType() { return FeaturesFormatGeoJson.MEDIA_TYPE; }
 
     @Value.Default
-    public Boolean getSuppressGeometry() { return false; }
+    public Boolean getSuppressPrimaryGeometry() { return false; }
+
+    @Value.Default
+    public Boolean getForceDefaultCrs() { return false; }
 
     public abstract Map<String, Object> getExtensions();
 

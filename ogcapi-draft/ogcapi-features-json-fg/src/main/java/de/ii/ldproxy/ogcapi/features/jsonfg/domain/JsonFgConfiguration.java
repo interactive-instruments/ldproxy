@@ -10,15 +10,10 @@ package de.ii.ldproxy.ogcapi.features.jsonfg.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Value.Immutable
@@ -29,7 +24,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
-    enum OPTION { describedby, featureTypes, when, where, refSys, links }
+    enum OPTION { describedby, featureType, when, where, coordRefSys, links }
 
     @Nullable
     Boolean getWhen();
@@ -41,10 +36,10 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     Boolean getDescribedby();
 
     @Nullable
-    Boolean getRefSys();
+    Boolean getCoordRefSys();
 
     @Nullable
-    List<String> getFeatureTypes();
+    List<String> getFeatureType();
 
     @Nullable
     List<Link> getLinks();
@@ -67,10 +62,10 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
         if (Objects.nonNull(getWhere()) && Objects.nonNull(src.getWhere()))
             builder.where(getWhere().mergeInto(src.getWhere()));
 
-        if (Objects.nonNull(getFeatureTypes()))
-            builder.featureTypes(getFeatureTypes());
-        else if (Objects.nonNull(src.getFeatureTypes()))
-            builder.featureTypes(src.getFeatureTypes());
+        if (Objects.nonNull(getFeatureType()))
+            builder.featureType(getFeatureType());
+        else if (Objects.nonNull(src.getFeatureType()))
+            builder.featureType(src.getFeatureType());
 
         return builder.build();
     }
