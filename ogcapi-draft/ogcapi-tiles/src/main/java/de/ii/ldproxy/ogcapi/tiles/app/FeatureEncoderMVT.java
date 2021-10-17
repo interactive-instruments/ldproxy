@@ -188,9 +188,6 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
     }
   }
 
-  //TODO: 2585449 feuerwehr size with master
-  // 2561287
-
   @Override
   public void onEnd(ModifiableContext context) {
     long mergerStart = System.nanoTime();
