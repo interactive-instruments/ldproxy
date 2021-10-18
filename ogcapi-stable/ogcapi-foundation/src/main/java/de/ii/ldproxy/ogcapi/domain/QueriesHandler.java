@@ -127,14 +127,15 @@ public interface QueriesHandler<T extends QueryIdentifier> {
         return null;
     }
 
-    default Response.ResponseBuilder prepareSuccessResponse(OgcApi api,
-                                                            ApiRequestContext requestContext,
+    default Response.ResponseBuilder prepareSuccessResponse(ApiRequestContext requestContext,
                                                             List<Link> links,
                                                             Date lastModified,
                                                             EntityTag etag,
                                                             String cacheControl,
                                                             Date expires,
-                                                            EpsgCrs crs) {
+                                                            EpsgCrs crs,
+                                                            boolean inline,
+                                                            String filename) {
         Response.ResponseBuilder response = Response.ok()
                                                     .type(requestContext
                                                                   .getMediaType()
@@ -174,6 +175,11 @@ public interface QueriesHandler<T extends QueryIdentifier> {
 
         if (crs != null)
             response.header("Content-Crs", "<" + crs.toUriString() + ">");
+
+        if (!inline || Objects.nonNull(filename)) {
+            response.header("Content-Disposition", (inline ? "inline" : "attachment") + (Objects.nonNull(filename) ? "; filename=\""+filename+"\"" : ""));
+
+        }
 
         return response;
     }

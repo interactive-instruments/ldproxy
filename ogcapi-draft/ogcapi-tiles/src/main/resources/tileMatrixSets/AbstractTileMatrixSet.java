@@ -33,7 +33,7 @@ public abstract class AbstractTileMatrixSet implements TileMatrixSet {
                                          .uri(getURI())
                                          .wellKnownScaleSet(getWellKnownScaleSet())
                                          .boundingBox(ImmutableTilesBoundingBox.builder()
-                                                                               .crsEpsg(getCrs())
+                                                                               .crs(getCrs().toUriString())
                                                                                .lowerLeft(getBigDecimal(bbox.getXmin()),
                                                                                           getBigDecimal(bbox.getYmin()))
                                                                                .upperRight(getBigDecimal(bbox.getXmax()),

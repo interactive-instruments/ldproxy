@@ -27,6 +27,7 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -35,7 +36,7 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
 
-    enum TileCacheType { FILES, MBTILES }
+    enum TileCacheType { FILES, MBTILES, NONE }
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -99,6 +100,13 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                         getTileProvider() instanceof TileProviderMbtiles ?
                                 ((TileProviderMbtiles) getTileProvider()).getZoomLevels() :
                                 ImmutableMap.of();
+    }
+
+    @Value.Auxiliary
+    @Value.Derived
+    @JsonIgnore
+    default Set<String> getTileMatrixSets() {
+        return getZoomLevelsDerived().keySet();
     }
 
     @Deprecated
