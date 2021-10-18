@@ -60,6 +60,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             .type(new MediaType("application", "vnd.mapbox.style+json"))
             .label("Mapbox")
             .parameter("mbs")
+            .fileExtension("json")
             .build();
 
     private final XtraPlatform xtraPlatform;

@@ -133,13 +133,15 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("landing-page.%s", outputFormatExtension.getMediaType().fileExtension()))
                 .entity(entity)
                 .build();
     }
@@ -189,13 +191,15 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("conformance-declaration.%s", outputFormatExtension.getMediaType().fileExtension()))
                 .entity(entity)
                 .build();
     }
