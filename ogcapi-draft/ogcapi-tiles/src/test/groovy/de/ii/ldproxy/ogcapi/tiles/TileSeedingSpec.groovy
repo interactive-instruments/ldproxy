@@ -13,7 +13,6 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs
 import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore //TODO
 class TileSeedingSpec extends Specification{
 
 
@@ -22,7 +21,7 @@ class TileSeedingSpec extends Specification{
         given: "a zoom Level of 0 and a spatial extent of the following Tile: zoom level 8, row 103, col 153"
 
         def zoomLevel = 0
-        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad")
+        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow()
 
         def crsTransformation = null
 
@@ -53,7 +52,7 @@ class TileSeedingSpec extends Specification{
         given: "a zoom Level of 10 and a spatial extent with default values"
 
         def zoomLevel = 10
-        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad")
+        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow();
 
 
         def crsTransformation = null
@@ -86,7 +85,7 @@ class TileSeedingSpec extends Specification{
         given: "a zoom Level of 12 and a spatial extent of the following Tile: zoom level 8, row 103, col 153"
 
         def zoomLevel = 12
-        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad")
+        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow()
 
         def crsTransformation = null
 
@@ -105,8 +104,8 @@ class TileSeedingSpec extends Specification{
 
         then: 'it should return a map with min/max row/col values'
 
-        result.minTileCol == 2448
-        result.maxTileCol == 2464
+        result.minTileCol == 2447
+        result.maxTileCol == 2463
         result.minTileRow == 1647
         result.maxTileRow == 1663
 
