@@ -90,10 +90,10 @@ class TileSeedingSpec extends Specification{
         def crsTransformation = null
 
         //coordinates from http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ in EPSG: 3857
-        def xMin = 3913575.8482010253
-        def yMin = 3757032.814272985
-        def xMax = 4070118.8821290657
-        def yMax = 3913575.8482010253
+        def xMin = 3913580.0
+        def yMin = 3757040.0
+        def xMax = 4070110.0
+        def yMax = 3913570.0
 
         def targetCrs = EpsgCrs.of(3857)
         def bbox = BoundingBox.of(xMin, yMin, xMax, yMax, targetCrs)
@@ -104,9 +104,9 @@ class TileSeedingSpec extends Specification{
 
         then: 'it should return a map with min/max row/col values'
 
-        result.minTileCol == 2447
+        result.minTileCol == 2448
         result.maxTileCol == 2463
-        result.minTileRow == 1647
+        result.minTileRow == 1648
         result.maxTileRow == 1663
 
     }
