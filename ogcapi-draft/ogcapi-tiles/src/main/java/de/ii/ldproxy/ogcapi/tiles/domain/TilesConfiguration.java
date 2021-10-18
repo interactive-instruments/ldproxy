@@ -35,7 +35,7 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
 
-    enum TileCacheType { FILES, MBTILES }
+    enum TileCacheType { FILES, MBTILES, NONE }
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
