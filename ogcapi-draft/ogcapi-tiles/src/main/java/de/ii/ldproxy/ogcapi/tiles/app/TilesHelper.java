@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -82,7 +83,8 @@ public class TilesHelper {
                                        Optional<URICustomizer> uriCustomizer,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
                                        FeaturesCoreProviders providers,
-                                       EntityRegistry entityRegistry) {
+                                       EntityRegistry entityRegistry,
+                                       CollectionDynamicMetadataRegistry metadataRegistry) {
 
         ImmutableTileSet.Builder builder = ImmutableTileSet.builder()
                                                            .dataType(TileSet.DataType.vector);
@@ -102,7 +104,7 @@ public class TilesHelper {
                                             ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
                                             : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
 
-        Optional<BoundingBox> bbox = collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent();
+        Optional<BoundingBox> bbox = collectionId.isPresent() ? metadataRegistry.getSpatialExtent(apiData.getId(),collectionId.get()) : metadataRegistry.getSpatialExtent(apiData.getId());
         bbox.ifPresent(boundingBox -> builder.boundingBox(ImmutableTilesBoundingBox.builder()
                                                                                    .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
                                                                                               BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))

@@ -11,6 +11,7 @@ import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.CACHE_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -80,6 +81,7 @@ public class TileCacheImpl implements TileCache {
     private final ExtensionRegistry extensionRegistry;
     private final EntityRegistry entityRegistry;
     private final TileMatrixSetRepository tileMatrixSetRepository;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
     /**
      * set data directory
@@ -90,7 +92,8 @@ public class TileCacheImpl implements TileCache {
                          @Requires SchemaInfo schemaInfo,
                          @Requires ExtensionRegistry extensionRegistry,
                          @Requires EntityRegistry entityRegistry,
-                         @Requires TileMatrixSetRepository tileMatrixSetRepository) throws IOException {
+                         @Requires TileMatrixSetRepository tileMatrixSetRepository,
+                         @Requires CollectionDynamicMetadataRegistry metadataRegistry) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.cacheStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
                                .resolve(TILES_DIR_NAME);
@@ -100,6 +103,7 @@ public class TileCacheImpl implements TileCache {
         this.extensionRegistry = extensionRegistry;
         this.entityRegistry = entityRegistry;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
+        this.metadataRegistry = metadataRegistry;
         Files.createDirectories(cacheStore);
 
         mbtiles = new HashMap<>();
@@ -289,9 +293,9 @@ public class TileCacheImpl implements TileCache {
             MinMax levels = tileset.getValue();
 
             BoundingBox bbox = boundingBox.orElseGet(() -> collectionId.isEmpty()
-                    ? apiData.getSpatialExtent()
+                    ? metadataRegistry.getSpatialExtent(apiData.getId())
                              .orElse(tileMatrixSet.getBoundingBox())
-                    : apiData.getSpatialExtent(collectionId.get())
+                    : metadataRegistry.getSpatialExtent(apiData.getId(), collectionId.get())
                              .orElse(tileMatrixSet.getBoundingBox()));
 
             // first the dataset tiles
@@ -414,7 +418,8 @@ public class TileCacheImpl implements TileCache {
                                                                    Optional.empty(),
                                                                    limitsGenerator,
                                                                    providers,
-                                                                   entityRegistry);
+                                                                   entityRegistry,
+                                                                   metadataRegistry);
 
                 // convert to Mbtiles metadata
                 // TODO support attribution, type, version

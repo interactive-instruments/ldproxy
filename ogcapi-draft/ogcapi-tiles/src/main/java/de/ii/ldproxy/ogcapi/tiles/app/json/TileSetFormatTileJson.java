@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.tiles.app.json;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;

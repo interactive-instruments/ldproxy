@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
@@ -101,6 +102,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final StaticTileProviderStore staticTileProviderStore;
     private final FeaturesCoreProviders providers;
     private final TileMatrixSetRepository tileMatrixSetRepository;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
@@ -110,7 +112,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires TileCache tileCache,
                                    @Requires StaticTileProviderStore staticTileProviderStore,
                                    @Requires FeaturesCoreProviders providers,
-                                   @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+                                   @Requires TileMatrixSetRepository tileMatrixSetRepository,
+                                   @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
@@ -120,6 +123,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         this.staticTileProviderStore = staticTileProviderStore;
         this.providers = providers;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
+        this.metadataRegistry = metadataRegistry;
 
         this.queryHandlers = ImmutableMap.<Query, QueryHandler<? extends QueryInput>>builder()
                 .put(Query.TILE_SETS, QueryHandler.with(QueryInputTileSets.class, this::getTileSetsResponse))
@@ -198,18 +202,20 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         builder.tilesets(tileMatrixSets.stream()
                                        .map(tileMatrixSet -> TilesHelper.buildTileSet(apiData,
-                                                                    tileMatrixSet,
-                                                                    tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
-                                                                    center,
-                                                                    collectionId,
-                                                                    vectorTilesLinkGenerator.generateTileSetEmbeddedLinks(requestContext.getUriCustomizer(),
-                                                                                                               tileMatrixSet.getId(),
-                                                                                                               tileFormats,
-                                                                                                               i18n,
-                                                                                                               requestContext.getLanguage()),
+                                                                                      tileMatrixSet,
+                                                                                      tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
+                                                                                      center,
+                                                                                      collectionId,
+                                                                                      vectorTilesLinkGenerator.generateTileSetEmbeddedLinks(requestContext.getUriCustomizer(),
+                                                                                                                                            tileMatrixSet.getId(),
+                                                                                                                                            tileFormats,
+                                                                                                                                            i18n,
+                                                                                                                                            requestContext.getLanguage()),
                                                                                       Optional.of(requestContext.getUriCustomizer().copy()),
                                                                                       limitsGenerator,
-                                                                                      providers, entityRegistry))
+                                                                                      providers,
+                                                                                      entityRegistry,
+                                                                                      metadataRegistry))
                                        .collect(Collectors.toUnmodifiableList()));
 
         TileSets tileSets = builder.build();
@@ -266,7 +272,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         TileSet tileset = TilesHelper.buildTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
                                                    zoomLevels, center, collectionId, links,
                                                    Optional.of(requestContext.getUriCustomizer().copy()),
-                                                   limitsGenerator, providers, entityRegistry);
+                                                   limitsGenerator, providers, entityRegistry, metadataRegistry);
         
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
         EntityTag etag = getEtag(tileset, TileSet.FUNNEL, outputFormat);
