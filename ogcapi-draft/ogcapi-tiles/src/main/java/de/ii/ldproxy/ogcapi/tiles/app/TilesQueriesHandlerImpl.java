@@ -220,11 +220,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("tilesets.%s", outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getTileSetsEntity(tileSets, collectionId, api, requestContext))
                 .build();
     }
@@ -271,13 +274,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s.%s", tileset.getTileMatrixSetId(), outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getTileSetEntity(tileset, apiData, collectionId, requestContext))
                 .build();
     }
@@ -489,13 +494,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tileMatrixSet.getId(), tileLevel, tileRow, tileCol, outputFormat.getMediaType().fileExtension()))
                 .entity(result.byteArray)
                 .build();
     }
@@ -524,11 +531,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        Tile tile = queryInput.getTile();
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
                 .entity(streamingOutput)
                 .build();
     }
@@ -549,13 +560,16 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        Tile tile = queryInput.getTile();
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
                 .entity(streamingOutput)
                 .build();
     }
@@ -576,13 +590,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
                 .entity(tile.getOutputFormat().getEmptyTile(tile))
                 .build();
     }

@@ -126,10 +126,13 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.schema.%s", collectionId, outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getEntity(schema, collectionId, api, requestContext))
                 .build();
     }

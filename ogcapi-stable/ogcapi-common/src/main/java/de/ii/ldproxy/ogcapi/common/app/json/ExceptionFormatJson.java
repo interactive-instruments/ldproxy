@@ -33,6 +33,7 @@ public class ExceptionFormatJson extends ErrorEntityWriter<ApiErrorMessage, ApiE
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.valueOf("application/problem+json"))
+            .fileExtension("json")
             .build();
 
     public ExceptionFormatJson() {

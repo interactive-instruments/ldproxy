@@ -42,6 +42,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
             .type(new MediaType("application","vnd.mapbox.tile+json"))
             .label("TileJSON")
             .parameter("tilejson")
+            .fileExtension("tile.json")
             .build();
 
     private final Schema schemaTileJson;
