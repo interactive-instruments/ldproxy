@@ -22,6 +22,7 @@ import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -32,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Provides
@@ -46,10 +46,13 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
 
     private final ExtensionRegistry extensionRegistry;
     private final I18n i18n;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public TileSetsFormatHtml(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    public TileSetsFormatHtml(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n,
+                              @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -124,9 +127,7 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                                                  .getExtension(HtmlConfiguration.class)
                                                  .orElse(null);
 
-        Map<String, TileMatrixSet> tileMatrixSets = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                .stream()
-                .collect(Collectors.toMap(TileMatrixSet::getId, tms -> tms));
+        Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
 
         return new TileSetsView(api.getData(), tiles, collectionId, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }

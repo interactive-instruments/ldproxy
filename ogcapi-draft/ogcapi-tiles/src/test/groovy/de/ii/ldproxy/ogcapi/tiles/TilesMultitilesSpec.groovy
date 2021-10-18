@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.tiles
 
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet
-import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.WebMercatorQuad
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -19,7 +18,8 @@ class TilesMultitilesSpec extends Specification {
 
     def "Test bbox parameter parsing"() {
         when:
-        TileMatrixSet tileMatrixSet = new WebMercatorQuad()
+        TileMatrixSet tileMatrixSet = TileMatrixSet.fromWellKnownId("WebMercatorQuad")
+
         def bbox = MultitilesUtils.parseBbox(bboxString, tileMatrixSet)
 
         then:
@@ -34,7 +34,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Incorrect values of bbox parameter"() {
         when:
-        def bbox = MultitilesUtils.parseBbox(bboxString, new WebMercatorQuad())
+        def bbox = MultitilesUtils.parseBbox(bboxString, TileMatrixSet.fromWellKnownId("WebMercatorQuad"))
 
         then:
         thrown(NotFoundException)
@@ -48,7 +48,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Test scaleDenominator parameter parsing"() {
         when:
-        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, new WebMercatorQuad())
+        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, TileMatrixSet.fromWellKnownId("WebMercatorQuad"))
 
         then:
         tileMatrices == expectedResult
@@ -64,7 +64,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Incorrect of out-of-range values of scaleDenominator parameter"() {
         when:
-        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, new WebMercatorQuad())
+        def tileMatrices = MultitilesUtils.parseScaleDenominator(scaleDenominator, TileMatrixSet.fromWellKnownId("WebMercatorQuad"))
 
         then:
         thrown(NotFoundException)
@@ -80,7 +80,7 @@ class TilesMultitilesSpec extends Specification {
 
     def "Conversion of longitude/latitude coordinates to tile coordinates for different tile matrix(level) values"() {
         when:
-        def tile = MultitilesUtils.pointToTile(lon, lat, tileMatrix, new WebMercatorQuad())
+        def tile = MultitilesUtils.pointToTile(lon, lat, tileMatrix, TileMatrixSet.fromWellKnownId("WebMercatorQuad"))
 
         then:
         tile == expectedResult

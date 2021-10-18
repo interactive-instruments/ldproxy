@@ -43,6 +43,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.auth.domain.User;
@@ -97,6 +98,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TileCache cache;
     private final StaticTileProviderStore staticTileProviderStore;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     EndpointTileMultiCollection(@Requires FeaturesCoreProviders providers,
                                 @Requires ExtensionRegistry extensionRegistry,
@@ -104,7 +106,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                                 @Requires CrsTransformerFactory crsTransformerFactory,
                                 @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                 @Requires TileCache cache,
-                                @Requires StaticTileProviderStore staticTileProviderStore) {
+                                @Requires StaticTileProviderStore staticTileProviderStore,
+                                @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(extensionRegistry);
         this.providers = providers;
         this.queryHandler = queryHandler;
@@ -112,6 +115,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         this.limitsGenerator = limitsGenerator;
         this.cache = cache;
         this.staticTileProviderStore = staticTileProviderStore;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -212,10 +216,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
             throw new NotFoundException("The requested tile is outside the zoom levels for this tile set.");
 
-        TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                .findAny()
-                .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
+        TileMatrixSet tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                             .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
         TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels)
                 .stream()
@@ -297,7 +299,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
             throw new NotAcceptableException("The requested tile format supports only a single layer. Please select only a single collection.");
 
         // check, if the cache can be used (no query parameters except f)
-        boolean useCache = queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f"));
+        boolean useCache = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f")));
 
         Tile multiLayerTile = new ImmutableTile.Builder()
                 .collectionIds(collections)
@@ -346,7 +349,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         // don't store the tile in the cache if it is outside the range
         MinMax cacheMinMax = tilesConfiguration.getZoomLevelsDerived()
                                                .get(tileMatrixSetId);
-        Tile finalMultiLayerTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+        Tile finalMultiLayerTile = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin())) ?
                 multiLayerTile :
                 new ImmutableTile.Builder()
                         .from(multiLayerTile)

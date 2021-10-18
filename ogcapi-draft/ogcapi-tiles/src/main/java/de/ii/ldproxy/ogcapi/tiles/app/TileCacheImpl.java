@@ -25,6 +25,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -78,7 +79,7 @@ public class TileCacheImpl implements TileCache {
     private final SchemaInfo schemaInfo;
     private final ExtensionRegistry extensionRegistry;
     private final EntityRegistry entityRegistry;
-    private final TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     /**
      * set data directory
@@ -89,7 +90,7 @@ public class TileCacheImpl implements TileCache {
                          @Requires SchemaInfo schemaInfo,
                          @Requires ExtensionRegistry extensionRegistry,
                          @Requires EntityRegistry entityRegistry,
-                         @Requires TileMatrixSetLimitsGenerator tileMatrixSetLimitsGenerator) throws IOException {
+                         @Requires TileMatrixSetRepository tileMatrixSetRepository) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.cacheStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
                                .resolve(TILES_DIR_NAME);
@@ -98,7 +99,7 @@ public class TileCacheImpl implements TileCache {
         this.schemaInfo = schemaInfo;
         this.extensionRegistry = extensionRegistry;
         this.entityRegistry = entityRegistry;
-        this.tileMatrixSetLimitsGenerator = tileMatrixSetLimitsGenerator;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
         Files.createDirectories(cacheStore);
 
         mbtiles = new HashMap<>();
@@ -115,9 +116,7 @@ public class TileCacheImpl implements TileCache {
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                                                                              .mode(apiValidation);
 
-        Map<String, TileMatrixSet> tileMatrixSets = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                     .stream()
-                                                                     .collect(Collectors.toMap(TileMatrixSet::getId, tms -> tms));
+        Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
         if (config.isPresent()
                 && config.get().isEnabled()
@@ -463,14 +462,12 @@ public class TileCacheImpl implements TileCache {
     }
 
     private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {
-        return extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                                .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                                .findAny()
-                                .orElseThrow(() -> new IllegalArgumentException("TileMatrixSet not found: "+tileMatrixSetId));
+        return tileMatrixSetRepository.get(tileMatrixSetId)
+                                      .orElseThrow(() -> new IllegalArgumentException("TileMatrixSet not found: "+tileMatrixSetId));
     }
 
     private List<TileMatrixSetLimits> getLimits(OgcApiDataV2 apiData, TileMatrixSet tileMatrixSet, MinMax minmax, Optional<String> collectionId, BoundingBox bbox) {
-        return tileMatrixSetLimitsGenerator.getTileMatrixSetLimits(bbox, tileMatrixSet, minmax);
+        return limitsGenerator.getTileMatrixSetLimits(bbox, tileMatrixSet, minmax);
     }
 
     private List<TileFormatWithQuerySupportExtension> getTileFormats(OgcApiDataV2 apiData, Optional<String> collectionId) {

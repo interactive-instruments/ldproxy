@@ -39,6 +39,7 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
     private static ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
             .label("HTML")
+            .parameter("html")
             .build();
 
     private final ExtendableOpenApiDefinition openApiDefinition;

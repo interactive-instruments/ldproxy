@@ -30,6 +30,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableQueryInputTileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableQueryInputTileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -62,13 +63,16 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
 
     private final TileMatrixSetsQueriesHandler queryHandler;
     private final FeaturesCoreProviders providers;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     EndpointTileMatrixSets(@Requires ExtensionRegistry extensionRegistry,
                            @Requires TileMatrixSetsQueriesHandler queryHandler,
-                           @Requires FeaturesCoreProviders providers) {
+                           @Requires FeaturesCoreProviders providers,
+                           @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
         this.providers = providers;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -162,10 +166,7 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
                                                                                                                                      .findFirst()
                                                                                                                                      .map(param -> param.getValues(api.getData())
                                    .stream()
-                                   .map(tileMatrixSetId -> extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                                                              .stream()
-                                                                                                              .filter(tms -> tileMatrixSetId.equals(tms.getId()))
-                                                                                                              .findAny())
+                                   .map(tileMatrixSetRepository::get)
                                    .filter(Optional::isPresent)
                                    .map(Optional::get)
                                    .collect(ImmutableSet.toImmutableSet()))

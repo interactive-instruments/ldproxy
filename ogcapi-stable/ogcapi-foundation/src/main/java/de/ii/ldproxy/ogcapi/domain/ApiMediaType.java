@@ -28,6 +28,11 @@ public interface ApiMediaType {
     }
 
     @Value.Default
+    default String fileExtension() {
+        return parameter();
+    }
+
+    @Value.Default
     default int qs() {
         return 1000;
     }

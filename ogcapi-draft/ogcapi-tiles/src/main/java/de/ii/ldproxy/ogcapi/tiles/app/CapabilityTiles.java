@@ -16,7 +16,6 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
@@ -30,6 +29,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -64,13 +64,16 @@ public class CapabilityTiles implements ApiBuildingBlock {
     private final FeaturesCoreProviders providers;
     private final FeaturesQuery queryParser;
     private final SchemaInfo schemaInfo;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public CapabilityTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
-                           @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo) {
+                           @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo,
+                           @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;
         this.queryParser = queryParser;
         this.providers = providers;
         this.schemaInfo = schemaInfo;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -111,10 +114,8 @@ public class CapabilityTiles implements ApiBuildingBlock {
         if (Objects.nonNull(config.getZoomLevelsDerived()))
             return config.getZoomLevelsDerived().get(tileMatrixSetId);
 
-        Optional<TileMatrixSet> tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                 .stream()
-                                                                 .filter(tms -> tms.getId().equals(tileMatrixSetId) && tms.isEnabledForApi(apiData))
-                                                                 .findAny();
+        Optional<TileMatrixSet> tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                                       .filter(tms -> config.getTileMatrixSets().contains(tms.getId()));
         return tileMatrixSet.map(matrixSet -> new ImmutableMinMax.Builder()
                 .min(matrixSet.getMinLevel())
                 .max(matrixSet.getMaxLevel())
@@ -122,10 +123,11 @@ public class CapabilityTiles implements ApiBuildingBlock {
     }
 
     private MinMax getZoomLevels(OgcApiDataV2 apiData, String tileMatrixSetId) {
-        Optional<TileMatrixSet> tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                 .stream()
-                                                                 .filter(tms -> tms.getId().equals(tileMatrixSetId) && tms.isEnabledForApi(apiData))
-                                                                 .findAny();
+        Optional<TileMatrixSet> tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                                       .filter(tms -> apiData.getExtension(TilesConfiguration.class)
+                                                                                        .map(TilesConfiguration::getTileMatrixSets)
+                                                                                        .filter(set -> set.contains(tms.getId()))
+                                                                                        .isPresent());
         return tileMatrixSet.map(matrixSet -> new ImmutableMinMax.Builder()
                 .min(matrixSet.getMinLevel())
                 .max(matrixSet.getMaxLevel())
@@ -207,10 +209,8 @@ public class CapabilityTiles implements ApiBuildingBlock {
             Map<String, MinMax> zoomLevels = config.getZoomLevelsDerived();
             for (Map.Entry<String, MinMax> entry2 : zoomLevels.entrySet()) {
                 String tileMatrixSetId = entry2.getKey();
-                Optional<TileMatrixSet> tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                         .stream()
-                                                                         .filter(tms -> tms.getId().equals(tileMatrixSetId) && tms.isEnabledForApi(apiData))
-                                                                         .findAny();
+                Optional<TileMatrixSet> tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                                               .filter(tms -> config.getTileMatrixSets().contains(tms.getId()));
                 if (tileMatrixSet.isEmpty()) {
                     builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' references a tile matrix set ''{1}'' that is not available in this API.", collectionId, tileMatrixSetId));
                 } else {

@@ -1,33 +1,36 @@
 ---
 id: vineyards
-createdAt: 1600610292030
-lastModified: 1600610292030
+createdAt: 1633786821320
+lastModified: 1633786821320
 entityStorageVersion: 2
 providerType: FEATURE
 featureProviderType: SQL
 connectionInfo:
+  connectorType: SLICK
   host: localhost
   database: vineyards
   user: postgres
   password: <base64-encoded-password>
   dialect: PGIS
-  computeNumberMatched: true
-  pathSyntax:
-    defaultPrimaryKey: ogc_fid
-    defaultSortKey: ogc_fid
-    junctionTablePattern: .+_2_.+
-    junctionTableFlag: '{junction}'
+sourcePathDefaults:
+  primaryKey: ogc_fid
+  sortKey: ogc_fid
 nativeCrs:
   code: 25832
   forceAxisOrder: NONE
+typeValidation: NONE
 types:
   vineyards:
+    label: Vineyards
+    description: 'The vineyard register constitutes the authorized list of names of single vineyards, vineyards clusters (Großlagen), sub-regions (Bereiche) and wine-growing regions (Anbaugebiete) for the protected designation of origin for wines in the German state Rhineland-Palatinate. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
+    <br>
+    The data for each vineyard includes the vineyard register number, the wine-growing region, the sub-region, the vineyard cluster, the name of the single vineyard, the village(s), the cadastral district(s) and the area with vines in hectares. The six-digit vineyard register number contains in the first digit the wine-growing region, in the second digit the sub-region, in the third and fourth digit the vineyard cluster and in the fifth and sixth digit the single vineyard.'
     sourcePath: /vineyards
     type: OBJECT
     properties:
       registerId:
         sourcePath: wlg_nr
-        type: STRING
+        type: INTEGER
         role: ID
         label: Vineyard register number
       name:
@@ -78,9 +81,3 @@ types:
         sourcePath: wkb_geometry
         type: GEOMETRY
         geometryType: MULTI_POLYGON
-      ogc_fid:
-        sourcePath: ogc_fid
-        type: INTEGER
-      gid:
-        sourcePath: gid
-        type: INTEGER

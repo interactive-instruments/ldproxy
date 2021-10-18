@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.tiles.infra;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ContentExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -34,6 +33,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -50,7 +50,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -81,6 +80,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
     private final XtraPlatform xtraPlatform;
     private final FeaturesCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public VectorTileSeeding(@Requires CrsTransformerFactory crsTransformerFactory,
                              @Requires ExtensionRegistry extensionRegistry,
@@ -88,7 +88,8 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                              @Requires TileCache tileCache,
                              @Requires XtraPlatform xtraPlatform,
                              @Requires FeaturesCoreProviders providers,
-                             @Requires TilesQueriesHandler queryHandler) {
+                             @Requires TilesQueriesHandler queryHandler,
+                             @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.extensionRegistry = extensionRegistry;
         this.limitsGenerator = limitsGenerator;
@@ -96,6 +97,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         this.xtraPlatform = xtraPlatform;
         this.providers = providers;
         this.queryHandler = queryHandler;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -117,6 +119,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                       .filter(TilesConfiguration::isEnabled)
                       // seeding only for features as tile providers
                       .filter(config -> config.getTileProvider().requiresQuerySupport())
+                      .filter(cfg -> cfg.getCache() != TilesConfiguration.TileCacheType.NONE)
                       .filter(config -> !config.getSeedingDerived()
                                                .isEmpty())
                       .isPresent();
@@ -495,15 +498,6 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
     }
 
     private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {
-        TileMatrixSet tileMatrixSet = null;
-        for (ContentExtension contentExtension : extensionRegistry.getExtensionsForType(ContentExtension.class)) {
-            if (contentExtension instanceof TileMatrixSet && ((TileMatrixSet) contentExtension).getId()
-                                                                                               .equals(tileMatrixSetId)) {
-                tileMatrixSet = (TileMatrixSet) contentExtension;
-                break;
-            }
-        }
-
-        return tileMatrixSet;
+        return tileMatrixSetRepository.get(tileMatrixSetId).orElse(null);
     }
 }

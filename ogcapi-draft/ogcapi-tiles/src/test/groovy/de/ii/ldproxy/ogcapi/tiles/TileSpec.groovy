@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.tiles.app.TileCacheImpl
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile
-import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.WebMercatorQuad
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -138,7 +138,7 @@ class TileSpec extends Specification{
 
         then: "it should return the zoom levels of the tiling scheme"
 
-        def tileMatrixSet = new WebMercatorQuad()
+        def tileMatrixSet = TileMatrixSet.fromWellKnownId("WebMercatorQuad")
 
         result == new ImmutableMinMax.Builder()
                 .min(tileMatrixSet.minLevel)
@@ -162,7 +162,7 @@ class TileSpec extends Specification{
 
         then: "it should return the zoom levels of the tiling scheme"
 
-        def tileMatrixSet = new WebMercatorQuad()
+        def tileMatrixSet = TileMatrixSet.fromWellKnownId("WebMercatorQuad")
 
         result == new ImmutableMinMax.Builder()
             .min(tileMatrixSet.minLevel)
@@ -248,7 +248,7 @@ class TileSpec extends Specification{
 
         then: "it should use the zoom level range of the tiling scheme"
 
-        def tileMatrixSet = new WebMercatorQuad()
+        def tileMatrixSet = TileMatrixSet.fromWellKnownId("WebMercatorQuad")
 
         result == new ImmutableMinMax.Builder()
                 .min(tileMatrixSet.minLevel)

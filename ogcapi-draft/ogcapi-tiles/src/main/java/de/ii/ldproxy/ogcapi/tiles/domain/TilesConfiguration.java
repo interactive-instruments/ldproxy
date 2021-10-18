@@ -26,6 +26,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
 import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
@@ -36,7 +37,7 @@ import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MINIMUM_SIZE_IN_PIX
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
 
-    enum TileCacheType { FILES, MBTILES }
+    enum TileCacheType { FILES, MBTILES, NONE }
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
@@ -98,6 +99,13 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                         getTileProvider() instanceof TileProviderMbtiles ?
                                 ((TileProviderMbtiles) getTileProvider()).getZoomLevels() :
                                 ImmutableMap.of();
+    }
+
+    @Value.Auxiliary
+    @Value.Derived
+    @JsonIgnore
+    default Set<String> getTileMatrixSets() {
+        return getZoomLevelsDerived().keySet();
     }
 
     @Deprecated

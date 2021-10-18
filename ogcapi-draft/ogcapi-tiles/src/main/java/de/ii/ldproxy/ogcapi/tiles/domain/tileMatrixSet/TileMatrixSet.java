@@ -7,28 +7,109 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ContentExtension;
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
+import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.TileMatrixSetImpl;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
+import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
  * This class provides derived information from a tile matrix set.
  */
-public interface TileMatrixSet extends ContentExtension {
+public interface TileMatrixSet {
 
-    @Override
-    default String getResourceName() { return "TileMatrixSet"; }
+    Logger LOGGER = LoggerFactory.getLogger(TileMatrixSet.class);
+
+    static Optional<TileMatrixSet> fromWellKnownId(String tileMatrixSetId) {
+        InputStream inputStream;
+        try {
+            inputStream = Resources.asByteSource(Resources.getResource(TileMatrixSetImpl.class, "/tileMatrixSets/" + tileMatrixSetId + ".json"))
+                                   .openStream();
+        } catch (IllegalArgumentException e) {
+            LOGGER.debug("Tile matrix set '{}' not found: {}", tileMatrixSetId, e.getMessage());
+            return Optional.empty();
+        } catch (IOException e) {
+            LOGGER.error("Could not load tile matrix set '{}': {}", tileMatrixSetId, e.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace: ", e);
+            }
+            return Optional.empty();
+        }
+
+        return fromInputStream(inputStream, tileMatrixSetId);
+    }
+
+    static Optional<TileMatrixSet> fromDefinition(String tileMatrixSetId, Path customTileMatrixSetsStore) {
+        File dir = customTileMatrixSetsStore.toFile();
+        if (!dir.exists())
+            dir.mkdirs();
+        Optional<File> tileMatrixSetFile = Arrays.stream(Objects.requireNonNullElse(dir.listFiles(), ImmutableList.of().toArray(File[]::new)))
+                                                 .filter(file -> !file.isHidden())
+                                                 .filter(file -> Files.getFileExtension(file.getName()).equals("json"))
+                                                 .filter(file -> Files.getNameWithoutExtension(file.getName()).equals(tileMatrixSetId))
+                                                 .findAny();
+        if (tileMatrixSetFile.isEmpty()) {
+            LOGGER.debug("Tile matrix set '{}' not found.", tileMatrixSetId);
+            return Optional.empty();
+        }
+
+        InputStream inputStream;
+        try {
+            inputStream = new FileInputStream(tileMatrixSetFile.get());
+        } catch (FileNotFoundException e) {
+            LOGGER.debug("Tile matrix set '{}' not found: {}", tileMatrixSetId, e.getMessage());
+            return Optional.empty();
+        }
+
+        return fromInputStream(inputStream, tileMatrixSetId);
+    }
+
+    static Optional<TileMatrixSet> fromInputStream(InputStream tileMatrixSetInputStream, String tileMatrixSetId) {
+        // prepare Jackson mapper for deserialization
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new Jdk8Module());
+        mapper.registerModule(new GuavaModule());
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+        mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+
+        TileMatrixSetData data;
+        try {
+            data = mapper.readValue(tileMatrixSetInputStream, TileMatrixSetData.class);
+        } catch (IOException e) {
+            LOGGER.error("Could not deserialize tile matrix set '{}': {}", tileMatrixSetId, e.getMessage());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Stacktrace: ", e);
+            }
+            return Optional.empty();
+        }
+
+        return Optional.of(new TileMatrixSetImpl(data));
+    }
 
     /**
      * fetch the local identifier for the tiling scheme
@@ -156,14 +237,6 @@ public interface TileMatrixSet extends ContentExtension {
     }
 
     /**
-     * get the number of meters for each coordinate unit.
-     * In a CRS with coordinates expressed in meters, 1.0. This is set as a default.
-     * In CRS with coordinates expressed in degrees the result is 360/(EquatorialRadius*2*PI).
-     * @return the number of meters
-     */
-    default double getMetersPerUnit() { return 1.0; }
-
-    /**
      * fetch the maximum zoom level, typically 24 or less
      * @return the maximum zoom level
      */
@@ -277,20 +350,7 @@ public interface TileMatrixSet extends ContentExtension {
      * @param level the tile matrix level
      * @return the tile matrix
      */
-    default TileMatrix getTileMatrix(int level) {
-        double initScaleDenominator = getInitialScaleDenominator();
-        BoundingBox bbox = getBoundingBox();
-        return ImmutableTileMatrix.builder()
-                                  .tileLevel(level)
-                                  .tileWidth(getTileSize())
-                                  .tileHeight(getTileSize())
-                                  .matrixWidth(getCols(level))
-                                  .matrixHeight(getRows(level))
-                                  .metersPerUnit(getMetersPerUnit())
-                                  .scaleDenominator(getBigDecimal(initScaleDenominator / Math.pow(2, level)))
-                                  .pointOfOrigin(new BigDecimal[]{ getBigDecimal(bbox.getXmin()), getBigDecimal(bbox.getYmax()) })
-                                  .build();
-    }
+    TileMatrix getTileMatrix(int level);
 
     default BigDecimal getBigDecimal(double value) {
         BigDecimal decimalValue = new BigDecimal(value);

@@ -119,7 +119,7 @@ public class TilesHelper {
                                                                 BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
                                                      .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
                                                                  BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
-                                                     .crsEpsg(OgcCrs.CRS84)
+                                                     .crs(OgcCrs.CRS84.toUriString())
                                                      .build());
 
         if (zoomLevels.getDefault().isPresent() || !center.isEmpty()) {
