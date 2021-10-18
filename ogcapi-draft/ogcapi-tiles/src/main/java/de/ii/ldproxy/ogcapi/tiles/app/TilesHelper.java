@@ -90,6 +90,7 @@ public class TilesHelper {
                                        TileSet.DataType dataType,
                                        List<Link> links,
                                        Optional<URICustomizer> uriCustomizer,
+                                       CrsTransformerFactory crsTransformerFactory,
                                        TileMatrixSetLimitsGenerator limitsGenerator,
                                        FeaturesCoreProviders providers,
                                        EntityRegistry entityRegistry) {
@@ -112,15 +113,19 @@ public class TilesHelper {
                                             ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
                                             : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
 
-        BoundingBox boundingBox = (collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent())
-                .orElse(tileMatrixSet.getBoundingBoxCrs84());
-        builder.boundingBox(ImmutableTilesBoundingBox.builder()
-                                                     .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
-                                                                BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
-                                                     .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
-                                                                 BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
-                                                     .crs(OgcCrs.CRS84.toUriString())
-                                                     .build());
+        try {
+            BoundingBox boundingBox = (collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent())
+                    .orElse(tileMatrixSet.getBoundingBoxCrs84(crsTransformerFactory));
+            builder.boundingBox(ImmutableTilesBoundingBox.builder()
+                                                         .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
+                                                                    BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
+                                                         .upperRight(BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
+                                                                     BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
+                                                         .crs(OgcCrs.CRS84.toUriString())
+                                                         .build());
+        } catch (CrsTransformationException e) {
+            // ignore, just skip the boundingBox
+        }
 
         if (zoomLevels.getDefault().isPresent() || !center.isEmpty()) {
             ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();

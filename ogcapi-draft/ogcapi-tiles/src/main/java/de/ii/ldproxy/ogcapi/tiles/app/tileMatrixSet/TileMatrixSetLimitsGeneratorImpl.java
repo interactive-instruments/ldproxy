@@ -63,7 +63,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         if (bbox.isEmpty()) {
             // fallback to bbox of the tile matrix set
             LOGGER.debug("No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set for collection '{}'. Using the tile matrix set bounding box.", collectionId);
-            bbox = Optional.of(tileMatrixSet.getBoundingBoxCrs84());
+            bbox = Optional.of(tileMatrixSet.getBoundingBox());
         }
 
         return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
@@ -89,7 +89,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         if (bbox.isEmpty()) {
             // fallback to bbox of the tile matrix set
             LOGGER.debug("No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
-            bbox = Optional.of(tileMatrixSet.getBoundingBoxCrs84());
+            bbox = Optional.of(tileMatrixSet.getBoundingBox());
         }
 
         return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
@@ -110,7 +110,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         if (bbox.isEmpty()) {
             // fallback to bbox of the tile matrix set
             LOGGER.debug("Bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
-            bbox = Optional.of(tileMatrixSet.getBoundingBoxCrs84());
+            bbox = Optional.of(tileMatrixSet.getBoundingBox());
         }
 
         return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());

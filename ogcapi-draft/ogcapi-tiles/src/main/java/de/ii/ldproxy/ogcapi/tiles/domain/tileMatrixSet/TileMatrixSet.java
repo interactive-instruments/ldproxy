@@ -301,7 +301,7 @@ public interface TileMatrixSet {
      * Fetch the bounding box of the tile matrix set in CRS84
      * @return bounding box
      */
-    BoundingBox getBoundingBoxCrs84();
+    BoundingBox getBoundingBoxCrs84(CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException;
 
     /**
      * validate, whether the row is valid for the zoom level

@@ -217,8 +217,10 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                                                                                           i18n,
                                                                                                                                           requestContext.getLanguage()),
                                                                                           Optional.of(requestContext.getUriCustomizer().copy()),
+                                                                                          crsTransformerFactory,
                                                                                           limitsGenerator,
-                                                                                          providers, entityRegistry))
+                                                                                          providers,
+                                                                                          entityRegistry))
                                            .collect(Collectors.toUnmodifiableList()));
 
         TileSets tileSets = builder.build();
@@ -279,7 +281,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         TileSet tileset = TilesHelper.buildTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
                                                    zoomLevels, center, collectionId, dataType, links,
                                                    Optional.of(requestContext.getUriCustomizer().copy()),
-                                                   limitsGenerator, providers, entityRegistry);
+                                                   crsTransformerFactory, limitsGenerator, providers, entityRegistry);
         
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
         EntityTag etag = getEtag(tileset, TileSet.FUNNEL, outputFormat);

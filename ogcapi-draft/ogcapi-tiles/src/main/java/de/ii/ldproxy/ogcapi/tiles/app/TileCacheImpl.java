@@ -29,6 +29,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -80,6 +81,7 @@ public class TileCacheImpl implements TileCache {
     private final ExtensionRegistry extensionRegistry;
     private final EntityRegistry entityRegistry;
     private final TileMatrixSetRepository tileMatrixSetRepository;
+    private final CrsTransformerFactory crsTransformerFactory;
 
     /**
      * set data directory
@@ -90,7 +92,8 @@ public class TileCacheImpl implements TileCache {
                          @Requires SchemaInfo schemaInfo,
                          @Requires ExtensionRegistry extensionRegistry,
                          @Requires EntityRegistry entityRegistry,
-                         @Requires TileMatrixSetRepository tileMatrixSetRepository) throws IOException {
+                         @Requires TileMatrixSetRepository tileMatrixSetRepository,
+                         @Requires CrsTransformerFactory crsTransformerFactory) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.cacheStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
                                .resolve(TILES_DIR_NAME);
@@ -100,6 +103,7 @@ public class TileCacheImpl implements TileCache {
         this.extensionRegistry = extensionRegistry;
         this.entityRegistry = entityRegistry;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
+        this.crsTransformerFactory = crsTransformerFactory;
         Files.createDirectories(cacheStore);
 
         mbtiles = new HashMap<>();
@@ -413,6 +417,7 @@ public class TileCacheImpl implements TileCache {
                                                                    TileSet.DataType.vector,
                                                                    ImmutableList.of(),
                                                                    Optional.empty(),
+                                                                   crsTransformerFactory,
                                                                    limitsGenerator,
                                                                    providers,
                                                                    entityRegistry);
