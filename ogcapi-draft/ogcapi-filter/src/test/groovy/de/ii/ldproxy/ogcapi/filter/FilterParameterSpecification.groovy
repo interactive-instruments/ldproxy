@@ -26,11 +26,11 @@ import spock.lang.Specification
 class FilterParameterSpecification extends Specification {
 
     static final String SUT_URL = System.getenv('SUT_URL')
-    static final String API_PATH_DARAA = "/rest/services/daraa"
+    static final String API_PATH_DARAA = "/daraa"
     static final String CULTURE_PNT = "CulturePnt"
     static final String TRANSPORTATION_GROUND_CRV = "TransportationGroundCrv"
     static final String CULTURE_PNT_PATH = API_PATH_DARAA + "/collections/" + CULTURE_PNT + "/items"
-    static final String API_PATH_GEOINFODOK = "/rest/services/geoinfodok"
+    static final String API_PATH_GEOINFODOK = "/geoinfodok"
     static final String AX_GEBAEUDEFUNKTION = "ax_gebaeudefunktion"
     static final String AX_GEBAEUDEFUNKTION_PATH = API_PATH_GEOINFODOK + "/collections/" + AX_GEBAEUDEFUNKTION + "/items"
     static final String GEO_JSON = "application/geo+json";
@@ -198,6 +198,21 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<propertyAndLiteral2String.responseData.numberReturned; i++) {
             assertFeature(propertyAndLiteral2String.responseData.features[i], propertyAndLiteralStringCheck.get(i))
         }
+
+        when: "8. Data is selected using a filter ZI001_SDV='2011-12-26T20:55:27Z'"
+        def temporalProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV='2011-12-26T20:55:27Z'"))
+        def temporalPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI001_SDV=='2011-12-26T20:55:27Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(temporalProperty)
+
+        and: "Returns the same number of features"
+        temporalProperty.responseData.numberReturned == temporalPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<temporalProperty.responseData.numberReturned; i++) {
+            assertFeature(temporalProperty.responseData.features[i], temporalPropertyCheck.get(i))
+        }
     }
 
     def "Operator neq"() {
@@ -279,6 +294,21 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns no features"
         literals.responseData.numberReturned == 0
+
+        when: "7. Data is selected using a filter ZI001_SDV<>'2011-12-26T20:55:27Z'"
+        def temporalProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV<>'2011-12-26T20:55:27Z'"))
+        def temporalPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI001_SDV!='2011-12-26T20:55:27Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(temporalProperty)
+
+        and: "Returns the same number of features"
+        temporalProperty.responseData.numberReturned == temporalPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<temporalProperty.responseData.numberReturned; i++) {
+            assertFeature(temporalProperty.responseData.features[i], temporalPropertyCheck.get(i))
+        }
     }
 
     def "Operator lt"() {
@@ -361,6 +391,21 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns no features"
         literals.responseData.numberReturned == 0
+
+        when: "7. Data is selected using a filter ZI001_SDV<'2011-12-26T20:55:27Z'"
+        def temporalProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV<'2011-12-26T20:55:27Z'"))
+        def temporalPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI001_SDV<'2011-12-26T20:55:27Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(temporalProperty)
+
+        and: "Returns the same number of features"
+        temporalProperty.responseData.numberReturned == temporalPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<temporalProperty.responseData.numberReturned; i++) {
+            assertFeature(temporalProperty.responseData.features[i], temporalPropertyCheck.get(i))
+        }
     }
 
     def "Operator gt"() {
@@ -443,6 +488,21 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns n0 features"
         literals.responseData.numberReturned == 0
+
+        when: "7. Data is selected using a filter ZI001_SDV>'2011-12-26T20:55:27Z'"
+        def temporalProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV>'2011-12-26T20:55:27Z'"))
+        def temporalPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI001_SDV>'2011-12-26T20:55:27Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(temporalProperty)
+
+        and: "Returns the same number of features"
+        temporalProperty.responseData.numberReturned == temporalPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<temporalProperty.responseData.numberReturned; i++) {
+            assertFeature(temporalProperty.responseData.features[i], temporalPropertyCheck.get(i))
+        }
     }
 
     def "Operator lteq"() {
@@ -525,6 +585,21 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns all features"
         literals.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
+
+        when: "7. Data is selected using a filter ZI001_SDV<='2011-12-26T20:55:27Z'"
+        def temporalProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV<='2011-12-26T20:55:27Z'"))
+        def temporalPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI001_SDV<='2011-12-26T20:55:27Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(temporalProperty)
+
+        and: "Returns the same number of features"
+        temporalProperty.responseData.numberReturned == temporalPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<temporalProperty.responseData.numberReturned; i++) {
+            assertFeature(temporalProperty.responseData.features[i], temporalPropertyCheck.get(i))
+        }
     }
 
     def "Operator gteq"() {
@@ -607,6 +682,21 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns all features"
         literals.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
+
+        when: "7. Data is selected using a filter ZI001_SDV>='2011-12-26T20:55:27Z'"
+        def temporalProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV>='2011-12-26T20:55:27Z'"))
+        def temporalPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI001_SDV>='2011-12-26T20:55:27Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(temporalProperty)
+
+        and: "Returns the same number of features"
+        temporalProperty.responseData.numberReturned == temporalPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<temporalProperty.responseData.numberReturned; i++) {
+            assertFeature(temporalProperty.responseData.features[i], temporalPropertyCheck.get(i))
+        }
     }
 
     def "Operator like"() {
@@ -811,6 +901,21 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<literalAndProperty.responseData.numberReturned; i++) {
             assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
         }
+
+        when: "7. Data is selected using a filter ZI001_SDV BETWEEN '2011-01-01T00:00:00Z' AND '2012-01-01T00:00:00Z'"
+        def temporalProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV BETWEEN '2011-01-01T00:00:00Z' AND '2012-01-01T00:00:00Z'"))
+        def temporalPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI001_SDV.startsWith('2011')).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(temporalProperty)
+
+        and: "Returns the same number of features"
+        temporalProperty.responseData.numberReturned == temporalPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<temporalProperty.responseData.numberReturned; i++) {
+            assertFeature(temporalProperty.responseData.features[i], temporalPropertyCheck.get(i))
+        }
     }
 
     def "Operator in"() {
@@ -878,6 +983,21 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<propertyAndLiteralNumeric2.responseData.numberReturned; i++) {
             assertFeature(propertyAndLiteralNumeric2.responseData.features[i], propertyAndLiteralNumeric2Check.get(i))
         }
+        when: "7. Data is selected using a filter ZI001_SDV IN ('2011-12-26T20:55:27Z','2021-10-10T10:10:10Z','2011-12-27T18:39:59Z')"
+        def temporalProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV  IN ('2011-12-26T20:55:27Z','2021-10-10T10:10:10Z','2011-12-27T18:39:59Z')"))
+        def temporalPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter(f -> f.properties.ZI001_SDV=='2011-12-26T20:55:27Z' ||  f.properties.ZI001_SDV=='2021-10-10T10:10:10Z' || f.properties.ZI001_SDV=='2011-12-27T18:39:59Z').toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(temporalProperty)
+
+        and: "Returns the same number of features"
+        temporalProperty.responseData.numberReturned == temporalPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<temporalProperty.responseData.numberReturned; i++) {
+            assertFeature(temporalProperty.responseData.features[i], temporalPropertyCheck.get(i))
+        }
+
     }
 
     def "Operator null"() {
@@ -1237,7 +1357,7 @@ class FilterParameterSpecification extends Specification {
 
         when: "6. Data is selected using a filter ZI001_SDV AnyInterActS 2011-12-26T20:55:27Z"
         def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV AnyInterActS 2011-12-26T20:55:27Z"))
-        def propertyAndLiteral6Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV == '2011-12-26 20:55:27' ).toList()
+        def propertyAndLiteral6Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV == '2011-12-26T20:55:27Z' ).toList()
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral6)
@@ -1346,7 +1466,7 @@ class FilterParameterSpecification extends Specification {
 
         when: "2. Data is selected using a filter ZI001_SDV TEqualS 2011-12-26T20:55:27Z"
         def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("ZI001_SDV TEqualS 2011-12-26T20:55:27Z"))
-        def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV == '2011-12-26 20:55:27' ).toList()
+        def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV == '2011-12-26T20:55:27Z' ).toList()
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral)
