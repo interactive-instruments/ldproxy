@@ -20,6 +20,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetDat
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetLinks;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
@@ -51,11 +52,14 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
     private final I18n i18n;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
     private final ExtensionRegistry extensionRegistry;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public TileMatrixSetsQueriesHandlerImpl(@Requires I18n i18n,
-                                            @Requires ExtensionRegistry extensionRegistry) {
+                                            @Requires ExtensionRegistry extensionRegistry,
+                                            @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
 
         this.queryHandlers = ImmutableMap.of(
                 Query.TILE_MATRIX_SETS,
@@ -135,10 +139,8 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                 i18n,
                 requestContext.getLanguage());
 
-        TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                                                       .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                                                       .findAny()
-                                                       .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
+        TileMatrixSet tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                             .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
         TileMatrixSetData tileMatrixSetData = ImmutableTileMatrixSetData.builder()
                                                                         .from(tileMatrixSet.getTileMatrixSetData())

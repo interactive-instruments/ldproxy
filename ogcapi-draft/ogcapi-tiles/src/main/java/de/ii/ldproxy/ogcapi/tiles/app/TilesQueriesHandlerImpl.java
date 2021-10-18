@@ -39,6 +39,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -99,6 +100,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final TileCache tileCache;
     private final StaticTileProviderStore staticTileProviderStore;
     private final FeaturesCoreProviders providers;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
@@ -107,7 +109,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TileCache tileCache,
                                    @Requires StaticTileProviderStore staticTileProviderStore,
-                                   @Requires FeaturesCoreProviders providers) {
+                                   @Requires FeaturesCoreProviders providers,
+                                   @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
@@ -116,6 +119,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         this.tileCache = tileCache;
         this.staticTileProviderStore = staticTileProviderStore;
         this.providers = providers;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
 
         this.queryHandlers = ImmutableMap.<Query, QueryHandler<? extends QueryInput>>builder()
                 .put(Query.TILE_SETS, QueryHandler.with(QueryInputTileSets.class, this::getTileSetsResponse))
@@ -600,10 +604,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     }
 
     private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {
-        return extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                    .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                    .findAny()
-                    .orElseThrow(() -> new ServerErrorException("TileMatrixSet not found: "+tileMatrixSetId, 500));
+        return tileMatrixSetRepository.get(tileMatrixSetId)
+                                      .orElseThrow(() -> new ServerErrorException("TileMatrixSet not found: "+tileMatrixSetId, 500));
     }
 
     private ResultReduced<byte[]> generateTile(

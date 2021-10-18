@@ -42,6 +42,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.auth.domain.User;
@@ -96,6 +97,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TileCache cache;
     private final StaticTileProviderStore staticTileProviderStore;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     EndpointTileMultiCollection(@Requires FeaturesCoreProviders providers,
                                 @Requires ExtensionRegistry extensionRegistry,
@@ -103,7 +105,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                                 @Requires CrsTransformerFactory crsTransformerFactory,
                                 @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                 @Requires TileCache cache,
-                                @Requires StaticTileProviderStore staticTileProviderStore) {
+                                @Requires StaticTileProviderStore staticTileProviderStore,
+                                @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(extensionRegistry);
         this.providers = providers;
         this.queryHandler = queryHandler;
@@ -111,6 +114,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         this.limitsGenerator = limitsGenerator;
         this.cache = cache;
         this.staticTileProviderStore = staticTileProviderStore;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -208,10 +212,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
             throw new NotFoundException("The requested tile is outside the zoom levels for this tile set.");
 
-        TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                .findAny()
-                .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
+        TileMatrixSet tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                             .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
         TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels)
                 .stream()
