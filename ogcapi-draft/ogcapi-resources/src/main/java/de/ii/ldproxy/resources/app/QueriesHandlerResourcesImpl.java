@@ -36,6 +36,7 @@ import org.osgi.framework.BundleContext;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
@@ -43,9 +44,13 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -121,7 +126,25 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                                                            .map(ResourcesFormatExtension.class::cast)
                                                            .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null)
+        Date lastModified = Arrays.stream(apiDir.listFiles())
+                                  .filter(file -> !file.isHidden())
+                                  .map(File::lastModified)
+                                  .max(Comparator.naturalOrder())
+                                  .map(Instant::ofEpochMilli)
+                                  .map(Date::from)
+                                  .orElse(Date.from(Instant.now()));
+        EntityTag etag = getEtag(resources, Resources.FUNNEL, format);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("resources.%s", format.getMediaType().fileExtension()))
                 .entity(format.getResourcesEntity(resources, apiData, requestContext))
                 .build();
     }
@@ -164,10 +187,21 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
         if (contentType==null || contentType.isEmpty())
             contentType = "application/octet-stream";
 
-        return prepareSuccessResponse(api, requestContext, null)
+        Date lastModified = getLastModified(resourceFile.toFile());
+        EntityTag etag = getEtag(resource);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext, null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      resourceId)
                 .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
                 .type(contentType)
-                .header("Content-Disposition", "inline; filename=\""+resourceId+"\"")
                 .build();
     }
 }

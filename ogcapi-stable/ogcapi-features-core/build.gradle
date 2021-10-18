@@ -4,8 +4,10 @@ dependencies {
 
     embedded (group: 'org.postgresql', name: 'postgresql', version: '42.2.23')
 
-    embeddedExport (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.1')
-    embeddedExport (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.1')
+    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.17.1')
+    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.17.1') {
+        exclude module: 'junit'
+    }
 
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

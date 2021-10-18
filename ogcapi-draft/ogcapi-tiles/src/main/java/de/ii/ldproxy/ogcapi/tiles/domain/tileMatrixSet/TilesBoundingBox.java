@@ -7,12 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Optional;
 
 @Value.Immutable
@@ -20,18 +21,16 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableTilesBoundingBox.Builder.class)
 public abstract class TilesBoundingBox {
 
-
     public abstract BigDecimal[] getLowerLeft();
     public abstract BigDecimal[] getUpperRight();
+    public abstract Optional<String> getCrs();
 
-    /**
-     * the coordinate reference system that is the basis of this tiling scheme
-     * @return
-     */
-    @JsonIgnore
-    public abstract Optional<EpsgCrs> getCrsEpsg();
-
-    @Value.Derived
-    @Value.Auxiliary
-    public Optional<String> getCrs() { return getCrsEpsg().map(EpsgCrs::toUriString); }
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<TilesBoundingBox> FUNNEL = (from, into) -> {
+        Arrays.stream(from.getLowerLeft())
+              .forEachOrdered(val -> into.putDouble(val.doubleValue()));
+        Arrays.stream(from.getUpperRight())
+              .forEachOrdered(val -> into.putDouble(val.doubleValue()));
+        from.getCrs().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+    };
 }

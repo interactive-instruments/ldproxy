@@ -8,8 +8,12 @@
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,4 +24,11 @@ public
 interface TilePoint {
     List<Double> getCoordinates();
     Optional<String> getTileMatrix();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<TilePoint> FUNNEL = (from, into) -> {
+        from.getCoordinates()
+            .forEach(into::putDouble);
+        from.getTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+    };
 }

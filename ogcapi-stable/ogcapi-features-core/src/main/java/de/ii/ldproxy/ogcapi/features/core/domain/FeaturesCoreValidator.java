@@ -52,6 +52,8 @@ public class FeaturesCoreValidator implements FeaturesCoreValidation {
             return ImmutableList.of();
 
         return keys.stream()
+                   // remove '*' keys
+                   .filter(key -> !key.startsWith("*"))
                    // normalize property names
                    //.map(key -> key.replaceAll("\\[[^\\]]*\\]", ""))
                    .filter(key -> schemaInfo.getPropertyNames(schema, false)

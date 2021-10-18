@@ -80,6 +80,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public abstract Optional<CollectionExtent> getDefaultExtent();
 
+    public abstract Optional<Caching> getDefaultCaching();
+
     @Value.Default
     public MODE getApiValidation() {
         return MODE.NONE;
@@ -108,6 +110,10 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     //behaves exactly like Map<String, FeatureTypeConfigurationOgcApi>, but supports mergeable builder deserialization
     //(immutables attributeBuilder does not work with maps yet)
     public abstract BuildableMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getCollections();
+
+    public Optional<FeatureTypeConfigurationOgcApi> getCollectionData(String collectionId) {
+        return Optional.ofNullable(getCollections().get(collectionId));
+    }
 
     @Override
     @Value.Derived

@@ -76,7 +76,7 @@ public class EndpointTileSetMultiCollection extends Endpoint implements Conforma
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
-                      .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                      .filter(TilesConfiguration::isMultiCollectionEnabled)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
             return providers.getFeatureProvider(apiData).supportsHighLoad();

@@ -14,14 +14,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
-import org.immutables.value.Value;
-
-import java.net.URI;
+import de.ii.ldproxy.ogcapi.styles.app.SchemaCacheStyleLayer;
+import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
@@ -30,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
@@ -54,9 +54,13 @@ public abstract class MbStyleStylesheet {
     public abstract Optional<MbStyleTransition> getTransition();
     public abstract List<MbStyleLayer> getLayers();
 
+    //TODO: replace with SchemaDeriverStyleLayer
     @JsonIgnore
-    public List<StyleLayer> getLayerMetadata(OgcApiDataV2 apiData, SchemaGeneratorGeoJson schemaGeneratorFeature) {
+    public List<StyleLayer> getLayerMetadata(OgcApiDataV2 apiData, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
         // prepare a map with the JSON schemas of the feature collections used in the style
+      JsonSchemaCache schemas = new SchemaCacheStyleLayer(() -> entityRegistry.getEntitiesForType(
+          Codelist.class));
+
         Map<String, JsonSchemaObject> schemaMap = getLayers().stream()
                                                              .filter(layer -> layer.getSource().isPresent() && layer.getSource().get().equals(apiData.getId()))
                                                              .map(layer -> layer.getSourceLayer())
@@ -64,7 +68,8 @@ public abstract class MbStyleStylesheet {
                                                              .map(Optional::get)
                                                              .distinct()
                                                              .filter(sourceLayer -> apiData.getCollections().containsKey(sourceLayer))
-                                                             .map(collectionId -> new AbstractMap.SimpleImmutableEntry<>(collectionId, schemaGeneratorFeature.getSchemaJson(apiData, collectionId, Optional.empty(), SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES)))
+                                                             .map(collectionId -> new AbstractMap.SimpleImmutableEntry<>(collectionId, schemas.getSchema(
+                                                                 providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId)), apiData, apiData.getCollections().get(collectionId), Optional.empty())))
                                                              .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
         return getLayers().stream()
                           .map(layer -> {

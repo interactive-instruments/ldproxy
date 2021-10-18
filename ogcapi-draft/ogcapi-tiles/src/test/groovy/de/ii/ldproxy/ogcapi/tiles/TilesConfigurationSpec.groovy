@@ -16,12 +16,12 @@ import de.ii.ldproxy.ogcapi.domain.MergeMap
 import de.ii.ldproxy.ogcapi.domain.MergeMinimal
 import de.ii.ldproxy.ogcapi.domain.MergeNested
 import de.ii.ldproxy.ogcapi.domain.MergeSimple
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutablePropertyTransformation
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutablePredefinedFilter
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableRule
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilesConfiguration
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
 class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<TilesConfiguration>, MergeMinimal<TilesConfiguration>, MergeSimple<TilesConfiguration>, MergeCollection<TilesConfiguration>, MergeMap<TilesConfiguration>, MergeNested<TilesConfiguration> {
@@ -39,10 +39,10 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
                 .maxRelativeAreaChangeInPolygonRepair(1)
                 .maxAbsoluteAreaChangeInPolygonRepair(1)
                 .minimumSizeInPixel(1)
-                .center(1)
+                .center(ImmutableList.<Double>of(1))
                 .addTileEncodings("foo")
                 .addTileSetEncodings("foo")
-                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().rename("bar").build())
+                .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
                 .putZoomLevels("foo", new ImmutableMinMax.Builder().min(1).max(10).build())
                 .putZoomLevelsCache("foo", new ImmutableMinMax.Builder().min(1).max(10).build())
                 .putSeeding("foo", new ImmutableMinMax.Builder().min(1).max(10).build())
@@ -84,13 +84,17 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
         return new ImmutableTilesConfiguration.Builder()
                 .from(getFull())
                 .from(getSimple())
+                .transformations(ImmutableMap.of(
+                        "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
+                        "*", [new ImmutablePropertyTransformation.Builder().flatten(".").build()]
+                ))
                 .build()
     }
 
     @Override
     TilesConfiguration getCollection() {
         return new ImmutableTilesConfiguration.Builder()
-                .center(1, 2)
+                .center(ImmutableList.<Double>of(1, 2))
                 .addTileEncodings("foo", "bar")
                 .addTileSetEncodings("bar")
                 .build()
@@ -100,7 +104,7 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     TilesConfiguration getCollectionFullMerged() {
         return new ImmutableTilesConfiguration.Builder()
                 .from(getFull())
-                .center(1, 2)
+                .center(ImmutableList.<Double>of(1, 2))
                 .tileEncodings(ImmutableList.of(
                         "foo",
                         "bar"
@@ -115,7 +119,7 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     @Override
     TilesConfiguration getMap() {
         return new ImmutableTilesConfiguration.Builder()
-                .putTransformations("bar", new ImmutablePropertyTransformation.Builder().rename("foo").build())
+                .putTransformations("bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()])
                 .putZoomLevels("bar", new ImmutableMinMax.Builder().min(1).max(10).build())
                 .putZoomLevelsCache("bar", new ImmutableMinMax.Builder().min(1).max(10).build())
                 .putSeeding("bar", new ImmutableMinMax.Builder().min(1).max(10).build())
@@ -129,8 +133,8 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
         return new ImmutableTilesConfiguration.Builder()
                 .from(getFull())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").build(),
-                        "bar", new ImmutablePropertyTransformation.Builder().rename("foo").build()
+                        "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
+                        "bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()]
                 ))
                 .zoomLevels(ImmutableMap.of(
                         "foo", new ImmutableMinMax.Builder().min(1).max(10).build(),
@@ -158,7 +162,7 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     @Override
     TilesConfiguration getNested() {
         return new ImmutableTilesConfiguration.Builder()
-                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().codelist("cl").build())
+                .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().codelist("cl").build()])
                 .build()
     }
 
@@ -167,7 +171,10 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
         return new ImmutableTilesConfiguration.Builder()
                 .from(getFull())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").codelist("cl").build()
+                        "foo", [
+                        new ImmutablePropertyTransformation.Builder().rename("bar").build(),
+                        new ImmutablePropertyTransformation.Builder().codelist("cl").build()
+                        ]
                 ))
                 .build()
     }

@@ -115,15 +115,11 @@ public class EndpointSchema extends EndpointSubCollection {
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
 
-        boolean includeLinkHeader = api.getData().getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
-
         Optional<String> profile = Optional.ofNullable(requestContext.getParameters().get("profile"));
 
         QueriesHandlerSchemaImpl.QueryInputSchema queryInput = new ImmutableQueryInputSchema.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
-                .includeLinkHeader(includeLinkHeader)
                 .profile(profile)
                 .build();
 

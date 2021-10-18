@@ -12,6 +12,8 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Request;
 import java.net.URI;
 import java.util.*;
 
@@ -33,6 +35,9 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
 
     @Override
     public abstract Optional<Locale> getLanguage();
+
+    @Override
+    public abstract Optional<Request> getRequest();
 
     @Value.Derived
     @Override

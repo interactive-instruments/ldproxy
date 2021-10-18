@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.tiles.infra;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ContentExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -29,11 +28,12 @@ import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -50,12 +50,9 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -79,25 +76,28 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
     private final CrsTransformerFactory crsTransformerFactory;
     private final ExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
-    private final TilesCache tilesCache;
+    private final TileCache tileCache;
     private final XtraPlatform xtraPlatform;
     private final FeaturesCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public VectorTileSeeding(@Requires CrsTransformerFactory crsTransformerFactory,
                              @Requires ExtensionRegistry extensionRegistry,
                              @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                             @Requires TilesCache tilesCache,
+                             @Requires TileCache tileCache,
                              @Requires XtraPlatform xtraPlatform,
                              @Requires FeaturesCoreProviders providers,
-                             @Requires TilesQueriesHandler queryHandler) {
+                             @Requires TilesQueriesHandler queryHandler,
+                             @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.extensionRegistry = extensionRegistry;
         this.limitsGenerator = limitsGenerator;
-        this.tilesCache = tilesCache;
+        this.tileCache = tileCache;
         this.xtraPlatform = xtraPlatform;
         this.providers = providers;
         this.queryHandler = queryHandler;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -116,6 +116,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
         return apiData.getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::isEnabled)
+                      .filter(cfg -> cfg.getCache() != TilesConfiguration.TileCacheType.NONE)
                       .filter(config -> !config.getSeedingDerived()
                                                .isEmpty())
                       .isPresent();
@@ -190,16 +191,22 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
-                    .api(api)
+                    .apiData(apiData)
                     .temporary(false)
+                    .isDatasetTile(false)
                     .featureProvider(featureProvider)
                     .outputFormat(outputFormat)
                     .build();
-            Path tileFile = tilesCache.getFile(tile);
-            if (Files.exists(tileFile)) {
-                // already there, nothing to create, but advance progress
-                currentTile[0] += 1;
-                return true;
+            try {
+                if (tileCache.tileExists(tile)) {
+                    // already there, nothing to create, but advance progress
+                    currentTile[0] += 1;
+                    return true;
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Failed to retrieve tile {}/{}/{}/{} for collection {} from the cache. Reason: {}",
+                            tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(),
+                            tile.getTileCol(), collectionId, e.getMessage());
             }
 
             URI uri;
@@ -231,7 +238,6 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             TilesQueriesHandler.QueryInputTileSingleLayer queryInput = new ImmutableQueryInputTileSingleLayer.Builder()
                     .tile(tile)
                     .query(query)
-                    .outputStream(new ByteArrayOutputStream())
                     .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                     .build();
 
@@ -252,7 +258,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         OgcApiDataV2 apiData = api.getData();
         FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
         Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
-        Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::getMultiCollectionEnabledDerived);
+        Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::isMultiCollectionEnabled);
 
         if (tilesConfiguration.isPresent()) {
             Map<String, MinMax> seedingConfig = tilesConfiguration.get()
@@ -282,7 +288,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                                                 })
                                                 .filter(collection -> {
                                                     Optional<TilesConfiguration> layerConfiguration = collection.getExtension(TilesConfiguration.class);
-                                                    if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().getMultiCollectionEnabledDerived())
+                                                    if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().isMultiCollectionEnabled())
                                                         return false;
                                                     MinMax levels = layerConfiguration.get().getZoomLevelsDerived().get(tileMatrixSet.getId());
                                                     return !Objects.nonNull(levels) || (levels.getMax() >= level && levels.getMin() <= level);
@@ -302,16 +308,22 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
-                    .api(api)
+                    .apiData(apiData)
                     .temporary(false)
+                    .isDatasetTile(true)
                     .featureProvider(featureProvider)
                     .outputFormat(outputFormat)
                     .build();
-            Path tileFile = tilesCache.getFile(multiLayerTile);
-            if (Files.exists(tileFile)) {
-                // already there, nothing to create, but still count for progress
-                currentTile[0] += 1;
-                return true;
+            try {
+                if (tileCache.tileExists(multiLayerTile)) {
+                    // already there, nothing to create, but still count for progress
+                    currentTile[0] += 1;
+                    return true;
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Failed to retrieve multi-collection tile {}/{}/{}/{} from the cache. Reason: {}",
+                            multiLayerTile.getTileMatrixSet().getId(), multiLayerTile.getTileLevel(), multiLayerTile.getTileRow(),
+                            multiLayerTile.getTileCol(), e.getMessage());
             }
 
             URI uri;
@@ -333,6 +345,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                                                                 .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> new ImmutableTile.Builder()
                                                                         .from(multiLayerTile)
                                                                         .collectionIds(ImmutableList.of(collectionId))
+                                                                        .isDatasetTile(false)
                                                                         .build()));
 
             Map<String, FeatureQuery> queryMap = collectionIds.stream()
@@ -366,7 +379,6 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                     .tile(multiLayerTile)
                     .singleLayerTileMap(singleLayerTileMap)
                     .queryMap(queryMap)
-                    .outputStream(new ByteArrayOutputStream())
                     .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                     .build();
 
@@ -455,7 +467,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             for (Map.Entry<String, MinMax> entry : seeding.entrySet()) {
                 TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
                 MinMax zoomLevels = entry.getValue();
-                List<TileMatrixSetLimits> allLimits = limitsGenerator.getTileMatrixSetLimits(api.getData(), tileMatrixSet, zoomLevels, crsTransformerFactory);
+                List<TileMatrixSetLimits> allLimits = limitsGenerator.getTileMatrixSetLimits(api.getData(), tileMatrixSet, zoomLevels);
 
                 for (TileMatrixSetLimits limits : allLimits) {
                     int level = Integer.parseInt(limits.getTileMatrix());
@@ -481,15 +493,6 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
     }
 
     private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {
-        TileMatrixSet tileMatrixSet = null;
-        for (ContentExtension contentExtension : extensionRegistry.getExtensionsForType(ContentExtension.class)) {
-            if (contentExtension instanceof TileMatrixSet && ((TileMatrixSet) contentExtension).getId()
-                                                                                               .equals(tileMatrixSetId)) {
-                tileMatrixSet = (TileMatrixSet) contentExtension;
-                break;
-            }
-        }
-
-        return tileMatrixSet;
+        return tileMatrixSetRepository.get(tileMatrixSetId).orElse(null);
     }
 }

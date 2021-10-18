@@ -9,9 +9,12 @@ package de.ii.ldproxy.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,4 +27,19 @@ public abstract class Styles extends PageRepresentation {
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<Styles> FUNNEL = (from, into) -> {
+        PageRepresentation.FUNNEL.funnel(from, into);
+        from.getStyles()
+            .stream()
+            .sorted(Comparator.comparing(StyleEntry::getId))
+            .forEachOrdered(val -> StyleEntry.FUNNEL.funnel(val, into));
+        from.getExtensions()
+            .keySet()
+            .stream()
+            .sorted()
+            .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
+        // we cannot encode the generic extension object
+    };
 }

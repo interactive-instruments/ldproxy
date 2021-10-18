@@ -12,13 +12,10 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import io.swagger.v3.oas.models.headers.Header;
-import io.swagger.v3.oas.models.media.StringSchema;
+
 import java.text.MessageFormat;
 import java.util.AbstractMap;
-import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -221,15 +218,33 @@ public abstract class Endpoint implements EndpointExtension {
     }
 
     protected QueryInput getGenericQueryInput(OgcApiDataV2 apiData) {
-        final boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
-                .map(FoundationConfiguration::getIncludeLinkHeader)
-                .orElse(false);
+        ImmutableQueryInputGeneric.Builder queryInputBuilder = new ImmutableQueryInputGeneric.Builder()
+                .includeLinkHeader(apiData.getExtension(FoundationConfiguration.class)
+                                          .map(FoundationConfiguration::getIncludeLinkHeader)
+                                          .orElse(false));
 
-        QueryInput queryInput = new ImmutableQueryInputGeneric.Builder()
-                .includeLinkHeader(includeLinkHeader)
-                .build();
+        Optional<? extends ExtensionConfiguration> optionalModuleConfig = apiData.getExtension(getBuildingBlockConfigurationType());
+        if (optionalModuleConfig.isPresent()) {
+            ExtensionConfiguration moduleConfig = optionalModuleConfig.get();
+            if (moduleConfig instanceof CachingConfiguration) {
+                Caching caching = ((CachingConfiguration) moduleConfig).getCaching();
+                Caching defaultCaching = apiData.getDefaultCaching().orElse(null);
+                if (Objects.nonNull(caching) && Objects.nonNull(caching.getLastModified()))
+                    queryInputBuilder.lastModified(Optional.ofNullable(caching.getLastModified()));
+                else if (Objects.nonNull(defaultCaching) && Objects.nonNull(defaultCaching.getLastModified()))
+                    queryInputBuilder.lastModified(Optional.ofNullable(defaultCaching.getLastModified()));
+                if (Objects.nonNull(caching) && Objects.nonNull(caching.getExpires()))
+                    queryInputBuilder.expires(Optional.ofNullable(caching.getExpires()));
+                else if (Objects.nonNull(defaultCaching) && Objects.nonNull(defaultCaching.getExpires()))
+                    queryInputBuilder.expires(Optional.ofNullable(defaultCaching.getExpires()));
+                if (Objects.nonNull(caching) && Objects.nonNull(caching.getCacheControl()))
+                    queryInputBuilder.cacheControl(Optional.ofNullable(caching.getCacheControl()));
+                else if (Objects.nonNull(defaultCaching) && Objects.nonNull(defaultCaching.getCacheControl()))
+                    queryInputBuilder.cacheControl(Optional.ofNullable(defaultCaching.getCacheControl()));
+            }
+        }
 
-        return queryInput;
+        return queryInputBuilder.build();
     }
 
     protected boolean strictHandling(Enumeration<String> prefer) {

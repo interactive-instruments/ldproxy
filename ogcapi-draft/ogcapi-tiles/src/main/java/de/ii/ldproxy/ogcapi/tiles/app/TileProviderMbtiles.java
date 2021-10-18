@@ -9,14 +9,12 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,34 +28,16 @@ public abstract class TileProviderMbtiles extends TileProvider {
     @Nullable
     public abstract String getFilename();
 
-    // TODO MBTILES: derive from metadata
     @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
-    public Map<String, MinMax> getZoomLevels() {
-        return ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder()
-                .min(0)
-                .max(14)
-                .getDefault(7)
-                .build());
-    }
+    public abstract Map<String, MinMax> getZoomLevels();
 
-    // TODO MBTILES: derive from metadata
-    @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
-    public String getTileEncoding() {
-        return "MVT";
-    }
-
-    // TODO MBTILES: derive from metadata
     @Nullable
     @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
-    public double[] getCenter() {
-        return new double[]{-1.5, 53.0};
-    }
+    public abstract String getTileEncoding();
+
+    @JsonIgnore
+    @Nullable
+    public abstract List<Double> getCenter();
 
     @Override
     @JsonIgnore
@@ -69,9 +49,15 @@ public abstract class TileProviderMbtiles extends TileProvider {
         if (Objects.isNull(src) || !(src instanceof TileProviderMbtiles))
             return this;
 
-        return ImmutableTileProviderMbtiles.builder()
-                                           .from((TileProviderMbtiles) src)
-                                           .from(this)
-                                           .build();
+        ImmutableTileProviderMbtiles.Builder builder = ImmutableTileProviderMbtiles.builder()
+                                                                                   .from((TileProviderMbtiles) src)
+                                                                                   .from(this);
+
+        if (Objects.nonNull(getCenter()))
+            builder.center(getCenter());
+        else if (Objects.nonNull(((TileProviderMbtiles)src).getCenter()))
+            builder.center(((TileProviderMbtiles)src).getCenter());
+
+        return builder.build();
     }
 }

@@ -73,7 +73,7 @@
   "@context": "https://schema.org/",
   "@type": "{{schemaOrgItemType}}",
   "name": "{{name}}",
-  "url": "{{#currentUrlWithSegmentClearParams}}{{id}}{{/currentUrlWithSegmentClearParams}}"{{#persistentUri}},
+  "url": "{{#currentUrlWithSegmentClearParams}}{{idValue}}{{/currentUrlWithSegmentClearParams}}"{{#persistentUri}},
   "sameAs": "{{.}}"{{/persistentUri}}{{#geoAsString}},
   "geo": {{{.}}}{{/geoAsString}}{{#properties}}{{#itemProp}},
   "{{.}}": "{{{getFirstValue}}}"{{/itemProp}}{{/properties}}

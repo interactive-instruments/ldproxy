@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.core.domain
 
 import com.google.common.collect.ImmutableMap
 import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
 class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<FeaturesCoreConfiguration>, MergeMinimal<FeaturesCoreConfiguration>, MergeSimple<FeaturesCoreConfiguration>, MergeMap<FeaturesCoreConfiguration>, MergeNested<FeaturesCoreConfiguration> {
@@ -29,7 +30,7 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
                         .addTemporal("date")
                         .addOther("string")
                         .build())
-                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().rename("bar").build())
+                .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
                 .build()
     }
 
@@ -70,7 +71,7 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
     FeaturesCoreConfiguration getMap() {
         //TODO: test deep merge
         return new ImmutableFeaturesCoreConfiguration.Builder()
-                .putTransformations("bar", new ImmutablePropertyTransformation.Builder().rename("foo").build())
+                .putTransformations("bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()])
                 .build()
     }
 
@@ -79,8 +80,8 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
         return new ImmutableFeaturesCoreConfiguration.Builder()
                 .from(getFull())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").build(),
-                        "bar", new ImmutablePropertyTransformation.Builder().rename("foo").build()
+                        "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
+                        "bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()]
                 ))
                 .build()
     }
@@ -88,7 +89,7 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
     @Override
     FeaturesCoreConfiguration getNested() {
         return new ImmutableFeaturesCoreConfiguration.Builder()
-                .putTransformations("foo", new ImmutablePropertyTransformation.Builder().codelist("cl").build())
+                .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().codelist("cl").build()])
                 .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
                         .addSpatial("secondGeometry")
                         .addTemporal("secondDate")
@@ -102,7 +103,10 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
         return new ImmutableFeaturesCoreConfiguration.Builder()
                 .from(getFull())
                 .transformations(ImmutableMap.of(
-                        "foo", new ImmutablePropertyTransformation.Builder().rename("bar").codelist("cl").build()
+                        "foo", [
+                        new ImmutablePropertyTransformation.Builder().rename("bar").build(),
+                        new ImmutablePropertyTransformation.Builder().codelist("cl").build()
+                ]
                 ))
                 .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
                         .addSpatial("geometry", "secondGeometry")

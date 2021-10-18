@@ -9,10 +9,12 @@ package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +25,7 @@ public abstract class TileMatrix {
 
     public static final int SIGNIFICANT_DIGITS = 15;
 
-    public String getId() { return String.valueOf(getTileLevel()); }
+    public abstract String getId();
     public abstract Optional<String> getTitle();
     public abstract Optional<String> getDescription();
     public abstract List<String> getKeywords();
@@ -32,18 +34,31 @@ public abstract class TileMatrix {
     public abstract long getMatrixWidth();
     public abstract long getMatrixHeight();
     public abstract BigDecimal getScaleDenominator();
-    @Value.Derived
-    public BigDecimal getCellSize() {
-        BigDecimal decimalValue = new BigDecimal(getScaleDenominator().doubleValue() * 0.00028 / getMetersPerUnit());
-        return decimalValue.setScale(SIGNIFICANT_DIGITS - decimalValue.precision() + decimalValue.scale(), RoundingMode.HALF_UP)
-                           .stripTrailingZeros();
-    }
+    public abstract BigDecimal getCellSize();
     public abstract BigDecimal[] getPointOfOrigin();
+    @Value.Default
     public String getCornerOfOrigin() { return "topLeft"; }
 
     @JsonIgnore
-    public abstract double getMetersPerUnit();
+    @Value.Derived
+    public int getTileLevel() { return Integer.parseInt(getId()); }
 
-    @JsonIgnore
-    public abstract int getTileLevel();
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<TileMatrix> FUNNEL = (from, into) -> {
+        into.putString(from.getId(), StandardCharsets.UTF_8);
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getKeywords()
+            .stream()
+            .sorted()
+            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        into.putLong(from.getTileWidth());
+        into.putLong(from.getTileHeight());
+        into.putLong(from.getMatrixWidth());
+        into.putLong(from.getMatrixHeight());
+        into.putDouble(from.getScaleDenominator().doubleValue());
+        Arrays.stream(from.getPointOfOrigin())
+              .forEachOrdered(val -> into.putDouble(val.doubleValue()));
+        into.putString(from.getCornerOfOrigin(), StandardCharsets.UTF_8);
+    };
 }

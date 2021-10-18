@@ -20,10 +20,16 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Variant;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -118,10 +124,27 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
 
         LandingPage apiLandingPage = builder.build();
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null)
-                .entity(outputFormatExtension.getLandingPageEntity(apiLandingPage,
+
+        Object entity = outputFormatExtension.getLandingPageEntity(apiLandingPage,
                                                                    requestContext.getApi(),
-                                                                   requestContext))
+                                                                   requestContext);
+
+        Date lastModified = getLastModified(queryInput, api);
+        EntityTag etag = getEtag(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext,
+                                      queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("landing-page.%s", outputFormatExtension.getMediaType().fileExtension()))
+                .entity(entity)
                 .build();
     }
 
@@ -160,10 +183,26 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         }
 
         ConformanceDeclaration conformanceDeclaration = builder.build();
-        return prepareSuccessResponse(requestContext.getApi(), requestContext, queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null)
-                .entity(outputFormatExtension.getConformanceEntity(conformanceDeclaration,
-                        requestContext.getApi(),
-                        requestContext))
+
+        Object entity = outputFormatExtension.getConformanceEntity(conformanceDeclaration,
+                                                                   requestContext.getApi(),
+                                                                   requestContext);
+        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        EntityTag etag = getEtag(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext,
+                                      queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("conformance-declaration.%s", outputFormatExtension.getMediaType().fileExtension()))
+                .entity(entity)
                 .build();
     }
 
@@ -183,7 +222,16 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
             return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
         }
 
-        return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(), requestContext);
+        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        // TODO support ETag
+        EntityTag etag = null;
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        // TODO support headers
+        return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(),
+                                                              requestContext);
     }
 
     private List<LandingPageExtension> getDatasetExtenders() {
@@ -196,9 +244,5 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
     private List<ConformanceClass> getConformanceClasses() {
         return extensionRegistry.getExtensionsForType(ConformanceClass.class);
-    }
-
-    private void addLinks(Response.ResponseBuilder response, ImmutableList<Link> links) {
-        links.stream().forEach(link -> response.links(link.getLink()));
     }
 }

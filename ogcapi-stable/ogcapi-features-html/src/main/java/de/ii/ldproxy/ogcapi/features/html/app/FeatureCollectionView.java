@@ -11,9 +11,11 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ldproxy.ogcapi.html.domain.DatasetView;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.xtraplatform.features.domain.Feature;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
@@ -42,9 +44,8 @@ public class FeatureCollectionView extends DatasetView {
     private URI uri;
     public List<NavigationDTO> pagination;
     public List<NavigationDTO> metaPagination;
-    public List<ObjectDTO> features;
+    public List<FeatureHtml> features;
     public boolean hideMap = true; // set to "hide"; change to "false" when we see a geometry
-    public PropertyDTO links;
     public Set<Map.Entry<String, String>> filterFields;
     public Map<String, String> bbox;
     public TemporalExtent temporalExtent;
@@ -56,27 +57,33 @@ public class FeatureCollectionView extends DatasetView {
     public boolean isCollection;
     public String persistentUri;
     public boolean spatialSearch;
-    public boolean classic;
-    public boolean complexObjects;
     public boolean schemaOrgFeatures;
+    public FeaturesHtmlConfiguration.POSITION mapPosition;
 
     public FeatureCollectionView(String template, URI uri, String name, String title, String description,
                                  String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
-                                 I18n i18n, Locale language, FeaturesHtmlConfiguration.LAYOUT layout) {
+                                 I18n i18n, Locale language, FeaturesHtmlConfiguration.POSITION mapPosition) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
         this.uri = uri; // TODO need to overload getPath() as it currently forces trailing slashes while OGC API uses no trailing slashes
         this.persistentUri = persistentUri;
-        this.classic = layout == FeaturesHtmlConfiguration.LAYOUT.CLASSIC;
-        this.complexObjects = layout == FeaturesHtmlConfiguration.LAYOUT.COMPLEX_OBJECTS;
-        this.schemaOrgFeatures = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
+        this.schemaOrgFeatures = Objects.nonNull(htmlConfig) && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
+        this.mapPosition = mapPosition;
     }
 
     @Override
     public String getPath() {
         String path = uri.getPath();
         return path;
+    }
+
+    public boolean isMapTop() {
+        return mapPosition == POSITION.TOP || (mapPosition == POSITION.AUTO && (features.isEmpty() || features.stream().anyMatch(FeatureHtml::hasObjects)));
+    }
+
+    public boolean isMapRight() {
+        return mapPosition == POSITION.RIGHT || (mapPosition == POSITION.AUTO && !features.isEmpty() && features.stream().noneMatch(FeatureHtml::hasObjects));
     }
 
     public Optional<String> getCanonicalUrl() throws URISyntaxException {

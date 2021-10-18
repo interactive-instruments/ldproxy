@@ -11,13 +11,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.ContentExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
@@ -30,10 +28,17 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.sqlite.SQLiteJDBCLoader;
+
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.List;
@@ -41,11 +46,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.sqlite.SQLiteJDBCLoader;
 
 @Component
 @Provides
@@ -56,18 +56,22 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
     public static final double MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR = 0.1;
     public static final double MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR = 1.0;
     public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;
+    public static final String DATASET_TILES = "__all__";
 
     private final ExtensionRegistry extensionRegistry;
     private final FeaturesCoreProviders providers;
     private final FeaturesQuery queryParser;
     private final SchemaInfo schemaInfo;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public CapabilityVectorTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
-                                 @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo) {
+                                 @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo,
+                                 @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;
         this.queryParser = queryParser;
         this.providers = providers;
         this.schemaInfo = schemaInfo;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -80,7 +84,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                                                                                                    .filter(FormatExtension::isEnabledByDefault)
                                                                                                                                    .map(format -> format.getMediaType().label())
                                                                                                                                    .collect(ImmutableList.toImmutableList()))
-                                                                                                   .center(0.0, 0.0)
+                                                                                                   .center(ImmutableList.of(0.0, 0.0))
                                                                                                    .zoomLevels(ImmutableMap.of("WebMercatorQuad", new ImmutableMinMax.Builder()
                                                                                                            .min(0)
                                                                                                            .max(23)
@@ -100,6 +104,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                                                                            .filter(FormatExtension::isEnabledByDefault)
                                                                                            .map(format -> format.getMediaType().label())
                                                                                            .collect(ImmutableList.toImmutableList()))
+                                                        .cache(TilesConfiguration.TileCacheType.FILES)
                                                         .build();
     }
 
@@ -107,10 +112,8 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
         if (Objects.nonNull(config.getZoomLevelsDerived()))
             return config.getZoomLevelsDerived().get(tileMatrixSetId);
 
-        Optional<TileMatrixSet> tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                 .stream()
-                                                                 .filter(tms -> tms.getId().equals(tileMatrixSetId) && tms.isEnabledForApi(apiData))
-                                                                 .findAny();
+        Optional<TileMatrixSet> tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                                       .filter(tms -> config.getTileMatrixSets().contains(tms.getId()));
         return tileMatrixSet.map(matrixSet -> new ImmutableMinMax.Builder()
                 .min(matrixSet.getMinLevel())
                 .max(matrixSet.getMaxLevel())
@@ -118,10 +121,11 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
     }
 
     private MinMax getZoomLevels(OgcApiDataV2 apiData, String tileMatrixSetId) {
-        Optional<TileMatrixSet> tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                 .stream()
-                                                                 .filter(tms -> tms.getId().equals(tileMatrixSetId) && tms.isEnabledForApi(apiData))
-                                                                 .findAny();
+        Optional<TileMatrixSet> tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                                       .filter(tms -> apiData.getExtension(TilesConfiguration.class)
+                                                                                        .map(TilesConfiguration::getTileMatrixSets)
+                                                                                        .filter(set -> set.contains(tms.getId()))
+                                                                                        .isPresent());
         return tileMatrixSet.map(matrixSet -> new ImmutableMinMax.Builder()
                 .min(matrixSet.getMinLevel())
                 .max(matrixSet.getMaxLevel())
@@ -193,18 +197,16 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                 }
             }
 
-            double[] center = config.getCenterDerived();
-            if (Objects.nonNull(center) && center.length!=2)
-                builder.addStrictErrors(MessageFormat.format("The center has been specified in the TILES module configuration of collection ''{1}'', but the array length is ''{0}'', not 2.", center.length, collectionId));
+            List<Double> center = config.getCenterDerived();
+            if (Objects.nonNull(center) && center.size()!=2)
+                builder.addStrictErrors(MessageFormat.format("The center has been specified in the TILES module configuration of collection ''{1}'', but the array length is ''{0}'', not 2.", center.size(), collectionId));
 
             Map<String, MinMax> zoomLevels = config.getZoomLevelsDerived();
             if (Objects.nonNull(zoomLevels)) {
                 for (Map.Entry<String, MinMax> entry2 : zoomLevels.entrySet()) {
                     String tileMatrixSetId = entry2.getKey();
-                    Optional<TileMatrixSet> tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                             .stream()
-                                                                             .filter(tms -> tms.getId().equals(tileMatrixSetId) && tms.isEnabledForApi(apiData))
-                                                                             .findAny();
+                    Optional<TileMatrixSet> tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                                                   .filter(tms -> config.getTileMatrixSets().contains(tms.getId()));
                     if (tileMatrixSet.isEmpty()) {
                         builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' references a tile matrix set ''{1}'' that is not available in this API.", collectionId, tileMatrixSetId));
                     } else {
@@ -286,9 +288,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
                                     // try to convert the filter to CQL-text
                                     String expression = filter.getFilter().get();
                                     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-                                    final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
-                                                                                               .map(FeaturesCoreConfiguration::getAllFilterParameters)
-                                                                                               .orElse(ImmutableMap.of());
+                                    final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
                                     try {
                                         queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
                                     } catch (Exception e) {

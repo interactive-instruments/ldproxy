@@ -32,10 +32,14 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -80,7 +84,21 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
                                                                                    requestContext.getMediaType(),
                                                                                    String.join(", ", styleRepository.getStylesFormatStream(apiData, collectionId).map(f -> f.getMediaType().type().toString()).collect(Collectors.toUnmodifiableList())))));
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? styles.getLinks() : null)
+        Date lastModified = styles.getLastModified()
+                                  .orElse(Date.from(Instant.now()));
+        EntityTag etag = getEtag(styles, Styles.FUNNEL, format);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext,
+                                      queryInput.getIncludeLinkHeader() ? styles.getLinks() : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("styles.%s", format.getMediaType().fileExtension()))
                 .entity(format.getStylesEntity(styles, apiData, collectionId, requestContext))
                 .build();
     }
@@ -103,16 +121,26 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
 
         // collect self/alternate links, but only, if we need to return them in the headers
         List<Link> links = null;
-        boolean includeLinkHeader = queryInput.getIncludeLinkHeader();
-        if (includeLinkHeader) {
+        if (queryInput.getIncludeLinkHeader()) {
             final DefaultLinksGenerator defaultLinkGenerator = new DefaultLinksGenerator();
             List<ApiMediaType> alternateMediaTypes = styleRepository.getStylesheetMediaTypes(apiData, collectionId, styleId);
             links = defaultLinkGenerator.generateLinks(requestContext.getUriCustomizer(), format.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
         }
 
-        return prepareSuccessResponse(api, requestContext, links)
+        Date lastModified = styleRepository.getStylesheetLastModified(apiData, collectionId, styleId, format, true);
+        EntityTag etag = getEtag(stylesheetContent.getContent());
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext, links,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.%s", styleId, format.getFileExtension()))
                 .entity(format.getStyleEntity(stylesheetContent, apiData, collectionId, styleId, requestContext))
-                .header("Content-Disposition", "inline; filename=\""+styleId+"."+format.getFileExtension()+"\"")
                 .build();
     }
 
@@ -130,7 +158,19 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
                                                                                           requestContext.getMediaType(),
                                                                                           String.join(", ", styleRepository.getStyleMetadataFormatStream(apiData, collectionId).map(f -> f.getMediaType().type().toString()).collect(Collectors.toUnmodifiableList())))));
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? metadata.getLinks() : null)
+        Date lastModified = styleRepository.getStyleLastModified(apiData, collectionId, queryInput.getStyleId());
+        EntityTag etag = getEtag(metadata, StyleMetadata.FUNNEL, format);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? metadata.getLinks() : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().fileExtension()))
                 .entity(format.getStyleMetadataEntity(metadata, apiData, collectionId, requestContext))
                 .build();
     }

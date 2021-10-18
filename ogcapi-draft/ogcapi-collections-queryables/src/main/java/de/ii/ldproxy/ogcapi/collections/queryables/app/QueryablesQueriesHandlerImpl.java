@@ -11,31 +11,34 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.Response;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.immutables.value.Value;
-
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Component
 @Instantiate
@@ -51,20 +54,19 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
         boolean getIncludeLinkHeader();
     }
 
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+    private final JsonSchemaCache schemaCache;
 
     public QueryablesQueriesHandlerImpl(@Requires I18n i18n,
-                                        @Requires FeaturesCoreProviders providers,
-                                        @Requires SchemaGeneratorGeoJson schemaGeneratorFeature) {
+                                        @Requires FeaturesCoreProviders providers) {
         this.i18n = i18n;
         this.providers = providers;
-        this.schemaGeneratorFeature = schemaGeneratorFeature;
         this.queryHandlers = ImmutableMap.of(
                 Query.QUERYABLES, QueryHandler.with(QueryInputQueryables.class, this::getQueryablesResponse)
         );
+        this.schemaCache = new SchemaCacheQueryables();
     }
 
     @Override
@@ -84,8 +86,12 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
         OgcApi api = requestContext.getApi();
         OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
-        if (!apiData.isCollectionEnabled(collectionId))
-            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
+        if (!apiData.isCollectionEnabled(collectionId)) {
+            throw new NotFoundException(MessageFormat
+                .format("The collection ''{0}'' does not exist in this API.", collectionId));
+        }
+        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
+            .get(collectionId);
 
         QueryablesFormatExtension outputFormat = api.getOutputFormat(
                     QueryablesFormatExtension.class,
@@ -100,14 +106,32 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
         List<Link> links =
                 new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
-        JsonSchemaObject jsonSchema = schemaGeneratorFeature.getSchemaJson(apiData, collectionId, links.stream()
-                                                                                                       .filter(link -> link.getRel().equals("self"))
-                                                                                                       .map(link -> link.getHref())
-                                                                                                       .map(link -> link.indexOf("?") == -1 ? link : link.substring(0, link.indexOf("?")))
-                                                                                                       .findAny(), SchemaGeneratorFeature.SCHEMA_TYPE.QUERYABLES);
+        Optional<String> schemaUri = links.stream()
+            .filter(link -> link.getRel().equals("self"))
+            .map(Link::getHref)
+            .map(link -> !link.contains("?") ? link : link.substring(0, link.indexOf("?")))
+            .findAny();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null)
-                .entity(outputFormat.getEntity(jsonSchema, links, collectionId, api, requestContext))
+        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData);
+
+        JsonSchemaDocument schema = schemaCache
+            .getSchema(featureSchema, apiData, collectionData, schemaUri);
+
+        Date lastModified = getLastModified(queryInput, api);
+        EntityTag etag = getEtag(schema, JsonSchema.FUNNEL, outputFormat);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.queryables.%s", collectionId, outputFormat.getMediaType().fileExtension()))
+                .entity(outputFormat.getEntity(schema, links, collectionId, api, requestContext))
                 .build();
     }
+
 }

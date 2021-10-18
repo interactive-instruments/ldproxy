@@ -120,12 +120,9 @@ public class EndpointStyleMetadata extends Endpoint {
         OgcApiDataV2 apiData = api.getData();
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}/metadata", "styleId", styleId);
 
-        boolean includeLinkHeader = apiData.getExtension(FoundationConfiguration.class)
-                                           .map(FoundationConfiguration::getIncludeLinkHeader)
-                                           .orElse(false);
         QueriesHandlerStyles.QueryInputStyle queryInput = new ImmutableQueryInputStyle.Builder()
+                .from(getGenericQueryInput(api.getData()))
                 .styleId(styleId)
-                .includeLinkHeader(includeLinkHeader)
                 .build();
 
         return queryHandler.handle(QueriesHandlerStyles.Query.STYLE_METADATA, queryInput, requestContext);
