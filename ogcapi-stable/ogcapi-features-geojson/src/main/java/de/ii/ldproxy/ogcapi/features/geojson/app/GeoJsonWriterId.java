@@ -7,12 +7,22 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -54,7 +64,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                 else
                     context.encoding().getJson()
                                          .writeStringField("id", currentId);
-                writeLink(context, currentId);
+                addLinks(context, currentId);
                 this.currentId = null;
                 this.currentIdIsInteger = false;
             }
@@ -85,7 +95,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
                         context.encoding().getJson()
                             .writeStringField("id", id);
 
-                    writeLink(context, id);
+                    addLinks(context, context.value());
                 }
             } else {
                 this.writeAtFeatureEnd = true;
@@ -103,26 +113,24 @@ public class GeoJsonWriterId implements GeoJsonWriter {
         next.accept(context);
     }
 
-    private void writeLink(EncodingAwareContextGeoJson context,
-                           String featureId) throws IOException {
+    private void addLinks(EncodingAwareContextGeoJson context,
+                          String featureId) throws IOException {
         if (context.encoding().isFeatureCollection() &&
-                context.encoding().getShowsFeatureSelfLink() &&
                 Objects.nonNull(featureId) &&
                 !featureId.isEmpty()) {
-            context.encoding().getJson()
-                                 .writeFieldName("links");
-            context.encoding().getJson()
-                                 .writeStartArray(1);
-            context.encoding().getJson()
-                                 .writeStartObject();
-            context.encoding().getJson()
-                                 .writeStringField("rel", "self");
-            context.encoding().getJson()
-                                 .writeStringField("href", context.encoding().getServiceUrl() + "/collections/" + context.encoding().getCollectionId() + "/items/" + featureId);
-            context.encoding().getJson()
-                                 .writeEndObject();
-            context.encoding().getJson()
-                                 .writeEndArray();
+            context.encoding().getState().addCurrentFeatureLinks(new ImmutableLink.Builder().rel("self")
+                                                                                        .href(context.encoding().getServiceUrl() + "/collections/" + context.encoding().getCollectionId() + "/items/" + featureId)
+                                                                                        .build());
+            Optional<String> template = context.encoding()
+                                               .getApiData()
+                                               .getCollections()
+                                               .get(context.encoding().getCollectionId())
+                                               .getPersistentUriTemplate();
+            if (template.isPresent()) {
+                context.encoding().getState().addCurrentFeatureLinks(new ImmutableLink.Builder().rel("canonical")
+                                                                                            .href(StringTemplateFilters.applyTemplate(template.get(), featureId))
+                                                                                            .build());
+            }
         }
     }
 }

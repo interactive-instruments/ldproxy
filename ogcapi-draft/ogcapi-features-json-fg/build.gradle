@@ -1,0 +1,7 @@
+dependencies {
+    provided project(":ogcapi-collections-schema")
+
+    // embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.1')
+    // embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.1')
+
+}
