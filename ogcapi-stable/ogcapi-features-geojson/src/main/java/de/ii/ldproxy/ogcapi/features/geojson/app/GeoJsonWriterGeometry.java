@@ -46,6 +46,8 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     private boolean hasPrimaryGeometry;
     private boolean inPrimaryGeometry;
     private final List<String> pos = new ArrayList<>();
+    // TODO: move coordinate conversion to WGS 84 to the transformation pipeline,
+    //       see https://github.com/interactive-instruments/ldproxy/issues/521
     private CrsTransformer crsTransformerGeometry;
     private boolean swapCoordinatesGeometry;
 
