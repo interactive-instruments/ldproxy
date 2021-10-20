@@ -25,13 +25,10 @@ import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
-import de.ii.ldproxy.ogcapi.tiles.app.TileFormatMVT;
-import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.WebMercatorQuad;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -101,7 +98,7 @@ public class TileSetsView extends OgcApiView {
                                   .orElse(null);
         this.tileCollections = spatialExtent.isPresent() ? tiles.getTilesets()
                 .stream()
-                .filter(tms -> mapClientType.equals(MapClient.Type.OPEN_LAYERS) || tms.getTileMatrixSetId().equals(WebMercatorQuad.ID))
+                .filter(tms -> mapClientType.equals(MapClient.Type.OPEN_LAYERS) || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
                 .map(tms -> {
                     String tmsId = tms.getTileMatrixSetId();
                     TileMatrixSet tileMatrixSet = tileMatrixSets.get(tmsId);
@@ -207,7 +204,7 @@ public class TileSetsView extends OgcApiView {
 
         if (tiles.getTilesets().size() >= 1) {
             if (mapClientType.equals(MapClient.Type.MAP_LIBRE)) {
-                Optional<TileSet> tileset = tiles.getTilesets().stream().filter(ts -> ts.getTileMatrixSetId().equals(WebMercatorQuad.ID)).findAny();
+                Optional<TileSet> tileset = tiles.getTilesets().stream().filter(ts -> ts.getTileMatrixSetId().equals("WebMercatorQuad")).findAny();
                 if (tileset.isPresent()) {
                     Multimap<String, List<String>> layers = tileset.get().getLayers().stream()
                                                            .filter(layer -> layer.getDataType() == DataType.vector)
@@ -231,7 +228,7 @@ public class TileSetsView extends OgcApiView {
                             .styleUrl(Optional.ofNullable(styleUrl))
                             .build();
                 } else {
-                    LOGGER.error("Configuration error: {} as the client for the HTML representation of tile sets requires that a tile set with the tiling scheme {} exists.", mapClientType, WebMercatorQuad.ID);
+                    LOGGER.error("Configuration error: {} as the client for the HTML representation of tile sets requires that a tile set with the tiling scheme {} exists.", mapClientType, "WebMercatorQuad");
                     this.mapClient = null;
                 }
             } else if (mapClientType.equals(MapClient.Type.OPEN_LAYERS)) {
