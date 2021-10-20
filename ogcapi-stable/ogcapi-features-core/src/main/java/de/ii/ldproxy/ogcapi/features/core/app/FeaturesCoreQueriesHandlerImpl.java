@@ -134,7 +134,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 Optional.of(collectionId))
                                                  .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        return getItemsResponse(api, requestContext, collectionId, queryInput, query, queryInput.getFeatureProvider(), true, null, outputFormat, onlyHitsIfMore, defaultPageSize,
+        return getItemsResponse(api, requestContext, collectionId, null, queryInput, query, queryInput.getFeatureProvider(), null, outputFormat, onlyHitsIfMore, defaultPageSize,
                 queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
@@ -163,12 +163,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        return getItemsResponse(api, requestContext, collectionId, queryInput, query, queryInput.getFeatureProvider(), false, persistentUri, outputFormat, false, Optional.empty(),
+        return getItemsResponse(api, requestContext, collectionId, featureId, queryInput, query, queryInput.getFeatureProvider(), persistentUri, outputFormat, false, Optional.empty(),
                 false, queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
     }
 
-    private Response getItemsResponse(OgcApi api, ApiRequestContext requestContext, String collectionId, QueryInput queryInput,
-                                      FeatureQuery query, FeatureProvider2 featureProvider, boolean isCollection,
+    private Response getItemsResponse(OgcApi api, ApiRequestContext requestContext, String collectionId, String featureId,
+                                      QueryInput queryInput, FeatureQuery query, FeatureProvider2 featureProvider,
                                       String canonicalUri,
                                       FeatureFormatExtension outputFormat,
                                       boolean onlyHitsIfMore, Optional<Integer> defaultPageSize,
@@ -181,11 +181,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         Optional<CrsTransformer> crsTransformer = Optional.empty();
         boolean swapCoordinates = false;
 
+        EpsgCrs sourceCrs = null;
         EpsgCrs targetCrs = query.getCrs()
                                  .orElse(defaultCrs);
         if (featureProvider.supportsCrs()) {
-            EpsgCrs sourceCrs = featureProvider.crs()
-                                               .getNativeCrs();
+            sourceCrs = featureProvider.crs()
+                                       .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
             swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
                                                                           .needsCoordinateSwap();
@@ -195,7 +196,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
         List<Link> links =
-                isCollection ?
+                Objects.isNull(featureId) ?
                         new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage()) :
                         new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, outputFormat.getCollectionMediaType(), canonicalUri, i18n, requestContext.getLanguage());
 
@@ -215,8 +216,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                                          .stream()
                                          .collect(Collectors.toMap(c -> c.getId(), c -> c)))
                 .defaultCrs(defaultCrs)
+                .sourceCrs(Optional.ofNullable(sourceCrs))
                 .links(links)
-                .isFeatureCollection(isCollection)
+                .isFeatureCollection(Objects.isNull(featureId))
                 .isHitsOnly(query.hitsOnly())
                 .isPropertyOnly(query.propertyOnly())
                 .fields(query.getFields())
@@ -236,7 +238,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             FeatureSourceStream<?> featureStream = featureProvider.passThrough()
                                                                   .getFeatureSourceStream(query);
 
-            streamingOutput = stream2(featureStream, !isCollection, outputStream -> outputFormat.getFeatureConsumer(transformationContext.outputStream(outputStream)
+            streamingOutput = stream2(featureStream, Objects.nonNull(featureId), outputStream -> outputFormat.getFeatureConsumer(transformationContext.outputStream(outputStream)
                                                                                                                                          .build())
                                                                                                 .get());
         } else if (outputFormat.canEncodeFeatures()) {
@@ -253,13 +255,13 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .getPropertyTransformations(api.getData().getCollections().get(collectionId))
                 .map(pt -> pt.withSubstitutions(ImmutableMap.of("serviceUrl", transformationContextGeneric.getServiceUrl())));
 
-            streamingOutput = stream(featureStream, !isCollection, encoder, propertyTransformations);
+            streamingOutput = stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
         } else {
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
         Date lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
-        EntityTag etag = isCollection ? null : getEtag(lastModified);
+        EntityTag etag = Objects.isNull(featureId) ? null : getEtag(lastModified);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -268,13 +270,15 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
         // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext, includeLinkHeader ? links.stream()
-                                                                                                        .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
-                                                                                                        .collect(ImmutableList.toImmutableList()) : null,
+        return prepareSuccessResponse(requestContext, includeLinkHeader ? links.stream()
+                                                                               .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
+                                                                               .collect(ImmutableList.toImmutableList()) : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      targetCrs)
+                                      targetCrs,
+                                      true,
+                                      String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().fileExtension()))
                 .entity(streamingOutput)
                 .build();
     }

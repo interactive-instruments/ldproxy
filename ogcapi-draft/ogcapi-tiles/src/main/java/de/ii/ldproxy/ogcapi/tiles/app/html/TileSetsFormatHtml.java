@@ -26,6 +26,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -37,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Provides
@@ -52,12 +52,14 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
     private final ExtensionRegistry extensionRegistry;
     private final I18n i18n;
     private final XtraPlatform xtraPlatform;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public TileSetsFormatHtml(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n,
-                              @Requires XtraPlatform xtraPlatform) {
+                              @Requires XtraPlatform xtraPlatform, @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
         this.xtraPlatform = xtraPlatform;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -132,9 +134,7 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                                                  .getExtension(HtmlConfiguration.class)
                                                  .orElse(null);
 
-        Map<String, TileMatrixSet> tileMatrixSets = extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                .stream()
-                .collect(Collectors.toMap(TileMatrixSet::getId, tms -> tms));
+        Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
 
         Optional<TilesConfiguration> tilesConfig = collectionId.isEmpty()
                 ? api.getData().getExtension(TilesConfiguration.class)

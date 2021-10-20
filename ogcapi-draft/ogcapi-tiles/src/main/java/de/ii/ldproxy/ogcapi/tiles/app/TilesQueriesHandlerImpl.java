@@ -39,6 +39,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -99,6 +100,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final TileCache tileCache;
     private final StaticTileProviderStore staticTileProviderStore;
     private final FeaturesCoreProviders providers;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public TilesQueriesHandlerImpl(@Requires I18n i18n,
                                    @Requires CrsTransformerFactory crsTransformerFactory,
@@ -107,7 +109,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                    @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                    @Requires TileCache tileCache,
                                    @Requires StaticTileProviderStore staticTileProviderStore,
-                                   @Requires FeaturesCoreProviders providers) {
+                                   @Requires FeaturesCoreProviders providers,
+                                   @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
@@ -116,6 +119,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         this.tileCache = tileCache;
         this.staticTileProviderStore = staticTileProviderStore;
         this.providers = providers;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
 
         this.queryHandlers = ImmutableMap.<Query, QueryHandler<? extends QueryInput>>builder()
                 .put(Query.TILE_SETS, QueryHandler.with(QueryInputTileSets.class, this::getTileSetsResponse))
@@ -216,11 +220,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("tilesets.%s", outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getTileSetsEntity(tileSets, collectionId, api, requestContext))
                 .build();
     }
@@ -267,13 +274,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s.%s", tileset.getTileMatrixSetId(), outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getTileSetEntity(tileset, apiData, collectionId, requestContext))
                 .build();
     }
@@ -485,13 +494,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tileMatrixSet.getId(), tileLevel, tileRow, tileCol, outputFormat.getMediaType().fileExtension()))
                 .entity(result.byteArray)
                 .build();
     }
@@ -520,11 +531,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        Tile tile = queryInput.getTile();
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
                 .entity(streamingOutput)
                 .build();
     }
@@ -545,13 +560,16 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        Tile tile = queryInput.getTile();
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
                 .entity(streamingOutput)
                 .build();
     }
@@ -572,22 +590,22 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
                 .entity(tile.getOutputFormat().getEmptyTile(tile))
                 .build();
     }
 
     private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {
-        return extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                    .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                    .findAny()
-                    .orElseThrow(() -> new ServerErrorException("TileMatrixSet not found: "+tileMatrixSetId, 500));
+        return tileMatrixSetRepository.get(tileMatrixSetId)
+                                      .orElseThrow(() -> new ServerErrorException("TileMatrixSet not found: "+tileMatrixSetId, 500));
     }
 
     private ResultReduced<byte[]> generateTile(

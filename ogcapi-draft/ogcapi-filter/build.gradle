@@ -6,6 +6,7 @@ dependencies {
 
 test {
     // activate to run filter tests
-    // environment "SUT_URL", "http://localhost:7080"
+    // environment "SUT_URL", "http://localhost:7080/rest/services"
+    // environment "SUT_URL", "https://demo.ldproxy.net"
 }
 

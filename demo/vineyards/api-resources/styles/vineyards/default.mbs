@@ -2,7 +2,7 @@
   "bearing" : 0.0,
   "version" : 8,
   "pitch" : 0.0,
-  "name" : "default",
+  "name" : "Default Style for Vineyards",
   "center": [
     7.35, 
     49.8
@@ -17,14 +17,38 @@
     "basemap" : {
       "type" : "raster",
       "tiles" : [ "https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png" ],
-      "attribution" : "&copy; <a href=\"http://www.bkg.bund.de\" class=\"link0\" target=\"_new\">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href=\"http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\" class=\"link0\" target=\"_new\">Datenquellen</a>'; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=\"http://weinlagen.lwk-rlp.de/\" class=\"link0\" target=\"_blank\">weinlagen.lwk-rlp.de</a>, <a href=\"http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html\" class=\"link0\" target=\"_blank\">Regelungen zu Gewährleistung und Haftung</a>'"
+      "attribution" : "&copy; <a href=\"http://www.bkg.bund.de\" class=\"link0\" target=\"_new\">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href=\"http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\" class=\"link0\" target=\"_new\">Datenquellen</a>; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=\"http://weinlagen.lwk-rlp.de/\" class=\"link0\" target=\"_blank\">weinlagen.lwk-rlp.de</a>, <a href=\"http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html\" class=\"link0\" target=\"_blank\">Regelungen zu Gewährleistung und Haftung</a>"
+    },
+    "dem": {
+        "type": "raster-dem",
+        "tiles": [ "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png" ],
+        "tileSize": 256,
+        "maxzoom": 14,
+        "encoding": "terrarium"
     }
   },
   "glyphs": "https://go-spatial.github.io/carto-assets/fonts/{fontstack}/{range}.pbf",
   "layers" : [ {
     "id": "background",
     "type": "raster",
-    "source" : "basemap"
+    "source" : "basemap",
+    "layout" : {
+      "visibility" : "visible"
+    }
+  }, {
+      "id": "Terrain",
+      "type": "hillshade",
+      "source": "dem",
+      "paint": {
+          "hillshade-illumination-direction": 315,
+          "hillshade-exaggeration": 0.8,
+          "hillshade-shadow-color": "#11001a",
+          "hillshade-highlight-color": "#fffcd6",
+          "hillshade-accent-color": "#1b0029"
+      },
+      "layout" : {
+        "visibility" : "none"
+      }
   }, {
     "type" : "fill",
     "source-layer" : "vineyards",
@@ -32,8 +56,8 @@
       "visibility" : "visible"
     },
     "paint" : {
-      "fill-color" : "#00ff00",
-      "fill-opacity" : 0.9
+      "fill-color" : ["rgb", 0, 255, 0],
+      "fill-opacity" : 0.75
     },
     "id" : "vineyards_fill",
     "source" : "vineyards"
@@ -45,7 +69,7 @@
     },
     "paint" : {
       "line-color" : "#408040",
-      "line-width" : 1
+      "line-width" : 0.5
     },
     "id" : "vineyards_line",
     "source" : "vineyards"

@@ -48,6 +48,7 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
             .type(new MediaType("application", "vnd.ogc.sld+xml", ImmutableMap.of("version", "1.0")))
             .label("SLD 1.0")
             .parameter("sld10")
+            .fileExtension("sld")
             .build();
 
     private Optional<Validator> validator;
