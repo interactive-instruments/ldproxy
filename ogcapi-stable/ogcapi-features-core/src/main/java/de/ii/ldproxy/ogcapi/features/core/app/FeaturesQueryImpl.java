@@ -11,7 +11,6 @@ import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguratio
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
-import static javax.measure.unit.SI.RADIAN;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -40,31 +39,14 @@ import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
-import de.ii.xtraplatform.cql.domain.TOverlaps;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-
-import java.util.HashMap;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
-
-import javax.measure.quantity.Angle;
-import javax.measure.unit.NonSI;
-//import javax.measure.unit.SI;
-import javax.measure.Unit;
-import tec.units.ri.unit.Units;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -74,6 +56,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.measure.Unit;
+import javax.measure.quantity.Angle;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.threeten.extra.Interval;
+import tec.units.ri.unit.Units;
 
 
 @Component
