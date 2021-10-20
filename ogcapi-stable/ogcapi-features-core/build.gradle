@@ -7,8 +7,9 @@ dependencies {
     embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.17.1') {
         exclude module: 'junit'
     }
-    implementation group: 'javax.measure', name: 'unit-api', version: '2.1.3'
-    implementation group: 'tec.units', name: 'unit-ri', version: '1.0.3'
+    embedded (group: 'tec.units', name: 'unit-ri', version: '1.0.3') {
+        exclude module: 'unit-api'
+    }
 
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }
