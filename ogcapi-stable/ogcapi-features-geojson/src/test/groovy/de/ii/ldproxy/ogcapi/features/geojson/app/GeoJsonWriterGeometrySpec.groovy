@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ldproxy.ogcapi.features.geojson.app.GeoJsonWriterGeometry
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureEncoderGeoJson
 import de.ii.xtraplatform.features.domain.FeatureProperty
@@ -80,7 +79,7 @@ class GeoJsonWriterGeometrySpec extends Specification {
     private void writeFeature(ByteArrayOutputStream outputStream,
                               List<Integer> nestingPattern) throws IOException, URISyntaxException {
         EncodingAwareContextGeoJson context = GeoJsonWriterSetupUtil.createTransformationContext(outputStream, false)
-        FeatureEncoderGeoJson encoder = new FeatureEncoderGeoJson(context.encoding(), ImmutableList.of(new GeoJsonWriterGeometry()));
+        FeatureEncoderGeoJson encoder = new FeatureEncoderGeoJson(context.encoding(), ImmutableList.of(new GeoJsonWriterGeometry(crsTransformerFactory)));
 
         context.encoding().getJson()
                 .writeStartObject()
