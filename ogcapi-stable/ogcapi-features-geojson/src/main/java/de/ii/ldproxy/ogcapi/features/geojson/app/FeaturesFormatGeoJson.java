@@ -29,6 +29,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;

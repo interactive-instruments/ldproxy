@@ -51,7 +51,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   @Override
-  public void onFeatureEnd(EncodingAwareContextGeoJson context,
+  public void onPropertiesEnd(EncodingAwareContextGeoJson context,
       Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
     if (currentStarted) {
