@@ -28,6 +28,8 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -108,15 +110,18 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
 
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
-        List<Link> links =
-                new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
+        List<Link> links = new DefaultLinksGenerator()
+                .generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
 
         Optional<String> schemaUri = links.stream()
             .filter(link -> Objects.equals(link.getRel(), "self"))
             .map(Link::getHref)
             .findAny();
 
-        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData);
+        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData)
+                                               .orElse(new ImmutableFeatureSchema.Builder().name(collectionId)
+                                                                                           .type(SchemaBase.Type.OBJECT)
+                                                                                           .build());
 
         JsonSchemaDocument schema = null;
         if (queryInput.getType().equals("feature"))

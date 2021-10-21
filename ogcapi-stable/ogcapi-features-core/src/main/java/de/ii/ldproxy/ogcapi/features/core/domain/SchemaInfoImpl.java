@@ -21,6 +21,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -145,8 +146,12 @@ public class SchemaInfoImpl implements SchemaInfo {
 
     @Override
     public List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId, boolean withSpatial, boolean withArrayBrackets) {
-        FeatureSchema schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
-        return schema.getProperties()
+        Optional<FeatureSchema> schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
+        if (schema.isEmpty())
+            return ImmutableList.of();
+
+        return schema.get()
+                     .getProperties()
                      .stream()
                      .filter(featureProperty -> !featureProperty.isSpatial() || withSpatial)
                      .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets))

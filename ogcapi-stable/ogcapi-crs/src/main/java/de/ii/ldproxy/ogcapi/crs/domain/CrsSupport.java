@@ -16,6 +16,8 @@ import java.util.Optional;
 
 public interface CrsSupport {
 
+    boolean isEnabled(OgcApiDataV2 apiData);
+
     List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData);
 
     List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration);

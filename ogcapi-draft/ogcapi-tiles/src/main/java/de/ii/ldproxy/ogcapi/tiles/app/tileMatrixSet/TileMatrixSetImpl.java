@@ -12,11 +12,16 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class TileMatrixSetImpl implements TileMatrixSet {
@@ -167,6 +172,13 @@ public class TileMatrixSetImpl implements TileMatrixSet {
                                                                        .mapToDouble(tm -> tm.getPointOfOrigin()[1].doubleValue())
                                                                        .max().orElse(Double.NaN))
                                                              .build());
+    }
+
+    @Override
+    public BoundingBox getBoundingBoxCrs84(CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
+        CrsTransformer crsTransformer = crsTransformerFactory.getTransformer(getCrs(), OgcCrs.CRS84)
+                                                             .orElseThrow(() -> new IllegalStateException(String.format("Could not transform the bounding box of tile matrix set '%s' to CRS84.", getId())));
+        return crsTransformer.transformBoundingBox(getBoundingBox());
     }
 
     @Override
