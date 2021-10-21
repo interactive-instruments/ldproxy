@@ -22,7 +22,7 @@ import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesTileset;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -30,6 +30,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -82,6 +83,7 @@ public class TileCacheImpl implements TileCache {
     private final EntityRegistry entityRegistry;
     private final TileMatrixSetRepository tileMatrixSetRepository;
     private final CollectionDynamicMetadataRegistry metadataRegistry;
+    private final CrsTransformerFactory crsTransformerFactory;
 
     /**
      * set data directory
@@ -93,7 +95,8 @@ public class TileCacheImpl implements TileCache {
                          @Requires ExtensionRegistry extensionRegistry,
                          @Requires EntityRegistry entityRegistry,
                          @Requires TileMatrixSetRepository tileMatrixSetRepository,
-                         @Requires CollectionDynamicMetadataRegistry metadataRegistry) throws IOException {
+                         @Requires CollectionDynamicMetadataRegistry metadataRegistry,
+                         @Requires CrsTransformerFactory crsTransformerFactory) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.cacheStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
                                .resolve(TILES_DIR_NAME);
@@ -104,6 +107,7 @@ public class TileCacheImpl implements TileCache {
         this.entityRegistry = entityRegistry;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
         this.metadataRegistry = metadataRegistry;
+        this.crsTransformerFactory = crsTransformerFactory;
         Files.createDirectories(cacheStore);
 
         mbtiles = new HashMap<>();
@@ -414,8 +418,10 @@ public class TileCacheImpl implements TileCache {
                                                                    config.getZoomLevelsDerived().get(tileMatrixSetId),
                                                                    config.getCenterDerived(),
                                                                    collectionId,
+                                                                   TileSet.DataType.vector,
                                                                    ImmutableList.of(),
                                                                    Optional.empty(),
+                                                                   crsTransformerFactory,
                                                                    limitsGenerator,
                                                                    providers,
                                                                    entityRegistry,
@@ -474,13 +480,13 @@ public class TileCacheImpl implements TileCache {
         return limitsGenerator.getTileMatrixSetLimits(bbox, tileMatrixSet, minmax);
     }
 
-    private List<TileFormatExtension> getTileFormats(OgcApiDataV2 apiData, Optional<String> collectionId) {
+    private List<TileFormatWithQuerySupportExtension> getTileFormats(OgcApiDataV2 apiData, Optional<String> collectionId) {
         Optional<TilesConfiguration> config = collectionId.isEmpty()
                 ? apiData.getExtension(TilesConfiguration.class)
                 : apiData.getExtension(TilesConfiguration.class, collectionId.get());
         if (config.isEmpty())
             return ImmutableList.of();
-        return extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+        return extensionRegistry.getExtensionsForType(TileFormatWithQuerySupportExtension.class)
                                 .stream()
                                 .filter(format -> collectionId.map(s -> format.isEnabledForApi(apiData, s)).orElseGet(() -> format.isEnabledForApi(apiData)))
                                 .filter(format -> config.get().getTileEncodingsDerived() == null || config.get().getTileEncodingsDerived().isEmpty() || config.get().getTileEncodingsDerived().contains(format.getMediaType().label()))
@@ -515,7 +521,7 @@ public class TileCacheImpl implements TileCache {
         }
     }
 
-    private void deleteTilesFiles(OgcApiDataV2 apiData, Optional<String> collectionId, List<TileFormatExtension> outputFormats,
+    private void deleteTilesFiles(OgcApiDataV2 apiData, Optional<String> collectionId, List<TileFormatWithQuerySupportExtension> outputFormats,
                                   TileMatrixSet tileMatrixSet, MinMax levels, BoundingBox bbox) throws SQLException, IOException {
         List<TileMatrixSetLimits> limitsList = getLimits(apiData, tileMatrixSet, levels, collectionId, bbox);
         for (TileMatrixSetLimits limits : limitsList) {
@@ -523,10 +529,10 @@ public class TileCacheImpl implements TileCache {
                          apiData.getId(), collectionId.orElse("all"), tileMatrixSet.getId(),
                          limits.getTileMatrix(), limits.getMinTileRow(), limits.getMaxTileRow(),
                          limits.getMinTileCol(), limits.getMaxTileCol(),
-                         outputFormats.stream().map(TileFormatExtension::getExtension).collect(Collectors.joining("/")));
+                         outputFormats.stream().map(TileFormatWithQuerySupportExtension::getExtension).collect(Collectors.joining("/")));
             for (int row=limits.getMinTileRow(); row<=limits.getMaxTileRow(); row++) {
                 for (int col=limits.getMinTileCol(); col<=limits.getMaxTileCol(); col++) {
-                    for (TileFormatExtension outputFormat: outputFormats) {
+                    for (TileFormatWithQuerySupportExtension outputFormat: outputFormats) {
                         Path path = getTilesStore().resolve(apiData.getId())
                                                    .resolve(collectionId.orElse("__all__"))
                                                    .resolve(tileMatrixSet.getId())

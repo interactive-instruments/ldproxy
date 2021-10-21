@@ -27,6 +27,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -70,16 +71,19 @@ public class EndpointTileSetsMultiCollection extends Endpoint implements Conform
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
             // Tiles are pre-generated as a static tile set
-            return config.map(ExtensionConfiguration::isEnabled).orElse(false);
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
                       .filter(TilesConfiguration::isMultiCollectionEnabled)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData).supportsHighLoad();
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
         }
     }
 

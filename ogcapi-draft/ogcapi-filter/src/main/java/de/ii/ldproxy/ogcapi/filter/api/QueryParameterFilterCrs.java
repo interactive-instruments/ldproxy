@@ -11,10 +11,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -116,5 +118,10 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
             return ImmutableMap.copyOf(newParameters);
         }
         return parameters;
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return FilterConfiguration.class;
     }
 }

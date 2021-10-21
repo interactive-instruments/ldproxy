@@ -33,6 +33,7 @@ import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -223,7 +224,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
     @Override
     public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
-        FeatureTransformationContext transformationContext, Optional<Locale> language) {
+            FeatureTransformationContext transformationContext, Optional<Locale> language) {
         OgcApiDataV2 serviceData = transformationContext.getApiData();
         String collectionName = transformationContext.getCollectionId();
         String staticUrlPrefix = transformationContext.getOgcApiRequest()
@@ -244,8 +245,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             FeatureTypeConfigurationOgcApi collectionData = serviceData.getCollections()
                 .get(collectionName);
             Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
-            FeatureProviderDataV2 providerData = providers.getFeatureProvider(serviceData, collectionData)
-                .getData();
+            Optional<FeatureProviderDataV2> providerData = providers.getFeatureProvider(serviceData, collectionData)
+                .map(FeatureProvider2::getData);
 
             Map<String, String> filterableFields = featuresCoreConfiguration
                 .map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)

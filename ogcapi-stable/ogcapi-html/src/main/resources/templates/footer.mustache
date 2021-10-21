@@ -78,6 +78,7 @@
 							projection: '{{projection}}'
 						});
 
+        {{#isVector}}
 		var layer{{tileMatrixSet}} = new ol.layer.VectorTile({
 								declutter: true,
 								title: "Vector Tiles",
@@ -89,6 +90,18 @@
 									url: tilesUrl{{tileMatrixSet}}
 								})
 							});
+        {{/isVector}}
+        {{^isVector}}
+		var layer{{tileMatrixSet}} = new ol.layer.Tile({
+								title: "Map Tiles",
+								source: new ol.source.XYZ({
+									maxZoom: maxLevel{{tileMatrixSet}},
+									projection: '{{projection}}',
+									tileGrid: tileGrid{{tileMatrixSet}},
+									url: tilesUrl{{tileMatrixSet}}
+								})
+							});
+        {{/isVector}}
         const extent{{tileMatrixSet}} = ol.proj.transformExtent(window._ldproxy.ol_map.extent, 'EPSG:4326', '{{projection}}');
         const center{{tileMatrixSet}} = ol.proj.fromLonLat([ {{defaultCenterLon}}, {{defaultCenterLat}} ], '{{projection}}');
 		const zoom{{tileMatrixSet}} = {{defaultZoomLevel}};
@@ -107,6 +120,7 @@
                                 url: window._ldproxy.ol_map.url
                             })
                         }),
+                        {{#isVector}}
                         new ol.layer.VectorTile({
                             declutter: true,
                             title: "Vector Tiles",
@@ -115,6 +129,15 @@
                                 url: tilesUrl
                             })
                         })
+                        {{/isVector}}
+                        {{^isVector}}
+                        new ol.layer.Tile({
+                            title: "Map Tiles",
+                            source: new ol.source.XYZ({
+                                url: tilesUrl
+                            })
+                        })
+                        {{/isVector}}
                     ]
         });
         const extent = ol.proj.transformExtent(window._ldproxy.ol_map.extent, 'EPSG:4326', 'EPSG:3857');

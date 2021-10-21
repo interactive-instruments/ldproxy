@@ -171,8 +171,8 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                                                      CollectionMetadataExtentTemporal.of(interval)));
 
                    final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-                   final FeatureProvider2 provider = providers.getFeatureProvider(apiData, collectionData);
-                   if (provider.supportsQueries()) {
+                   final Optional<FeatureProvider2> provider = providers.getFeatureProvider(apiData, collectionData);
+                   if (provider.map(FeatureProvider2::supportsQueries).orElse(false)) {
                        final String featureTypeId = collectionData.getExtension(FeaturesCoreConfiguration.class)
                                                                   .map(cfg -> cfg.getFeatureType().orElse(collectionId))
                                                                   .orElse(collectionId);
@@ -180,7 +180,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                                        .type(featureTypeId)
                                                                        .build();
                        // TODO getFeatureCount() currently always returns 0, so for now we should not use this metadata element
-                       final long count = ((FeatureQueries) provider).getFeatureCount(query);
+                       final long count = ((FeatureQueries) provider.get()).getFeatureCount(query);
                        metadataRegistry.put(apiData.getId(), collectionId, MetadataType.count,
                                             CollectionMetadataCount.of(count));
                    }
@@ -398,7 +398,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         Optional<FeatureTypeConfigurationOgcApi> collectionData = apiData
             .getCollectionData(collectionId);
         Optional<FeatureSchema> featureSchema = collectionData
-            .map(cd -> providers.getFeatureSchema(apiData, cd));
+            .flatMap(cd -> providers.getFeatureSchema(apiData, cd));
 
         List<OgcApiQueryParameter> build = Stream.concat(
             generalList,
@@ -441,6 +441,8 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                        .get(collectionId);
 
         FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .filter(ExtensionConfiguration::isEnabled)
+                                                                    .filter(cfg -> cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature) != FeaturesCoreConfiguration.ItemType.unknown)
                                                                     .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
 
         int minimumPageSize = coreConfiguration.getMinimumPageSize();
@@ -450,12 +452,11 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
-
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                 .defaultPageSize(Optional.of(defaultPageSize))
                 .showsFeatureSelfLink(showsFeatureSelfLink)
@@ -479,6 +480,8 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                            .get(collectionId);
 
         FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .filter(ExtensionConfiguration::isEnabled)
+                                                                    .filter(cfg -> cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature) != FeaturesCoreConfiguration.ItemType.unknown)
                                                                     .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items/{featureId}", collectionId);
@@ -490,7 +493,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .collectionId(collectionId)
                 .featureId(featureId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs());
 
         if (Objects.nonNull(coreConfiguration.getCaching()) && Objects.nonNull(coreConfiguration.getCaching().getCacheControlItems()))
@@ -502,10 +505,11 @@ public class EndpointFeatures extends EndpointSubCollection {
     private Optional<BoundingBox> computeBbox(OgcApiDataV2 apiData, String collectionId) throws IllegalStateException, CrsTransformationException {
 
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
+        Optional<FeatureProvider2> featureProvider = providers.getFeatureProvider(apiData, collectionData);
 
-        if (featureProvider.supportsExtents()) {
-            Optional<BoundingBox> spatialExtent = featureProvider.extents()
+        if (featureProvider.map(FeatureProvider2::supportsExtents).orElse(false)) {
+            Optional<BoundingBox> spatialExtent = featureProvider.get()
+                                                                 .extents()
                                                                  .getSpatialExtent(collectionId);
 
             if (spatialExtent.isPresent()) {
@@ -531,9 +535,9 @@ public class EndpointFeatures extends EndpointSubCollection {
 
     private Optional<TemporalExtent> computeInterval(OgcApiDataV2 apiData, String collectionId) {
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, collectionData);
+        Optional<FeatureProvider2> featureProvider = providers.getFeatureProvider(apiData, collectionData);
 
-        if (featureProvider.supportsExtents()) {
+        if (featureProvider.map(FeatureProvider2::supportsExtents).orElse(false)) {
 
             List<String> temporalQueryables = collectionData
                     .getExtension(FeaturesCoreConfiguration.class)
@@ -544,10 +548,12 @@ public class EndpointFeatures extends EndpointSubCollection {
             if (!temporalQueryables.isEmpty()) {
                 Optional<Interval> interval;
                 if (temporalQueryables.size() >= 2) {
-                    interval = featureProvider.extents()
+                    interval = featureProvider.get()
+                                              .extents()
                                               .getTemporalExtent(collectionId, temporalQueryables.get(0), temporalQueryables.get(1));
                 } else {
-                    interval = featureProvider.extents()
+                    interval = featureProvider.get()
+                                              .extents()
                                               .getTemporalExtent(collectionId, temporalQueryables.get(0));
                 }
                 return interval.map(value -> new ImmutableTemporalExtent.Builder()

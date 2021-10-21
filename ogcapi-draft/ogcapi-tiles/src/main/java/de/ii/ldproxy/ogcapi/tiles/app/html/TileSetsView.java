@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles.app.html;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.CollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -47,6 +48,7 @@ public class TileSetsView extends OgcApiView {
     public String none;
     public boolean withOlMap;
     public boolean spatialSearch;
+    public boolean isVector;
     public Map<String, String> bbox;
     public Map<String, String> interval;
 
@@ -70,14 +72,19 @@ public class TileSetsView extends OgcApiView {
                 tiles.getDescription()
                      .orElse(""));
 
+        if (Objects.isNull(spatialExtent))
+            spatialExtent = apiData.getDefaultExtent()
+                                   .flatMap(CollectionExtent::getSpatial)
+                                   .orElse(null);
         this.bbox = Objects.isNull(spatialExtent) ? null : ImmutableMap.of(
                 "minLng", Double.toString(spatialExtent.getXmin()),
                 "minLat", Double.toString(spatialExtent.getYmin()),
                 "maxLng", Double.toString(spatialExtent.getXmax()),
                 "maxLat", Double.toString(spatialExtent.getYmax()));
+        BoundingBox finalSpatialExtent = spatialExtent;
         this.tileCollections = Objects.nonNull(spatialExtent) ? tiles.getTilesets()
-                .stream()
-                .map(tms -> {
+                                                                     .stream()
+                                                                     .map(tms -> {
                     String tmsId = tms.getTileMatrixSetId();
                     TileMatrixSet tileMatrixSet = tileMatrixSets.get(tmsId);
                     if (tileMatrixSet==null)
@@ -96,13 +103,13 @@ public class TileSetsView extends OgcApiView {
 
                     String level = tms.getCenterPoint()
                                       .flatMap(TilePoint::getTileMatrix)
-                                      .orElse("10");
+                                      .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
                     String lon = tms.getCenterPoint().isPresent() && tms.getCenterPoint().get().getCoordinates().size() >= 2
                             ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
-                            : Double.toString(spatialExtent.getXmax() * 0.5 + spatialExtent.getXmin() * 0.5);
+                            : Double.toString(finalSpatialExtent.getXmax() * 0.5 + finalSpatialExtent.getXmin() * 0.5);
                     String lat = tms.getCenterPoint().isPresent() && tms.getCenterPoint().get().getCoordinates().size() >= 2
                             ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
-                            : Double.toString(spatialExtent.getYmax() * 0.5 + spatialExtent.getYmin() * 0.5);
+                            : Double.toString(finalSpatialExtent.getYmax() * 0.5 + finalSpatialExtent.getYmin() * 0.5);
 
                     return new ImmutableMap.Builder<String,String>()
                             .put("tileMatrixSet",tmsId)
@@ -116,18 +123,32 @@ public class TileSetsView extends OgcApiView {
                             .put("projection","EPSG:"+tileMatrixSet.getCrs().getCode())
                             .build();
                 })
-                .collect(Collectors.toList()) : ImmutableList.of();
+                                                                     .collect(Collectors.toList()) : ImmutableList.of();
 
-        this.tilesUrl = tiles.getTilesets()
-                             .stream()
-                             .map(PageRepresentation::getLinks)
-                             .flatMap(Collection::stream)
-                             .filter(link -> Objects.equals(link.getRel(),"item"))
-                             .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
-                             .map(Link::getHref)
-                             .findFirst()
-                             .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-                             .orElse(null);
+        List<Link> tileTemplates = tiles.getTilesets()
+                                        .stream()
+                                        .map(PageRepresentation::getLinks)
+                                        .flatMap(Collection::stream)
+                                        .filter(link -> Objects.equals(link.getRel(), "item"))
+                                        .collect(Collectors.toUnmodifiableList());
+
+        Optional<String> tileTemplate = tileTemplates.stream()
+                                                     .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
+                                                     .map(Link::getHref)
+                                                     .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                                                     .findAny();
+        if (tileTemplate.isPresent()) {
+            this.tilesUrl = tileTemplate.get();
+            this.isVector = true;
+        } else {
+            this.tilesUrl = tileTemplates.stream()
+                                        .filter(link -> link.getType().startsWith("image/"))
+                                        .map(Link::getHref)
+                                        .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                                        .findAny()
+                                         .orElse(null);
+            this.isVector = false;
+        }
 
         this.tileJsonLink = tiles.getTilesets()
                                  .stream()
@@ -166,5 +187,15 @@ public class TileSetsView extends OgcApiView {
             this.interval = ImmutableMap.of(
                     "start", interval[0].toString(),
                     "end", interval[1].toString());
+    }
+
+    private String getDefaultLevel(double lonDiff, int maxLevel) {
+        int defaultLevel = 0;
+        double dx = 360;
+        while (dx>lonDiff && defaultLevel<=maxLevel) {
+            dx = dx/2.0;
+            defaultLevel++;
+        }
+        return String.valueOf(defaultLevel);
     }
 }

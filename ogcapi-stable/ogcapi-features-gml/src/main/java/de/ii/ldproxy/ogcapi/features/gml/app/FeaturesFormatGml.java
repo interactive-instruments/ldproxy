@@ -89,10 +89,8 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
     public Optional<FeatureConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
                                                                                                     .from(transformationContext)
-                                                                                                    .namespaces(((ConnectionInfoWfsHttp) ((WithConnectionInfo<?>)providers.getFeatureProvider(transformationContext.getApiData())
-                                                                                                                                                  .getData())
-                                                                                                                                                              .getConnectionInfo())
-                                                                                                            .getNamespaces())
+                                                                                                    .namespaces(((ConnectionInfoWfsHttp) ((WithConnectionInfo<?>)providers.getFeatureProviderOrThrow(transformationContext.getApiData())
+                                                                                                                                                                          .getData()).getConnectionInfo()).getNamespaces())
                                                                                                     .build()));
     }
 

@@ -61,8 +61,10 @@ public class CollectionExtensionFeatures implements CollectionExtension {
         collection.title(featureType.getLabel())
                   .description(featureType.getDescription())
                   .itemType(featureType.getExtension(FeaturesCoreConfiguration.class)
+                                       .filter(ExtensionConfiguration::isEnabled)
                                        .flatMap(FeaturesCoreConfiguration::getItemType)
-                                       .map(itemType -> itemType.toString()));
+                                       .map(itemType -> itemType.toString())
+                                       .orElse(FeaturesCoreConfiguration.ItemType.unknown.toString()));
 
         URICustomizer uriBuilder = uriCustomizer
                 .copy()

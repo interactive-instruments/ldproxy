@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.tiles.app.TilesHelper;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
@@ -68,8 +69,9 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         }
 
         if (bbox.isEmpty()) {
-            LOGGER.error("Cannot generate tile matrix set limits.");
-            return ImmutableList.of();
+            // fallback to bbox of the tile matrix set
+            LOGGER.debug("No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set for collection '{}'. Using the tile matrix set bounding box.", collectionId);
+            bbox = Optional.of(tileMatrixSet.getBoundingBox());
         }
 
         return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
@@ -93,8 +95,9 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         }
 
         if (bbox.isEmpty()) {
-            LOGGER.error("Cannot generate tile matrix set limits.");
-            return ImmutableList.of();
+            // fallback to bbox of the tile matrix set
+            LOGGER.debug("No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
+            bbox = Optional.of(tileMatrixSet.getBoundingBox());
         }
 
         return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
@@ -110,34 +113,14 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
     public List<TileMatrixSetLimits> getTileMatrixSetLimits(BoundingBox boundingBox, TileMatrixSet tileMatrixSet,
                                                             MinMax tileMatrixRange) {
 
-        Optional<BoundingBox> bbox = getBoundingBoxInTileMatrixSetCrs(boundingBox, tileMatrixSet);
+        Optional<BoundingBox> bbox = TilesHelper.getBoundingBoxInTargetCrs(boundingBox, tileMatrixSet.getCrs(), crsTransformerFactory);
 
         if (bbox.isEmpty()) {
-            LOGGER.error("Cannot generate tile matrix set limits.");
-            return ImmutableList.of();
+            // fallback to bbox of the tile matrix set
+            LOGGER.debug("Bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
+            bbox = Optional.of(tileMatrixSet.getBoundingBox());
         }
 
         return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
-    }
-
-    @Override
-    public Optional<BoundingBox> getBoundingBoxInTileMatrixSetCrs(BoundingBox bbox, TileMatrixSet tileMatrixSet) {
-        EpsgCrs sourceCrs = bbox.getEpsgCrs();
-        EpsgCrs targetCrs = tileMatrixSet.getCrs();
-        if (sourceCrs.getCode()== targetCrs.getCode() && sourceCrs.getForceAxisOrder()==targetCrs.getForceAxisOrder())
-            return Optional.of(bbox);
-
-        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-        if (transformer.isPresent()) {
-            try {
-                return Optional.ofNullable(transformer.get()
-                                                      .transformBoundingBox(bbox));
-            } catch (CrsTransformationException e) {
-                LOGGER.error(String.format(Locale.US, "Cannot convert bounding box (%f, %f, %f, %f) from %s to %s. Reason: %s", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), sourceCrs, targetCrs, e.getMessage()));
-                return Optional.empty();
-            }
-        }
-        LOGGER.error(String.format(Locale.US, "Cannot convert bounding box (%f, %f, %f, %f) from %s to %s. Reason: no applicable transformer found.", bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), sourceCrs, targetCrs));
-        return Optional.empty();
     }
 }
