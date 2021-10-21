@@ -28,6 +28,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.changes.ImmutableChangeContext;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -143,12 +144,12 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
             getPsqlListeners(apiData, entry.getKey())
                     .stream()
                     .forEach(listener -> {
-                        FeatureProviderDataV2 providerData = providers.getFeatureProvider(apiData, entry.getValue()).getData();
+                        Optional<FeatureProviderDataV2> providerData = providers.getFeatureProvider(apiData, entry.getValue()).map(FeatureProvider2::getData);
                         // TODO currently the dialect is not accessible via ProviderData or from other modules
                         // if (!providerData.getDialect().equals(ConnectionInfoSql.Dialect.PGIS)) {
                         //    resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but has an SQL feature provider that does not support the PostgreSQL dialect.", entry.getKey()));
                         // } else
-                        if (providerData.getFeatureProviderType().equals("SQL")) {
+                        if (providerData.isPresent() && providerData.get().getFeatureProviderType().equals("SQL")) {
                             try {
                                 connections.get(key).put(entry.getKey(), getConnection(listener));
                                 listeners.get(key).put(entry.getKey(), listener);
@@ -158,8 +159,10 @@ public class FeatureListenerPsql implements ApiExtension, OgcApiBackgroundTask {
                             } catch (SQLException e) {
                                 resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but an SQL error occurred while initializing: %s", entry.getKey(), e.getMessage()));
                             }
+                        } else if (providerData.isPresent()){
+                            resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but has an incompatible feature provider type '%s'.", entry.getKey(), providerData.get().getFeatureProviderType()));
                         } else {
-                            resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but has an incompatible feature provider type '%s'.", entry.getKey(), providerData.getFeatureProviderType()));
+                            resultBuilder.addErrors(String.format("Collection %s includes a PostgreSQL listener, but has no feature provider.", entry.getKey()));
                         }
                     });
         }
