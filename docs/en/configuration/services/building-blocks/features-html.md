@@ -13,7 +13,7 @@ The module *Features HTML* may be enabled for every API with a feature provider.
 |`collectionDescriptionsInOverview`  |boolean |`true` |Show collection descriptions in *Feature Collections* resource for HTML.
 |`layout` |enum |`CLASSIC` |Layout for *Features* and *Feature* resources. Either `CLASSIC` (mainly for simple objects with simple values) or `COMPLEX_OBJECTS` (supports more complex object structures and longer values).
 |`mapClientType` |enum |`MAP_LIBRE` |The map client library to use to display features in the HTML representation. The default is MapLibre GL (`MAP_LIBRE`). WIP: Cesium (`CESIUM`) can be used for displaying 3D features on a globe.
-|`style` |string |`null` |An optional URL template of a Mapbox style to use for map. The template may contain `{{serviceUrl}}` (substituted with the API landing page URI) and `{{collectionId}}` (substituted with the collection id). If no style is set, a simple default style is used. The value is ignore, if the map client is not MapLibre.
+|`style` |string |`DEFAULT` |An optional URL template of a Mapbox style to use for map. The template may contain `{{serviceUrl}}` (substituted with the API landing page URI) and `{{collectionId}}` (substituted with the collection id). If the style is set to `DEFAULT`, a simple default style is used. The value is ignored, if the map client is not MapLibre.
 
 ### Example
 

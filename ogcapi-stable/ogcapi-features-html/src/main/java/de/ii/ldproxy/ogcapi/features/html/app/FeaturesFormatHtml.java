@@ -296,10 +296,10 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
-                                             .filter(Objects::nonNull)
                                              .orElse(MapClient.Type.MAP_LIBRE);
         String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
         String styleUrl = config.map(FeaturesHtmlConfiguration::getStyle)
+                                .filter(s -> !s.equals("DEFAULT"))
                                 .map(s -> s.replace("{{serviceUrl}}", serviceUrl)
                                            .replace("{{collectionId}}", featureType.getId()))
                                 .orElse(null);
@@ -359,10 +359,10 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
-                                             .filter(Objects::nonNull)
                                              .orElse(MapClient.Type.MAP_LIBRE);
         String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
         String styleUrl = config.map(FeaturesHtmlConfiguration::getStyle)
+                                .filter(s -> !s.equals("DEFAULT"))
                                 .map(s -> s.replace("{{serviceUrl}}", serviceUrl)
                                            .replace("{{collectionId}}", featureType.getId()))
                                 .orElse(null);
