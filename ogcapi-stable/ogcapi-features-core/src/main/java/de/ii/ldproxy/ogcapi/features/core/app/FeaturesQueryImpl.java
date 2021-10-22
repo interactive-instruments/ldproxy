@@ -57,7 +57,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.measure.Unit;
-import javax.measure.quantity.Angle;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -75,9 +74,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     private static final Splitter ARRAY_SPLITTER = Splitter.on(',')
                                                            .trimResults();
-
-    private static final Unit<Angle> DEGREE_ANGLE = Units.RADIAN.multiply(2.0 * Math.PI).divide(360);
-
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesQueryImpl.class);
 
@@ -470,7 +466,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                         precision = coreConfiguration.getCoordinatePrecision().get("meter");
                         if (Objects.isNull(precision))
                             precision = coreConfiguration.getCoordinatePrecision().get("metre");
-                    } else if (unit.equals(DEGREE_ANGLE)) {
+                    } else if ("degree".equals(unit.toString())) {
                         precision = coreConfiguration.getCoordinatePrecision().get("degree");
                     } else {
                         LOGGER.debug("Coordinate precision could not be set, unrecognised unit found: '{}'.", unit);
