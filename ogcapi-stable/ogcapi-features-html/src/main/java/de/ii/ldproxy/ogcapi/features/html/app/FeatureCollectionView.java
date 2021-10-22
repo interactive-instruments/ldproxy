@@ -7,7 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.app;
 
+import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.CollectionExtent;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -20,6 +24,7 @@ import de.ii.ldproxy.ogcapi.html.domain.ImmutableSource;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source.TYPE;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient.Type;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.features.domain.Feature;
 import org.apache.http.NameValuePair;
@@ -67,10 +72,12 @@ public class FeatureCollectionView extends DatasetView {
     public FeaturesHtmlConfiguration.POSITION mapPosition;
     public MapClient mapClient;
 
-    public FeatureCollectionView(String template, URI uri, String name, String title, String description,
-                                 String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
-                                 I18n i18n, Locale language, FeaturesHtmlConfiguration.POSITION mapPosition,
-                                 MapClient.Type mapClientType, String styleUrl) {
+    public FeatureCollectionView(OgcApiDataV2 apiData,
+        FeatureTypeConfigurationOgcApi collectionData, String template,
+        URI uri, String name, String title, String description,
+        String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
+        I18n i18n, Locale language, POSITION mapPosition,
+        Type mapClientType, String styleUrl) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
@@ -80,13 +87,22 @@ public class FeatureCollectionView extends DatasetView {
         this.mapPosition = mapPosition;
         this.uriBuilder = new URICustomizer(uri);
 
+        this.bbox = collectionData.getExtent()
+            .flatMap(CollectionExtent::getSpatial)
+            .map(boundingBox -> ImmutableMap.of(
+            "minLng", Double.toString(boundingBox.getXmin()),
+            "minLat", Double.toString(boundingBox.getYmin()),
+            "maxLng", Double.toString(boundingBox.getXmax()),
+            "maxLat", Double.toString(boundingBox.getYmax())))
+            .orElse(null);
+
         if (mapClientType.equals(MapClient.Type.MAP_LIBRE)) {
             this.mapClient = new ImmutableMapClient.Builder()
                     .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
                                            .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
                     .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
                                          .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
-                    //TODO .bounds(bbox)
+                    .bounds(Optional.ofNullable(bbox))
                     .data(new ImmutableSource.Builder()
                                   .type(TYPE.geojson)
                                   .url(uriBuilder.removeParameters("f").ensureParameter("f", "json").toString())

@@ -304,7 +304,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                            .replace("{{collectionId}}", featureType.getId()))
                                 .orElse(null);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl);
 
         featureTypeDataset.temporalExtent = apiData.getTemporalExtent(featureType.getId()).orElse(null);
         apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
@@ -316,11 +316,6 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         featureTypeDataset.uriBuilderWithFOnly = uriCustomizer.copy()
                                                               .clearParameters()
                                                               .ensureParameter("f", MEDIA_TYPE.parameter());
-
-        //TODO: refactor all views, use extendable OgcApiCollection(s) as base, move this to CollectionExtension
-        featureTypeDataset.spatialSearch = featureType.getExtensions()
-                                                      .stream()
-                                                      .anyMatch(extensionConfiguration -> Objects.equals(extensionConfiguration.getBuildingBlock(), "FILTER_TRANSFORMERS"));
 
         return featureTypeDataset;
     }
@@ -367,7 +362,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                            .replace("{{collectionId}}", featureType.getId()))
                                 .orElse(null);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData,
+            featureType, "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl);
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 
