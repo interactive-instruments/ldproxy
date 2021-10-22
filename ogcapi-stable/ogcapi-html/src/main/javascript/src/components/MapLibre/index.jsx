@@ -20,7 +20,7 @@ const MapLibre = ({
     dataType,
     dataLayers,
     interactive,
-    hash,
+    savePosition,
     drawBounds,
     defaultStyle,
     popup,
@@ -54,7 +54,7 @@ const MapLibre = ({
                 },
                 attributionControl: false,
                 interactive,
-                hash,
+                hash: savePosition ? 'position' : false,
             }}>
             <Configuration
                 styleUrl={styleUrl}
@@ -80,7 +80,7 @@ MapLibre.propTypes = {
     zoom: PropTypes.number,
     bounds: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
     interactive: PropTypes.bool,
-    hash: PropTypes.bool,
+    savePosition: PropTypes.bool,
     dataUrl: PropTypes.string,
     drawBounds: PropTypes.bool,
     // eslint-disable-next-line react/forbid-prop-types
@@ -97,7 +97,7 @@ MapLibre.defaultProps = {
     zoom: 0,
     bounds: null,
     interactive: true,
-    hash: false,
+    savePosition: false,
     drawBounds: false,
     dataUrl: null,
     defaultStyle: undefined,

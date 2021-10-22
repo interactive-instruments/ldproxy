@@ -36,7 +36,7 @@ public interface MapClient {
   Optional<String> getAttribution();
 
   @Value.Default
-  default boolean getHash()  { return false; }
+  default boolean getSavePosition()  { return false; }
 
   Optional<Map<String, String>> getBounds();
 

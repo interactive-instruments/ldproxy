@@ -39,6 +39,7 @@ public class StyleView extends GenericView {
         this.mapClient = new ImmutableMapClient.Builder()
             .styleUrl(styleUrl)
             .popup(Popup.CLICK_PROPERTIES)
+            .savePosition(true)
             .build();
 
         this.popup = false;
