@@ -12,10 +12,13 @@ import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -35,12 +38,15 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class VectorTilesOnCollection implements CollectionExtension {
+public class TilesOnCollection implements CollectionExtension {
 
     private final I18n i18n;
+    private final ExtensionRegistry extensionRegistry;
 
-    public VectorTilesOnCollection(@Requires I18n i18n) {
+    public TilesOnCollection(@Requires I18n i18n,
+                             @Requires ExtensionRegistry extensionRegistry) {
         this.i18n = i18n;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override
@@ -57,11 +63,20 @@ public class VectorTilesOnCollection implements CollectionExtension {
                                                      List<ApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
         // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
-        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
+        final TilesLinkGenerator tilesLinkGenerator = new TilesLinkGenerator();
 
         if (!isNested && isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class) &&
             isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class, TilesConfiguration::isSingleCollectionEnabled)) {
-            collection.addAllLinks(vectorTilesLinkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
+            Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                                                                   .stream()
+                                                                   .filter(format -> format.isEnabledForApi(apiData, featureTypeConfiguration.getId()))
+                                                                   .map(format -> format.getDataType())
+                                                                   .findAny();
+            if (dataType.isEmpty())
+                // no tile format is enabled
+                return collection;
+
+            collection.addAllLinks(tilesLinkGenerator.generateCollectionLinks(uriCustomizer, dataType.get(), i18n, language));
         }
 
         return collection;

@@ -29,6 +29,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -96,14 +97,17 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
             return false;
         if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
             // Tiles are pre-generated as a static tile set
-            return config.map(ExtensionConfiguration::isEnabled).orElse(false);
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
         } else {
             if (config.filter(TilesConfiguration::isSingleCollectionEnabled)
                       .isEmpty()) 
                 return false;
             // Tiles are generated on-demand from a data source;
             // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData).supportsHighLoad();
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
         }
     }
 

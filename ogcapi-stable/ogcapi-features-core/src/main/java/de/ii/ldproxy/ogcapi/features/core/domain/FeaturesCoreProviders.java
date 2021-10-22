@@ -20,28 +20,42 @@ import java.util.Optional;
 
 public interface FeaturesCoreProviders {
 
-    FeatureProvider2 getFeatureProvider(OgcApiDataV2 apiData);
+    boolean hasFeatureProvider(OgcApiDataV2 apiData);
 
-    FeatureProvider2 getFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
+    Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData);
 
-    default FeatureSchema getFeatureSchema(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
+    FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData);
+
+    boolean hasFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
+
+    Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
+
+    FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
+
+    default Optional<FeatureSchema> getFeatureSchema(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
         String featureTypeId = featureType.getExtension(FeaturesCoreConfiguration.class)
                                           .flatMap(FeaturesCoreConfiguration::getFeatureType)
                                           .orElse(featureType.getId());
-        FeatureProvider2 featureProvider = getFeatureProvider(apiData, featureType);
-        return featureProvider.getData().getTypes().get(featureTypeId);
+        Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
+        return featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
     }
 
     default Map<String, FeatureSchema> getFeatureSchemas(OgcApiDataV2 apiData) {
         return apiData.getCollections()
-                      .values()
+                      .entrySet()
                       .stream()
-                      .map(collectionData -> {
-                        FeatureSchema schema = getFeatureSchema(apiData, collectionData);
-                        if (Objects.isNull(schema))
-                          return null;
+                      .map(entry -> {
+                          FeatureTypeConfigurationOgcApi featureType = entry.getValue();
+                          String featureTypeId = featureType.getExtension(FeaturesCoreConfiguration.class)
+                                                            .map(cfg -> cfg.getFeatureType()
+                                                                           .orElse(featureType.getId()))
+                                                            .orElse(featureType.getId());
+                          Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
+                          Optional<FeatureSchema> schema = featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
+                          if (schema.isEmpty())
+                              return null;
 
-                        return new AbstractMap.SimpleImmutableEntry<>(collectionData.getId(), schema);
+                          return new AbstractMap.SimpleImmutableEntry<>(featureType.getId(), schema.get());
                       })
                       .filter(Objects::nonNull)
                       .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));

@@ -1,28 +1,28 @@
-</div>
-
-<footer class="footer bg-light py-4 d-flex flex-column justify-content-around align-items-center">
-    {{#htmlConfig}}
-    {{#footerText}}
-        <div class="container text-muted text-center">
-            {{{.}}}
         </div>
-    {{/footerText}}
-    {{/htmlConfig}}
-  <div class="container d-flex flex-row justify-content-between align-items-center w-100">
-      {{> brand}}
-        <span>
-        {{#htmlConfig}}
-        {{#legalUrl}}
-            <span><a class="small mr-2" href="{{.}}" target="_blank">{{legalName}}</a></span>
-        {{/legalUrl}}
-        {{#privacyUrl}}
-            <span><a class="small" href="{{.}}" target="_blank">{{privacyName}}</a></span>
-        {{/privacyUrl}}
-        {{/htmlConfig}}
-        </span>
-  </div>
-</footer>
 
-</body>
+        <footer class="footer bg-light py-4 d-flex flex-column justify-content-around align-items-center">
+            {{#htmlConfig}}
+            {{#footerText}}
+                <div class="container text-muted text-center">
+                    {{{.}}}
+                </div>
+            {{/footerText}}
+            {{/htmlConfig}}
+	        <div class="container d-flex flex-row justify-content-between align-items-center w-100">
+	            {{> brand}}
+                <span>
+                {{#htmlConfig}}
+                {{#legalUrl}}
+                    <span><a class="small mr-2" href="{{.}}" target="_blank">{{legalName}}</a></span>
+                {{/legalUrl}}
+                {{#privacyUrl}}
+                    <span><a class="small" href="{{.}}" target="_blank">{{privacyName}}</a></span>
+                {{/privacyUrl}}
+                {{/htmlConfig}}
+                </span>
+	        </div>
+        </footer>
+
+    </body>
 
 {{> htmlEnd}}

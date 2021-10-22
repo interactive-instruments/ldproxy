@@ -64,6 +64,7 @@ public class TileSetsView extends OgcApiView {
     public String none;
     public boolean withOlMap;
     public boolean spatialSearch;
+    public boolean isVector;
     public Map<String, String> bbox;
     public Map<String, String> temporalExtent;
     public final MapClient mapClient;
@@ -90,6 +91,9 @@ public class TileSetsView extends OgcApiView {
                      .orElse(""));
 
         Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
+        if (spatialExtent.isEmpty())
+            spatialExtent = apiData.getDefaultExtent().flatMap(extent -> extent.getSpatial());
+        Optional<BoundingBox> finalSpatialExtent = spatialExtent;
         this.bbox = spatialExtent.map(boundingBox -> ImmutableMap.of(
                 "minLng", Double.toString(boundingBox.getXmin()),
                 "minLat", Double.toString(boundingBox.getYmin()),
@@ -118,13 +122,13 @@ public class TileSetsView extends OgcApiView {
 
                     String level = tms.getCenterPoint()
                                       .flatMap(TilePoint::getTileMatrix)
-                                      .orElse("10");
+                                      .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
                     String lon = tms.getCenterPoint().isPresent() && tms.getCenterPoint().get().getCoordinates().size() >= 2
                             ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
-                            : Double.toString(spatialExtent.get().getXmax() * 0.5 + spatialExtent.get().getXmin() * 0.5);
+                            : Double.toString(finalSpatialExtent.get().getXmax() * 0.5 + finalSpatialExtent.get().getXmin() * 0.5);
                     String lat = tms.getCenterPoint().isPresent() && tms.getCenterPoint().get().getCoordinates().size() >= 2
                             ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
-                            : Double.toString(spatialExtent.get().getYmax() * 0.5 + spatialExtent.get().getYmin() * 0.5);
+                            : Double.toString(finalSpatialExtent.get().getYmax() * 0.5 + finalSpatialExtent.get().getYmin() * 0.5);
 
                     return new ImmutableMap.Builder<String,String>()
                             .put("tileMatrixSet",tmsId)
@@ -140,16 +144,30 @@ public class TileSetsView extends OgcApiView {
                 })
                 .collect(Collectors.toList()) : ImmutableList.of();
 
-        this.tilesUrl = tiles.getTilesets()
+        List<Link> tileTemplates = tiles.getTilesets()
                              .stream()
                              .map(PageRepresentation::getLinks)
                              .flatMap(Collection::stream)
                              .filter(link -> Objects.equals(link.getRel(),"item"))
+                                        .collect(Collectors.toUnmodifiableList());
+
+        Optional<String> tileTemplate = tileTemplates.stream()
                              .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
                              .map(Link::getHref)
-                             .findFirst()
                              .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                                                     .findAny();
+        if (tileTemplate.isPresent()) {
+            this.tilesUrl = tileTemplate.get();
+            this.isVector = true;
+        } else {
+            this.tilesUrl = tileTemplates.stream()
+                                        .filter(link -> link.getType().startsWith("image/"))
+                                        .map(Link::getHref)
+                                        .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                                        .findAny()
                              .orElse(null);
+            this.isVector = false;
+        }
 
         this.tileJsonLink = tiles.getTilesets()
                                  .stream()
@@ -241,5 +259,15 @@ public class TileSetsView extends OgcApiView {
         } else {
             this.mapClient = null;
         }
+    }
+
+    private String getDefaultLevel(double lonDiff, int maxLevel) {
+        int defaultLevel = 0;
+        double dx = 360;
+        while (dx>lonDiff && defaultLevel<=maxLevel) {
+            dx = dx/2.0;
+            defaultLevel++;
+        }
+        return String.valueOf(defaultLevel);
     }
 }

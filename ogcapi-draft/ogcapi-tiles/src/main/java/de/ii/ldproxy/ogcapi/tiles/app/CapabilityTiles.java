@@ -25,11 +25,13 @@ import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -50,7 +52,7 @@ import java.util.stream.Collectors;
 @Component
 @Provides
 @Instantiate
-public class CapabilityVectorTiles implements ApiBuildingBlock {
+public class CapabilityTiles implements ApiBuildingBlock {
 
     public static final int LIMIT_DEFAULT = 100000;
     public static final double MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR = 0.1;
@@ -64,9 +66,9 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
     private final SchemaInfo schemaInfo;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public CapabilityVectorTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
-                                 @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo,
-                                 @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    public CapabilityTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
+                           @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo,
+                           @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;
         this.queryParser = queryParser;
         this.providers = providers;
@@ -79,7 +81,7 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
 
         return new ImmutableTilesConfiguration.Builder().enabled(false)
                                                         .tileProvider(ImmutableTileProviderFeatures.builder()
-                                                                                                   .tileEncodings(extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                                                                                                   .tileEncodings(extensionRegistry.getExtensionsForType(TileFormatWithQuerySupportExtension.class)
                                                                                                                                    .stream()
                                                                                                                                    .filter(FormatExtension::isEnabledByDefault)
                                                                                                                                    .map(format -> format.getMediaType().label())
@@ -168,7 +170,10 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
             String collectionId = entry.getKey();
             TilesConfiguration config = entry.getValue();
 
-            List<String> featureProperties = schemaInfo.getPropertyNames(providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId)), false);
+            Optional<FeatureSchema> schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
+            List<String> featureProperties = schema.isPresent()
+                    ? schemaInfo.getPropertyNames(schema.get(), false)
+                    : ImmutableList.of();
 
             List<String> formatLabels = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                                                          .stream()
@@ -198,29 +203,27 @@ public class CapabilityVectorTiles implements ApiBuildingBlock {
             }
 
             List<Double> center = config.getCenterDerived();
-            if (Objects.nonNull(center) && center.size()!=2)
+            if (center.size()!=0 && center.size()!=2)
                 builder.addStrictErrors(MessageFormat.format("The center has been specified in the TILES module configuration of collection ''{1}'', but the array length is ''{0}'', not 2.", center.size(), collectionId));
 
             Map<String, MinMax> zoomLevels = config.getZoomLevelsDerived();
-            if (Objects.nonNull(zoomLevels)) {
-                for (Map.Entry<String, MinMax> entry2 : zoomLevels.entrySet()) {
-                    String tileMatrixSetId = entry2.getKey();
-                    Optional<TileMatrixSet> tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
-                                                                                   .filter(tms -> config.getTileMatrixSets().contains(tms.getId()));
-                    if (tileMatrixSet.isEmpty()) {
-                        builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' references a tile matrix set ''{1}'' that is not available in this API.", collectionId, tileMatrixSetId));
-                    } else {
-                        if (tileMatrixSet.get().getMinLevel() > entry2.getValue().getMin()) {
-                            builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to start at level ''{2}'', but the minimum level of the tile matrix set is ''{3}''.", collectionId, tileMatrixSetId, entry2.getValue().getMin(), tileMatrixSet.get().getMinLevel()));
-                        }
-                        if (tileMatrixSet.get().getMaxLevel() < entry2.getValue().getMax()) {
-                            builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to end at level ''{2}'', but the maximum level of the tile matrix set is ''{3}''.", collectionId, tileMatrixSetId, entry2.getValue().getMax(), tileMatrixSet.get().getMaxLevel()));
-                        }
-                        if (entry2.getValue().getDefault().isPresent()) {
-                            Integer defaultLevel = entry2.getValue().getDefault().get();
-                            if (defaultLevel < entry2.getValue().getMin() || defaultLevel > entry2.getValue().getMax()) {
-                                builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' specifies a default level ''{2}'' that is outside of the range [ ''{3}'' : ''{4}'' ].", tileMatrixSetId, defaultLevel, entry2.getValue().getMin(), entry2.getValue().getMax()));
-                            }
+            for (Map.Entry<String, MinMax> entry2 : zoomLevels.entrySet()) {
+                String tileMatrixSetId = entry2.getKey();
+                Optional<TileMatrixSet> tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                                               .filter(tms -> config.getTileMatrixSets().contains(tms.getId()));
+                if (tileMatrixSet.isEmpty()) {
+                    builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' references a tile matrix set ''{1}'' that is not available in this API.", collectionId, tileMatrixSetId));
+                } else {
+                    if (tileMatrixSet.get().getMinLevel() > entry2.getValue().getMin()) {
+                        builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to start at level ''{2}'', but the minimum level of the tile matrix set is ''{3}''.", collectionId, tileMatrixSetId, entry2.getValue().getMin(), tileMatrixSet.get().getMinLevel()));
+                    }
+                    if (tileMatrixSet.get().getMaxLevel() < entry2.getValue().getMax()) {
+                        builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to end at level ''{2}'', but the maximum level of the tile matrix set is ''{3}''.", collectionId, tileMatrixSetId, entry2.getValue().getMax(), tileMatrixSet.get().getMaxLevel()));
+                    }
+                    if (entry2.getValue().getDefault().isPresent()) {
+                        Integer defaultLevel = entry2.getValue().getDefault().get();
+                        if (defaultLevel < entry2.getValue().getMin() || defaultLevel > entry2.getValue().getMax()) {
+                            builder.addStrictErrors(MessageFormat.format("The configuration in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' specifies a default level ''{2}'' that is outside of the range [ ''{3}'' : ''{4}'' ].", tileMatrixSetId, defaultLevel, entry2.getValue().getMin(), entry2.getValue().getMax()));
                         }
                     }
                 }

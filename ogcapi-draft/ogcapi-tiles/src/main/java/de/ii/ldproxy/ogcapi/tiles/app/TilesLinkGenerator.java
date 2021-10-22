@@ -14,6 +14,8 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +24,7 @@ import java.util.Optional;
 /**
  * This class is responsible for generating the links in the json Files.
  */
-public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
+public class TilesLinkGenerator extends DefaultLinksGenerator {
 
     /**
      * generates the Links on the landing page /{apiId}/
@@ -32,7 +34,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return a List with links
      */
-    public List<Link> generateLandingPageLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateLandingPageLinks(URICustomizer uriBuilder, TileSet.DataType dataType, I18n i18n, Optional<Locale> language) {
 
         return ImmutableList.<Link>builder()
                 .add(new ImmutableLink.Builder()
@@ -52,7 +54,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                 .ensureLastPathSegment("tiles")
                                 .removeParameters("f")
                                 .toString())
-                        .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector")
+                        .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())
                         .title(i18n.get("tilesLink", language))
                         .build())
                 .build();
@@ -92,7 +94,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
     public List<Link> generateTileSetsLinks(URICustomizer uriBuilder,
                                             ApiMediaType mediaType,
                                             List<ApiMediaType> alternateMediaTypes,
-                                            List<ApiMediaType> tileFormats,
+                                            List<TileFormatExtension> tileFormats,
                                             I18n i18n,
                                             Optional<Locale> language) {
 
@@ -113,7 +115,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
     public List<Link> generateTileSetLinks(URICustomizer uriBuilder,
                                            ApiMediaType mediaType,
                                            List<ApiMediaType> alternateMediaTypes,
-                                           List<ApiMediaType> tileFormats,
+                                           List<TileFormatExtension> tileFormats,
                                            I18n i18n,
                                            Optional<Locale> language) {
 
@@ -124,10 +126,10 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                                           .href(uriBuilder.copy()
                                                                           .clearParameters()
                                                                           .ensureNoTrailingSlash()
-                                                                          .toString() + "/{tileMatrix}/{tileRow}/{tileCol}?f="+format.parameter())
+                                                                          .toString() + "/{tileMatrix}/{tileRow}/{tileCol}?f="+format.getMediaType().parameter())
                                                           .rel("item")
-                                                          .type(format.type().toString())
-                                                          .title(i18n.get("tileLinkTemplate"+format.label(), language))
+                                                          .type(format.getMediaType().type().toString())
+                                                          .title(i18n.get("tileLinkTemplate"+format.getMediaType().label(), language))
                                                           .templated(true)
                                                           .build()));
 
@@ -144,7 +146,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      */
     public List<Link> generateTileSetEmbeddedLinks(URICustomizer uriBuilder,
                                                    String tileMatrixSetId,
-                                                   List<ApiMediaType> tileFormats,
+                                                   List<TileFormatExtension> tileFormats,
                                                    I18n i18n,
                                                    Optional<Locale> language) {
 
@@ -163,10 +165,10 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                                                           .clearParameters()
                                                                           .ensureNoTrailingSlash()
                                                                           .ensureLastPathSegment(tileMatrixSetId)
-                                                                          .toString() + "/{tileMatrix}/{tileRow}/{tileCol}?f="+format.parameter())
+                                                                          .toString() + "/{tileMatrix}/{tileRow}/{tileCol}?f="+format.getMediaType().parameter())
                                                           .rel("item")
-                                                          .type(format.type().toString())
-                                                          .title(i18n.get("tileLinkTemplate"+format.label(), language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
+                                                          .type(format.getMediaType().type().toString())
+                                                          .title(i18n.get("tileLinkTemplate"+format.getMediaType().label(), language).replace("{{tileMatrixSetId}}", tileMatrixSetId))
                                                           .templated(true)
                                                           .build()));
 
@@ -181,7 +183,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
      * @param language the requested language (optional)
      * @return a list with links
      */
-    public List<Link> generateCollectionLinks(URICustomizer uriBuilder, I18n i18n, Optional<Locale> language) {
+    public List<Link> generateCollectionLinks(URICustomizer uriBuilder, TileSet.DataType dataType, I18n i18n, Optional<Locale> language) {
 
 
         return ImmutableList.<Link>builder()
@@ -192,7 +194,7 @@ public class VectorTilesLinkGenerator extends DefaultLinksGenerator {
                                 .removeParameters("f")
                                 .toString()
                         )
-                        .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector")
+                        .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())
                         .title(i18n.get("tilesLink", language))
                         .build())
                 .build();

@@ -7,10 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityVectorTiles.MINIMUM_SIZE_IN_PIXEL;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
@@ -25,12 +21,17 @@ import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import org.immutables.value.Value;
+
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
-import org.immutables.value.Value;
+
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MINIMUM_SIZE_IN_PIXEL;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -76,21 +77,19 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     }
 
     @Deprecated
-    @Nullable
     List<Double> getCenter();
 
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
     default List<Double> getCenterDerived() {
-        return Objects.nonNull(getCenter()) ?
+        return !getCenter().isEmpty() ?
                 getCenter() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getCenter() :
                         getTileProvider() instanceof TileProviderMbtiles ?
                                 ((TileProviderMbtiles) getTileProvider()).getCenter() :
-                                null;
+                                ImmutableList.of();
     }
 
     @Deprecated
@@ -379,9 +378,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
 
-        if (Objects.nonNull(getCenter()))
+        if (!getCenter().isEmpty())
             builder.center(getCenter());
-        else if (Objects.nonNull(src.getCenter()))
+        else if (!src.getCenter().isEmpty())
             builder.center(src.getCenter());
 
         return builder.build();

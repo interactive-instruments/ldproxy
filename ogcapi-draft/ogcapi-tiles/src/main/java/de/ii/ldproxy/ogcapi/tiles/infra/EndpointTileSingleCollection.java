@@ -36,6 +36,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -134,16 +135,19 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         Optional<TilesConfiguration> config = apiData.getCollections()
                                                      .get(collectionId)
                                                      .getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
             // Tiles are pre-generated as a static tile set
-            return config.map(ExtensionConfiguration::isEnabled).orElse(false);
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
                       .filter(TilesConfiguration::isSingleCollectionEnabled)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData).supportsHighLoad();
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
         }
     }
 
@@ -246,7 +250,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                 .replace("{tileRow}", tileRow)
                 .replace("{tileCol}", tileCol);
         TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path, Optional.of(collectionId))
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+                                                              .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         if (!requiresQuerySupport) {
             // return a static tile
@@ -262,6 +266,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                     .outputFormat(outputFormat)
                     .temporary(false)
                     .isDatasetTile(false)
+                    .addCollectionIds(collectionId)
                     .build();
 
             String mbtilesFilename = ((TileProviderMbtiles) tileProvider).getFilename();
@@ -280,7 +285,10 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
             return queryHandler.handle(TilesQueriesHandler.Query.MBTILES_TILE, queryInput, requestContext);
         }
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        if (!(outputFormat instanceof TileFormatWithQuerySupportExtension))
+            throw new RuntimeException(String.format("Unexpected tile format without query support. Found: %s", outputFormat.getClass().getSimpleName()));
+
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
 
         // check, if the cache can be used (no query parameters except f)
@@ -340,7 +348,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
             processingParameters = parameter.transformContext(null, processingParameters, queryParams, api.getData());
         }
 
-        FeatureQuery query = outputFormat.getQuery(tile, allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
+        FeatureQuery query = ((TileFormatWithQuerySupportExtension) outputFormat).getQuery(tile, allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
 
         FeaturesCoreConfiguration coreConfiguration = featureType.getExtension(FeaturesCoreConfiguration.class).get();
 

@@ -29,7 +29,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -102,20 +102,23 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        // currently no vector tiles support for WFS backends
+        // no vector tiles support for WFS backends
         if (!providers.getFeatureProvider(apiData)
-                      .supportsHighLoad()) {
+                      .map(FeatureProvider2::supportsHighLoad)
+                      .orElse(false)) {
             return false;
         }
 
         // no formats available
-        if (extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+        if (extensionRegistry.getExtensionsForType(TileFormatWithQuerySupportExtension.class)
                              .isEmpty()) {
             return false;
         }
 
         return apiData.getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::isEnabled)
+                      // seeding only for features as tile providers
+                      .filter(config -> config.getTileProvider().requiresQuerySupport())
                       .filter(cfg -> cfg.getCache() != TilesConfiguration.TileCacheType.NONE)
                       .filter(config -> !config.getSeedingDerived()
                                                .isEmpty())
@@ -150,7 +153,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
      */
     @Override
     public void run(OgcApi api, TaskContext taskContext) {
-        List<TileFormatExtension> outputFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
+        List<TileFormatWithQuerySupportExtension> outputFormats = extensionRegistry.getExtensionsForType(TileFormatWithQuerySupportExtension.class);
 
         try {
             // first seed the multi-layer tiles, which also generates the necessary single-layer tiles
@@ -175,9 +178,10 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         }
     }
 
-    private void seedSingleLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats, TaskContext taskContext) throws IOException {
+    private void seedSingleLayerTiles(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, TaskContext taskContext) throws IOException {
         OgcApiDataV2 apiData = api.getData();
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        // isEnabled checks that we have a feature provider
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         Map<String, Map<String, MinMax>> seedingMap = getSeedingConfig(apiData);
 
         long numberOfTiles = getNumberOfTiles2(api, outputFormats, seedingMap);
@@ -254,9 +258,10 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         });
     }
 
-    private void seedMultiLayerTiles(OgcApi api, List<TileFormatExtension> outputFormats, TaskContext taskContext) throws IOException {
+    private void seedMultiLayerTiles(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, TaskContext taskContext) throws IOException {
         OgcApiDataV2 apiData = api.getData();
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        // isEnabled checks that we have a feature provider
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
         Optional<TilesConfiguration> tilesConfiguration = apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::isMultiCollectionEnabled);
 
@@ -267,9 +272,9 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                 multiLayerTilesSeeding = seedingConfig;
         }
 
-        List<TileFormatExtension> multiLayerFormats = outputFormats.stream()
-                                                                   .filter(TileFormatExtension::canMultiLayer)
-                                                                   .collect(Collectors.toList());
+        List<TileFormatWithQuerySupportExtension> multiLayerFormats = outputFormats.stream()
+                                                                                   .filter(TileFormatWithQuerySupportExtension::canMultiLayer)
+                                                                                   .collect(Collectors.toList());
 
         long numberOfTiles = getNumberOfTiles(api, multiLayerFormats, multiLayerTilesSeeding);
         final double[] currentTile = {0.0};
@@ -417,7 +422,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         return minMaxMap;
     }
 
-    private long getNumberOfTiles2(OgcApi api, List<TileFormatExtension> outputFormats, Map<String, Map<String, MinMax>> seeding) {
+    private long getNumberOfTiles2(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, Map<String, MinMax>> seeding) {
         final long[] numberOfTiles = {0};
 
         try {
@@ -432,7 +437,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         return numberOfTiles[0];
     }
 
-    private long getNumberOfTiles(OgcApi api, List<TileFormatExtension> outputFormats, Map<String, MinMax> seeding) {
+    private long getNumberOfTiles(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, MinMax> seeding) {
         final long[] numberOfTiles = {0};
 
         try {
@@ -448,10 +453,10 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
     }
 
     interface TileWalker {
-        boolean visit(OgcApi api, String collectionId, TileFormatExtension outputFormat, TileMatrixSet tileMatrixSet, int level, int row, int col) throws IOException;
+        boolean visit(OgcApi api, String collectionId, TileFormatWithQuerySupportExtension outputFormat, TileMatrixSet tileMatrixSet, int level, int row, int col) throws IOException;
     }
 
-    private void walkCollectionsAndTiles(OgcApi api, List<TileFormatExtension> outputFormats, Map<String, Map<String, MinMax>> seeding, TileWalker tileWalker) throws IOException {
+    private void walkCollectionsAndTiles(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, Map<String, MinMax>> seeding, TileWalker tileWalker) throws IOException {
         for (Map.Entry<String, Map<String, MinMax>> entry : seeding.entrySet()) {
             String collectionId = entry.getKey();
             Map<String, MinMax> seedingConfig = entry.getValue();
@@ -462,8 +467,8 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         }
     }
 
-    private void walkTiles(OgcApi api, String collectionId, List<TileFormatExtension> outputFormats, Map<String, MinMax> seeding, TileWalker tileWalker) throws IOException {
-        for (TileFormatExtension outputFormat : outputFormats) {
+    private void walkTiles(OgcApi api, String collectionId, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, MinMax> seeding, TileWalker tileWalker) throws IOException {
+        for (TileFormatWithQuerySupportExtension outputFormat : outputFormats) {
             for (Map.Entry<String, MinMax> entry : seeding.entrySet()) {
                 TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
                 MinMax zoomLevels = entry.getValue();

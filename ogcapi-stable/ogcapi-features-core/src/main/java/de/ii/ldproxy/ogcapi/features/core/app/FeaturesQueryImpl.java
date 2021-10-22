@@ -50,6 +50,8 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 
 import java.util.HashMap;
+
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -216,18 +218,18 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .map(FeaturesCoreConfiguration::getAllFilterParameters)
             .orElse(ImmutableMap.of()));
 
-        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData);
+        Optional<FeatureSchema> featureSchema = providers.getFeatureSchema(apiData, collectionData);
 
-        featureSchema.getPrimaryGeometry()
-            .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
+        featureSchema.flatMap(SchemaBase::getPrimaryGeometry)
+                     .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
 
-        featureSchema.getPrimaryInterval()
+        featureSchema.flatMap(SchemaBase::getPrimaryInterval)
             .ifPresentOrElse(
                 interval -> queryables.put(PARAMETER_DATETIME, String.format("%s%s%s",
                     interval.first().getFullPathAsString(),
                     DATETIME_INTERVAL_SEPARATOR,
                     interval.second().getFullPathAsString())),
-                () -> featureSchema.getPrimaryInstant()
+                () -> featureSchema.flatMap(SchemaBase::getPrimaryInstant)
                     .ifPresent(instant -> queryables.put(PARAMETER_DATETIME, instant.getFullPathAsString())));
 
         return ImmutableMap.<String, String>builder()
