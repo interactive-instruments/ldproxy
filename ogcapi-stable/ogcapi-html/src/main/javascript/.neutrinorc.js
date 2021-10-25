@@ -88,6 +88,10 @@ module.exports = {
             neutrino.config.module
                 .rule('font')
                 .test(/\.(eot|ttf|woff|woff2|ico)(\?v=\d+\.\d+\.\d+)?$/);
+
+            neutrino.config.performance
+                .maxEntrypointSize(2048000)
+                .maxAssetSize(1024000);
         },
     ],
 };

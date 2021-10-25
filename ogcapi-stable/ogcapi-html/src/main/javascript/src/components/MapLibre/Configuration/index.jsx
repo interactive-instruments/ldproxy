@@ -74,7 +74,10 @@ const setStyleVector = (
                         (layer) =>
                             layer.type === 'raster' ||
                             (layer['source-layer'] &&
-                                (sourceLayers.length === 0 || sourceLayers.includes(layer['source-layer'])))
+                                (sourceLayers.length === 0 ||
+                                    sourceLayers.includes(
+                                        layer['source-layer']
+                                    )))
                     ),
                 };
             }
@@ -176,6 +179,8 @@ const MapLibreConfiguration = ({
     defaultStyle,
     fitBounds,
     popup,
+    custom,
+    showCompass,
 }) => {
     useMaplibreUIEffect(({ map, maplibre }) => {
         map.addControl(
@@ -185,7 +190,7 @@ const MapLibreConfiguration = ({
         );
         map.addControl(new maplibre.ScaleControl());
         if (controls) {
-            map.addControl(new maplibre.NavigationControl());
+            map.addControl(new maplibre.NavigationControl({ showCompass }));
         }
         if (data) {
             const style = {
@@ -226,6 +231,9 @@ const MapLibreConfiguration = ({
         } else if (styleUrl) {
             setStyleVector(map, maplibre, styleUrl, popup);
         }
+        if (custom) {
+            custom(map, maplibre);
+        }
     }, []);
 
     return null;
@@ -249,6 +257,8 @@ MapLibreConfiguration.propTypes = {
     }),
     fitBounds: PropTypes.bool,
     popup: PropTypes.oneOf(['HOVER_ID', 'CLICK_PROPERTIES']),
+    custom: PropTypes.func,
+    showCompass: PropTypes.bool,
 };
 
 MapLibreConfiguration.defaultProps = {
@@ -267,6 +277,8 @@ MapLibreConfiguration.defaultProps = {
     },
     fitBounds: true,
     popup: null,
+    custom: null,
+    showCompass: true,
 };
 
 export default MapLibreConfiguration;

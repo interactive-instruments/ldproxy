@@ -8,14 +8,16 @@ export const baseStyle = (url, attribution, defaultUrl, defaultAttribution) => {
     const baseAttribution =
         url === defaultUrl && attribution !== defaultAttribution
             ? [attribution, defaultAttribution]
-            : attribution;
+            : attribution || defaultAttribution;
+
+    const finalUrl = url || defaultUrl;
 
     const servers =
-        url.indexOf('{s}') > -1 || url.indexOf('{a-c}') > -1
+        finalUrl.indexOf('{s}') > -1 || finalUrl.indexOf('{a-c}') > -1
             ? ['a', 'b', 'c'].map((prefix) =>
-                  url.replace(/\{s\}/, prefix).replace(/\{a-c\}/, prefix)
+                  finalUrl.replace(/\{s\}/, prefix).replace(/\{a-c\}/, prefix)
               )
-            : [url];
+            : [finalUrl];
 
     return {
         version: 8,
@@ -138,7 +140,7 @@ const withSourceAndFilter = (layers, source, geometryType) =>
         id: `${source}_${layer.id}`,
         'source-layer': source,
         filter: ['==', '$type', geometryType],
-   }));
+    }));
 
 export const vectorLayers = (
     source,

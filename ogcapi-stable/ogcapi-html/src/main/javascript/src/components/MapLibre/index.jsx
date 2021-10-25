@@ -9,6 +9,8 @@ import Configuration from './Configuration';
 import { baseStyle, emptyStyle } from './styles';
 import { polygonFromBounds } from './geojson';
 
+export { polygonFromBounds };
+
 const MapLibre = ({
     styleUrl,
     backgroundUrl,
@@ -23,7 +25,10 @@ const MapLibre = ({
     savePosition,
     drawBounds,
     defaultStyle,
+    fitBoundsOptions,
     popup,
+    custom,
+    showCompass,
 }) => {
     const style = styleUrl
         ? emptyStyle()
@@ -47,11 +52,7 @@ const MapLibre = ({
             }}
             customParameters={{
                 bounds,
-                fitBoundsOptions: {
-                    padding: 30,
-                    maxZoom: 16,
-                    animate: false,
-                },
+                fitBoundsOptions,
                 attributionControl: false,
                 interactive,
                 hash: savePosition ? 'position' : false,
@@ -62,9 +63,11 @@ const MapLibre = ({
                 dataType={dataType}
                 dataLayers={dataLayers}
                 controls={interactive}
+                showCompass={showCompass}
                 defaultStyle={defaultStyle}
                 fitBounds={!drawBounds}
                 popup={popup}
+                custom={custom}
             />
         </Map>
     );
@@ -85,6 +88,8 @@ MapLibre.propTypes = {
     drawBounds: PropTypes.bool,
     // eslint-disable-next-line react/forbid-prop-types
     defaultStyle: PropTypes.object,
+    // eslint-disable-next-line react/forbid-prop-types
+    fitBoundsOptions: PropTypes.object,
     ...Configuration.propTypes,
 };
 
@@ -101,6 +106,11 @@ MapLibre.defaultProps = {
     drawBounds: false,
     dataUrl: null,
     defaultStyle: undefined,
+    fitBoundsOptions: {
+        padding: 30,
+        maxZoom: 16,
+        animate: false,
+    },
     ...Configuration.defaultProps,
 };
 
