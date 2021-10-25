@@ -7,7 +7,7 @@
     <br/>
 </div>
 
-<div id="app-wrapper" class="mb-5">
+<div id="filter" class="mb-5">
 <div class="row mb-3">
 <div class="col-md-3 font-weight-bold py-1">
 Filter
@@ -79,5 +79,7 @@ Filter
 {{^hideMap}}
   {{> mapClient}}
 {{/hideMap}}
+
+{{> filterEditor}}
 
 {{> footer}}

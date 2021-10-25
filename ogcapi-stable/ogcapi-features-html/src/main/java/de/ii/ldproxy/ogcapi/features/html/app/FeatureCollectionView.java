@@ -63,21 +63,21 @@ public class FeatureCollectionView extends DatasetView {
     public URICustomizer uriBuilder;
     public URICustomizer uriBuilderWithFOnly;
     public boolean bare;
-    // TODO this belongs to the nearby module in the community repo
-    // public List<PropertyDTO> additionalFeatures;
     public boolean isCollection;
     public String persistentUri;
     public boolean spatialSearch;
     public boolean schemaOrgFeatures;
     public FeaturesHtmlConfiguration.POSITION mapPosition;
-    public MapClient mapClient;
+    public final MapClient mapClient;
+    public final FilterEditor filterEditor;
 
     public FeatureCollectionView(OgcApiDataV2 apiData,
         FeatureTypeConfigurationOgcApi collectionData, String template,
         URI uri, String name, String title, String description,
         String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
         I18n i18n, Locale language, POSITION mapPosition,
-        Type mapClientType, String styleUrl) {
+        Type mapClientType, String styleUrl,
+        Map<String, String> queryables) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
@@ -116,6 +116,14 @@ public class FeatureCollectionView extends DatasetView {
         } else {
             LOGGER.error("Configuration error: {} is not a supported map client for the HTML representation of features.", mapClientType);
             this.mapClient = null;
+        }
+
+        if (Objects.nonNull(queryables)) {
+            this.filterEditor = new ImmutableFilterEditor.Builder()
+                .fields(queryables.entrySet())
+                .build();
+        } else {
+            this.filterEditor = null;
         }
     }
 
