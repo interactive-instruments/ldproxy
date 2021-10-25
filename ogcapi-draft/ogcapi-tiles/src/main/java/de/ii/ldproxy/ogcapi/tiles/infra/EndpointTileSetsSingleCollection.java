@@ -24,8 +24,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSets;
-import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -43,7 +41,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -161,23 +158,10 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
         OgcApiDataV2 apiData = api.getData();
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/tiles", "collectionId", collectionId);
 
-        TilesQueriesHandler.QueryInputTileSets queryInput = new ImmutableQueryInputTileSets.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .collectionId(collectionId)
-                .center(getCenter(apiData))
-                .tileMatrixSetZoomLevels(getTileMatrixSetZoomLevels(apiData, collectionId))
-                .build();
+        TilesQueriesHandler.QueryInputTileSets queryInput = TileEndpointsHelper.getTileSetsQueryInput(apiData,
+                getGenericQueryInput(apiData), collectionId);
 
         return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
     }
 
-    private List<Double> getCenter(OgcApiDataV2 data) {
-        TilesConfiguration tilesConfiguration = data.getExtension(TilesConfiguration.class).get();
-        return tilesConfiguration.getCenterDerived();
-    }
-
-    private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiDataV2 data, String collectionId) {
-        TilesConfiguration tilesConfiguration = data.getCollections().get(collectionId).getExtension(TilesConfiguration.class).get();
-        return tilesConfiguration.getZoomLevelsDerived();
-    }
 }

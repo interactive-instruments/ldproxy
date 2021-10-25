@@ -23,7 +23,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -130,11 +129,7 @@ public class EndpointTileSetsMultiCollection extends Endpoint implements Conform
 
         TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
-        TilesQueriesHandler.QueryInputTileSets queryInput = new ImmutableQueryInputTileSets.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .center(tilesConfiguration.getCenterDerived())
-                .tileMatrixSetZoomLevels(tilesConfiguration.getZoomLevelsDerived())
-                .build();
+        TilesQueriesHandler.QueryInputTileSets queryInput = TileEndpointsHelper.getTileSetsQueryInput(tilesConfiguration, getGenericQueryInput(apiData));
 
         return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
     }

@@ -25,7 +25,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -162,13 +161,7 @@ public class EndpointTileSetSingleCollection extends EndpointSubCollection imple
         FeatureTypeConfigurationOgcApi featureType = requestContext.getApi().getData().getCollections().get(collectionId);
         TilesConfiguration tilesConfiguration = featureType.getExtension(TilesConfiguration.class).get();
 
-        TilesQueriesHandler.QueryInputTileSet queryInput = new ImmutableQueryInputTileSet.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .collectionId(collectionId)
-                .tileMatrixSetId(tileMatrixSetId)
-                .center(tilesConfiguration.getCenterDerived())
-                .zoomLevels(tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId))
-                .build();
+        TilesQueriesHandler.QueryInputTileSet queryInput = TileEndpointsHelper.getTileSetQueryInput(tilesConfiguration, getGenericQueryInput(apiData), tileMatrixSetId, collectionId);
 
         return queryHandler.handle(TilesQueriesHandler.Query.TILE_SET, queryInput, requestContext);
     }
