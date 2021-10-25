@@ -241,7 +241,7 @@ public class TileSetsView extends OgcApiView {
                                           .url(xyzTemplate)
                                           .putAllLayers(layers)
                                           .build())
-                            .bounds(bbox)
+                            .bounds(Optional.ofNullable(bbox))
                             .popup(Popup.CLICK_PROPERTIES)
                             .styleUrl(Optional.ofNullable(styleUrl))
                             .build();
