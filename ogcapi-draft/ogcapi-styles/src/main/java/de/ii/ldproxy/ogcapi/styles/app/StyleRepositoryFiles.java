@@ -29,6 +29,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyles;
@@ -464,7 +465,7 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                       OgcApiDataV2 apiData,
                                                       Optional<String> collectionId) {
         Optional<StylesConfiguration> config = (collectionId.isEmpty() ? apiData : apiData.getCollections().get(collectionId.get())).getExtension(StylesConfiguration.class);
-        if (config.isPresent()) {
+        if (config.isPresent() && config.get().isEnabled()) {
             List<String> formatLabels = getStyleFormatStream(apiData, collectionId).map(format -> format.getMediaType().label())
                                                                                    .collect(Collectors.toUnmodifiableList());
             for (String encoding : config.get().getStyleEncodings()) {
@@ -475,11 +476,21 @@ public class StyleRepositoryFiles implements StyleRepository {
 
             // check that the default stylesheet for the web map exists
             String defaultStyle = config.get().getDefaultStyle();
-            if (Objects.nonNull(defaultStyle)) {
+            if (Objects.isNull(defaultStyle)) {
+                defaultStyle = (collectionId.isEmpty() ? apiData : apiData.getCollections().get(collectionId.get()))
+                        .getExtension(HtmlConfiguration.class)
+                        .map(HtmlConfiguration::getDefaultStyle)
+                        .orElse("NONE");
+            }
+            if (!defaultStyle.equals("NONE")) {
+                String finalDefaultStyle = defaultStyle;
                 boolean exists = getStyleFormatStream(apiData, collectionId).filter(StyleFormatExtension::getAsDefault)
-                                                                            .anyMatch(format -> stylesheetExists(apiData, collectionId, defaultStyle, format, true));
+                                                                            .anyMatch(format -> stylesheetExists(apiData, collectionId, finalDefaultStyle, format, true));
                 if (!exists) {
-                    builder.addStrictErrors(MessageFormat.format("The default style ''{0}'' specified in the STYLES module configuration does not exist.", defaultStyle));
+                    if (collectionId.isPresent())
+                        builder.addStrictErrors(MessageFormat.format("The default style ''{0}'' specified in the STYLES module configuration does not exist for collection ''{1}''.", defaultStyle, collectionId.get()));
+                    else
+                        builder.addStrictErrors(MessageFormat.format("The default style ''{0}'' specified in the STYLES module configuration does not exist.", defaultStyle));
                 }
             }
         }

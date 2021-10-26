@@ -321,8 +321,8 @@ public class EndpointFeatures extends EndpointSubCollection {
         Stream<OgcApiQueryParameter> generalList, OgcApiDataV2 apiData, String collectionId, String logPrefix) {
 
         Optional<FeaturesCoreConfiguration> coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
-        final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
-            .orElse(ImmutableMap.of());
+        final List<String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
+            .orElse(ImmutableList.of());
 
         Map<String, List<PropertyTransformation>> transformations;
         if (coreConfiguration.isPresent()) {
@@ -337,7 +337,7 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         List<OgcApiQueryParameter> build = Stream.concat(
             generalList,
-            filterableFields.keySet().stream()
+            filterableFields.stream()
                 .map(field -> {
                     Optional<Schema<?>> schema2 = featureSchema.flatMap(fs -> schemaGeneratorFeature.getQueryable(fs,
                         collectionData.get(), field));

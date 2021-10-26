@@ -11,6 +11,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
 import org.apache.felix.ipojo.annotations.Component;
@@ -26,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
@@ -70,8 +72,14 @@ public class StylesOnLandingPage implements LandingPageExtension {
 
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-        Optional<String> defaultStyle = Optional.ofNullable(apiData.getExtension(StylesConfiguration.class).get().getDefaultStyle());
-        List<Link> links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, defaultStyle, i18n, language);
+        String defaultStyle = apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getDefaultStyle).orElse(null);
+        if (Objects.isNull(defaultStyle)) {
+            defaultStyle = apiData.getExtension(HtmlConfiguration.class)
+                                  .map(HtmlConfiguration::getDefaultStyle)
+                                  .map(s -> s.equals("NONE") ? null : s)
+                                  .orElse(null);
+        }
+        List<Link> links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language);
         landingPageBuilder.addAllLinks(links);
 
         final String datasetId = apiData.getId();

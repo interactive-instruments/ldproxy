@@ -44,8 +44,13 @@ public abstract class OgcApiDatasetView extends OgcApiView {
     protected final Optional<TemporalExtent> temporalExtent;
     protected final Optional<OgcApiExtentTemporal> temporalExtentIso;
     protected final URICustomizer uriCustomizer;
+    private final Optional<Locale> language;
 
-    protected OgcApiDatasetView(String templateName, @Nullable Charset charset, @Nullable OgcApiDataV2 apiData, List<NavigationDTO> breadCrumbs, HtmlConfiguration htmlConfig, boolean noIndex, String urlPrefix, @Nullable List<Link> links, @Nullable String title, @Nullable String description, URICustomizer uriCustomizer, Optional<OgcApiExtent> extent) {
+    protected OgcApiDatasetView(String templateName, @Nullable Charset charset,
+        @Nullable OgcApiDataV2 apiData, List<NavigationDTO> breadCrumbs,
+        HtmlConfiguration htmlConfig, boolean noIndex, String urlPrefix, @Nullable List<Link> links,
+        @Nullable String title, @Nullable String description, URICustomizer uriCustomizer,
+        Optional<OgcApiExtent> extent, Optional<Locale> language) {
         super(templateName, charset, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix, links, title, description);
         this.bbox = extent.flatMap(OgcApiExtent::getSpatial)
                      .map(OgcApiExtentSpatial::getBbox)
@@ -61,6 +66,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                                               return builder.build();
                                           });
         this.uriCustomizer = uriCustomizer;
+        this.language = language;
     }
 
     public abstract List<Link> getDistributionLinks();
@@ -103,6 +109,10 @@ public abstract class OgcApiDatasetView extends OgcApiView {
 
     public Optional<String> getTemporalCoverage() {
         return temporalExtentIso.map(v -> v.getFirstIntervalIso8601());
+    }
+
+    public Optional<String> getTemporalCoverageHtml() {
+        return temporalExtent.map(extent -> extent.humanReadable(language.orElse(Locale.getDefault())));
     }
 
     public Map<String, String> getBbox() {

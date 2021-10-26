@@ -18,6 +18,7 @@ The module *HTML* may be enabled for every API. It is enabled by default. Provid
 |`openLayersUrl` |string |"https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png" |URL template for OpenLayers background map tiles.
 |`openLayersAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |Source attribution for OpenLayers background map.
 |`footerText` |string |"" |Additional text shown in footer of every site.
+|`defaultStyle` |string |`NONE` |A default style in the style repository that is used in maps in the HTML representation of the features and tiles resources. If `NONE`, a simple wireframe style will be used with OpenStreetMap as a basemap. If the value is not `NONE`, the API landing page (or the collection page) will also contain a link to a web map with the style for the dataset (or the collection).
 
 ### Example
 

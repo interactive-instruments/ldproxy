@@ -15,6 +15,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
@@ -49,6 +50,15 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
 
     @Nullable
     TileCacheType getCache();
+
+    @Nullable
+    MapClient.Type getMapClientType();
+
+    @Nullable
+    String getStyle();
+
+    @Nullable
+    Boolean getRemoveZoomLevelConstraints();
 
     @Deprecated
     List<String> getTileEncodings();

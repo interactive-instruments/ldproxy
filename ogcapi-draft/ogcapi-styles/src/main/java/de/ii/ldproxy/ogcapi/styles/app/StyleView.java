@@ -7,36 +7,27 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
-import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
 import de.ii.xtraplatform.services.domain.GenericView;
-
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class StyleView extends GenericView {
+    public final String title;
     public final String styleUrl;
-    public final String apiId;
-    public final String styleId;
     public final boolean popup;
     public final boolean layerSwitcher;
     public final String layerIds;
-    public final Map<String, String> bbox;
-    private final OgcApiDataV2 apiData;
+    public final MapClient mapClient;
 
     public StyleView(String styleUrl, OgcApiDataV2 apiData, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap) {
         super("/templates/style", null);
+        this.title = "Style " + styleId;
         this.styleUrl = styleUrl;
-        this.apiId = apiData.getId();
-        this.styleId = styleId;
-        this.apiData = apiData;
-        this.popup = popup;
-        this.layerSwitcher = layerControl;
         this.layerIds = "{" +
                 layerMap.entrySet()
                         .stream()
@@ -45,11 +36,13 @@ public class StyleView extends GenericView {
                         .collect(Collectors.joining(", ")) +
                 "}";
 
-        Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
-        this.bbox = spatialExtent.isEmpty() ? null : ImmutableMap.of(
-                "minLng", Double.toString(spatialExtent.get().getXmin()),
-                "minLat", Double.toString(spatialExtent.get().getYmin()),
-                "maxLng", Double.toString(spatialExtent.get().getXmax()),
-                "maxLat", Double.toString(spatialExtent.get().getYmax()));
+        this.mapClient = new ImmutableMapClient.Builder()
+            .styleUrl(styleUrl)
+            .popup(Popup.CLICK_PROPERTIES)
+            .savePosition(true)
+            .build();
+
+        this.popup = false;
+        this.layerSwitcher = false;
     }
 }

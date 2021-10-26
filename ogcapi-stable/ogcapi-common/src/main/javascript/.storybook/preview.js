@@ -1,10 +1,10 @@
 import React from 'react'
 import { Grommet } from 'grommet'
-import { themeBase } from '@xtraplatform/core'
+import { createTheme } from '@xtraplatform/core'
 
 export const decorators = [
   (Story) => (
-    <Grommet theme={themeBase}>
+    <Grommet theme={createTheme()}>
       <Story />
     </Grommet>
   ),

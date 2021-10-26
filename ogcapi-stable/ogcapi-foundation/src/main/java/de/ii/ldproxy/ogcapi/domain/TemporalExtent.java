@@ -8,6 +8,11 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -26,5 +31,13 @@ public interface TemporalExtent {
     @Nullable
     default Long getEnd() {
         return null;
+    }
+
+    default String humanReadable(Locale locale) {
+        DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+
+        return String.format("%s - %s",
+            Optional.ofNullable(getStart()).map(start -> df.format(new Date(start))).orElse(".."),
+            Optional.ofNullable(getEnd()).map(end -> df.format(new Date(end))).orElse(".."));
     }
 }

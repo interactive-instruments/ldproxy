@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
@@ -28,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -69,12 +71,16 @@ public class StylesOnCollection implements CollectionExtension {
             return collection;
         }
 
-        Optional<String> defaultStyle = Optional.ofNullable(apiData.getCollections().get(collectionId).getExtension(StylesConfiguration.class).get().getDefaultStyle());
-        if (defaultStyle.isPresent()) {
-            Optional<StyleFormatExtension> htmlStyleFormat = styleRepo.getStyleFormatStream(apiData, Optional.of(collectionId)).filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)).findAny();
-            if (htmlStyleFormat.isPresent() && !styleRepo.stylesheetExists(apiData, Optional.of(collectionId), defaultStyle.get(), htmlStyleFormat.get(), true))
-                defaultStyle = Optional.empty();
+        String defaultStyle = apiData.getCollections().get(collectionId).getExtension(StylesConfiguration.class).map(StylesConfiguration::getDefaultStyle).orElse(null);
+        if (Objects.isNull(defaultStyle)) {
+            Optional<HtmlConfiguration> htmlConfig = apiData.getCollections().get(collectionId).getExtension(HtmlConfiguration.class);
+            defaultStyle = htmlConfig.map(HtmlConfiguration::getDefaultStyle).orElse("NONE");
         }
-        return collection.addAllLinks(new StylesLinkGenerator().generateCollectionLinks(uriCustomizer, defaultStyle, i18n, language));
+        if (!defaultStyle.equals("NONE")) {
+            Optional<StyleFormatExtension> htmlStyleFormat = styleRepo.getStyleFormatStream(apiData, Optional.of(collectionId)).filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)).findAny();
+            if (htmlStyleFormat.isPresent() && !styleRepo.stylesheetExists(apiData, Optional.of(collectionId), defaultStyle, htmlStyleFormat.get(), true))
+                defaultStyle = null;
+        }
+        return collection.addAllLinks(new StylesLinkGenerator().generateCollectionLinks(uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language));
     }
 }

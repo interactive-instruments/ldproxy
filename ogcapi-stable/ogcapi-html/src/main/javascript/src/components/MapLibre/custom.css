@@ -1,0 +1,43 @@
+.map-sm {
+    height: 480px;
+    background: #f8f4f0;
+}
+
+.map-md {
+    height: 600px;
+    background: #f8f4f0;
+}
+
+.map-full {
+    height: 100vh;
+}
+
+.maplibregl-ctrl.maplibregl-ctrl-attrib {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/*TODO: get color from bootstrap? */
+.maplibregl-ctrl-attrib a {
+    color: #007bff !important;
+}
+
+.maplibregl-popup-content {
+    max-height: 50vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.map-sm .maplibregl-popup-content {
+    max-height: 240px;
+}
+.map-md .maplibregl-popup-content {
+    max-height: 300px;
+}
+
+.maplibregl-popup.popup-props {
+    /* min-width: 600px; */
+}
+.maplibregl-popup-content td {
+    max-width: 300px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
