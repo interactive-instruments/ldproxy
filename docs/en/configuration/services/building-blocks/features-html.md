@@ -13,7 +13,8 @@ The module *Features HTML* may be enabled for every API with a feature provider.
 |`collectionDescriptionsInOverview`  |boolean |`true` |Show collection descriptions in *Feature Collections* resource for HTML.
 |`layout` |enum |`CLASSIC` |Layout for *Features* and *Feature* resources. Either `CLASSIC` (mainly for simple objects with simple values) or `COMPLEX_OBJECTS` (supports more complex object structures and longer values).
 |`mapClientType` |enum |`MAP_LIBRE` |The map client library to use to display features in the HTML representation. The default is MapLibre GL (`MAP_LIBRE`). WIP: Cesium (`CESIUM`) can be used for displaying 3D features on a globe.
-|`style` |string |`DEFAULT` |An optional URL template of a Mapbox style to use for map. The template may contain `{{serviceUrl}}` (substituted with the API landing page URI) and `{{collectionId}}` (substituted with the collection id). If the style is set to `DEFAULT`, a simple default style is used. The value is ignored, if the map client is not MapLibre.
+|`style` |string |`DEFAULT` |An optional Mapbox style in the style repository to use for the map in the HTML representation of a feature or feature collection. If set to `DEFAULT`, the `defaultStyle` configured in the [HTML configuration](html.md) is used. If set to `NONE`, a simple wireframe style will be used with OpenStreetMap as a basemap. The value is ignored, if the map client is not MapLibre.
+|`removeZoomLevelConstraints` |boolean |`false` |If `true`, any `minzoom` or `maxzoom` members are removed from the GeoJSON layers. The value is ignored, if the map client is not MapLibre or `style` is `NONE`.
 
 ### Example
 
@@ -37,9 +38,9 @@ The module *Features HTML* may be enabled for every API with a feature provider.
       itemLabelFormat: '{{name}}'
       transformations:
         geometry:
-          remove: OVERVIEW
-        occupancy[].typeOfOccupant:
-          remove: OVERVIEW
-        occupancy[].numberOfOccupants:
-          remove: OVERVIEW
+          remove: IN_COLLECTION
+        occupancy.typeOfOccupant:
+          remove: IN_COLLECTION
+        occupancy.numberOfOccupants:
+          remove: IN_COLLECTION
 ```

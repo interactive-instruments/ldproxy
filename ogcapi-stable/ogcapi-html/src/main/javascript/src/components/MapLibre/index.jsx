@@ -13,6 +13,7 @@ export { polygonFromBounds };
 
 const MapLibre = ({
     styleUrl,
+    removeZoomLevelConstraints,
     backgroundUrl,
     center,
     zoom,
@@ -59,6 +60,7 @@ const MapLibre = ({
             }}>
             <Configuration
                 styleUrl={styleUrl}
+                removeZoomLevelConstraints={removeZoomLevelConstraints}
                 data={data}
                 dataType={dataType}
                 dataLayers={dataLayers}
@@ -77,6 +79,7 @@ MapLibre.displayName = 'MapLibre';
 
 MapLibre.propTypes = {
     styleUrl: PropTypes.string,
+    removeZoomLevelConstraints: PropTypes.bool,
     backgroundUrl: PropTypes.string,
     attribution: PropTypes.string,
     center: PropTypes.arrayOf(PropTypes.number),
@@ -95,6 +98,7 @@ MapLibre.propTypes = {
 
 MapLibre.defaultProps = {
     styleUrl: null,
+    removeZoomLevelConstraints: false,
     backgroundUrl: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',

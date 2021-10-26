@@ -53,6 +53,11 @@ public interface MapClient {
     return new ImmutableStyle.Builder().build();
   }
 
+  @Value.Default
+  default boolean getRemoveZoomLevelConstraints() {
+    return false;
+  }
+
   Optional<Popup> getPopup();
 
   @Value.Lazy

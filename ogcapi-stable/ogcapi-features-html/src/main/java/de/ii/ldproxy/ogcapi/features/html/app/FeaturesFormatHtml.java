@@ -305,20 +305,18 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             //ignore
         }
 
-        HtmlConfiguration htmlConfig = featureType.getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
+        Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
 
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
                                              .orElse(MapClient.Type.MAP_LIBRE);
         String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
-        String styleUrl = config.map(FeaturesHtmlConfiguration::getStyle)
-                                .filter(s -> !s.equals("DEFAULT"))
-                                .map(s -> s.replace("{{serviceUrl}}", serviceUrl)
-                                           .replace("{{collectionId}}", featureType.getId()))
-                                .orElse(null);
+        String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(config.map(FeaturesHtmlConfiguration::getStyle), Optional.of(featureType.getId()), serviceUrl))
+                                    .orElse(null);
+        boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
+                                                   .orElse(false);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, filterableFields);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig.orElse(null), null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, filterableFields);
 
         featureTypeDataset.temporalExtent = apiData.getTemporalExtent(featureType.getId()).orElse(null);
         apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
@@ -362,21 +360,19 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        HtmlConfiguration htmlConfig = featureType.getExtension(HtmlConfiguration.class)
-                                                  .orElse(null);
+        Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
 
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
                                              .orElse(MapClient.Type.MAP_LIBRE);
         String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
-        String styleUrl = config.map(FeaturesHtmlConfiguration::getStyle)
-                                .filter(s -> !s.equals("DEFAULT"))
-                                .map(s -> s.replace("{{serviceUrl}}", serviceUrl)
-                                           .replace("{{collectionId}}", featureType.getId()))
-                                .orElse(null);
+        String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(config.map(FeaturesHtmlConfiguration::getStyle), Optional.of(featureType.getId()), serviceUrl))
+                                    .orElse(null);
+        boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
+                                                   .orElse(false);
 
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData,
-            featureType, "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl,
+            featureType, "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig.orElse(null), persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints,
             null);
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());

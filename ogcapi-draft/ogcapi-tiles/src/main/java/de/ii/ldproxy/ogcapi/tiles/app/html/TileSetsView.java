@@ -78,6 +78,7 @@ public class TileSetsView extends OgcApiView {
                         String urlPrefix,
                         MapClient.Type mapClientType,
                         String styleUrl,
+                        boolean removeZoomLevelConstraints,
                         HtmlConfiguration htmlConfig,
                         boolean noIndex,
                         URICustomizer uriCustomizer,
@@ -244,6 +245,7 @@ public class TileSetsView extends OgcApiView {
                             .bounds(Optional.ofNullable(bbox))
                             .popup(Popup.CLICK_PROPERTIES)
                             .styleUrl(Optional.ofNullable(styleUrl))
+                            .removeZoomLevelConstraints(removeZoomLevelConstraints)
                             .build();
                 } else {
                     LOGGER.error("Configuration error: {} as the client for the HTML representation of tile sets requires that a tile set with the tiling scheme {} exists.", mapClientType, "WebMercatorQuad");

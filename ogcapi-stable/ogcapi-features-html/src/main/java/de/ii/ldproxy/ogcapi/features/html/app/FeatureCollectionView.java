@@ -32,8 +32,11 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +79,7 @@ public class FeatureCollectionView extends DatasetView {
         URI uri, String name, String title, String description,
         String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
         I18n i18n, Locale language, POSITION mapPosition,
-        Type mapClientType, String styleUrl,
+        Type mapClientType, String styleUrl, boolean removeZoomLevelConstraints,
         Map<String, String> queryables) {
         super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
@@ -109,6 +112,7 @@ public class FeatureCollectionView extends DatasetView {
                                   .build())
                     .popup(Popup.HOVER_ID)
                     .styleUrl(Optional.ofNullable(styleUrl))
+                    .removeZoomLevelConstraints(removeZoomLevelConstraints)
                     .build();
         } else if (mapClientType.equals(MapClient.Type.CESIUM)) {
             //TODO: Cesium

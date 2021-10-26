@@ -46,7 +46,7 @@ public class StylesLinkGenerator {
                         .title(i18n.get("stylesLink",language))
                         .build());
 
-        if (defaultStyle.isPresent())
+        if (defaultStyle.isPresent() && !defaultStyle.get().equals("NONE"))
             builder.add(new ImmutableLink.Builder()
                                 .href(uriBuilder.copy()
                                              .ensureNoTrailingSlash()

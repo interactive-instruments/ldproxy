@@ -52,6 +52,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @Nullable
   String getStyle();
 
+  @Nullable
+  Boolean getRemoveZoomLevelConstraints();
+
   @Value.Check
   default FeaturesHtmlConfiguration backwardsCompatibility() {
     if (getLayout() == LAYOUT.CLASSIC

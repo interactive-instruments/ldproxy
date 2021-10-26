@@ -8,6 +8,9 @@
     {{/savePosition}}
     {{#styleUrl}}
       styleUrl: '{{{.}}}',
+      {{#removeZoomLevelConstraints}}
+        removeZoomLevelConstraints: {{.}},
+      {{/removeZoomLevelConstraints}}
     {{/styleUrl}}
     {{^styleUrl}}
       {{#backgroundUrl}}

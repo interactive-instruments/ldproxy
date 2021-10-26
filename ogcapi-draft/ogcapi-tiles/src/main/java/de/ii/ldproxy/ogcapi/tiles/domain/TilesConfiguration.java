@@ -57,6 +57,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     @Nullable
     String getStyle();
 
+    @Nullable
+    Boolean getRemoveZoomLevelConstraints();
+
     @Deprecated
     List<String> getTileEncodings();
 

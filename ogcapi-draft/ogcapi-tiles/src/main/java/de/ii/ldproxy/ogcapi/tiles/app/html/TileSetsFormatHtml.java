@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -32,8 +33,12 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -124,15 +129,13 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                         .add(new NavigationDTO(tilesTitle))
                         .build();
 
-        HtmlConfiguration htmlConfig = collectionId.isPresent() ?
+        Optional<HtmlConfiguration> htmlConfig = collectionId.isPresent() ?
                                             api.getData()
                                                  .getCollections()
                                                  .get(collectionId.get())
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null) :
+                                                 .getExtension(HtmlConfiguration.class) :
                                             api.getData()
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
+                                                 .getExtension(HtmlConfiguration.class);
 
         Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
 
@@ -140,15 +143,13 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                 ? api.getData().getExtension(TilesConfiguration.class)
                 : api.getData().getExtension(TilesConfiguration.class, collectionId.get());
         MapClient.Type mapClientType = tilesConfig.map(TilesConfiguration::getMapClientType)
-                                                  .filter(Objects::nonNull)
                                                   .orElse(MapClient.Type.MAP_LIBRE);
         String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new)).toString();
-        String styleUrl = tilesConfig.map(TilesConfiguration::getStyle)
-                                     .filter(Objects::nonNull)
-                                     .map(style -> style.replace("{{serviceUrl}}", serviceUrl)
-                                                        .replace("{{collectionId}}", collectionId.orElse("{{collectionId}}")))
-                                     .orElse(null);
+        String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(tilesConfig.map(TilesConfiguration::getStyle), collectionId, serviceUrl))
+                                    .orElse(null);
+        boolean removeZoomLevelConstraints = tilesConfig.map(TilesConfiguration::getRemoveZoomLevelConstraints)
+                                                        .orElse(false);
 
-        return new TileSetsView(api.getData(), tiles, collectionId, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), mapClientType, styleUrl, htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        return new TileSetsView(api.getData(), tiles, collectionId, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), mapClientType, styleUrl, removeZoomLevelConstraints, htmlConfig.orElse(null), isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 }

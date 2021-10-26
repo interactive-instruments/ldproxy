@@ -7,7 +7,7 @@ import { geoJsonLayers, hoverLayers, vectorLayers } from '../styles';
 import { getBounds, getFeaturesWithIdAsProperty, idProperty } from '../geojson';
 import { addPopup, addPopupProps } from './popup';
 
-const setStyleGeoJson = (map, styleUrl) => {
+const setStyleGeoJson = (map, styleUrl, removeZoomLevelConstraints) => {
     const baseStyle = map.getStyle();
     // eslint-disable-next-line no-undef
     fetch(styleUrl)
@@ -26,6 +26,10 @@ const setStyleGeoJson = (map, styleUrl) => {
                             source: 'data',
                         };
                         delete newLayer['source-layer'];
+                        if (removeZoomLevelConstraints) {
+                            delete newLayer.minzoom;
+                            delete newLayer.maxzoom;    
+                        }
                         return newLayer;
                     }
 
@@ -40,6 +44,7 @@ const setStyleVector = (
     map,
     maplibre,
     styleUrl,
+    removeZoomLevelConstraints,
     popup,
     sourceUrl,
     sourceLayers
@@ -78,7 +83,19 @@ const setStyleVector = (
                                     sourceLayers.includes(
                                         layer['source-layer']
                                     )))
-                    ),
+                    ).map((layer) => {
+                        if (layer.type === 'vector') {
+                            const newLayer = {
+                                ...layer,
+                            };
+                            if (removeZoomLevelConstraints) {
+                                delete newLayer.minzoom;
+                                delete newLayer.maxzoom;
+                            }
+                            return newLayer;
+                        }
+                        return layer;
+                    }),
                 };
             }
 
@@ -100,6 +117,7 @@ const addData = (
     map,
     maplibre,
     styleUrl,
+    removeZoomLevelConstraints,
     data,
     dataType,
     dataLayers,
@@ -127,7 +145,7 @@ const addData = (
         }
 
         if (styleUrl) {
-            setStyleGeoJson(map, styleUrl);
+            setStyleGeoJson(map, styleUrl, removeZoomLevelConstraints);
         } else {
             const defaultLayers = geoJsonLayers(defaultStyle);
 
@@ -143,6 +161,7 @@ const addData = (
                 map,
                 maplibre,
                 styleUrl,
+                removeZoomLevelConstraints,
                 popup,
                 data,
                 Object.keys(dataLayers)
@@ -172,6 +191,7 @@ const addData = (
 
 const MapLibreConfiguration = ({
     styleUrl,
+    removeZoomLevelConstraints,
     data,
     dataType,
     dataLayers,
@@ -207,6 +227,7 @@ const MapLibreConfiguration = ({
                             map,
                             maplibre,
                             styleUrl,
+                            removeZoomLevelConstraints,
                             json,
                             dataType,
                             dataLayers,
@@ -220,6 +241,7 @@ const MapLibreConfiguration = ({
                     map,
                     maplibre,
                     styleUrl,
+                    false,
                     data,
                     dataType,
                     dataLayers,
@@ -243,6 +265,7 @@ MapLibreConfiguration.displayName = 'MapLibreConfiguration';
 
 MapLibreConfiguration.propTypes = {
     styleUrl: PropTypes.string,
+    removeZoomLevelConstraints: PropTypes.bool,
     data: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
     dataType: PropTypes.string,
     dataLayers: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
@@ -263,6 +286,7 @@ MapLibreConfiguration.propTypes = {
 
 MapLibreConfiguration.defaultProps = {
     styleUrl: null,
+    removeZoomLevelConstraints: false,
     data: null,
     dataType: 'geojson',
     dataLayers: {},
