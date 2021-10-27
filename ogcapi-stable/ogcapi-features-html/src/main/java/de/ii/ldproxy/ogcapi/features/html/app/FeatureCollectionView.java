@@ -90,8 +90,7 @@ public class FeatureCollectionView extends DatasetView {
         this.mapPosition = mapPosition;
         this.uriBuilder = new URICustomizer(uri);
 
-        this.bbox = collectionData.getExtent()
-            .flatMap(CollectionExtent::getSpatial)
+        this.bbox = apiData.getSpatialExtent(collectionData.getId())
             .map(boundingBox -> ImmutableMap.of(
             "minLng", Double.toString(boundingBox.getXmin()),
             "minLat", Double.toString(boundingBox.getYmin()),
