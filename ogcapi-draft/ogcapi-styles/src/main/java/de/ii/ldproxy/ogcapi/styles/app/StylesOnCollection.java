@@ -71,12 +71,21 @@ public class StylesOnCollection implements CollectionExtension {
             return collection;
         }
 
-        String defaultStyle = apiData.getCollections().get(collectionId).getExtension(StylesConfiguration.class).map(StylesConfiguration::getDefaultStyle).orElse(null);
+        String defaultStyle = apiData.getCollections()
+                                     .get(collectionId)
+                                     .getExtension(StylesConfiguration.class)
+                                     .map(StylesConfiguration::getDefaultStyle)
+                                     .map(s -> s.equals("NONE") ? null : s)
+                                     .orElse(null);
         if (Objects.isNull(defaultStyle)) {
-            Optional<HtmlConfiguration> htmlConfig = apiData.getCollections().get(collectionId).getExtension(HtmlConfiguration.class);
-            defaultStyle = htmlConfig.map(HtmlConfiguration::getDefaultStyle).orElse("NONE");
+            defaultStyle = apiData.getCollections()
+                                  .get(collectionId)
+                                  .getExtension(HtmlConfiguration.class)
+                                  .map(HtmlConfiguration::getDefaultStyle)
+                                  .map(s -> s.equals("NONE") ? null : s)
+                                  .orElse(null);
         }
-        if (!defaultStyle.equals("NONE")) {
+        if (Objects.nonNull(defaultStyle)) {
             Optional<StyleFormatExtension> htmlStyleFormat = styleRepo.getStyleFormatStream(apiData, Optional.of(collectionId)).filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)).findAny();
             if (htmlStyleFormat.isPresent() && !styleRepo.stylesheetExists(apiData, Optional.of(collectionId), defaultStyle, htmlStyleFormat.get(), true))
                 defaultStyle = null;

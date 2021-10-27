@@ -12,6 +12,8 @@ import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
 import org.apache.felix.ipojo.annotations.Component;
@@ -20,6 +22,7 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.osgi.framework.BundleContext;
 
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,14 +46,12 @@ import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 public class StylesOnLandingPage implements LandingPageExtension {
 
     private final I18n i18n;
-    private final Path stylesStore;
+    private final StyleRepository styleRepo;
 
-    public StylesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                               @Requires I18n i18n) throws IOException {
-        this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                .resolve("styles");
-        Files.createDirectories(stylesStore);
+    public StylesOnLandingPage(@Requires I18n i18n,
+                               @Requires StyleRepository styleRepo) throws IOException {
         this.i18n = i18n;
+        this.styleRepo = styleRepo;
     }
 
     @Override
@@ -72,21 +73,23 @@ public class StylesOnLandingPage implements LandingPageExtension {
 
         final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-        String defaultStyle = apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::getDefaultStyle).orElse(null);
+        String defaultStyle = apiData.getExtension(StylesConfiguration.class)
+                                     .map(StylesConfiguration::getDefaultStyle)
+                                     .map(s -> s.equals("NONE") ? null : s)
+                                     .orElse(null);
         if (Objects.isNull(defaultStyle)) {
             defaultStyle = apiData.getExtension(HtmlConfiguration.class)
                                   .map(HtmlConfiguration::getDefaultStyle)
                                   .map(s -> s.equals("NONE") ? null : s)
                                   .orElse(null);
         }
+        if (Objects.nonNull(defaultStyle)) {
+            Optional<StyleFormatExtension> htmlStyleFormat = styleRepo.getStyleFormatStream(apiData, Optional.empty()).filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)).findAny();
+            if (htmlStyleFormat.isPresent() && !styleRepo.stylesheetExists(apiData, Optional.empty(), defaultStyle, htmlStyleFormat.get(), true))
+                defaultStyle = null;
+        }
         List<Link> links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language);
         landingPageBuilder.addAllLinks(links);
-
-        final String datasetId = apiData.getId();
-        File apiDir = new File(stylesStore + File.separator + datasetId);
-        if (!apiDir.exists()) {
-            apiDir.mkdirs();
-        }
 
         return landingPageBuilder;
     }
