@@ -45,7 +45,7 @@ const showPopupProps = (map, popup) => (e) => {
     Object.keys(e.features[0].properties)
         .sort()
         .forEach((prop) => {
-            description += `<tr><td class="pr-4"><strong>${prop}</strong></td><td title="${e.features[0].properties[prop]}">${e.features[0].properties[prop]}</td></tr>`;
+            description += `<tr><td title="${prop}" class="pr-4"><strong>${prop}</strong></td><td title="${e.features[0].properties[prop]}">${e.features[0].properties[prop]}</td></tr>`;
         });
 
     description += '</table>';
@@ -83,7 +83,7 @@ export const addPopupProps = (map, maplibre, layerIds = []) => {
     const popup = new maplibre.Popup({
         closeButton: true,
         closeOnClick: true,
-        maxWidth: '600px',
+        maxWidth: '50%',
         className: 'popup-props',
     });
 

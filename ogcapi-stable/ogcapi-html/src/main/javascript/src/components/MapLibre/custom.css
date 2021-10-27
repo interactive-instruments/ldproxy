@@ -24,7 +24,7 @@
 .maplibregl-popup-content {
     max-height: 50vh;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
 }
 .map-sm .maplibregl-popup-content {
     max-height: 240px;
@@ -33,11 +33,7 @@
     max-height: 300px;
 }
 
-.maplibregl-popup.popup-props {
-    /* min-width: 600px; */
-}
 .maplibregl-popup-content td {
-    max-width: 300px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
