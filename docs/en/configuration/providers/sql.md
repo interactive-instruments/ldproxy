@@ -43,6 +43,7 @@ Settings for the connection pool.
 |`minConnections` |integer |`maxConnections` |Minimum number of connections to the database that are maintained.
 |`idleTimeout` |string |`10m` |The maximum amount of time that a connection is allowed to sit idle in the pool. Only applies to connections beyond the `minConnections` limit. A value of 0 means that idle connections are never removed from the pool.
 |`initFailFast` |boolean |`true` |If disabled the provider will wait longer for the first database connection to be established. Has no effect if `minConnections` is `0`. Should normally be disabled only on development systems.
+|`shared` |boolean |`false` |If enabled for multiple providers with matching `host`, `database` and `user`, a single connection pool will be shared between these providers. If any of the other `connectionInfo` options do not match, the provider startup will fail.
 
 <a name="source-path-defaults"></a>
 

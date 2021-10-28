@@ -43,6 +43,7 @@ Einstellungen für den Connection-Pool.
 |`minConnections` |integer |`maxConnections` |Steuert die minimale Anzahl von Verbindungen zur Datenbank, die jederzeit offen gehalten werden.
 |`idleTimeout` |string |`10m` |Die maximale Zeit die eine Connection unbeschäftigt im Pool verbleibt. Bezieht sich nur auf Connections über der `minConnections` Grenze. Ein Wert von `0` bedeutet, dass unbeschäftigte Connections niemals aus dem Pool entfernt werden.
 |`initFailFast` |boolean |`true` |Steuert, ob das Starten des Feature-Providers abgebrochen werden soll, wenn der Aufbau der ersten Connection länger dauert. Hat keinen Effekt bei `minConnections: 0`. Diese Option sollte in der Regel nur auf Entwicklungssystemen deaktiviert werden.
+|`shared` |boolean |`false` |Wenn `shared` für mehrere Provider mit übereinstimmenden `host`, `database` und `user` aktiviert ist, teilen sich diese Provider einen Connection-Pool. Wenn eine der anderen Optionen in `connectionInfo` nicht übereinstimmt, schlägt der Start des Providers fehl.
 
 <a name="source-path-defaults"></a>
 
