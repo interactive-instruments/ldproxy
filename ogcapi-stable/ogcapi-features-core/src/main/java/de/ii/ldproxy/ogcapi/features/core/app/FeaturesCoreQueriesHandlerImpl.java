@@ -27,6 +27,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.cql.domain.Geometry.Point;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -39,7 +40,9 @@ import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.Result;
 import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.routes.sql.domain.ImmutableRouteQuery;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
@@ -124,6 +127,19 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         FeatureQuery query = queryInput.getQuery();
+
+        //TODO: REMOVE
+        query = ImmutableFeatureQuery.builder()
+            .from(query)
+            .addExtensions(ImmutableRouteQuery.builder()
+                .start(Point.of(2613295.72, 5581035.03, EpsgCrs.of(31466)))
+                .end(Point.of(2613281.67, 5585569.78, EpsgCrs.of(31466)))
+                //.addWayPoints(Point.of(2.0, 2.0))
+                .addFlags("best")
+                .build())
+            .build();
+        //TODO: REMOVE
+
         Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
         boolean onlyHitsIfMore = false; // TODO check
 
