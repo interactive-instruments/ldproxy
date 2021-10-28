@@ -18,6 +18,7 @@ Es werden die folgenden konfigurierbaren Optionen unterstützt:
 |`openLayersUrl` |string |"https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png" |Das URL-Template für die Kacheln einer Hintergrundkarte in OpenLayers-Karten.
 |`openLayersAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |Der Quellenangabe in OpenLayers für die Hintergrundkarte.
 |`footerText` |string |"" |Zusätzlicher Text, der auf jeder HTML-Seite im Footer angezeigt wird.
+|`defaultStyle` |string |`NONE` |Ein Style im Style-Repository, der standardmäßig in Karten mit Feature- und Tile-Ressourcen verwendet werden soll. Bei `NONE` wird ein einfacher Style mit OpenStreetMap als Basiskarte verwendet. Wenn der Wert nicht `NONE` ist, enthält die "Landing Page" bzw. die "Feature Collection" auch einen Link zu einer Webkarte mit dem Stil für den Datensatz bzw. die Feature Collection. Der Style sollte alle Daten abdecken und muss im Format Mapbox Style verfügbar sein.
 
 Beispiel für die Angaben in der Konfigurationsdatei:
 

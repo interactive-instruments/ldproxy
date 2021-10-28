@@ -37,6 +37,7 @@ Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann soll
 |`maxAbsoluteAreaChangeInPolygonRepair` | number |1.0 |Steuert die maximal erlaubte absolute Änderung der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte Polygongeometrie verwendet. Der Wert 1.0 entspricht einem "Pixel" im Kachelkoordinatensystem.
 |`transformations` |object |`{}` |Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe [transformiert](general-rules.md#transformations) werden.
 |`caching` |object |`{}` |Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
+|`style` |string |`DEFAULT` |Ein Style im Style-Repository, der standardmäßig in Karten mit den Tiles verwendet werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei `NONE` wird ein einfacher Style mit OpenStreetMap als Basiskarte verwendet. Der Style sollte alle Daten abdecken und muss im Format Mapbox Style verfügbar sein. Es wird zuerst nach einem Style mit dem Namen für die Feature Collection gesucht; falls keiner gefunden wird, wird nach einem Style mit dem Namen auf der API-Ebene gesucht. Wird kein Style gefunden, wird `NONE` verwendet.
 
 Beispiel für die Angaben in der Konfigurationsdatei für Gebäude:
 
