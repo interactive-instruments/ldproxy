@@ -38,6 +38,9 @@ const EditorBody = ({
                             onAdd={onAdd}
                         />
                     )}
+                    {spatial && (
+                        <SpatialFilter bounds={bounds} onChange={onAdd} />
+                    )}
                     {temporal && (
                         <TemporalFilter
                             start={temporal.start}
@@ -47,9 +50,6 @@ const EditorBody = ({
                             }
                             onChange={onAdd}
                         />
-                    )}
-                    {spatial && (
-                        <SpatialFilter bounds={bounds} onChange={onAdd} />
                     )}
                 </Col>
                 <Col md='6'>
