@@ -35,6 +35,7 @@ The types object has an entry for every feature type with the feature type ident
 |`role` |enum |`null` |`ID` has to be set for the property that should be used as the unique feature id. As a rule that should be the first property ion the  `properties` object. Property names cannot contain spaces (" ") or slashes ("/"). Set `TYPE` for a property that specifies the type name of the object.
 |`objectType` |string | |Optional name for an object type, used for example in JSON Schema. For properties that should be mapped as links according to *RFC 8288*, use `Link`.
 |`geometryType` |enum | |The specific geometry type for properties with `type: GEOMETRY`. Possible values are simple feature geometry types: `POINT`, `MULTI_POINT`, `LINE_STRING`, `MULTI_LINE_STRING`, `POLYGON`, `MULTI_POLYGON`, `GEOMETRY_COLLECTION` and `ANY`
+|`forcePolygonCCW` |boolean |`true` |Option to disable enforcement of counter-clockwise orientation for exterior rings and a clockwise orientation for interior rings (only for SQL).
 
 ## Connection Info
 

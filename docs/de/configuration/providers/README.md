@@ -35,6 +35,7 @@ Das Types-Objekt hat für jede Objektart einen Eintrag mit dem Identifikator der
 |`role` |enum |`null` |`ID` ist bei der Eigenschaft eines Objekts anzugeben, die für die `featureId` in der API zu verwenden ist. Diese Eigenschaft ist typischerweise die erste Eigenschaft im `properties`-Objekt. Erlaubte Zeichen in diesen Eigenschaften sind alle Zeichen bis auf das Leerzeichen (" ") und der Querstrich ("/"). `TYPE` ist bei der Eigenschaft eines Objekts anzugeben, die den Namen des Objekttyps enthält.
 |`objectType` |string | |Optional kann ein Name für den Typ spezifiziert werden. Der Name hat i.d.R. nur informativen Charakter und wird z.B. bei der Erzeugung von JSON-Schemas verwendet. Bei Eigenschaften, die als Web-Links nach RFC 8288 abgebildet werden sollen, ist immer "Link" anzugeben.
 |`geometryType` |enum | |Mit der Angabe kann der Geometrietype spezifiziert werden. Die Angabe ist nur bei Geometrieeigenschaften (`type: GEOMETRY`) relevant. Erlaubt sind die Simple-Feature-Geometrietypen, d.h. `POINT`, `MULTI_POINT`, `LINE_STRING`, `MULTI_LINE_STRING`, `POLYGON`, `MULTI_POLYGON`, `GEOMETRY_COLLECTION` und `ANY`.
+|`forcePolygonCCW` |boolean |`true` |Option zur Deaktivierung des Erzwingens der Orientierung von Polygonen, gegen den Uhrzeigersinn für äußere Ringe und mit dem Urzeigersinn für innere Ringe (nur für SQL).
 
 ## Die ConnectionInfo-Objekte
 
