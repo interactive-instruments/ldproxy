@@ -251,7 +251,7 @@ const MapLibreConfiguration = ({
                 );
             }
         } else if (styleUrl) {
-            setStyleVector(map, maplibre, styleUrl, popup);
+            setStyleVector(map, maplibre, styleUrl, removeZoomLevelConstraints, popup);
         }
         if (custom) {
             custom(map, maplibre);
