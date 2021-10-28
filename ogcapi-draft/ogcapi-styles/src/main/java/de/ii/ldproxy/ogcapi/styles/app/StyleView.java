@@ -23,8 +23,9 @@ public class StyleView extends GenericView {
     public final boolean layerSwitcher;
     public final String layerIds;
     public final MapClient mapClient;
+    public final String urlPrefix;
 
-    public StyleView(String styleUrl, OgcApiDataV2 apiData, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap) {
+    public StyleView(String styleUrl, OgcApiDataV2 apiData, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap, String urlPrefix) {
         super("/templates/style", null);
         this.title = "Style " + styleId;
         this.styleUrl = styleUrl;
@@ -44,5 +45,6 @@ public class StyleView extends GenericView {
 
         this.popup = false;
         this.layerSwitcher = false;
+        this.urlPrefix = urlPrefix;
     }
 }
