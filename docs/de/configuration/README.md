@@ -91,22 +91,17 @@ Die Beispiele in der Konfigurationsdokumentation verwenden eine hypothetische AP
 Das Datenbankschema des Quelldatensatzes besteht aus zwei Tabellen:
 
 ```sql
-CREATE TABLE public.weinlagen (
-    ogc_fid integer NOT NULL,
-    wkb_geometry public.geometry(MultiPolygon,25832),
-    wlg_nr character varying(254),
-    datum date,
-    suchfeld character varying(254),
-    suchfeld_1 character varying(254),
-    anbaugebie character varying(254),
-    bereich character varying(254),
-    grosslage character varying(254),
-    wlg_name character varying(254),
-    gemeinde character varying(254),
-    gemarkunge character varying(254),
-    rebflache_ character varying(254),
-    gem_info character varying(254),
-    gid numeric(9,0)
+CREATE TABLE public.kita (
+  oid integer NOT NULL,
+  kitaid character varying(255) NOT NULL,
+  name character varying(255) NOT NULL,
+  strasse character varying(255),
+  hausnummer character varying(255),
+  plz character varying(255),
+  ort character varying(255) NOT NULL,
+  telefon character varying(255),
+  geometry public.geometry(Point,25832) NOT NULL,
+  PRIMARY KEY (oid)
 );
 
 CREATE TABLE public.plaetze (

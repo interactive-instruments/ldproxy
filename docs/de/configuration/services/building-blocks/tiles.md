@@ -35,6 +35,8 @@ Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann soll
 |`minimumSizeInPixel`| number |0.5 |Objekte mit Liniengeometrien, die kürzer als der Wert sind, werden nicht in die Kachel aufgenommen. Objekte mit Flächengeometrien, die kleiner als das Quadrat des Werts sind, werden nicht in die Kachel aufgenommen. Der Wert 0.5 entspricht einem halben "Pixel" im Kachelkoordinatensystem.
 |`maxRelativeAreaChangeInPolygonRepair` | number |0.1 |Steuert die maximal erlaubte relative Änderung der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte Polygongeometrie verwendet. Der Wert 0.1 entspricht 10%.
 |`maxAbsoluteAreaChangeInPolygonRepair` | number |1.0 |Steuert die maximal erlaubte absolute Änderung der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte Polygongeometrie verwendet. Der Wert 1.0 entspricht einem "Pixel" im Kachelkoordinatensystem.
+|`transformations` |object |`{}` |Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe [transformiert](general-rules.md#transformations) werden.
+|`caching` |object |`{}` |Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
 
 Beispiel für die Angaben in der Konfigurationsdatei für Gebäude:
 

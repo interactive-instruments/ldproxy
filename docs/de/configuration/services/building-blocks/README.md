@@ -24,17 +24,18 @@ Grundsätzliche Regeln, die für alle API-Module gelten, finden Sie [hier](gener
 |[OpenAPI 3.0](oas30.md) |OAS30 |stable |Ja |Aktiviert die Unterstützung für die API-Definition in OpenAPI 3.0
 |[Feature Collections](collections.md) |COLLECTIONS |stable |Ja |Ressourcen "Feature Collections" und "Feature Collection"
 |[Features Core](features-core.md) |FEATURES_CORE |stable |Ja |Ressourcen "Features" und "Feature"
-|[Features HTML](features-html.md) |FEATURES_HTML |stable |Ja |Aktiviert die HTML-Ausgabe für die Ressourcen "Features" und "Feature"
 |[Features GeoJSON](geojson.md) |GEO_JSON |stable |Ja |Aktiviert die GeoJSON-Ausgabe für die Ressourcen "Features" und "Feature"
 |[Features GML](gml.md) |GML |stable |Nein |Aktiviert die GML-Ausgabe für die Ressourcen "Features" und "Feature" (nur bei WFS-Providern)
+|[Features HTML](features-html.md) |FEATURES_HTML |stable |Ja |Aktiviert die HTML-Ausgabe für die Ressourcen "Features" und "Feature"
 |[Coordinate Reference Systems](crs.md) |CRS |stable |Ja |Aktiviert die Unterstützung für Koordinatenreferenzsysteme neben dem Standardsystem CRS84.
 |[Collections Queryables](queryables.md) |QUERYABLES |draft |Nein |Aktiviert die Ressource "Queryables" für Feature Collections
 |[Collections Schema](schema.md) |SCHEMA |draft |Nein |Aktiviert die Ressource "Schema" für Feature Collections
 |[Features GeoJSON-LD](geojson-ld.md) |GEO_JSON_LD |draft |Nein |Aktiviert JSON-LD-Erweiterungen in der GeoJSON-Ausgabe
+|[Features JSON-FG](json-fg.md) |JSON_FG |draft |Nein |Aktiviert die JSON-FG-Ausgabe für die Ressourcen "Features" und "Feature"
 |[Filter / CQL](filter.md) |FILTER |draft |Nein |Aktiviert die Angabe von CQL-Filtern für die Ressourcen "Features" und "Vector Tiles"
 |[Geometry Simplification](geometry-simplification.md) |GEOMETRY_SIMPLIFICATION |draft |Nein |Aktiviert die Option zur Vereinfachung von Geometrien nach Douglas-Peucker bei den Ressourcen "Features" und "Feature"
 |[Projections](projections.md) |PROJECTIONS |draft |Nein |Aktiviert die Option zur Begrenzung der zurückgelieferten Feature-Eigenschaften bei den Ressourcen "Features", "Feature" und "Vector Tiles"
 |[Sorting](sorting.md) |SORTING |draft |Nein |Aktiviert die Option zur Sortierung der zurückgelieferten Features bei der Ressource "Features"
-|[Styles](styles.md) |STYLES |draft |Nein |Aktiviert die Unterstützung für die Bereitstellung und Verwaltung von Styles (Mapbox Style oder SLD) und zugehöriger Ressourcen (Synmbole, Sprites) in der API
-|[Vector Tiles](tiles.md) |TILES |draft |Nein |Aktivitert die Unterstützung für die Bereitstellung von Vector Tiles im Format Mapbox Vector Tiles für den gesamten Datensatz und/oder einzelne Collections
+|[Styles](styles.md) |STYLES |draft |Nein |Aktiviert die Unterstützung für die Bereitstellung und Verwaltung von Styles (Mapbox Style oder SLD) und zugehöriger Ressourcen (Symbole, Sprites) in der API
+|[Tiles](tiles.md) |TILES |draft |Nein |Aktiviert die Unterstützung für die Bereitstellung von Tiles im Format Mapbox Vector Tiles oder als Bitmaps für den gesamten Datensatz und/oder einzelne Collections
 |[Simple Transactions](transactional.md) |TRANSACTIONAL |draft |Nein |Aktiviert die Unterstützung für die Veränderung von Features unter Verwendung der Standardlogik der HTTP-Methoden POST/PUT/DELETE/PATCH

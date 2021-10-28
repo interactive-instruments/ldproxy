@@ -4,7 +4,7 @@ Das Modul "CRS" kann für jede über ldproxy bereitgestellte API mit einem Featu
 
 Alle Koordinatentransformationen zwischen zwei Koordinatenreferenzsystemen erfolgen mit Geotools. Geotools entscheidet, welche Transformation verwendet wird, sofern mehrere verfügbar sind. Eine Konfigurationsmöglichkeit in ldproxy besteht nicht.
 
-Das Modul implementiert alle Vorgaben der Konformatitätsklasse "Coordinate Reference System by Reference" von [OGC API - Features - Part 2: Coordinate Reference System by Reference 1.0.0-draft.1](http://docs.opengeospatial.org/DRAFTS/18-058.html).
+Das Modul implementiert alle Vorgaben der Konformitätsklasse "Coordinate Reference System by Reference" von [OGC API - Features - Part 2: Coordinate Reference System by Reference 1.0.0-draft.1](http://docs.opengeospatial.org/DRAFTS/18-058.html).
 
 In der Konfiguration können die folgenden Optionen gewählt werden:
 

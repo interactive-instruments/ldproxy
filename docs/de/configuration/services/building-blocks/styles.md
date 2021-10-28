@@ -2,7 +2,7 @@
 
 Das Modul "Styles" kann für jede über ldproxy bereitgestellte API aktiviert werden. Es ergänzt verschiedene Ressourcen für die Bereitstellung und Verwaltung von Styles (Mapbox Style oder SLD) und zugehöriger Ressourcen (Synmbole, Sprites) in der API.
 
-Das Modul basiert auf den Vorgaben der Konformatitätsklassen *Core*, *Manage styles*, *Validation of styles*, *Resources*, *Manage resources*, *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1*, *HTML* und *Style information* aus dem [Entwurf von OGC API - Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html#rc_queryables). Die Implementierung wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
+Das Modul basiert auf den Vorgaben der Konformitätsklassen *Core*, *Manage styles*, *Validation of styles*, *Resources*, *Manage resources*, *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1*, *HTML* und *Style information* aus dem [Entwurf von OGC API - Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html#rc_queryables). Die Implementierung wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
 
 |Ressource |Pfad |HTTP-Methode |Unterstützte Ein- und Ausgabeformate
 | --- | --- | --- | ---
@@ -33,6 +33,7 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 |`webmapWithLayerControl` |boolean |`false` |Steuert, ob bei Webkarten zu Styles im Format Mapbox Style die Layer ein- und ausgeschaltet werden können. Ein- und ausgeschaltet werden können jeweils gebündelt alle Layer zu einer Feature Collection.
 |`layerControlAllLayers` |boolean |`false` |Nur wirksam bei `webmapWithLayerControl: true`. Steuert, ob auch Kartenlayer, die nicht aus den Vector Tiles dieser API, z.B. eine Hintergrundkarte, ein- und ausgeschaltet werden können.
 |`deriveCollectionStyles` |boolean |`false` |Nur wirksam bei Styles im Format Mapbox Style. Steuert, ob die Styles auf der Ebene der Collections aus den Styles aus der übergeordneten Style-Collection abgeleitet werden sollen. Voraussetzung ist, dass der Name der `source` im Stylesheet der `{apiId}` entspricht und der Name der `source-layer` der `{collectionId}`.  
+|`caching` |object |`{}` |Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
 
 Die Stylesheets, die Style-Metadaten und die Style-Informationen liegen als Dateien im ldproxy-Datenverzeichnis:
 

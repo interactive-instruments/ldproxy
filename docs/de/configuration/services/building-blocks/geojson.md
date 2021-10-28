@@ -2,7 +2,7 @@
 
 Das Modul "Features GeoJSON" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen Features und Feature in GeoJSON.
 
-Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der Konformatitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson).
+Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der Konformitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson).
 
 In der Konfiguration können die folgenden Optionen gewählt werden:
 

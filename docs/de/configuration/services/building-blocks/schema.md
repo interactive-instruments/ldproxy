@@ -7,3 +7,5 @@ Das Modul "Collections Schema" kann für jede über ldproxy bereitgestellte API 
 |Schema |`/{apiId}/collections/{collectionId}/schema` |GET |JSON Schema
 
 In der Konfiguration können keine Optionen gewählt werden.
+
+|`caching` |object |`{}` |Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.

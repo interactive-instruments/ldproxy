@@ -29,12 +29,14 @@ Alle Pfadangaben in dieser Dokumentation sind relativ zur Basis-URI des Deployme
 
 ## Transformationen
 
-In den API-Modulen, die Features verarbeiten ([Core](features-core.md), [GeoJSON](geojson.md), [HTML](features-html.md), [Vector Tiles](tiles.md)), können die Feature-Eigenschaften über Transformationen an die Anforderungen der Ausgabe angepasst werden:
+TODO: zu aktualisieren (flatten, nullify, reduceStringFormat)
+
+In den API-Modulen, die Features verarbeiten ([Core](features-core.md), [GeoJSON](geojson.md), [JSON-FG](json-fg.md), [HTML](features-html.md), [Tiles](tiles.md)), können die Feature-Eigenschaften über Transformationen an die Anforderungen der Ausgabe angepasst werden:
 
 |Transformation |Datentyp |Beschreibung
 | --- | --- | ---
 |`rename` |string |Benennt die Eigenschaft auf den angegebenen Namen um.
-|`remove` |enum |`OVERVIEW` unterdrückt die Objekteigenschaft bei der Features-Ressource (vor allem für die HTML-Ausgabe relevant), `ALWAYS` unterdrückt sie immer, `NEVER` nie.
+|`remove` |enum |`IN_COLLECTION` (bis Version 3.0: `OVERVIEW`) unterdrückt die Objekteigenschaft bei der Features-Ressource (vor allem für die HTML-Ausgabe relevant), `ALWAYS` unterdrückt sie immer, `NEVER` nie.
 |`null` |regex |Bildet alle Werte, die dem regulären Ausdruck entsprechen, auf `null` ab. Diese Transformation ist nicht bei objektwertigen Eigenschaften anwendbar.
 |`stringFormat` |string |Der Wert wird in den angegebenen neuen Wert transformiert. `{{value}}` wird dabei durch den aktuellen Wert und `{{serviceUr}}` durch die Landing-Page-URI der API ersetzt. Bei `{{value}}` können noch weitere [Filter](#String-Template-Filter) ausgeführt werden, diese werden durch "\|" getrennt. Diese Transformation ist nur bei STRING-wertigen Eigenschaften anwendbar. Ist der transformierte Wert für die HTML-Ausgabe gedacht, dann kann auch Markdown-Markup verwendet werden, dieser wird bei der HTML-Ausgabe aufbereitet.
 |`dateFormat` |string |Der Wert wird unter Anwendung des angegebenen [Patterns](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns) transformiert. `dd.MM.yyyy` bildet den Wert zum Beispiel auf ein Datum nach deutscher Schreibweise ab. Diese Transformation ist nur bei DATETIME-wertigen Eigenschaften anwendbar.
@@ -56,4 +58,38 @@ Einige Beispiele:
 * `{{value | toUpper}}` wandelt den Text in Großbuchstaben um
 * `{{value | toLower}}` wandelt den Text in Kleinbuchstaben um
 * `{{value | urlEncode}}` kodiert Sonderzeichen im Text für die Nutzung in einer URI
+* `{{value | unHtml}}` entfernt HTML-Tags (z.B. zum Reduzieren eines HTML-Links auf den Link-Text)
 * `[{{value}}](https://de.wikipedia.org/wiki/{{value | replace:' ':'_' | urlencode}})` wandelt einen Gemeindenamen in einen Markdown-Link zum Wikipedia-Eintrag der Gemeinde
+
+<a name="caching"></a>
+
+## HTTP-Header für Caching
+
+ldproxy setzt in Antworten die folgenden HTTP-Header für HTTP-Caching - soweit diese für die jeweilige Ressource bestimmt werden können:
+
+* `Last-Modified`: Der Zeitstempel der letzten Änderung wird - sofern möglich - aus der zurückzugebenden Repräsentation der Ressource bestimmt, z.B. aus dem Änderungsdatum einer Datei. Er kann über eine Konfigurationseinstellung überschrieben werden (siehe unten).
+* `ETag`: Der Tag wird - sofern möglich - aus der zurückzugebenden Repräsentation der Ressource bestimmt.
+* `Cache-Control`: Der Header wird nur gesetzt, wenn er für die Ressourcen des Moduls konfiguriert wurde (siehe unten).
+* `Expires`: Der Header wird nur gesetzt, wenn er für die Ressourcen des Moduls konfiguriert wurde (siehe unten).
+
+In jedem Modul, das Ressourcen bereitstellt und nicht nur Query-Parameter oder Ausgabeformate realisiert, ist eine Konfigurationsoption `caching`, deren Wert ein Objekt mit den folgenden, optionalen Einträgen ist:
+
+|Option |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`lastModified` |string |`null` |Für die Ressourcen in dem Modul wird der `Last-Modified` Header auf den konfigurierten Wert gesetzt. Der Wert überschreibt einen ggf. aus der Ressource bestimmten Änderungszeitpunkt.
+|`cacheControl` |string |`null` |Für die Ressourcen in dem Modul wird der `Expires` Header auf den konfigurierten Wert gesetzt. Ausnahme sind die "Features" und "Feature"-Ressourcen, bei denen `cacheControlItems` zu verwenden ist.
+|`cacheControlItems` |string |`null` |Für die "Features" und "Feature"-Ressourcen wird der `Cache-Control` Header auf den konfigurierten Wert gesetzt.
+|`expires` |string |`null` |Für die Ressourcen in dem Modul wird der `Expires` Header auf den konfigurierten Wert gesetzt.
+
+In der API-Konfiguration können über eine Konfigurationsoption `defaultCaching` Standardwerte für die gesamte API gesetzt werden.
+
+Beispiel für die Angaben in der Konfigurationsdatei:
+
+```yaml
+defaultCaching:
+  cacheControl: 'max-age=3600'
+- buildingBlock: FEATURES_CORE
+  caching:
+    lastModified: '2021-07-01T00:00:00+02:00'
+    expires: '2021-12-31T23:59:59+01:00'
+```
