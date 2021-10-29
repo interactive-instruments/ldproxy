@@ -8,9 +8,9 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`nestedObjectStrategy` |enum |`FLATTEN` |Steuert, ob im Schema des Feature-Providers ggf. definierte Objektstrukturen in der GeoJSON-Ausgabe abgeflacht werden (`FLATTEN`) oder nicht (`NESTED`). Bei der Angabe von `FLATTEN` muss der Wert von `multiplicityStrategy` gleich `SUFFIX` sein, bei `NESTED` muss er gleich `ARRAY` sein.
-|`multiplicityStrategy` |enum |`SUFFIX` |Steuert, ob im Schema des Feature-Providers ggf. definierte Arraystrukturen in der GeoJSON-Ausgabe abgeflacht werden (`SUFFIX`) oder nicht (`ARRAY`). Bei der Angabe von `SUFFIX` muss der Wert von `nestedObjectStrategy` gleich `FLATTEN` sein, bei `ARRAY` muss er gleich `NESTED` sein.
-|`separator` |string |"." |Steuert das Trennzeichen, das bei `FLATTEN`/`SUFFIX` für die Namen der Objekteigenschaften verwendet wird. Ein Trennzeichen wird immer dann eingesetzt, wenn eine Eigenschaft multipel (ein Array) oder strukturiert (ein Objekt) ist. Im Fall eines Array ergeben sich die Namen der abgeflachten Eigenschaften aus dem Namen der Eigenschaft im Schema und der Position im Array, getrennt durch das Trennzeichen. Bei einer objektwertigen Eigenschaft ergeben sich die Namen der abgeflachten Eigenschaften aus dem Namen der objektwertigen Eigenschaft im Schema und den Namen der Eigenschaften im Datentyp des Objekts, ebenfalls getrennt durch das Trennzeichen. Erlaubt sind ".", "/", ":", oder "_".
+|`nestedObjectStrategy` |enum |`FLATTEN` |*Deprecated* Wird abgelöst durch die [`flatten`-Transformation](../../providers/transformations.md).
+|`multiplicityStrategy` |enum |`SUFFIX` |*Deprecated* Wird abgelöst durch die [`flatten`-Transformation](../../providers/transformations.md).
+|`separator` |string |"." |*Deprecated* Wird abgelöst durch die [`flatten`-Transformation](../../providers/transformations.md).
 |`transformations` |object |`{}` |Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der GeoJSON-Ausgabe [transformiert](general-rules.md#transformations) werden.
 
 Ein Beispiel zur Abflachung. Das nicht abgeflachte Feature
@@ -82,6 +82,7 @@ Beispiel für die Angaben in der Konfigurationsdatei:
 
 ```yaml
 - buildingBlock: GEO_JSON
-  nestedObjectStrategy: NESTED
-  multiplicityStrategy: ARRAY
+  transformations:  
+    '*':
+      flatten: '.'
 ```
