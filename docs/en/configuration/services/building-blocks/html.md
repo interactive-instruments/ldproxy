@@ -33,12 +33,8 @@ The module *HTML* may be enabled for every API. It is enabled by default. Provid
   legalUrl: 'https://example.org/impressum/'
   privacyName: Datenschutzerklärung
   privacyUrl: 'https://example.org/datenschutzerklarung/'
-  leafletUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  openLayersUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  leafletAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
-    f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
-    class="link0" target="_new">Datenquellen</a>'
-  openLayersAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
+  mapBackgroundUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
+  mapAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
     f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
     class="link0" target="_new">Datenquellen</a>'
   footerText: 'Warnung: Bei den APIs auf diesem Server handelt es sich um Test-APIs während der Entwicklung.'
