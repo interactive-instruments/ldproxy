@@ -12,6 +12,7 @@ Jeder Feature-Provider wird in einer Konfigurationsdatei in einem Objekt mit den
 |`featureProviderType` |enum | |`SQL` für ein SQL-DBMS als Datenquelle, `WFS` für einen OGC Web Feature Service als Datenquelle.
 |`connectionInfo` |object | |Ein Objekt mit Angaben zur Datenquelle. Der Inhalt hängt von `featureProviderType` ab ([SQL](sql.md#connection-info) und [WFS](wfs.md#connection-info)).
 |`nativeCrs` |object | |Das Koordinatenreferenzsystem, in dem Geometrien in dem Datensatz geführt werden. Der EPSG-Code des Koordinatenreferenzsystems wird als Integer in `code` angegeben. Mit `forceAxisOrder` kann die Koordinatenreihenfolge geändert werden: `NONE` verwendet die Reihenfolge des Koordinatenreferenzsystems, `LON_LAT` verwendet stets Länge/Ostwert als ersten und Breite/Nordwert als zweiten Wert, `LAT_LON` entsprechend umgekehrt. Beispiel: Das Default-Koordinatenreferenzsystem `CRS84` entspricht `code: 4326` und `forceAxisOrder: LON_LAT`.
+|`nativeTimeZone` |string | `UTC` |Eine Zeitzonen-ID, z.B. `Europe/Berlin`. Wird auf temporale Werte ohne Zeitzone im Datensatz angewendet.
 |`types` |object |`{}` |Ein Objekt mit der Spezifikation zu jeder Objektart. Siehe unten.
 |`typeValidation` |enum |`NONE` |Steuert ob die Spezifikationen der Objektarten daraufhin geprüft werden, ob sie zur Datenquelle passen (nur für SQL). `NONE` heißt keine Prüfung. Bei `LAX` schlägt die Prüfung fehl und der Start des Providers wird verhindert, wenn Probleme festgestellt werden, die in jedem Fall zu Laufzeitfehlern führen würden. Probleme die abhängig von den tatsächlichen Daten zu Laufzeitfehlern führen könnten, werden als Warnung geloggt. Bei `STRICT` führen alle festgestellten Probleme zu einem Fehlstart. Der Provider wird also nur gestartet, wenn keine Risiken für Laufzeitfehler im Zusammenhang mit der Datenquelle identifiziert werden.
 |`auto` |boolean |`false` |Steuert, ob die Informationen zu `types` beim Start automatisch aus der Datenquelle bestimmt werden sollen (Auto-Modus). In diesem Fall sollte `types` nicht angegeben sein.
@@ -26,7 +27,7 @@ Das Types-Objekt hat für jede Objektart einen Eintrag mit dem Identifikator der
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`type` |enum |`STRING` / `OBJECT` |Der Datentyp des Schemaobjekts. Der Standardwert ist `STRING`, sofern nicht auch die Eigenschaft `properties` angegeben ist, dann ist es `OBJECT`. Erlaubt sind:<ul><li>`FLOAT`, `INTEGER`, `STRING`, `BOOLEAN`, `DATETIME` für einen einfachen Wert des entsprechenden Datentyps. `DATETIME` kann dabei sowohl ein Datum als auch ein Zeitstempel sein.</li><li>`GEOMETRY` für eine Geometrie.</li><li>`OBJECT` für ein Objekt.</li><li>`OBJECT_ARRAY` für eine Liste von Objekten.</li><li>`VALUE_ARRAY` für eine Liste von einfachen Werten.</li></ul>
+|`type` |enum |`STRING` / `OBJECT` |Der Datentyp des Schemaobjekts. Der Standardwert ist `STRING`, sofern nicht auch die Eigenschaft `properties` angegeben ist, dann ist es `OBJECT`. Erlaubt sind:<ul><li>`FLOAT`, `INTEGER`, `STRING`, `BOOLEAN`, `DATETIME`, `DATE` für einen einfachen Wert des entsprechenden Datentyps.</li><li>`GEOMETRY` für eine Geometrie.</li><li>`OBJECT` für ein Objekt.</li><li>`OBJECT_ARRAY` für eine Liste von Objekten.</li><li>`VALUE_ARRAY` für eine Liste von einfachen Werten.</li></ul>
 |`sourcePath` |string | |Der relative Pfad zu diesem Schemaobjekt. Die Pfadsyntax ist je nach Provider-Typ unterschiedlich ([SQL](sql.md#path-syntax) und [WFS](wfs.md#path-syntax)).
 |`constantValue` |string / number / boolean |`null` |Alternativ zu `sourcePath` kann diese Eigenschaft verwendet werden, um im Feature-Provider eine Eigenschaft mit einem festen Wert zu belegen.
 |`label` |string | |Eine Bezeichnung des Schemaobjekts, z.B. für die Angabe in der HTML-Ausgabe.
@@ -36,6 +37,7 @@ Das Types-Objekt hat für jede Objektart einen Eintrag mit dem Identifikator der
 |`objectType` |string | |Optional kann ein Name für den Typ spezifiziert werden. Der Name hat i.d.R. nur informativen Charakter und wird z.B. bei der Erzeugung von JSON-Schemas verwendet. Bei Eigenschaften, die als Web-Links nach RFC 8288 abgebildet werden sollen, ist immer "Link" anzugeben.
 |`geometryType` |enum | |Mit der Angabe kann der Geometrietype spezifiziert werden. Die Angabe ist nur bei Geometrieeigenschaften (`type: GEOMETRY`) relevant. Erlaubt sind die Simple-Feature-Geometrietypen, d.h. `POINT`, `MULTI_POINT`, `LINE_STRING`, `MULTI_LINE_STRING`, `POLYGON`, `MULTI_POLYGON`, `GEOMETRY_COLLECTION` und `ANY`.
 |`forcePolygonCCW` |boolean |`true` |Option zur Deaktivierung des Erzwingens der Orientierung von Polygonen, gegen den Uhrzeigersinn für äußere Ringe und mit dem Urzeigersinn für innere Ringe (nur für SQL).
+|`transformations` |object |`{}` |Optionale Transformationen für die Eigenschaft, siehe [Transformationen](transformations.md).
 
 ## Die ConnectionInfo-Objekte
 
