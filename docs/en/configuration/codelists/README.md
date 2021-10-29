@@ -9,8 +9,8 @@ Codelists allow to map property values to a different value. This is useful espe
 |`id` |string | |Codelist identifier. Is referenced by `codelist` transformations and has to match the file name.
 |`label` |string | |Human readable label.
 |`sourceType` |enum | |Always `TEMPLATES`.
-|`entries` |object |`{}` |Map with the original value as key and the new value as value. Values might use [`stringFormat` transformations](services/building-blocks/README.md#transformations).
-|`fallback` |string |der Wert |Optional default value. Might use [`stringFormat` transformations](services/building-blocks/README.md#transformations).
+|`entries` |object |`{}` |Map with the original value as key and the new value as value. Values might use [`stringFormat` transformations](../providers/transformations.md).
+|`fallback` |string |der Wert |Optional default value. Might use [`stringFormat` transformations](../providers/transformations.md).
 
 ### Example
 

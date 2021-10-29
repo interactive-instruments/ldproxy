@@ -2,6 +2,8 @@
 
 # Transformations
 
+TODO: zu aktualisieren (flatten, nullify, reduceStringFormat)
+
 Transformations are supported in multiple parts of the configuration.
 
 Transformations do not affect data sources, they are applied on-the-fly as part of the encoding.

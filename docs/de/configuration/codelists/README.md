@@ -10,9 +10,9 @@ Die nachfolgende Tabelle beschreibt die Struktur der Codelisten-Dateien.
 |`label` |string | |Eine lesbare Bezeichnung der Codelist, die im Manager angezeigt wird.
 |`sourceType` |enum | |`TEMPLATES` für alle manuell erstellte Codelisten.
 |`entries` |object |`{}` |Jeder Eintrag bildet einen Wert auf den neuen Wert ab.
-|`fallback` |string |der Wert |Optional kann ein Defaultwert angegeben werden. Dabei können auch [`stringFormat`-Transformationen](services/building-blocks/README.md#transformations) genutzt werden.
+|`fallback` |string |der Wert |Optional kann ein Defaultwert angegeben werden. Dabei können auch [`stringFormat`-Transformationen](../providers/transformations.md) genutzt werden.
 
-Bei den Zielwerten in `entries` und bei `fallback` können auch [`stringFormat`-Transformationen](services/building-blocks/README.md#transformations) genutzt werden. Ist der transformierte Wert für die HTML-Ausgabe gedacht, dann kann auch Markdown-Markup verwendet werden, dieser wird bei der HTML-Ausgabe aufbereitet.
+Bei den Zielwerten in `entries` und bei `fallback` können auch [`stringFormat`-Transformationen](../providers/transformations.md) genutzt werden. Ist der transformierte Wert für die HTML-Ausgabe gedacht, dann kann auch Markdown-Markup verwendet werden, dieser wird bei der HTML-Ausgabe aufbereitet.
 
 Ein Beispiel, basierend auf der INSPIRE-Codelist [EnvironmentalDomain](https://inspire.ec.europa.eu/codeList/EnvironmentalDomain), der Werte wie "soil" auf einen Markdown-Link in die INSPIRE-Codelist-Registry abbildet:
 
