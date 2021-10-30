@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
@@ -94,7 +95,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default ImmutableEpsgCrs getDefaultEpsgCrs() {
+    default EpsgCrs getDefaultEpsgCrs() {
         return ImmutableEpsgCrs.copyOf(getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84);
     }
 

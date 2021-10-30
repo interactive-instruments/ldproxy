@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.collections.domain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.*;
-import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,7 +144,7 @@ public abstract class EndpointSubCollection extends Endpoint {
                     });
         }
         ImmutableApiResponse.Builder responseBuilder = new ImmutableApiResponse.Builder()
-                .statusCode(postUrlencoded ? Endpoint.SUCCESS_STATUS.get(HttpMethods.GET) : Endpoint.SUCCESS_STATUS.get(method))
+                .statusCode(postUrlencoded ? Endpoint.SUCCESS_STATUS_RESOURCE.get(HttpMethods.GET) : Endpoint.SUCCESS_STATUS_RESOURCE.get(method))
                 .description("The operation was executed successfully.")
                 .headers(headers.stream().filter(header -> header.isResponseHeader()).collect(Collectors.toUnmodifiableList()));
         if (!responseContent.isEmpty())

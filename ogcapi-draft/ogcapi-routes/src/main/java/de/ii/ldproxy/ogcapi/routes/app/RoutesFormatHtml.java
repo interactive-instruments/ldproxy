@@ -1,0 +1,112 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+package de.ii.ldproxy.ogcapi.routes.app;
+
+import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.MediaType;
+import java.util.List;
+
+@Component
+@Provides
+@Instantiate
+public class RoutesFormatHtml implements RoutesFormatExtension {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RoutesFormatHtml.class);
+    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
+            .type(MediaType.TEXT_HTML_TYPE)
+            .label("HTML")
+            .parameter("html")
+            .build();
+
+    private final Schema schemaHtml;
+    public final static String SCHEMA_REF_HTML = "#/components/schemas/htmlSchema";
+    private final I18n i18n;
+
+    public RoutesFormatHtml(@Requires I18n i18n) {
+        this.i18n = i18n;
+        schemaHtml = new StringSchema().example("<html>...</html>");
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return RoutingConfiguration.class;
+    }
+
+    @Override
+    public Object getFormEntity(RouteDefinitionInfo templateInfo, OgcApi api, ApiRequestContext requestContext) {
+        String rootTitle = i18n.get("root", requestContext.getLanguage());
+        String routesTitle = i18n.get("routesTitle", requestContext.getLanguage());
+
+        final URICustomizer uriCustomizer = requestContext.getUriCustomizer();
+        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
+            .add(new NavigationDTO(rootTitle,
+                                   uriCustomizer.copy()
+                                       .removeLastPathSegments(api.getData()
+                                                                   .getSubPath()
+                                                                   .size() + 1)
+                                       .toString()))
+            .add(new NavigationDTO(api.getData().getLabel(),
+                                   uriCustomizer.copy()
+                                       .removeLastPathSegments(1)
+                                       .toString()))
+            .add(new NavigationDTO(routesTitle))
+            .build();
+
+        HtmlConfiguration htmlConfig = api.getData()
+            .getExtension(HtmlConfiguration.class)
+            .orElse(null);
+
+        RoutesView view =
+            new RoutesView(api.getData(), templateInfo, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
+        return view;
+    }
+
+    @Override
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+        return new ImmutableApiMediaTypeContent.Builder()
+                .schema(schemaHtml)
+                .schemaRef(SCHEMA_REF_HTML)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+    }
+
+    @Override
+    public ApiMediaType getMediaType() {
+        return MEDIA_TYPE;
+    }
+
+    private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+        return apiData.getExtension(HtmlConfiguration.class)
+            .map(HtmlConfiguration::getNoIndexEnabled)
+            .orElse(true);
+    }
+}

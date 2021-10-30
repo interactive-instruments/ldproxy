@@ -411,7 +411,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
@@ -449,7 +449,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), allowedParameters);
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), allowedParameters);
 
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))
@@ -484,8 +484,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                                     .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items/{featureId}", collectionId);
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, toFlatMap(uriInfo.getQueryParameters()), allowedParameters, featureId);
-
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), toFlatMap(uriInfo.getQueryParameters()), allowedParameters, featureId);
 
         ImmutableQueryInputFeature.Builder queryInputBuilder = new ImmutableQueryInputFeature.Builder()
                 .from(getGenericQueryInput(api.getData()))

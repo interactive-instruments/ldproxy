@@ -91,6 +91,12 @@ public interface ParameterExtension extends ApiExtension {
         return queryBuilder;
     }
 
+    default ImmutableFeatureQuery.Builder transformQuery(ImmutableFeatureQuery.Builder queryBuilder,
+                                                         Map<String, String> parameters,
+                                                         OgcApiDataV2 apiData) {
+        return queryBuilder;
+    }
+
     default Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType,
                                                  Map<String, Object> context,
                                                  Map<String, String> parameters,

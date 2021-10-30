@@ -256,7 +256,7 @@ public interface QueriesHandler<T extends QueryIdentifier> {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    default <S extends PageRepresentation> EntityTag getEtag(S entity, Funnel<S> funnel, FormatExtension outputFormat) {
+    default <S> EntityTag getEtag(S entity, Funnel<S> funnel, FormatExtension outputFormat) {
         String etag = Hashing.murmur3_128()
                              .newHasher()
                              .putObject(entity, funnel)

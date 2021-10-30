@@ -101,7 +101,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     @Override
     public FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                              FeaturesCoreConfiguration coreConfiguration,
+                                              EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
                                               Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
                                               String featureId) {
 
@@ -122,18 +122,18 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                                                 .type(featureTypeId)
                                                                                 .filter(filter)
                                                                                 .returnsSingleFeature(true)
-                                                                                .crs(coreConfiguration.getDefaultEpsgCrs());
+                                                                                .crs(defaultCrs);
 
         for (OgcApiQueryParameter parameter : allowedParameters) {
             parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
 
-        return processCoordinatePrecision(queryBuilder, coreConfiguration).build();
+        return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
     }
 
     @Override
     public FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                              FeaturesCoreConfiguration coreConfiguration,
+                                              EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
                                               int minimumPageSize,
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters,
                                               List<OgcApiQueryParameter> allowedParameters) {
@@ -180,12 +180,13 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                                 .type(featureTypeId)
-                                                                                .crs(coreConfiguration.getDefaultEpsgCrs())
+                                                                                .crs(defaultCrs)
                                                                                 .limit(limit)
                                                                                 .offset(offset)
                                                                                 .hitsOnly(hitsOnly);
 
         for (OgcApiQueryParameter parameter : allowedParameters) {
+            parameter.transformQuery(queryBuilder, parameters, apiData);
             parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
         }
 
@@ -207,7 +208,31 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             queryBuilder.filter(cql);
         }
 
-        return processCoordinatePrecision(queryBuilder, coreConfiguration).build();
+        return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
+    }
+
+    public FeatureQuery requestToBareFeatureQuery(OgcApiDataV2 apiData, String featureTypeId,
+                                              EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
+                                              int minimumPageSize,
+                                              int defaultPageSize, int maxPageSize, Map<String, String> parameters,
+                                              List<OgcApiQueryParameter> allowedParameters) {
+
+        // TODO detailed checks should no longer be necessary
+        final int limit = parseLimit(minimumPageSize, defaultPageSize, maxPageSize, parameters.get("limit"));
+        final int offset = parseOffset(parameters.get("offset"));
+
+        final ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
+            .type(featureTypeId)
+            .crs(defaultCrs)
+            .limit(limit)
+            .offset(offset)
+            .hitsOnly(false);
+
+        for (OgcApiQueryParameter parameter : allowedParameters) {
+            parameter.transformQuery(queryBuilder, parameters, apiData);
+        }
+
+        return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
     }
 
     @Override
@@ -459,22 +484,22 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     }
 
     private ImmutableFeatureQuery.Builder processCoordinatePrecision(ImmutableFeatureQuery.Builder queryBuilder,
-                                                                     FeaturesCoreConfiguration coreConfiguration) {
+                                                                     Map<String, Integer> coordinatePrecision) {
         // check, if we need to add a precision value; for this we need the target CRS,
         // so we need to build the query to get the CRS
         ImmutableFeatureQuery query = queryBuilder.build();
-        if (!coreConfiguration.getCoordinatePrecision().isEmpty() && query.getCrs().isPresent()) {
+        if (!coordinatePrecision.isEmpty() && query.getCrs().isPresent()) {
             Integer precision = null;
             // TODO we need to handle different units per axis, right now we just look at the first axis
             //      and assume that the vertical precision would be less digits than the horizontal one
             try {
                 Unit<?> unit = crsTransformerFactory.getCrsUnit(query.getCrs().get());
                 if (unit.equals(SI.METRE)) {
-                    precision = coreConfiguration.getCoordinatePrecision().get("meter");
+                    precision = coordinatePrecision.get("meter");
                     if (Objects.isNull(precision))
-                        precision = coreConfiguration.getCoordinatePrecision().get("metre");
+                        precision = coordinatePrecision.get("metre");
                 } else if (unit.equals(NonSI.DEGREE_ANGLE)) {
-                    precision = coreConfiguration.getCoordinatePrecision().get("degree");
+                    precision = coordinatePrecision.get("degree");
                 } else {
                     LOGGER.debug("Coordinate precision could not be set, unrecognised unit found: '{}'.", unit.toString());
                 }

@@ -103,8 +103,7 @@ public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApi
     }
 
     @Override
-    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureType,
-                                                        ImmutableFeatureQuery.Builder queryBuilder,
+    public ImmutableFeatureQuery.Builder transformQuery(ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters,
                                                         OgcApiDataV2 apiData) {
         if (parameters.containsKey(getName())) {

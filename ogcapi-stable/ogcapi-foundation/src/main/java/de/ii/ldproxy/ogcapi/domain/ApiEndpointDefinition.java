@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.google.common.collect.ImmutableSet;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -62,6 +63,7 @@ public abstract class ApiEndpointDefinition {
     public static final int SORT_PRIORITY_RESOURCES = 2100;
     public static final int SORT_PRIORITY_RESOURCE = 2110;
     public static final int SORT_PRIORITY_RESOURCES_MANAGER = 2120;
+    public static final int SORT_PRIORITY_ROUTES = 2500;
 
 
     public static final int SORT_PRIORITY_DUMMY = Integer.MAX_VALUE;
@@ -238,6 +240,11 @@ public abstract class ApiEndpointDefinition {
                                 if (operation.getRequestBody().isPresent()) {
                                     Set<javax.ws.rs.core.MediaType> mediaTypes = operation.getRequestBody().get().getContent().keySet();
                                     if (mediaTypes.size()==1 && mediaTypes.iterator().next().equals(javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED_TYPE)) {
+                                        // URL-encoded form
+                                        isMutation = false;
+                                        status406 = true;
+                                    } else if (operation.getSuccess().stream().anyMatch(response -> ImmutableSet.of("200", "202", "204").contains(response.getStatusCode()))) {
+                                        // Processing request
                                         isMutation = false;
                                         status406 = true;
                                     }

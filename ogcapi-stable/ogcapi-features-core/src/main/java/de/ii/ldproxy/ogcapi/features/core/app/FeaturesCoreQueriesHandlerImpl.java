@@ -31,6 +31,7 @@ import de.ii.xtraplatform.cql.domain.Geometry.Point;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -132,11 +133,14 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         query = ImmutableFeatureQuery.builder()
             .from(query)
             .addExtensions(ImmutableRouteQuery.builder()
-                .start(Point.of(2613295.72, 5581035.03, EpsgCrs.of(31466)))
-                .end(Point.of(2613281.67, 5585569.78, EpsgCrs.of(31466)))
-                //.addWayPoints(Point.of(2.0, 2.0))
-                .addFlags("best")
-                .build())
+                               .start(Point.of(7.589975, 50.358011, OgcCrs.CRS84)) // Koblenz HBf
+                               .end(Point.of(7.613844, 50.364580, OgcCrs.CRS84)) // Festung Ehrenbreitstein
+                               // TODO waypoints do not work yet
+                               //.addWayPoints(Point.of(7.603757, 50.355805, OgcCrs.CRS84)) // Schlosstreppe
+                               //.start(Point.of(2613295.72, 5581035.03, EpsgCrs.of(31466)))
+                               //.end(Point.of(2613281.67, 5585569.78, EpsgCrs.of(31466)))
+                               .addFlags("best", "noferry")
+                               .build())
             .build();
         //TODO: REMOVE
 

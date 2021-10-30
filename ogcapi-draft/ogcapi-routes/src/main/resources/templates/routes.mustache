@@ -1,0 +1,368 @@
+{{> header}}
+
+<div class="row">
+    <div class="col-md-10">
+        <h1>{{title}}</h1>
+        <span>{{{description}}}</span>
+        <br/>
+        <br/>
+        <br/>
+        <form class="contact-form">
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="name">{{routeNameTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input id="name" name="name" type="text" value="Route"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="preference">{{preferenceTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <ul class="list-unstyled">
+                            {{#defaultPreference}}
+                                <li>
+                                    <input id="preference-{{key}}" name="preference" type="radio" value="{{key}}" checked="true"/>
+                                    <label class="inline" for="salutation-{{key}}">{{value}}</label>
+                                </li>
+                            {{/defaultPreference}}
+                            {{#otherPreferences}}
+                                <li>
+                                    <input id="preference-{{key}}" name="preference" type="radio" value="{{key}}"/>
+                                    <label class="inline" for="salutation-{{key}}">{{value}}</label>
+                                </li>
+                            {{/otherPreferences}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="flags">{{additionalFlagsTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <ul class="list-unstyled">
+                            {{#additionalFlags}}
+                                <li>
+                                    <input id="flag-{{key}}" name="flags" type="checkbox" value="{{key}}"/>
+                                    <label class="inline" for="flags-{{key}}">{{value}}</label>
+                                </li>
+                            {{/additionalFlags}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="start">{{startLocationTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <ul class="list-unstyled">
+                            <li>
+                                <input id="start-x" name="start" type="number" step="any" value="7.590232"/>
+                                <label class="inline" for="start-x">{{xTitle}}</label>
+                            </li>
+                            <li>
+                                <input id="start-y" name="start" type="number" step="any" value="50.350158"/>
+                                <label class="inline" for="start-y">{{yTitle}}</label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="end">{{endLocationTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <ul class="list-unstyled">
+                            <li>
+                                <input id="end-x" name="end" type="number" step="any" value="7.613844"/>
+                                <label class="inline" for="end-x">{{xTitle}}</label>
+                            </li>
+                            <li>
+                                <input id="end-y" name="end" type="number" step="any" value="50.364580"/>
+                                <label class="inline" for="end-y">{{yTitle}}</label>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="crs">{{crsTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <select id="crs" name="crs">
+                            {{#crs}}
+                                <option value="{{key}}">{{value}}</option>
+                            {{/crs}}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="col-md-3 font-weight-bold">
+                </div>
+                <div class="col-md-9">
+                    <input name="secret" type="hidden" value="route-definition-form"/>
+                    <button type="submit">{{computeRouteButton}}</button>
+                    <div id="spinner"><div></div><div></div><div></div><div></div></div>
+                </div>
+            </div>
+
+        </form>
+
+        <br/>
+        <div class="row my-2">
+            <div class="col-md-12">
+                <div id="map" class="map-md"></div>
+            </div>
+        </div>
+        <!-- debug
+        <div class="results">
+            <h2>Form Data</h2>
+            <pre></pre>
+        </div>
+        <div class="route">
+            <h2>Route</h2>
+            <pre></pre>
+        </div>
+        -->
+    </div>
+</div>
+
+<!-- TODO move css and js; use mapClient -->
+<style type="text/css">
+.lds-ring {
+  display: inline-block;
+  position: relative;
+  height: 20px;
+}
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  margin: 2px;
+  border: 2px solid #404040;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #404040 transparent transparent transparent;
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+</style>
+<script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
+<script type="text/javascript">
+function handleFormSubmit(event) {
+   event.preventDefault();
+
+   const data = new FormData(event.target);
+
+   const routeDefinition = {
+      'inputs': {
+         'name': '',
+         'preference': '',
+         'additionalFlags': [],
+         'waypoints': {
+            'value': {
+               'type': 'MultiPoint',
+               'coordinates': [[0, 0], [0, 0]]
+            }
+         }
+      }
+   };
+
+   routeDefinition.inputs.name = data.get('name');
+   routeDefinition.inputs.preference = data.get('preference');
+   routeDefinition.inputs.additionalFlags = data.getAll('flags');
+   routeDefinition.inputs.waypoints.value.coordinates[0] = data.getAll('start');
+   routeDefinition.inputs.waypoints.value.coordinates[1] = data.getAll('end');
+
+   var routeDefJsonString = JSON.stringify(routeDefinition, null, 2);
+
+   /* debug
+   const results = document.querySelector('.results pre');
+   results.innerText = routeDefJsonString;
+   */
+
+   const xhr = new XMLHttpRequest();
+   xhr.onreadystatechange = function () {
+      // TODO error handling
+      if (this.readyState === 4 && this.status === 200) {
+         document.getElementById('spinner').classList.remove('lds-ring');
+         document.querySelector('button').disabled = false;
+
+         const routeJson = JSON.parse(this.responseText);
+         var map = new maplibregl.Map({
+            'container': 'map',
+            'style': {
+               'version': 8,
+               'sources': {
+                  'basemap': {
+                     'type': 'raster',
+                     'tiles': [
+                        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                     ],
+                     'scheme': 'xyz',
+                     'attribution': '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                  },
+                  'route': {
+                     'type': 'geojson',
+                     'data': routeJson,
+                     'attribution': '{{{attribution}}}'
+                  }
+               },
+               'layers': [{
+                  'id': 'background',
+                  'type': 'raster',
+                  'source': 'basemap'
+               }, {
+                  'id': 'overview',
+                  'type': 'line',
+                  'source': 'route',
+                  'layout': {
+                     'line-join': 'round',
+                     'line-cap': 'round'
+                  },
+                  'paint': {
+                     'line-color': '#00f',
+                     'line-width': 5
+                  },
+                  'filter': ['==', '$type', 'LineString']
+               }, {
+                  'id': 'point',
+                  'type': 'circle',
+                  'source': 'route',
+                  'minzoom': 12,
+                  'paint': {
+                     'circle-radius': 6,
+                     'circle-color': '#00f'
+                  },
+                  'filter': ['==', '$type', 'Point']
+               }]
+            },
+            'center': [7.6, 50.36],
+            'zoom': 13
+         });
+
+         map.addControl(new maplibregl.ScaleControl());
+         map.addControl(new maplibregl.NavigationControl());
+
+         map.on('mouseenter', 'overview', () => changeCursor(map, 'pointer'));
+         map.on('mouseleave', 'overview', () => changeCursor(map, ''));
+         map.on('click', 'overview', showPopupProps(map, popup));
+         map.on('mouseenter', 'point', () => changeCursor(map, 'pointer'));
+         map.on('mouseleave', 'point', () => changeCursor(map, ''));
+         map.on('click', 'point', showPopupProps(map, popup));
+
+         const bbox = routeJson['bbox'];
+         const bounds = [ [ bbox[0], bbox[1] ], [ bbox[3], bbox[4] ] ];
+         map.fitBounds( bounds, {
+            padding: 50,
+            maxZoom: 16,
+            duration: 500
+         });
+
+         /* debug
+         const routeElement = document.querySelector('.route pre');
+         routeElement.innerText = JSON.stringify(routeJson, null, 2);
+         */
+      }
+   };
+   xhr.open('POST', './routes');
+   xhr.setRequestHeader('Content-Type', 'application/json');
+   xhr.setRequestHeader('Accept', 'application/geo+json');
+   xhr.send(routeDefJsonString);
+
+   document.querySelector('button').disabled = true;
+   document.getElementById('spinner').classList.add('lds-ring');
+}
+
+const changeCursor = (map, cursor) => {
+    const canvas = map.getCanvas();
+    canvas.style.cursor = cursor;
+};
+
+const firstCoordinate = (geometry) => {
+    switch (geometry.type) {
+        case 'Point':
+            return geometry.coordinates;
+        case 'LineString':
+        case 'MultiPoints':
+            return geometry.coordinates[0];
+        case 'Polygon':
+        case 'MultiLineString':
+            return geometry.coordinates[0][0];
+        case 'MultiPolygon':
+            return geometry.coordinates[0][0][0];
+        default:
+            return null;
+    }
+};
+
+const showPopupProps = (map, popup) => (e) => {
+    const lngLat = firstCoordinate(e.features[0].geometry);
+    let description = `<h5>${e.features[0].sourceLayer}</h5><hr/><table>`;
+
+    Object.keys(e.features[0].properties)
+       .sort()
+       .forEach((prop) => {
+          description += `<tr><td title="${prop}" class="pr-4"><strong>${prop}</strong></td><td title="${e.features[0].properties[prop]}">${e.features[0].properties[prop]}</td></tr>`;
+       });
+
+    description += '</table>';
+
+    // Ensure that if the map is zoomed out such that multiple
+    // copies of the feature are visible, the popup appears
+    // over the copy being pointed to.
+    while (Math.abs(e.lngLat.lng - lngLat[0]) > 180) {
+       lngLat[0] += e.lngLat.lng > lngLat[0] ? 360 : -360;
+    }
+
+    if (lngLat && description) {
+       popup.setLngLat(lngLat).setHTML(description).addTo(map);
+    }
+};
+
+const popup = new maplibregl.Popup({
+    closeButton: true,
+    closeOnClick: true,
+    maxWidth: '60%',
+    className: 'popup-props',
+});
+
+const form = document.querySelector('.contact-form');
+form.addEventListener('submit', handleFormSubmit);
+</script>
+
+{{> footer}}
