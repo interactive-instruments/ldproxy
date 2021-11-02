@@ -330,7 +330,7 @@ public class EndpointFeatures extends EndpointSubCollection {
             resourceBuilder.putOperations("GET", operation);
 
         if (postUrlencoded) {
-            operation = addOperation(apiData, HttpMethods.POST, true, ImmutableList.of(),
+            operation = addOperation(apiData, HttpMethods.POST, true, queryParameters1,
                                      collectionId, subSubPath, operationSummary, operationDescription, TAGS);
 
             if (operation != null)
