@@ -40,7 +40,6 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -268,7 +267,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         if (explode) {
             for (String collectionId : collectionIdParam.getValues(apiData)) {
                 postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
-                                                          .map(FeaturesCoreConfiguration::getSupportPostOnItems)
+                                                          .map(FeaturesCoreConfiguration::getPostOnItems)
                                                           .orElse(false);
                 Stream<OgcApiQueryParameter> queryParameters = allQueryParameters.stream()
                     .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
@@ -292,13 +291,13 @@ public class EndpointFeatures extends EndpointSubCollection {
             if (representativeCollectionId.isPresent()) {
                 String collectionId = representativeCollectionId.get();
                 postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
-                                                          .map(FeaturesCoreConfiguration::getSupportPostOnItems)
+                                                          .map(FeaturesCoreConfiguration::getPostOnItems)
                                                           .orElse(false);
                 queryParameters = allQueryParameters.stream()
                     .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
             } else {
                 postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class)
-                                                          .map(FeaturesCoreConfiguration::getSupportPostOnItems)
+                                                          .map(FeaturesCoreConfiguration::getPostOnItems)
                                                           .orElse(false);
             }
 

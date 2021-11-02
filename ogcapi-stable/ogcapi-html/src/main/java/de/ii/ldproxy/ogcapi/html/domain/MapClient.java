@@ -65,6 +65,11 @@ public interface MapClient {
     return getType() == Type.MAP_LIBRE;
   }
 
+  @Value.Lazy
+  default boolean isCesium() {
+    return getType() == Type.CESIUM;
+  }
+
   @Value.Immutable
   interface Source {
     enum TYPE {geojson, vector}

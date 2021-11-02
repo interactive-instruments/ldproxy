@@ -55,5 +55,33 @@
     {{> app-maplibre}}
   {{/isMapLibre}}
 
+<!-- TODO temporary hack -->
+{{#isCesium}}
+<script>
+Cesium.Ion.defaultAccessToken = null;
+Cesium.Camera.DEFAULT_VIEW_RECTANGLE = {{{featureExtent}}};
+Cesium.Camera.DEFAULT_VIEW_FACTOR = 0;
+var viewer = new Cesium.Viewer("map", {
+    {{#backgroundUrl}}
+    imageryProvider : new Cesium.WebMapTileServiceImageryProvider({ url : '{{{.}}}' }),
+    {{/backgroundUrl}}
+    animation : false,
+    baseLayerPicker : false,
+    homeButton : true,
+    geocoder : false,
+    timeline : false,
+    scene3DOnly : true,
+    fullscreenButton : false,
+    navigationInstructionsInitiallyVisible : false
+});
+{{#attribution}}
+var credit = new Cesium.Credit('{{{.}}}');
+viewer.scene.frameState.creditDisplay.addDefaultCredit(credit);
+{{/attribution}}
+{{#mapEntities}}{{{.}}}{{/mapEntities}}
+viewer.zoomTo(viewer.entities);
+</script>
+{{/isCesium}}
+
 {{/mapClient}}
 

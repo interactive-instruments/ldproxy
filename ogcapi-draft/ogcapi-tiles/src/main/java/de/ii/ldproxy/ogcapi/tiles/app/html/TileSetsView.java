@@ -234,9 +234,9 @@ public class TileSetsView extends OgcApiView {
 
                     this.mapClient = new ImmutableMapClient.Builder()
                             .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
-                                                   .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
+                                                   .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
                             .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                                                 .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+                                                 .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
                             .data(new ImmutableSource.Builder()
                                           .type(TYPE.vector)
                                           .url(xyzTemplate)
