@@ -372,11 +372,16 @@ public class EndpointFeatures extends EndpointSubCollection {
                             collectionId);
                         return null;
                     }
+                    String description = "Filter the collection by property '" + field + "'";
+                    if (Objects.nonNull(schema2.get().getDescription()) && !schema2.get().getDescription().isEmpty())
+                        description += ": " + schema2.get().getDescription() + ".";
+                    else
+                        description += ".";
                     return new ImmutableQueryParameterTemplateQueryable.Builder()
                         .apiId(apiData.getId())
                         .collectionId(collectionId)
                         .name(field)
-                        .description("Filter the collection by property '" + field + "'")
+                        .description(description)
                         .schema(schema2.get())
                         .build();
                 })
