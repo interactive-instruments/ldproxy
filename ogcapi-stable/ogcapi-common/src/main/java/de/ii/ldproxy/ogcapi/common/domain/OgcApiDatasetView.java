@@ -74,7 +74,9 @@ public abstract class OgcApiDatasetView extends OgcApiView {
     public List<Link> getLinks() {
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|conformance|http://www\\.opengis\\.net/def/rel/ogc/1\\.0/data|data|http://www\\.opengis\\.net/def/rel/ogc/1\\.0/tilesets-\\w+|http://www\\.opengis\\.net/def/rel/ogc/1\\.0/styles|service-desc|service-doc|describedby|items|http://www\\.opengis\\.net/def/rel/ogc/1\\.0/items|ogc-dapa-processes|ldp-map)$"))
+                .filter(link -> !link.getRel()
+                    .replace("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/","")
+                    .matches("^(?:self|alternate|conformance|data|tilesets-\\w+|styles|service-desc|service-doc|describedby|items|routes|ldp-map)$"))
                 .collect(Collectors.toList());
     }
 
