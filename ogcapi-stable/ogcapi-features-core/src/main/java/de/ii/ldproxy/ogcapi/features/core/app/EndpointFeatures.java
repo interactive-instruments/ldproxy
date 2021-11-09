@@ -238,18 +238,18 @@ public class EndpointFeatures extends EndpointSubCollection {
                 "The `limit` parameter may be used to control the subset of the selected features that should be returned in the response, " +
                 "the page size. Each page may include information about the number of selected and returned features (`numberMatched` " +
                 "and `numberReturned`) as well as links to support paging (link relation `next`).",
-            "FEATURES", true);
+            "FEATURES");
 
         generateDefinition(apiData, definitionBuilder, allQueryParameters, "/items/{featureId}",
             "retrieve a feature in the feature collection '",
-            "Fetch the feature with id `{featureId}`.", "FEATURE", false);
+            "Fetch the feature with id `{featureId}`.", "FEATURE");
 
         return definitionBuilder.build();
     }
 
     private void generateDefinition(OgcApiDataV2 apiData, Builder definitionBuilder,
         ImmutableList<OgcApiQueryParameter> allQueryParameters, String subSubPath, String summary, String description,
-        String logPrefix, boolean postUrlencoded) {
+        String logPrefix) {
 
         String path = "/collections/{collectionId}" + subSubPath;
         List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -266,16 +266,13 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         if (explode) {
             for (String collectionId : collectionIdParam.getValues(apiData)) {
-                postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
-                                                          .map(FeaturesCoreConfiguration::getPostOnItems)
-                                                          .orElse(false);
                 Stream<OgcApiQueryParameter> queryParameters = allQueryParameters.stream()
                     .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
 
                 generateCollectionDefinition(apiData, definitionBuilder, subSubPath, path,
                     pathParameters,
                     queryParameters, collectionId,
-                    summary, description, logPrefix, postUrlencoded);
+                    summary, description, logPrefix);
 
                 // since the generation is quite expensive, check if the startup was interrupted
                 // after every collection
@@ -290,28 +287,21 @@ public class EndpointFeatures extends EndpointSubCollection {
 
             if (representativeCollectionId.isPresent()) {
                 String collectionId = representativeCollectionId.get();
-                postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
-                                                          .map(FeaturesCoreConfiguration::getPostOnItems)
-                                                          .orElse(false);
                 queryParameters = allQueryParameters.stream()
                     .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
-            } else {
-                postUrlencoded = postUrlencoded && apiData.getExtension(FeaturesCoreConfiguration.class)
-                                                          .map(FeaturesCoreConfiguration::getPostOnItems)
-                                                          .orElse(false);
             }
 
             generateCollectionDefinition(apiData, definitionBuilder, subSubPath, path,
                 pathParameters,
                 queryParameters, "{collectionId}",
-                summary, description, logPrefix, postUrlencoded);
+                summary, description, logPrefix);
         }
     }
 
     private void generateCollectionDefinition(OgcApiDataV2 apiData, Builder definitionBuilder,
         String subSubPath, String path, List<OgcApiPathParameter> pathParameters,
         Stream<OgcApiQueryParameter> queryParameters, String collectionId,
-        String summary, String description, String logPrefix, boolean postUrlencoded) {
+        String summary, String description, String logPrefix) {
 
         final List<OgcApiQueryParameter> queryParameters1 = path.equals("/collections/{collectionId}/items")
             ? getQueryParametersWithQueryables(queryParameters, apiData, collectionId, logPrefix)
@@ -328,15 +318,6 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         if (operation != null)
             resourceBuilder.putOperations("GET", operation);
-
-        if (postUrlencoded) {
-            operation = addOperation(apiData, HttpMethods.POST, true, queryParameters1,
-                                     collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-
-            if (operation != null)
-                resourceBuilder.putOperations("POST", operation);
-
-        }
 
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
     }
@@ -426,46 +407,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .showsFeatureSelfLink(showsFeatureSelfLink)
                 .build();
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURES, queryInput, requestContext);
-    }
-
-    @POST
-    @Path("/{collectionId}/items")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    public Response getItems(@Auth Optional<User> optionalUser,
-                             @Context OgcApi api,
-                             @Context ApiRequestContext requestContext,
-                             @Context UriInfo uriInfo,
-                             @PathParam("collectionId") String collectionId,
-                             @RequestBody MultivaluedMap<String,String> parameters) {
-        checkCollectionExists(api.getData(), collectionId);
-
-        FeatureTypeConfigurationOgcApi collectionData = api.getData()
-                                                           .getCollections()
-                                                           .get(collectionId);
-
-        FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
-                                                                    .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
-
-        int minimumPageSize = coreConfiguration.getMinimumPageSize();
-        int defaultPageSize = coreConfiguration.getDefaultPageSize();
-        int maxPageSize = coreConfiguration.getMaximumPageSize();
-        boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
-
-        List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), allowedParameters);
-
-        FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .collectionId(collectionId)
-                .query(query)
-                .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
-                .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
-                .defaultPageSize(Optional.of(defaultPageSize))
-                .showsFeatureSelfLink(showsFeatureSelfLink)
-                .build();
-
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURES, queryInput, requestContext);
+        return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContext);
     }
 
     @GET
@@ -502,6 +444,6 @@ public class EndpointFeatures extends EndpointSubCollection {
         if (Objects.nonNull(coreConfiguration.getCaching()) && Objects.nonNull(coreConfiguration.getCaching().getCacheControlItems()))
             queryInputBuilder.cacheControl(coreConfiguration.getCaching().getCacheControlItems());
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInputBuilder.build(), requestContext);
+        return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURE, queryInputBuilder.build(), requestContext);
     }
 }

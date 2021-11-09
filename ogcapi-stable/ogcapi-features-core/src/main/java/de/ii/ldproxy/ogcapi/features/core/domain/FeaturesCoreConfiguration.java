@@ -85,9 +85,6 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
 
     Map<String, Integer> getCoordinatePrecision();
 
-    @Nullable
-    Boolean getPostOnItems();
-
     @Override
     Map<String, List<PropertyTransformation>> getTransformations();
 

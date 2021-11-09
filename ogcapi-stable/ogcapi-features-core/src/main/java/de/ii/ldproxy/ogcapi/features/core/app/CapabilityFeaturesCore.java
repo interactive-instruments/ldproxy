@@ -32,7 +32,6 @@ public class CapabilityFeaturesCore implements ApiBuildingBlock {
                                                                .minimumPageSize(MINIMUM_PAGE_SIZE)
                                                                .defaultPageSize(DEFAULT_PAGE_SIZE)
                                                                .maximumPageSize(MAX_PAGE_SIZE)
-                                                               .postOnItems(false)
                                                                .showsFeatureSelfLink(false)
                                                                .build();
     }

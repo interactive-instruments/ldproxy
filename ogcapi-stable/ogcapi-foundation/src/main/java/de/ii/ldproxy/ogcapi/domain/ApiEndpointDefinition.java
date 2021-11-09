@@ -42,6 +42,7 @@ public abstract class ApiEndpointDefinition {
     public static final int SORT_PRIORITY_FEATURES_JSONLD_CONTEXT = 1100;
     public static final int SORT_PRIORITY_QUERYABLES = 1200;
     public static final int SORT_PRIORITY_SCHEMA = 1300;
+    public static final int SORT_PRIORITY_FEATURES_EXTENSIONS = 1400;
     public static final int SORT_PRIORITY_TILE_SETS = 1500;
     public static final int SORT_PRIORITY_TILE_SET = 1510;
     public static final int SORT_PRIORITY_TILE = 1520;
