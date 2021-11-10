@@ -24,6 +24,9 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
     @Nullable
     Boolean getPostOnItems();
 
+    @Nullable
+    Boolean getIntersectsParameter();
+
     @Override
     default Builder getBuilder() {
         return new ImmutableFeaturesExtensionsConfiguration.Builder();

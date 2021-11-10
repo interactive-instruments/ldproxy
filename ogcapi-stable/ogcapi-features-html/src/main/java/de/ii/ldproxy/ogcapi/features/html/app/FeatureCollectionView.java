@@ -234,8 +234,8 @@ public class FeatureCollectionView extends DatasetView {
             builder.add("viewer.entities.add({" +
                             "name:\"" + name + "\"," +
                             (is3d
-                                ? "polygon:{hierarchy:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(0), minHeight) + "]),perPositionHeight:true,"
-                                : "polygon:{hierarchy:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(0)) + "]),perPositionHeight:true,") +
+                                ? "polygon:{hierarchy:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(0).getCoordinates(), minHeight) + "]),perPositionHeight:true,"
+                                : "polygon:{hierarchy:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(0).getCoordinates()) + "]),perPositionHeight:true,") +
                             "material:Cesium.Color.BLUE.withAlpha(0.5)," +
                             "outline:true,outlineColor:Cesium.Color.BLUE" +
                             "}});");
@@ -243,16 +243,16 @@ public class FeatureCollectionView extends DatasetView {
             builder.add("viewer.entities.add({" +
                             "name:\"" + name + "\"," +
                             (is3d
-                                ? "polygon:{hierarchy:{positions:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(0), minHeight) + "])," +
+                                ? "polygon:{hierarchy:{positions:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(0).getCoordinates(), minHeight) + "])," +
                                 "holes:[" +
                                 IntStream.range(1, polygon.getCoordinates().size())
-                                    .mapToObj(n -> "{positions:Cesium.Cartesian3.fromDegreesArrayHeights(["+getCoordinatesString(polygon.getCoordinates().get(n), minHeight)+"])}")
+                                    .mapToObj(n -> "{positions:Cesium.Cartesian3.fromDegreesArrayHeights(["+getCoordinatesString(polygon.getCoordinates().get(n).getCoordinates(), minHeight)+"])}")
                                     .collect(Collectors.joining(",")) +
                                 "]},perPositionHeight:true,"
-                                : "polygon:{hierarchy:{positions:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(0)) + "])," +
+                                : "polygon:{hierarchy:{positions:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(0).getCoordinates()) + "])," +
                                 "holes:[" +
                                 IntStream.range(1, polygon.getCoordinates().size())
-                                    .mapToObj(n -> "{positions:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(n)) + "])}")
+                                    .mapToObj(n -> "{positions:Cesium.Cartesian3.fromDegreesArrayHeights([" + getCoordinatesString(polygon.getCoordinates().get(n).getCoordinates()) + "])}")
                                     .collect(Collectors.joining(",")) +
                                 "]},perPositionHeight:true,") +
                             "material:Cesium.Color.BLUE.withAlpha(0.5)," +

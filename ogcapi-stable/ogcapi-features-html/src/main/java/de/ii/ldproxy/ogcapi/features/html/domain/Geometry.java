@@ -121,47 +121,47 @@ public interface Geometry<T> {
 
   @Value.Immutable
   @JsonDeserialize(builder = ImmutablePolygon.Builder.class)
-  interface Polygon extends Geometry<List<Coordinate>> {
+  interface Polygon extends Geometry<LineString> {
 
-    static Polygon of(List<Coordinate>... coordinates) {
-      return new ImmutablePolygon.Builder().addCoordinates(coordinates)
+    static Polygon of(LineString... rings) {
+      return new ImmutablePolygon.Builder().addCoordinates(rings)
           .build();
     }
 
-    static Polygon of(EpsgCrs crs, List<Coordinate>... coordinates) {
+    static Polygon of(EpsgCrs crs, LineString... rings) {
       return new ImmutablePolygon.Builder().crs(crs)
-          .addCoordinates(coordinates)
+          .addCoordinates(rings)
           .build();
     }
 
-    static Polygon of(List<List<Coordinate>> coordinates) {
-      return new ImmutablePolygon.Builder().addAllCoordinates(coordinates)
+    static Polygon of(List<LineString> rings) {
+      return new ImmutablePolygon.Builder().addAllCoordinates(rings)
           .build();
     }
 
-    static Polygon of(EpsgCrs crs, List<List<Coordinate>> coordinates) {
+    static Polygon of(EpsgCrs crs, List<LineString> rings) {
       return new ImmutablePolygon.Builder().crs(crs)
-          .addAllCoordinates(coordinates)
+          .addAllCoordinates(rings)
           .build();
     }
 
     @Override
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates().stream()
+          .map(Geometry::getCoordinates)
           .flatMap(List::stream)
           .collect(Collectors.toUnmodifiableList());
     }
 
     @Override
     default boolean is3d() {
-      return getCoordinates().get(0).get(0).size()==3;
+      return getCoordinates().get(0).getCoordinates().get(0).size()==3;
     }
 
     @Value.Check
     default void check() {
       Preconditions.checkState(!getCoordinates().isEmpty(), "A polygon must have at least an outer ring, no ring was found.");
-      getCoordinates().stream()
-          .forEach(coords -> Preconditions.checkState(coords.size() > 3, "Each ring must have at least 4 coordinates, found: %d.", coords.size()));
+      getCoordinates().forEach(ring -> Preconditions.checkState(ring.getCoordinates().size() > 3, "Each ring must have at least 4 coordinates, found: %d.", ring.getCoordinates().size()));
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(coords.stream().skip(1).allMatch(c -> c.size()==coords.get(0).size()),
                                "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.", coords.size());
@@ -191,7 +191,7 @@ public interface Geometry<T> {
     @Override
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates().stream()
-          .map(point -> point.getCoordinates())
+          .map(Geometry::getCoordinates)
           .flatMap(List::stream)
           .collect(Collectors.toUnmodifiableList());
     }
@@ -232,7 +232,7 @@ public interface Geometry<T> {
     @Override
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates().stream()
-          .map(line -> line.getCoordinates())
+          .map(Geometry::getCoordinates)
           .flatMap(List::stream)
           .collect(Collectors.toUnmodifiableList());
     }
@@ -273,8 +273,9 @@ public interface Geometry<T> {
     @Override
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates().stream()
-          .map(polygon -> polygon.getCoordinates())
+          .map(Geometry::getCoordinates)
           .flatMap(List::stream)
+          .map(Geometry::getCoordinates)
           .flatMap(List::stream)
           .collect(Collectors.toUnmodifiableList());
     }

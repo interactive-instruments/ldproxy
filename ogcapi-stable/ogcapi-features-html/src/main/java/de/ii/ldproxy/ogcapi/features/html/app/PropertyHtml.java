@@ -249,13 +249,13 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
                                                .collect(Collectors.toUnmodifiableList()));
       case POLYGON:
         return Geometry.Polygon.of(coordinatesProperties.stream()
-                                       .map(ring -> getCoordinates(ring.getNestedProperties()))
+                                       .map(ring -> Geometry.LineString.of(getCoordinates(ring.getNestedProperties())))
                                        .collect(Collectors.toUnmodifiableList()));
       case MULTI_POLYGON:
         return Geometry.MultiPolygon.of(coordinatesProperties.stream()
                                             .map(polygon -> Geometry.Polygon.of(polygon.getNestedProperties()
                                                                                     .stream()
-                                                                                    .map(ring -> getCoordinates(ring.getNestedProperties()))
+                                                                                    .map(ring -> Geometry.LineString.of(getCoordinates(ring.getNestedProperties())))
                                                                                     .collect(Collectors.toUnmodifiableList())))
                                             .collect(Collectors.toUnmodifiableList()));
       default:

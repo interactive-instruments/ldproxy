@@ -88,6 +88,15 @@ public class EndpointFeaturesExtensions extends EndpointSubCollection {
     }
 
     @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return super.isEnabledForApi(apiData, collectionId) &&
+            apiData.getCollections().get(collectionId).getEnabled() &&
+            apiData.getExtension(FeaturesExtensionsConfiguration.class, collectionId)
+                .map(FeaturesExtensionsConfiguration::getIntersectsParameter)
+                .orElse(false);
+    }
+
+    @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
             formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
@@ -98,7 +107,7 @@ public class EndpointFeaturesExtensions extends EndpointSubCollection {
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
         ApiEndpointDefinition endpointFeaturesDefintion = extensionRegistry.getExtensionsForType(EndpointExtension.class)
             .stream()
-            .filter(endpoint -> endpoint.isEnabledForApi(apiData))
+            .filter(endpoint -> endpoint.isEnabledForApi(apiData) && endpoint.getBuildingBlockConfigurationType().equals(FeaturesCoreConfiguration.class))
             .map(endpoint -> endpoint.getDefinition(apiData))
             .filter(definition -> definition.getApiEntrypoint().equals("collections") && definition.getSortPriority()==SORT_PRIORITY_FEATURES)
             .findAny()

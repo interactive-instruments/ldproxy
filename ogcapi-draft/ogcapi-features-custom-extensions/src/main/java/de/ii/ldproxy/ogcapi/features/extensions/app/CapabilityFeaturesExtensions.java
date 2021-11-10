@@ -24,6 +24,7 @@ public class CapabilityFeaturesExtensions implements ApiBuildingBlock {
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFeaturesExtensionsConfiguration.Builder().enabled(false)
             .postOnItems(false)
+            .intersectsParameter(false)
             .build();
     }
 

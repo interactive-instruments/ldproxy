@@ -1,0 +1,146 @@
+/**
+ * Copyright 2021 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+package de.ii.ldproxy.ogcapi.features.extensions.app;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.extensions.domain.FeaturesExtensionsConfiguration;
+import de.ii.ldproxy.ogcapi.features.extensions.domain.GeometryHelperWKT;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.streams.domain.Http;
+import de.ii.xtraplatform.streams.domain.HttpClient;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+
+import java.util.Map;
+
+@Component
+@Provides
+@Instantiate
+public class QueryParameterIntersects extends ApiExtensionCache implements OgcApiQueryParameter {
+
+    private final FeaturesCoreProviders providers;
+    private final GeometryHelperWKT geometryHelper;
+    private final HttpClient httpClient;
+
+    public QueryParameterIntersects(@Requires FeaturesCoreProviders providers,
+                                    @Requires GeometryHelperWKT geometryHelper,
+                                    @Requires Http http) {
+        this.providers = providers;
+        this.geometryHelper = geometryHelper;
+        this.httpClient = http.getDefaultClient();
+    }
+
+    @Override
+    public String getId() {
+        return "intersects";
+    }
+
+    @Override
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+            isEnabledForApi(apiData) &&
+                definitionPath.equals("/collections/{collectionId}/items") &&
+                method== HttpMethods.GET);
+    }
+
+    @Override
+    public String getName() {
+        return "intersects";
+    }
+
+    @Override
+    public String getDescription() {
+        return "A Well Known Text representation of a geometry as defined in Simple Feature Access - Part 1: Common Architecture " +
+            "or a URI that returns a GeoJSON feature. For a polygon or multi-polygon the geometry is used. For other geometries a buffer is added.";
+    }
+
+    @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        return new StringSchema().pattern(geometryHelper.getRegex() + "|" + "^http(?:s)?://.*$");
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return super.isEnabledForApi(apiData, collectionId) &&
+            apiData.getCollections().get(collectionId).getEnabled() &&
+            apiData.getExtension(FeaturesExtensionsConfiguration.class, collectionId)
+                .map(FeaturesExtensionsConfiguration::getIntersectsParameter)
+                .orElse(false);
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return FeaturesExtensionsConfiguration.class;
+    }
+
+    @Override
+    public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
+                                                   Map<String, String> parameters,
+                                                   OgcApiDataV2 apiData) {
+        // validity against the schema has already been checked
+        if (parameters.containsKey(getName())) {
+            String intersects = parameters.get(getName());
+            String wkt;
+            if (intersects.startsWith("http")) {
+                try {
+                    wkt = getGeometry(intersects);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException(String.format("HTTP URL '%s' in parameter 'intersects' must be a GeoJSON feature with a geometry. Failure to convert to a geometry: %s", intersects, e.getMessage()), e);
+                }
+                if (!wkt.matches(geometryHelper.getRegex())) {
+                    throw new IllegalStateException(String.format("Response to HTTP URL '%s' in parameter 'intersects' cannot be converted to a WKT geometry: '%s'", intersects, wkt));
+                }
+            } else {
+                wkt = intersects;
+            }
+            String spatialPropertyName = getPrimarySpatialProperty(apiData, featureType.getId());
+            String filter = parameters.get("filter");
+            filter = (filter==null? "" : filter+" AND ") + "(INTERSECTS("+spatialPropertyName+","+wkt+"))";
+            parameters.put("filter",filter);
+            parameters.remove(getName());
+        }
+
+        return parameters;
+    }
+
+    private String getPrimarySpatialProperty(OgcApiDataV2 apiData, String collectionId) {
+        return providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId))
+            .flatMap(SchemaBase::getPrimaryGeometry)
+            .map(FeatureSchema::getName)
+            .orElseThrow(() -> new RuntimeException(String.format("Configuration for feature collection '%s' does not specify a primary geometry.", collectionId)));
+    }
+
+    private String getGeometry(String coordRef) {
+        String response = httpClient.getAsString(coordRef);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = null;
+        try {
+            jsonNode = mapper.readTree(response);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(String.format("Could not parse GeoJSON geometry object: %s", e.getMessage()), e);
+        }
+
+        return geometryHelper.convertGeoJsonToWkt(jsonNode);
+    }
+
+}
