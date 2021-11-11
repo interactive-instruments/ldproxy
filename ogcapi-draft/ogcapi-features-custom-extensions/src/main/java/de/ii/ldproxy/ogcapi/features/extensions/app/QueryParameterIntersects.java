@@ -70,7 +70,7 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
     @Override
     public String getDescription() {
         return "A Well Known Text representation of a geometry as defined in Simple Feature Access - Part 1: Common Architecture " +
-            "or a URI that returns a GeoJSON feature. For a polygon or multi-polygon the geometry is used. For other geometries a buffer is added.";
+            "or a URI that returns a GeoJSON feature with a geometry. Only features are returned that intersect the geometry.";
     }
 
     @Override
