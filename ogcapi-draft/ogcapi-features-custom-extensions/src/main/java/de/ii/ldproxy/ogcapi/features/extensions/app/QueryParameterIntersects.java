@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.features.extensions.app;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -30,6 +31,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
@@ -115,8 +117,11 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
             String spatialPropertyName = getPrimarySpatialProperty(apiData, featureType.getId());
             String filter = parameters.get("filter");
             filter = (filter==null? "" : filter+" AND ") + "(INTERSECTS("+spatialPropertyName+","+wkt+"))";
-            parameters.put("filter",filter);
-            parameters.remove(getName());
+
+            Map<String, String> newParameters = new HashMap<>(parameters);
+            newParameters.put("filter",filter);
+            newParameters.remove(getName());
+            return ImmutableMap.copyOf(newParameters);
         }
 
         return parameters;
