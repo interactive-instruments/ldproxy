@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.cql.domain.Geometry;
 import de.ii.xtraplatform.cql.domain.ImmutablePoint;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -52,7 +53,12 @@ public interface RouteDefinitionWrapper {
   default List<Geometry.Point> getWaypoints() {
     List<List<Float>> waypoints = getPoints();
     EpsgCrs crs = getCrs();
-    return IntStream.range(1, waypoints.size())
+
+    if (waypoints.size() <= 2) {
+      return ImmutableList.of();
+    }
+
+    return IntStream.range(1, waypoints.size()-1)
         .mapToObj(i -> processWaypoint(waypoints.get(i), crs))
         .collect(Collectors.toUnmodifiableList());
   }
