@@ -44,6 +44,7 @@ import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.ImmutableRouteQuery;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive;
 import org.apache.felix.ipojo.annotations.Component;
@@ -163,6 +164,14 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             throw new IllegalArgumentException(String.format("The parameter 'coordRefSys' in the route definition is invalid: the crs '%s' is not supported", waypointCrs.toUriString()));
         }
 
+        if (!routeDefinition.getWaypoints().isEmpty() && !Objects.requireNonNullElse(config.getIntermediateWaypoints(), false)) {
+            throw new IllegalArgumentException(String.format("This API does not support waypoints in addition to the start and end location. The following waypoints were provided: %s",
+                                                             routeDefinition.getWaypoints()
+                                                                 .stream()
+                                                                 .map(p -> p.getCoordinates().get(0).toString())
+                                                                 .collect(Collectors.joining(","))));
+        }
+
         query = ImmutableFeatureQuery.builder()
             .from(query)
             .addExtensions(ImmutableRouteQuery.builder()
@@ -199,7 +208,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .crsTransformer(crsTransformer)
             .codelists(entityRegistry.getEntitiesForType(Codelist.class)
                            .stream()
-                           .collect(Collectors.toMap(c -> c.getId(), c -> c)))
+                           .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
             .defaultCrs(queryInput.getDefaultCrs())
             .sourceCrs(Optional.ofNullable(sourceCrs))
             .crs(targetCrs)

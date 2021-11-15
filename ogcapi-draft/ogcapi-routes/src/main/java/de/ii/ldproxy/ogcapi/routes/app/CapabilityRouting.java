@@ -26,6 +26,7 @@ import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguratio
 public class CapabilityRouting implements ApiBuildingBlock {
 
     public static String CORE = "http://www.opengis.net/spec/ogcapi-routes-1/0.0/conf/core";
+    public static String INTERMEDIATE_WAYPOINTS = "http://www.opengis.net/spec/ogcapi-routes-1/0.0/conf/intermediate-waypoints";
 
     private final ExtensionRegistry extensionRegistry;
 
@@ -39,7 +40,7 @@ public class CapabilityRouting implements ApiBuildingBlock {
             .enabled(false)
             //.async(false) TODO not yet implemented
             //.callback(false) TODO not yet implemented
-            //.intermediateWaypoints(false) TODO not yet implemented
+            .intermediateWaypoints(false)
             .preferences(ImmutableMap.of("fastest",new ImmutableRoutingFlag.Builder().label("fastest").build()))
             .defaultPreference("fastest")
             .additionalFlags(ImmutableMap.of())

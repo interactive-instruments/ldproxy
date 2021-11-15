@@ -38,9 +38,10 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     @Nullable
     Boolean getCallback();
 
+    */
+
     @Nullable
     Boolean getIntermediateWaypoints();
-     */
 
     Map<String, RoutingFlag> getPreferences();
 
