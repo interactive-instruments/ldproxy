@@ -108,9 +108,11 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
                 } catch (Exception e) {
                     throw new IllegalArgumentException(String.format("HTTP URL '%s' in parameter 'intersects' must be a GeoJSON feature with a geometry. Failure to convert to a geometry: %s", intersects, e.getMessage()), e);
                 }
+                /* TODO validate WKT conversion? The regex can lead to a Stack overflow, so it has been disabled.
                 if (!wkt.matches(geometryHelper.getRegex())) {
                     throw new IllegalStateException(String.format("Response to HTTP URL '%s' in parameter 'intersects' cannot be converted to a WKT geometry: '%s'", intersects, wkt));
                 }
+                */
             } else {
                 wkt = intersects;
             }
