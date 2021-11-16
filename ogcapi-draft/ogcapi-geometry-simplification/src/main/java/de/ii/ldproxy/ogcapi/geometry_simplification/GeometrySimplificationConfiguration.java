@@ -11,10 +11,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
+import java.util.List;
+
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableGeometrySimplificationConfiguration.Builder.class)
 public interface GeometrySimplificationConfiguration extends ExtensionConfiguration {
+
+    List<PredefinedFilter> getFilters();
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }

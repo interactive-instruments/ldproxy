@@ -7,37 +7,55 @@
  */
 package de.ii.ldproxy.ogcapi.geometry_simplification;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.measure.unit.NonSI;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
 import java.math.BigDecimal;
 import java.util.Map;
+
+import static de.ii.ldproxy.ogcapi.crs.app.QueryParameterCrsFeatures.CRS;
 
 @Component
 @Provides
 @Instantiate
-public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterScaleDenominatorFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    Logger LOGGER = LoggerFactory.getLogger(QueryParameterMaxAllowableOffsetFeatures.class);
+    Logger LOGGER = LoggerFactory.getLogger(QueryParameterScaleDenominatorFeatures.class);
+
+    private final CrsTransformerFactory crsTransformerFactory;
+
+    public QueryParameterScaleDenominatorFeatures(@Requires CrsTransformerFactory crsTransformerFactory) {
+        this.crsTransformerFactory = crsTransformerFactory;
+    }
 
     @Override
     public String getName() {
-        return "max-allowable-offset";
+        return "scale-denominator";
     }
 
     @Override
     public String getDescription() {
-        return "This parameter can be used to specify the epsilon of the Douglas-Peucker algorithm " +
-            "(maximum distance between the original points and the simplified curve) to be used for " +
-            "simplifying the geometries in the response. The parameter is in the units of the " +
-            "response coordinate reference system.";
+        return "This parameter can be used to specify the target scale to be used for " +
+            "simplifying the geometries in the response. The value is the denominator of the scale, " +
+            "i.e., for a scale of 1:100,000, the value is 100,000.";
     }
 
     @Override
@@ -49,7 +67,7 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache 
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
     }
 
-    private final Schema schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);
+    private final Schema schema = new NumberSchema().minimum(new BigDecimal(0)).example(100000);
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData) {
@@ -74,11 +92,25 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache 
                                            .get(featureTypeConfiguration.getId()), GeometrySimplificationConfiguration.class)) {
             return queryBuilder;
         }
-        if (parameters.containsKey("max-allowable-offset")) {
+        if (parameters.containsKey("scale-denominator")) {
+            double meterPerUnit = 40075017.0d/360.0d;
+            if (parameters.containsKey(CRS)) {
+                try {
+                    Unit<?> unit = crsTransformerFactory.getCrsUnit(EpsgCrs.fromString(parameters.get(CRS)));
+                    if (unit.equals(SI.METRE)) {
+                        meterPerUnit = 1.0;
+                    }
+                } catch (Throwable e) {
+                    // ignore
+                }
+            }
             try {
-                queryBuilder.maxAllowableOffset(Double.parseDouble(parameters.get("max-allowable-offset")));
+                // 9783.9396205 ( epsilon at WebMercatorQuad zoom level 0 ) / 559082264.028717 (scale denominator at WebMercatorQuad zoom level 0)
+                double maxAllowableOffset = 0.0000175d * Double.parseDouble(parameters.get("scale-denominator")) / meterPerUnit;
+                queryBuilder.maxAllowableOffset(maxAllowableOffset);
                 // TODO remove
-                LOGGER.debug("max-allowable-offset: {}", Double.parseDouble(parameters.get("max-allowable-offset")));
+                LOGGER.debug("max-allowable-offset: {}", maxAllowableOffset);
+
             } catch (NumberFormatException e) {
                 //ignore
             }
