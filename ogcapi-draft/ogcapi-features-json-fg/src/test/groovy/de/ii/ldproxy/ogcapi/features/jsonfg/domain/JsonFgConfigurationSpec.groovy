@@ -23,8 +23,8 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .coordRefSys(true)
                 .where(new ImmutableWhereConfiguration.Builder()
                         .enabled(true)
-                        .alwaysIncludeGeoJsonGeometry(true)
                         .build())
+                .geojsonCompatibility(true)
                 .build()
     }
 
@@ -56,9 +56,9 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .when(true)
                 .where(new ImmutableWhereConfiguration.Builder()
                         .enabled(true)
-                        .alwaysIncludeGeoJsonGeometry(true)
                         .build())
                 .coordRefSys(true)
+                .geojsonCompatibility(true)
                 .build()
     }
 
@@ -78,7 +78,6 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
         return new ImmutableJsonFgConfiguration.Builder()
                 .where(new ImmutableWhereConfiguration.Builder()
                         .enabled(false)
-                        .alwaysIncludeGeoJsonGeometry(false)
                         .build())
                 .build()
     }
@@ -93,8 +92,8 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .coordRefSys(true)
                 .where(new ImmutableWhereConfiguration.Builder()
                         .enabled(false)
-                        .alwaysIncludeGeoJsonGeometry(false)
                         .build())
+                .geojsonCompatibility(true)
                 .build()
     }
 }

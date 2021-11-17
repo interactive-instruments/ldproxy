@@ -27,8 +27,8 @@ public class CapabilityJsonFg implements ApiBuildingBlock {
                                                          .when(true)
                                                          .coordRefSys(true)
                                                          .where(new ImmutableWhereConfiguration.Builder().enabled(true)
-                                                                                                         .alwaysIncludeGeoJsonGeometry(false)
                                                                                                          .build())
+                                                         .geojsonCompatibility(true)
                                                          .build();
     }
 

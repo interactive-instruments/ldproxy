@@ -19,10 +19,8 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -123,7 +121,8 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
                                     .filter(JsonFgConfiguration::isEnabled)
                                     .filter(cfg -> Objects.nonNull(cfg.getFeatureType()) && !cfg.getFeatureType().isEmpty())
                                     .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.featureType) ||
-                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE) ||
+                                        transformationContext.getMediaType().equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
                                     .isPresent();
     }
 

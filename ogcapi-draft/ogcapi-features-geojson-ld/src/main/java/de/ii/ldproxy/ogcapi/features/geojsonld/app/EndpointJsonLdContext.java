@@ -91,9 +91,9 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
         ContextFormatExtension format = extensionRegistry.getExtensionsForType(ContextFormatExtension.class)
                                                          .stream()
                                                          .filter(f -> f.isEnabledForApi(api.getData()))
-                                                         .filter(f -> f.getMediaType()
-                                                                       .matches(apiRequestContext.getMediaType()
-                                                                                                 .type()))
+                                                         .filter(f -> apiRequestContext.getMediaType()
+                                                             .matches(f.getMediaType()
+                                                                          .type()))
                                                          .findFirst()
                                                          .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", apiRequestContext.getMediaType())));
 

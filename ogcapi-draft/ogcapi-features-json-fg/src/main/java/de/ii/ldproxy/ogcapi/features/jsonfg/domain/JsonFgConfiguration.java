@@ -39,6 +39,9 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     Boolean getCoordRefSys();
 
     @Nullable
+    Boolean getGeojsonCompatibility();
+
+    @Nullable
     List<String> getFeatureType();
 
     @Nullable

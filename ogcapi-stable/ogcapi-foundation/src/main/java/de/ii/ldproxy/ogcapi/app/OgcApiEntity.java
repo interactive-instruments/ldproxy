@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.app;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -24,6 +25,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -85,15 +87,19 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     @Override
     public <T extends FormatExtension> Optional<T> getOutputFormat(Class<T> extensionType, ApiMediaType mediaType,
                                                                    String path, Optional<String> collectionId) {
-        return extensionRegistry.getExtensionsForType(extensionType)
-                                .stream()
-                                .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-                                .filter(outputFormatExtension -> mediaType.type()
-                                                                          .isCompatible(outputFormatExtension.getMediaType()
-                                                                                                             .type()))
-                                .filter(outputFormatExtension -> collectionId.isPresent() ? outputFormatExtension.isEnabledForApi(getData(),collectionId.get()) :
-                                                                                            outputFormatExtension.isEnabledForApi(getData()))
-                                .findFirst();
+        List<T> candidates = extensionRegistry.getExtensionsForType(extensionType)
+            .stream()
+            .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
+            .filter(outputFormatExtension -> collectionId.isPresent() ? outputFormatExtension.isEnabledForApi(getData(), collectionId.get()) :
+                outputFormatExtension.isEnabledForApi(getData()))
+            .collect(Collectors.toUnmodifiableList());
+        MediaType selected = ApiMediaType.negotiateMediaType(ImmutableList.of(mediaType.type()),
+                                                             candidates.stream()
+                                                                 .map(f -> f.getMediaType().type())
+                                                                 .collect(Collectors.toUnmodifiableList()));
+        return candidates.stream()
+            .filter(f -> f.getMediaType().type().equals(selected))
+            .findFirst();
     }
 
     @Override

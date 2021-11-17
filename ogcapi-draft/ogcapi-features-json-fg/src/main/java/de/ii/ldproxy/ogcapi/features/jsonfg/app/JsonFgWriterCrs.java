@@ -75,7 +75,8 @@ public class JsonFgWriterCrs implements GeoJsonWriter {
                                     .filter(JsonFgConfiguration::isEnabled)
                                     .filter(cfg -> Objects.requireNonNullElse(cfg.getCoordRefSys(), false))
                                     .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.coordRefSys) ||
-                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE) ||
+                                        transformationContext.getMediaType().equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
                                     .isPresent();
     }
 }

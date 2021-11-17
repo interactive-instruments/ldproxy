@@ -103,7 +103,8 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
                                     .filter(JsonFgConfiguration::isEnabled)
                                     .filter(cfg -> Objects.requireNonNullElse(cfg.getDescribedby(), false))
                                     .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.describedby) ||
-                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE) ||
+                                        transformationContext.getMediaType().equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
                                     .isPresent()
                 && transformationContext.getApiData()
                                         .getCollections()

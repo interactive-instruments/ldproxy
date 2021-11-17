@@ -8,21 +8,15 @@
 package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -125,7 +119,8 @@ public class JsonFgWriterWhen implements GeoJsonWriter {
                                     .filter(JsonFgConfiguration::isEnabled)
                                     .filter(cfg -> Objects.requireNonNullElse(cfg.getWhen(),false))
                                     .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.when) ||
-                                            context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+                                            context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE) ||
+                                        context.encoding().getMediaType().equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
                                     .isPresent();
     }
 }

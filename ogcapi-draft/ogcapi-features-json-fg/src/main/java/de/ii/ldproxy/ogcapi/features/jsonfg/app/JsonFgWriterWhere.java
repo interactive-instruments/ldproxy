@@ -170,7 +170,8 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
                                     .filter(cfg -> Objects.requireNonNullElse(Objects.nonNull(cfg.getWhere()) ? Objects.requireNonNullElse(cfg.getWhere()
                                                                                                                                               .getEnabled(), true) : true, true))
                                     .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.where) ||
-                                            context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+                                            context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE) ||
+                                        context.encoding().getMediaType().equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
                                     .isPresent();
     }
 }

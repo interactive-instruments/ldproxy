@@ -11,7 +11,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.internal.util.collection.Refs;
 import org.glassfish.jersey.message.internal.QualitySourceMediaType;
+import org.glassfish.jersey.message.internal.VariantSelector;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +26,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ContentNegotiation {
@@ -138,26 +143,36 @@ public class ContentNegotiation {
                                                                   .distinct()
                                                                   .toArray(MediaType[]::new);
 
-        Variant variant = null;
+        MediaType selected = null;
         try {
             if (supportedMediaTypesArray.length > 0) {
-                variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypesArray)
-                                                       .build());
+                final List<Variant> variants = Variant.mediaTypes(supportedMediaTypesArray)
+                    .build();
+                if (request instanceof ContainerRequest) {
+                    final List<MediaType> acceptableMediaTypes = ((ContainerRequest) request).getAcceptableMediaTypes();
+                    final Ref<String> varyValueRef = Refs.emptyRef();
+                    List<Variant> compatibleVariants = VariantSelector.selectVariants((ContainerRequest) request, variants, varyValueRef);
+                    selected = ApiMediaType.negotiateMediaType(acceptableMediaTypes, compatibleVariants.stream()
+                        .map(Variant::getMediaType)
+                        .collect(Collectors.toUnmodifiableList()));
+                } else {
+                    Variant variant = request.selectVariant(variants);
+                    if (Objects.nonNull(variant))
+                        selected = variant.getMediaType();
+                }
             }
         } catch (Exception ex) {
             LOGGER.warn("Could not parse request headers during content negotiation. Selecting any media type. Reason: {}", ex.getMessage());
             return supportedMediaTypes.stream().findAny();
         }
 
-        return Optional.ofNullable(variant)
-                       .map(Variant::getMediaType)
-                       .flatMap(mediaType -> findMatchingOgcApiMediaType(mediaType, supportedMediaTypes));
+        return findMatchingOgcApiMediaType(selected, supportedMediaTypes);
     }
 
     private Optional<ApiMediaType> findMatchingOgcApiMediaType(MediaType mediaType,
                                                                ImmutableSet<ApiMediaType> supportedMediaTypes) {
         return supportedMediaTypes.stream()
-                                  .filter(type -> type.matches(mediaType))
+                                  .filter(type -> type.type().equals(mediaType))
                                   .findFirst();
     }
 

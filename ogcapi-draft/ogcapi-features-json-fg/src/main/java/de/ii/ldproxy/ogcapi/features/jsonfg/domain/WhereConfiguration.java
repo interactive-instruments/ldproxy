@@ -21,9 +21,6 @@ public interface WhereConfiguration {
     @Nullable
     Boolean getEnabled();
 
-    @Nullable
-    Boolean getAlwaysIncludeGeoJsonGeometry();
-
     default WhereConfiguration mergeInto(WhereConfiguration src) {
         if (Objects.isNull(src))
             return this;
