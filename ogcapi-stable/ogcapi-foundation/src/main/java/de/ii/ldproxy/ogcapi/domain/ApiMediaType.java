@@ -59,8 +59,6 @@ public interface ApiMediaType {
     static boolean isCompatible(MediaType accepted, MediaType provided, COMPATIBILITY_LEVEL level) {
         boolean result = false;
 
-        LOGGER.debug("isCompatible-1: '{}', '{}', '{}': {}", accepted, provided, level, result);
-
         if (provided==null)
             return result;
 
@@ -70,16 +68,12 @@ public interface ApiMediaType {
                 || (accepted.getType().equalsIgnoreCase(provided.getType()));
         }
 
-        LOGGER.debug("isCompatible-2: '{}', '{}', '{}': {}", accepted, provided, level, result);
-
         if (result && (level==COMPATIBILITY_LEVEL.SUBTYPES || level==COMPATIBILITY_LEVEL.PARAMETERS)) {
             result = accepted.getSubtype().equals(MEDIA_TYPE_WILDCARD)
                 || provided.getSubtype().equals(MEDIA_TYPE_WILDCARD)
                 || accepted.getSubtype().equalsIgnoreCase(provided.getSubtype())
                 || provided.getSubtype().endsWith("+" + accepted.getSubtype());
         }
-
-        LOGGER.debug("isCompatible-3: '{}', '{}', '{}': {}", accepted, provided, level, result);
 
         if (result && level==COMPATIBILITY_LEVEL.PARAMETERS) {
             Map<String, String> acceptedParameters = accepted.getParameters();
@@ -94,8 +88,6 @@ public interface ApiMediaType {
                     .allMatch(entry -> acceptedParameters.containsKey(entry.getKey())
                         && acceptedParameters.get(entry.getKey()).equals(entry.getValue()));
         }
-
-        LOGGER.debug("isCompatible-4: '{}', '{}', '{}': {}", accepted, provided, level, result);
 
         return result;
     }
