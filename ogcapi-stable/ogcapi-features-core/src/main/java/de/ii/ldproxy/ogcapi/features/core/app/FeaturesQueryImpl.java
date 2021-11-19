@@ -209,7 +209,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         if (parameters.containsKey("clip-box")) {
             EpsgCrs crs = parameters.containsKey("bbox-crs") ? EpsgCrs.fromString(parameters.get("bbox-crs")) : OgcCrs.CRS84;
-            queryBuilder.clipbox(Optional.of(bboxToEnvelope(parameters.get("clip-box"), crs)));
+            List<String> values = ARRAY_SPLITTER.splitToList(parameters.get("clip-box"));
+            queryBuilder.clipbox(Optional.of(bboxToEnvelope(values, crs, "clip-box")));
         }
 
         return processCoordinatePrecision(queryBuilder, coreConfiguration).build();
@@ -329,7 +330,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         return predicates.isEmpty() ? Optional.empty() : Optional.of(predicates.size() == 1 ? CqlFilter.of(predicates.get(0)) : CqlFilter.of(And.of(predicates)));
     }
 
-    // TODO use bboxToEnvelope
     private CqlPredicate bboxToCql(String geometryField, String bboxValue) {
         List<String> values = ARRAY_SPLITTER.splitToList(bboxValue);
         EpsgCrs sourceCrs = OgcCrs.CRS84;
@@ -343,43 +343,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             }
         }
 
-        if (values.size() != 4) {
-            throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: it must have exactly four values, found %d.", values.size()));
-        }
-
-        List<Double> coordinates;
-        try {
-            coordinates = values.stream()
-                                .map(Double::valueOf)
-                                .collect(Collectors.toList());
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s'", getBboxAsString(values)));
-        }
-
-        checkCoordinateRange(coordinates, sourceCrs);
-
-        Envelope envelope = Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), sourceCrs);
+        Envelope envelope = bboxToEnvelope(values, sourceCrs, "bbox");
 
         return CqlPredicate.of(Intersects.of(geometryField, SpatialLiteral.of(envelope)));
     }
 
-    private Envelope bboxToEnvelope(String bboxValue, EpsgCrs crs) {
-        List<String> values = ARRAY_SPLITTER.splitToList(bboxValue);
-        /* TODO
-        EpsgCrs sourceCrs = OgcCrs.CRS84;
-
-        if (values.size() == 5) {
-            try {
-                sourceCrs = EpsgCrs.fromString(values.get(4));
-                values = values.subList(0, 4);
-            } catch (Throwable e) {
-                //continue, fifth value is not from bbox-crs, as that is already validated in OgcApiParameterCrs
-            }
-        }
-         */
-
+    private Envelope bboxToEnvelope(List<String> values, EpsgCrs crs, String parameterName) {
         if (values.size() != 4) {
-            throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: it must have exactly four values, found %d.", values.size()));
+            throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: it must have exactly four values, found %d.", parameterName, values.size()));
         }
 
         List<Double> coordinates;
@@ -388,14 +359,12 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                 .map(Double::valueOf)
                 .collect(Collectors.toList());
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s'", getBboxAsString(values)));
+            throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: the coordinates are not valid numbers '%s'", parameterName, getBboxAsString(values)));
         }
 
         checkCoordinateRange(coordinates, crs);
 
-        Envelope envelope = Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), crs);
-
-        return envelope;
+        return Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), crs);
     }
 
     private void checkCoordinateRange(List<Double> coordinates, EpsgCrs crs) {

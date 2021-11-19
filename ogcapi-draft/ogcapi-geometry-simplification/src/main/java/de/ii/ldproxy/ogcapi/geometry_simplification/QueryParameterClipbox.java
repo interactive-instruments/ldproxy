@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.features.core.app;
+package de.ii.ldproxy.ogcapi.geometry_simplification;
 
 import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
@@ -13,23 +13,26 @@ import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
 @Instantiate
 public class QueryParameterClipbox extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    // TODO move to geometry-simplication module
-
+    private final FeaturesCoreProviders providers;
     private final Schema baseSchema;
 
-    public QueryParameterClipbox() {
+    public QueryParameterClipbox(@Requires FeaturesCoreProviders providers) {
+        this.providers = providers;
         baseSchema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(4);
     }
 
@@ -48,6 +51,22 @@ public class QueryParameterClipbox extends ApiExtensionCache implements OgcApiQu
                 "* Upper right corner, coordinate axis 2 \n\n" +
                 "The coordinate reference system of the values is WGS 84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84) " +
                 "unless a different coordinate reference system is specified in the parameter `bbox-crs`.";
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return super.isEnabledForApi(apiData) &&
+            providers.getFeatureProvider(apiData)
+                .map(FeatureProvider2::supportsClipping)
+                .orElse(false);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return super.isEnabledForApi(apiData, collectionId) &&
+            providers.getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
+                .map(FeatureProvider2::supportsClipping)
+                .orElse(false);
     }
 
     @Override
