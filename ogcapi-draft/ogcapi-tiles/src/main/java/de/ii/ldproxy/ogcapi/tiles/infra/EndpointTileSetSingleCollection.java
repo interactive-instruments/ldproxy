@@ -8,14 +8,12 @@
 package de.ii.ldproxy.ogcapi.tiles.infra;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
@@ -50,20 +48,18 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetSingleCollection extends EndpointSubCollection implements ConformanceClass {
+public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSingleCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetSingleCollection.class);
 
     private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
 
-    private final TilesQueriesHandler queryHandler;
     private final FeaturesCoreProviders providers;
 
     EndpointTileSetSingleCollection(@Requires ExtensionRegistry extensionRegistry,
                                     @Requires TilesQueriesHandler queryHandler,
                                     @Requires FeaturesCoreProviders providers) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+        super(extensionRegistry, queryHandler);
         this.providers = providers;
     }
 
@@ -153,16 +149,6 @@ public class EndpointTileSetSingleCollection extends EndpointSubCollection imple
                                        @PathParam("collectionId") String collectionId,
                                        @PathParam("tileMatrixSetId") String tileMatrixSetId) {
 
-        OgcApiDataV2 apiData = api.getData();
-        String path = "/collections/{collectionId}/tiles/{tileMatrixSetId}";
-        checkPathParameter(extensionRegistry, apiData, path, "collectionId", collectionId);
-        checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
-
-        FeatureTypeConfigurationOgcApi featureType = requestContext.getApi().getData().getCollections().get(collectionId);
-        TilesConfiguration tilesConfiguration = featureType.getExtension(TilesConfiguration.class).get();
-
-        TilesQueriesHandler.QueryInputTileSet queryInput = TileEndpointsHelper.getTileSetQueryInput(tilesConfiguration, getGenericQueryInput(apiData), tileMatrixSetId, collectionId);
-
-        return queryHandler.handle(TilesQueriesHandler.Query.TILE_SET, queryInput, requestContext);
+        return super.getTileSet(api, requestContext, collectionId, tileMatrixSetId);
     }
 }

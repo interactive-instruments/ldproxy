@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.tiles.infra;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -49,20 +48,18 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetsSingleCollection extends EndpointSubCollection implements ConformanceClass {
+public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSingleCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetsSingleCollection.class);
 
     private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
 
-    private final TilesQueriesHandler queryHandler;
     private final FeaturesCoreProviders providers;
 
     EndpointTileSetsSingleCollection(@Requires ExtensionRegistry extensionRegistry,
                                      @Requires TilesQueriesHandler queryHandler,
                                      @Requires FeaturesCoreProviders providers) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+        super(extensionRegistry, queryHandler);
         this.providers = providers;
     }
 
@@ -155,13 +152,7 @@ public class EndpointTileSetsSingleCollection extends EndpointSubCollection impl
     public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @PathParam("collectionId") String collectionId) {
 
-        OgcApiDataV2 apiData = api.getData();
-        checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/tiles", "collectionId", collectionId);
-
-        TilesQueriesHandler.QueryInputTileSets queryInput = TileEndpointsHelper.getTileSetsQueryInput(apiData,
-                getGenericQueryInput(apiData), collectionId);
-
-        return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
+        return super.getTileSets(api, requestContext, collectionId);
     }
 
 }

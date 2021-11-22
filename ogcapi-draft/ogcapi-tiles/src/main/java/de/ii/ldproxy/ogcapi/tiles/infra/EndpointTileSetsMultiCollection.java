@@ -12,7 +12,6 @@ import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
@@ -33,7 +32,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -46,18 +44,16 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetsMultiCollection extends Endpoint implements ConformanceClass {
+public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMultiCollection implements ConformanceClass {
 
     private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
-    private final TilesQueriesHandler queryHandler;
     private final FeaturesCoreProviders providers;
 
     EndpointTileSetsMultiCollection(@Requires ExtensionRegistry extensionRegistry,
                                     @Requires TilesQueriesHandler queryHandler,
                                     @Requires FeaturesCoreProviders providers) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+        super(extensionRegistry, queryHandler);
         this.providers = providers;
     }
 
@@ -123,14 +119,6 @@ public class EndpointTileSetsMultiCollection extends Endpoint implements Conform
     @GET
     public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
 
-        OgcApiDataV2 apiData = api.getData();
-        if (!isEnabledForApi(apiData))
-            throw new NotFoundException("Multi-collection tiles are not available in this API.");
-
-        TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
-
-        TilesQueriesHandler.QueryInputTileSets queryInput = TileEndpointsHelper.getTileSetsQueryInput(tilesConfiguration, getGenericQueryInput(apiData));
-
-        return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
+        return super.getTileSets(api, requestContext);
     }
 }

@@ -12,7 +12,6 @@ import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
@@ -47,18 +46,15 @@ import java.util.Optional;
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetMultiCollection extends Endpoint implements ConformanceClass {
+public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMultiCollection implements ConformanceClass {
 
     private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
-
-    private final TilesQueriesHandler queryHandler;
     private final FeaturesCoreProviders providers;
 
     EndpointTileSetMultiCollection(@Requires ExtensionRegistry extensionRegistry,
                                    @Requires TilesQueriesHandler queryHandler,
                                    @Requires FeaturesCoreProviders providers) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+        super(extensionRegistry, queryHandler);
         this.providers = providers;
     }
 
@@ -131,13 +127,6 @@ public class EndpointTileSetMultiCollection extends Endpoint implements Conforma
                                        @Context ApiRequestContext requestContext,
                                        @PathParam("tileMatrixSetId") String tileMatrixSetId) {
 
-        OgcApiDataV2 apiData = api.getData();
-        String path = "/tiles/{tileMatrixSetId}";
-        checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
-        TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
-
-        TilesQueriesHandler.QueryInputTileSet queryInput = TileEndpointsHelper.getTileSetQueryInput(tilesConfiguration, getGenericQueryInput(apiData), tileMatrixSetId);
-
-        return queryHandler.handle(TilesQueriesHandler.Query.TILE_SET, queryInput, requestContext);
+        return super.getTileSet(api, requestContext, tileMatrixSetId);
     }
 }
