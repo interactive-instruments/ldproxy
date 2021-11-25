@@ -1,0 +1,9 @@
+.boxdraw {
+    background: rgba(255, 0, 0, 0.2);
+    border: 2px solid red;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+}

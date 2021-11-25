@@ -211,6 +211,6 @@ public class StyleFormatHtml implements StyleFormatExtension {
             }
         }
 
-        return new StyleView(styleUrl, apiData, styleId, popup, layerControl, layerMap.asMap());
+        return new StyleView(styleUrl, apiData, styleId, popup, layerControl, layerMap.asMap(), requestContext.getStaticUrlPrefix());
     }
 }

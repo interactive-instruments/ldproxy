@@ -176,6 +176,8 @@ public class TileMatrixSetImpl implements TileMatrixSet {
 
     @Override
     public BoundingBox getBoundingBoxCrs84(CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
+        if (getCrs().equals(OgcCrs.CRS84))
+            return getBoundingBox();
         CrsTransformer crsTransformer = crsTransformerFactory.getTransformer(getCrs(), OgcCrs.CRS84)
                                                              .orElseThrow(() -> new IllegalStateException(String.format("Could not transform the bounding box of tile matrix set '%s' to CRS84.", getId())));
         return crsTransformer.transformBoundingBox(getBoundingBox());

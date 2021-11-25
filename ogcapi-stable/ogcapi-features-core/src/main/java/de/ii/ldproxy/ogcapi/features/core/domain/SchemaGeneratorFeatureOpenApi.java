@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 @Instantiate
 public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
 
-    private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
+    public static final String DEFAULT_FLATTENING_SEPARATOR = ".";
 
     private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaCache = new ConcurrentHashMap<>();
     private final FeaturesCoreProviders providers;

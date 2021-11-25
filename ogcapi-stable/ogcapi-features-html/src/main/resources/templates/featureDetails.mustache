@@ -13,7 +13,7 @@
     </div>
     {{^hideMap}}
     <div class="col-md-6">
-        <div id="map"></div>
+        <div id="map" class="map-sm"></div>
     </div>
     {{/hideMap}}
 </div>
@@ -23,7 +23,7 @@
 {{^hideMap}}
     <div class="row my-2">
         <div class="col-md-12">
-            <div id="map"></div>
+            <div id="map" class="map-sm"></div>
         </div>
     </div>
 {{/hideMap}}
@@ -41,8 +41,11 @@
 </div>
 {{/isMapTop}}
 
-{{> script}}
 
-<script src="{{urlPrefix}}/app/js/featureDetails.js" defer></script>
+{{> app-common}}
+
+{{^hideMap}}
+  {{> mapClient}}
+{{/hideMap}}
 
 {{> footer}}

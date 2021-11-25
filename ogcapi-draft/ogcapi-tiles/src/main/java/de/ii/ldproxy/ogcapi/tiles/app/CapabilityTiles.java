@@ -107,6 +107,7 @@ public class CapabilityTiles implements ApiBuildingBlock {
                                                                                            .map(format -> format.getMediaType().label())
                                                                                            .collect(ImmutableList.toImmutableList()))
                                                         .cache(TilesConfiguration.TileCacheType.FILES)
+                                                        .style("DEFAULT")
                                                         .build();
     }
 

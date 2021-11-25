@@ -1,0 +1,90 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body.with-footer {
+    /* Margin bottom by footer height */
+    margin-bottom: 288px;
+}
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    /* Set the fixed height of the footer here */
+    height: 288px;
+}
+
+.list-comma-separated {
+    padding: 0;
+    margin: 0;
+}
+.list-comma-separated li {
+    display: inline;
+}
+.list-comma-separated li:not(:last-of-type)::after {
+    content: ', ';
+}
+
+.list-separated {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+}
+.list-separated li:not(:last-of-type)::after {
+    display: inline-block;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    content: '|';
+}
+
+.space-after li {
+    margin-bottom: 5em;
+}
+
+[data-toggle='collapse'].collapsed .if-not-collapsed {
+    display: none;
+}
+[data-toggle='collapse']:not(.collapsed) .if-collapsed {
+    display: none;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+tbody > tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+td:first-child {
+    padding-right: 15px;
+}
+
+.object-separator {
+    font-size: 0.5em;
+}
+.pl-4x,
+.px-4x {
+    padding-left: 2rem !important;
+}
+.pr-4x,
+.px-4x {
+    padding-right: 2rem !important;
+}
+.pl-5x,
+.px-5x {
+    padding-left: 4rem !important;
+}
+.pr-5x,
+.px-5x {
+    padding-right: 4rem !important;
+}
+.pl-5xx,
+.px-5xx {
+    padding-left: 5rem !important;
+}
+.pr-5xx,
+.px-5xx {
+    padding-right: 5rem !important;
+}

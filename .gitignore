@@ -19,3 +19,14 @@ gradle.properties
 .project
 .settings/
 bin/
+
+# yarn v2
+.yarn/*
+.pnp.*
+!.yarn/sdks/
+!.yarn/releases/
+!.yarn/plugins/
+!.yarn/patches/
+# Neutrino build directory
+build
+

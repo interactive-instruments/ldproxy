@@ -1,0 +1,25 @@
+{{#filterEditor}}
+<script type="text/javascript">
+  globalThis._filter = {
+      container: 'filter',
+      fields: {
+        {{#fields}}
+          '{{key}}': '{{{value}}}',
+        {{/fields}}
+      },
+    {{#temporalExtent}}
+      temporal: {
+          start: {{#start}}{{.}}{{/start}}{{^start}}0{{/start}},
+          end: {{#end}}{{.}}{{/end}}{{^end}}Date.now(){{/end}}
+      },
+    {{/temporalExtent}}
+    {{#bbox}}
+      spatial: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
+    {{/bbox}}
+  }
+</script>
+
+{{> app-filtereditor}}
+
+{{/filterEditor}}
+
