@@ -8,12 +8,18 @@
 package de.ii.ldproxy.ogcapi.tiles.infra;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
@@ -37,6 +43,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -57,6 +65,7 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
     private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
     private final FeaturesCoreProviders providers;
+    private final Client client;
 
     EndpointMapTileMultiCollection(@Requires FeaturesCoreProviders providers,
                                    @Requires ExtensionRegistry extensionRegistry,
@@ -68,6 +77,7 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
                                    @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(providers, extensionRegistry, queryHandler, crsTransformerFactory, limitsGenerator, cache, staticTileProviderStore, tileMatrixSetRepository);
         this.providers = providers;
+        this.client = ClientBuilder.newClient();
     }
 
     @Override
@@ -91,7 +101,27 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
 
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return null;
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("tiles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE);
+        final String path = "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
+        final HttpMethods method = HttpMethods.GET;
+        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        String operationSummary = "fetch a map tile with multiple layers, one per collection";
+        Optional<String> operationDescription = Optional.of("The tile in the requested tiling scheme ('{tileMatrixSetId}'), " +
+                "on the requested zoom level ('{tileMatrix}'), with the requested grid coordinates ('{tileRow}', '{tileCol}') is returned. " +
+                "The tile has one layer per collection with all selected features in the bounding box of the tile with the requested properties.");
+        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                .path(path)
+                .pathParameters(pathParameters);
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation != null) {
+            resourceBuilder.putOperations(method.name(), operation);
+        }
+        definitionBuilder.putResources(path, resourceBuilder.build());
+
+        return definitionBuilder.build();
     }
 
     @Path("/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
@@ -101,7 +131,13 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
                             @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
             throws CrsTransformationException, IOException, NotFoundException {
-
-        return super.getTile(optionalUser, api, tileMatrixSetId, tileMatrix, tileRow, tileCol, uriInfo, requestContext);
+        String format = "png";
+        String target = "http://localhost:8080/styles/daraa";
+        String path = String.format("%s/%s/%s.%s", tileMatrix, tileRow, tileCol, format);
+        String responseType = "image/" + format;
+        return client.target(target)
+                .path(path)
+                .request(responseType)
+                .get();
     }
 }

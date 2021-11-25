@@ -7,12 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.infra;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -27,6 +34,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,6 +44,8 @@ import java.util.Optional;
 @Provides
 @Instantiate
 public class EndpointMapTileSetMultiCollection extends AbstractEndpointTileSetMultiCollection {
+
+    private static final List<String> TAGS = ImmutableList.of("Access multi-layer map tiles");
 
     private final FeaturesCoreProviders providers;
 
@@ -67,7 +77,25 @@ public class EndpointMapTileSetMultiCollection extends AbstractEndpointTileSetMu
 
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return null;
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("tiles")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SET);
+        String path = "/map/tiles/{tileMatrixSetId}";
+        HttpMethods method = HttpMethods.GET;
+        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
+        String operationSummary = "retrieve information about a tile set";
+        Optional<String> operationDescription = Optional.of("This operation fetches information about a tile set.");
+        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilderSet = new ImmutableOgcApiResourceAuxiliary.Builder()
+                .path(path)
+                .pathParameters(pathParameters);
+        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
+        if (operation != null) {
+            resourceBuilderSet.putOperations(method.name(), operation);
+        }
+        definitionBuilder.putResources(path, resourceBuilderSet.build());
+
+        return definitionBuilder.build();
     }
 
     /**
