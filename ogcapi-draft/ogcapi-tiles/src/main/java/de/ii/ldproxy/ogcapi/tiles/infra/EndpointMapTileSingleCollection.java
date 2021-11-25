@@ -8,13 +8,19 @@
 package de.ii.ldproxy.ogcapi.tiles.infra;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
@@ -39,6 +45,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -56,9 +64,11 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointMapTileSingleCollection.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
+    private static final List<String> TAGS = ImmutableList.of("Access single-layer map tiles");
 
     private final FeaturesCoreProviders providers;
+    private final Client client;
+
 
     EndpointMapTileSingleCollection(@Requires FeaturesCoreProviders providers,
                                     @Requires ExtensionRegistry extensionRegistry,
@@ -70,6 +80,7 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
                                     @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(providers, extensionRegistry, queryHandler, crsTransformerFactory, limitsGenerator, cache, staticTileProviderStore, tileMatrixSetRepository);
         this.providers = providers;
+        this.client = ClientBuilder.newClient();
     }
 
     @Override
@@ -107,7 +118,41 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
 
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return null;
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+                .apiEntrypoint("collections")
+                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION);
+        final String subSubPath = "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
+        final String path = "/collections/{collectionId}" + subSubPath;
+        final HttpMethods method = HttpMethods.GET;
+        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+        final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+        if (optCollectionIdParam.isEmpty()) {
+            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
+        } else {
+            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+            boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final List<String> collectionIds = (explode) ?
+                    collectionIdParam.getValues(apiData) :
+                    ImmutableList.of("{collectionId}");
+            for (String collectionId : collectionIds) {
+                List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
+                String operationSummary = "fetch a map tile of the collection '"+ collectionId + "'";
+                Optional<String> operationDescription = Optional.of("The map tile in the requested tiling scheme ('{tileMatrixSetId}'), " +
+                        "on the requested zoom level ('{tileMatrix}'), with the requested grid coordinates ('{tileRow}', '{tileCol}') is returned. " +
+                        "The tile has a single layer with all selected features in the bounding box of the tile with the requested properties.");
+                String resourcePath = path.replace("{collectionId}", collectionId);
+                ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+                        .path(resourcePath)
+                        .pathParameters(pathParameters);
+                ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
+                if (operation != null) {
+                    resourceBuilder.putOperations(method.name(), operation);
+                }
+                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+            }
+        }
+
+        return definitionBuilder.build();
     }
 
     @Path("/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
@@ -117,7 +162,13 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
                             @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
             throws CrsTransformationException, IOException, NotFoundException {
-
-        return super.getTile(optionalUser, api, collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, uriInfo, requestContext);
+        String format = "png";
+        String target = "http://localhost:8080/styles/daraa/" + collectionId;
+        String path = String.format("%s/%s/%s.%s", tileMatrix, tileRow, tileCol, format);
+        String responseType = "image/" + format;
+        return client.target(target)
+                .path(path)
+                .request(responseType)
+                .get();
     }
 }
