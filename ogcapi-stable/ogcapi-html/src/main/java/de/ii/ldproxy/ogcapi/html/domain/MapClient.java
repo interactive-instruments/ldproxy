@@ -66,6 +66,11 @@ public interface MapClient {
   }
 
   @Value.Lazy
+  default boolean isOpenLayers() {
+    return getType() == Type.OPEN_LAYERS;
+  }
+
+  @Value.Lazy
   default boolean isCesium() {
     return getType() == Type.CESIUM;
   }

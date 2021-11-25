@@ -48,12 +48,28 @@
     {{#popup}}
       popup: '{{.}}',
     {{/popup}}
+      tileMatrixSets: [
+      {{#tileCollections}}
+        {
+        {{#.}}
+          {{key}}: '{{value}}',
+        {{/.}}
+        },
+      {{/tileCollections}}
+      ],
+      setCurrentTileMatrixSet: () => {},
   }
 </script>
 
   {{#isMapLibre}}
     {{> app-maplibre}}
   {{/isMapLibre}}
+  {{#isOpenLayers}}
+    {{> app-openlayers}}
+  {{/isOpenLayers}}
+  {{#isCesium}}
+    {{> app-maplibre}}
+  {{/isCesium}}
 
 <!-- TODO temporary hack -->
 {{#isCesium}}

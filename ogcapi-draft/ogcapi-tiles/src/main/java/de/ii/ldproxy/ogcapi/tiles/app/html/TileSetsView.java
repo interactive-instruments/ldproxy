@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.html.domain.ImmutableSource;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source.TYPE;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient.Type;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
@@ -32,6 +33,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +53,8 @@ import static de.ii.ldproxy.ogcapi.tiles.domain.TileLayer.GeometryType.polygons;
 public class TileSetsView extends OgcApiView {
     private static final Logger LOGGER = LoggerFactory.getLogger(TileSetsView.class);
 
-    public List<Map<String,String>> tileCollections;
+    public List<Set<Map.Entry<String,String>>> tileCollections;
+    public List<String> tileMatrixSetIds;
     public String tilesUrl;
     public String tileJsonLink;
     public String tileJsonTitle;
@@ -101,6 +104,11 @@ public class TileSetsView extends OgcApiView {
                 "maxLng", Double.toString(boundingBox.getXmax()),
                 "maxLat", Double.toString(boundingBox.getYmax())))
                                   .orElse(null);
+        this.tileMatrixSetIds = spatialExtent.isPresent() ? tiles.getTilesets()
+            .stream()
+            .map(TileSet::getTileMatrixSetId)
+            .filter(tileMatrixSetId -> mapClientType.equals(MapClient.Type.OPEN_LAYERS) || tileMatrixSetId.equals("WebMercatorQuad"))
+            .collect(Collectors.toList()) : ImmutableList.of();
         this.tileCollections = spatialExtent.isPresent() ? tiles.getTilesets()
                 .stream()
                 .filter(tms -> mapClientType.equals(MapClient.Type.OPEN_LAYERS) || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
@@ -141,7 +149,7 @@ public class TileSetsView extends OgcApiView {
                             .put("resolutions",resolutions)
                             .put("sizes",sizes)
                             .put("projection","EPSG:"+tileMatrixSet.getCrs().getCode())
-                            .build();
+                            .build().entrySet();
                 })
                 .collect(Collectors.toList()) : ImmutableList.of();
 
@@ -177,7 +185,7 @@ public class TileSetsView extends OgcApiView {
                                  .filter(link -> Objects.equals(link.getRel(),"self"))
                                  .map(Link::getHref)
                                  .findFirst()
-                                 .map(href -> href.replaceAll("/\\w+$", "/{tileMatrixSetId}"))
+                                 .map(href -> href.replaceAll("/\\w+$", "/WebMercatorQuad") + "?f=tilejson")
                                  .orElse(null);
 
         this.mapTitle = i18n.get("mapTitle", language);
@@ -223,37 +231,21 @@ public class TileSetsView extends OgcApiView {
 
         if (tiles.getTilesets().size() >= 1) {
             if (mapClientType.equals(MapClient.Type.MAP_LIBRE)) {
-                Optional<TileSet> tileset = tiles.getTilesets().stream().filter(ts -> ts.getTileMatrixSetId().equals("WebMercatorQuad")).findAny();
-                if (tileset.isPresent()) {
-                    Multimap<String, List<String>> layers = tileset.get().getLayers().stream()
-                                                           .filter(layer -> layer.getDataType() == DataType.vector)
-                                                           .map(layer -> layer.getGeometryType().isPresent()
-                                                                   ? new SimpleImmutableEntry<>(layer.getId(), ImmutableList.of(layer.getGeometryType().get().name()))
-                                                                   : new SimpleImmutableEntry<>(layer.getId(), ImmutableList.of(points.name(), lines.name(), polygons.name())))
-                                                           .collect(ImmutableSetMultimap.toImmutableSetMultimap(Map.Entry::getKey, Map.Entry::getValue));
+                Optional<TileSet> tileSet = tiles.getTilesets().stream().filter(ts -> ts.getTileMatrixSetId().equals("WebMercatorQuad")).findAny();
+                if (tileSet.isPresent()) {
+                    Multimap<String, List<String>> layers = getLayers(tileSet.get());
 
-                    this.mapClient = new ImmutableMapClient.Builder()
-                            .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
-                                                   .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
-                            .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                                                 .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
-                            .data(new ImmutableSource.Builder()
-                                          .type(TYPE.vector)
-                                          .url(xyzTemplate)
-                                          .putAllLayers(layers)
-                                          .build())
-                            .bounds(Optional.ofNullable(bbox))
-                            .popup(Popup.CLICK_PROPERTIES)
-                            .styleUrl(Optional.ofNullable(styleUrl))
-                            .removeZoomLevelConstraints(removeZoomLevelConstraints)
-                            .build();
+                    this.mapClient = getMapClient(Type.MAP_LIBRE, styleUrl, removeZoomLevelConstraints, htmlConfig,
+                        layers);
                 } else {
                     LOGGER.error("Configuration error: {} as the client for the HTML representation of tile sets requires that a tile set with the tiling scheme {} exists.", mapClientType, "WebMercatorQuad");
                     this.mapClient = null;
                 }
             } else if (mapClientType.equals(MapClient.Type.OPEN_LAYERS)) {
-                //TODO: OpenLayers
-                this.mapClient = null;
+                Multimap<String, List<String>> layers = getLayers(tiles.getTilesets().get(0));
+
+                this.mapClient = getMapClient(Type.OPEN_LAYERS, styleUrl, removeZoomLevelConstraints, htmlConfig,
+                    layers);
             } else {
                 LOGGER.error("Configuration error: {} is not a supported map client for the HTML representation of tile sets.", mapClientType);
                 this.mapClient = null;
@@ -261,6 +253,38 @@ public class TileSetsView extends OgcApiView {
         } else {
             this.mapClient = null;
         }
+    }
+
+    private ImmutableMapClient getMapClient(Type type,
+        String styleUrl, boolean removeZoomLevelConstraints,
+        HtmlConfiguration htmlConfig, Multimap<String, List<String>> layers) {
+        return new ImmutableMapClient.Builder()
+                .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                                       .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
+                .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
+                                     .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
+                .data(new ImmutableSource.Builder()
+                              .type(TYPE.vector)
+                              .url(xyzTemplate)
+                              .putAllLayers(layers)
+                              .build())
+                .bounds(Optional.ofNullable(bbox))
+                .popup(Popup.CLICK_PROPERTIES)
+                .styleUrl(Optional.ofNullable(styleUrl))
+                .removeZoomLevelConstraints(removeZoomLevelConstraints)
+                .build();
+    }
+
+    private Multimap<String, List<String>> getLayers(TileSet tileSet) {
+        return tileSet.getLayers().stream()
+            .filter(layer -> layer.getDataType() == DataType.vector)
+            .map(layer -> layer.getGeometryType().isPresent()
+                ? new SimpleImmutableEntry<>(layer.getId(),
+                ImmutableList.of(layer.getGeometryType().get().name()))
+                : new SimpleImmutableEntry<>(layer.getId(),
+                    ImmutableList.of(points.name(), lines.name(), polygons.name())))
+            .collect(ImmutableSetMultimap.toImmutableSetMultimap(Map.Entry::getKey,
+                Map.Entry::getValue));
     }
 
     private String getDefaultLevel(double lonDiff, int maxLevel) {
