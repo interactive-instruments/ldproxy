@@ -62,7 +62,7 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     Map<String, Integer> getCoordinatePrecision();
 
     @Nullable
-    Boolean getHtml();
+    HtmlForm getHtml();
 
     @Override
     default Builder getBuilder() {

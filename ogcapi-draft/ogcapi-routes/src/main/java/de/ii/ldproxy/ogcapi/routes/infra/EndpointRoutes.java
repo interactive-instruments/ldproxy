@@ -31,6 +31,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputRouteDefinitionForm;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionInfo;

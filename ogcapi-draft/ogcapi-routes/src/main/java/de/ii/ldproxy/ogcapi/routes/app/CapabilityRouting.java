@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlForm;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutingFlag;
 import org.apache.felix.ipojo.annotations.Component;
@@ -45,7 +46,9 @@ public class CapabilityRouting implements ApiBuildingBlock {
             .defaultPreference("fastest")
             .additionalFlags(ImmutableMap.of())
             .defaultCrs(CRS84)
-            .html(true)
+            .html(ImmutableHtmlForm.builder()
+                      .enabled(true)
+                      .build())
             .build();
     }
 

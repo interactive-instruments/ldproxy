@@ -20,11 +20,13 @@ import de.ii.ldproxy.ogcapi.html.domain.ImmutableSource;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
+import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -43,14 +45,16 @@ public class RoutesView extends OgcApiView {
     public final MapClient mapClient;
 
     private final RouteDefinitionInfo templateInfo;
+    private final HtmlFormDefaults htmlDefaults;
 
-    public RoutesView(OgcApiDataV2 apiData, RouteDefinitionInfo templateInfo, final List<NavigationDTO> breadCrumbs,
+    public RoutesView(OgcApiDataV2 apiData, RouteDefinitionInfo templateInfo, HtmlFormDefaults htmlDefaults, final List<NavigationDTO> breadCrumbs,
                       String urlPrefix, HtmlConfiguration htmlConfig, boolean noIndex, I18n i18n, Optional<Locale> language) {
         super("routes.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
               ImmutableList.of(),
               i18n.get("routesTitle", language),
               i18n.get("routesDescription", language));
         this.templateInfo = templateInfo;
+        this.htmlDefaults = htmlDefaults;
         routeNameTitle = i18n.get("routeNameTitle", language);
         preferenceTitle = i18n.get("preferenceTitle", language);
         additionalFlagsTitle = i18n.get("additionalFlagsTitle", language);
@@ -113,6 +117,52 @@ public class RoutesView extends OgcApiView {
         return templateInfo
             .getCrs()
             .entrySet();
+    }
+
+    public Float getStartX() {
+        List<Float> pos = htmlDefaults.getStart();
+        if (Objects.nonNull(pos) && pos.size()>=2)
+            return pos.get(0);
+        return null;
+    }
+
+    public Float getStartY() {
+        List<Float> pos = htmlDefaults.getStart();
+        if (Objects.nonNull(pos) && pos.size()>=2)
+            return pos.get(1);
+        return null;
+    }
+
+    public Float getEndX() {
+        List<Float> pos = htmlDefaults.getEnd();
+        if (Objects.nonNull(pos) && pos.size()>=2)
+            return pos.get(0);
+        return null;
+    }
+
+    public Float getEndY() {
+        List<Float> pos = htmlDefaults.getEnd();
+        if (Objects.nonNull(pos) && pos.size()>=2)
+            return pos.get(1);
+        return null;
+    }
+
+    public double getCenterX() {
+        List<Float> pos = htmlDefaults.getCenter();
+        if (Objects.nonNull(pos) && pos.size()>=2)
+            return pos.get(0);
+        return 0.0;
+    }
+
+    public double getCenterY() {
+        List<Float> pos = htmlDefaults.getCenter();
+        if (Objects.nonNull(pos) && pos.size()>=2)
+            return pos.get(1);
+        return 0.0;
+    }
+
+    public int getCenterLevel() {
+        return Objects.requireNonNullElse(htmlDefaults.getCenterLevel(), 0);
     }
 
     public Optional<String> getAttribution() {

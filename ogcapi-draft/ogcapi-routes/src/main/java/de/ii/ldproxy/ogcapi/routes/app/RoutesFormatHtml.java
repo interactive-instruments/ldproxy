@@ -20,6 +20,9 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.ldproxy.ogcapi.routes.domain.HtmlForm;
+import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
@@ -85,8 +88,14 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
             .getExtension(HtmlConfiguration.class)
             .orElse(null);
 
+        HtmlFormDefaults htmlDefaults = api.getData()
+            .getExtension(RoutingConfiguration.class)
+            .map(RoutingConfiguration::getHtml)
+            .flatMap(HtmlForm::getDefaults)
+            .orElse(ImmutableHtmlFormDefaults.builder().build());
+
         RoutesView view =
-            new RoutesView(api.getData(), templateInfo, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
+            new RoutesView(api.getData(), templateInfo, htmlDefaults, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
         return view;
     }
 
