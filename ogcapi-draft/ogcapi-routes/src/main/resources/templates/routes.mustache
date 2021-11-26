@@ -332,7 +332,7 @@ function handleFormSubmit(event) {
          map.on('click', 'point', showPopupProps(map, popup));
 
          const bbox = routeJson['bbox'];
-         const bounds = [ [ bbox[0], bbox[1] ], [ bbox[3], bbox[4] ] ];
+         const bounds = (bbox.length === 4) ? [ [ bbox[0], bbox[1] ], [ bbox[2], bbox[3] ] ] : [ [ bbox[0], bbox[1] ], [ bbox[3], bbox[4] ] ];
          map.fitBounds( bounds, {
             padding: 50,
             maxZoom: 16,
@@ -414,7 +414,7 @@ const popup = new maplibregl.Popup({
     className: 'popup-props',
 });
 
-var map = new maplibregl.Map({
+var map0 = new maplibregl.Map({
 'container': 'map',
 'style': {
    'version': 8,
@@ -440,8 +440,8 @@ var map = new maplibregl.Map({
 'zoom': {{centerLevel}}
 });
 
-map.addControl(new maplibregl.ScaleControl());
-map.addControl(new maplibregl.NavigationControl());
+map0.addControl(new maplibregl.ScaleControl());
+map0.addControl(new maplibregl.NavigationControl());
 
 const form = document.querySelector('.contact-form');
 form.addEventListener('submit', handleFormSubmit);

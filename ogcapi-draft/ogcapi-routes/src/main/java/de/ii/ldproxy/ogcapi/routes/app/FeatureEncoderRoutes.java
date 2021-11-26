@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.routes.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import de.ii.ldproxy.ogcapi.features.core.domain.Geometry;
 import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoute;
@@ -94,8 +95,21 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         .orElseThrow(() -> new IllegalStateException(String.format("Route segment with sequence number '%s' is without a geometry. Cannot construct route.", id)))
         .getCoordinates();
 
-    ImmutableMap.Builder<String, Object> propertyBuilder = ImmutableMap.builder();
+    AtomicReference<ImmutableMap.Builder<String, Object>> propertyBuilder = new AtomicReference<>(ImmutableMap.builder());
     int coordCount = coordinates.size();
+
+    // swap curve, if necessary
+    int node = feature.findPropertyByPath("node")
+        .map(PropertyRoutes::getFirstValue)
+        .map(Integer::parseInt)
+        .orElseThrow();
+    int target = feature.findPropertyByPath(ImmutableList.of("data", "target"))
+        .map(PropertyRoutes::getFirstValue)
+        .map(Integer::parseInt)
+        .orElseThrow();
+    if (node==target) {
+      coordinates = Lists.reverse(coordinates);
+    }
 
     if (firstSegment) {
       firstSegment = false;
@@ -110,7 +124,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       segments.add(segmentBuilder
                        .putProperties("directionChange_deg", Math.toDegrees(deltaAngle(lastAngle, angle)))
                        .build());
-      propertyBuilder.put("angleAtStart_deg", Math.toDegrees(angle));
+      propertyBuilder.get().put("angleAtStart_deg", Math.toDegrees(angle));
     }
 
     overviewGeometry.addAll(coordinates.subList(1, coordCount));
@@ -118,8 +132,9 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     if (is3d) {
       AtomicReference<Double> segAscent = new AtomicReference<>(0.0);
       AtomicReference<Double> segDescent = new AtomicReference<>(0.0);
+      List<Geometry.Coordinate> finalCoordinates = coordinates;
       IntStream.range(1, coordCount)
-          .mapToDouble(i -> coordinates.get(i).z - coordinates.get(i - 1).z)
+          .mapToDouble(i -> finalCoordinates.get(i).z - finalCoordinates.get(i - 1).z)
           .forEach(deltaZ -> {
             if (deltaZ > 0)
               segAscent.updateAndGet(v -> v + deltaZ);
@@ -127,20 +142,20 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
               segDescent.updateAndGet(v -> v - deltaZ);
           });
       aggAscent += segAscent.get();
-      propertyBuilder.put("ascent_m", segAscent.get());
+      propertyBuilder.get().put("ascent_m", segAscent.get());
       aggDescent += segDescent.get();
-      propertyBuilder.put("descent_m", segDescent.get());
+      propertyBuilder.get().put("descent_m", segDescent.get());
     }
 
     lastPoint = Geometry.Point.of(coordinates.get(coordCount-1));
     lastAngle = computeAngle(coordinates.get(coordCount - 2), coordinates.get(coordCount - 1));;
-    propertyBuilder.put("angleAtEnd_deg", Math.toDegrees(lastAngle));
+    propertyBuilder.get().put("angleAtEnd_deg", Math.toDegrees(lastAngle));
 
     feature.findPropertyByPath("cost")
         .map(PropertyRoutes::getFirstValue)
         .map(Double::parseDouble)
         .ifPresent(cost -> {
-          propertyBuilder.put("cost", cost);
+          propertyBuilder.get().put("cost", cost);
           aggCost += cost;
         });
     feature.getProperties()
@@ -148,28 +163,42 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         .filter(p -> p.getPropertyPath().get(0).equals("data"))
         .filter(p -> p.getSchema().filter(SchemaBase::isSpatial).isEmpty())
         .forEach(p -> {
-          SchemaBase.Type type = p.getSchema().map(FeatureSchema::getType).orElse(SchemaBase.Type.UNKNOWN);
-          if (!p.getType().equals(PropertyBase.Type.VALUE))
-            LOGGER.debug("Property '{}' of segment '{}' property is not a value and is ignored.", p.getName(), id);
-          else if (type.equals(SchemaBase.Type.BOOLEAN))
-            propertyBuilder.put(p.getName(), Boolean.parseBoolean(p.getFirstValue()));
-          else if (type.equals(SchemaBase.Type.FLOAT)) {
-            propertyBuilder.put(p.getName(), Double.parseDouble(p.getFirstValue()));
-            if (p.getName().equals("length_m"))
-              aggLength += Double.parseDouble(p.getFirstValue());
-          } else if (type.equals(SchemaBase.Type.INTEGER))
-            propertyBuilder.put(p.getName(), Integer.parseInt(p.getFirstValue()));
-          else if (type.equals(SchemaBase.Type.STRING) || type.equals(SchemaBase.Type.DATE) || type.equals(SchemaBase.Type.DATETIME)) {
-            if (!p.getFirstValue().isEmpty()) {
-              propertyBuilder.put(p.getName(), p.getFirstValue());
-            }
-          } else
-            LOGGER.debug("Property '{}' of segment '{}' property is of unsupported type '{}' and is ignored.", p.getName(), id, type);
+          propertyBuilder.set(processProperty(id, p, propertyBuilder.get()));
         });
     segmentBuilder = ImmutableRouteSegment.builder()
                      .geometry(lastPoint)
                      .id(Integer.parseInt(id))
-                     .properties(propertyBuilder.build());
+                     .properties(propertyBuilder.get().build());
+  }
+
+  private ImmutableMap.Builder<String, Object> processProperty(String id, PropertyRoutes p, ImmutableMap.Builder<String, Object> propertyBuilder) {
+    if (p.getSchema().filter(SchemaBase::isSpatial).isPresent())
+      return propertyBuilder;
+
+    SchemaBase.Type type = p.getSchema().map(FeatureSchema::getType).orElse(SchemaBase.Type.UNKNOWN);
+    if (p.getType().equals(PropertyBase.Type.OBJECT)) {
+      for (PropertyRoutes p2 : p.getNestedProperties()) {
+        propertyBuilder = processProperty(id, p2, propertyBuilder);
+      }
+    } else if (!p.getType().equals(PropertyBase.Type.VALUE))
+      LOGGER.debug("Property '{}' of segment '{}' is not a value and is ignored.", p.getName(), id);
+    else if (type.equals(SchemaBase.Type.BOOLEAN))
+      propertyBuilder.put(p.getName(), Boolean.parseBoolean(p.getFirstValue()));
+    else if (type.equals(SchemaBase.Type.FLOAT)) {
+      propertyBuilder.put(p.getName(), Double.parseDouble(p.getFirstValue()));
+      if (p.getName().equals("length_m"))
+        aggLength += Double.parseDouble(p.getFirstValue());
+    } else if (type.equals(SchemaBase.Type.INTEGER))
+      if (!p.getName().equals("source") && !p.getName().equals("target"))
+        propertyBuilder.put(p.getName(), Integer.parseInt(p.getFirstValue()));
+    else if (type.equals(SchemaBase.Type.STRING) || type.equals(SchemaBase.Type.DATE) || type.equals(SchemaBase.Type.DATETIME)) {
+      if (!p.getFirstValue().isEmpty()) {
+        propertyBuilder.put(p.getName(), p.getFirstValue());
+      }
+    } else
+      LOGGER.debug("Property '{}' of segment '{}' property is of unsupported type '{}' and is ignored.", p.getName(), id, type);
+
+    return propertyBuilder;
   }
 
   @Override
