@@ -3,278 +3,266 @@ import React from "react";
 import PropTypes from "prop-types";
 
 import { useMaplibreUIEffect } from "react-maplibre-ui";
-// import { layerControlGrouped as LayerControl } from "mapbox-layer-control/layerControlGrouped";
-// TODO: use local copy with disabled build
-// import LegendControl from "mapboxgl-legend/src";
 import { geoJsonLayers, hoverLayers, vectorLayers } from "../styles";
 import { getBounds, getFeaturesWithIdAsProperty, idProperty } from "../geojson";
 import { addPopup, addPopupProps } from "./popup";
 
-// import "mapbox-layer-control/layerControl.css";
-// import "mapboxgl-legend/dist/index.esm.min.css";
-
 const setStyleGeoJson = (map, styleUrl, removeZoomLevelConstraints) => {
-  const baseStyle = map.getStyle();
-  // eslint-disable-next-line no-undef
-  fetch(styleUrl)
-    .then((response) => response.json())
-    .then((style) => {
-      const dataStyle = {
-        ...style,
-        sources: {
-          ...style.sources,
-          ...baseStyle.sources,
-        },
-        layers: style.layers.map((layer) => {
+    // eslint-disable-next-line no-undef
+    fetch(styleUrl)
+        .then((response) => response.json())
+        .then((style) => {
+      const baseStyle = map.getStyle();
+            const dataStyle = {
+                ...style,
+                sources: {
+                    ...style.sources,
+                    ...baseStyle.sources,
+                },
+                layers: style.layers.map((layer) => {
           if (layer.type !== "raster") {
-            const newLayer = {
-              ...layer,
+                        const newLayer = {
+                            ...layer,
               source: "data",
-            };
+                        };
             delete newLayer["source-layer"];
-            if (removeZoomLevelConstraints) {
-              delete newLayer.minzoom;
-              delete newLayer.maxzoom;
-            }
-            return newLayer;
-          }
+                        if (removeZoomLevelConstraints) {
+                            delete newLayer.minzoom;
+                            delete newLayer.maxzoom;    
+                        }
+                        return newLayer;
+                    }
 
-          return layer;
-        }),
-      };
-      map.setStyle(dataStyle);
-    });
+                    return layer;
+                }),
+            };
+
+      if (dataStyle.sources.data) {
+        dataStyle.sources.data.attribution = style.layers
+          .filter(
+            (layer) =>
+              layer.type !== "raster" && style.sources[layer.source].attribution
+          )
+          .map((layer) => style.sources[layer.source].attribution)
+          .filter((v, i, a) => a.indexOf(v) === i)
+          .join(" | ");
+      }
+
+            map.setStyle(dataStyle);
+        });
 };
 
 const setStyleVector = (
-  map,
-  maplibre,
-  styleUrl,
-  removeZoomLevelConstraints,
-  popup,
-  sourceUrl,
-  sourceLayers
+    map,
+    maplibre,
+    styleUrl,
+    removeZoomLevelConstraints,
+    popup,
+    sourceUrl,
+    sourceLayers
 ) => {
-  const baseStyle = map.getStyle();
-  // eslint-disable-next-line no-undef
-  fetch(styleUrl)
-    .then((response) => response.json())
-    .then((style) => {
-      let dataStyle = style;
+    // eslint-disable-next-line no-undef
+    fetch(styleUrl)
+        .then((response) => response.json())
+        .then((style) => {
+      const baseStyle = map.getStyle();
+            let dataStyle = style;
 
-      if (sourceUrl) {
-        const newSources = {};
-        Object.keys(style.sources).forEach((source) => {
+            if (sourceUrl) {
+                const newSources = {};
+                Object.keys(style.sources).forEach((source) => {
           if (style.sources[source].type === "vector") {
-            newSources[source] = {
-              ...style.sources[source],
-              tiles: [sourceUrl],
-            };
-          } else {
-            newSources[source] = style.sources[source];
-          }
-        });
+                        newSources[source] = {
+                            ...style.sources[source],
+                            tiles: [sourceUrl],
+                        };
+                    } else {
+                        newSources[source] = style.sources[source];
+                    }
+                });
 
-        dataStyle = {
-          ...style,
-          sources: {
-            ...newSources,
-            ...baseStyle.sources,
-          },
+                dataStyle = {
+                    ...style,
+                    sources: {
+                        ...newSources,
+                        ...baseStyle.sources,
+                    },
           layers: style.layers
             .filter(
-              (layer) =>
+                        (layer) =>
                 layer.type === "raster" ||
                 (layer["source-layer"] &&
-                  (sourceLayers.length === 0 ||
+                                (sourceLayers.length === 0 ||
                     sourceLayers.includes(layer["source-layer"])))
             )
             .map((layer) => {
               if (layer.type === "vector") {
-                const newLayer = {
-                  ...layer,
+                            const newLayer = {
+                                ...layer,
+                            };
+                            if (removeZoomLevelConstraints) {
+                                delete newLayer.minzoom;
+                                delete newLayer.maxzoom;
+                            }
+                            return newLayer;
+                        }
+                        return layer;
+                    }),
                 };
-                if (removeZoomLevelConstraints) {
-                  delete newLayer.minzoom;
-                  delete newLayer.maxzoom;
-                }
-                return newLayer;
-              }
-              return layer;
-            }),
-        };
-      }
+            }
 
-      map.setStyle(dataStyle);
+            map.setStyle(dataStyle);
 
       if (popup === "CLICK_PROPERTIES") {
-        addPopupProps(
-          map,
-          maplibre,
-          dataStyle.layers
+                addPopupProps(
+                    map,
+                    maplibre,
+                    dataStyle.layers
             .filter((layer) => layer.type !== "raster")
-            .map((layer) => layer.id)
-        );
-      }
-
-      //  map.once("styledata", () => {
-      /* map.addControl(
-        
-        new LegendControl({ collapsed: true, toggler: true }),
-        "top-left"
-      ); */
-      // });
-      /* new LayerControl({
-            collapsed: true,
-            layers: dataStyle.layers
-              .filter((layer) => layer.type !== "raster")
-              .map((layer) => ({
-                id: layer.id,
-                directory: dataStyle.name,
-                group: "All layers",
-              })),
-          }), */
-    });
+                        .map((layer) => layer.id)
+                );
+            }
+        });
 };
 
 const addData = (
-  map,
-  maplibre,
-  styleUrl,
-  removeZoomLevelConstraints,
-  data,
-  dataType,
-  dataLayers,
-  defaultStyle,
-  fitBounds,
-  popup
+    map,
+    maplibre,
+    styleUrl,
+    removeZoomLevelConstraints,
+    data,
+    dataType,
+    dataLayers,
+    defaultStyle,
+    fitBounds,
+    popup
 ) => {
   if (dataType === "geojson") {
-    const features = getFeaturesWithIdAsProperty(data);
+        const features = getFeaturesWithIdAsProperty(data);
 
     map.addSource("data", {
       type: "geojson",
-      data: features,
-      promoteId: idProperty,
-    });
+            data: features,
+            promoteId: idProperty,
+        });
 
-    if (fitBounds) {
-      const bounds = getBounds(data);
+        if (fitBounds) {
+            const bounds = getBounds(data);
 
-      map.fitBounds(bounds, {
-        padding: 50,
-        maxZoom: 16,
-        duration: 500,
-      });
-    }
+            map.fitBounds(bounds, {
+                padding: 50,
+                maxZoom: 16,
+                duration: 500,
+            });
+        }
 
-    if (styleUrl) {
-      setStyleGeoJson(map, styleUrl, removeZoomLevelConstraints);
-    } else {
-      const defaultLayers = geoJsonLayers(defaultStyle);
+        if (styleUrl) {
+            setStyleGeoJson(map, styleUrl, removeZoomLevelConstraints);
+        } else {
+            const defaultLayers = geoJsonLayers(defaultStyle);
 
-      defaultLayers.forEach((layer) => map.addLayer(layer));
+            defaultLayers.forEach((layer) => map.addLayer(layer));
 
       if (popup === "HOVER_ID") {
-        addPopup(map, maplibre, hoverLayers);
-      }
-    }
+                addPopup(map, maplibre, hoverLayers);
+            }
+        }
   } else if (dataType === "vector") {
-    if (styleUrl) {
-      setStyleVector(
-        map,
-        maplibre,
-        styleUrl,
-        removeZoomLevelConstraints,
-        popup,
-        data,
-        Object.keys(dataLayers)
-      );
-    } else {
+        if (styleUrl) {
+            setStyleVector(
+                map,
+                maplibre,
+                styleUrl,
+                removeZoomLevelConstraints,
+                popup,
+                data,
+                Object.keys(dataLayers)
+            );
+        } else {
       map.addSource("data", {
         type: "vector",
-        tiles: [data],
-      });
+                tiles: [data],
+            });
 
-      const layers = Object.keys(dataLayers).flatMap((layer) =>
-        vectorLayers(layer, dataLayers[layer], defaultStyle)
-      );
+            const layers = Object.keys(dataLayers).flatMap((layer) =>
+                vectorLayers(layer, dataLayers[layer], defaultStyle)
+            );
 
-      layers.forEach((vectorLayer) => map.addLayer(vectorLayer));
+            layers.forEach((vectorLayer) => map.addLayer(vectorLayer));
 
       if (popup === "CLICK_PROPERTIES") {
-        addPopupProps(
-          map,
-          maplibre,
-          layers.map((l) => l.id)
-        );
-      }
+                addPopupProps(
+                    map,
+                    maplibre,
+                    layers.map((l) => l.id)
+                );
+            }
+        }
     }
-  }
 };
 
 const MapLibreConfiguration = ({
-  styleUrl,
-  removeZoomLevelConstraints,
-  data,
-  dataType,
-  dataLayers,
-  controls,
-  defaultStyle,
-  fitBounds,
-  popup,
-  custom,
-  showCompass,
+    styleUrl,
+    removeZoomLevelConstraints,
+    data,
+    dataType,
+    dataLayers,
+    controls,
+    defaultStyle,
+    fitBounds,
+    popup,
+    custom,
+    showCompass,
 }) => {
-  useMaplibreUIEffect(({ map, maplibre }) => {
-    map.addControl(
-      new maplibre.AttributionControl({
-        compact: false,
-      })
-    );
-    map.addControl(new maplibre.ScaleControl());
-    if (controls) {
-      map.addControl(new maplibre.NavigationControl({ showCompass }));
-    }
-    if (data) {
-      const style = {
-        ...MapLibreConfiguration.defaultProps.defaultStyle,
-        ...defaultStyle,
-      };
+    useMaplibreUIEffect(({ map, maplibre }) => {
+        map.addControl(
+            new maplibre.AttributionControl({
+                compact: false,
+            })
+        );
+        map.addControl(new maplibre.ScaleControl());
+        if (controls) {
+            map.addControl(new maplibre.NavigationControl({ showCompass }));
+        }
+        if (data) {
+            const style = {
+                ...MapLibreConfiguration.defaultProps.defaultStyle,
+                ...defaultStyle,
+            };
 
       if (dataType === "geojson" && typeof data === "string") {
-        // eslint-disable-next-line no-undef
-        fetch(data)
-          .then((response) => response.json())
-          .then((json) => {
-            addData(
-              map,
-              maplibre,
-              styleUrl,
-              removeZoomLevelConstraints,
-              json,
-              dataType,
-              dataLayers,
-              style,
-              fitBounds,
-              popup
-            );
-          });
-      } else {
-        addData(
-          map,
-          maplibre,
-          styleUrl,
-          false,
-          data,
-          dataType,
-          dataLayers,
-          style,
-          fitBounds,
-          popup
-        );
-      }
-    } else if (styleUrl) {
+                // eslint-disable-next-line no-undef
+                fetch(data)
+                    .then((response) => response.json())
+                    .then((json) => {
+                        addData(
+                            map,
+                            maplibre,
+                            styleUrl,
+                            removeZoomLevelConstraints,
+                            json,
+                            dataType,
+                            dataLayers,
+                            style,
+                            fitBounds,
+                            popup
+                        );
+                    });
+            } else {
+                addData(
+                    map,
+                    maplibre,
+                    styleUrl,
+                    false,
+                    data,
+                    dataType,
+                    dataLayers,
+                    style,
+                    fitBounds,
+                    popup
+                );
+            }
+        } else if (styleUrl) {
       setStyleVector(
         map,
         maplibre,
@@ -282,57 +270,57 @@ const MapLibreConfiguration = ({
         removeZoomLevelConstraints,
         popup
       );
-    }
-    if (custom) {
-      custom(map, maplibre);
-    }
-  }, []);
+        }
+        if (custom) {
+            custom(map, maplibre);
+        }
+    }, []);
 
-  return null;
+    return null;
 };
 
 MapLibreConfiguration.displayName = "MapLibreConfiguration";
 
 MapLibreConfiguration.propTypes = {
-  styleUrl: PropTypes.string,
-  removeZoomLevelConstraints: PropTypes.bool,
-  data: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-  dataType: PropTypes.string,
-  dataLayers: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
-  controls: PropTypes.bool,
-  defaultStyle: PropTypes.shape({
-    color: PropTypes.string,
-    opacity: PropTypes.number,
-    circleRadius: PropTypes.number,
-    lineWidth: PropTypes.number,
-    fillOpacity: PropTypes.number,
-    outlineWidth: PropTypes.number,
-  }),
-  fitBounds: PropTypes.bool,
+    styleUrl: PropTypes.string,
+    removeZoomLevelConstraints: PropTypes.bool,
+    data: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+    dataType: PropTypes.string,
+    dataLayers: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
+    controls: PropTypes.bool,
+    defaultStyle: PropTypes.shape({
+        color: PropTypes.string,
+        opacity: PropTypes.number,
+        circleRadius: PropTypes.number,
+        lineWidth: PropTypes.number,
+        fillOpacity: PropTypes.number,
+        outlineWidth: PropTypes.number,
+    }),
+    fitBounds: PropTypes.bool,
   popup: PropTypes.oneOf(["HOVER_ID", "CLICK_PROPERTIES"]),
-  custom: PropTypes.func,
-  showCompass: PropTypes.bool,
+    custom: PropTypes.func,
+    showCompass: PropTypes.bool,
 };
 
 MapLibreConfiguration.defaultProps = {
-  styleUrl: null,
-  removeZoomLevelConstraints: false,
-  data: null,
+    styleUrl: null,
+    removeZoomLevelConstraints: false,
+    data: null,
   dataType: "geojson",
-  dataLayers: {},
-  controls: true,
-  defaultStyle: {
+    dataLayers: {},
+    controls: true,
+    defaultStyle: {
     color: "#1D4E89",
-    opacity: 1,
-    circleRadius: 8,
-    lineWidth: 4,
-    fillOpacity: 0.2,
-    outlineWidth: 2,
-  },
-  fitBounds: true,
-  popup: null,
-  custom: null,
-  showCompass: true,
+        opacity: 1,
+        circleRadius: 8,
+        lineWidth: 4,
+        fillOpacity: 0.2,
+        outlineWidth: 2,
+    },
+    fitBounds: true,
+    popup: null,
+    custom: null,
+    showCompass: true,
 };
 
 export default MapLibreConfiguration;
