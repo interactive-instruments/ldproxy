@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.ldproxy.ogcapi.tiles.infra.AbstractEndpointTileSetMultiCollection;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -78,7 +79,7 @@ public class EndpointMapTileSetMultiCollection extends AbstractEndpointTileSetMu
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
         ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("tiles")
+                .apiEntrypoint("map")
                 .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_SET);
         String path = "/map/tiles/{tileMatrixSetId}";
         HttpMethods method = HttpMethods.GET;

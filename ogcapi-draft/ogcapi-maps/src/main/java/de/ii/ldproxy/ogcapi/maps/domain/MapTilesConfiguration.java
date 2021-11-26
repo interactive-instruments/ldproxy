@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -23,6 +24,12 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
 
     @Nullable
     String getMapProvider();
+
+    @Nullable
+    String getUrlTemplate();
+
+    @Nullable
+    List<String> getTileEncodings();
 
     @Override
     default MapTilesConfiguration.Builder getBuilder() {

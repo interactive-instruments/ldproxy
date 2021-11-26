@@ -102,7 +102,7 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
         ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("tiles")
+                .apiEntrypoint("map")
                 .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE);
         final String path = "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
         final HttpMethods method = HttpMethods.GET;
