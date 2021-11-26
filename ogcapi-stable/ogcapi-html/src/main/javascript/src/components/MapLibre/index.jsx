@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "./custom.css";
 
 import Configuration from "./Configuration";
+import LayerControl from "./LayerControl";
 import { baseStyle, emptyStyle } from "./styles";
 import { polygonFromBounds } from "./geojson";
 
@@ -30,6 +31,7 @@ const MapLibre = ({
   popup,
   custom,
   showCompass,
+  layerGroupControl,
 }) => {
   const style = styleUrl
     ? emptyStyle()
@@ -72,6 +74,9 @@ const MapLibre = ({
         popup={popup}
         custom={custom}
       />
+      {layerGroupControl && Object.keys(layerGroupControl).length > 0 && (
+        <LayerControl layerGroups={layerGroupControl} />
+      )}
     </Map>
   );
 };
@@ -94,6 +99,7 @@ MapLibre.propTypes = {
   defaultStyle: PropTypes.object,
   // eslint-disable-next-line react/forbid-prop-types
   fitBoundsOptions: PropTypes.object,
+  layerGroupControl: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
   ...Configuration.propTypes,
 };
 
@@ -116,6 +122,7 @@ MapLibre.defaultProps = {
     maxZoom: 16,
     animate: false,
   },
+  layerGroupControl: null,
   ...Configuration.defaultProps,
 };
 

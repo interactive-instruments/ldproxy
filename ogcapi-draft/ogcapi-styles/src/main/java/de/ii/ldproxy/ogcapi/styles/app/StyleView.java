@@ -14,13 +14,12 @@ import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
 import de.ii.xtraplatform.services.domain.GenericView;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class StyleView extends GenericView {
     public final String title;
     public final String styleUrl;
-    public final boolean popup;
-    public final boolean layerSwitcher;
     public final String layerIds;
     public final MapClient mapClient;
     public final String urlPrefix;
@@ -39,12 +38,11 @@ public class StyleView extends GenericView {
 
         this.mapClient = new ImmutableMapClient.Builder()
             .styleUrl(styleUrl)
-            .popup(Popup.CLICK_PROPERTIES)
+            .popup(popup ? Optional.of(Popup.CLICK_PROPERTIES) : Optional.empty())
             .savePosition(true)
+            .layerGroupControl(layerControl ? Optional.of(layerMap.entrySet()) : Optional.empty())
             .build();
 
-        this.popup = false;
-        this.layerSwitcher = false;
         this.urlPrefix = urlPrefix;
     }
 }

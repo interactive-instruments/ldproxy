@@ -48,6 +48,15 @@
     {{#popup}}
       popup: '{{.}}',
     {{/popup}}
+      layerGroupControl: {
+    {{#layerGroupControl}}
+        '{{key}}': [
+        {{#value}}
+          '{{.}}',
+        {{/value}}
+        ],
+    {{/layerGroupControl}}
+      },
       tileMatrixSets: [
       {{#tileCollections}}
         {
