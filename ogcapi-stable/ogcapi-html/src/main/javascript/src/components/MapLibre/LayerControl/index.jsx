@@ -41,10 +41,17 @@ const LayerControl = ({ layerGroups }) => {
       id="layer-control"
       style={{ position: "absolute", zIndex: 1, top: "10px", right: "50px" }}
     >
-      <ButtonGroup vertical>
+      <ButtonGroup
+        vertical
+        style={{
+          backgroundColor: "white",
+          borderRadius: "0.25rem",
+        }}
+      >
         {Object.keys(layerGroups).map((name) => (
           <Button
             color="secondary"
+            outline
             onClick={(e) => {
               e.target.blur();
               onSelect(name);

@@ -16,6 +16,7 @@
     "dependencies": {
         "@mapbox/geojson-extent": "^1.0.1",
         "bootstrap": "^4.6.0",
+        "c137.js": "^1.84.0",
         "maplibre-gl": "^1.15.2",
         "moment": "^2.29.1",
         "ol": "^6.9.0",
@@ -32,6 +33,8 @@
     },
     "devDependencies": {
         "@babel/core": "^7",
+        "@babel/plugin-proposal-nullish-coalescing-operator": "^7.16.0",
+        "@babel/preset-env": "^7.16.4",
         "@mdx-js/react": "^1.6.22",
         "@neutrinojs/airbnb": "^9.3.0",
         "@neutrinojs/mocha": "^9.3.0",
