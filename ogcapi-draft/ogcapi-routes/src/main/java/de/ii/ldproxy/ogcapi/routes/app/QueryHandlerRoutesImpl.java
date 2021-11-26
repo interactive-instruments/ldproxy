@@ -25,6 +25,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableFeatureTransformationContextRoutes;
+import de.ii.ldproxy.ogcapi.routes.domain.Preference;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
@@ -52,6 +53,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
@@ -153,11 +155,27 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
         RouteDefinition def = routeDefinition.getInputs();
 
-        ImmutableList.Builder<String> flagBuilder = new ImmutableList.Builder<>();
+        ImmutableRouteQuery.Builder routeQueryBuilder = ImmutableRouteQuery.builder()
+            .start(routeDefinition.getStart())
+            .end(routeDefinition.getEnd())
+            .wayPoints(routeDefinition.getWaypoints());
+
         String preference = def.getPreference().orElse(config.getDefaultPreference());
-        processFlag(preference, config.getPreferences()).ifPresent(flagBuilder::add);
-        def.getAdditionalFlags()
-            .forEach(flag -> processFlag(flag, config.getAdditionalFlags()).ifPresent(flagBuilder::add));
+        routeQueryBuilder = processPreference(preference, config.getPreferences(), routeQueryBuilder);
+
+        ImmutableList.Builder<String> flagBuilder = new ImmutableList.Builder<>();
+        for (String flag: def.getAdditionalFlags()) {
+            flagBuilder = processFlag(flag, config.getAdditionalFlags(), flagBuilder);
+        }
+        routeQueryBuilder.flags(flagBuilder.build());
+
+        if (def.getWeight().isPresent()) {
+            routeQueryBuilder.weight(def.getWeight().get());
+        }
+
+        if (def.getHeight().isPresent()) {
+            routeQueryBuilder.height(def.getHeight().get());
+        }
 
         EpsgCrs waypointCrs = routeDefinition.getCrs();
         if (!crsSupport.isSupported(apiData, waypointCrs)) {
@@ -174,12 +192,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
         query = ImmutableFeatureQuery.builder()
             .from(query)
-            .addExtensions(ImmutableRouteQuery.builder()
-                               .flags(flagBuilder.build())
-                               .start(routeDefinition.getStart())
-                               .end(routeDefinition.getEnd())
-                               .wayPoints(routeDefinition.getWaypoints())
-                               .build())
+            .addExtensions(routeQueryBuilder.build())
             .build();
 
         Optional<CrsTransformer> crsTransformer = Optional.empty();
@@ -312,12 +325,24 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         };
     }
 
-    private Optional<String> processFlag(String flag, Map<String, RoutingFlag> flagConfig) {
-        if (Objects.isNull(flag))
-            return Optional.empty();
+    private ImmutableRouteQuery.Builder processPreference(@NotNull String preference, Map<String, Preference> preferencesConfig,
+                                   ImmutableRouteQuery.Builder routeQueryBuilder) {
+        if (!preferencesConfig.containsKey(preference))
+            throw new IllegalArgumentException(String.format("Unknown preference '%s'. Known preferences: %s", preference, String.join(", ", preferencesConfig.keySet())));
+        Preference pref = preferencesConfig.get(preference);
+        routeQueryBuilder
+            .costColumn(pref.getCostColumn())
+            .reverseCostColumn(pref.getReverseCostColumn());
+        return routeQueryBuilder;
+    }
 
-        if (!flagConfig.containsKey(flag))
-            throw new IllegalArgumentException(String.format("Unknown routing flag '%s'. Known flags: %s", flag, String.join(", ", flagConfig.keySet())));
-        return Optional.of(flagConfig.get(flag).getProviderFlag().orElse(flag));
+    private ImmutableList.Builder<String> processFlag(String flag, Map<String, RoutingFlag> flagConfig,
+                             ImmutableList.Builder<String> flagBuilder) {
+        if (Objects.nonNull(flag)) {
+            if (!flagConfig.containsKey(flag))
+                throw new IllegalArgumentException(String.format("Unknown routing flag '%s'. Known flags: %s", flag, String.join(", ", flagConfig.keySet())));
+            flagBuilder.add(flagConfig.get(flag).getProviderFlag().orElse(flag));
+        }
+        return flagBuilder;
     }
 }

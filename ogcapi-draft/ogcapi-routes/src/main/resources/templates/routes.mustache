@@ -41,6 +41,7 @@
                     </div>
                 </div>
             </div>
+            {{#hasAdditionalFlags}}
             <div class="row my-3">
                 <div class="input-group">
                     <div class="col-md-3 font-weight-bold">
@@ -58,6 +59,33 @@
                     </div>
                 </div>
             </div>
+            {{/hasAdditionalFlags}}
+            {{#supportsMaxWeight}}
+                <div class="row my-3">
+                    <div class="input-group">
+                        <div class="col-md-3 font-weight-bold">
+                            <label for="weight">{{maxWeightTitle}}</label>
+                        </div>
+                        <div class="col-md-9">
+                            <input id="weight" name="weight" type="number" step="any"/>
+                            <label class="inline" for="weight">{{weightUnitTitle}}</label>
+                        </div>
+                    </div>
+                </div>
+            {{/supportsMaxWeight}}
+            {{#supportsMaxHeight}}
+                <div class="row my-3">
+                    <div class="input-group">
+                        <div class="col-md-3 font-weight-bold">
+                            <label for="height">{{maxHeightTitle}}</label>
+                        </div>
+                        <div class="col-md-9">
+                            <input id="height" name="height" type="number" step="any"/>
+                            <label class="inline" for="height">{{heightUnitTitle}}</label>
+                        </div>
+                    </div>
+                </div>
+            {{/supportsMaxHeight}}
             <div class="row my-3">
                 <div class="input-group">
                     <div class="col-md-3 font-weight-bold">
@@ -200,6 +228,8 @@ function handleFormSubmit(event) {
          'name': '',
          'preference': '',
          'additionalFlags': [],
+         'weight': null,
+         'height': null,
          'waypoints': {
             'value': {
                'type': 'MultiPoint',
@@ -212,6 +242,12 @@ function handleFormSubmit(event) {
    routeDefinition.inputs.name = data.get('name');
    routeDefinition.inputs.preference = data.get('preference');
    routeDefinition.inputs.additionalFlags = data.getAll('flags');
+   if (data.get('weight') !== '') {
+     routeDefinition.inputs.weight = parseFloat(data.get('weight'));
+   }
+   if (data.get('height') !== '') {
+     routeDefinition.inputs.height = parseFloat(data.get('height'));
+   }
    routeDefinition.inputs.waypoints.value.coordinates[0] = data.getAll('start');
    routeDefinition.inputs.waypoints.value.coordinates[1] = data.getAll('end');
    routeDefinition.inputs.waypoints.value.coordRefSys = data.get('crs');

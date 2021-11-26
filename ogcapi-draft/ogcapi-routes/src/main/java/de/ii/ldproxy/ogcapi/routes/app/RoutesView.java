@@ -22,6 +22,7 @@ import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 
 import java.util.List;
 import java.util.Locale;
@@ -40,9 +41,15 @@ public class RoutesView extends OgcApiView {
     public final String crsTitle;
     public final String xTitle;
     public final String yTitle;
+    public final String maxWeightTitle;
+    public final String maxHeightTitle;
+    public final String weightUnitTitle;
+    public final String heightUnitTitle;
     public final String computeRouteButton;
     public Map<String, String> bbox;
     public final MapClient mapClient;
+    public final boolean supportsMaxWeight;
+    public final boolean supportsMaxHeight;
 
     private final RouteDefinitionInfo templateInfo;
     private final HtmlFormDefaults htmlDefaults;
@@ -64,6 +71,10 @@ public class RoutesView extends OgcApiView {
         computeRouteButton = i18n.get("computeRouteButton", language);
         xTitle = i18n.get("xTitle", language);
         yTitle = i18n.get("yTitle", language);
+        maxWeightTitle = i18n.get("maxWeightTitle", language);
+        maxHeightTitle = i18n.get("maxHeightTitle", language);
+        weightUnitTitle = i18n.get("weightUnitTitle", language);
+        heightUnitTitle = i18n.get("heightUnitTitle", language);
 
         this.bbox = apiData.getSpatialExtent()
             .map(boundingBox -> ImmutableMap.of(
@@ -87,6 +98,13 @@ public class RoutesView extends OgcApiView {
             .styleUrl(Optional.ofNullable(null)) // TODO
             .removeZoomLevelConstraints(false) // TODO
             .build();
+
+        this.supportsMaxWeight = apiData.getExtension(RoutingConfiguration.class)
+            .map(RoutingConfiguration::getLoadRestrictions)
+            .orElse(false);
+        this.supportsMaxHeight = apiData.getExtension(RoutingConfiguration.class)
+            .map(RoutingConfiguration::getHeightRestrictions)
+            .orElse(false);
     }
 
     public Optional<Map.Entry<String,String>> getDefaultPreference() {
@@ -111,6 +129,12 @@ public class RoutesView extends OgcApiView {
         return templateInfo
             .getAdditionalFlags()
             .entrySet();
+    }
+
+    public boolean hasAdditionalFlags() {
+        return !templateInfo
+            .getAdditionalFlags()
+            .isEmpty();
     }
 
     public Set<Map.Entry<String,String>> getCrs() {

@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.routes.domain.Preference;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingFlag;
 import org.apache.felix.ipojo.annotations.Component;
@@ -54,10 +55,10 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
         }
 
         // TODO check on startup that there is at least one preference and that the default preference is one of them
-        Map<String, RoutingFlag> flags = apiData.getExtension(RoutingConfiguration.class)
+        Map<String, Preference> preferences = apiData.getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getPreferences)
             .orElse(ImmutableMap.of());
-        builder.putExtensions(CORE,ImmutableMap.of("preferences", flags.keySet().stream().collect(ImmutableList.toImmutableList())));
+        builder.putExtensions(CORE,ImmutableMap.of("preferences", preferences.keySet().stream().collect(ImmutableList.toImmutableList())));
 
         return builder;
     }

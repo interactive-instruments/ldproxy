@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlForm;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutablePreference;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutingFlag;
 import org.apache.felix.ipojo.annotations.Component;
@@ -42,7 +43,17 @@ public class CapabilityRouting implements ApiBuildingBlock {
             //.async(false) TODO not yet implemented
             //.callback(false) TODO not yet implemented
             .intermediateWaypoints(false)
-            .preferences(ImmutableMap.of("fastest",new ImmutableRoutingFlag.Builder().label("fastest").build()))
+            .preferences(ImmutableMap
+                             .of("fastest", new ImmutablePreference.Builder()
+                                     .label("Fastest")
+                                     .costColumn("cost_s")
+                                     .reverseCostColumn("reverse_cost_s")
+                                     .build(),
+                                 "shortest", new ImmutablePreference.Builder()
+                                     .label("Shortest")
+                                     .costColumn("cost")
+                                     .reverseCostColumn("reverse_cost")
+                                     .build()))
             .defaultPreference("fastest")
             .additionalFlags(ImmutableMap.of())
             .defaultCrs(CRS84)

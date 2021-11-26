@@ -25,11 +25,11 @@ public abstract class Waypoints {
 
     @Value.Check
     void check() {
-        Preconditions.checkState(getType().equals("MultiPoint"), "Waypoints is not a MultiPoint geometry. Found: %s.", getType());
-        Preconditions.checkState(getCoordinates().size()>=2, "At least two waypoints are required. Found: %d.", getCoordinates().size());
+        Preconditions.checkState(getType().equals("MultiPoint"), "Waypoints is not a MultiPoint geometry. Found: {}.", getType());
+        Preconditions.checkState(getCoordinates().size()>=2, "At least two waypoints are required. Found: {}.", getCoordinates().size());
         getCoordinates().forEach(waypoint -> {
-            Preconditions.checkState(waypoint.size()>=2, "At least two coordinates are required per waypoint. Found: %d.", waypoint.size());
-            Preconditions.checkState(waypoint.size()<=3, "At most three coordinates are required per waypoint. Found: %d.", waypoint.size());
+            Preconditions.checkState(waypoint.size()>=2, "At least two coordinates are required per waypoint. Found: {}.", waypoint.size());
+            Preconditions.checkState(waypoint.size()<=3, "At most three coordinates are required per waypoint. Found: {}.", waypoint.size());
         });
     }
 }

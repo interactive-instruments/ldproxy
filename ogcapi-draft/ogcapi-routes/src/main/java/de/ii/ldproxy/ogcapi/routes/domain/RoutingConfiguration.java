@@ -43,7 +43,18 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     @Nullable
     Boolean getIntermediateWaypoints();
 
-    Map<String, RoutingFlag> getPreferences();
+    @Nullable
+    Boolean getLoadRestrictions();
+
+    @Nullable
+    Boolean getHeightRestrictions();
+
+    @Nullable
+    Boolean getObstacles();
+
+    // TODO mode
+
+    Map<String, Preference> getPreferences();
 
     String getDefaultPreference();
 
