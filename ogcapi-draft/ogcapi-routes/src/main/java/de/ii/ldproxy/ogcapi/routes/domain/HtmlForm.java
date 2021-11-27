@@ -9,8 +9,10 @@ package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.features.core.domain.Geometry;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -20,6 +22,8 @@ import java.util.Optional;
 public interface HtmlForm {
 
     Boolean getEnabled();
+
+    Map<String,EpsgCrs> getCrs();
 
     Optional<HtmlFormDefaults> getDefaults();
 }

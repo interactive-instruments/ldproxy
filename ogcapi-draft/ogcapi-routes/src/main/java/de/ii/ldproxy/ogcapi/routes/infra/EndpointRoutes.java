@@ -31,14 +31,14 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlFormDefaults;
+import de.ii.ldproxy.ogcapi.routes.domain.HtmlForm;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputRouteDefinitionForm;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionInfo;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
-import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionWrapper;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -219,10 +219,14 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .orElse(ImmutableMap.of());
 
-        // TODO determine from configuration
-        ImmutableMap<String, String> crsList = ImmutableMap.of(OgcCrs.CRS84.toUriString(), "WGS 84 Länge/Breite",
-                                                               EpsgCrs.of(25832).toUriString(), "ETRS89 / UTM32 Nord",
-                                                               EpsgCrs.of(5676).toUriString(), "DHDN / Gauss-Krüger 2. Streifen");
+        ImmutableMap<String, String> crsList = apiData.getExtension(RoutingConfiguration.class)
+            .map(RoutingConfiguration::getHtml)
+            .map(HtmlForm::getCrs)
+            .orElse(ImmutableMap.of())
+            .entrySet()
+            .stream()
+            .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getValue().toUriString(), entry.getKey()))
+            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
         QueryHandlerRoutes.QueryInputRouteDefinitionForm queryInput = new ImmutableQueryInputRouteDefinitionForm.Builder()
             .templateInfo(new ImmutableRouteDefinitionInfo.Builder()

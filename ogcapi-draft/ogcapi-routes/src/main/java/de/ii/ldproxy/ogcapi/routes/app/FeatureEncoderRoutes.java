@@ -180,18 +180,18 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       for (PropertyRoutes p2 : p.getNestedProperties()) {
         propertyBuilder = processProperty(id, p2, propertyBuilder);
       }
-    } else if (!p.getType().equals(PropertyBase.Type.VALUE))
+    } else if (!p.getType().equals(PropertyBase.Type.VALUE)) {
       LOGGER.debug("Property '{}' of segment '{}' is not a value and is ignored.", p.getName(), id);
-    else if (type.equals(SchemaBase.Type.BOOLEAN))
+    } else if (type.equals(SchemaBase.Type.BOOLEAN)) {
       propertyBuilder.put(p.getName(), Boolean.parseBoolean(p.getFirstValue()));
-    else if (type.equals(SchemaBase.Type.FLOAT)) {
+    } else if (type.equals(SchemaBase.Type.FLOAT)) {
       propertyBuilder.put(p.getName(), Double.parseDouble(p.getFirstValue()));
       if (p.getName().equals("length_m"))
         aggLength += Double.parseDouble(p.getFirstValue());
-    } else if (type.equals(SchemaBase.Type.INTEGER))
+    } else if (type.equals(SchemaBase.Type.INTEGER)) {
       if (!p.getName().equals("source") && !p.getName().equals("target"))
         propertyBuilder.put(p.getName(), Integer.parseInt(p.getFirstValue()));
-    else if (type.equals(SchemaBase.Type.STRING) || type.equals(SchemaBase.Type.DATE) || type.equals(SchemaBase.Type.DATETIME)) {
+    } else if (type.equals(SchemaBase.Type.STRING) || type.equals(SchemaBase.Type.DATE) || type.equals(SchemaBase.Type.DATETIME)) {
       if (!p.getFirstValue().isEmpty()) {
         propertyBuilder.put(p.getName(), p.getFirstValue());
       }

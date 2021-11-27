@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.routes.app;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
@@ -15,6 +16,8 @@ import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlForm;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutablePreference;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutingFlag;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -59,6 +62,7 @@ public class CapabilityRouting implements ApiBuildingBlock {
             .defaultCrs(CRS84)
             .html(ImmutableHtmlForm.builder()
                       .enabled(true)
+                      .crs(ImmutableMap.<String,EpsgCrs>of("WGS 84 longitude/latitude", OgcCrs.CRS84))
                       .build())
             .build();
     }
