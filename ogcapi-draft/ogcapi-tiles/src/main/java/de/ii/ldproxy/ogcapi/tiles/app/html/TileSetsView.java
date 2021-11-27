@@ -259,6 +259,7 @@ public class TileSetsView extends OgcApiView {
         String styleUrl, boolean removeZoomLevelConstraints,
         HtmlConfiguration htmlConfig, Multimap<String, List<String>> layers) {
         return new ImmutableMapClient.Builder()
+                .type(type)
                 .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
                                        .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
                 .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
