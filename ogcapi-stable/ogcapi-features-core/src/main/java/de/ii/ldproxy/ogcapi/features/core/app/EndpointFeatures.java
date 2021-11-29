@@ -40,7 +40,6 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -48,7 +47,26 @@ import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.models.media.Schema;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -60,19 +78,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
@@ -348,11 +353,16 @@ public class EndpointFeatures extends EndpointSubCollection {
                             collectionId);
                         return null;
                     }
+                    String description = "Filter the collection by property '" + field + "'";
+                    if (Objects.nonNull(schema2.get().getDescription()) && !schema2.get().getDescription().isEmpty())
+                        description += ": " + schema2.get().getDescription() + ".";
+                    else
+                        description += ".";
                     return new ImmutableQueryParameterTemplateQueryable.Builder()
                         .apiId(apiData.getId())
                         .collectionId(collectionId)
                         .name(field)
-                        .description("Filter the collection by property '" + field + "'")
+                        .description(description)
                         .schema(schema2.get())
                         .build();
                 })
@@ -397,7 +407,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .showsFeatureSelfLink(showsFeatureSelfLink)
                 .build();
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURES, queryInput, requestContext);
+        return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContext);
     }
 
     @GET
@@ -434,6 +444,6 @@ public class EndpointFeatures extends EndpointSubCollection {
         if (Objects.nonNull(coreConfiguration.getCaching()) && Objects.nonNull(coreConfiguration.getCaching().getCacheControlItems()))
             queryInputBuilder.cacheControl(coreConfiguration.getCaching().getCacheControlItems());
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInputBuilder.build(), requestContext);
+        return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURE, queryInputBuilder.build(), requestContext);
     }
 }

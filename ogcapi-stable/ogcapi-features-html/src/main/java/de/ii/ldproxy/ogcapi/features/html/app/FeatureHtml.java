@@ -8,10 +8,13 @@
 package de.ii.ldproxy.ogcapi.features.html.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.features.html.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureBase;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -131,6 +134,11 @@ public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
   }
 
   @Value.Lazy
+  default Optional<Geometry<?>> parseGeometry() {
+    return getGeometry().map(PropertyHtml::parseGeometry);
+  }
+
+  @Value.Lazy
   default List<PropertyHtml> getFirstCoordinates() {
     return getGeometry().flatMap(geometry -> {
       PropertyHtml current = geometry;
@@ -163,5 +171,32 @@ public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
             .filter(Optional::isPresent)
             .map(Optional::get)
             .findFirst());
+  }
+
+  default List<PropertyHtml> findPropertiesByPath(String pathString) {
+    return findPropertiesByPath(PropertyHtml.PATH_SPLITTER.splitToList(pathString));
+  }
+
+  default List<PropertyHtml> findPropertiesByPath(List<String> path) {
+    List<PropertyHtml> properties = getProperties().stream()
+        .map(property -> {
+          switch (PropertyHtml.pathCompatible(property.getPropertyPath(), path)) {
+            case SUB_PATH:
+              return property.findPropertiesByPath(path);
+            case EQUAL:
+              return ImmutableList.of(property);
+          }
+          return ImmutableList.<PropertyHtml>of();
+        })
+        .flatMap(Collection::stream)
+        .collect(Collectors.toUnmodifiableList());
+    if (properties.isEmpty())
+      properties = getProperties().stream()
+          .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
+          .map(property -> property.findPropertyByPath(path))
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .collect(Collectors.toUnmodifiableList());
+    return properties;
   }
 }

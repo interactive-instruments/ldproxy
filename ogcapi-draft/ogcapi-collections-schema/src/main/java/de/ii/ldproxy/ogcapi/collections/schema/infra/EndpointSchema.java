@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.ExtendableConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
@@ -28,6 +29,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
@@ -46,6 +48,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Component
 @Provides
@@ -67,6 +70,20 @@ public class EndpointSchema extends EndpointSubCollection {
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return SchemaConfiguration.class;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return super.isEnabledForApi(apiData) && apiData.getExtension(GeoJsonConfiguration.class)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(false);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return super.isEnabledForApi(apiData, collectionId) && apiData.getExtension(GeoJsonConfiguration.class, collectionId)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(false);
     }
 
     @Override

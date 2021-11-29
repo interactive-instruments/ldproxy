@@ -109,9 +109,9 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
         this.collectionInformationTitle = i18n.get ("collectionInformationTitle", language);
         this.mapClient = new ImmutableMapClient.Builder()
             .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
-                .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
+                .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
             .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+                .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
             .bounds(Optional.ofNullable(this.getBbox()))
             .drawBounds(true)
             .isInteractive(false)
