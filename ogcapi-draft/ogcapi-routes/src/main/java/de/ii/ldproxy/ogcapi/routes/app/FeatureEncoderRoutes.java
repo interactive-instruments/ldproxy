@@ -33,6 +33,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.round;
+
 // TODO generalize options and make them configurable to avoid that the encoder is specific to one use case and source dataset
 
 public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, FeatureRoutes> {
@@ -47,12 +50,14 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
   private List<Geometry.Coordinate> overviewGeometry;
   private List<RouteSegment> segments;
   private Double aggCost;
+  private Double aggDuration;
   private Double aggLength;
   private Double aggAscent;
   private Double aggDescent;
   private ImmutableRouteSegment.Builder segmentBuilder;
   private boolean firstSegment;
   private boolean is3d;
+  private boolean isReverse;
 
   public FeatureEncoderRoutes(FeatureTransformationContextRoutes transformationContext) {
     this.transformationContext = transformationContext;
@@ -82,6 +87,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     segments = new ArrayList<>();
     overviewGeometry = new ArrayList<>();
     aggCost = 0.0;
+    aggDuration = 0.0;
     aggLength = 0.0;
     aggAscent = 0.0;
     aggDescent = 0.0;
@@ -109,6 +115,9 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         .orElse(Integer.MIN_VALUE);
     if (node!=Integer.MIN_VALUE && target!= Integer.MIN_VALUE && node==target) {
       coordinates = Lists.reverse(coordinates);
+      isReverse = true;
+    } else {
+      isReverse = false;
     }
 
     if (firstSegment) {
@@ -188,6 +197,10 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       propertyBuilder.put(p.getName(), Double.parseDouble(p.getFirstValue()));
       if (p.getName().equals("length_m"))
         aggLength += Double.parseDouble(p.getFirstValue());
+      if (p.getName().equals("duration_forward_s") && !isReverse)
+        aggDuration += Double.parseDouble(p.getFirstValue());
+      else if (p.getName().equals("duration_backward_s") && isReverse)
+        aggDuration += abs(Double.parseDouble(p.getFirstValue()));
     } else if (type.equals(SchemaBase.Type.INTEGER)) {
       if (!p.getName().equals("source") && !p.getName().equals("target"))
         propertyBuilder.put(p.getName(), Integer.parseInt(p.getFirstValue()));
@@ -206,17 +219,20 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     if (Objects.nonNull(start) && Objects.nonNull(lastPoint)) {
       builder.bbox(computeBbox());
       long processingDuration = (System.nanoTime() - transformationContext.getStartTimeNano()) / 1000000;
+      ImmutableMap.Builder<String, Number> propertyBuilder = ImmutableMap.builder();
+      if (aggLength>0.0)
+        propertyBuilder.put("length_m", round(aggLength));
+      if (aggDuration>0.0)
+        propertyBuilder.put("duration_s", round(aggDuration));
+      if (aggAscent>0.0)
+        propertyBuilder.put("ascent_m", round(aggAscent));
+      if (aggDescent>0.0)
+        propertyBuilder.put("descent_m", round(aggDescent));
+      propertyBuilder.put("processingTime_ms", round(processingDuration));
       builder.addFeatures(ImmutableRouteOverview.builder()
                               .geometry(Geometry.LineString.of(overviewGeometry))
                               .id(0)
-                              .properties(is3d ? ImmutableMap.of("length_m", aggLength,
-                                                                 "ascent_m", aggAscent,
-                                                                 "descent_m", aggDescent,
-                                                                 "cost", aggCost,
-                                                                 "processingTime_ms", processingDuration)
-                                              : ImmutableMap.of("length_m", aggLength,
-                                                                "cost", aggCost,
-                                                                "processingTime_ms", processingDuration))
+                              .properties(propertyBuilder.build())
                               .build(),
                           start,
                           ImmutableRouteEnd.builder()
