@@ -16,8 +16,11 @@
     "dependencies": {
         "@mapbox/geojson-extent": "^1.0.1",
         "bootstrap": "^4.6.0",
+        "c137.js": "^1.84.0",
         "maplibre-gl": "^1.15.2",
         "moment": "^2.29.1",
+        "ol": "^6.9.0",
+        "proj4": "^2.7.5",
         "prop-types": "^15.7.2",
         "qs": "^6.5.1",
         "react": "^16",
@@ -25,10 +28,13 @@
         "react-datetime-range-picker": "^1.0.5",
         "react-dom": "^16",
         "react-maplibre-ui": "^2.0.0",
-        "reactstrap": "^5.0.0-alpha.3"
+        "reactstrap": "^5.0.0-alpha.3",
+        "rlayers": "^1.1.1"
     },
     "devDependencies": {
         "@babel/core": "^7",
+        "@babel/plugin-proposal-nullish-coalescing-operator": "^7.16.0",
+        "@babel/preset-env": "^7.16.4",
         "@mdx-js/react": "^1.6.22",
         "@neutrinojs/airbnb": "^9.3.0",
         "@neutrinojs/mocha": "^9.3.0",

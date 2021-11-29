@@ -40,7 +40,6 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -373,11 +372,16 @@ public class EndpointFeatures extends EndpointSubCollection {
                             collectionId);
                         return null;
                     }
+                    String description = "Filter the collection by property '" + field + "'";
+                    if (Objects.nonNull(schema2.get().getDescription()) && !schema2.get().getDescription().isEmpty())
+                        description += ": " + schema2.get().getDescription() + ".";
+                    else
+                        description += ".";
                     return new ImmutableQueryParameterTemplateQueryable.Builder()
                         .apiId(apiData.getId())
                         .collectionId(collectionId)
                         .name(field)
-                        .description("Filter the collection by property '" + field + "'")
+                        .description(description)
                         .schema(schema2.get())
                         .build();
                 })
@@ -461,7 +465,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .showsFeatureSelfLink(showsFeatureSelfLink)
                 .build();
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURES, queryInput, requestContext);
+        return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContext);
     }
 
     @GET
@@ -497,6 +501,6 @@ public class EndpointFeatures extends EndpointSubCollection {
         if (Objects.nonNull(coreConfiguration.getCaching()) && Objects.nonNull(coreConfiguration.getCaching().getCacheControlItems()))
             queryInputBuilder.cacheControl(coreConfiguration.getCaching().getCacheControlItems());
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInputBuilder.build(), requestContext);
+        return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURE, queryInputBuilder.build(), requestContext);
     }
 }
