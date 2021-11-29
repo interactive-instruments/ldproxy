@@ -102,12 +102,12 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     int node = feature.findPropertyByPath("node")
         .map(PropertyRoutes::getFirstValue)
         .map(Integer::parseInt)
-        .orElseThrow();
+        .orElse(Integer.MIN_VALUE);
     int target = feature.findPropertyByPath(ImmutableList.of("data", "target"))
         .map(PropertyRoutes::getFirstValue)
         .map(Integer::parseInt)
-        .orElseThrow();
-    if (node==target) {
+        .orElse(Integer.MIN_VALUE);
+    if (node!=Integer.MIN_VALUE && target!= Integer.MIN_VALUE && node==target) {
       coordinates = Lists.reverse(coordinates);
     }
 
