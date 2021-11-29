@@ -86,9 +86,9 @@ public class RoutesView extends OgcApiView {
 
         this.mapClient = new ImmutableMapClient.Builder()
             .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
-                               .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
+                               .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
             .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                             .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+                             .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
             .bounds(Optional.ofNullable(bbox))
             .data(new ImmutableSource.Builder()
                       .type(MapClient.Source.TYPE.geojson)
@@ -189,7 +189,12 @@ public class RoutesView extends OgcApiView {
         return Objects.requireNonNullElse(htmlDefaults.getCenterLevel(), 0);
     }
 
-    public Optional<String> getAttribution() {
-        return apiData.getMetadata().flatMap(Metadata::getAttribution);
+    @Override
+    public String getAttribution() {
+        Optional<String> datasetAttribution = apiData.getMetadata().flatMap(Metadata::getAttribution);
+        if (datasetAttribution.isEmpty())
+            return super.getAttribution();
+
+        return apiData.getMetadata().flatMap(Metadata::getAttribution).get() + " | " + super.getAttribution();
     }
 }

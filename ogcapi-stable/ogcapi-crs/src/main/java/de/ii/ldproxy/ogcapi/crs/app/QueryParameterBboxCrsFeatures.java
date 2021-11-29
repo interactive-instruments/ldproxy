@@ -86,7 +86,7 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
                                              .collect(ImmutableList.toImmutableList());
             String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
-                .map(ImmutableEpsgCrs::toUriString)
+                .map(EpsgCrs::toUriString)
                 .orElse(CRS84);
             schemaMap.get(apiHashCode)
                      .put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
