@@ -10,36 +10,24 @@ package de.ii.ldproxy.ogcapi.routes.infra;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ApiHeader;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ApiOperation;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.Endpoint;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.routes.domain.HtmlForm;
+import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputRouteDefinitionForm;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionInfo;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionWrapper;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypointWrapper;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypoints;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionWrapper;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
+import de.ii.ldproxy.ogcapi.routes.domain.Waypoints;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -131,12 +119,27 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
         return formats;
     }
 
-    private Map<MediaType, ApiMediaTypeContent> getRequestContent() {
+    private Map<MediaType, ApiMediaTypeContent> getRequestContent(Optional<RoutingConfiguration> config) {
+        List<Example> examples = ImmutableList.of();;
+        Optional<HtmlFormDefaults> defaults = config.map(RoutingConfiguration::getHtml)
+            .flatMap(HtmlForm::getDefaults);
+        if (defaults.isPresent()) {
+            Waypoints waypoints = new ImmutableWaypoints.Builder().addCoordinates(defaults.get().getStart(), defaults.get().getEnd()).build();
+            ImmutableRouteDefinition.Builder builder = new ImmutableRouteDefinition.Builder();
+            config.map(RoutingConfiguration::getDefaultPreference).ifPresent(pref -> builder.preference(pref));
+            builder.waypoints(new ImmutableWaypointWrapper.Builder().value(waypoints).build());
+            defaults.get().getName().ifPresent(name -> builder.name(name));
+            examples = ImmutableList.of(new ImmutableExample.Builder()
+                             .value(new ImmutableRouteDefinitionWrapper.Builder()
+                                        .inputs(builder.build())
+                                        .build())
+                             .build());
+        }
         return ImmutableMap.of(REQUEST_MEDIA_TYPE.type(), new ImmutableApiMediaTypeContent.Builder()
             .ogcApiMediaType(REQUEST_MEDIA_TYPE)
             .schema(schemaRouteDefinition)
             .schemaRef("#/components/schemas/RouteDefinition")
-            .examples(ImmutableList.of())
+            .examples(examples)
             .build());
     }
 
@@ -164,7 +167,7 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
         Optional<String> operationDescription = Optional.of(description);
         ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
             .path(path);
-        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent();
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(config);
         Map<MediaType, ApiMediaTypeContent> responseContent = getContent(apiData, "/routes", method);
         ApiOperation operation = addOperation(apiData, method, OPERATION_TYPE.PROCESS, requestContent, responseContent, queryParameters, headers, path, operationSummary, operationDescription, Optional.empty(), TAGS);
         if (operation!=null)

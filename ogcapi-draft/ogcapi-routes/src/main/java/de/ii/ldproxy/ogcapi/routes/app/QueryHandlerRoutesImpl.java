@@ -160,7 +160,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .end(routeDefinition.getEnd())
             .wayPoints(routeDefinition.getWaypoints());
 
-        String preference = def.getPreference().orElse(config.getDefaultPreference());
+        String preference = Objects.requireNonNullElse(def.getPreference(),config.getDefaultPreference());
         routeQueryBuilder = processPreference(preference, config.getPreferences(), routeQueryBuilder);
 
         ImmutableList.Builder<String> flagBuilder = new ImmutableList.Builder<>();
@@ -169,12 +169,12 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         }
         routeQueryBuilder.flags(flagBuilder.build());
 
-        if (def.getWeight().isPresent()) {
-            routeQueryBuilder.weight(def.getWeight().get());
+        if (Objects.nonNull(def.getWeight())) {
+            routeQueryBuilder.weight(def.getWeight());
         }
 
-        if (def.getHeight().isPresent()) {
-            routeQueryBuilder.height(def.getHeight().get());
+        if (Objects.nonNull(def.getHeight())) {
+            routeQueryBuilder.height(def.getHeight());
         }
 
         EpsgCrs waypointCrs = routeDefinition.getCrs();
@@ -237,7 +237,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .shouldSwapCoordinates(swapCoordinates)
             .isHitsOnlyIfMore(false)
             .showsFeatureSelfLink(false)
-            .name(def.getName())
+            .name(Objects.requireNonNullElse(def.getName(),"Route"))
             .format(outputFormat)
             .outputStream(new OutputStreamToByteConsumer())
             .startTimeNano(System.nanoTime())
@@ -274,7 +274,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                                       targetCrs,
                                       true,
                                       String.format("%s.%s",
-                                                    def.getName().orElse("route"),
+                                                    Objects.requireNonNullElse(def.getName(),"Route"),
                                                     outputFormat.getMediaType().fileExtension()))
             .entity(result)
             .build();

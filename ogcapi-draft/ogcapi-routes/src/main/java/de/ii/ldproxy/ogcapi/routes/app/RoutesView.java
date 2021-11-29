@@ -143,6 +143,10 @@ public class RoutesView extends OgcApiView {
             .entrySet();
     }
 
+    public String getRouteName() {
+        return htmlDefaults.getName().orElse("Route");
+    }
+
     public Float getStartX() {
         List<Float> pos = htmlDefaults.getStart();
         if (Objects.nonNull(pos) && pos.size()>=2)

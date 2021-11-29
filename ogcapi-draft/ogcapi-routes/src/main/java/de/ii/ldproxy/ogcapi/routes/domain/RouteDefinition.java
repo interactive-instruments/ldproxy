@@ -7,10 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.routes.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import de.ii.xtraplatform.cql.domain.Geometry;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,11 +22,16 @@ import java.util.Optional;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableRouteDefinition.Builder.class)
 public interface RouteDefinition {
-    Optional<String> getName();
-    Optional<String> getPreference();
-    Optional<Double> getWeight();
-    Optional<Double> getHeight();
-    Optional<Geometry.MultiPolygon> getObstacles(); // TODO use proper class, after consolidation of geometry types?
+    @Nullable
+    String getName();
+    @Nullable
+    String getPreference();
+    @Nullable
+    Double getWeight();
+    @Nullable
+    Double getHeight();
+    @Nullable
+    Geometry.MultiPolygon getObstacles(); // TODO use proper class, after consolidation of geometry types?
     List<String> getAdditionalFlags();
     WaypointWrapper getWaypoints();
 }

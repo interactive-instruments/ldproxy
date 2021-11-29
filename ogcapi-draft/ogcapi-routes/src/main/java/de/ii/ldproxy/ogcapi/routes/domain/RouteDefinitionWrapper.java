@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.routes.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.cql.domain.Geometry;
@@ -24,11 +25,13 @@ import java.util.stream.IntStream;
 public interface RouteDefinitionWrapper {
   RouteDefinition getInputs();
 
+  @JsonIgnore
   @Value.Derived
   default List<List<Float>> getPoints() {
     return getInputs().getWaypoints().getValue().getCoordinates();
   }
 
+  @JsonIgnore
   @Value.Derived
   default EpsgCrs getCrs() {
     try {
@@ -38,17 +41,20 @@ public interface RouteDefinitionWrapper {
     }
   }
 
+  @JsonIgnore
   @Value.Derived
   default Geometry.Point getStart() {
     return processWaypoint(getPoints().get(0), getCrs());
   }
 
+  @JsonIgnore
   @Value.Derived
   default Geometry.Point getEnd() {
     List<List<Float>> waypoints = getPoints();
     return processWaypoint(waypoints.get(waypoints.size()-1), getCrs());
   }
 
+  @JsonIgnore
   @Value.Derived
   default List<Geometry.Point> getWaypoints() {
     List<List<Float>> waypoints = getPoints();
