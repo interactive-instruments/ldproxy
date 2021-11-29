@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
@@ -24,7 +25,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -38,7 +41,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
 
     enum DefaultCrs {CRS84, CRS84h}
 
-    enum ItemType {feature, record}
+    enum ItemType {unknown, feature, record}
 
     int MINIMUM_PAGE_SIZE = 1;
     int DEFAULT_PAGE_SIZE = 10;
@@ -70,6 +73,9 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     @Nullable
     Integer getMaximumPageSize();
 
+    Set<String> getEmbeddedFeatureLinkRels();
+
+    @Deprecated
     @Nullable
     Boolean getShowsFeatureSelfLink();
 
@@ -139,20 +145,16 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default Map<String, String> getQOrOtherFilterParameters() {
+    default List<String> getQOrOtherFilterParameters() {
         if (getQueryables().isPresent()) {
-            FeaturesCollectionQueryables queryables = getQueryables().get();
-            Map<String, String> parameters = new LinkedHashMap<>();
-
-            queryables.getQ()
-                      .forEach(property -> parameters.put(property, property));
-            queryables.getOther()
-                      .forEach(property -> parameters.put(property, property));
-
-            return parameters;
+            return Stream.concat(
+                getQueryables().get().getQ().stream(),
+                getQueryables().get().getOther().stream()
+            )
+                .collect(Collectors.toList());
         }
 
-        return ImmutableMap.of();
+        return ImmutableList.of();
     }
 
     @JsonIgnore
@@ -260,6 +262,12 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
         Map<String, Integer> mergedCoordinatePrecision = new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getCoordinatePrecision());
         mergedCoordinatePrecision.putAll(getCoordinatePrecision());
         builder.coordinatePrecision(mergedCoordinatePrecision);
+
+        // keep the rels from the parent configuration and just add new rels
+        builder.embeddedFeatureLinkRels(ImmutableSet.<String>builder()
+                                                    .addAll(((FeaturesCoreConfiguration) source).getEmbeddedFeatureLinkRels())
+                                                    .addAll(this.getEmbeddedFeatureLinkRels())
+                                                    .build());
 
         return builder.build();
     }

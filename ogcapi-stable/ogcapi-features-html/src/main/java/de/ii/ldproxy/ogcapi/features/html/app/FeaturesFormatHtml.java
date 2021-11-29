@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.app;
 
+import static de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi.DEFAULT_FLATTENING_SEPARATOR;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
@@ -25,17 +27,21 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
-import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
-import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
+import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -44,27 +50,28 @@ import de.ii.xtraplatform.streams.domain.Http;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.MediaType;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
@@ -83,6 +90,9 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             .build();
     private final Schema schema = new StringSchema().example("<html>...</html>");
     private final static String schemaRef = "#/components/schemas/htmlSchema";
+    private final static WithTransformationsApplied SCHEMA_FLATTENER = new WithTransformationsApplied(
+        ImmutableMap.of(
+            PropertyTransformations.WILDCARD, new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
     private final Dropwizard dropwizard;
     private final EntityRegistry entityRegistry;
@@ -90,16 +100,18 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
     private final FeaturesCoreValidation featuresCoreValidator;
+    private final XtraPlatform xtraPlatform;
 
     public FeaturesFormatHtml(@Requires Dropwizard dropwizard, @Requires EntityRegistry entityRegistry,
                               @Requires Http http, @Requires I18n i18n, @Requires FeaturesCoreProviders providers,
-                              @Requires FeaturesCoreValidation featuresCoreValidator) {
+                              @Requires FeaturesCoreValidation featuresCoreValidator, @Requires XtraPlatform xtraPlatform) {
         this.dropwizard = dropwizard;
         this.entityRegistry = entityRegistry;
         this.http = http;
         this.i18n = i18n;
         this.providers = providers;
         this.featuresCoreValidator = featuresCoreValidator;
+        this.xtraPlatform = xtraPlatform;
     }
 
     @Override
@@ -240,11 +252,17 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             FeatureTypeConfigurationOgcApi collectionData = serviceData.getCollections()
                 .get(collectionName);
             Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
-            FeatureProviderDataV2 providerData = providers.getFeatureProvider(serviceData, collectionData)
-                .getData();
 
-            Map<String, String> filterableFields = featuresCoreConfiguration
+            List<String> queryables = featuresCoreConfiguration
                 .map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
+                .orElse(ImmutableList.of());
+            Map<String, String> filterableFields = transformationContext.getFeatureSchema()
+                .map(schema -> schema.accept(SCHEMA_FLATTENER))
+                .map(schema -> schema.getProperties().stream()
+                    .filter(property -> queryables.contains(property.getName()))
+                    .map(property -> new SimpleImmutableEntry<>(property.getName(),
+                        property.getLabel().orElse(property.getName())))
+                    .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)))
                 .orElse(ImmutableMap.of());
 
             featureTypeDataset = createFeatureCollectionView(serviceData, serviceData.getCollections()
@@ -254,7 +272,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                 .get(collectionName)
                 .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getSubPath());
         } else {
-            featureTypeDataset = createFeatureDetailsView(serviceData.getCollections()
+            featureTypeDataset = createFeatureDetailsView(serviceData, serviceData.getCollections()
                 .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getSubPath(), getMapPosition(serviceData));
         }
 
@@ -287,15 +305,22 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             //ignore
         }
 
-        HtmlConfiguration htmlConfig = featureType.getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
+        Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition);
+        Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
+        MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
+                                             .orElse(MapClient.Type.MAP_LIBRE);
+        String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
+        String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(config.map(FeaturesHtmlConfiguration::getStyle), Optional.of(featureType.getId()), serviceUrl))
+                                    .orElse(null);
+        boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
+                                                   .orElse(false);
+
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig.orElse(null), null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, filterableFields);
 
         featureTypeDataset.temporalExtent = apiData.getTemporalExtent(featureType.getId()).orElse(null);
         apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
-        featureTypeDataset.filterFields = filterableFields.entrySet();
 
         featureTypeDataset.uriBuilder = uriCustomizer.copy()
                                                      .ensureParameter("f", MEDIA_TYPE.parameter());
@@ -303,15 +328,10 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                               .clearParameters()
                                                               .ensureParameter("f", MEDIA_TYPE.parameter());
 
-        //TODO: refactor all views, use extendable OgcApiCollection(s) as base, move this to CollectionExtension
-        featureTypeDataset.spatialSearch = featureType.getExtensions()
-                                                      .stream()
-                                                      .anyMatch(extensionConfiguration -> Objects.equals(extensionConfiguration.getBuildingBlock(), "FILTER_TRANSFORMERS"));
-
         return featureTypeDataset;
     }
 
-    private FeatureCollectionView createFeatureDetailsView(FeatureTypeConfigurationOgcApi featureType,
+    private FeatureCollectionView createFeatureDetailsView(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType,
                                                            URICustomizer uriCustomizer, List<Link> links,
                                                            String apiLabel, String featureId,
                                                            String staticUrlPrefix, Optional<Locale> language,
@@ -340,10 +360,20 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
-        HtmlConfiguration htmlConfig = featureType.getExtension(HtmlConfiguration.class)
-                                                  .orElse(null);
+        Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView("featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig, persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition);
+        Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
+        MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
+                                             .orElse(MapClient.Type.MAP_LIBRE);
+        String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
+        String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(config.map(FeaturesHtmlConfiguration::getStyle), Optional.of(featureType.getId()), serviceUrl))
+                                    .orElse(null);
+        boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
+                                                   .orElse(false);
+
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData,
+            featureType, "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig.orElse(null), persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints,
+            null);
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 

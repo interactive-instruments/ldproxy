@@ -127,14 +127,15 @@ public interface QueriesHandler<T extends QueryIdentifier> {
         return null;
     }
 
-    default Response.ResponseBuilder prepareSuccessResponse(OgcApi api,
-                                                            ApiRequestContext requestContext,
+    default Response.ResponseBuilder prepareSuccessResponse(ApiRequestContext requestContext,
                                                             List<Link> links,
                                                             Date lastModified,
                                                             EntityTag etag,
                                                             String cacheControl,
                                                             Date expires,
-                                                            EpsgCrs crs) {
+                                                            EpsgCrs crs,
+                                                            boolean inline,
+                                                            String filename) {
         Response.ResponseBuilder response = Response.ok()
                                                     .type(requestContext
                                                                   .getMediaType()
@@ -175,27 +176,40 @@ public interface QueriesHandler<T extends QueryIdentifier> {
         if (crs != null)
             response.header("Content-Crs", "<" + crs.toUriString() + ">");
 
+        if (!inline || Objects.nonNull(filename)) {
+            response.header("Content-Disposition", (inline ? "inline" : "attachment") + (Objects.nonNull(filename) ? "; filename=\""+filename+"\"" : ""));
+
+        }
+
         return response;
     }
 
     default Date getLastModified(QueryInput queryInput, PageRepresentation resource) {
         return queryInput.getLastModified()
                          .orElse(resource.getLastModified()
-                                         .orElse(Date.from(Instant.now())));
+                                         .orElse(null));
     }
 
     default Date getLastModified(QueryInput queryInput, OgcApi api) {
         return queryInput.getLastModified()
+                         .orElse(null);
+                         /* TODO since the information in the service configuration is not updated,
+                             if the file is updated outside of the manager, this is currently not a reliable mechanism
                          .orElse(Date.from(Instant.ofEpochMilli(api.getData()
                                                                    .getLastModified())));
+                          */
     }
 
     default Date getLastModified(QueryInput queryInput, OgcApi api, FeatureProvider2 provider) {
         return queryInput.getLastModified()
+                         .orElse(null);
+                         /* TODO since the information in the provider or service configuration is not updated,
+                             if the file is updated outside of the manager, this is currently not a reliable mechanism
                          .orElse(Date.from(Instant.ofEpochMilli(Math.max(api.getData()
                                                                             .getLastModified(),
                                                                          provider.getData()
                                                                                  .getLastModified()))));
+                          */
     }
 
     default Date getLastModified(File file) {

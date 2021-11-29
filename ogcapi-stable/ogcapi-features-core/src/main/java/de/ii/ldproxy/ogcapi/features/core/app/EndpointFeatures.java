@@ -40,6 +40,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -320,8 +321,8 @@ public class EndpointFeatures extends EndpointSubCollection {
         Stream<OgcApiQueryParameter> generalList, OgcApiDataV2 apiData, String collectionId, String logPrefix) {
 
         Optional<FeaturesCoreConfiguration> coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
-        final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
-            .orElse(ImmutableMap.of());
+        final List<String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
+            .orElse(ImmutableList.of());
 
         Map<String, List<PropertyTransformation>> transformations;
         if (coreConfiguration.isPresent()) {
@@ -332,11 +333,11 @@ public class EndpointFeatures extends EndpointSubCollection {
         Optional<FeatureTypeConfigurationOgcApi> collectionData = apiData
             .getCollectionData(collectionId);
         Optional<FeatureSchema> featureSchema = collectionData
-            .map(cd -> providers.getFeatureSchema(apiData, cd));
+            .flatMap(cd -> providers.getFeatureSchema(apiData, cd));
 
         List<OgcApiQueryParameter> build = Stream.concat(
             generalList,
-            filterableFields.keySet().stream()
+            filterableFields.stream()
                 .map(field -> {
                     Optional<Schema<?>> schema2 = featureSchema.flatMap(fs -> schemaGeneratorFeature.getQueryable(fs,
                         collectionData.get(), field));
@@ -375,6 +376,8 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                        .get(collectionId);
 
         FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .filter(ExtensionConfiguration::isEnabled)
+                                                                    .filter(cfg -> cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature) != FeaturesCoreConfiguration.ItemType.unknown)
                                                                     .orElseThrow(() -> new NotFoundException(MessageFormat.format("Features are not supported in API ''{0}'', collection ''{1}''.", api.getId(), collectionId)));
 
         int minimumPageSize = coreConfiguration.getMinimumPageSize();
@@ -384,12 +387,11 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
         FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration, minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
-
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
                 .defaultPageSize(Optional.of(defaultPageSize))
                 .showsFeatureSelfLink(showsFeatureSelfLink)
@@ -413,6 +415,8 @@ public class EndpointFeatures extends EndpointSubCollection {
                                                            .get(collectionId);
 
         FeaturesCoreConfiguration coreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                                                                    .filter(ExtensionConfiguration::isEnabled)
+                                                                    .filter(cfg -> cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature) != FeaturesCoreConfiguration.ItemType.unknown)
                                                                     .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items/{featureId}", collectionId);
@@ -424,7 +428,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .collectionId(collectionId)
                 .featureId(featureId)
                 .query(query)
-                .featureProvider(providers.getFeatureProvider(api.getData(), collectionData))
+                .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
                 .defaultCrs(coreConfiguration.getDefaultEpsgCrs());
 
         if (Objects.nonNull(coreConfiguration.getCaching()) && Objects.nonNull(coreConfiguration.getCaching().getCacheControlItems()))

@@ -47,6 +47,21 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+
+import java.util.HashMap;
+
+import de.ii.xtraplatform.features.domain.SchemaBase;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.threeten.extra.Interval;
+
+import javax.measure.unit.NonSI;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -211,18 +226,18 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .map(FeaturesCoreConfiguration::getAllFilterParameters)
             .orElse(ImmutableMap.of()));
 
-        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData);
+        Optional<FeatureSchema> featureSchema = providers.getFeatureSchema(apiData, collectionData);
 
-        featureSchema.getPrimaryGeometry()
+        featureSchema.flatMap(SchemaBase::getPrimaryGeometry)
             .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
 
-        featureSchema.getPrimaryInterval()
+        featureSchema.flatMap(SchemaBase::getPrimaryInterval)
             .ifPresentOrElse(
                 interval -> queryables.put(PARAMETER_DATETIME, String.format("%s%s%s",
                     interval.first().getFullPathAsString(),
                     DATETIME_INTERVAL_SEPARATOR,
                     interval.second().getFullPathAsString())),
-                () -> featureSchema.getPrimaryInstant()
+                () -> featureSchema.flatMap(SchemaBase::getPrimaryInstant)
                     .ifPresent(instant -> queryables.put(PARAMETER_DATETIME, instant.getFullPathAsString())));
 
         return ImmutableMap.<String, String>builder()
@@ -463,14 +478,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                 ImmutableList.Builder<Integer> precisionListBuilder = new ImmutableList.Builder<>();
                 for (Unit<?> unit : units) {
                     if (unit.equals(Units.METRE)) {
-                        precision = coreConfiguration.getCoordinatePrecision().get("meter");
-                        if (Objects.isNull(precision))
-                            precision = coreConfiguration.getCoordinatePrecision().get("metre");
+                    precision = coreConfiguration.getCoordinatePrecision().get("meter");
+                    if (Objects.isNull(precision))
+                        precision = coreConfiguration.getCoordinatePrecision().get("metre");
                     } else if ("degree".equals(unit.toString())) {
-                        precision = coreConfiguration.getCoordinatePrecision().get("degree");
-                    } else {
+                    precision = coreConfiguration.getCoordinatePrecision().get("degree");
+                } else {
                         LOGGER.debug("Coordinate precision could not be set, unrecognised unit found: '{}'.", unit);
-                    }
+                }
                     if (Objects.nonNull(precision)) {
                         precisionListBuilder.add(precision);
                     }

@@ -42,6 +42,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
             .type(new MediaType("application","vnd.mapbox.tile+json"))
             .label("TileJSON")
             .parameter("tilejson")
+            .fileExtension("tile.json")
             .build();
 
     private final Schema schemaTileJson;
@@ -99,13 +100,13 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     private String getTilesUriTemplate(TileSet tileset) {
         return tileset.getLinks()
                       .stream()
-                .filter(link -> link.getRel().equalsIgnoreCase("item") && link.getType().equalsIgnoreCase("application/vnd.mapbox-vector-tile"))
-                .findFirst()
-                .map(Link::getHref)
-                .orElseThrow(() -> new RuntimeException("No tile URI template with link relation type 'item' found for Mapbox Vector Tiles."))
-                .replace("{tileMatrixSetId}", tileset.getTileMatrixSetId())
-                .replace("{tileMatrix}", "{z}")
-                .replace("{tileRow}", "{y}")
-                .replace("{tileCol}", "{x}");
+                      .filter(link -> link.getRel().equalsIgnoreCase("item"))
+                      .findFirst()
+                      .map(Link::getHref)
+                      .orElseThrow(() -> new RuntimeException("No tile URI template with link relation type 'item' found."))
+                      .replace("{tileMatrixSetId}", tileset.getTileMatrixSetId())
+                      .replace("{tileMatrix}", "{z}")
+                      .replace("{tileRow}", "{y}")
+                      .replace("{tileCol}", "{x}");
     }
 }

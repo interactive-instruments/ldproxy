@@ -1,0 +1,36 @@
+{{#schemaOrgFeatures}}{{#features}}{{#schemaOrgItemType}}<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "{{schemaOrgItemType}}",
+  "name": "{{name}}",
+  "url": "{{#currentUrlWithSegmentClearParams}}{{idValue}}{{/currentUrlWithSegmentClearParams}}"{{#persistentUri}},
+  "sameAs": "{{.}}"{{/persistentUri}}{{#geoAsString}},
+  "geo": {{{.}}}{{/geoAsString}}{{#properties}}{{#itemProp}},
+  "{{.}}": "{{{getFirstValue}}}"{{/itemProp}}{{/properties}}
+}
+</script>{{/schemaOrgItemType}}
+{{/features}}{{/schemaOrgFeatures}}
+{{#isApiCatalog}}<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "DataCatalog",
+  "name": "{{title}}",
+  "description": "{{{description}}}",
+  "url": "{{canonicalUrl}}",
+  "dataset": [{{{datasetsAsString}}}]
+}
+</script>{{/isApiCatalog}}
+
+{{#isDataset}}{{#schemaOrgDataset}}<script type="application/ld+json">
+{{{.}}}
+</script>{{/schemaOrgDataset}}{{/isDataset}}
+
+{{#hasBreadCrumbs}}<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {{{breadCrumbsList}}}
+  ]
+}
+</script>{{/hasBreadCrumbs}}

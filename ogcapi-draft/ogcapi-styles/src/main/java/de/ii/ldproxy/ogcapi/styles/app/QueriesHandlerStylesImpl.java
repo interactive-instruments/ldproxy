@@ -91,11 +91,14 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? styles.getLinks() : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("styles.%s", format.getMediaType().fileExtension()))
                 .entity(format.getStylesEntity(styles, apiData, collectionId, requestContext))
                 .build();
     }
@@ -130,12 +133,14 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, links,
+        return prepareSuccessResponse(requestContext, links,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.%s", styleId, format.getFileExtension()))
                 .entity(format.getStyleEntity(stylesheetContent, apiData, collectionId, styleId, requestContext))
-                .header("Content-Disposition", "inline; filename=\""+styleId+"."+format.getFileExtension()+"\"")
                 .build();
     }
 
@@ -159,10 +164,13 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? metadata.getLinks() : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? metadata.getLinks() : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().fileExtension()))
                 .entity(format.getStyleMetadataEntity(metadata, apiData, collectionId, requestContext))
                 .build();
     }

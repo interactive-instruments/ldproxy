@@ -38,10 +38,12 @@ import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.auth.domain.User;
@@ -96,6 +98,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TileCache cache;
     private final StaticTileProviderStore staticTileProviderStore;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     EndpointTileMultiCollection(@Requires FeaturesCoreProviders providers,
                                 @Requires ExtensionRegistry extensionRegistry,
@@ -103,7 +106,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                                 @Requires CrsTransformerFactory crsTransformerFactory,
                                 @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                 @Requires TileCache cache,
-                                @Requires StaticTileProviderStore staticTileProviderStore) {
+                                @Requires StaticTileProviderStore staticTileProviderStore,
+                                @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(extensionRegistry);
         this.providers = providers;
         this.queryHandler = queryHandler;
@@ -111,6 +115,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         this.limitsGenerator = limitsGenerator;
         this.cache = cache;
         this.staticTileProviderStore = staticTileProviderStore;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -121,16 +126,19 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
             // Tiles are pre-generated as a static tile set
-            return config.map(ExtensionConfiguration::isEnabled).orElse(false);
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
                       .filter(TilesConfiguration::isMultiCollectionEnabled)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData).supportsHighLoad();
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
         }
     }
 
@@ -208,10 +216,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
             throw new NotFoundException("The requested tile is outside the zoom levels for this tile set.");
 
-        TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                .findAny()
-                .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
+        TileMatrixSet tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                             .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
         TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels)
                 .stream()
@@ -232,7 +238,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                 .replace("{tileCol}", tileCol);
 
         TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path, Optional.empty())
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+                                                              .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         if (!requiresQuerySupport) {
             // return a static tile
@@ -266,8 +272,11 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
             return queryHandler.handle(TilesQueriesHandler.Query.MBTILES_TILE, queryInput, requestContext);
         }
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
+
+        if (!(outputFormat instanceof TileFormatWithQuerySupportExtension))
+            throw new RuntimeException(String.format("Unexpected tile format without query support. Found: %s", outputFormat.getClass().getSimpleName()));
 
         List<String> collections = queryParams.containsKey("collections") ?
                 Splitter.on(",")
@@ -290,7 +299,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
             throw new NotAcceptableException("The requested tile format supports only a single layer. Please select only a single collection.");
 
         // check, if the cache can be used (no query parameters except f)
-        boolean useCache = queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f"));
+        boolean useCache = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f")));
 
         Tile multiLayerTile = new ImmutableTile.Builder()
                 .collectionIds(collections)
@@ -339,7 +349,8 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
         // don't store the tile in the cache if it is outside the range
         MinMax cacheMinMax = tilesConfiguration.getZoomLevelsDerived()
                                                .get(tileMatrixSetId);
-        Tile finalMultiLayerTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+        Tile finalMultiLayerTile = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin())) ?
                 multiLayerTile :
                 new ImmutableTile.Builder()
                         .from(multiLayerTile)
@@ -379,7 +390,7 @@ public class EndpointTileMultiCollection extends Endpoint implements Conformance
                                                                    .get(collectionId)
                                                                    .getExtension(TilesConfiguration.class)
                                                                    .orElse(tilesConfiguration);
-                    FeatureQuery query = outputFormat.getQuery(singleLayerTileMap.get(collectionId), allowedParameters, queryParams, layerConfiguration, requestContext.getUriCustomizer());
+                    FeatureQuery query = ((TileFormatWithQuerySupportExtension) outputFormat).getQuery(singleLayerTileMap.get(collectionId), allowedParameters, queryParams, layerConfiguration, requestContext.getUriCustomizer());
                     return ImmutableFeatureQuery.builder()
                                                 .from(query)
                                                 .type(featureTypeId)

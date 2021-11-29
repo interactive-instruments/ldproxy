@@ -34,6 +34,9 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.Response;
+
+import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -112,7 +115,10 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
             .map(link -> !link.contains("?") ? link : link.substring(0, link.indexOf("?")))
             .findAny();
 
-        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData);
+        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData)
+                                               .orElse(new ImmutableFeatureSchema.Builder().name(collectionId)
+                                                                                           .type(SchemaBase.Type.OBJECT)
+                                                                                           .build());
 
         JsonSchemaDocument schema = schemaCache
             .getSchema(featureSchema, apiData, collectionData, schemaUri);
@@ -123,10 +129,13 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.queryables.%s", collectionId, outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getEntity(schema, links, collectionId, api, requestContext))
                 .build();
     }

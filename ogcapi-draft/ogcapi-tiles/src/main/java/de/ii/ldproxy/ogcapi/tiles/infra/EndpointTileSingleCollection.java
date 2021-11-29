@@ -36,10 +36,12 @@ import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.auth.domain.User;
@@ -91,6 +93,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TileCache cache;
     private final StaticTileProviderStore staticTileProviderStore;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     EndpointTileSingleCollection(@Requires FeaturesCoreProviders providers,
                                  @Requires ExtensionRegistry extensionRegistry,
@@ -98,7 +101,8 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                                  @Requires CrsTransformerFactory crsTransformerFactory,
                                  @Requires TileMatrixSetLimitsGenerator limitsGenerator,
                                  @Requires TileCache cache,
-                                 @Requires StaticTileProviderStore staticTileProviderStore) {
+                                 @Requires StaticTileProviderStore staticTileProviderStore,
+                                 @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(extensionRegistry);
         this.providers = providers;
         this.queryHandler = queryHandler;
@@ -106,6 +110,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         this.limitsGenerator = limitsGenerator;
         this.cache = cache;
         this.staticTileProviderStore = staticTileProviderStore;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -130,16 +135,19 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         Optional<TilesConfiguration> config = apiData.getCollections()
                                                      .get(collectionId)
                                                      .getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
             // Tiles are pre-generated as a static tile set
-            return config.map(ExtensionConfiguration::isEnabled).orElse(false);
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
         } else {
             // Tiles are generated on-demand from a data source
             if (config.filter(TilesConfiguration::isEnabled)
                       .filter(TilesConfiguration::isSingleCollectionEnabled)
                       .isEmpty()) return false;
             // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData).supportsHighLoad();
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
         }
     }
 
@@ -220,10 +228,8 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
             throw new NotFoundException("The requested tile is outside the zoom levels for this tile set.");
 
-        TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                .findAny()
-                .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
+        TileMatrixSet tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                             .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
         TileMatrixSetLimits tileLimits = limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId, tileMatrixSet, zoomLevels)
                 .stream()
@@ -244,7 +250,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                 .replace("{tileRow}", tileRow)
                 .replace("{tileCol}", tileCol);
         TileFormatExtension outputFormat = api.getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), path, Optional.of(collectionId))
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+                                                              .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         if (!requiresQuerySupport) {
             // return a static tile
@@ -260,6 +266,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
                     .outputFormat(outputFormat)
                     .temporary(false)
                     .isDatasetTile(false)
+                    .addCollectionIds(collectionId)
                     .build();
 
             String mbtilesFilename = ((TileProviderMbtiles) tileProvider).getFilename();
@@ -278,12 +285,16 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
             return queryHandler.handle(TilesQueriesHandler.Query.MBTILES_TILE, queryInput, requestContext);
         }
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        if (!(outputFormat instanceof TileFormatWithQuerySupportExtension))
+            throw new RuntimeException(String.format("Unexpected tile format without query support. Found: %s", outputFormat.getClass().getSimpleName()));
+
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         ensureFeatureProviderSupportsQueries(featureProvider);
 
         // check, if the cache can be used (no query parameters except f)
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
-        boolean useCache = queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f"));
+        boolean useCache = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (queryParams.isEmpty() || (queryParams.size()==1 && queryParams.containsKey("f")));
 
         Tile tile = new ImmutableTile.Builder()
                 .collectionIds(ImmutableList.of(collectionId))
@@ -323,7 +334,8 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
         // don't store the tile in the cache if it is outside the range
         MinMax cacheMinMax = tilesConfiguration.getZoomLevelsCacheDerived()
                                                .get(tileMatrixSetId);
-        Tile finalTile = Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()) ?
+        Tile finalTile = tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE &&
+                (Objects.isNull(cacheMinMax) || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin())) ?
                 tile :
                 new ImmutableTile.Builder()
                         .from(tile)
@@ -336,7 +348,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection implemen
             processingParameters = parameter.transformContext(null, processingParameters, queryParams, api.getData());
         }
 
-        FeatureQuery query = outputFormat.getQuery(tile, allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
+        FeatureQuery query = ((TileFormatWithQuerySupportExtension) outputFormat).getQuery(tile, allowedParameters, queryParams, tilesConfiguration, requestContext.getUriCustomizer());
 
         FeaturesCoreConfiguration coreConfiguration = featureType.getExtension(FeaturesCoreConfiguration.class).get();
 

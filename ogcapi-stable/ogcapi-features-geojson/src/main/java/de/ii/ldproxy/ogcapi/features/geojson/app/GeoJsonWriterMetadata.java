@@ -7,20 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
-import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
-import java.util.OptionalLong;
-import java.util.function.Consumer;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.OptionalLong;
+import java.util.function.Consumer;
 
 /**
  * @author zahnen
@@ -35,8 +32,6 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
         return new GeoJsonWriterMetadata();
     }
 
-    private boolean linksWritten;
-
     @Override
     public int getSortPriority() {
         return 20;
@@ -48,9 +43,11 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
         if (context.encoding().isFeatureCollection()) {
             OptionalLong numberReturned = context.metadata().getNumberReturned();
             OptionalLong numberMatched = context.metadata().getNumberMatched();
-            boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
 
+            /* TODO
+            boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
             this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), isLastPage);
+             */
 
             if (numberReturned.isPresent()) {
                 context.encoding().getJson()
@@ -69,6 +66,7 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
         next.accept(context);
     }
 
+    /* TODO
     @Override
     public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         if (!context.encoding().isFeatureCollection()) {
@@ -90,7 +88,7 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
     }
 
     private void writeLinksIfAny(JsonGenerator json, List<Link> links, boolean isLastPage) throws IOException {
-        if (!linksWritten && !links.isEmpty()) {
+        if (!links.isEmpty()) {
             json.writeFieldName("links");
             json.writeStartArray();
 
@@ -109,8 +107,7 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
             }
 
             json.writeEndArray();
-
-            this.linksWritten = true;
         }
     }
+     */
 }

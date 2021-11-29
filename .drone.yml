@@ -13,6 +13,10 @@ pipeline:
       - ldproxy-manager/src/main/javascript/.yarn/cache
       - ldproxy-manager/src/main/javascript/.yarn/install-state.gz
       - ldproxy-manager/src/main/javascript/.yarn/unplugged
+      - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/build-state.yml
+      - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/cache
+      - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/install-state.gz
+      - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/unplugged
 
   check-snapshot:
     image: openjdk:11-slim
@@ -149,6 +153,10 @@ pipeline:
       - ldproxy-manager/src/main/javascript/.yarn/cache
       - ldproxy-manager/src/main/javascript/.yarn/install-state.gz
       - ldproxy-manager/src/main/javascript/.yarn/unplugged
+      - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/build-state.yml
+      - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/cache
+      - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/install-state.gz
+      - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/unplugged
 
 #  notify:
 #    image: plugins/slack:1.3.0
