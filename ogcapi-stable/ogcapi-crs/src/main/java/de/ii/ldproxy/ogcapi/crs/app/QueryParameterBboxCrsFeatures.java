@@ -17,7 +17,9 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -59,7 +61,7 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
 
     @Override
     public String getDescription() {
-        return "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).";
+        return "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude (with or without height).";
     }
 
     @Override
@@ -82,8 +84,12 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
                                              .stream()
                                              .map(EpsgCrs::toUriString)
                                              .collect(ImmutableList.toImmutableList());
+            String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                .map(ImmutableEpsgCrs::toUriString)
+                .orElse(CRS84);
             schemaMap.get(apiHashCode)
-                     .put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
+                     .put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
     }

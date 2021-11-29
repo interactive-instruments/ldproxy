@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Value.Immutable
 public abstract class ApiEndpointDefinition {
@@ -41,6 +42,7 @@ public abstract class ApiEndpointDefinition {
     public static final int SORT_PRIORITY_FEATURES_JSONLD_CONTEXT = 1100;
     public static final int SORT_PRIORITY_QUERYABLES = 1200;
     public static final int SORT_PRIORITY_SCHEMA = 1300;
+    public static final int SORT_PRIORITY_FEATURES_EXTENSIONS = 1400;
     public static final int SORT_PRIORITY_TILE_SETS = 1500;
     public static final int SORT_PRIORITY_TILE_SET = 1510;
     public static final int SORT_PRIORITY_TILE = 1520;
@@ -234,6 +236,13 @@ public abstract class ApiEndpointDefinition {
                             case "POST":
                                 pathItem.post(op);
                                 isMutation = true;
+                                if (operation.getRequestBody().isPresent()) {
+                                    Set<javax.ws.rs.core.MediaType> mediaTypes = operation.getRequestBody().get().getContent().keySet();
+                                    if (mediaTypes.size()==1 && mediaTypes.iterator().next().equals(javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED_TYPE)) {
+                                        isMutation = false;
+                                        status406 = true;
+                                    }
+                                }
                                 break;
                             case "PUT":
                                 pathItem.put(op);

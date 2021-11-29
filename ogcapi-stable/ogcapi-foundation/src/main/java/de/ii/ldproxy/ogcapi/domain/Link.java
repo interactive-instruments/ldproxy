@@ -95,6 +95,10 @@ public abstract class Link {
             return "FlatGeobuf";
         else if (mediaType.toLowerCase().split(";")[0].endsWith("fg+json"))
             return "JSON-FG";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/vnd.ogc.city+json"))
+            return "CityJSON";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/vnd.ogc.city+json-seq"))
+            return "CityJSON-Seq";
         else if (mediaType.toLowerCase().split(";")[0].endsWith("+xml"))
             return "XML";
         else if (mediaType.toLowerCase().split(";")[0].endsWith("+json"))

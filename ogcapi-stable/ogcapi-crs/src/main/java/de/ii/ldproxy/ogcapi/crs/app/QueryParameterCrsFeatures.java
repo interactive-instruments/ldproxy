@@ -11,7 +11,9 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -52,7 +54,7 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
 
     @Override
     public String getDescription() {
-        return "The coordinate reference system of the response geometries. Default is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).";
+        return "The coordinate reference system of the response geometries. Default is WGS84 longitude/latitude (with or without height).";
     }
 
     @Override
@@ -76,7 +78,11 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
                                              .stream()
                                              .map(EpsgCrs::toUriString)
                                              .collect(ImmutableList.toImmutableList());
-            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
+            String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                .map(ImmutableEpsgCrs::toUriString)
+                    .orElse(CRS84);
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
     }

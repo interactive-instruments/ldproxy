@@ -48,12 +48,38 @@
     {{#popup}}
       popup: '{{.}}',
     {{/popup}}
+      layerGroupControl: {
+    {{#layerGroupControl}}
+        '{{key}}': [
+        {{#value}}
+          '{{.}}',
+        {{/value}}
+        ],
+    {{/layerGroupControl}}
+      },
+      tileMatrixSets: [
+      {{#tileCollections}}
+        {
+        {{#.}}
+          {{key}}: '{{value}}',
+        {{/.}}
+        },
+      {{/tileCollections}}
+      ],
+      setCurrentTileMatrixSet: () => {},
   }
 </script>
 
   {{#isMapLibre}}
     {{> app-maplibre}}
   {{/isMapLibre}}
+  {{#isOpenLayers}}
+    {{> app-openlayers}}
+  {{/isOpenLayers}}
+  {{#isCesium}}
+    {{> data-cesium}}
+    {{> app-cesium}}
+  {{/isCesium}}
 
 {{/mapClient}}
 
