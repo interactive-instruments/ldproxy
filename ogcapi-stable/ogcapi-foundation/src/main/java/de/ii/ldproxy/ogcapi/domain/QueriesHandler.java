@@ -288,6 +288,10 @@ public interface QueriesHandler<T extends QueryIdentifier> {
             }
         }
 
+        if (error.getCause().getClass().getSimpleName().equals("PSQLException")) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+
         throw new InternalServerErrorException(errorMessage, error);
     }
 
