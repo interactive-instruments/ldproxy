@@ -288,8 +288,9 @@ public interface QueriesHandler<T extends QueryIdentifier> {
             }
         }
 
-        if (error.getCause().getClass().getSimpleName().equals("PSQLException")) {
-            throw new IllegalArgumentException(errorMessage);
+        if (error.getCause().getClass().getSimpleName().equals("PSQLException") &&
+                error.getCause().getMessage().contains("ERROR: operator does not exist")) {
+            throw new IllegalArgumentException(error.getCause().getMessage());
         }
 
         throw new InternalServerErrorException(errorMessage, error);
