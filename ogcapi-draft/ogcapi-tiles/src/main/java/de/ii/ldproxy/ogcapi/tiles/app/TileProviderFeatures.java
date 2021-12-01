@@ -14,10 +14,12 @@ import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
+import de.ii.ldproxy.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -33,6 +35,8 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract Map<String, MinMax> getZoomLevels();
 
     public abstract Map<String, MinMax> getZoomLevelsCache();
+
+    public abstract Optional<SeedingOptions> getSeedingOptions();
 
     public abstract Map<String, MinMax> getSeeding();
 
