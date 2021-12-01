@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.routes.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import de.ii.ldproxy.ogcapi.domain.UnprocessableEntity;
 import de.ii.ldproxy.ogcapi.features.core.domain.Geometry;
 import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoute;
@@ -27,6 +28,7 @@ import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.WebApplicationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -258,8 +260,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       builder.addAllFeatures(segments);
       builder.status(Route.STATUS.successful);
     } else {
-      // TODO is an empty route failed or successful ?
-      builder.status(Route.STATUS.failed);
+      throw new UnprocessableEntity("Could not compute a route between the start and end location.");
     }
     byte[] result = transformationContext.getFormat()
         .getRouteAsByteArray(builder.build(), transformationContext.getApiData(), transformationContext.getOgcApiRequest());
