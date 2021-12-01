@@ -8,29 +8,22 @@
 package de.ii.ldproxy.ogcapi.maps.infra;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.maps.app.MapProviderTileserver;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileMultiCollection;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
@@ -38,7 +31,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import io.dropwizard.auth.Auth;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -122,32 +114,13 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
             throws CrsTransformationException, IOException, NotFoundException {
 
-        final String urlTemplate = api.getData()
+        TileProvider tileProvider = api.getData()
             .getExtension(MapTilesConfiguration.class)
             .map(MapTilesConfiguration::getMapProvider)
-            .map(mapProvider -> {
-                if (mapProvider instanceof MapProviderTileserver) {
-                    return ((MapProviderTileserver) mapProvider).getUrlTemplate();
-                }
-                return null;
-            })
-            .orElse(null);
-
-        if (Objects.isNull(urlTemplate))
-            throw new IllegalStateException("The MAP_TILES configuration is invalid, no 'urlTemplate' was found.");
-
-        // TODO
-        ApiMediaType mediaType = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("image", "png"))
-            .label("PNG")
-            .parameter("png")
-            .build();
-        return client.target(urlTemplate)
-            .resolveTemplate("tileMatrix", tileMatrix)
-            .resolveTemplate("tileRow", tileRow)
-            .resolveTemplate("tileCol", tileCol)
-            .resolveTemplate("fileExtension", mediaType.fileExtension())
-            .request(mediaType.type())
-            .get();
+            .orElseThrow();
+        return super.getTile(api.getData(), requestContext, uriInfo,
+                             "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+                             tileMatrixSetId, tileMatrix, tileRow, tileCol,
+                             tileProvider);
     }
 }

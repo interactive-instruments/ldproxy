@@ -17,27 +17,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public abstract class TileFormatWithQuerySupportExtension extends TileFormatExtension {
+public abstract class TileFormatWithQuerySupportExtension extends TileFormatExtension implements TileFromFeatureQuery {
 
-    @Override
-    public boolean canMultiLayer() { return true; }
-
-    @Override
-    public boolean canTransformFeatures() { return true; }
-
-    public abstract FeatureQuery getQuery(Tile tile,
-                                          List<OgcApiQueryParameter> allowedParameters,
-                                          Map<String, String> queryParameters,
-                                          TilesConfiguration tilesConfiguration,
-                                          URICustomizer uriCustomizer);
-
-    public class MultiLayerTileContent {
-        public byte[] byteArray;
-        public boolean isComplete;
-    }
-
-    public abstract MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException;
-
-    public abstract double getMaxAllowableOffsetNative(Tile tile);
-    public abstract double getMaxAllowableOffsetCrs84(Tile tile);
 }

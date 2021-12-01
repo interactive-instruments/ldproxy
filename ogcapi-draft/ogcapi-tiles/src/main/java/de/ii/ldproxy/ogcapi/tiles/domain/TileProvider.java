@@ -10,10 +10,17 @@ package de.ii.ldproxy.ogcapi.tiles.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderTileServer;
 import org.immutables.value.Value;
+
+import java.util.List;
+import java.util.Map;
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
@@ -28,11 +35,21 @@ public abstract class TileProvider {
 
     @JsonIgnore
     @Value.Default
+    public boolean tilesMayBeCached() { return false; }
+
+    @JsonIgnore
+    @Value.Default
     public boolean requiresQuerySupport() { return true; }
 
     @JsonIgnore
     @Value.Default
     public boolean supportsTilesHints() { return false; }
 
+    public abstract List<String> getTileEncodings();
+
     public abstract TileProvider mergeInto(TileProvider tileProvider);
+
+    public abstract QueryInput getQueryInput(OgcApiDataV2 apiData, URICustomizer uriCustomizer,
+                                             Map<String, String> queryParameters, List<OgcApiQueryParameter> allowedParameters,
+                                             QueryInput genericInput, Tile tile);
 }

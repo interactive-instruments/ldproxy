@@ -79,32 +79,7 @@ public abstract class TileFormatExtension implements FormatExtension {
 
     public boolean canMultiLayer() { return false; }
 
-    public boolean canTransformFeatures() { return false; }
-
-    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
-        FeatureTransformationContextTiles transformationContext) {
-        return Optional.empty();
-    }
-
-    public Optional<PropertyTransformations> getPropertyTransformations(
-        FeatureTypeConfigurationOgcApi collectionData) {
-
-        Optional<PropertyTransformations> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
-            .map(featuresCoreConfiguration -> ((PropertyTransformations)featuresCoreConfiguration));
-
-        Optional<PropertyTransformations> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
-            .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
-            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration));
-
-
-        return formatTransformations.map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
-            .or(() -> coreTransformations);
-    }
-
-    public Optional<PropertyTransformations> getPropertyTransformations(
-        FeatureTypeConfigurationOgcApi collectionData, Map<String, String> substitutions) {
-        return getPropertyTransformations(collectionData).map(propertyTransformations -> propertyTransformations.withSubstitutions(substitutions));
-    }
+    public boolean supportsFeatureQuery() { return this instanceof TileFromFeatureQuery; }
 
     public abstract String getExtension();
 

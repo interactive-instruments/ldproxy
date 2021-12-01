@@ -27,6 +27,7 @@ import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
@@ -117,18 +118,18 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
 
     @Path("/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
     @GET
-    public Response getTile(@Auth Optional<User> optionalUser, @Context OgcApi api, @PathParam("collectionId") String collectionId,
+    public Response getTile(@Context OgcApi api, @PathParam("collectionId") String collectionId,
                             @PathParam("tileMatrixSetId") String tileMatrixSetId, @PathParam("tileMatrix") String tileMatrix,
                             @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
             throws CrsTransformationException, IOException, NotFoundException {
-        String format = "png";
-        String target = "http://localhost:8080/styles/daraa-topographic/" + collectionId;
-        String path = String.format("%s/%s/%s.%s", tileMatrix, tileRow, tileCol, format);
-        String responseType = "image/" + format;
-        return client.target(target)
-                .path(path)
-                .request(responseType)
-                .get();
+        TileProvider tileProvider = api.getData()
+            .getExtension(MapTilesConfiguration.class, collectionId)
+            .map(MapTilesConfiguration::getMapProvider)
+            .orElseThrow();
+        return super.getTile(api.getData(), requestContext, uriInfo,
+                             "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+                             collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol,
+                             tileProvider);
     }
 }

@@ -27,6 +27,7 @@ import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileMultiCollection;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
@@ -114,7 +115,13 @@ public class EndpointTileMultiCollection extends AbstractEndpointTileMultiCollec
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
             throws CrsTransformationException, IOException, NotFoundException {
 
-        return super.getTile(api.getData(), requestContext, "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-                             tileMatrixSetId, tileMatrix, tileRow, tileCol, uriInfo);
+        TileProvider tileProvider = api.getData()
+            .getExtension(TilesConfiguration.class)
+            .map(TilesConfiguration::getTileProvider)
+            .orElseThrow();
+        return super.getTile(api.getData(), requestContext, uriInfo,
+                             "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+                             tileMatrixSetId, tileMatrix, tileRow, tileCol,
+                             tileProvider);
     }
 }

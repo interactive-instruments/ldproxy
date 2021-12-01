@@ -7,36 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.maps.app;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
-import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.app.ImmutableTileProviderFeatures;
-import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
-import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
-import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
-import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -71,15 +52,6 @@ public class CapabilityMapTiles implements ApiBuildingBlock {
 
         return new ImmutableMapTilesConfiguration.Builder()
             .enabled(false)
-            .mapProvider(ImmutableMapProviderTileserver.builder()
-                             // TODO
-                             .tileEncodings(extensionRegistry.getExtensionsForType(MapTileFormatExtension.class)
-                                                .stream()
-                                                .filter(FormatExtension::isEnabledByDefault)
-                                                .map(format -> format.getMediaType().label())
-                                                .collect(ImmutableList.toImmutableList()))
-                             .build())
-            .cache(TilesConfiguration.TileCacheType.MBTILES)
             .build();
     }
 

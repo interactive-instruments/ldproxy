@@ -91,7 +91,7 @@ public abstract class Tile {
 
     /**
      *
-     * @return {@code true}, if the tile is a tile for the /tiles resources
+     * @return {@code true}, if the tile is a tile for the /tiles or /map/tiles resources
      */
     public abstract boolean isDatasetTile();
 

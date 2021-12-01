@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
+import de.ii.ldproxy.ogcapi.tiles.app.TileProviderTileServer;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -44,10 +45,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     }
 
     @Nullable
-    TileProvider getTileProvider();
-
-    @Nullable
-    TileProvider getMapProvider();
+    TileProvider getTileProvider(); // TODO add TileServer support
 
     List<String> getTileSetEncodings();
 
@@ -69,8 +67,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     // Note: Most configuration options have been moved to TileProviderFeatures and have been deprecated here.
     // The getXyzDerived() methods support the deprecated configurations as well as the new style.
 
-    // TODO add TileServer to the Derived-methods
-
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
@@ -81,7 +77,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                         ((TileProviderFeatures) getTileProvider()).getTileEncodings() :
                         getTileProvider() instanceof TileProviderMbtiles && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) ?
                                 ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) :
-                                ImmutableList.of();
+                                getTileProvider() instanceof TileProviderTileServer && Objects.nonNull(((TileProviderTileServer) getTileProvider()).getTileEncodings()) ?
+                                    ((TileProviderTileServer) getTileProvider()).getTileEncodings() :
+                                    ImmutableList.of();
     }
 
     @Deprecated

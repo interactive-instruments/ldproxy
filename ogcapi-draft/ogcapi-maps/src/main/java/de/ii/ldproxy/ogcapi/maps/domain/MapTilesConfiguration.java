@@ -7,10 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.maps.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.maps.app.MapProviderTileserver;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import org.immutables.value.Value;
 
@@ -27,10 +28,19 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
     }
 
     @Nullable
-    MapProvider getMapProvider();
+    TileProvider getMapProvider(); // TODO: must be TileServer, generalize and extend to MBTiles
 
     @Nullable
-    TilesConfiguration.TileCacheType getCache();
+    TilesConfiguration.TileCacheType getCache(); // TODO: add caching support
+
+    @Value.Auxiliary
+    @Value.Derived
+    @JsonIgnore
+    default List<String> getTileEncodingsDerived() {
+        if (Objects.isNull(getMapProvider()))
+            return ImmutableList.of();
+        return Objects.requireNonNullElse(getMapProvider().getTileEncodings(), ImmutableList.of());
+    }
 
     @Override
     default MapTilesConfiguration.Builder getBuilder() {

@@ -27,6 +27,7 @@ import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileSingleCollection;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
@@ -106,12 +107,19 @@ public class EndpointTileSingleCollection extends AbstractEndpointTileSingleColl
 
     @Path("/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
     @GET
-    public Response getTile(@Auth Optional<User> optionalUser, @Context OgcApi api, @PathParam("collectionId") String collectionId,
+    public Response getTile(@Context OgcApi api, @PathParam("collectionId") String collectionId,
                             @PathParam("tileMatrixSetId") String tileMatrixSetId, @PathParam("tileMatrix") String tileMatrix,
                             @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
             throws CrsTransformationException, IOException, NotFoundException {
 
-        return super.getTile(optionalUser, api, collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol, uriInfo, requestContext);
+        TileProvider tileProvider = api.getData()
+            .getExtension(TilesConfiguration.class)
+            .map(TilesConfiguration::getTileProvider)
+            .orElseThrow();
+        return super.getTile(api.getData(), requestContext, uriInfo,
+                             "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+                             collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol,
+                             tileProvider);
     }
 }

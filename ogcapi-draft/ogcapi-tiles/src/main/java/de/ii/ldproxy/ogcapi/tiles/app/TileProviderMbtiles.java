@@ -9,8 +9,17 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
+import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -34,6 +43,11 @@ public abstract class TileProviderMbtiles extends TileProvider {
     @Nullable
     @JsonIgnore
     public abstract String getTileEncoding();
+
+    @JsonIgnore
+    @Value.Auxiliary
+    @Value.Derived
+    public List<String> getTileEncodings() { return Objects.nonNull(getTileEncoding()) ? ImmutableList.of(getTileEncoding()) : ImmutableList.of(); }
 
     @JsonIgnore
     public abstract List<Double> getCenter();
@@ -60,5 +74,19 @@ public abstract class TileProviderMbtiles extends TileProvider {
             builder.center(src.getCenter());
 
         return builder.build();
+    }
+
+    @Override
+    @JsonIgnore
+    @Value.Derived
+    public QueryInput getQueryInput(OgcApiDataV2 apiData, URICustomizer uriCustomizer,
+                                    Map<String, String> queryParameters, List<OgcApiQueryParameter> allowedParameters,
+                                    QueryInput genericInput, Tile tile) {
+
+        return new ImmutableQueryInputTileMbtilesTile.Builder()
+            .from(genericInput)
+            .tile(tile)
+            .provider(this)
+            .build();
     }
 }

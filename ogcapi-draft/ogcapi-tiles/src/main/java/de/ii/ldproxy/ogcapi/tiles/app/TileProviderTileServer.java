@@ -7,14 +7,23 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileTileServerTile;
+import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @Value.Immutable
@@ -24,13 +33,32 @@ public abstract class TileProviderTileServer extends TileProvider {
 
     public final String getType() { return "TILESERVER"; }
 
-    // TODO support multiple styles?
+    // TODO add optional support for multiple styles once the specification is stable
 
     @Nullable
     public abstract String getUrlTemplate();
 
-    @Value.Default
-    public List<String> getTileEncodings() { return ImmutableList.of(); }
+    @Nullable
+    public abstract String getUrlTemplateSingleCollection();
+
+    @Override
+    public abstract List<String> getTileEncodings();
+
+    // TODO support caching
+
+    @Override
+    @JsonIgnore
+    @Value.Derived
+    public QueryInput getQueryInput(OgcApiDataV2 apiData, URICustomizer uriCustomizer,
+                                    Map<String, String> queryParameters, List<OgcApiQueryParameter> allowedParameters,
+                                    QueryInput genericInput, Tile tile) {
+
+        return new ImmutableQueryInputTileTileServerTile.Builder()
+            .from(genericInput)
+            .tile(tile)
+            .provider(this)
+            .build();
+    }
 
     @Override
     public TileProvider mergeInto(TileProvider source) {

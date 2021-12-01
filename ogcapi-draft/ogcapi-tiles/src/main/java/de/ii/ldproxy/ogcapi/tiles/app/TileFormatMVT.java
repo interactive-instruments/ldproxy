@@ -24,7 +24,9 @@ import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFromFeatureQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -96,14 +98,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     }
 
     @Override
-    public boolean canMultiLayer() {
-        return true;
-    }
-
-    @Override
-    public boolean canTransformFeatures() {
-        return true;
-    }
+    public boolean canMultiLayer() { return true; }
 
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
@@ -250,7 +245,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     }
 
     @Override
-    public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException {
+    public TileFromFeatureQuery.MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException {
         VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         VectorTileDecoder decoder = new VectorTileDecoder();
         Set<String> processedCollections = new TreeSet<>();
@@ -304,7 +299,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
             }
         }
 
-        MultiLayerTileContent result = new MultiLayerTileContent();
+        TileFromFeatureQuery.MultiLayerTileContent result = new TileFromFeatureQuery.MultiLayerTileContent();
         result.byteArray = encoder.encode();
         result.isComplete = processedCollections.size()==singleLayerTileMap.size();
 

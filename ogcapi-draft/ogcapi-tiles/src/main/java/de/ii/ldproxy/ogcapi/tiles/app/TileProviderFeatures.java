@@ -9,16 +9,47 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileEmpty;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMultiLayer;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileStream;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
+import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFromFeatureQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
+
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import javax.ws.rs.NotAcceptableException;
+
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -28,6 +59,7 @@ public abstract class TileProviderFeatures extends TileProvider {
 
     public final String getType() { return "FEATURES"; }
 
+    @Override
     public abstract List<String> getTileEncodings();
 
     public abstract Map<String, MinMax> getZoomLevels();
@@ -92,6 +124,105 @@ public abstract class TileProviderFeatures extends TileProvider {
 
     @Nullable
     public abstract Double getMinimumSizeInPixel();
+
+    @Override
+    @JsonIgnore
+    @Value.Default
+    public boolean tilesMayBeCached() { return true; }
+
+    @Override
+    @JsonIgnore
+    @Value.Derived
+    public QueryInput getQueryInput(OgcApiDataV2 apiData, URICustomizer uriCustomizer,
+                                    Map<String, String> queryParameters, List<OgcApiQueryParameter> allowedParameters,
+                                    QueryInput genericInput, Tile tile) {
+        if (!tile.getFeatureProvider().map(FeatureProvider2::supportsQueries).orElse(false)) {
+            throw new IllegalStateException("Tile cannot be generated. The feature provider does not support feature queries.");
+        }
+
+        TileFormatExtension outputFormat = tile.getOutputFormat();
+        List<String> collections = tile.getCollectionIds();
+
+        if (collections.isEmpty()) {
+            return new ImmutableQueryInputTileEmpty.Builder()
+                .from(genericInput)
+                .tile(tile)
+                .build();
+        }
+
+        if (!(outputFormat instanceof TileFormatWithQuerySupportExtension))
+            throw new RuntimeException(String.format("Unexpected tile format without query support. Found: %s", outputFormat.getClass().getSimpleName()));
+
+        // first execute the information that is passed as processing parameters (e.g., "properties")
+        Map<String, Object> processingParameters = new HashMap<>();
+        for (OgcApiQueryParameter parameter : allowedParameters) {
+            processingParameters = parameter.transformContext(null, processingParameters, queryParameters, apiData);
+        }
+
+        if (tile.isDatasetTile()) {
+            if (!outputFormat.canMultiLayer() && collections.size() > 1)
+                throw new NotAcceptableException("The requested tile format supports only a single layer. Please select only a single collection.");
+
+            Map<String, Tile> singleLayerTileMap = collections.stream()
+                .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> new ImmutableTile.Builder()
+                    .from(tile)
+                    .collectionIds(ImmutableList.of(collectionId))
+                    .isDatasetTile(false)
+                    .build()));
+
+            Map<String, FeatureQuery> queryMap = collections.stream()
+                // skip collections without spatial queryable
+                .filter(collectionId -> {
+                    Optional<FeaturesCoreConfiguration> featuresConfiguration = apiData.getCollections()
+                        .get(collectionId)
+                        .getExtension(FeaturesCoreConfiguration.class);
+                    return featuresConfiguration.isPresent()
+                        && featuresConfiguration.get().getQueryables().isPresent()
+                        && !featuresConfiguration.get().getQueryables().get().getSpatial().isEmpty();
+                })
+                .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> {
+                    String featureTypeId = apiData.getCollections()
+                        .get(collectionId)
+                        .getExtension(FeaturesCoreConfiguration.class)
+                        .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                        .orElse(collectionId);
+                    TilesConfiguration layerConfiguration = apiData.getExtension(TilesConfiguration.class, collectionId).orElseThrow();
+                    FeatureQuery query = ((TileFormatWithQuerySupportExtension) outputFormat).getQuery(singleLayerTileMap.get(collectionId), allowedParameters, queryParameters, layerConfiguration, uriCustomizer);
+                    return ImmutableFeatureQuery.builder()
+                        .from(query)
+                        .type(featureTypeId)
+                        .build();
+                }));
+
+            FeaturesCoreConfiguration coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class).orElseThrow();
+
+            return new ImmutableQueryInputTileMultiLayer.Builder()
+                .from(genericInput)
+                .tile(tile)
+                .singleLayerTileMap(singleLayerTileMap)
+                .queryMap(queryMap)
+                .processingParameters(processingParameters)
+                .defaultCrs(apiData.getExtension(FeaturesCoreConfiguration.class).map(FeaturesCoreConfiguration::getDefaultEpsgCrs).orElseThrow())
+                .build();
+        } else {
+            String collectionId = tile.getCollectionId();
+            FeatureTypeConfigurationOgcApi featureType = apiData.getCollectionData(collectionId).orElseThrow();
+            TilesConfiguration layerConfiguration = apiData.getExtension(TilesConfiguration.class, collectionId).orElseThrow();
+            FeatureQuery query = ((TileFromFeatureQuery) outputFormat).getQuery(tile, allowedParameters, queryParameters, layerConfiguration, uriCustomizer);
+
+            FeaturesCoreConfiguration coreConfiguration = featureType.getExtension(FeaturesCoreConfiguration.class).orElseThrow();
+
+            return new ImmutableQueryInputTileSingleLayer.Builder()
+                .from(genericInput)
+                .tile(tile)
+                .query(query)
+                .processingParameters(processingParameters)
+                .defaultCrs(featureType.getExtension(FeaturesCoreConfiguration.class)
+                                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                                .orElseThrow())
+                .build();
+        }
+    }
 
     @Override
     public TileProvider mergeInto(TileProvider source) {

@@ -9,23 +9,12 @@ package de.ii.ldproxy.ogcapi.maps.domain;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
-import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import io.swagger.v3.oas.models.media.BinarySchema;
-import io.swagger.v3.oas.models.media.Schema;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
@@ -35,7 +24,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(MapTilesConfiguration.class)
                 .filter(MapTilesConfiguration::getEnabled)
-                .filter(config -> config.getMapProvider().getTileEncodings().contains(this.getMediaType().label()))
+                .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                 .isPresent() &&
             apiData.getExtension(TilesConfiguration.class)
                 .filter(TilesConfiguration::getEnabled)
@@ -47,7 +36,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return apiData.getExtension(MapTilesConfiguration.class, collectionId)
                 .filter(MapTilesConfiguration::getEnabled)
-                .filter(config -> config.getMapProvider().getTileEncodings().contains(this.getMediaType().label()))
+                .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                 .isPresent() &&
             apiData.getExtension(TilesConfiguration.class, collectionId)
                 .filter(TilesConfiguration::getEnabled)
@@ -58,8 +47,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
         List<String> formats = apiData.getExtension(MapTilesConfiguration.class)
-            .map(MapTilesConfiguration::getMapProvider)
-            .map(MapProvider::getTileEncodings)
+            .map(MapTilesConfiguration::getTileEncodingsDerived)
             .orElse(ImmutableList.of());
         return isEnabledForApi(apiData) &&
             definitionPath.startsWith("/map/tiles") &&
@@ -69,8 +57,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String collectionId, String definitionPath) {
         List<String> formats = apiData.getExtension(MapTilesConfiguration.class, collectionId)
-            .map(MapTilesConfiguration::getMapProvider)
-            .map(MapProvider::getTileEncodings)
+            .map(MapTilesConfiguration::getTileEncodingsDerived)
             .orElse(ImmutableList.of());
         return isEnabledForApi(apiData, collectionId) &&
             definitionPath.startsWith("/collection/{collectionId}/map/tiles") &&
