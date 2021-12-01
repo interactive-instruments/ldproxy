@@ -58,7 +58,10 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
         Map<String, Preference> preferences = apiData.getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getPreferences)
             .orElse(ImmutableMap.of());
-        builder.putExtensions(CORE,ImmutableMap.of("preferences", preferences.keySet().stream().collect(ImmutableList.toImmutableList())));
+        builder.putExtensions("properties",
+                              ImmutableMap.of(CORE,
+                                              ImmutableMap.of("preferences",
+                                                              preferences.keySet().stream().collect(ImmutableList.toImmutableList()))));
 
         return builder;
     }
