@@ -14,7 +14,7 @@
                         <label for="name">{{routeNameTitle}}</label>
                     </div>
                     <div class="col-md-9">
-                        <input id="name" name="name" type="text" value="{{routeName}}"/>
+                        <input id="name" name="name" type="text" size="64" value="{{routeName}}"/>
                     </div>
                 </div>
             </div>
@@ -94,11 +94,11 @@
                     <div class="col-md-9">
                         <ul class="list-unstyled">
                             <li>
-                                <input id="start-x" name="start" type="number" step="any"{{#startX}} value="{{.}}"{{/startX}}/>
+                                <input id="start-x" name="start-x" type="number" step="any"{{#startX}} value="{{.}}"{{/startX}}/>
                                 <label class="inline" for="start-x">{{xTitle}}</label>
                             </li>
                             <li>
-                                <input id="start-y" name="start" type="number" step="any"{{#startY}} value="{{.}}"{{/startY}}/>
+                                <input id="start-y" name="start-y" type="number" step="any"{{#startY}} value="{{.}}"{{/startY}}/>
                                 <label class="inline" for="start-y">{{yTitle}}</label>
                             </li>
                         </ul>
@@ -113,11 +113,11 @@
                     <div class="col-md-9">
                         <ul class="list-unstyled">
                             <li>
-                                <input id="end-x" name="end" type="number" step="any"{{#endX}} value="{{.}}"{{/endX}}/>
+                                <input id="end-x" name="end-x" type="number" step="any"{{#endX}} value="{{.}}"{{/endX}}/>
                                 <label class="inline" for="end-x">{{xTitle}}</label>
                             </li>
                             <li>
-                                <input id="end-y" name="end" type="number" step="any"{{#endY}} value="{{.}}"{{/endY}}/>
+                                <input id="end-y" name="end-y" type="number" step="any"{{#endY}} value="{{.}}"{{/endY}}/>
                                 <label class="inline" for="end-y">{{yTitle}}</label>
                             </li>
                         </ul>
@@ -228,8 +228,6 @@ function handleFormSubmit(event) {
          'name': '',
          'preference': '',
          'additionalFlags': [],
-         'weight': null,
-         'height': null,
          'waypoints': {
             'value': {
                'type': 'MultiPoint',
@@ -243,13 +241,15 @@ function handleFormSubmit(event) {
    routeDefinition.inputs.preference = data.get('preference');
    routeDefinition.inputs.additionalFlags = data.getAll('flags');
    if (data.get('weight') !== '') {
-     routeDefinition.inputs.weight = parseFloat(data.get('weight'));
+     routeDefinition.inputs.weight = parseFloat(data.get('weight').replace(',','.'));
    }
    if (data.get('height') !== '') {
-     routeDefinition.inputs.height = parseFloat(data.get('height'));
+     routeDefinition.inputs.height = parseFloat(data.get('height').replace(',','.'));
    }
-   routeDefinition.inputs.waypoints.value.coordinates[0] = data.getAll('start');
-   routeDefinition.inputs.waypoints.value.coordinates[1] = data.getAll('end');
+   routeDefinition.inputs.waypoints.value.coordinates[0][0] = parseFloat(data.get('start-x').replace(',','.'));
+   routeDefinition.inputs.waypoints.value.coordinates[0][1] = parseFloat(data.get('start-y').replace(',','.'));
+   routeDefinition.inputs.waypoints.value.coordinates[1][0] = parseFloat(data.get('end-x').replace(',','.'));
+   routeDefinition.inputs.waypoints.value.coordinates[1][1] = parseFloat(data.get('end-y').replace(',','.'));
    routeDefinition.inputs.waypoints.value.coordRefSys = data.get('crs');
 
    var routeDefJsonString = JSON.stringify(routeDefinition, null, 2);
@@ -267,69 +267,7 @@ function handleFormSubmit(event) {
          document.querySelector('button').disabled = false;
 
          const routeJson = JSON.parse(this.responseText);
-         var map = new maplibregl.Map({
-            'container': 'map',
-            'style': {
-               'version': 8,
-               'sources': {
-                  'basemap': {
-                     'type': 'raster',
-                     'tiles': [
-                        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                     ],
-                     'scheme': 'xyz',
-                     'attribution': '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                  },
-                  'route': {
-                     'type': 'geojson',
-                     'data': routeJson,
-                     'attribution': '{{{attribution}}}'
-                  }
-               },
-               'layers': [{
-                  'id': 'background',
-                  'type': 'raster',
-                  'source': 'basemap'
-               }, {
-                  'id': 'overview',
-                  'type': 'line',
-                  'source': 'route',
-                  'layout': {
-                     'line-join': 'round',
-                     'line-cap': 'round'
-                  },
-                  'paint': {
-                     'line-color': '#00f',
-                     'line-width': 5
-                  },
-                  'filter': ['==', '$type', 'LineString']
-               }, {
-                  'id': 'point',
-                  'type': 'circle',
-                  'source': 'route',
-                  'minzoom': 12,
-                  'paint': {
-                     'circle-radius': 6,
-                     'circle-color': '#00f'
-                  },
-                  'filter': ['==', '$type', 'Point']
-               }]
-            },
-            'center': [{{centerX}}, {{centerY}}],
-            'zoom': {{centerLevel}}
-         });
-
-         map.addControl(new maplibregl.ScaleControl());
-         map.addControl(new maplibregl.NavigationControl());
-
-         map.on('mouseenter', 'overview', () => changeCursor(map, 'pointer'));
-         map.on('mouseleave', 'overview', () => changeCursor(map, ''));
-         map.on('click', 'overview', showPopupProps(map, popup));
-         map.on('mouseenter', 'point', () => changeCursor(map, 'pointer'));
-         map.on('mouseleave', 'point', () => changeCursor(map, ''));
-         map.on('click', 'point', showPopupProps(map, popup));
+         map.getSource('route').setData(routeJson);
 
          const bbox = routeJson['bbox'];
          const bounds = (bbox.length === 4) ? [ [ bbox[0], bbox[1] ], [ bbox[2], bbox[3] ] ] : [ [ bbox[0], bbox[1] ], [ bbox[3], bbox[4] ] ];
@@ -414,7 +352,7 @@ const popup = new maplibregl.Popup({
     className: 'popup-props',
 });
 
-var map0 = new maplibregl.Map({
+var map = new maplibregl.Map({
 'container': 'map',
 'style': {
    'version': 8,
@@ -427,21 +365,55 @@ var map0 = new maplibregl.Map({
             'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
          ],
          'scheme': 'xyz',
-         'attribution': '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+         'attribution': '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+      },
+      'route': {
+            'type': 'geojson',
+            'data': { 'type': 'FeatureCollection', 'features': [] }
       }
    },
    'layers': [{
-      'id': 'background',
-      'type': 'raster',
-      'source': 'basemap'
-   }]
+        'id': 'background',
+        'type': 'raster',
+        'source': 'basemap'
+   },{
+        'id': 'overview',
+        'type': 'line',
+        'source': 'route',
+        'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint': {
+            'line-color': '#00f',
+            'line-width': 5
+        },
+        'filter': ['==', '$type', 'LineString']
+    },{
+        'id': 'segment',
+        'type': 'circle',
+        'source': 'route',
+        'minzoom': 12,
+        'paint': {
+            'circle-radius': 6,
+            'circle-color': '#00f'
+        },
+        'filter': ['==', '$type', 'Point']
+    }]
 },
-'center': [{{centerX}}, {{centerY}}],
-'zoom': {{centerLevel}}
+'center': [-118.0, 34.5],
+'zoom': 6
 });
 
-map0.addControl(new maplibregl.ScaleControl());
-map0.addControl(new maplibregl.NavigationControl());
+map.addControl(new maplibregl.ScaleControl());
+map.addControl(new maplibregl.NavigationControl());
+
+map.on('mouseenter', 'overview', () => changeCursor(map, 'pointer'));
+map.on('mouseleave', 'overview', () => changeCursor(map, ''));
+map.on('click', 'overview', showPopupProps(map, popup));
+map.on('mouseenter', 'point', () => changeCursor(map, 'pointer'));
+map.on('mouseleave', 'point', () => changeCursor(map, ''));
+map.on('click', 'point', showPopupProps(map, popup));
 
 const form = document.querySelector('.contact-form');
 form.addEventListener('submit', handleFormSubmit);
