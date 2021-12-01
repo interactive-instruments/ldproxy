@@ -164,7 +164,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         .map(PropertyRoutes::getFirstValue)
         .map(Double::parseDouble)
         .ifPresent(cost -> {
-          propertyBuilder.get().put("cost", cost);
+          // propertyBuilder.get().put("cost", cost);
           aggCost += cost;
         });
     feature.getProperties()
@@ -194,16 +194,32 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     } else if (type.equals(SchemaBase.Type.BOOLEAN)) {
       propertyBuilder.put(p.getName(), Boolean.parseBoolean(p.getFirstValue()));
     } else if (type.equals(SchemaBase.Type.FLOAT)) {
-      propertyBuilder.put(p.getName(), Double.parseDouble(p.getFirstValue()));
-      if (p.getName().equals("length_m"))
-        aggLength += Double.parseDouble(p.getFirstValue());
-      if (p.getName().equals("duration_forward_s") && !isReverse)
-        aggDuration += Double.parseDouble(p.getFirstValue());
-      else if (p.getName().equals("duration_backward_s") && isReverse)
-        aggDuration += abs(Double.parseDouble(p.getFirstValue()));
+      String name = p.getName();
+      double value = Double.parseDouble(p.getFirstValue());
+      if (name.equals("length_m")) {
+        propertyBuilder.put(name, value);
+        aggLength += value;
+      } else if (name.equals("maxHeight_m") || name.equals("maxWeight_t")) {
+        propertyBuilder.put(name, value);
+      } else if (name.equals("duration_forward_s") && !isReverse) {
+        propertyBuilder.put("duration_s", value);
+        aggDuration += value;
+      } else if (name.equals("duration_backward_s") && isReverse) {
+        value = abs(value);
+        propertyBuilder.put("duration_s", value);
+        aggDuration += value;
+      } else if (name.equals("maxspeed_forward") && !isReverse) {
+        propertyBuilder.put("maxSpeed", value);
+        propertyBuilder.put("maxSpeed_uom", "mph");
+      } else if (name.equals("maxspeed_backward") && isReverse) {
+        propertyBuilder.put("maxSpeed", value);
+        propertyBuilder.put("maxSpeed_uom", "mph");
+      }
     } else if (type.equals(SchemaBase.Type.INTEGER)) {
-      if (!p.getName().equals("source") && !p.getName().equals("target"))
-        propertyBuilder.put(p.getName(), Integer.parseInt(p.getFirstValue()));
+      String name = p.getName();
+      int value = Integer.parseInt(p.getFirstValue());
+      if (!name.equals("source") && !name.equals("target"))
+        propertyBuilder.put(name, value);
     } else if (type.equals(SchemaBase.Type.STRING) || type.equals(SchemaBase.Type.DATE) || type.equals(SchemaBase.Type.DATETIME)) {
       if (!p.getFirstValue().isEmpty()) {
         propertyBuilder.put(p.getName(), p.getFirstValue());
