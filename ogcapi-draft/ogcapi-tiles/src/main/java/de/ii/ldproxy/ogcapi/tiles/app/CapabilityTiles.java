@@ -173,7 +173,7 @@ public class CapabilityTiles implements ApiBuildingBlock {
 
             Optional<FeatureSchema> schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
             List<String> featureProperties = schema.isPresent()
-                    ? schemaInfo.getPropertyNames(schema.get(), false)
+                    ? schemaInfo.getPropertyNames(schema.get(), false, false)
                     : ImmutableList.of();
 
             List<String> formatLabels = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
