@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.tiles.infra;
+package de.ii.ldproxy.ogcapi.maps.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
@@ -17,46 +17,54 @@ import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileSetsSingleCollection;
+import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
+import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileSetsMultiCollection;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Handle responses under '/collection/{collectionId}/tiles'.
+ * Handle responses under '/tiles'.
  */
 @Component
 @Provides
 @Instantiate
-public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSingleCollection implements ConformanceClass {
+public class EndpointMapTileSetsMultiCollection extends AbstractEndpointTileSetsMultiCollection implements ConformanceClass {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetsSingleCollection.class);
+    private static final List<String> TAGS = ImmutableList.of("Access multi-layer map tiles");
 
-    private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
-
-    EndpointTileSetsSingleCollection(@Requires ExtensionRegistry extensionRegistry,
-                                     @Requires TilesQueriesHandler queryHandler,
-                                     @Requires FeaturesCoreProviders providers) {
+    EndpointMapTileSetsMultiCollection(@Requires ExtensionRegistry extensionRegistry,
+                                       @Requires TilesQueriesHandler queryHandler,
+                                       @Requires FeaturesCoreProviders providers) {
         super(extensionRegistry, queryHandler, providers);
     }
 
     @Override
     public List<String> getConformanceClassUris() {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
-                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-tilesets");
+                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/dataset-tilesets");
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        if (!apiData.getExtension(MapTilesConfiguration.class)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(false))
+            return false;
+        return super.isEnabledForApi(apiData);
     }
 
     @Override
@@ -67,24 +75,16 @@ public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSi
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
         return computeDefinition(apiData,
-                                 "collections",
-                                 ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION,
-                                 "/collections/{collectionId}",
-                                 "/tiles",
+                                 "map",
+                                 ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SETS,
+                                 "/map/tiles",
                                  TAGS);
     }
 
-    /**
-     * retrieve all available tile matrix sets from the collection
-     *
-     * @return all tile matrix sets from the collection in a json array
-     */
-    @Path("/{collectionId}/tiles")
+    @Path("/tiles")
     @GET
-    public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext,
-                                @PathParam("collectionId") String collectionId) {
+    public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
 
-        return super.getTileSets(api.getData(), requestContext, "/collections/{collectionId}/tiles", collectionId);
+        return super.getTileSets(api.getData(), requestContext, "/map/tiles", true);
     }
-
 }

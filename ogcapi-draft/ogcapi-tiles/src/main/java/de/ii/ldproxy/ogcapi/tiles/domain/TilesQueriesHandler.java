@@ -83,6 +83,8 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
         Optional<String> getCollectionId();
         List<Double> getCenter();
         Map<String, MinMax> getTileMatrixSetZoomLevels();
+        String getPath();
+        boolean getOnlyWebMercatorQuad();
     }
 
     @Value.Immutable
@@ -92,6 +94,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
         String getTileMatrixSetId();
         List<Double> getCenter();
         MinMax getZoomLevels();
+        String getPath();
     }
 
 }

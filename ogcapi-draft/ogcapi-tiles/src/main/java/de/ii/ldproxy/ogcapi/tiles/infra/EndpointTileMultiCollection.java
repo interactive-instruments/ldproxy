@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileMultiCollection;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
@@ -85,25 +86,6 @@ public class EndpointTileMultiCollection extends AbstractEndpointTileMultiCollec
     }
 
     @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
-            // Tiles are pre-generated as a static tile set
-            return config.filter(ExtensionConfiguration::isEnabled)
-                         .isPresent();
-        } else {
-            // Tiles are generated on-demand from a data source
-            if (config.filter(TilesConfiguration::isEnabled)
-                      .filter(TilesConfiguration::isMultiCollectionEnabled)
-                      .isEmpty()) return false;
-            // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData)
-                            .map(FeatureProvider2::supportsHighLoad)
-                            .orElse(false);
-        }
-    }
-
-    @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return TilesConfiguration.class;
     }
@@ -117,36 +99,22 @@ public class EndpointTileMultiCollection extends AbstractEndpointTileMultiCollec
 
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("tiles")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE);
-        final String path = "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
-        final HttpMethods method = HttpMethods.GET;
-        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-        String operationSummary = "fetch a tile with multiple layers, one per collection";
-        Optional<String> operationDescription = Optional.of("The tile in the requested tiling scheme ('{tileMatrixSetId}'), " +
-                "on the requested zoom level ('{tileMatrix}'), with the requested grid coordinates ('{tileRow}', '{tileCol}') is returned. " +
-                "The tile has one layer per collection with all selected features in the bounding box of the tile with the requested properties.");
-        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                .path(path)
-                .pathParameters(pathParameters);
-        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-        if (operation != null)
-            resourceBuilder.putOperations(method.name(), operation);
-        definitionBuilder.putResources(path, resourceBuilder.build());
-
-        return definitionBuilder.build();
+        return computeDefinition(apiData,
+                                 "tiles",
+                                 ApiEndpointDefinition.SORT_PRIORITY_TILE,
+                                 "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+                                 TAGS);
     }
 
     @Path("/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
     @GET
-    public Response getTile(@Auth Optional<User> optionalUser, @Context OgcApi api,
+    public Response getTile(@Context OgcApi api,
                             @PathParam("tileMatrixSetId") String tileMatrixSetId, @PathParam("tileMatrix") String tileMatrix,
                             @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
             throws CrsTransformationException, IOException, NotFoundException {
 
-        return super.getTile(optionalUser, api, tileMatrixSetId, tileMatrix, tileRow, tileCol, uriInfo, requestContext);
+        return super.getTile(api.getData(), requestContext, "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+                             tileMatrixSetId, tileMatrix, tileRow, tileCol, uriInfo);
     }
 }

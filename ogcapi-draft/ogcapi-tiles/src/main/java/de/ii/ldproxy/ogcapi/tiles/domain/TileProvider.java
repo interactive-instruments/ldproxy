@@ -12,15 +12,17 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
+import de.ii.ldproxy.ogcapi.tiles.app.TileProviderTileServer;
 import org.immutables.value.Value;
 
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "type")
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = TileProviderFeatures.class, name = "FEATURES"),
-        @JsonSubTypes.Type(value = TileProviderMbtiles.class, name = "MBTILES")
+    @JsonSubTypes.Type(value = TileProviderFeatures.class, name = "FEATURES"),
+    @JsonSubTypes.Type(value = TileProviderMbtiles.class, name = "MBTILES"),
+    @JsonSubTypes.Type(value = TileProviderTileServer.class, name = "TILESERVER")
 })
 public abstract class TileProvider {
 

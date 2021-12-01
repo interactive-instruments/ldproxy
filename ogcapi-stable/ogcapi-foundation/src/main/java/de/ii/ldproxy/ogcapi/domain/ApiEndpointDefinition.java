@@ -47,7 +47,13 @@ public abstract class ApiEndpointDefinition {
     public static final int SORT_PRIORITY_TILE_SETS_COLLECTION = 1530;
     public static final int SORT_PRIORITY_TILE_SET_COLLECTION = 1540;
     public static final int SORT_PRIORITY_TILE_COLLECTION = 1550;
-    public static final int SORT_PRIORITY_TILE_MATRIX_SETS = 1590;
+    public static final int SORT_PRIORITY_MAP_TILE_SETS = 1600;
+    public static final int SORT_PRIORITY_MAP_TILE_SET = 1610;
+    public static final int SORT_PRIORITY_MAP_TILE = 1620;
+    public static final int SORT_PRIORITY_MAP_TILE_SETS_COLLECTION = 1630;
+    public static final int SORT_PRIORITY_MAP_TILE_SET_COLLECTION = 1640;
+    public static final int SORT_PRIORITY_MAP_TILE_COLLECTION = 1650;
+    public static final int SORT_PRIORITY_TILE_MATRIX_SETS = 1700;
     public static final int SORT_PRIORITY_STYLES = 2000;
     public static final int SORT_PRIORITY_STYLESHEET = 2010;
     public static final int SORT_PRIORITY_STYLE_METADATA = 2020;

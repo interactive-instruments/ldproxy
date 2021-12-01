@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.tiles.infra;
+package de.ii.ldproxy.ogcapi.maps.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
@@ -22,6 +22,8 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
+import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
@@ -29,6 +31,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileSingleCollection;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -66,9 +69,7 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
 
     private static final List<String> TAGS = ImmutableList.of("Access single-layer map tiles");
 
-    private final FeaturesCoreProviders providers;
     private final Client client;
-
 
     EndpointMapTileSingleCollection(@Requires FeaturesCoreProviders providers,
                                     @Requires ExtensionRegistry extensionRegistry,
@@ -79,7 +80,6 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
                                     @Requires StaticTileProviderStore staticTileProviderStore,
                                     @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(providers, extensionRegistry, queryHandler, crsTransformerFactory, limitsGenerator, cache, staticTileProviderStore, tileMatrixSetRepository);
-        this.providers = providers;
         this.client = ClientBuilder.newClient();
     }
 
@@ -90,69 +90,29 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
 
     @Override
     public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
+        if (formats == null) {
+            formats = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class);
+        }
         return formats;
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        Optional<TilesConfiguration> config = apiData.getCollections()
-                                                     .get(collectionId)
-                                                     .getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
-            // Tiles are pre-generated as a static tile set
-            return config.filter(ExtensionConfiguration::isEnabled)
-                         .isPresent();
-        } else {
-            // Tiles are generated on-demand from a data source
-            if (config.filter(TilesConfiguration::isEnabled)
-                      .filter(TilesConfiguration::isSingleCollectionEnabled)
-                      .isEmpty()) return false;
-            // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData)
-                            .map(FeatureProvider2::supportsHighLoad)
-                            .orElse(false);
-        }
+        if (!apiData.getExtension(MapTilesConfiguration.class, collectionId)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(false))
+            return false;
+        return super.isEnabledForApi(apiData, collectionId);
     }
 
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("collections")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION);
-        final String subSubPath = "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}";
-        final String path = "/collections/{collectionId}" + subSubPath;
-        final HttpMethods method = HttpMethods.GET;
-        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-        if (optCollectionIdParam.isEmpty()) {
-            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
-        } else {
-            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
-            final List<String> collectionIds = (explode) ?
-                    collectionIdParam.getValues(apiData) :
-                    ImmutableList.of("{collectionId}");
-            for (String collectionId : collectionIds) {
-                List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
-                String operationSummary = "fetch a map tile of the collection '"+ collectionId + "'";
-                Optional<String> operationDescription = Optional.of("The map tile in the requested tiling scheme ('{tileMatrixSetId}'), " +
-                        "on the requested zoom level ('{tileMatrix}'), with the requested grid coordinates ('{tileRow}', '{tileCol}') is returned. " +
-                        "The tile has a single layer with all selected features in the bounding box of the tile with the requested properties.");
-                String resourcePath = path.replace("{collectionId}", collectionId);
-                ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                        .path(resourcePath)
-                        .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                if (operation != null) {
-                    resourceBuilder.putOperations(method.name(), operation);
-                }
-                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-            }
-        }
-
-        return definitionBuilder.build();
+        return computeDefinition(apiData,
+                                 "collections",
+                                 ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_COLLECTION,
+                                 "/collections/{collectionId}",
+                                 "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+                                 TAGS);
     }
 
     @Path("/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
@@ -163,7 +123,7 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
                             @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
             throws CrsTransformationException, IOException, NotFoundException {
         String format = "png";
-        String target = "http://localhost:8080/styles/daraa/" + collectionId;
+        String target = "http://localhost:8080/styles/daraa-topographic/" + collectionId;
         String path = String.format("%s/%s/%s.%s", tileMatrix, tileRow, tileCol, format);
         String responseType = "image/" + format;
         return client.target(target)

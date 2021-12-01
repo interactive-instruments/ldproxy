@@ -68,7 +68,7 @@ import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.LIMIT_DEFAULT;
 @Component
 @Provides
 @Instantiate
-public class TileFormatMVT implements TileFormatWithQuerySupportExtension {
+public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
 
@@ -107,14 +107,15 @@ public class TileFormatMVT implements TileFormatWithQuerySupportExtension {
 
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        if (path.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+        if (path.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+            path.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
             return new ImmutableApiMediaTypeContent.Builder()
                     .schema(SCHEMA_TILE)
                     .schemaRef(SCHEMA_REF_TILE)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new RuntimeException("Unexpected path: " + path);
+        return null;
     }
 
     @Override

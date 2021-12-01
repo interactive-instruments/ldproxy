@@ -46,6 +46,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     @Nullable
     TileProvider getTileProvider();
 
+    @Nullable
+    TileProvider getMapProvider();
+
     List<String> getTileSetEncodings();
 
     @Nullable
@@ -65,6 +68,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
 
     // Note: Most configuration options have been moved to TileProviderFeatures and have been deprecated here.
     // The getXyzDerived() methods support the deprecated configurations as well as the new style.
+
+    // TODO add TileServer to the Derived-methods
 
     @Value.Auxiliary
     @Value.Derived
