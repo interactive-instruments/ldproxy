@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -23,34 +22,29 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileEmpty;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMultiLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
-import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileStream;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
+import de.ii.ldproxy.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFromFeatureQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import org.immutables.value.Value;
 
-import java.io.InputStream;
+import javax.annotation.Nullable;
+import javax.ws.rs.NotAcceptableException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
-import javax.ws.rs.NotAcceptableException;
-
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
@@ -65,6 +59,8 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract Map<String, MinMax> getZoomLevels();
 
     public abstract Map<String, MinMax> getZoomLevelsCache();
+
+    public abstract Optional<SeedingOptions> getSeedingOptions();
 
     public abstract Map<String, MinMax> getSeeding();
 

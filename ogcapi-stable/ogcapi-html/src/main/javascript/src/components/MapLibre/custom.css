@@ -1,39 +1,43 @@
 .map-sm {
-    height: 480px;
-    background: #f8f4f0;
+  height: 480px;
+  background: #f8f4f0;
 }
 
 .map-md {
-    height: 600px;
-    background: #f8f4f0;
+  height: 600px;
+  background: #f8f4f0;
 }
 
 .map-full {
-    height: 100vh;
+  height: 100vh;
 }
 
 .maplibregl-ctrl.maplibregl-ctrl-attrib {
-    background-color: rgba(255, 255, 255, 0.7) !important;
+  background-color: rgba(255, 255, 255, 0.7) !important;
 }
 
 /*TODO: get color from bootstrap? */
 .maplibregl-ctrl-attrib a {
-    color: #007bff !important;
+  color: #007bff !important;
 }
 
 .maplibregl-popup-content {
-    max-height: 50vh;
-    overflow-y: auto;
-    overflow-x: auto;
+  max-height: 50vh;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 .map-sm .maplibregl-popup-content {
-    max-height: 240px;
+  max-height: 240px;
 }
 .map-md .maplibregl-popup-content {
-    max-height: 300px;
+  max-height: 300px;
 }
 
 .maplibregl-popup-content td {
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mapboxgl-ctrl.mgl-layerControl {
+  max-height: 80vh;
 }

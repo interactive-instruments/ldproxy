@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,6 +23,7 @@ import de.ii.ldproxy.ogcapi.tiles.app.TileProviderTileServer;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -173,6 +175,15 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getSeeding() :
                         ImmutableMap.of();
+    }
+
+    @Value.Auxiliary
+    @Value.Derived
+    @JsonIgnore
+    default Optional<SeedingOptions> getSeedingOptions() {
+        return getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getSeedingOptions()
+            : Optional.empty();
     }
 
     @Deprecated

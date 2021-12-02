@@ -16,8 +16,10 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -62,7 +64,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
 
     @Override
     public String getDescription() {
-        return "Specify which of the supported CRSs to use to encode geometric values in a filter expression";
+        return "Specify which of the supported CRSs to use to encode geometric values in a filter expression (parameter 'filter'). Default is WGS84 longitude/latitude (with or without height).";
     }
 
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
@@ -92,7 +94,11 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
                                              .stream()
                                              .map(EpsgCrs::toUriString)
                                              .collect(ImmutableList.toImmutableList());
-            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
+            String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                .map(ImmutableEpsgCrs::toUriString)
+                .orElse(CRS84);
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
     }
