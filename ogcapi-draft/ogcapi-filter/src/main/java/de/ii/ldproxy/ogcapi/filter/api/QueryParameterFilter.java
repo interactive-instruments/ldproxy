@@ -78,7 +78,8 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
             isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                    definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
     private final Schema schema = new StringSchema();

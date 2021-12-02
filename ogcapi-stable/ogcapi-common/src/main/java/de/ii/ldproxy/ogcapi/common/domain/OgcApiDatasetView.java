@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
@@ -72,9 +73,25 @@ public abstract class OgcApiDatasetView extends OgcApiView {
     public abstract List<Link> getDistributionLinks();
 
     public List<Link> getLinks() {
+        List<String> ignoreRels = new ImmutableList.Builder<String>()
+            .add("self")
+            .add("alternate")
+            .add("conformance")
+            .add("service-desc")
+            .add("service-doc")
+            .add("describedby")
+            .add("data")
+            .add("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/data")
+            .add("items")
+            .add("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/items")
+            .add("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/tilesets-\\w+")
+            .add("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/styles")
+            .add("ldp-map")
+            .build();
+
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:self|alternate|conformance|http://www\\.opengis\\.net/def/rel/ogc/1\\.0/data|data|http://www\\.opengis\\.net/def/rel/ogc/1\\.0/tilesets-\\w+|http://www\\.opengis\\.net/def/rel/ogc/1\\.0/styles|service-desc|service-doc|describedby|items|http://www\\.opengis\\.net/def/rel/ogc/1\\.0/items|ogc-dapa-processes|ldp-map)$"))
+                .filter(link -> !link.getRel().matches("^(?:" + String.join("|", ignoreRels) + ")$"))
                 .collect(Collectors.toList());
     }
 

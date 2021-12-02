@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.tiles.app.html;
+package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
@@ -26,10 +26,7 @@ import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Type;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet.DataType;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -50,6 +47,7 @@ import static de.ii.ldproxy.ogcapi.tiles.domain.TileLayer.GeometryType.points;
 import static de.ii.ldproxy.ogcapi.tiles.domain.TileLayer.GeometryType.lines;
 import static de.ii.ldproxy.ogcapi.tiles.domain.TileLayer.GeometryType.polygons;
 
+// TODO class needs to be in 'domain', since it is also accessed from MAP_TILES; find better solution
 public class TileSetsView extends OgcApiView {
     private static final Logger LOGGER = LoggerFactory.getLogger(TileSetsView.class);
 
@@ -255,7 +253,7 @@ public class TileSetsView extends OgcApiView {
         }
     }
 
-    private ImmutableMapClient getMapClient(Type type,
+    private MapClient getMapClient(Type type,
         String styleUrl, boolean removeZoomLevelConstraints,
         HtmlConfiguration htmlConfig, Multimap<String, List<String>> layers) {
         return new ImmutableMapClient.Builder()
@@ -265,7 +263,7 @@ public class TileSetsView extends OgcApiView {
                 .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
                                      .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
                 .data(new ImmutableSource.Builder()
-                              .type(TYPE.vector)
+                              .type(isVector ? TYPE.vector : TYPE.raster)
                               .url(xyzTemplate)
                               .putAllLayers(layers)
                               .build())
