@@ -45,6 +45,10 @@ public abstract class TileProvider {
     @Value.Default
     public boolean supportsTilesHints() { return false; }
 
+    public abstract boolean isMultiCollectionEnabled();
+
+    public abstract boolean isSingleCollectionEnabled();
+
     public abstract List<String> getTileEncodings();
 
     public abstract TileProvider mergeInto(TileProvider tileProvider);

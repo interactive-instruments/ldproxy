@@ -253,7 +253,7 @@ public class TileSetsView extends OgcApiView {
         }
     }
 
-    private ImmutableMapClient getMapClient(Type type,
+    private MapClient getMapClient(Type type,
         String styleUrl, boolean removeZoomLevelConstraints,
         HtmlConfiguration htmlConfig, Multimap<String, List<String>> layers) {
         return new ImmutableMapClient.Builder()
@@ -263,7 +263,7 @@ public class TileSetsView extends OgcApiView {
                 .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
                                      .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
                 .data(new ImmutableSource.Builder()
-                              .type(TYPE.vector)
+                              .type(isVector ? TYPE.vector : TYPE.raster)
                               .url(xyzTemplate)
                               .putAllLayers(layers)
                               .build())

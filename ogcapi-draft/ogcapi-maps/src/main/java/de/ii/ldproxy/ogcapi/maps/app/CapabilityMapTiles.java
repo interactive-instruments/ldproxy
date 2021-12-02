@@ -76,8 +76,8 @@ public class CapabilityMapTiles implements ApiBuildingBlock {
                 .mode(apiValidation);
 
         // TODO
-        // check urlTemplate (string, mandatory, no default): a URL template for the access to the map tile from the tileserver-gl deployment. The URL template must include the parameters tileMatrix, tileRow, tileCol and format;
-        // check tileEncodings (string array, default is ["PNG"]) with "PNG", "JPG" and "WEBP" as recognized values.
+        // check url templates (string, mandatory, no default): a URL template for the access to the map tile from the tileserver-gl deployment. The URL template must include the parameters tileMatrix, tileRow, tileCol and fileExtension;
+        // check tile encodings (string array, default is ["PNG"]) with "PNG", "JPG" and "WebP" as recognized values.
 
         return builder.build();
     }

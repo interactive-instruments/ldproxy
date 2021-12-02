@@ -132,7 +132,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     @JsonIgnore
     default boolean isSingleCollectionEnabled() {
         return Objects.equals(getSingleCollectionEnabled(), true)
-                || (getTileProvider() instanceof TileProviderFeatures && ((TileProviderFeatures) getTileProvider()).isSingleCollectionEnabled())
+                || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled())
                 || isEnabled();
     }
 
@@ -145,7 +145,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     @JsonIgnore
     default boolean isMultiCollectionEnabled() {
         return Objects.equals(getMultiCollectionEnabled(), true)
-            || (getTileProvider() instanceof TileProviderFeatures && ((TileProviderFeatures) getTileProvider()).isMultiCollectionEnabled())
+            || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled())
             || isEnabled();
     }
 

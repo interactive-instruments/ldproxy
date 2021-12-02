@@ -48,7 +48,6 @@ public abstract class TileProviderTileServer extends TileProvider {
 
     @Override
     @JsonIgnore
-    @Value.Derived
     public QueryInput getQueryInput(OgcApiDataV2 apiData, URICustomizer uriCustomizer,
                                     Map<String, String> queryParameters, List<OgcApiQueryParameter> allowedParameters,
                                     QueryInput genericInput, Tile tile) {
@@ -58,6 +57,22 @@ public abstract class TileProviderTileServer extends TileProvider {
             .tile(tile)
             .provider(this)
             .build();
+    }
+
+    @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isMultiCollectionEnabled() {
+        return Objects.nonNull(getUrlTemplate());
+    }
+
+    @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isSingleCollectionEnabled() {
+        return Objects.nonNull(getUrlTemplateSingleCollection());
     }
 
     @Override

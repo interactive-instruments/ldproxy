@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Handle responses under '/collection/{collectionId}/tiles'.
+ * Handle responses under '/collections/{collectionId}/tiles'.
  */
 @Component
 @Provides
@@ -70,11 +70,12 @@ public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSet
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        if (!apiData.getExtension(MapTilesConfiguration.class, collectionId)
-            .map(ExtensionConfiguration::isEnabled)
-            .orElse(false))
-            return false;
-        return super.isEnabledForApi(apiData, collectionId);
+        if (apiData.getExtension(MapTilesConfiguration.class, collectionId)
+            .filter(ExtensionConfiguration::isEnabled)
+            .filter(MapTilesConfiguration::isSingleCollectionEnabled)
+            .isPresent())
+            return super.isEnabledForApi(apiData, collectionId);
+        return false;
     }
 
     @Override
@@ -97,7 +98,8 @@ public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSet
     public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @PathParam("collectionId") String collectionId) {
 
-        return super.getTileSets(api.getData(), requestContext, "/collections/{collectionId}/map/tiles/{tileMatrixSetId}", collectionId);
+        return super.getTileSets(api.getData(), requestContext,
+                                 "/collections/{collectionId}/map/tiles", collectionId, true);
     }
 
 }

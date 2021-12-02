@@ -45,7 +45,7 @@ public class MapTilesLinkGenerator extends DefaultLinksGenerator {
                                 .removeParameters("f")
                                 .toString())
                         .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())
-                        .title(i18n.get("tilesLink", language))
+                        .title(i18n.get("mapTilesLink", language))
                         .build())
                 .build();
     }
@@ -60,7 +60,6 @@ public class MapTilesLinkGenerator extends DefaultLinksGenerator {
      */
     public List<Link> generateCollectionLinks(URICustomizer uriBuilder, TileSet.DataType dataType, I18n i18n, Optional<Locale> language) {
 
-
         return ImmutableList.<Link>builder()
                 .add(new ImmutableLink.Builder()
                         .href(uriBuilder.copy()
@@ -70,7 +69,7 @@ public class MapTilesLinkGenerator extends DefaultLinksGenerator {
                                 .toString()
                         )
                         .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())
-                        .title(i18n.get("tilesLink", language))
+                        .title(i18n.get("mapTilesLink", language))
                         .build())
                 .build();
     }

@@ -73,7 +73,7 @@ public abstract class TileFormatExtension implements FormatExtension {
             .map(TilesConfiguration::getTileEncodingsDerived)
             .orElse(ImmutableList.of());
         return isEnabledForApi(apiData, collectionId) &&
-            definitionPath.startsWith("/collection/{collectionId}/tiles") &&
+            definitionPath.startsWith("/collections/{collectionId}/tiles") &&
             ((formats.isEmpty() && isEnabledByDefault()) || formats.contains(getMediaType().label()));
     }
 

@@ -36,7 +36,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 /**
- * Handle responses under '/collection/{collectionId}/tiles'.
+ * Handle responses under '/collections/{collectionId}/tiles'.
  */
 @Component
 @Provides
@@ -84,7 +84,8 @@ public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSi
     public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @PathParam("collectionId") String collectionId) {
 
-        return super.getTileSets(api.getData(), requestContext, "/collections/{collectionId}/tiles", collectionId);
+        return super.getTileSets(api.getData(), requestContext,
+                                 "/collections/{collectionId}/tiles", collectionId, false);
     }
 
 }

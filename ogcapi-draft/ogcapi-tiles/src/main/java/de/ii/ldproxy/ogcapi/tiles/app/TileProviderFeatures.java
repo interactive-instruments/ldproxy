@@ -85,6 +85,7 @@ public abstract class TileProviderFeatures extends TileProvider {
     @Nullable
     public abstract Boolean getSingleCollectionEnabled();
 
+    @Override
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
@@ -95,6 +96,7 @@ public abstract class TileProviderFeatures extends TileProvider {
     @Nullable
     public abstract Boolean getMultiCollectionEnabled();
 
+    @Override
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary

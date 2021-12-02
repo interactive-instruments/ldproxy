@@ -24,6 +24,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(MapTilesConfiguration.class)
                 .filter(MapTilesConfiguration::getEnabled)
+                .filter(MapTilesConfiguration::isMultiCollectionEnabled)
                 .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                 .isPresent() &&
             apiData.getExtension(TilesConfiguration.class)
@@ -36,6 +37,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return apiData.getExtension(MapTilesConfiguration.class, collectionId)
                 .filter(MapTilesConfiguration::getEnabled)
+                .filter(MapTilesConfiguration::isSingleCollectionEnabled)
                 .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                 .isPresent() &&
             apiData.getExtension(TilesConfiguration.class, collectionId)
@@ -60,7 +62,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
             .map(MapTilesConfiguration::getTileEncodingsDerived)
             .orElse(ImmutableList.of());
         return isEnabledForApi(apiData, collectionId) &&
-            definitionPath.startsWith("/collection/{collectionId}/map/tiles") &&
+            definitionPath.startsWith("/collections/{collectionId}/map/tiles") &&
             ((formats.isEmpty() && isEnabledByDefault()) || formats.contains(getMediaType().label()));
     }
 

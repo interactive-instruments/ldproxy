@@ -123,7 +123,8 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
         return definitionBuilder.build();
     }
 
-    protected Response getTileSets(OgcApiDataV2 apiData, ApiRequestContext requestContext, String definitionPath, String collectionId) {
+    protected Response getTileSets(OgcApiDataV2 apiData, ApiRequestContext requestContext,
+                                   String definitionPath, String collectionId, boolean onlyWebMercatorQuad) {
 
         checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/tiles", "collectionId", collectionId);
 
@@ -133,6 +134,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
             .center(getCenter(apiData))
             .tileMatrixSetZoomLevels(getTileMatrixSetZoomLevels(apiData, collectionId))
             .path(definitionPath)
+            .onlyWebMercatorQuad(onlyWebMercatorQuad)
             .build();
 
         return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);

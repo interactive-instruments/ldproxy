@@ -99,11 +99,12 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        if (!apiData.getExtension(MapTilesConfiguration.class, collectionId)
-            .map(ExtensionConfiguration::isEnabled)
-            .orElse(false))
-            return false;
-        return super.isEnabledForApi(apiData, collectionId);
+        if (apiData.getExtension(MapTilesConfiguration.class, collectionId)
+            .filter(ExtensionConfiguration::isEnabled)
+            .filter(MapTilesConfiguration::isSingleCollectionEnabled)
+            .isPresent())
+            return super.isEnabledForApi(apiData, collectionId);
+        return false;
     }
 
     @Override

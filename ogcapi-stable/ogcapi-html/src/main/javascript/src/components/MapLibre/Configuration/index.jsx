@@ -208,6 +208,16 @@ const addData = (
         );
       }
     }
+  } else if (dataType === "raster") {
+    map.addSource("data", {
+      type: "raster",
+      tiles: [data],
+    });
+    map.addLayer({
+      id: "data",
+      type: "raster",
+      source: "data",
+    });
   }
 };
 

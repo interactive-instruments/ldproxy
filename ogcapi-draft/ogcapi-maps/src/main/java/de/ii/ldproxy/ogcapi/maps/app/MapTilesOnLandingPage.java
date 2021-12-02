@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
@@ -50,6 +51,7 @@ public class MapTilesOnLandingPage implements LandingPageExtension {
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(MapTilesConfiguration.class)
             .filter(MapTilesConfiguration::getEnabled)
+            .filter(MapTilesConfiguration::isMultiCollectionEnabled)
             .isPresent() &&
             apiData.getExtension(TilesConfiguration.class)
                 .filter(TilesConfiguration::getEnabled)
@@ -69,7 +71,7 @@ public class MapTilesOnLandingPage implements LandingPageExtension {
                                                 Optional<Locale> language) {
 
         if (isEnabledForApi(apiData)) {
-            Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+            Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class)
                                                                    .stream()
                                                                    .filter(format -> format.isEnabledForApi(apiData))
                                                                    .map(TileFormatExtension::getDataType)

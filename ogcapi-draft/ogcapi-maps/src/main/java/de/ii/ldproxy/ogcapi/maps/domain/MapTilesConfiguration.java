@@ -42,6 +42,24 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
         return Objects.requireNonNullElse(getMapProvider().getTileEncodings(), ImmutableList.of());
     }
 
+    @JsonIgnore
+    @Value.Auxiliary
+    @Value.Derived
+    default boolean isMultiCollectionEnabled() {
+        if (Objects.isNull(getMapProvider()))
+            return false;
+        return getMapProvider().isMultiCollectionEnabled();
+    }
+
+    @JsonIgnore
+    @Value.Auxiliary
+    @Value.Derived
+    default boolean isSingleCollectionEnabled() {
+        if (Objects.isNull(getMapProvider()))
+            return false;
+        return getMapProvider().isSingleCollectionEnabled();
+    }
+
     @Override
     default MapTilesConfiguration.Builder getBuilder() {
         return new ImmutableMapTilesConfiguration.Builder();
@@ -57,8 +75,6 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
         ImmutableMapTilesConfiguration.Builder builder = new ImmutableMapTilesConfiguration.Builder()
             .from(src)
             .from(this);
-
-        // TODO
 
         return builder.build();
     }

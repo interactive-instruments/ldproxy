@@ -17,6 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
@@ -59,6 +60,7 @@ public class MapTilesOnCollection implements CollectionExtension {
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return apiData.getExtension(MapTilesConfiguration.class)
             .filter(MapTilesConfiguration::getEnabled)
+            .filter(MapTilesConfiguration::isSingleCollectionEnabled)
             .isPresent() &&
             apiData.getExtension(TilesConfiguration.class)
                 .filter(TilesConfiguration::getEnabled)
@@ -78,7 +80,7 @@ public class MapTilesOnCollection implements CollectionExtension {
         final MapTilesLinkGenerator mapTilesLinkGenerator = new MapTilesLinkGenerator();
 
         if (!isNested && isEnabledForApi(apiData, featureTypeConfiguration.getId())) {
-            Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+            Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class)
                                                                    .stream()
                                                                    .filter(format -> format.isEnabledForApi(apiData, featureTypeConfiguration.getId()))
                                                                    .map(TileFormatExtension::getDataType)

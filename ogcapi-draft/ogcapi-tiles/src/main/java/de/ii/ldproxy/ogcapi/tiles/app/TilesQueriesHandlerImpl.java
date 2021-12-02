@@ -454,7 +454,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                         .limit(query.getLimit())
                         .offset(0)
                         .i18n(i18n)
-                        .outputStream(new OutputStreamToByteConsumer()/*TODO*/)
+                        .outputStream(new OutputStreamToByteConsumer())
                         .build();
             } catch (Exception e) {
                 throw new RuntimeException("Error building the tile transformation context.", e);

@@ -58,6 +58,22 @@ public abstract class TileProviderMbtiles extends TileProvider {
     public boolean requiresQuerySupport() { return false; }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isMultiCollectionEnabled() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isSingleCollectionEnabled() {
+        return false;
+    }
+
+    @Override
     public TileProvider mergeInto(TileProvider source) {
         if (Objects.isNull(source) || !(source instanceof TileProviderMbtiles))
             return this;

@@ -53,11 +53,12 @@ public class EndpointMapTileSetMultiCollection extends AbstractEndpointTileSetMu
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        if (!apiData.getExtension(MapTilesConfiguration.class)
-            .map(ExtensionConfiguration::isEnabled)
-            .orElse(false))
-            return false;
-        return super.isEnabledForApi(apiData);
+        if (apiData.getExtension(MapTilesConfiguration.class)
+            .filter(ExtensionConfiguration::isEnabled)
+            .filter(MapTilesConfiguration::isMultiCollectionEnabled)
+            .isPresent())
+            return super.isEnabledForApi(apiData);
+        return false;
     }
 
     @Override
