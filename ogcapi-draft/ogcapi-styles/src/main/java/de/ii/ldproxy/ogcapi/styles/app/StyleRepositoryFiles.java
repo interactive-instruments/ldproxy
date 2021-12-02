@@ -29,6 +29,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
@@ -45,6 +46,7 @@ import de.ii.ldproxy.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetMetadata;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -488,9 +490,37 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                                             .anyMatch(format -> stylesheetExists(apiData, collectionId, finalDefaultStyle, format, true));
                 if (!exists) {
                     if (collectionId.isPresent())
-                        builder.addStrictErrors(MessageFormat.format("The default style ''{0}'' specified in the STYLES module configuration does not exist for collection ''{1}''.", defaultStyle, collectionId.get()));
+                        builder.addWarnings(MessageFormat.format("The default style ''{0}'' specified in the HTML module configuration does not exist for collection ''{1}'' and no link to the web map will be created.", defaultStyle, collectionId.get()));
                     else
-                        builder.addStrictErrors(MessageFormat.format("The default style ''{0}'' specified in the STYLES module configuration does not exist.", defaultStyle));
+                        builder.addWarnings(MessageFormat.format("The default style ''{0}'' specified in the HTML module configuration does not exist and no link to the web map will be created.", defaultStyle));
+                }
+            }
+
+            if (collectionId.isPresent()) {
+                // all feature access is on the collection level
+                final String style = apiData.getExtension(FeaturesHtmlConfiguration.class, collectionId.get()).map(FeaturesHtmlConfiguration::getStyle).orElse(defaultStyle);
+                if (!style.equals("NONE") && !style.equals("DEFAULT")) {
+                    boolean exists = getStyleFormatStream(apiData, collectionId).filter(StyleFormatExtension::getAsDefault)
+                        .anyMatch(format -> stylesheetExists(apiData, collectionId, style, format, true));
+                    if (!exists) {
+                        builder.addWarnings(MessageFormat.format("The style ''{0}'' specified in the FEATURES_HTML module configuration does not exist for collection ''{1}''. 'NONE' will be used instead.", style, collectionId.get()));
+                    }
+                }
+            }
+
+            final String style = (collectionId.isEmpty()
+                ? apiData.getExtension(TilesConfiguration.class)
+                : apiData.getExtension(TilesConfiguration.class, collectionId.get()))
+                .map(TilesConfiguration::getStyle)
+                .orElse(defaultStyle);
+            if (!style.equals("NONE") && !style.equals("DEFAULT")) {
+                boolean exists = getStyleFormatStream(apiData, collectionId).filter(StyleFormatExtension::getAsDefault)
+                    .anyMatch(format -> stylesheetExists(apiData, collectionId, style, format, true));
+                if (!exists) {
+                    if (collectionId.isPresent())
+                        builder.addWarnings(MessageFormat.format("The style ''{0}'' specified in the TILES module configuration does not exist for collection ''{1}''. 'NONE' will be used instead.", style, collectionId.get()));
+                    else
+                        builder.addWarnings(MessageFormat.format("The style ''{0}'' specified in the TILES module configuration does not exist. 'NONE' will be used instead.", style));
                 }
             }
         }
