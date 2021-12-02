@@ -366,7 +366,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
         if (constraints.getMin().isPresent())
           builder.minimum(Math.round(constraints.getMin().get()));
         if (constraints.getMax().isPresent())
-          builder.minimum(Math.round(constraints.getMax().get()));
+          builder.maximum(Math.round(constraints.getMax().get()));
         result = builder.build();
       } else if (result instanceof ImmutableJsonSchemaNumber) {
         ImmutableJsonSchemaNumber.Builder builder = ImmutableJsonSchemaNumber.builder()
@@ -374,7 +374,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
         if (constraints.getMin().isPresent())
           builder.minimum(constraints.getMin().get());
         if (constraints.getMax().isPresent())
-          builder.minimum(constraints.getMax().get());
+          builder.maximum(constraints.getMax().get());
         result = builder.build();
       }
     }

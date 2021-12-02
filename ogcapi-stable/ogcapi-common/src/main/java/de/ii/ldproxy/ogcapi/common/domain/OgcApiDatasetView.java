@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
@@ -72,11 +73,26 @@ public abstract class OgcApiDatasetView extends OgcApiView {
     public abstract List<Link> getDistributionLinks();
 
     public List<Link> getLinks() {
+        List<String> ignoreRels = new ImmutableList.Builder<String>()
+            .add("self")
+            .add("alternate")
+            .add("conformance")
+            .add("service-desc")
+            .add("service-doc")
+            .add("describedby")
+            .add("data")
+            .add("items")
+            .add("tilesets-\\w+")
+            .add("styles")
+            .add("routes")
+            .add("ldp-map")
+            .build();
+
         return links
                 .stream()
                 .filter(link -> !link.getRel()
                     .replace("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/","")
-                    .matches("^(?:self|alternate|conformance|data|tilesets-\\w+|styles|service-desc|service-doc|describedby|items|routes|ldp-map)$"))
+                    .matches("^(?:" + String.join("|", ignoreRels) + ")$"))
                 .collect(Collectors.toList());
     }
 

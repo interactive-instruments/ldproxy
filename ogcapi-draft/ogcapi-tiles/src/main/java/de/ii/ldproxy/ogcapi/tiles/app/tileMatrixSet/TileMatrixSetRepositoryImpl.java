@@ -71,7 +71,7 @@ public class TileMatrixSetRepositoryImpl implements TileMatrixSetRepository {
     public Optional<TileMatrixSet> get(String tileMatrixSetId) {
         if (tileMatrixSets.isEmpty())
             initCache();
-        return Optional.of(tileMatrixSets.get(tileMatrixSetId));
+        return Optional.ofNullable(tileMatrixSets.get(tileMatrixSetId));
     }
 
     @Override

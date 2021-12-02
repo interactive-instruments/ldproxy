@@ -20,7 +20,7 @@ public interface TileSetFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/tiles/"+TMS_REGEX+"/?$";
+        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?(?:/map)?/tiles/"+TMS_REGEX+"/?$";
     }
 
     Object getTileSetEntity(TileSet tileset, OgcApiDataV2 apiData, Optional<String> collectionId, ApiRequestContext requestContext);

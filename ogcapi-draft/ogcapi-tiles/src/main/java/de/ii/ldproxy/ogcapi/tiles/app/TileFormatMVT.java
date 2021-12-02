@@ -24,7 +24,9 @@ import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFromFeatureQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -68,7 +70,7 @@ import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.LIMIT_DEFAULT;
 @Component
 @Provides
 @Instantiate
-public class TileFormatMVT implements TileFormatWithQuerySupportExtension {
+public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
 
@@ -96,25 +98,19 @@ public class TileFormatMVT implements TileFormatWithQuerySupportExtension {
     }
 
     @Override
-    public boolean canMultiLayer() {
-        return true;
-    }
-
-    @Override
-    public boolean canTransformFeatures() {
-        return true;
-    }
+    public boolean canMultiLayer() { return true; }
 
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        if (path.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+        if (path.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+            path.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
             return new ImmutableApiMediaTypeContent.Builder()
                     .schema(SCHEMA_TILE)
                     .schemaRef(SCHEMA_REF_TILE)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new RuntimeException("Unexpected path: " + path);
+        return null;
     }
 
     @Override
@@ -249,7 +245,7 @@ public class TileFormatMVT implements TileFormatWithQuerySupportExtension {
     }
 
     @Override
-    public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException {
+    public TileFromFeatureQuery.MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException {
         VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
         VectorTileDecoder decoder = new VectorTileDecoder();
         Set<String> processedCollections = new TreeSet<>();
@@ -303,7 +299,7 @@ public class TileFormatMVT implements TileFormatWithQuerySupportExtension {
             }
         }
 
-        MultiLayerTileContent result = new MultiLayerTileContent();
+        TileFromFeatureQuery.MultiLayerTileContent result = new TileFromFeatureQuery.MultiLayerTileContent();
         result.byteArray = encoder.encode();
         result.isComplete = processedCollections.size()==singleLayerTileMap.size();
 

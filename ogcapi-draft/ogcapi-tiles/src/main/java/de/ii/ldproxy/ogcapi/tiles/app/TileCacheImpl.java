@@ -21,6 +21,7 @@ import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesTileset;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
@@ -524,7 +525,7 @@ public class TileCacheImpl implements TileCache {
                          apiData.getId(), collectionId.orElse("all"), tileMatrixSet.getId(),
                          limits.getTileMatrix(), limits.getMinTileRow(), limits.getMaxTileRow(),
                          limits.getMinTileCol(), limits.getMaxTileCol(),
-                         outputFormats.stream().map(TileFormatWithQuerySupportExtension::getExtension).collect(Collectors.joining("/")));
+                         outputFormats.stream().map(TileFormatExtension::getExtension).collect(Collectors.joining("/")));
             for (int row=limits.getMinTileRow(); row<=limits.getMaxTileRow(); row++) {
                 for (int col=limits.getMinTileCol(); col<=limits.getMaxTileCol(); col++) {
                     for (TileFormatWithQuerySupportExtension outputFormat: outputFormats) {

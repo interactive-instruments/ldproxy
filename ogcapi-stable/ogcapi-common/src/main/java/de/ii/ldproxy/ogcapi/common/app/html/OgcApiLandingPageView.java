@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class OgcApiLandingPageView extends OgcApiDatasetView {
 
@@ -119,11 +120,11 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
                 .findFirst();
     }
 
-    public Optional<Link> getTiles() {
+    public List<Link> getTiles() {
         return links
                 .stream()
                 .filter(link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
-                .findFirst();
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public Optional<Link> getStyles() {

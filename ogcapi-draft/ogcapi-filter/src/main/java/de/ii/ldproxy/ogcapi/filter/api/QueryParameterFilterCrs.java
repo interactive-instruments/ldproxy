@@ -53,7 +53,8 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
                 isEnabledForApi(apiData) &&
                 method == HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                        definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
     @Override

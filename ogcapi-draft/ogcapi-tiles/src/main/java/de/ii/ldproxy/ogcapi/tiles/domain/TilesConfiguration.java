@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -18,9 +19,11 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
+import de.ii.ldproxy.ogcapi.tiles.app.TileProviderTileServer;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -44,7 +47,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     }
 
     @Nullable
-    TileProvider getTileProvider();
+    TileProvider getTileProvider(); // TODO add TileServer support
 
     List<String> getTileSetEncodings();
 
@@ -76,7 +79,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                         ((TileProviderFeatures) getTileProvider()).getTileEncodings() :
                         getTileProvider() instanceof TileProviderMbtiles && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) ?
                                 ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) :
-                                ImmutableList.of();
+                                getTileProvider() instanceof TileProviderTileServer && Objects.nonNull(((TileProviderTileServer) getTileProvider()).getTileEncodings()) ?
+                                    ((TileProviderTileServer) getTileProvider()).getTileEncodings() :
+                                    ImmutableList.of();
     }
 
     @Deprecated
@@ -127,7 +132,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     @JsonIgnore
     default boolean isSingleCollectionEnabled() {
         return Objects.equals(getSingleCollectionEnabled(), true)
-                || (getTileProvider() instanceof TileProviderFeatures && ((TileProviderFeatures) getTileProvider()).isSingleCollectionEnabled())
+                || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled())
                 || isEnabled();
     }
 
@@ -140,7 +145,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     @JsonIgnore
     default boolean isMultiCollectionEnabled() {
         return Objects.equals(getMultiCollectionEnabled(), true)
-            || (getTileProvider() instanceof TileProviderFeatures && ((TileProviderFeatures) getTileProvider()).isMultiCollectionEnabled())
+            || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled())
             || isEnabled();
     }
 
@@ -170,6 +175,15 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getSeeding() :
                         ImmutableMap.of();
+    }
+
+    @Value.Auxiliary
+    @Value.Derived
+    @JsonIgnore
+    default Optional<SeedingOptions> getSeedingOptions() {
+        return getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getSeedingOptions()
+            : Optional.empty();
     }
 
     @Deprecated

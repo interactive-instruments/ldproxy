@@ -56,7 +56,7 @@ public class FeaturesCoreValidator implements FeaturesCoreValidation {
                    .filter(key -> !key.startsWith("*"))
                    // normalize property names
                    //.map(key -> key.replaceAll("\\[[^\\]]*\\]", ""))
-                   .filter(key -> schemaInfo.getPropertyNames(schema, false)
+                   .filter(key -> schemaInfo.getPropertyNames(schema, false, true)
                                             .stream()
                                             .noneMatch(schemaProperty -> schemaProperty.equals(key)))
                    .collect(Collectors.toUnmodifiableList());

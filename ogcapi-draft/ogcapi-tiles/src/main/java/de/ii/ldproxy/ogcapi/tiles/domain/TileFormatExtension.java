@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
@@ -30,13 +31,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface TileFormatExtension extends FormatExtension {
+public abstract class TileFormatExtension implements FormatExtension {
 
-    String SCHEMA_REF_TILE = "#/components/schemas/Binary";
-    Schema SCHEMA_TILE = new BinarySchema();
+    protected String SCHEMA_REF_TILE = "#/components/schemas/Binary";
+    protected Schema SCHEMA_TILE = new BinarySchema();
 
     @Override
-    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::getEnabled)
                       .filter(TilesConfiguration::isMultiCollectionEnabled)
@@ -45,10 +46,8 @@ public interface TileFormatExtension extends FormatExtension {
     }
 
     @Override
-    default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return apiData.getCollections()
-                      .get(collectionId)
-                      .getExtension(TilesConfiguration.class)
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        return apiData.getExtension(TilesConfiguration.class, collectionId)
                       .filter(TilesConfiguration::getEnabled)
                       .filter(TilesConfiguration::isSingleCollectionEnabled)
                       .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
@@ -56,53 +55,46 @@ public interface TileFormatExtension extends FormatExtension {
     }
 
     @Override
-    default String getPathPattern() {
+    public String getPathPattern() {
         return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/tiles/\\w+/\\w+/\\w+/\\w+/?$";
     }
 
-    default boolean canMultiLayer() { return false; }
-
-    default boolean canTransformFeatures() { return false; }
-
-    default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
-        FeatureTransformationContextTiles transformationContext) {
-        return Optional.empty();
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        List<String> formats = apiData.getExtension(TilesConfiguration.class)
+            .map(TilesConfiguration::getTileEncodingsDerived)
+            .orElse(ImmutableList.of());
+        return isEnabledForApi(apiData) &&
+            definitionPath.startsWith("/tiles") &&
+            ((formats.isEmpty() && isEnabledByDefault()) || formats.contains(getMediaType().label()));
     }
 
-    default Optional<PropertyTransformations> getPropertyTransformations(
-        FeatureTypeConfigurationOgcApi collectionData) {
-
-        Optional<PropertyTransformations> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
-            .map(featuresCoreConfiguration -> ((PropertyTransformations)featuresCoreConfiguration));
-
-        Optional<PropertyTransformations> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
-            .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
-            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration));
-
-
-        return formatTransformations.map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
-            .or(() -> coreTransformations);
+    public boolean isApplicable(OgcApiDataV2 apiData, String collectionId, String definitionPath) {
+        List<String> formats = apiData.getExtension(TilesConfiguration.class, collectionId)
+            .map(TilesConfiguration::getTileEncodingsDerived)
+            .orElse(ImmutableList.of());
+        return isEnabledForApi(apiData, collectionId) &&
+            definitionPath.startsWith("/collections/{collectionId}/tiles") &&
+            ((formats.isEmpty() && isEnabledByDefault()) || formats.contains(getMediaType().label()));
     }
 
-    default Optional<PropertyTransformations> getPropertyTransformations(
-        FeatureTypeConfigurationOgcApi collectionData, Map<String, String> substitutions) {
-        return getPropertyTransformations(collectionData).map(propertyTransformations -> propertyTransformations.withSubstitutions(substitutions));
-    }
+    public boolean canMultiLayer() { return false; }
 
-    String getExtension();
+    public boolean supportsFeatureQuery() { return this instanceof TileFromFeatureQuery; }
 
-    default boolean getGzippedInMbtiles() { return false; }
+    public abstract String getExtension();
 
-    default boolean getSupportsEmptyTile() { return false; }
+    public boolean getGzippedInMbtiles() { return false; }
 
-    default byte[] getEmptyTile(Tile tile) {
+    public boolean getSupportsEmptyTile() { return false; }
+
+    public byte[] getEmptyTile(Tile tile) {
         throw new IllegalStateException(String.format("No empty tile available for tile format %s.", this.getClass().getSimpleName()));
     }
 
-    TileSet.DataType getDataType();
+    public abstract TileSet.DataType getDataType();
 
     @Override
-    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return TilesConfiguration.class;
     }
 }

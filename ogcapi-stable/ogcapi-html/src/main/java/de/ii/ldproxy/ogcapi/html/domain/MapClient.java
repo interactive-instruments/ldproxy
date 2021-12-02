@@ -82,7 +82,7 @@ public interface MapClient {
 
   @Value.Immutable
   interface Source {
-    enum TYPE {geojson, vector}
+    enum TYPE {geojson, vector, raster}
 
     TYPE getType();
 

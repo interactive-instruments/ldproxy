@@ -63,7 +63,8 @@ public class QueryParameterProperties extends ApiExtensionCache implements OgcAp
                 method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
-                 definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
