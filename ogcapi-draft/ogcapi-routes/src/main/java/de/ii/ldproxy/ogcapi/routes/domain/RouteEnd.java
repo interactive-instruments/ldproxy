@@ -18,7 +18,7 @@ import java.util.Map;
 @JsonDeserialize(builder = ImmutableRouteEnd.Builder.class)
 public abstract class RouteEnd extends RouteComponent {
 
-    public final String getFeatureType() { return "end"; }
+    public static String FEATURE_TYPE = "end";
 
     public abstract Geometry.Point getGeometry();
 

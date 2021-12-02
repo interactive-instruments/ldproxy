@@ -18,7 +18,7 @@ import java.util.Map;
 @JsonDeserialize(builder = ImmutableRouteSegment.Builder.class)
 public abstract class RouteSegment extends RouteComponent {
 
-    public final String getFeatureType() { return "segment"; }
+    public static String FEATURE_TYPE = "segment";
 
     public abstract Geometry.Point getGeometry();
 

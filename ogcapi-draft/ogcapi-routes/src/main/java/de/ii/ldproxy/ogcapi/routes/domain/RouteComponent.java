@@ -13,10 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.util.Optional;
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "featureType")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = RouteOverview.class, name = "overview"),
     @JsonSubTypes.Type(value = RouteStart.class, name = "start"),

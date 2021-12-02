@@ -18,7 +18,7 @@ import java.util.Map;
 @JsonDeserialize(builder = ImmutableRouteOverview.Builder.class)
 public abstract class RouteOverview extends RouteComponent {
 
-    public final String getFeatureType() { return "overview"; }
+    public static String FEATURE_TYPE = "overview";
 
     public abstract Geometry.LineString getGeometry();
 

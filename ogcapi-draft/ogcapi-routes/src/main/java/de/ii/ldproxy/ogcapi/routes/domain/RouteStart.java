@@ -18,7 +18,7 @@ import java.util.Map;
 @JsonDeserialize(builder = ImmutableRouteStart.Builder.class)
 public abstract class RouteStart extends RouteComponent {
 
-    public final String getFeatureType() { return "start"; }
+    public static String FEATURE_TYPE = "start";
 
     public abstract Geometry.Point getGeometry();
 

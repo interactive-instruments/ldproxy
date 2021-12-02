@@ -19,6 +19,8 @@ import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteOverview;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteSegment;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteStart;
 import de.ii.ldproxy.ogcapi.routes.domain.Route;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteEnd;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteOverview;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteSegment;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteStart;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
@@ -126,7 +128,9 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       firstSegment = false;
       Geometry.Coordinate firstCoord = coordinates.get(0);
       start = ImmutableRouteStart.builder()
+          .id(2)
           .geometry(Geometry.Point.of(firstCoord))
+          .putProperties("featureType", RouteStart.FEATURE_TYPE)
           .build();
       overviewGeometry.add(firstCoord);
       is3d = firstCoord.size()==3;
@@ -135,7 +139,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       segments.add(segmentBuilder
                        .putProperties("directionChange_deg", Math.toDegrees(deltaAngle(lastAngle, angle)))
                        .build());
-      propertyBuilder.get().put("angleAtStart_deg", Math.toDegrees(angle));
+      // propertyBuilder.get().put("angleAtStart_deg", Math.toDegrees(angle));
     }
 
     overviewGeometry.addAll(coordinates.subList(1, coordCount));
@@ -160,7 +164,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
 
     lastPoint = Geometry.Point.of(coordinates.get(coordCount-1));
     lastAngle = computeAngle(coordinates.get(coordCount - 2), coordinates.get(coordCount - 1));;
-    propertyBuilder.get().put("angleAtEnd_deg", Math.toDegrees(lastAngle));
+    // propertyBuilder.get().put("angleAtEnd_deg", Math.toDegrees(lastAngle));
 
     feature.findPropertyByPath("cost")
         .map(PropertyRoutes::getFirstValue)
@@ -177,9 +181,10 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
           propertyBuilder.set(processProperty(id, p, propertyBuilder.get()));
         });
     segmentBuilder = ImmutableRouteSegment.builder()
-                     .geometry(lastPoint)
-                     .id(Integer.parseInt(id))
-                     .properties(propertyBuilder.get().build());
+        .geometry(lastPoint)
+        .id(Integer.parseInt(id)+3)
+        .putProperties("featureType", RouteSegment.FEATURE_TYPE)
+        .putAllProperties(propertyBuilder.get().build());
   }
 
   private ImmutableMap.Builder<String, Object> processProperty(String id, PropertyRoutes p, ImmutableMap.Builder<String, Object> propertyBuilder) {
@@ -248,13 +253,16 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         propertyBuilder.put("descent_m", round(aggDescent));
       propertyBuilder.put("processingTime_ms", round(processingDuration));
       builder.addFeatures(ImmutableRouteOverview.builder()
+                              .id(1)
                               .geometry(Geometry.LineString.of(overviewGeometry))
-                              .id(0)
-                              .properties(propertyBuilder.build())
+                              .putProperties("featureType", RouteOverview.FEATURE_TYPE)
+                              .putAllProperties(propertyBuilder.build())
                               .build(),
                           start,
                           ImmutableRouteEnd.builder()
+                              .id(3)
                               .geometry(lastPoint)
+                              .putProperties("featureType", RouteEnd.FEATURE_TYPE)
                               .build());
       segments.add(segmentBuilder.build());
       builder.addAllFeatures(segments);
