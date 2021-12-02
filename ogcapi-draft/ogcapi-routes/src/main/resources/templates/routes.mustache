@@ -284,15 +284,23 @@ function handleFormSubmit(event) {
       } else if (this.readyState === 4) {
          document.getElementById('spinner').classList.remove('lds-ring');
          document.querySelector('button').disabled = false;
-         if (this.status === 400 || this.status === 500) {
-             const errorElement = document.querySelector('.error p');
-             errorElement.innerText = 'An error occurred, the route could not be computed.'; // TODO i18n
+
+         const problem = JSON.parse(this.responseText);
+         const errorElement = document.querySelector('.error p');
+         if (problem.title !== "" && problem.detail !== "") {
+             errorElement.innerText = problem.title + ": " + problem.detail;
+         } else if (problem.title !== "") {
+             errorElement.innerText = problem.title;
+         } else if (problem.detail !== "") {
+             errorElement.innerText = problem.detail;
+         } else {
+             errorElement.innerText = "An error occurred. No route could be computed."; // TODO i18n
          }
       }
    };
    xhr.open('POST', './routes');
    xhr.setRequestHeader('Content-Type', 'application/json');
-   xhr.setRequestHeader('Accept', 'application/geo+json');
+   xhr.setRequestHeader('Accept', 'application/geo+json,application/problem+json;q=0.9,application/json;q=0.8');
    xhr.send(routeDefJsonString);
 
    document.querySelector('button').disabled = true;

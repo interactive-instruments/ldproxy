@@ -260,7 +260,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       builder.addAllFeatures(segments);
       builder.status(Route.STATUS.successful);
     } else {
-      throw new UnprocessableEntity("Could not compute a route between the start and end location.");
+      throw new UnprocessableEntity("No route was found between the start and end location.");
     }
     byte[] result = transformationContext.getFormat()
         .getRouteAsByteArray(builder.build(), transformationContext.getApiData(), transformationContext.getOgcApiRequest());
