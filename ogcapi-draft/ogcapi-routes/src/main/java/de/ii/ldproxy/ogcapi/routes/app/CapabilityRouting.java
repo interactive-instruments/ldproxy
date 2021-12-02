@@ -32,20 +32,18 @@ public class CapabilityRouting implements ApiBuildingBlock {
 
     public static String CORE = "http://www.opengis.net/spec/ogcapi-routes-1/0.0/conf/core";
     public static String INTERMEDIATE_WAYPOINTS = "http://www.opengis.net/spec/ogcapi-routes-1/0.0/conf/intermediate-waypoints";
-
-    private final ExtensionRegistry extensionRegistry;
-
-    public CapabilityRouting(@Requires ExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
-    }
+    public static String HEIGHT = "http://www.opengis.net/spec/ogcapi-routes-1/0.0/conf/height";
+    public static String WEIGHT = "http://www.opengis.net/spec/ogcapi-routes-1/0.0/conf/weight";
+    public static String OBSTACLES = "http://www.opengis.net/spec/ogcapi-routes-1/0.0/conf/obstacles";
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableRoutingConfiguration.Builder()
             .enabled(false)
-            //.async(false) TODO not yet implemented
-            //.callback(false) TODO not yet implemented
             .intermediateWaypoints(false)
+            .loadRestrictions(false)
+            .heightRestrictions(false)
+            .obstacles(false)
             .preferences(ImmutableMap
                              .of("fastest", new ImmutablePreference.Builder()
                                      .label("Fastest")

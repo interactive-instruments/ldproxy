@@ -178,11 +178,9 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             routeQueryBuilder.height(def.getHeight());
         }
 
-        /*
         if (Objects.nonNull(def.getObstacles())) {
-            routeQueryBuilder.obstacles("TODO");
+            routeQueryBuilder.obstacles(def.getObstacles().getWkt());
         }
-         */
 
         EpsgCrs waypointCrs = routeDefinition.getCrs();
         if (!crsSupport.isSupported(apiData, waypointCrs)) {

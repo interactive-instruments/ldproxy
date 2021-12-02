@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -24,12 +25,18 @@ public interface ObstaclesWrapper {
     @Value.Derived
     @Value.Auxiliary
     default String getWkt() {
-        return "TODO";
-        /*
-        List<String> polygons = getValue().getCoordinates()
-            .stream()
-            .map(polygon -> "("+polygon.stream().map(ring -> "("+ring.stream().map(pos -> "("+String.join(" ",pos.stream().map(val -> String.))+")")+")")+")")
+        return "MULTIPOLYGON("+getValue().getCoordinates().stream().map(this::getPolygon).collect(Collectors.joining(","))+")";
+    }
 
-        return "MULTIPOLYGON"*/
+    default String getPolygon(List<List<List<Float>>> polygon) {
+        return "("+polygon.stream().map(this::getRing).collect(Collectors.joining(","))+")";
+    }
+
+    default String getRing(List<List<Float>> ring) {
+        return "("+ring.stream().map(this::getPos).collect(Collectors.joining(","))+")";
+    }
+
+    default String getPos(List<Float> pos) {
+        return pos.stream().map(String::valueOf).collect(Collectors.joining(" "));
     }
 }
