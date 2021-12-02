@@ -29,9 +29,9 @@ import de.ii.ldproxy.ogcapi.routes.domain.Preference;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
-import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionWrapper;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingFlag;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -44,6 +44,7 @@ import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.ImmutableRouteQuery;
+import de.ii.xtraplatform.routes.sql.domain.RouteQuery;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
@@ -177,6 +178,12 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             routeQueryBuilder.height(def.getHeight());
         }
 
+        /*
+        if (Objects.nonNull(def.getObstacles())) {
+            routeQueryBuilder.obstacles("TODO");
+        }
+         */
+
         EpsgCrs waypointCrs = routeDefinition.getCrs();
         if (!crsSupport.isSupported(apiData, waypointCrs)) {
             throw new IllegalArgumentException(String.format("The parameter 'coordRefSys' in the route definition is invalid: the crs '%s' is not supported", waypointCrs.toUriString()));
@@ -190,9 +197,12 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                                                                  .collect(Collectors.joining(","))));
         }
 
+        RouteQuery routeQuery = routeQueryBuilder.build();
+        LOGGER.debug("Route Query: {}", routeQuery);
+
         query = ImmutableFeatureQuery.builder()
             .from(query)
-            .addExtensions(routeQueryBuilder.build())
+            .addExtensions(routeQuery)
             .build();
 
         Optional<CrsTransformer> crsTransformer = Optional.empty();

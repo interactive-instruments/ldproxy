@@ -31,15 +31,6 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     @Nullable
     String getFeatureType();
 
-    /* TODO not yet implemented
-    @Nullable
-    Boolean getAsync();
-
-    @Nullable
-    Boolean getCallback();
-
-    */
-
     @Nullable
     Boolean getIntermediateWaypoints();
 

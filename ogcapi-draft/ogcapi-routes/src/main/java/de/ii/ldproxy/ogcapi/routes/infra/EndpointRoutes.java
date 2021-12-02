@@ -20,7 +20,7 @@ import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputRouteDefinitionForm
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionInfo;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionWrapper;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypointWrapper;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypointsWrapper;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypoints;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionWrapper;
@@ -127,7 +127,7 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
             Waypoints waypoints = new ImmutableWaypoints.Builder().addCoordinates(defaults.get().getStart(), defaults.get().getEnd()).build();
             ImmutableRouteDefinition.Builder builder = new ImmutableRouteDefinition.Builder();
             config.map(RoutingConfiguration::getDefaultPreference).ifPresent(pref -> builder.preference(pref));
-            builder.waypoints(new ImmutableWaypointWrapper.Builder().value(waypoints).build());
+            builder.waypoints(new ImmutableWaypointsWrapper.Builder().value(waypoints).build());
             defaults.get().getName().ifPresent(name -> builder.name(name));
             examples = ImmutableList.of(new ImmutableExample.Builder()
                              .value(new ImmutableRouteDefinitionWrapper.Builder()
