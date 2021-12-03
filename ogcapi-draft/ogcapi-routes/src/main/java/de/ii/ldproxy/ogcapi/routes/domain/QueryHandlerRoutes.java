@@ -31,6 +31,7 @@ public interface QueryHandlerRoutes extends QueriesHandler<QueryHandlerRoutes.Qu
         String getFeatureTypeId();
         EpsgCrs getDefaultCrs();
         Optional<String> getCrs();
+        String getSpeedLimitUnit();
     }
 
     @Value.Immutable

@@ -45,6 +45,9 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
 
     // TODO mode
 
+    @Nullable
+    String getSpeedLimitUnit();
+
     Map<String, Preference> getPreferences();
 
     String getDefaultPreference();

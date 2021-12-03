@@ -21,4 +21,5 @@ public abstract class FeatureTransformationContextRoutes implements FeatureTrans
     public abstract Optional<String> getName();
     public abstract EpsgCrs getCrs();
     public abstract long getStartTimeNano();
+    public abstract String getSpeedLimitUnit();
 }

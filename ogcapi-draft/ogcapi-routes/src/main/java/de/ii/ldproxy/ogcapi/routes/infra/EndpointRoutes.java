@@ -278,6 +278,9 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
         Map<String, Integer> coordinatePrecision = apiData.getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getCoordinatePrecision)
             .orElse(ImmutableMap.of());
+        String speedLimitUnit = apiData.getExtension(RoutingConfiguration.class)
+            .map(RoutingConfiguration::getSpeedLimitUnit)
+            .orElse("kmph");
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/routes", HttpMethods.POST);
         FeatureQuery query = ogcApiFeaturesQuery.requestToBareFeatureQuery(api.getData(), featureTypeId, defaultCrs, coordinatePrecision, 1, Integer.MAX_VALUE, Integer.MAX_VALUE, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
         QueryHandlerRoutes.QueryInputComputeRoute queryInput = new ImmutableQueryInputComputeRoute.Builder()
@@ -288,6 +291,7 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
             .query(query)
             .crs(Optional.ofNullable(request.getHeader("crs")))
             .defaultCrs(defaultCrs)
+            .speedLimitUnit(speedLimitUnit)
             .build();
         return queryHandler.handle(QueryHandlerRoutes.Query.COMPUTE_ROUTE, queryInput, requestContext);
     }

@@ -249,6 +249,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .format(outputFormat)
             .outputStream(new OutputStreamToByteConsumer())
             .startTimeNano(System.nanoTime())
+            .speedLimitUnit(queryInput.getSpeedLimitUnit())
             .build();
 
         Optional<FeatureTokenEncoder<?>> encoder = outputFormat.getFeatureEncoder(transformationContext, Optional.empty());

@@ -65,6 +65,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
   private boolean firstSegment;
   private boolean is3d;
   private boolean isReverse;
+  private String speedLimitUnit;
 
   public FeatureEncoderRoutes(FeatureTransformationContextRoutes transformationContext) {
     this.transformationContext = transformationContext;
@@ -98,6 +99,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     aggLength = 0.0;
     aggAscent = 0.0;
     aggDescent = 0.0;
+    speedLimitUnit = transformationContext.getSpeedLimitUnit();
   }
 
   @Override
@@ -219,10 +221,10 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         aggDuration += value;
       } else if (name.equals("maxspeed_forward") && !isReverse) {
         propertyBuilder.put("maxSpeed", round(value));
-        propertyBuilder.put("maxSpeedUnit", "kmph"); // TODO: make confgurable "mph" or "kmph"
+        propertyBuilder.put("maxSpeedUnit", speedLimitUnit);
       } else if (name.equals("maxspeed_backward") && isReverse) {
         propertyBuilder.put("maxSpeed", round(value));
-        propertyBuilder.put("maxSpeedUnit", "kmph");
+        propertyBuilder.put("maxSpeedUnit", speedLimitUnit);
       }
     } else if (type.equals(SchemaBase.Type.INTEGER)) {
       String name = p.getName();
