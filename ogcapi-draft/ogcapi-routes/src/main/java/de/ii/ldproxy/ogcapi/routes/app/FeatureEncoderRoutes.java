@@ -31,8 +31,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.WebApplicationException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
@@ -136,10 +139,11 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       is3d = firstCoord.size()==3;
     } else {
       double angle = computeAngle(coordinates.get(0), coordinates.get(1));
+      double changeDeg = Math.toDegrees(deltaAngle(lastAngle, angle));
       segments.add(segmentBuilder
-                       .putProperties("directionChange_deg", Math.toDegrees(deltaAngle(lastAngle, angle)))
+                       .putProperties("instructions", changeDeg > 45 ? "left" : changeDeg < -45 ? "right" : "continue")
+                       .putProperties("directionChange_deg", round(changeDeg))
                        .build());
-      // propertyBuilder.get().put("angleAtStart_deg", Math.toDegrees(angle));
     }
 
     overviewGeometry.addAll(coordinates.subList(1, coordCount));
@@ -164,13 +168,11 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
 
     lastPoint = Geometry.Point.of(coordinates.get(coordCount-1));
     lastAngle = computeAngle(coordinates.get(coordCount - 2), coordinates.get(coordCount - 1));;
-    // propertyBuilder.get().put("angleAtEnd_deg", Math.toDegrees(lastAngle));
 
     feature.findPropertyByPath("cost")
         .map(PropertyRoutes::getFirstValue)
         .map(Double::parseDouble)
         .ifPresent(cost -> {
-          // propertyBuilder.get().put("cost", cost);
           aggCost += cost;
         });
     feature.getProperties()
@@ -204,23 +206,23 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       String name = p.getName();
       double value = Double.parseDouble(p.getFirstValue());
       if (name.equals("length_m")) {
-        propertyBuilder.put(name, value);
+        propertyBuilder.put(name, round(value));
         aggLength += value;
       } else if (name.equals("maxHeight_m") || name.equals("maxWeight_t")) {
-        propertyBuilder.put(name, value);
+        propertyBuilder.put(name, String.format(Locale.US,"%.1f",value));
       } else if (name.equals("duration_forward_s") && !isReverse) {
-        propertyBuilder.put("duration_s", value);
+        propertyBuilder.put("duration_s", round(value));
         aggDuration += value;
       } else if (name.equals("duration_backward_s") && isReverse) {
         value = abs(value);
         propertyBuilder.put("duration_s", value);
         aggDuration += value;
       } else if (name.equals("maxspeed_forward") && !isReverse) {
-        propertyBuilder.put("maxSpeed", value);
-        propertyBuilder.put("maxSpeed_uom", "mph");
+        propertyBuilder.put("maxSpeed", round(value));
+        propertyBuilder.put("maxSpeedUnit", "mph"); // TODO: make confgurable "mph" or "kmph"
       } else if (name.equals("maxspeed_backward") && isReverse) {
-        propertyBuilder.put("maxSpeed", value);
-        propertyBuilder.put("maxSpeed_uom", "mph");
+        propertyBuilder.put("maxSpeed", round(value));
+        propertyBuilder.put("maxSpeedUnit", "mph");
       }
     } else if (type.equals(SchemaBase.Type.INTEGER)) {
       String name = p.getName();
@@ -242,7 +244,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     if (Objects.nonNull(start) && Objects.nonNull(lastPoint)) {
       builder.bbox(computeBbox());
       long processingDuration = (System.nanoTime() - transformationContext.getStartTimeNano()) / 1000000;
-      ImmutableMap.Builder<String, Number> propertyBuilder = ImmutableMap.builder();
+      ImmutableMap.Builder<String, Object> propertyBuilder = ImmutableMap.builder();
       if (aggLength>0.0)
         propertyBuilder.put("length_m", round(aggLength));
       if (aggDuration>0.0)
@@ -251,7 +253,10 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         propertyBuilder.put("ascent_m", round(aggAscent));
       if (aggDescent>0.0)
         propertyBuilder.put("descent_m", round(aggDescent));
-      propertyBuilder.put("processingTime_ms", round(processingDuration));
+      propertyBuilder.put("processingTime", Instant.now()
+          .truncatedTo(ChronoUnit.SECONDS)
+          .toString());
+      propertyBuilder.put("processingDuration_ms", round(processingDuration));
       builder.addFeatures(ImmutableRouteOverview.builder()
                               .id(1)
                               .geometry(Geometry.LineString.of(overviewGeometry))
