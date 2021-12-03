@@ -219,10 +219,10 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         aggDuration += value;
       } else if (name.equals("maxspeed_forward") && !isReverse) {
         propertyBuilder.put("maxSpeed", round(value));
-        propertyBuilder.put("maxSpeedUnit", "mph"); // TODO: make confgurable "mph" or "kmph"
+        propertyBuilder.put("maxSpeedUnit", "kmph"); // TODO: make confgurable "mph" or "kmph"
       } else if (name.equals("maxspeed_backward") && isReverse) {
         propertyBuilder.put("maxSpeed", round(value));
-        propertyBuilder.put("maxSpeedUnit", "mph");
+        propertyBuilder.put("maxSpeedUnit", "kmph");
       }
     } else if (type.equals(SchemaBase.Type.INTEGER)) {
       String name = p.getName();
