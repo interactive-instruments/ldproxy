@@ -19,7 +19,9 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NONE)
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = JsonSchemaString.class, name = "string"),
         @JsonSubTypes.Type(value = JsonSchemaNumber.class, name = "number"),
