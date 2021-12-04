@@ -5,8 +5,11 @@
         <h1>{{title}}</h1>
         <span>{{{description}}}</span>
         <br/>
-        <br/>
-        <br/>
+        <div class="row my-2">
+            <div class="col-md-12">
+                <div id="map" class="map-md"></div>
+            </div>
+        </div>
         <form class="contact-form">
             <div class="row my-3">
                 <div class="input-group">
@@ -86,6 +89,7 @@
                     </div>
                 </div>
             {{/supportsMaxHeight}}
+            <!--
             <div class="row my-3">
                 <div class="input-group">
                     <div class="col-md-3 font-weight-bold">
@@ -138,6 +142,7 @@
                     </div>
                 </div>
             </div>
+            -->
             <div class="row my-3">
                 <div class="col-md-3 font-weight-bold">
                 </div>
@@ -160,11 +165,6 @@
         </form>
 
         <br/>
-        <div class="row my-2">
-            <div class="col-md-12">
-                <div id="map" class="map-md"></div>
-            </div>
-        </div>
         <!-- debug
         <div class="results">
             <h2>Form Data</h2>
@@ -216,11 +216,16 @@
 }
 </style>
 <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
+<script src="https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js"></script>
 <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.css" type="text/css"/>
 <script type="text/javascript">
 function handleFormSubmit(event) {
    event.preventDefault();
 
+   const lngLatStart = markerStart.getLngLat();
+   const lngLatEnd = markerEnd.getLngLat();
    const data = new FormData(event.target);
 
    const routeDefinition = {
@@ -246,11 +251,18 @@ function handleFormSubmit(event) {
    if (data.get('height') !== '') {
      routeDefinition.inputs.height = parseFloat(data.get('height').replace(',','.'));
    }
-   routeDefinition.inputs.waypoints.value.coordinates[0][0] = parseFloat(data.get('start-x').replace(',','.'));
-   routeDefinition.inputs.waypoints.value.coordinates[0][1] = parseFloat(data.get('start-y').replace(',','.'));
-   routeDefinition.inputs.waypoints.value.coordinates[1][0] = parseFloat(data.get('end-x').replace(',','.'));
-   routeDefinition.inputs.waypoints.value.coordinates[1][1] = parseFloat(data.get('end-y').replace(',','.'));
-   routeDefinition.inputs.waypoints.value.coordRefSys = data.get('crs');
+   routeDefinition.inputs.waypoints.value.coordinates[0][0] = lngLatStart.lng;
+   routeDefinition.inputs.waypoints.value.coordinates[0][1] = lngLatStart.lat;
+   routeDefinition.inputs.waypoints.value.coordinates[1][0] = lngLatEnd.lng;
+   routeDefinition.inputs.waypoints.value.coordinates[1][1] = lngLatEnd.lat;
+
+   {{#supportsObstacles}}
+   const drawData = draw.getAll();
+    if (drawData.features.length > 0) {
+        routeDefinition.inputs.obstacles = {};
+        routeDefinition.inputs.obstacles.value = turf.combine(drawData).features[0].geometry;
+    }
+   {{/supportsObstacles}}
 
    var routeDefJsonString = JSON.stringify(routeDefinition, null, 2);
 
@@ -270,12 +282,14 @@ function handleFormSubmit(event) {
          map.getSource('route').setData(routeJson);
 
          const bbox = routeJson['bbox'];
-         const bounds = (bbox.length === 4) ? [ [ bbox[0], bbox[1] ], [ bbox[2], bbox[3] ] ] : [ [ bbox[0], bbox[1] ], [ bbox[3], bbox[4] ] ];
-         map.fitBounds( bounds, {
-            padding: 50,
-            maxZoom: 16,
-            duration: 500
-         });
+         if (bbox) {
+            const bounds = (bbox.length === 4) ? [ [ bbox[0], bbox[1] ], [ bbox[2], bbox[3] ] ] : [ [ bbox[0], bbox[1] ], [ bbox[3], bbox[4] ] ];
+            map.fitBounds( bounds, {
+                padding: 50,
+                maxZoom: 16,
+                duration: 500
+            });
+         }
 
          /* debug
          const routeElement = document.querySelector('.route pre');
@@ -287,11 +301,11 @@ function handleFormSubmit(event) {
 
          const problem = JSON.parse(this.responseText);
          const errorElement = document.querySelector('.error p');
-         if (problem.title !== "" && problem.detail !== "") {
+         if (problem.title !== "" && problem.detail !== "" && problem.title !== undefined && problem.detail !== undefined) {
              errorElement.innerText = problem.title + ": " + problem.detail;
-         } else if (problem.title !== "") {
+         } else if (problem.title !== "" && problem.title !== undefined) {
              errorElement.innerText = problem.title;
-         } else if (problem.detail !== "") {
+         } else if (problem.detail !== "" && problem.detail !== undefined) {
              errorElement.innerText = problem.detail;
          } else {
              errorElement.innerText = "An error occurred. No route could be computed."; // TODO i18n
@@ -303,6 +317,7 @@ function handleFormSubmit(event) {
    xhr.setRequestHeader('Accept', 'application/geo+json,application/problem+json;q=0.9,application/json;q=0.8');
    xhr.send(routeDefJsonString);
 
+   document.querySelector('.error p').innerText = "";
    document.querySelector('button').disabled = true;
    document.getElementById('spinner').classList.add('lds-ring');
 }
@@ -419,9 +434,35 @@ map.addControl(new maplibregl.NavigationControl());
 map.on('mouseenter', 'overview', () => changeCursor(map, 'pointer'));
 map.on('mouseleave', 'overview', () => changeCursor(map, ''));
 map.on('click', 'overview', showPopupProps(map, popup));
-map.on('mouseenter', 'point', () => changeCursor(map, 'pointer'));
-map.on('mouseleave', 'point', () => changeCursor(map, ''));
-map.on('click', 'point', showPopupProps(map, popup));
+map.on('mouseenter', 'segment', () => changeCursor(map, 'pointer'));
+map.on('mouseleave', 'segment', () => changeCursor(map, ''));
+map.on('click', 'segment', showPopupProps(map, popup));
+
+{{#supportsObstacles}}
+const draw = new MapboxDraw({
+    displayControlsDefault: false,
+    controls: {
+    polygon: true,
+    trash: true
+    }
+});
+map.addControl(draw);
+{{/supportsObstacles}}
+
+var start = document.getElementById('start');
+var markerStart = new maplibregl.Marker({
+    draggable: true,
+    color: 'blue'
+})
+.setLngLat([{{startX}}, {{startY}}])
+.addTo(map);
+var end = document.getElementById('end'); 
+var markerEnd = new maplibregl.Marker({
+    draggable: true,
+    color: 'green'
+})
+.setLngLat([{{endX}}, {{endY}}])
+.addTo(map);
 
 const form = document.querySelector('.contact-form');
 form.addEventListener('submit', handleFormSubmit);

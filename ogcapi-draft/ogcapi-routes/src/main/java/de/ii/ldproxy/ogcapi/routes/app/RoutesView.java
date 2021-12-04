@@ -50,6 +50,7 @@ public class RoutesView extends OgcApiView {
     public final MapClient mapClient;
     public final boolean supportsMaxWeight;
     public final boolean supportsMaxHeight;
+    public final boolean supportsObstacles;
 
     private final RouteDefinitionInfo templateInfo;
     private final HtmlFormDefaults htmlDefaults;
@@ -104,6 +105,9 @@ public class RoutesView extends OgcApiView {
             .orElse(false);
         this.supportsMaxHeight = apiData.getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getHeightRestrictions)
+            .orElse(false);
+        this.supportsObstacles = apiData.getExtension(RoutingConfiguration.class)
+            .map(RoutingConfiguration::getObstacles)
             .orElse(false);
     }
 
