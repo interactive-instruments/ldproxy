@@ -179,7 +179,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         ensureFeatureProviderSupportsQueries(featureProvider);
 
         Optional<CrsTransformer> crsTransformer = Optional.empty();
-        boolean swapCoordinates = false;
 
         EpsgCrs sourceCrs = null;
         EpsgCrs targetCrs = query.getCrs()
@@ -188,8 +187,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             sourceCrs = featureProvider.crs()
                                        .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
-                                                                          .needsCoordinateSwap();
         }
 
 
@@ -226,7 +223,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .offset(query.getOffset())
                 .maxAllowableOffset(query.getMaxAllowableOffset())
                 .geometryPrecision(query.getGeometryPrecision().get(0))
-                .shouldSwapCoordinates(swapCoordinates)
                 .isHitsOnlyIfMore(onlyHitsIfMore)
                 .showsFeatureSelfLink(showsFeatureSelfLink);
 
