@@ -11,7 +11,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.I18n;
@@ -41,6 +40,7 @@ import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
@@ -121,7 +121,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     private Response getItemsResponse(QueryInputFeatures queryInput, ApiRequestContext requestContext) {
 
         OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         FeatureQuery query = queryInput.getQuery();
         Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
@@ -189,7 +188,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
         }
 
-
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
         List<Link> links =
@@ -211,7 +209,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .crsTransformer(crsTransformer)
                 .codelists(entityRegistry.getEntitiesForType(Codelist.class)
                                          .stream()
-                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
+                                         .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
                 .defaultCrs(defaultCrs)
                 .sourceCrs(Optional.ofNullable(sourceCrs))
                 .links(links)
@@ -222,7 +220,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .limit(query.getLimit())
                 .offset(query.getOffset())
                 .maxAllowableOffset(query.getMaxAllowableOffset())
-                .geometryPrecision(query.getGeometryPrecision().get(0))
+                .geometryPrecision(query.getGeometryPrecision())
                 .isHitsOnlyIfMore(onlyHitsIfMore)
                 .showsFeatureSelfLink(showsFeatureSelfLink);
 

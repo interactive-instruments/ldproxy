@@ -143,8 +143,8 @@ public interface FeatureTransformationContext {
     }
 
     @Value.Default
-    default int getGeometryPrecision() {
-        return 0;
+    default List<Integer> getGeometryPrecision() {
+        return ImmutableList.of(0, 0, 0);
     }
 
     abstract class State {

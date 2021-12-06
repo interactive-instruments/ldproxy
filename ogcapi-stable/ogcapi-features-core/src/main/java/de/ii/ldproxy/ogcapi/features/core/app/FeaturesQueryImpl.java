@@ -62,10 +62,10 @@ import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
-import tec.units.ri.unit.Units;
 
 
 @Component
@@ -458,30 +458,25 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         // so we need to build the query to get the CRS
         ImmutableFeatureQuery query = queryBuilder.build();
         if (!coreConfiguration.getCoordinatePrecision().isEmpty() && query.getCrs().isPresent()) {
-            Integer precision = null;
-            try {
-                List<Unit<?>> units = crsInfo.getAxisUnits(query.getCrs().get());
-                ImmutableList.Builder<Integer> precisionListBuilder = new ImmutableList.Builder<>();
-                for (Unit<?> unit : units) {
-                    if (unit.equals(Units.METRE)) {
+            Integer precision;
+            List<Unit<?>> units = crsInfo.getAxisUnits(query.getCrs().get());
+            ImmutableList.Builder<Integer> precisionListBuilder = new ImmutableList.Builder<>();
+            for (Unit<?> unit : units) {
+                if (unit.equals(Units.METRE)) {
                     precision = coreConfiguration.getCoordinatePrecision().get("meter");
                     if (Objects.isNull(precision))
                         precision = coreConfiguration.getCoordinatePrecision().get("metre");
-                    } else if ("degree".equals(unit.toString())) {
+                } else if (unit.equals(Units.DEGREE)) {
                     precision = coreConfiguration.getCoordinatePrecision().get("degree");
                 } else {
-                        LOGGER.debug("Coordinate precision could not be set, unrecognised unit found: '{}'.", unit);
+                    LOGGER.debug("Coordinate precision could not be set, unrecognised unit found: '{}'.", unit.getName());
+                    return queryBuilder;
                 }
-                    if (Objects.nonNull(precision)) {
-                        precisionListBuilder.add(precision);
-                    }
-                }
-                ImmutableList<Integer> precisionList = precisionListBuilder.build();
-                if (!precisionList.isEmpty()) {
-                    queryBuilder.geometryPrecision(precisionList);
-                }
-            } catch (Throwable e) {
-                LOGGER.debug("Coordinate precision could not be set: {}'.", e.getMessage());
+                precisionListBuilder.add(precision);
+            }
+            List<Integer> precisionList = precisionListBuilder.build();
+            if (!precisionList.isEmpty()) {
+                queryBuilder.geometryPrecision(precisionList);
             }
         }
         return queryBuilder;
