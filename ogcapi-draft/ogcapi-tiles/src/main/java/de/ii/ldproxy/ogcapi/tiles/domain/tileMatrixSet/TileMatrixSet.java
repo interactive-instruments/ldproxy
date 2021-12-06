@@ -218,25 +218,6 @@ public interface TileMatrixSet {
     }
 
     /**
-     * determine the Douglas-Peucker distance parameter for a tile
-     * @param level the zoom level
-     * @param row the row
-     * @param col the column
-     * @param crs the target coordinate references system
-     * @param crsTransformerFactory a coordinate references system transformation object
-     * @return the distance in the units of measure of the target coordinate references system
-     * @throws CrsTransformationException an error occurred when transforming the coordinates
-     */
-    default double getMaxAllowableOffset(int level, int row, int col, EpsgCrs crs, CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
-        BoundingBox bbox = getTileBoundingBox(level, col, row);
-        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(getCrs(), crs);
-        if (transformer.isPresent()) {
-            bbox = transformer.get().transformBoundingBox(bbox);
-        }
-        return (bbox.getXmax()-bbox.getXmin())/getTileExtent();
-    }
-
-    /**
      * fetch the maximum zoom level, typically 24 or less
      * @return the maximum zoom level
      */
