@@ -42,7 +42,28 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
 
     @Override
     public String getDescription() {
-        return "Filter features in the collection using the query expression in the parameter value.";
+        return "Filter features in the collection using the query expression in the parameter value. Filter expressions " +
+            "are written in the Common Query Language (CQL), which is a candidate OGC standard. This API implements " +
+            "[version 1.0.0-draft.2 from January 2021](https://github.com/opengeospatial/ogcapi-features/releases/download/part3-1.0.0-draft.2/19-079.html). " +
+            "The recommended language for this query parameter is CQL Text (`filter-lang=cql-text`) and this language is " +
+            "used in the examples below.\n\n" +
+            "* `address.LocalityName = 'Bonn'`" +
+            "* `name LIKE '%Kirche%'`" +
+            "* `measuredHeight > 10`" +
+            "* `storeysAboveGround <= 4`" +
+            "* `measuredHeight BETWEEN 10 AND 20`" +
+            "* `address.LocalityName IN ('Bonn', 'Köln', 'Düren')`" +
+            "* `address.LocalityName NOT IN ('Bonn', 'Köln', 'Düren')`" +
+            "* `name IS NOT NULL`" +
+            "* `INTERSECTS(bbox,POLYGON(()))`" +
+            "* `creationDate > '2018-01-01'`" +
+            "* `creationDate < '2018-01-01'`" +
+            "* `creationDate >= '2018-01-01' AND creationDate <= '2018-12-31'`" +
+            "* `creationDate AFTER 2018-01-01`" +
+            "* `creationDate BEFORE 2018-01-01`" +
+            "* `creationDate DURING 2018-01-01/2018-12-31`" +
+            "\n\n" +
+            "Warning: The final version of the Common Query Language standard will include several ";
     }
 
     @Override

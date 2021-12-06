@@ -42,7 +42,7 @@ public class QueryParameterSkipGeometry extends ApiExtensionCache implements Ogc
 
     @Override
     public String getDescription() {
-        return "This option can be used to skip response geometries for each feature.";
+        return "Use this option to exclude geometries from the response for each feature.";
     }
 
     @Override
