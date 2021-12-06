@@ -23,7 +23,7 @@ import javax.ws.rs.core.MediaType;
 @Component
 @Provides
 @Instantiate
-public class TileFormatWEBP implements TileFormatExtension {
+public class TileFormatWEBP extends TileFormatExtension {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("image","webp"))
@@ -38,14 +38,15 @@ public class TileFormatWEBP implements TileFormatExtension {
 
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        if (path.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+        if (path.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+            path.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
             return new ImmutableApiMediaTypeContent.Builder()
                     .schema(SCHEMA_TILE)
                     .schemaRef(SCHEMA_REF_TILE)
                     .ogcApiMediaType(MEDIA_TYPE)
                     .build();
 
-        throw new RuntimeException("Unexpected path: " + path);
+        return null;
     }
 
     @Override

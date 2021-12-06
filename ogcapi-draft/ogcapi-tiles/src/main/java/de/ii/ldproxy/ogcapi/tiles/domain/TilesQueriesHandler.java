@@ -12,6 +12,8 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
+import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
+import de.ii.ldproxy.ogcapi.tiles.app.TileProviderTileServer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
@@ -28,7 +30,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     @Override
     Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();
 
-    enum Query implements QueryIdentifier {TILE_SETS, TILE_SET, SINGLE_LAYER_TILE, MULTI_LAYER_TILE, TILE_STREAM, EMPTY_TILE, MBTILES_TILE}
+    enum Query implements QueryIdentifier {TILE_SETS, TILE_SET, SINGLE_LAYER_TILE, MULTI_LAYER_TILE, TILE_STREAM, EMPTY_TILE, MBTILES_TILE, TILESERVER_TILE}
 
     @Value.Immutable
     interface QueryInputTileEmpty extends QueryInput {
@@ -47,7 +49,14 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     interface QueryInputTileMbtilesTile extends QueryInput {
 
         Tile getTile();
-        Path getTileProvider();
+        TileProviderMbtiles getProvider();
+    }
+
+    @Value.Immutable
+    interface QueryInputTileTileServerTile extends QueryInput {
+
+        Tile getTile();
+        TileProviderTileServer getProvider();
     }
 
     @Value.Immutable
@@ -83,6 +92,8 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
         Optional<String> getCollectionId();
         List<Double> getCenter();
         Map<String, MinMax> getTileMatrixSetZoomLevels();
+        String getPath();
+        boolean getOnlyWebMercatorQuad();
     }
 
     @Value.Immutable
@@ -92,6 +103,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
         String getTileMatrixSetId();
         List<Double> getCenter();
         MinMax getZoomLevels();
+        String getPath();
     }
 
 }

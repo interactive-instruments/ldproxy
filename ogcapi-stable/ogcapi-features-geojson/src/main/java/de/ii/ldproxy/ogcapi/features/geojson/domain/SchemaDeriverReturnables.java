@@ -79,7 +79,13 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
         .build());
 
     findByRole(properties, Role.ID)
-        .ifPresent(jsonSchema -> builder.putProperties("id", jsonSchema));
+        .ifPresent(jsonSchema -> {
+          if (jsonSchema.isRequired()) {
+            jsonSchema.getName().ifPresent(required::remove);
+            builder.addRequired("id");
+          }
+          builder.putProperties("id", jsonSchema);
+        });
 
     findByRole(properties, Role.PRIMARY_GEOMETRY)
         .or(() -> findByRole(properties, SECONDARY_GEOMETRY))

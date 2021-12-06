@@ -1,0 +1,16 @@
+{{> htmlStart}}
+
+<body>
+<div class="container py-4">
+    <h2>HTTP Error {{status}}: {{title}}</h2>
+    <br>
+    <div>{{{detail}}}</div>
+    <br>
+    {{#instance}}<div><em>Request: {{.}}</em></div>{{/instance}}
+</div>
+</body>
+
+{{> htmlEnd}}
+
+
+

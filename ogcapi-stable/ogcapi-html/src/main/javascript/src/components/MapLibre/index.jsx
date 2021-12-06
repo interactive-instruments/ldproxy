@@ -6,11 +6,12 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import "./custom.css";
 
 import Configuration from "./Configuration";
+import CanvasPlugin from "./CanvasPlugin";
 import LayerControl from "./LayerControl";
 import { baseStyle, emptyStyle } from "./styles";
 import { polygonFromBounds } from "./geojson";
 
-export { polygonFromBounds };
+export { Configuration, CanvasPlugin, polygonFromBounds };
 
 const MapLibre = ({
   styleUrl,
@@ -32,6 +33,7 @@ const MapLibre = ({
   custom,
   showCompass,
   layerGroupControl,
+  children,
 }) => {
   const style = styleUrl
     ? emptyStyle()
@@ -77,6 +79,7 @@ const MapLibre = ({
       {layerGroupControl && Object.keys(layerGroupControl).length > 0 && (
         <LayerControl layerGroups={layerGroupControl} />
       )}
+      {children}
     </Map>
   );
 };
