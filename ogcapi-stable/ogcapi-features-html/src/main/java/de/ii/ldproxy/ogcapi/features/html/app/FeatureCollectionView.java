@@ -130,6 +130,9 @@ public class FeatureCollectionView extends DatasetView {
 
         if (Objects.nonNull(queryables)) {
             this.filterEditor = new ImmutableFilterEditor.Builder()
+                .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                    .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
+                .attribution(getAttribution())
                 .fields(queryables.entrySet())
                 .build();
         } else {
