@@ -2,41 +2,47 @@ plugins {
     id "com.moowork.node" version "1.3.1"
 }
 
+ext {
+    generatedResourcesDir = new File(project.buildDir, 'generated/src/main/resources/')
+}
+
+compileJava {
+    project.sourceSets.main.resources { srcDir generatedResourcesDir }
+    outputs.dir(generatedResourcesDir)
+}
+
 node {
-    version = '10.22.1'
+    version = '14.17.6'
     yarnVersion = '1.22.5'
     download = project.findProperty('downloadNode') != 'false' ?: false
 }
 
-sourceSets {
-  main {
-      resources {
-        srcDir "${buildDir}/javascript"
-      }
-  }
-}
-
 yarn_install {
-  execOverrides {
-    it.workingDir = 'src/main/javascript'
-  }
+    inputs.file("src/main/javascript/package.json")
+    inputs.file("src/main/javascript/yarn.lock")
+    outputs.dir("src/main/javascript/node_modules")
+    outputs.dir("src/main/javascript/.yarn/cache")
+    execOverrides {
+        it.workingDir = 'src/main/javascript'
+    }
 }
 
 task yarn_build(type: YarnTask) {
-  execOverrides {
-    it.workingDir = 'src/main/javascript'
-  }
-  args = ['run', 'build']
+    dependsOn yarn_install
+    inputs.file("src/main/javascript/package.json")
+    inputs.file("src/main/javascript/yarn.lock")
+    inputs.dir("src/main/javascript/src")
+    outputs.dir(generatedResourcesDir)
+    execOverrides {
+        it.workingDir = 'src/main/javascript'
+    }
+    args = ['run', 'build']
 }
-
-yarn_build.dependsOn yarn_install
 
 yarn_start {
-  execOverrides {
-    it.workingDir = 'src/main/javascript'
-  }
+    execOverrides {
+        it.workingDir = 'src/main/javascript'
+    }
 }
 
-assemble.dependsOn yarn_build
-//check.dependsOn yarn_build
-yarn_build.finalizedBy jar
+processResources.dependsOn yarn_build

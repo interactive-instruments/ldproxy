@@ -6,8 +6,11 @@ dependencies {
     api project(":ogcapi-foundation")
 }
 
+ext {
+    generatedResourcesDir = new File(project.buildDir, 'generated/src/main/resources/')
+}
+
 compileJava {
-    File generatedResourcesDir = new File(project.buildDir, 'generated/src/main/resources/')
     project.sourceSets.main.resources { srcDir generatedResourcesDir }
     outputs.dir(generatedResourcesDir)
 }
@@ -26,19 +29,26 @@ node {
 }
 
 yarn_install {
+    inputs.file("src/main/javascript/package.json")
+    inputs.file("src/main/javascript/yarn.lock")
+    outputs.dir("src/main/javascript/node_modules")
+    outputs.dir("src/main/javascript/.yarn/cache")
     execOverrides {
         it.workingDir = 'src/main/javascript'
     }
 }
 
 task yarn_build(type: YarnTask) {
+    dependsOn yarn_install
+    inputs.file("src/main/javascript/package.json")
+    inputs.file("src/main/javascript/yarn.lock")
+    inputs.dir("src/main/javascript/src")
+    outputs.dir(generatedResourcesDir)
     execOverrides {
         it.workingDir = 'src/main/javascript'
     }
     args = ['run', 'build']
 }
-
-yarn_build.dependsOn yarn_install
 
 yarn_start {
     execOverrides {
@@ -47,5 +57,3 @@ yarn_start {
 }
 
 processResources.dependsOn yarn_build
-//check.dependsOn yarn_build
-yarn_build.finalizedBy jar

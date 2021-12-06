@@ -9,10 +9,11 @@ pipeline:
     mount:
       - .gradle/caches
       - .gradle/wrapper
-      - ldproxy-manager/src/main/javascript/.yarn/build-state.yml
+      - ldproxy-manager/.gradle
       - ldproxy-manager/src/main/javascript/.yarn/cache
       - ldproxy-manager/src/main/javascript/.yarn/install-state.gz
       - ldproxy-manager/src/main/javascript/.yarn/unplugged
+      - ogcapi-stable/ogcapi-html/.gradle
       - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/build-state.yml
       - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/cache
       - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/install-state.gz
@@ -149,10 +150,12 @@ pipeline:
     mount:
       - .gradle/caches
       - .gradle/wrapper
+      - ldproxy-manager/.gradle
       - ldproxy-manager/src/main/javascript/.yarn/build-state.yml
       - ldproxy-manager/src/main/javascript/.yarn/cache
       - ldproxy-manager/src/main/javascript/.yarn/install-state.gz
       - ldproxy-manager/src/main/javascript/.yarn/unplugged
+      - ogcapi-stable/ogcapi-html/.gradle
       - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/build-state.yml
       - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/cache
       - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/install-state.gz
