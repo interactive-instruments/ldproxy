@@ -7,7 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.app;
 
+import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import org.immutables.value.Value;
 
@@ -17,5 +19,7 @@ public interface FilterEditor {
 
   Set<Entry<String, String>> getFields();
 
+  Optional<String> getBackgroundUrl();
 
+  Optional<String> getAttribution();
 }
