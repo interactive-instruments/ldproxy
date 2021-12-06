@@ -16,6 +16,16 @@ const Resizer = ({ map, maplibre, bounds, onChange }) => {
   }, [map, bounds]);
 
   useEffect(() => {
+    const update = () => onChange(rectToBounds(map, maplibre, rect));
+
+    map.on("idle", update);
+
+    return () => {
+      map.off("idle", update);
+    };
+  }, [onChange, map, maplibre, rect]);
+
+  useEffect(() => {
     const box = boxRef.current;
     if (!box) return;
 
