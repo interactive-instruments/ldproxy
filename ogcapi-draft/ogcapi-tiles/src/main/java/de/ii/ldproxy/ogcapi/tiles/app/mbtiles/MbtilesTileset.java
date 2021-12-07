@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.Semaphore;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -42,6 +43,7 @@ public class MbtilesTileset {
     private static final int EMPTY_TILE_ID = 1;
     private Connection connection = null;
     private final Path tilesetPath;
+    private Semaphore mutex = new Semaphore(1);
 
     public MbtilesTileset(Path tilesetPath) {
         if (!Files.exists(tilesetPath)) {
@@ -111,7 +113,7 @@ public class MbtilesTileset {
             }
 
             SqlHelper.execute(connection, "COMMIT");
-            releaseConnection();
+            releaseConnection(connection);
 
         } catch (Exception e) {
             throw new RuntimeException(String.format("Could not create new Mbtiles file: %s", tilesetPath), e);
@@ -125,7 +127,7 @@ public class MbtilesTileset {
         return connection;
     }
 
-    private void releaseConnection() {
+    private void releaseConnection(Connection connection) {
         // nothing to do
     }
 
@@ -201,23 +203,23 @@ public class MbtilesTileset {
                 }
             }
         }
-        releaseConnection();
+        releaseConnection(connection);
         return builder.build();
     }
 
     public Optional<InputStream> getTile(Tile tile) throws SQLException, IOException {
         Optional<InputStream> result = Optional.empty();
-        Connection connection = getConnection();
         int level = tile.getTileLevel();
         int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
         int col = tile.getTileCol();
         boolean gzip = tile.getOutputFormat().getGzippedInMbtiles();
+        Connection connection = getConnection();
         String sql = String.format("SELECT tile_data FROM tiles WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
         ResultSet rs = SqlHelper.executeQuery(connection, sql);
         if (rs.next()) {
             result = Optional.of(gzip ? new GZIPInputStream(rs.getBinaryStream("tile_data")) : rs.getBinaryStream("tile_data"));
         }
-        releaseConnection();
+        releaseConnection(connection);
         return result;
     }
 
@@ -232,7 +234,7 @@ public class MbtilesTileset {
         if (rs.next()) {
             result = Optional.of(rs.getInt("tile_id")==EMPTY_TILE_ID && tile.getOutputFormat().getSupportsEmptyTile());
         }
-        releaseConnection();
+        releaseConnection(connection);
         return result;
     }
 
@@ -243,93 +245,112 @@ public class MbtilesTileset {
         int col = tile.getTileCol();
         String sql = String.format("SELECT tile_data FROM tiles WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
         boolean exists = SqlHelper.executeQuery(connection, sql).next();
-        releaseConnection();
+        releaseConnection(connection);
         return exists;
     }
 
     public void writeTile(Tile tile, byte[] content) throws SQLException, IOException {
-        Connection connection = getConnection();
         int level = tile.getTileLevel();
         int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
         int col = tile.getTileCol();
         boolean gzip = tile.getOutputFormat().getGzippedInMbtiles();
         boolean supportsEmtpyTile = tile.getOutputFormat().getSupportsEmptyTile();
-        boolean exists = false;
-        // do we have an old blob?
-        Integer old_tile_id = null;
-        String sql = String.format("SELECT tile_id FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
-        ResultSet rs = SqlHelper.executeQuery(connection, sql);
-        if (rs.next()) {
-            exists = true;
-            old_tile_id = rs.getInt(1);
-        }
-        // now add the new tile
-        int tile_id = EMPTY_TILE_ID;
-        if (content.length>0 || !supportsEmtpyTile) {
-            PreparedStatement statement = connection.prepareStatement("INSERT INTO tile_blobs (tile_data) VALUES(?)");
-            ByteArrayOutputStream mvt = new ByteArrayOutputStream(content.length);
-            if (gzip) {
-                GZIPOutputStream gzipStream = new GZIPOutputStream(mvt);
-                gzipStream.write(content);
-                gzipStream.close();
-            } else {
-                mvt.write(content);
+        try {
+            mutex.acquire();
+            Connection connection = getConnection();
+            // do we have an old blob?
+            boolean exists = false;
+            Integer old_tile_id = null;
+            String sql = String.format("SELECT tile_id FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
+            ResultSet rs = SqlHelper.executeQuery(connection, sql);
+            if (rs.next()) {
+                exists = true;
+                old_tile_id = rs.getInt(1);
             }
-            statement.setBytes(1, mvt.toByteArray());
-            statement.execute();
-            statement.close();
-            rs = SqlHelper.executeQuery(connection, "SELECT last_insert_rowid()");
-            tile_id = rs.getInt(1);
-        }
-        PreparedStatement statement = exists
+            // add the new tile
+            int tile_id = EMPTY_TILE_ID;
+            if (content.length>0 || !supportsEmtpyTile) {
+                PreparedStatement statement = connection.prepareStatement("INSERT INTO tile_blobs (tile_data) VALUES(?)");
+                ByteArrayOutputStream mvt = new ByteArrayOutputStream(content.length);
+                if (gzip) {
+                    GZIPOutputStream gzipStream = new GZIPOutputStream(mvt);
+                    gzipStream.write(content);
+                    gzipStream.close();
+                } else {
+                    mvt.write(content);
+                }
+                statement.setBytes(1, mvt.toByteArray());
+                statement.execute();
+                statement.close();
+                rs = SqlHelper.executeQuery(connection, "SELECT last_insert_rowid()");
+                tile_id = rs.getInt(1);
+            }
+            PreparedStatement statement = exists
                 ? connection.prepareStatement("UPDATE tile_map SET tile_id=? WHERE zoom_level=? AND tile_row=? AND tile_column=?")
                 : connection.prepareStatement("INSERT INTO tile_map (tile_id,zoom_level,tile_row,tile_column) VALUES(?,?,?,?)");
-        statement.setInt(1, tile_id);
-        statement.setInt(2, level);
-        statement.setInt(3, row);
-        statement.setInt(4, col);
-        statement.execute();
-        statement.close();
-        // finally remove any old blob
-        if (Objects.nonNull(old_tile_id) && (old_tile_id != EMPTY_TILE_ID || !supportsEmtpyTile)) {
-            SqlHelper.execute(connection, String.format("DELETE FROM tile_map WHERE tile_id = %d", old_tile_id));
+            statement.setInt(1, tile_id);
+            statement.setInt(2, level);
+            statement.setInt(3, row);
+            statement.setInt(4, col);
+            statement.execute();
+            statement.close();
+            // finally remove any old blob
+            if (Objects.nonNull(old_tile_id) && (old_tile_id != EMPTY_TILE_ID || !supportsEmtpyTile)) {
+                SqlHelper.execute(connection, String.format("DELETE FROM tile_map WHERE tile_id = %d", old_tile_id));
+            }
+        } catch (InterruptedException ignored) {
+        } finally {
+            mutex.release();
+            releaseConnection(connection);
         }
-        releaseConnection();
     }
 
     public void deleteTile(Tile tile) throws SQLException {
-        Connection connection = getConnection();
         boolean supportsEmtpyTile = tile.getOutputFormat().getSupportsEmptyTile();
         int level = tile.getTileLevel();
         int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
         int col = tile.getTileCol();
-        String sql = String.format("SELECT tile_id FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
-        ResultSet rs = SqlHelper.executeQuery(connection, sql);
-        if (rs.next()) {
-            int tile_id = rs.getInt(1);
-            SqlHelper.execute(connection, String.format("DELETE FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col));
-            if (tile_id != EMPTY_TILE_ID || !supportsEmtpyTile) {
-                SqlHelper.execute(connection, String.format("DELETE FROM tile_blobs WHERE tile_id=%d", tile_id));
+        try {
+            mutex.acquire();
+            Connection connection = getConnection();
+            String sql = String.format("SELECT tile_id FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
+            ResultSet rs = SqlHelper.executeQuery(connection, sql);
+            if (rs.next()) {
+                int tile_id = rs.getInt(1);
+                SqlHelper.execute(connection, String.format("DELETE FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col));
+                if (tile_id != EMPTY_TILE_ID || !supportsEmtpyTile) {
+                    SqlHelper.execute(connection, String.format("DELETE FROM tile_blobs WHERE tile_id=%d", tile_id));
+                }
             }
+        } catch (InterruptedException ignored) {
+        } finally {
+            mutex.release();
+            releaseConnection(connection);
         }
-        releaseConnection();
     }
 
     public void deleteTiles(TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits) throws SQLException {
-        Connection connection = getConnection();
         int level = Integer.parseInt(limits.getTileMatrix());
-        String sqlFrom = String.format("FROM tile_map WHERE zoom_level=%d AND tile_row>=%d AND tile_column>=%d AND tile_row<=%d AND tile_column<=%d",
-                                       level,
-                                       tileMatrixSet.getTmsRow(level, limits.getMaxTileRow()), limits.getMinTileCol(),
-                                       tileMatrixSet.getTmsRow(level, limits.getMinTileRow()), limits.getMaxTileCol());
-        ResultSet rs = SqlHelper.executeQuery(connection, String.format("SELECT DISTINCT tile_id %s", sqlFrom));
-        while (rs.next()) {
-            int tile_id = rs.getInt(1);
-            if (tile_id != EMPTY_TILE_ID) {
-                SqlHelper.execute(connection, String.format("DELETE FROM tile_blobs WHERE tile_id=%d", tile_id));
+        try {
+            mutex.acquire();
+            Connection connection = getConnection();
+            String sqlFrom = String.format("FROM tile_map WHERE zoom_level=%d AND tile_row>=%d AND tile_column>=%d AND tile_row<=%d AND tile_column<=%d",
+                                           level,
+                                           tileMatrixSet.getTmsRow(level, limits.getMaxTileRow()), limits.getMinTileCol(),
+                                           tileMatrixSet.getTmsRow(level, limits.getMinTileRow()), limits.getMaxTileCol());
+            ResultSet rs = SqlHelper.executeQuery(connection, String.format("SELECT DISTINCT tile_id %s", sqlFrom));
+            while (rs.next()) {
+                int tile_id = rs.getInt(1);
+                if (tile_id != EMPTY_TILE_ID) {
+                    SqlHelper.execute(connection, String.format("DELETE FROM tile_blobs WHERE tile_id=%d", tile_id));
+                }
             }
+            SqlHelper.execute(connection, String.format("DELETE %s", sqlFrom));
+        } catch (InterruptedException ignored) {
+        } finally {
+            mutex.release();
+            releaseConnection(connection);
         }
-        SqlHelper.execute(connection, String.format("DELETE %s", sqlFrom));
-        releaseConnection();
+
     }
 }
