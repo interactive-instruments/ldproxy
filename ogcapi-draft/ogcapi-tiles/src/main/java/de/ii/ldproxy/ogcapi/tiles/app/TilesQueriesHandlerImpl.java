@@ -594,9 +594,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private Response getTileServerTileResponse(QueryInputTileTileServerTile queryInput, ApiRequestContext requestContext) {
 
         Tile tile = queryInput.getTile();
-        String collectionId = tile.getCollectionId();
 
-        final String urlTemplate = Objects.isNull(collectionId)
+        final String urlTemplate = tile.isDatasetTile()
             ? queryInput.getProvider().getUrlTemplate()
             : queryInput.getProvider().getUrlTemplateSingleCollection();
 
@@ -610,7 +609,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .resolveTemplate("tileRow", tile.getTileRow())
             .resolveTemplate("tileCol", tile.getTileCol())
             .resolveTemplate("fileExtension", mediaType.fileExtension());
-        if (Objects.nonNull(collectionId))
+        if (Objects.nonNull(tile.getCollectionId()))
             client = client.resolveTemplate("collectionId", tile.getCollectionId());
         Response response = client.request(mediaType.type()).get();
 
