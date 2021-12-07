@@ -216,10 +216,11 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
       long encoderDuration = (System.nanoTime() - encoderStart) / 1000000;
       long transformerDuration = (System.nanoTime() - transformerStart) / 1000000;
       long processingDuration = (System.nanoTime() - processingStart) / 1000000;
-      String text = String.format("Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms.",
+      int kiloBytes = mvt.length/1024;
+      String text = String.format("Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
           collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), context.metadata().getNumberReturned().orElse(0), written,
-          transformerDuration, processingDuration, featureDuration / 1000000, featureCount == 0 ? 0 : featureDuration / featureCount / 1000000, mergerDuration, encoderDuration);
-      if (processingDuration > 200)
+          transformerDuration, processingDuration, featureDuration / 1000000, featureCount == 0 ? 0 : featureDuration / featureCount / 1000000, mergerDuration, encoderDuration, kiloBytes);
+      if (processingDuration > 200 || kiloBytes > 50)
         LOGGER.debug(text);
       else
         LOGGER.trace(text);
