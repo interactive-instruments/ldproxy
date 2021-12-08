@@ -51,8 +51,9 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
     @Override
     public String getDescription() {
         return "Sort the results based on the properties identified by this parameter. " +
-                "The parameter value is a comma-separated list of property names, where each parameter name " +
-                "may be preceeded by a '+' (ascending, default) or '-' (descending).";
+            "The parameter value is a comma-separated list of property names that can be used to sort results (sortables), " +
+            "where each parameter name " +
+            "may be preceeded by a '+' (ascending, default) or '-' (descending).";
     }
 
     @Override

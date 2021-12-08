@@ -20,6 +20,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -61,7 +62,7 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
 
     @Override
     public String getDescription() {
-        return "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude (with or without height).";
+        return "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude.";
     }
 
     @Override
@@ -80,14 +81,17 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
-                                             .stream()
-                                             .map(EpsgCrs::toUriString)
-                                             .collect(ImmutableList.toImmutableList());
-            String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+            // TODO: only include 2D (variants) of the CRSs
+            String defaultCrs = CRS84 /* TODO support 4 or 6 numbers
+            apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
                 .map(ImmutableEpsgCrs::toUriString)
-                .orElse(CRS84);
+                .orElse(CRS84) */;
+            List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
+                .stream()
+                .map(crs ->crs.equals(OgcCrs.CRS84h) ? OgcCrs.CRS84 : crs)
+                .map(EpsgCrs::toUriString)
+                .collect(ImmutableList.toImmutableList());
             schemaMap.get(apiHashCode)
                      .put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
         }

@@ -79,6 +79,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -162,6 +163,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         List<TileFormatExtension> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
             .stream()
             .filter(format -> collectionId.map(s -> format.isApplicable(apiData, s, definitionPath)).orElseGet(() -> format.isApplicable(apiData, definitionPath)))
+            // sort formats in the order specified in the configuration for consistency;
+            // the first one will always used in the HTML representation
+            .sorted(Comparator.comparing(format -> queryInput.getTileEncodings().indexOf(format.getMediaType().label())))
             .collect(Collectors.toUnmodifiableList());
 
         Optional<TileSet.DataType> dataType = tileFormats.stream()
@@ -586,9 +590,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private Response getTileServerTileResponse(QueryInputTileTileServerTile queryInput, ApiRequestContext requestContext) {
 
         Tile tile = queryInput.getTile();
-        String collectionId = tile.getCollectionId();
 
-        final String urlTemplate = Objects.isNull(collectionId)
+        final String urlTemplate = tile.isDatasetTile()
             ? queryInput.getProvider().getUrlTemplate()
             : queryInput.getProvider().getUrlTemplateSingleCollection();
 
@@ -602,7 +605,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .resolveTemplate("tileRow", tile.getTileRow())
             .resolveTemplate("tileCol", tile.getTileCol())
             .resolveTemplate("fileExtension", mediaType.fileExtension());
-        if (Objects.nonNull(collectionId))
+        if (Objects.nonNull(tile.getCollectionId()))
             client = client.resolveTemplate("collectionId", tile.getCollectionId());
         Response response = client.request(mediaType.type()).get();
 

@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.*;
 import io.swagger.v3.oas.models.headers.Header;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +97,15 @@ public abstract class EndpointSubCollection extends Endpoint {
         final String path = "/collections/"+collectionId+subSubPath;
         ApiRequestBody body = null;
         if (method== HttpMethods.POST && postUrlencoded) {
+            Schema formSchema = new ObjectSchema();
+            queryParameters
+                .forEach(param -> {
+                    Schema paramSchema = param.getSchema(apiData, collectionId)
+                        .description(param.getDescription());
+                    formSchema.addProperties(param.getName(), paramSchema);
+                    if (param.getRequired(apiData, collectionId))
+                        formSchema.addRequiredItem(param.getName());
+                });
             Map<MediaType, ApiMediaTypeContent> requestContent =
                     ImmutableMap.of(MediaType.APPLICATION_FORM_URLENCODED_TYPE,
                                     new ImmutableApiMediaTypeContent.Builder().ogcApiMediaType(new ImmutableApiMediaType.Builder()
@@ -102,8 +113,8 @@ public abstract class EndpointSubCollection extends Endpoint {
                                                                                                                     .label("Form")
                                                                                                                     .parameter("form")
                                                                                                                     .build())
-                                                                              .schema(new StringSchema())
-                                                                              .schemaRef("#/components/schemas/anyString")
+                                                                              .schema(formSchema)
+                                                                              .schemaRef("#/components/schemas/form_"+collectionId)
                                                                               .build());
             body = new ImmutableApiRequestBody.Builder()
                     .description("The query parameters of the GET request encoded in the request body.")
@@ -155,7 +166,7 @@ public abstract class EndpointSubCollection extends Endpoint {
                 .description(operationDescription)
                 .externalDocs(externalDocs)
                 .tags(tags)
-                .queryParameters(queryParameters)
+                .queryParameters(postUrlencoded ? ImmutableList.of() : queryParameters)
                 .headers(headers.stream().filter(header -> header.isRequestHeader()).collect(Collectors.toUnmodifiableList()))
                 .success(responseBuilder.build())
                 .hideInOpenAPI(hide);
