@@ -51,7 +51,7 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
             "of the collection.\n\n" +
             "The following are examples of CQL Text expressions:\n\n" +
             "* Logical operators (`AND`, `OR`, `NOT`) are supported\n" +
-            "* Simple comparison predicates (`=`, `!=`, `<`, `>`, `<=`, `>=`):\n" +
+            "* Simple comparison predicates (`=`, `<>`, `<`, `>`, `<=`, `>=`):\n" +
             "  * `address.LocalityName = 'Bonn'`\n" +
             "  * `measuredHeight > 10`\n" +
             "  * `storeysAboveGround <= 4`\n" +
