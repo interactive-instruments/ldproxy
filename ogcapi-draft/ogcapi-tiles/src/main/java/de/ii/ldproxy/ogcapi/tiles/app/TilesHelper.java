@@ -235,7 +235,7 @@ public class TilesHelper {
         if (sourceCrs.getCode()== targetCrs.getCode() && sourceCrs.getForceAxisOrder()==targetCrs.getForceAxisOrder())
             return Optional.of(bbox);
 
-        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs, true);
         if (transformer.isPresent()) {
             try {
                 return Optional.ofNullable(transformer.get()

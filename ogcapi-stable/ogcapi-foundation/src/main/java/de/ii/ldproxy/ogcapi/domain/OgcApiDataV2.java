@@ -258,7 +258,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
-        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
+        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs, true);
 
         if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
             return crsTransformer.get()
