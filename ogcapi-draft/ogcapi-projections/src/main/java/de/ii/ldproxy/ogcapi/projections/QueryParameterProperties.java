@@ -53,7 +53,7 @@ public class QueryParameterProperties extends ApiExtensionCache implements OgcAp
 
     @Override
     public String getDescription() {
-        return "The properties that should be included for each feature. The parameter value is a comma-separated list of property names.";
+        return "The properties that should be included for each feature. The parameter value is a comma-separated list of property names. By default, all feature properties with a value are returned.";
     }
 
     @Override
