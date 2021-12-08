@@ -95,7 +95,8 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
     }
 
     protected Response getTileSets(OgcApiDataV2 apiData, ApiRequestContext requestContext,
-                                   String definitionPath, boolean onlyWebMercatorQuad) {
+                                   String definitionPath, boolean onlyWebMercatorQuad,
+                                   List<String> tileEncodings) {
 
         if (!isEnabledForApi(apiData))
             throw new NotFoundException("Multi-collection tiles are not available in this API.");
@@ -108,6 +109,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
             .tileMatrixSetZoomLevels(tilesConfiguration.getZoomLevelsDerived())
             .path(definitionPath)
             .onlyWebMercatorQuad(onlyWebMercatorQuad)
+            .tileEncodings(tileEncodings)
             .build();
 
         return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
