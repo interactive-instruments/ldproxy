@@ -152,27 +152,27 @@ public class TileSetsView extends OgcApiView {
                 .collect(Collectors.toList()) : ImmutableList.of();
 
         List<Link> tileTemplates = tiles.getTilesets()
-                             .stream()
-                             .map(PageRepresentation::getLinks)
-                             .flatMap(Collection::stream)
-                             .filter(link -> Objects.equals(link.getRel(),"item"))
-                                        .collect(Collectors.toUnmodifiableList());
+            .stream()
+            .map(PageRepresentation::getLinks)
+            .flatMap(Collection::stream)
+            .filter(link -> Objects.equals(link.getRel(),"item"))
+            .collect(Collectors.toUnmodifiableList());
 
         Optional<String> tileTemplate = tileTemplates.stream()
-                             .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
-                             .map(Link::getHref)
-                             .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-                                                     .findAny();
+            .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
+            .map(Link::getHref)
+            .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+            .findFirst();
         if (tileTemplate.isPresent()) {
             this.tilesUrl = tileTemplate.get();
             this.isVector = true;
         } else {
             this.tilesUrl = tileTemplates.stream()
-                                        .filter(link -> link.getType().startsWith("image/"))
-                                        .map(Link::getHref)
-                                        .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-                                        .findAny()
-                             .orElse(null);
+                .filter(link -> link.getType().startsWith("image/"))
+                .map(Link::getHref)
+                .map(href -> href.replaceAll("/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}", "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                .findFirst()
+                .orElse(null);
             this.isVector = false;
         }
 

@@ -98,8 +98,13 @@ public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSet
     public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @PathParam("collectionId") String collectionId) {
 
+        List<String> tileEncodings = api.getData()
+            .getExtension(MapTilesConfiguration.class, collectionId)
+            .map(MapTilesConfiguration::getTileEncodingsDerived)
+            .orElseThrow(() -> new IllegalStateException("No tile encoding available."));
         return super.getTileSets(api.getData(), requestContext,
-                                 "/collections/{collectionId}/map/tiles", collectionId, true);
+                                 "/collections/{collectionId}/map/tiles", collectionId,
+                                 true, tileEncodings);
     }
 
 }

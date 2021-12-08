@@ -76,11 +76,11 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
         return !getTileEncodings().isEmpty() ?
                 getTileEncodings() :
                 getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getTileEncodings() :
+                        getTileProvider().getTileEncodings() :
                         getTileProvider() instanceof TileProviderMbtiles && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) ?
                                 ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) :
                                 getTileProvider() instanceof TileProviderTileServer && Objects.nonNull(((TileProviderTileServer) getTileProvider()).getTileEncodings()) ?
-                                    ((TileProviderTileServer) getTileProvider()).getTileEncodings() :
+                                    getTileProvider().getTileEncodings() :
                                     ImmutableList.of();
     }
 
