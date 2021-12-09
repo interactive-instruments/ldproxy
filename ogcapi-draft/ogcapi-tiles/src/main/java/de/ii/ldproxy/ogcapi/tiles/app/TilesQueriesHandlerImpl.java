@@ -637,9 +637,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
-        InputStream stream = response.readEntity(InputStream.class);
+        byte[] content;
+        try {
+            content = response.readEntity(InputStream.class).readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read map tile from TileServer.",e);
+        }
         Date lastModified = null;
-        EntityTag etag = getEtag(stream);
+        EntityTag etag = getEtag(content);
         Response.ResponseBuilder responseBuilder = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(responseBuilder))
             return responseBuilder.build();
@@ -653,7 +658,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                       null,
                                       true,
                                       String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
-            .entity(response.readEntity(InputStream.class))
+            .entity(content)
             .build();
     }
 
