@@ -40,6 +40,9 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     Boolean getCollectionDescriptionsInOverview();
 
     @Nullable
+    Boolean getSendEtags();
+
+    @Nullable
     String getLegalName();
 
     @Nullable

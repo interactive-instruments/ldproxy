@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileSets;
@@ -70,6 +71,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayInputStream;
@@ -215,7 +217,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         TileSets tileSets = builder.build();
 
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(tileSets, TileSets.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileSets, TileSets.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -271,7 +277,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                    crsTransformerFactory, limitsGenerator, providers, entityRegistry);
         
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(tileset, TileSet.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileset, TileSet.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

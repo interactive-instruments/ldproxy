@@ -28,6 +28,7 @@ public class CapabilityHtml implements ApiBuildingBlock {
                                                        .noIndexEnabled(true)
                                                        .schemaOrgEnabled(true)
                                                        .collectionDescriptionsInOverview(false)
+                                                       .sendEtags(false)
                                                        .legalName("Legal notice")
                                                        .legalUrl("")
                                                        .privacyName("Privacy notice")
