@@ -98,18 +98,20 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            // TODO: only include 2D (variants) of the CRSs
-            String defaultCrs = CRS84 /* TODO support 4 or 6 numbers
-            apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+            // always support both default CRSs
+            String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
                 .map(ImmutableEpsgCrs::toUriString)
-                .orElse(CRS84) */;
+                .orElse(CRS84);
+            ImmutableList.Builder<String> crsListBuilder = new ImmutableList.Builder<>();
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
                 .stream()
-                .map(crs ->crs.equals(OgcCrs.CRS84h) ? OgcCrs.CRS84 : crs)
                 .map(EpsgCrs::toUriString)
                 .collect(ImmutableList.toImmutableList());
-            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
+            crsListBuilder.addAll(crsList);
+            if (!crsList.contains(CRS84))
+                crsListBuilder.add(CRS84);
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsListBuilder.build())._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
     }
@@ -127,7 +129,8 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
             } catch (Throwable e) {
                 throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: %s", FILTER_CRS, e.getMessage()), e);
             }
-            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, filterCrs)) {
+            // CRS84 is always supported
+            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, filterCrs) && !filterCrs.equals(OgcCrs.CRS84)) {
                 throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", FILTER_CRS, filterCrs.toUriString()));
             }
 
