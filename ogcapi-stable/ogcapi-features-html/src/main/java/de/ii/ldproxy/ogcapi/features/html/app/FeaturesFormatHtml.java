@@ -20,6 +20,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
@@ -155,19 +156,6 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                                   .filter(Objects::nonNull)
                                                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        for (Map.Entry<String,FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
-            String collectionId = entry.getKey();
-            FeaturesHtmlConfiguration config = entry.getValue();
-            Optional<String> itemLabelFormat = config.getFeatureTitleTemplate();
-            if (itemLabelFormat.isPresent()) {
-                Pattern valuePattern = Pattern.compile("\\{\\{[\\w\\.]+( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
-                Matcher matcher = valuePattern.matcher(itemLabelFormat.get());
-                if (!matcher.find()) {
-                    builder.addWarnings(MessageFormat.format("The HTML Item Label Format ''{0}'' in collection ''{1}'' does not include a value pattern that can be replaced with a feature-specific value.", itemLabelFormat.get(), collectionId));
-                }
-            }
-        }
-
         Map<String, Collection<String>> keyMap = htmlConfigurationMap.entrySet()
                                                                       .stream()
                                                                       .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
@@ -218,10 +206,16 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                 .orElse(true);
     }
 
-    private FeaturesHtmlConfiguration.POSITION getMapPosition(OgcApiDataV2 apiData) {
-        return apiData.getExtension(FeaturesHtmlConfiguration.class)
+    private FeaturesHtmlConfiguration.POSITION getMapPosition(OgcApiDataV2 apiData, String collectionId) {
+        return apiData.getExtension(FeaturesHtmlConfiguration.class, collectionId)
                 .map(FeaturesHtmlConfiguration::getMapPosition)
                 .orElse(FeaturesHtmlConfiguration.POSITION.AUTO);
+    }
+
+    private List<String> getGeometryProperties(OgcApiDataV2 apiData, String collectionId) {
+        return apiData.getExtension(FeaturesHtmlConfiguration.class, collectionId)
+            .map(FeaturesHtmlConfiguration::getGeometryProperties)
+            .orElse(ImmutableList.of());
     }
 
     @Override
@@ -251,6 +245,14 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         if (transformationContext.isFeatureCollection()) {
             FeatureTypeConfigurationOgcApi collectionData = serviceData.getCollections()
                 .get(collectionName);
+
+            Integer htmlMaxLimit = collectionData.getExtension(FeaturesHtmlConfiguration.class)
+                .map(FeaturesHtmlConfiguration::getMaximumPageSize)
+                .orElse(null);
+            if (Objects.nonNull(htmlMaxLimit) && htmlMaxLimit < transformationContext.getLimit())
+                throw new IllegalArgumentException(String.format("The HTML output has a maximum page size (parameter 'limit') of %d. Found: %d",
+                                                                 htmlMaxLimit, transformationContext.getLimit()));
+
             Optional<FeaturesCoreConfiguration> featuresCoreConfiguration = collectionData.getExtension(FeaturesCoreConfiguration.class);
 
             List<String> queryables = featuresCoreConfiguration
@@ -266,14 +268,14 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                 .orElse(ImmutableMap.of());
 
             featureTypeDataset = createFeatureCollectionView(serviceData, serviceData.getCollections()
-                .get(collectionName), uriCustomizer.copy(), filterableFields, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getMapPosition(serviceData));
+                .get(collectionName), uriCustomizer.copy(), filterableFields, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getMapPosition(serviceData, collectionName), getGeometryProperties(serviceData, collectionName));
 
             addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getCollections()
                 .get(collectionName)
                 .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getSubPath());
         } else {
             featureTypeDataset = createFeatureDetailsView(serviceData, serviceData.getCollections()
-                .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getSubPath(), getMapPosition(serviceData));
+                .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getSubPath(), getMapPosition(serviceData, collectionName), getGeometryProperties(serviceData, collectionName));
         }
 
         ImmutableFeatureTransformationContextHtml transformationContextHtml = ImmutableFeatureTransformationContextHtml.builder()
@@ -297,7 +299,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         String staticUrlPrefix,
         boolean bare, Optional<Locale> language,
         boolean noIndex,
-        POSITION mapPosition) {
+        POSITION mapPosition,
+        List<String> geometryProperties) {
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -306,6 +309,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         }
 
         Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
+        String attribution = apiData.getMetadata().flatMap(Metadata::getAttribution).orElse(null);
 
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
@@ -316,7 +320,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
                                                    .orElse(false);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig.orElse(null), null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, filterableFields);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, filterableFields, geometryProperties);
 
         featureTypeDataset.temporalExtent = apiData.getTemporalExtent(featureType.getId()).orElse(null);
         apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
@@ -337,7 +341,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                            String staticUrlPrefix, Optional<Locale> language,
                                                            boolean noIndex,
                                                            List<String> subPathToLandingPage,
-                                                           FeaturesHtmlConfiguration.POSITION mapPosition) {
+                                                           FeaturesHtmlConfiguration.POSITION mapPosition,
+                                                           List<String> geometryProperties) {
 
         String rootTitle = i18n.get("root", language);
         String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -361,6 +366,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         }
 
         Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
+        String attribution = apiData.getMetadata().flatMap(Metadata::getAttribution).orElse(null);
 
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
@@ -372,8 +378,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                    .orElse(false);
 
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData,
-            featureType, "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), staticUrlPrefix, htmlConfig.orElse(null), persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints,
-            null);
+            featureType, "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints,
+            null, geometryProperties);
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 

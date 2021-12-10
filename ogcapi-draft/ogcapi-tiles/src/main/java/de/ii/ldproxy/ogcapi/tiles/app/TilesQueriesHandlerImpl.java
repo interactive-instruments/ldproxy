@@ -15,7 +15,6 @@ import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
@@ -24,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileSets;
@@ -37,7 +37,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
@@ -69,7 +68,10 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayInputStream;
@@ -79,6 +81,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -126,14 +129,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         this.tileMatrixSetRepository = tileMatrixSetRepository;
 
         this.queryHandlers = ImmutableMap.<Query, QueryHandler<? extends QueryInput>>builder()
-                .put(Query.TILE_SETS, QueryHandler.with(QueryInputTileSets.class, this::getTileSetsResponse))
-                .put(Query.TILE_SET, QueryHandler.with(QueryInputTileSet.class, this::getTileSetResponse))
-                .put(Query.SINGLE_LAYER_TILE, QueryHandler.with(QueryInputTileSingleLayer.class, this::getSingleLayerTileResponse))
-                .put(Query.MULTI_LAYER_TILE, QueryHandler.with(QueryInputTileMultiLayer.class, this::getMultiLayerTileResponse))
-                .put(Query.EMPTY_TILE, QueryHandler.with(QueryInputTileEmpty.class, this::getEmptyTileResponse))
-                .put(Query.TILE_STREAM, QueryHandler.with(QueryInputTileStream.class, this::getTileStreamResponse))
-                .put(Query.MBTILES_TILE, QueryHandler.with(QueryInputTileMbtilesTile.class, this::getMbtilesTileResponse))
-                .build();
+            .put(Query.TILE_SETS, QueryHandler.with(QueryInputTileSets.class, this::getTileSetsResponse))
+            .put(Query.TILE_SET, QueryHandler.with(QueryInputTileSet.class, this::getTileSetResponse))
+            .put(Query.SINGLE_LAYER_TILE, QueryHandler.with(QueryInputTileSingleLayer.class, this::getSingleLayerTileResponse))
+            .put(Query.MULTI_LAYER_TILE, QueryHandler.with(QueryInputTileMultiLayer.class, this::getMultiLayerTileResponse))
+            .put(Query.EMPTY_TILE, QueryHandler.with(QueryInputTileEmpty.class, this::getEmptyTileResponse))
+            .put(Query.TILE_STREAM, QueryHandler.with(QueryInputTileStream.class, this::getTileStreamResponse))
+            .put(Query.MBTILES_TILE, QueryHandler.with(QueryInputTileMbtilesTile.class, this::getMbtilesTileResponse))
+            .put(Query.TILESERVER_TILE, QueryHandler.with(QueryInputTileTileServerTile.class, this::getTileServerTileResponse))
+            .build();
     }
 
     @Override
@@ -145,43 +149,30 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         OgcApi api = requestContext.getApi();
         OgcApiDataV2 apiData = api.getData();
         Optional<String> collectionId = queryInput.getCollectionId();
-        String path = collectionId.map(s -> "/collections/" + s + "/tiles").orElse("/tiles");
+        String definitionPath = queryInput.getPath();
+        String path = collectionId.map(value -> definitionPath.replace("{collectionId}", value)).orElse(definitionPath);
+        boolean onlyWebMercatorQuad = queryInput.getOnlyWebMercatorQuad();
 
         TileSetsFormatExtension outputFormat = api.getOutputFormat(TileSetsFormatExtension.class, requestContext.getMediaType(), path, collectionId)
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         final TilesLinkGenerator tilesLinkGenerator = new TilesLinkGenerator();
 
-        Optional<FeatureTypeConfigurationOgcApi> featureType = collectionId.map(s -> requestContext.getApi().getData().getCollections().get(s));
+        Optional<FeatureTypeConfigurationOgcApi> featureType = collectionId.map(s -> apiData.getCollections().get(s));
         Map<String, MinMax> tileMatrixSetZoomLevels = queryInput.getTileMatrixSetZoomLevels();
         List<Double> center = queryInput.getCenter();
 
-        List<ApiMediaType> tileSetFormats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)
-                                                             .stream()
-                                                             .filter(format -> collectionId.map(s -> format.isEnabledForApi(apiData, s)).orElseGet(() -> format.isEnabledForApi(apiData)))
-                                                             .filter(format -> {
-                    Optional<TilesConfiguration> config = collectionId.isPresent() ?
-                            apiData.getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
-                            apiData.getExtension(TilesConfiguration.class);
-                    return config.isPresent() && (config.get().getTileSetEncodings()==null || (config.get().getTileSetEncodings().isEmpty() || config.get().getTileSetEncodings().contains(format.getMediaType().label())));
-                })
-                                                             .map(FormatExtension::getMediaType)
-                                                             .collect(Collectors.toList());
-
         List<TileFormatExtension> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
-                                                                 .stream()
-                                                                 .filter(format -> collectionId.map(s -> format.isEnabledForApi(apiData, s)).orElseGet(() -> format.isEnabledForApi(apiData)))
-                                                                 .filter(format -> {
-                                                                     Optional<TilesConfiguration> config = collectionId.isPresent() ?
-                                                                             apiData.getCollections().get(collectionId.get()).getExtension(TilesConfiguration.class) :
-                                                                             apiData.getExtension(TilesConfiguration.class);
-                                                                     return config.isPresent() && (config.get().getTileEncodingsDerived()==null || (config.get().getTileEncodingsDerived().isEmpty() || config.get().getTileEncodingsDerived().contains(format.getMediaType().label())));
-                                                                 })
-                                                                 .collect(Collectors.toList());
+            .stream()
+            .filter(format -> collectionId.map(s -> format.isApplicable(apiData, s, definitionPath)).orElseGet(() -> format.isApplicable(apiData, definitionPath)))
+            // sort formats in the order specified in the configuration for consistency;
+            // the first one will always used in the HTML representation
+            .sorted(Comparator.comparing(format -> queryInput.getTileEncodings().indexOf(format.getMediaType().label())))
+            .collect(Collectors.toUnmodifiableList());
 
         Optional<TileSet.DataType> dataType = tileFormats.stream()
-                                                         .map(format -> format.getDataType())
-                                                         .findAny();
+            .map(TileFormatExtension::getDataType)
+            .findAny();
 
         List<Link> links = tilesLinkGenerator.generateTileSetsLinks(requestContext.getUriCustomizer(),
                                                                     requestContext.getMediaType(),
@@ -191,42 +182,46 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                     requestContext.getLanguage());
 
         ImmutableTileSets.Builder builder = ImmutableTileSets.builder()
-                                                             .title(featureType.isPresent()
-                                                                            ? featureType.get().getLabel()
-                                                                            : apiData.getLabel())
-                                                             .description(featureType.map(ft -> ft.getDescription().orElse(""))
-                                                                                     .orElseGet(() -> apiData.getDescription().orElse("")))
-                                                             .links(links);
+            .title(featureType.isPresent()
+                       ? featureType.get().getLabel()
+                       : apiData.getLabel())
+            .description(featureType.map(ft -> ft.getDescription().orElse(""))
+                             .orElseGet(() -> apiData.getDescription().orElse("")))
+            .links(links);
 
         List<TileMatrixSet> tileMatrixSets = tileMatrixSetZoomLevels.keySet()
-                                                                    .stream()
-                                                                    .map(this::getTileMatrixSetById)
-                                                                    .collect(Collectors.toUnmodifiableList());
+            .stream()
+            .map(this::getTileMatrixSetById)
+            .filter(tileMatrixSet -> !onlyWebMercatorQuad || tileMatrixSet.getId().equals("WebMercatorQuad"))
+            .collect(Collectors.toUnmodifiableList());
 
-        if (dataType.isPresent())
-            builder.tilesets(tileMatrixSets.stream()
-                                           .map(tileMatrixSet -> TilesHelper.buildTileSet(apiData,
-                                                                                          tileMatrixSet,
-                                                                                          tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
-                                                                                          center,
-                                                                                          collectionId,
-                                                                                          dataType.get(),
-                                                                                          tilesLinkGenerator.generateTileSetEmbeddedLinks(requestContext.getUriCustomizer(),
-                                                                                                                                          tileMatrixSet.getId(),
-                                                                                                                                          tileFormats,
-                                                                                                                                          i18n,
-                                                                                                                                          requestContext.getLanguage()),
-                                                                                          Optional.of(requestContext.getUriCustomizer().copy()),
-                                                                                          crsTransformerFactory,
-                                                                                          limitsGenerator,
-                                                                                          providers,
-                                                                                          entityRegistry))
-                                           .collect(Collectors.toUnmodifiableList()));
+        dataType.ifPresent(type -> builder.tilesets(tileMatrixSets.stream()
+                                                        .map(tileMatrixSet -> TilesHelper.buildTileSet(apiData,
+                                                                                                       tileMatrixSet,
+                                                                                                       tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
+                                                                                                       center,
+                                                                                                       collectionId,
+                                                                                                       type,
+                                                                                                       tilesLinkGenerator.generateTileSetEmbeddedLinks(requestContext.getUriCustomizer(),
+                                                                                                                                                       tileMatrixSet.getId(),
+                                                                                                                                                       tileFormats,
+                                                                                                                                                       i18n,
+                                                                                                                                                       requestContext.getLanguage()),
+                                                                                                       Optional.of(requestContext.getUriCustomizer().copy()),
+                                                                                                       crsTransformerFactory,
+                                                                                                       limitsGenerator,
+                                                                                                       providers,
+                                                                                                       entityRegistry))
+                                                        .collect(Collectors.toUnmodifiableList())));
 
         TileSets tileSets = builder.build();
 
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(tileSets, TileSets.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileSets, TileSets.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -248,23 +243,21 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         OgcApiDataV2 apiData = api.getData();
         String tileMatrixSetId = queryInput.getTileMatrixSetId();
         Optional<String> collectionId = queryInput.getCollectionId();
-        String path = collectionId.map(s -> "/collections/" + s + "/tiles/" + tileMatrixSetId).orElseGet(() -> "/tiles/" + tileMatrixSetId);
+        String definitionPath = queryInput.getPath();
+        String path = collectionId.map(value -> definitionPath.replace("{collectionId}", value))
+            .orElse(definitionPath)
+            .replace("{tileMatrixSetId}", tileMatrixSetId);
 
         TileSetFormatExtension outputFormat = api.getOutputFormat(TileSetFormatExtension.class, requestContext.getMediaType(), path, collectionId)
                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
         List<TileFormatExtension> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                                                                  .stream()
-                                                                 .filter(format -> collectionId.map(s -> format.isEnabledForApi(apiData, s)).orElseGet(() -> format.isEnabledForApi(apiData)))
-                                                                 .filter(format -> {
-                                                                     Optional<TilesConfiguration> config = collectionId.map(cid -> apiData.getCollections().get(cid).getExtension(TilesConfiguration.class))
-                                                                                                                       .orElse(apiData.getExtension(TilesConfiguration.class));
-                                                                     return config.isPresent() && (config.get().getTileEncodingsDerived()==null || (config.get().getTileEncodingsDerived().isEmpty() || config.get().getTileEncodingsDerived().contains(format.getMediaType().label())));
-                                                                 })
-                                                                 .collect(Collectors.toList());
+                                                                 .filter(format -> collectionId.map(s -> format.isApplicable(apiData, s, definitionPath)).orElseGet(() -> format.isApplicable(apiData, definitionPath)))
+                                                                 .collect(Collectors.toUnmodifiableList());
 
         TileSet.DataType dataType = tileFormats.stream()
-                                               .map(format -> format.getDataType())
+                                               .map(TileFormatExtension::getDataType)
                                                .findAny()
                                                .orElseThrow(() -> new NotFoundException("No encoding found for this tile set."));
 
@@ -284,7 +277,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                    crsTransformerFactory, limitsGenerator, providers, entityRegistry);
         
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(tileset, TileSet.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileset, TileSet.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -369,7 +366,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         Optional<FeatureTokenEncoder<?>> encoder = outputFormat.getFeatureEncoder(transformationContext);
 
-        if (outputFormat.canTransformFeatures() && encoder.isPresent()) {
+        if (outputFormat.supportsFeatureQuery() && encoder.isPresent()) {
 
             FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
 
@@ -471,7 +468,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                         .limit(query.getLimit())
                         .offset(0)
                         .i18n(i18n)
-                        .outputStream(new OutputStreamToByteConsumer()/*TODO*/)
+                        .outputStream(new OutputStreamToByteConsumer())
                         .build();
             } catch (Exception e) {
                 throw new RuntimeException("Error building the tile transformation context.", e);
@@ -479,7 +476,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
             Optional<FeatureTokenEncoder<?>> encoder = outputFormat.getFeatureEncoder(transformationContext);
 
-            if (outputFormat.canTransformFeatures() && encoder.isPresent()) {
+            if (outputFormat.supportsFeatureQuery() && encoder.isPresent()) {
 
                 FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
 
@@ -572,7 +569,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     private Response getMbtilesTileResponse(QueryInputTileMbtilesTile queryInput, ApiRequestContext requestContext) {
 
-        StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(staticTileProviderStore.getTile(queryInput.getTileProvider(), queryInput.getTile()), outputStream);
+        String mbtilesFilename = queryInput.getProvider().getFilename();
+
+        java.nio.file.Path provider = staticTileProviderStore.getTileProvider(queryInput.getTile().getApiData(), mbtilesFilename);
+
+        if (!provider.toFile().exists())
+            throw new RuntimeException(String.format("Mbtiles file '%s' does not exist", provider));
+
+
+        StreamingOutput streamingOutput = outputStream -> ByteStreams.copy(staticTileProviderStore.getTile(provider, queryInput.getTile()), outputStream);
 
         List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
                                                                      requestContext.getMediaType(),
@@ -580,8 +585,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
-        Date lastModified = getLastModified(queryInput.getTileProvider().toFile());
-        EntityTag etag = getEtag(staticTileProviderStore.getTile(queryInput.getTileProvider(), queryInput.getTile()));
+        Date lastModified = getLastModified(provider.toFile());
+        EntityTag etag = getEtag(staticTileProviderStore.getTile(provider, queryInput.getTile()));
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -598,6 +603,63 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                       String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
                 .entity(streamingOutput)
                 .build();
+    }
+
+    private Response getTileServerTileResponse(QueryInputTileTileServerTile queryInput, ApiRequestContext requestContext) {
+
+        Tile tile = queryInput.getTile();
+
+        final String urlTemplate = tile.isDatasetTile()
+            ? queryInput.getProvider().getUrlTemplate()
+            : queryInput.getProvider().getUrlTemplateSingleCollection();
+
+        if (Objects.isNull(urlTemplate))
+            throw new IllegalStateException("The MAP_TILES configuration is invalid, no 'urlTemplate' was found.");
+
+        ApiMediaType mediaType = tile.getOutputFormat().getMediaType();
+        WebTarget client = ClientBuilder.newClient()
+            .target(urlTemplate)
+            .resolveTemplate("tileMatrix", tile.getTileLevel())
+            .resolveTemplate("tileRow", tile.getTileRow())
+            .resolveTemplate("tileCol", tile.getTileCol())
+            .resolveTemplate("fileExtension", mediaType.fileExtension());
+        if (Objects.nonNull(tile.getCollectionId()))
+            client = client.resolveTemplate("collectionId", tile.getCollectionId());
+        Response response = client.request(mediaType.type()).get();
+
+        // unsuccessful? just forward the error response
+        if (response.getStatus()!=200)
+            return response;
+
+        List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
+                                                                     requestContext.getMediaType(),
+                                                                     ImmutableList.of(),
+                                                                     i18n,
+                                                                     requestContext.getLanguage());
+
+        byte[] content;
+        try {
+            content = response.readEntity(InputStream.class).readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read map tile from TileServer.",e);
+        }
+        Date lastModified = null;
+        EntityTag etag = getEtag(content);
+        Response.ResponseBuilder responseBuilder = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(responseBuilder))
+            return responseBuilder.build();
+
+        return prepareSuccessResponse(requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
+            .entity(content)
+            .build();
     }
 
     private Response getEmptyTileResponse(QueryInputTileEmpty queryInput, ApiRequestContext requestContext) {
@@ -642,11 +704,12 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         FeatureStream featureStream,
         FeatureTokenEncoder<?> encoder,
         FeatureTransformationContextTiles transformationContext,
-        TileFormatExtension outputFormat) {
+        TileFormatWithQuerySupportExtension outputFormat) {
 
         Optional<PropertyTransformations> propertyTransformations = transformationContext.getCollection()
                 .flatMap(collection -> outputFormat.getPropertyTransformations(collection,
-                    ImmutableMap.of("serviceUrl", transformationContext.getServiceUrl())));
+                                                                               ImmutableMap.of("serviceUrl", transformationContext.getServiceUrl()),
+                                                                               outputFormat.getBuildingBlockConfigurationType()));
 
         SinkReducedTransformed<Object, byte[], byte[]> featureSink = encoder.to(Sink.reduceByteArray());
 

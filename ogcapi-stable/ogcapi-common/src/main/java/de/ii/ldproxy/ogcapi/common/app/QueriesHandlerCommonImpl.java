@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.*;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -128,7 +129,10 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                                    requestContext);
 
         Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension);
+        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -186,7 +190,10 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                                    requestContext.getApi(),
                                                                    requestContext);
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension);
+        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || requestContext.getApi().getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

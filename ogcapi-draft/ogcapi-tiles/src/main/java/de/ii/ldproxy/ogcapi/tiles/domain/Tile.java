@@ -91,7 +91,7 @@ public abstract class Tile {
 
     /**
      *
-     * @return {@code true}, if the tile is a tile for the /tiles resources
+     * @return {@code true}, if the tile is a tile for the /tiles or /map/tiles resources
      */
     public abstract boolean isDatasetTile();
 
@@ -99,7 +99,7 @@ public abstract class Tile {
     @Value.Derived
     @Value.Auxiliary
     public String getCollectionId() {
-        return getCollectionIds().size()==1 ?
+        return !isDatasetTile() && getCollectionIds().size()==1 ?
                 getCollectionIds().get(0) :
                 null;
     }

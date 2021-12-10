@@ -7,16 +7,16 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.app;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.CollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
+import de.ii.ldproxy.ogcapi.features.html.domain.Geometry;
 import de.ii.ldproxy.ogcapi.html.domain.DatasetView;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
@@ -26,19 +26,17 @@ import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Type;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import de.ii.xtraplatform.features.domain.Feature;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -47,6 +45,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * @author zahnen
@@ -73,15 +72,16 @@ public class FeatureCollectionView extends DatasetView {
     public FeaturesHtmlConfiguration.POSITION mapPosition;
     public final MapClient mapClient;
     public final FilterEditor filterEditor;
+    public final CesiumData cesiumData;
 
     public FeatureCollectionView(OgcApiDataV2 apiData,
         FeatureTypeConfigurationOgcApi collectionData, String template,
-        URI uri, String name, String title, String description,
+        URI uri, String name, String title, String description, String attribution,
         String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
         I18n i18n, Locale language, POSITION mapPosition,
         Type mapClientType, String styleUrl, boolean removeZoomLevelConstraints,
-        Map<String, String> queryables) {
-        super(template, uri, name, title, description, urlPrefix, htmlConfig, noIndex);
+        Map<String, String> queryables, List<String> geometryProperties) {
+        super(template, uri, name, title, description, attribution, urlPrefix, htmlConfig, noIndex);
         this.features = new ArrayList<>();
         this.isCollection = !"featureDetails".equals(template);
         this.uri = uri; // TODO need to overload getPath() as it currently forces trailing slashes while OGC API uses no trailing slashes
@@ -89,6 +89,7 @@ public class FeatureCollectionView extends DatasetView {
         this.schemaOrgFeatures = Objects.nonNull(htmlConfig) && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
         this.mapPosition = mapPosition;
         this.uriBuilder = new URICustomizer(uri);
+        this.cesiumData = new CesiumData(features, geometryProperties);
 
         this.bbox = apiData.getSpatialExtent(collectionData.getId())
             .map(boundingBox -> ImmutableMap.of(
@@ -101,9 +102,8 @@ public class FeatureCollectionView extends DatasetView {
         if (mapClientType.equals(MapClient.Type.MAP_LIBRE)) {
             this.mapClient = new ImmutableMapClient.Builder()
                     .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
-                                           .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
-                    .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                                         .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+                                           .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
+                    .attribution(getAttribution())
                     .bounds(Optional.ofNullable(bbox))
                     .data(new ImmutableSource.Builder()
                                   .type(TYPE.geojson)
@@ -114,8 +114,15 @@ public class FeatureCollectionView extends DatasetView {
                     .removeZoomLevelConstraints(removeZoomLevelConstraints)
                     .build();
         } else if (mapClientType.equals(MapClient.Type.CESIUM)) {
-            //TODO: Cesium
-            this.mapClient = null;
+            this.mapClient = new ImmutableMapClient.Builder()
+                .type(mapClientType)
+                .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                                   .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl()))
+                                   .map(url -> url.replace("{z}", "{TileMatrix}")
+                                       .replace("{y}", "{TileRow}")
+                                       .replace("{x}", "{TileCol}")))
+                .attribution(getAttribution())
+                .build();
         } else {
             LOGGER.error("Configuration error: {} is not a supported map client for the HTML representation of features.", mapClientType);
             this.mapClient = null;
@@ -123,6 +130,9 @@ public class FeatureCollectionView extends DatasetView {
 
         if (Objects.nonNull(queryables)) {
             this.filterEditor = new ImmutableFilterEditor.Builder()
+                .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                    .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
+                .attribution(htmlConfig.getBasemapAttribution())
                 .fields(queryables.entrySet())
                 .build();
         } else {
@@ -142,6 +152,18 @@ public class FeatureCollectionView extends DatasetView {
 
     public boolean isMapRight() {
         return mapPosition == POSITION.RIGHT || (mapPosition == POSITION.AUTO && !features.isEmpty() && features.stream().noneMatch(FeatureHtml::hasObjects));
+    }
+
+    @Override
+    public String getAttribution() {
+        String basemapAttribution = super.getAttribution();
+        if (Objects.nonNull(attribution)) {
+            if (Objects.nonNull(basemapAttribution))
+                return String.join(" | ", attribution, basemapAttribution);
+            else
+                return attribution;
+        }
+        return basemapAttribution;
     }
 
     public Optional<String> getCanonicalUrl() throws URISyntaxException {

@@ -9,9 +9,12 @@ package de.ii.ldproxy.ogcapi.html.domain;
 
 import com.google.common.collect.Multimap;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -60,14 +63,26 @@ public interface MapClient {
 
   Optional<Popup> getPopup();
 
+  Optional<Set<Entry<String, Collection<String>>>> getLayerGroupControl();
+
   @Value.Lazy
   default boolean isMapLibre() {
     return getType() == Type.MAP_LIBRE;
   }
 
+  @Value.Lazy
+  default boolean isOpenLayers() {
+    return getType() == Type.OPEN_LAYERS;
+  }
+
+  @Value.Lazy
+  default boolean isCesium() {
+    return getType() == Type.CESIUM;
+  }
+
   @Value.Immutable
   interface Source {
-    enum TYPE {geojson, vector}
+    enum TYPE {geojson, vector, raster}
 
     TYPE getType();
 

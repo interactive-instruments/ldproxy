@@ -40,6 +40,9 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     Boolean getCollectionDescriptionsInOverview();
 
     @Nullable
+    Boolean getSendEtags();
+
+    @Nullable
     String getLegalName();
 
     @Nullable
@@ -55,10 +58,10 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getDefaultStyle();
 
     @Nullable
-    String getMapBackgroundUrl();
+    String getBasemapUrl();
 
     @Nullable
-    String getMapAttribution();
+    String getBasemapAttribution();
 
     @Deprecated(since = "3.1.0")
     @Nullable

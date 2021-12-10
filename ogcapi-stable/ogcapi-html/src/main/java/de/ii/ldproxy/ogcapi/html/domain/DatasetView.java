@@ -33,6 +33,7 @@ public class DatasetView extends GenericView {
     public List<String> keywords;
     public String version;
     public String license;
+    public String attribution;
     public String url;
     public String metadataUrl;
     public boolean noIndex;
@@ -66,6 +67,14 @@ public class DatasetView extends GenericView {
         this.name = name;
         this.title = title;
         this.description = description;
+    }
+
+    public DatasetView(String template, URI uri, String name, String title, String description, String attribution, String urlPrefix, HtmlConfiguration htmlConfig, boolean noIndex) {
+        this(template, uri, urlPrefix, htmlConfig, noIndex);
+        this.name = name;
+        this.title = title;
+        this.description = description;
+        this.attribution = attribution;
     }
 
     public DecoratedCollection<String> getKeywordsDecorated() {
@@ -107,5 +116,13 @@ public class DatasetView extends GenericView {
                 result += ",\n    ";
         }
         return result;
+    }
+
+    public String getAttribution() {
+        if (Objects.nonNull(htmlConfig.getLeafletAttribution()))
+            return htmlConfig.getLeafletAttribution();
+        if (Objects.nonNull(htmlConfig.getOpenLayersAttribution()))
+            return htmlConfig.getOpenLayersAttribution();
+        return htmlConfig.getBasemapAttribution();
     }
 }

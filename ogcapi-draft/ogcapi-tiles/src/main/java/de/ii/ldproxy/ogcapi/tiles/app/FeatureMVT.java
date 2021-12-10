@@ -85,6 +85,7 @@ public interface FeatureMVT extends FeatureBase<PropertyMVT, FeatureSchema> {
     return getProperties().stream()
         .filter(property -> property.getSchema()
             .filter(SchemaBase::isSpatial)
+            .filter(SchemaBase::isPrimaryGeometry)
             .isPresent())
         .findFirst();
   }

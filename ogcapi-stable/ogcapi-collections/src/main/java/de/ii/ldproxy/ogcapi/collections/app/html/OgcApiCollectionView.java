@@ -109,9 +109,9 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
         this.collectionInformationTitle = i18n.get ("collectionInformationTitle", language);
         this.mapClient = new ImmutableMapClient.Builder()
             .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
-                .or(() -> Optional.ofNullable(htmlConfig.getMapBackgroundUrl())))
+                .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
             .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                .or(() -> Optional.ofNullable(htmlConfig.getMapAttribution())))
+                .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
             .bounds(Optional.ofNullable(this.getBbox()))
             .drawBounds(true)
             .isInteractive(false)
@@ -163,11 +163,11 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
                     .collect(Collectors.toUnmodifiableList());
     }
 
-    public Optional<Link> getTiles() {
+    public List<Link> getTiles() {
         return links
                 .stream()
                 .filter(link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
-                .findFirst();
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public Optional<Link> getStyles() {
@@ -181,13 +181,6 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "ldp-map"))
-                .findFirst();
-    }
-
-    public Optional<Link> getDapa() {
-        return links
-                .stream()
-                .filter(link -> Objects.equals(link.getRel(), "ogc-dapa-processes"))
                 .findFirst();
     }
 

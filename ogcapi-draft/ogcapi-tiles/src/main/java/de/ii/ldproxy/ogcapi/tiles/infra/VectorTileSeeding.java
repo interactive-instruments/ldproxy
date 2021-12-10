@@ -27,6 +27,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMultiLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
+import de.ii.ldproxy.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
@@ -43,6 +44,7 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.services.domain.TaskContext;
+import java.sql.SQLException;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -142,7 +144,33 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     @Override
     public boolean runOnStart(OgcApi api) {
-        return isEnabledForApi(api.getData());
+        return isEnabledForApi(api.getData())
+            && api.getData().getExtension(TilesConfiguration.class)
+            .flatMap(TilesConfiguration::getSeedingOptions)
+            .filter(seedingOptions -> !seedingOptions.shouldRunOnStartup())
+            .isEmpty();
+    }
+
+    @Override
+    public Optional<String> runPeriodic(OgcApi api) {
+        return api.getData().getExtension(TilesConfiguration.class)
+            .flatMap(TilesConfiguration::getSeedingOptions)
+            .flatMap(SeedingOptions::getCronExpression);
+    }
+
+    @Override
+    public int getMaxPartials(OgcApi api) {
+        return api.getData().getExtension(TilesConfiguration.class)
+            .flatMap(TilesConfiguration::getSeedingOptions)
+            .map(SeedingOptions::getEffectiveMaxThreads)
+            .orElse(1);
+    }
+
+    private boolean shouldPurge(OgcApi api) {
+        return api.getData().getExtension(TilesConfiguration.class)
+            .flatMap(TilesConfiguration::getSeedingOptions)
+            .filter(SeedingOptions::shouldPurge)
+            .isPresent();
     }
 
     /**
@@ -153,6 +181,16 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
      */
     @Override
     public void run(OgcApi api, TaskContext taskContext) {
+        if (shouldPurge(api) && taskContext.isFirstPartial()) {
+            try {
+                taskContext.setStatusMessage("purging cache");
+                tileCache.deleteTiles(api.getData(), Optional.empty(), Optional.empty(), Optional.empty());
+                taskContext.setStatusMessage("purged cache successfully");
+            } catch (IOException | SQLException e) {
+                LOGGER.debug("{}: purging failed | {}", getLabel(), e.getMessage());
+            }
+        }
+
         List<TileFormatWithQuerySupportExtension> outputFormats = extensionRegistry.getExtensionsForType(TileFormatWithQuerySupportExtension.class);
 
         try {
@@ -184,10 +222,10 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
         Map<String, Map<String, MinMax>> seedingMap = getSeedingConfig(apiData);
 
-        long numberOfTiles = getNumberOfTiles2(api, outputFormats, seedingMap);
+        long numberOfTiles = getNumberOfTiles2(api, outputFormats, seedingMap, taskContext);
         final double[] currentTile = {0.0};
 
-        walkCollectionsAndTiles(api, outputFormats, seedingMap, (api1, collectionId, outputFormat, tileMatrixSet, level, row, col) -> {
+        walkCollectionsAndTiles(api, outputFormats, seedingMap, taskContext, (api1, collectionId, outputFormat, tileMatrixSet, level, row, col) -> {
             TilesConfiguration tilesConfiguration = getTilesConfiguration(apiData, collectionId).get();
             Tile tile = new ImmutableTile.Builder()
                     .collectionIds(ImmutableList.of(collectionId))
@@ -248,7 +286,11 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
             taskContext.setStatusMessage(String.format("currently processing -> %s, %s/%s/%s/%s, %s", collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension()));
 
-            queryHandler.handle(TilesQueriesHandler.Query.SINGLE_LAYER_TILE, queryInput, requestContext);
+            try {
+                queryHandler.handle(TilesQueriesHandler.Query.SINGLE_LAYER_TILE, queryInput, requestContext);
+            } catch (Throwable e) {
+                LOGGER.debug("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
+            }
 
             currentTile[0] += 1;
             taskContext.setCompleteness(currentTile[0] / numberOfTiles);
@@ -276,10 +318,10 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                                                                                    .filter(TileFormatWithQuerySupportExtension::canMultiLayer)
                                                                                    .collect(Collectors.toList());
 
-        long numberOfTiles = getNumberOfTiles(api, multiLayerFormats, multiLayerTilesSeeding);
+        long numberOfTiles = getNumberOfTiles(api, multiLayerFormats, multiLayerTilesSeeding, taskContext);
         final double[] currentTile = {0.0};
 
-        walkTiles(api, "multi-layer", multiLayerFormats, multiLayerTilesSeeding, (api1, layerName, outputFormat, tileMatrixSet, level, row, col) -> {
+        walkTiles(api, "multi-layer", multiLayerFormats, multiLayerTilesSeeding, taskContext, (api1, layerName, outputFormat, tileMatrixSet, level, row, col) -> {
             List<String> collectionIds = apiData.getCollections()
                                                 .values()
                                                 .stream()
@@ -390,7 +432,11 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
             taskContext.setStatusMessage(String.format("currently processing -> %s, %s/%s/%s/%s, %s", layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension()));
 
-            queryHandler.handle(TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
+            try {
+                queryHandler.handle(TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
+            } catch (Throwable e) {
+                LOGGER.debug("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
+            }
 
             currentTile[0] += 1;
             taskContext.setCompleteness(currentTile[0] / numberOfTiles);
@@ -422,11 +468,11 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         return minMaxMap;
     }
 
-    private long getNumberOfTiles2(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, Map<String, MinMax>> seeding) {
+    private long getNumberOfTiles2(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, Map<String, MinMax>> seeding, TaskContext taskContext) {
         final long[] numberOfTiles = {0};
 
         try {
-            walkCollectionsAndTiles(api, outputFormats, seeding, (ignore1, collectionId, ignore2, ignore3, ignore4, ignore5, ignore6) -> {
+            walkCollectionsAndTiles(api, outputFormats, seeding, taskContext, (ignore1, collectionId, ignore2, ignore3, ignore4, ignore5, ignore6) -> {
                 numberOfTiles[0]++;
                 return true;
             });
@@ -437,11 +483,11 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         return numberOfTiles[0];
     }
 
-    private long getNumberOfTiles(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, MinMax> seeding) {
+    private long getNumberOfTiles(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, MinMax> seeding, TaskContext taskContext) {
         final long[] numberOfTiles = {0};
 
         try {
-            walkTiles(api, "", outputFormats, seeding, (ignore1, collectionId, ignore2, ignore3, ignore4, ignore5, ignore6) -> {
+            walkTiles(api, "", outputFormats, seeding, taskContext, (ignore1, collectionId, ignore2, ignore3, ignore4, ignore5, ignore6) -> {
                 numberOfTiles[0]++;
                 return true;
             });
@@ -456,18 +502,18 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         boolean visit(OgcApi api, String collectionId, TileFormatWithQuerySupportExtension outputFormat, TileMatrixSet tileMatrixSet, int level, int row, int col) throws IOException;
     }
 
-    private void walkCollectionsAndTiles(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, Map<String, MinMax>> seeding, TileWalker tileWalker) throws IOException {
+    private void walkCollectionsAndTiles(OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, Map<String, MinMax>> seeding, TaskContext taskContext, TileWalker tileWalker) throws IOException {
         for (Map.Entry<String, Map<String, MinMax>> entry : seeding.entrySet()) {
             String collectionId = entry.getKey();
             Map<String, MinMax> seedingConfig = entry.getValue();
             Optional<TilesConfiguration> tilesConfiguration = getTilesConfiguration(api.getData(),collectionId);
             if (tilesConfiguration.isPresent()) {
-                walkTiles(api, collectionId, outputFormats, seedingConfig, tileWalker);
+                walkTiles(api, collectionId, outputFormats, seedingConfig, taskContext, tileWalker);
             }
         }
     }
 
-    private void walkTiles(OgcApi api, String collectionId, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, MinMax> seeding, TileWalker tileWalker) throws IOException {
+    private void walkTiles(OgcApi api, String collectionId, List<TileFormatWithQuerySupportExtension> outputFormats, Map<String, MinMax> seeding, TaskContext taskContext, TileWalker tileWalker) throws IOException {
         for (TileFormatWithQuerySupportExtension outputFormat : outputFormats) {
             for (Map.Entry<String, MinMax> entry : seeding.entrySet()) {
                 TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
@@ -479,6 +525,9 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
                     for (int row = limits.getMinTileRow(); row <= limits.getMaxTileRow(); row++) {
                         for (int col = limits.getMinTileCol(); col <= limits.getMaxTileCol(); col++) {
+                            if (taskContext.isPartial() && !taskContext.matchesPartialModulo(col)) {
+                                continue;
+                            }
                             boolean shouldContinue = tileWalker.visit(api, collectionId, outputFormat, tileMatrixSet, level, row, col);
                             if (!shouldContinue) {
                                 return;
