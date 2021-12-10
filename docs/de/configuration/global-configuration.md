@@ -10,6 +10,7 @@ Die Konfigurationsdatei `cfg.yml` befindet sich im Daten-Verzeichnis.
 |`logging` |object | |Konfiguration des [Logging](#logging)
 |`auth` |object | |Konfiguration der [Autorisierung](#auth)
 |`manager` |object | |Konfiguration des [Manager](#manager)
+|`backgroundTasks` |object | |Konfiguration von [Hintergrundprozessen](#background-tasks)
 
 <a name="store"></a>
 
@@ -308,3 +309,11 @@ logging:
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
 |`enabled` |boolean |`true` |Soll die Manager-App zur Verwaltung der Konfiguration aktiviert werden (siehe [Manager](README.md#manager))?
+
+<a name="background-tasks"></a>
+
+## Hintergrundprozesse
+
+|Eigenschaft |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`maxThreads` |integer |`1` |Die maximale Anzahl an Threads, die für Hintergrundprozesse zur Verfügung stehen. Falls zu jeder Zeit Requests performant beantwortet können werden sollen, sollte der Wert die Hälfte der CPU-Kerne nicht überschreiten.

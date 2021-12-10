@@ -39,6 +39,19 @@ Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann soll
 |`caching` |object |`{}` |Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
 |`style` |string |`DEFAULT` |Ein Style im Style-Repository, der standardmäßig in Karten mit den Tiles verwendet werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei `NONE` wird ein einfacher Style mit OpenStreetMap als Basiskarte verwendet. Der Style sollte alle Daten abdecken und muss im Format Mapbox Style verfügbar sein. Es wird zuerst nach einem Style mit dem Namen für die Feature Collection gesucht; falls keiner gefunden wird, wird nach einem Style mit dem Namen auf der API-Ebene gesucht. Wird kein Style gefunden, wird `NONE` verwendet.
 
+TODO: link from tileProvider.seedingOptions
+<a name="seeding-options"></a>
+
+### Optionen für das Seeding
+
+|Option |Data Type |Default |Description
+| --- | --- | --- | ---
+|`runOnStartup` |boolean |`true` |Steuert, ob das Seeding beim Start einer API ausgeführt wird.
+|`runPeriodic` |string |`null` |Ein Crontab-Pattern für die regelmäßige Ausführung des Seedings. Das Seeding wird stets nur einmal pro API zur gleichen Zeit ausgeführt, d.h. falls eine weitere Ausführung geplant ist, während die vorherige noch läuft, wird diese übersprungen.
+|`purge` |boolean |`false` |Steuert, ob der Cache vor dem Seeding bereinigt wird.
+|`maxThreads` |integer |`1` |Die maximale Anzahl an Threads, die für das Seeding verwendet werden darf. Die tatsächlich verwendete Zahl der Threads hängt davon ab, wie viele Threads für [Hintergrundprozesse](../../global-configuration.md#background-tasks) zur Verfügung stehen, wenn das Seeding startet. Wenn mehr als ein Thread erlaubt sein soll, ist zunächst zu prüfen, ob genügend Threads für [Hintergrundprozesse](../../global-configuration.md#background-tasks) konfiguriert sind. Es ist zu berücksichtigen, dass alle APIs um die vorhandenen Threads für [Hintergrundprozesse](../../global-configuration.md#background-tasks) konkurrieren.
+
+
 Beispiel für die Angaben in der Konfigurationsdatei für Gebäude:
 
 ```yaml
