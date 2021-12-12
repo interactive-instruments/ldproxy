@@ -34,6 +34,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Handle responses under '/collections/{collectionId}/tiles'.
@@ -84,8 +85,13 @@ public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSi
     public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext,
                                 @PathParam("collectionId") String collectionId) {
 
+        List<String> tileEncodings = api.getData()
+            .getExtension(TilesConfiguration.class, collectionId)
+            .map(TilesConfiguration::getTileEncodingsDerived)
+            .orElseThrow(() -> new IllegalStateException("No tile encoding available."));
         return super.getTileSets(api.getData(), requestContext,
-                                 "/collections/{collectionId}/tiles", collectionId, false);
+                                 "/collections/{collectionId}/tiles", collectionId,
+                                 false, tileEncodings);
     }
 
 }

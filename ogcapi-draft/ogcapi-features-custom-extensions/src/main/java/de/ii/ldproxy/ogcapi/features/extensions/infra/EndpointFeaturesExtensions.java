@@ -92,8 +92,9 @@ public class EndpointFeaturesExtensions extends EndpointSubCollection {
         return super.isEnabledForApi(apiData, collectionId) &&
             apiData.getCollections().get(collectionId).getEnabled() &&
             apiData.getExtension(FeaturesExtensionsConfiguration.class, collectionId)
-                .map(FeaturesExtensionsConfiguration::getIntersectsParameter)
-                .orElse(false);
+                .filter(ExtensionConfiguration::isEnabled)
+                .filter(FeaturesExtensionsConfiguration::getPostOnItems)
+                .isPresent();
     }
 
     @Override

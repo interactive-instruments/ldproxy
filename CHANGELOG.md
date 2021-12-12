@@ -1,5 +1,68 @@
 # Changelog
 
+## v3.1.0 (10/12/2021)
+
+#### Implemented enhancements
+
+-  query parameter "intersects" on "items" [#541](https://github.com/interactive-instruments/ldproxy/issues/541)
+-  support POST on "items" [#540](https://github.com/interactive-instruments/ldproxy/issues/540)
+-  add option to disable ST_ForcePolygonCCW() wrapper [#506](https://github.com/interactive-instruments/ldproxy/issues/506)
+-  add tile matrix sets for ETRS89/UTM32 [#505](https://github.com/interactive-instruments/ldproxy/issues/505)
+-  support self joins in the SQL feature provider [#503](https://github.com/interactive-instruments/ldproxy/issues/503)
+-  add support for JSON-FG [#499](https://github.com/interactive-instruments/ldproxy/issues/499)
+-  support for Maps (based on Vector Tiles and Styles) [#498](https://github.com/interactive-instruments/ldproxy/issues/498)
+-  DB connection pool per server and user [#497](https://github.com/interactive-instruments/ldproxy/issues/497)
+-  consolidate use of mapping libraries, use default style for all maps [#496](https://github.com/interactive-instruments/ldproxy/issues/496)
+-  support Cesium JS as map client in HTML feature view [#494](https://github.com/interactive-instruments/ldproxy/issues/494)
+-  support "now" as a temporal value in datetime/filter  [#481](https://github.com/interactive-instruments/ldproxy/issues/481)
+-  support caching headers / conditional GET requests [#475](https://github.com/interactive-instruments/ldproxy/issues/475)
+-  add option to disable the tile cache [#474](https://github.com/interactive-instruments/ldproxy/issues/474)
+-  Tiles: add support for other tile formats [#471](https://github.com/interactive-instruments/ldproxy/issues/471)
+-  add admin task to purge files from a tile cache [#469](https://github.com/interactive-instruments/ldproxy/issues/469)
+-  support mbtiles as an additional option for the tile cache [#467](https://github.com/interactive-instruments/ldproxy/issues/467)
+-  support GeoPackage and SQLite/SpatiaLite [#444](https://github.com/interactive-instruments/ldproxy/issues/444)
+-  align Styles implementation with latest draft [#440](https://github.com/interactive-instruments/ldproxy/issues/440)
+-  support for CQL array predicates [#431](https://github.com/interactive-instruments/ldproxy/issues/431)
+-  generalize tiles to support other providers [#193](https://github.com/interactive-instruments/ldproxy/issues/193)
+
+#### Improvements
+
+-  improve OpenAPI documentation of Part 3 filter parameters [#535](https://github.com/interactive-instruments/ldproxy/issues/535)
+-  add content-disposition headers [#513](https://github.com/interactive-instruments/ldproxy/issues/513)
+-  avoid external resources in HTML [#495](https://github.com/interactive-instruments/ldproxy/issues/495)
+-  support non-unique secondary sort keys [#488](https://github.com/interactive-instruments/ldproxy/issues/488)
+-  support date/datetime values as sort keys and in CQL comparison predicates [#480](https://github.com/interactive-instruments/ldproxy/issues/480)
+-  timestamps must conform to RFC 3339 [#472](https://github.com/interactive-instruments/ldproxy/issues/472)
+-  broken HTTP header = silent failure [#463](https://github.com/interactive-instruments/ldproxy/issues/463)
+-  align Tiles with the latest draft [#459](https://github.com/interactive-instruments/ldproxy/issues/459)
+-  WFS improvements and bugfixes [#457](https://github.com/interactive-instruments/ldproxy/issues/457)
+-  HTML: reactivate image URL handling [#455](https://github.com/interactive-instruments/ldproxy/issues/455)
+-  support envelopes that span the anti-meridian [#447](https://github.com/interactive-instruments/ldproxy/issues/447)
+-  HTML bbox filter editor improvements [#403](https://github.com/interactive-instruments/ldproxy/issues/403)
+-  Schema: distinguish Date and DateTime properties [#335](https://github.com/interactive-instruments/ldproxy/issues/335)
+-  queryables and datetime/bbox [#323](https://github.com/interactive-instruments/ldproxy/issues/323)
+-  optimize cache for empty tiles [#302](https://github.com/interactive-instruments/ldproxy/issues/302)
+-  add options for tile cache seeding [#278](https://github.com/interactive-instruments/ldproxy/issues/278)
+
+#### Fixed bugs
+
+-  set correct default CRS for 'crs', 'bbox-crs' and 'filter-crs' [#542](https://github.com/interactive-instruments/ldproxy/issues/542)
+-  various minor issues identified during testing [#539](https://github.com/interactive-instruments/ldproxy/issues/539)
+-  precision is not considered, if no other coordinate transformation is needed [#489](https://github.com/interactive-instruments/ldproxy/issues/489)
+-  HTML exceptions includes fail  [#484](https://github.com/interactive-instruments/ldproxy/issues/484)
+-  consider a filter on a provider type in the bbox computation [#465](https://github.com/interactive-instruments/ldproxy/issues/465)
+-  feature collections cannot be disabled [#452](https://github.com/interactive-instruments/ldproxy/issues/452)
+
+#### Dependency updates
+
+-  upgrade dropwizard from 1.3 to 2.0 [#427](https://github.com/interactive-instruments/ldproxy/issues/427)
+
+---
+
+## v3.1.0-beta.1 (28/10/2021)
+
+---
+
 ## v3.0.0 (07/05/2021)
 
 #### Implemented enhancements
@@ -12,7 +75,7 @@
 -  add support for OGC API Records [#369](https://github.com/interactive-instruments/ldproxy/issues/369)
 -  add support for JSON Schema draft-07 [#365](https://github.com/interactive-instruments/ldproxy/issues/365)
 -  support auto-reload of entity configurations [#267](https://github.com/interactive-instruments/ldproxy/issues/267)
--  support GeoPackage and SQLite/SpatiaLite [#444](https://github.com/interactive-instruments/ldproxy/issues/444)
+- support GeoPackage and SQLite/SpatiaLite [#444](https://github.com/interactive-instruments/ldproxy/issues/444)
 
 #### Improvements
 

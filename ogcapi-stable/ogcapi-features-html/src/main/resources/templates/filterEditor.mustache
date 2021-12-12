@@ -16,6 +16,12 @@
     {{#bbox}}
       spatial: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
     {{/bbox}}
+    {{#backgroundUrl}}
+      backgroundUrl: '{{{.}}}',
+    {{/backgroundUrl}}
+    {{#attribution}}
+      attribution: '{{{.}}}',
+    {{/attribution}}
   }
 </script>
 

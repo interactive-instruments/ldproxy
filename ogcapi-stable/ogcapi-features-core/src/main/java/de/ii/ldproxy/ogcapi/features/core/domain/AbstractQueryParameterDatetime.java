@@ -42,14 +42,13 @@ public abstract class AbstractQueryParameterDatetime extends ApiExtensionCache i
 
     @Override
     public String getDescription() {
-        return "Either a local date, a date-time with time zone, 'now' or an open or closed interval. Date and time expressions adhere to RFC 3339. \n"+
-                "Examples:\n\n" +
-                "* A date-time: '2018-02-12T23:20:50Z'\n" +
-                "* A closed interval: '2018-02-12T00:00:00Z/2018-03-18T12:31:12Z'\n" +
-                "* Open intervals: '2018-02-12T00:00:00Z/..' or '../2018-03-18T12:31:12Z'\n\n" +
-                "* Now: 'now'\n" +
-                "* An interval until now: '2018-02-12T00:00:00Z/now'\n" +
-                "Selects features that have a temporal property that intersects the value of the parameter.";
+        return "Either a date-time or an interval. Date and time expressions adhere to RFC 3339.\n" +
+            "Intervals may be bounded or half-bounded (double-dots at start or end).\n" +
+            "Examples:\n\n" +
+            "* A date-time: \"2018-02-12T23:20:50Z\"\n" +
+            "* A bounded interval: \"2018-02-12T00:00:00Z/2018-03-18T12:31:12Z\"\n" +
+            "* Half-bounded intervals: \"2018-02-12T00:00:00Z/..\" or \"../2018-03-18T12:31:12Z\"\n\n" +
+            "Only features that have a temporal property that intersects the value of `datetime` are selected.";
     }
 
     @Override

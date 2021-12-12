@@ -229,15 +229,16 @@ public class EndpointFeatures extends EndpointSubCollection {
         generateDefinition(apiData, definitionBuilder, allQueryParameters, "/items",
             "retrieve features in the feature collection '",
             "The response is a document consisting of features in the collection. " +
-                "The features included in the response are determined by the server based on the query parameters of the request. " +
+                "The features included in the response are determined by the server based on the query parameters of the request.\n\n" +
                 "To support access to larger collections without overloading the client, the API supports paged access with links " +
-                "to the next page, if more features are selected that the page size. The `bbox` and `datetime` parameter can be " +
+                "to the next page, if more features are selected that the page size.\n\nThe `bbox` and `datetime` parameter can be " +
                 "used to select only a subset of the features in the collection (the features that are in the bounding box or time interval). " +
                 "The `bbox` parameter matches all features in the collection that are not associated with a location, too. " +
                 "The `datetime` parameter matches all features in the collection that are not associated with a time stamp or interval, too. " +
                 "The `limit` parameter may be used to control the subset of the selected features that should be returned in the response, " +
                 "the page size. Each page may include information about the number of selected and returned features (`numberMatched` " +
-                "and `numberReturned`) as well as links to support paging (link relation `next`).",
+                "and `numberReturned`) as well as links to support paging (link relation `next`).\n\nSee the details of this operation for " +
+                "a description of additional query parameters supported by this resource.",
             "FEATURES", true);
 
         generateDefinition(apiData, definitionBuilder, allQueryParameters, "/items/{featureId}",
@@ -373,8 +374,10 @@ public class EndpointFeatures extends EndpointSubCollection {
                         return null;
                     }
                     String description = "Filter the collection by property '" + field + "'";
+                    if (Objects.nonNull(schema2.get().getTitle()) && !schema2.get().getTitle().isEmpty())
+                        description += " (" + schema2.get().getTitle() + ")";
                     if (Objects.nonNull(schema2.get().getDescription()) && !schema2.get().getDescription().isEmpty())
-                        description += ": " + schema2.get().getDescription() + ".";
+                        description += ": " + schema2.get().getDescription();
                     else
                         description += ".";
                     return new ImmutableQueryParameterTemplateQueryable.Builder()

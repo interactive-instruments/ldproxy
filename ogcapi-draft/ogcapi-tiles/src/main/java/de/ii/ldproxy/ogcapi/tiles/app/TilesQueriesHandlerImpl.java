@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTileSets;
@@ -70,6 +71,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayInputStream;
@@ -79,6 +81,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -162,6 +165,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         List<TileFormatExtension> tileFormats = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
             .stream()
             .filter(format -> collectionId.map(s -> format.isApplicable(apiData, s, definitionPath)).orElseGet(() -> format.isApplicable(apiData, definitionPath)))
+            // sort formats in the order specified in the configuration for consistency;
+            // the first one will always used in the HTML representation
+            .sorted(Comparator.comparing(format -> queryInput.getTileEncodings().indexOf(format.getMediaType().label())))
             .collect(Collectors.toUnmodifiableList());
 
         Optional<TileSet.DataType> dataType = tileFormats.stream()
@@ -211,7 +217,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         TileSets tileSets = builder.build();
 
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(tileSets, TileSets.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileSets, TileSets.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -267,7 +277,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                    crsTransformerFactory, limitsGenerator, providers, entityRegistry);
         
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(tileset, TileSet.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileset, TileSet.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -594,9 +608,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private Response getTileServerTileResponse(QueryInputTileTileServerTile queryInput, ApiRequestContext requestContext) {
 
         Tile tile = queryInput.getTile();
-        String collectionId = tile.getCollectionId();
 
-        final String urlTemplate = Objects.isNull(collectionId)
+        final String urlTemplate = tile.isDatasetTile()
             ? queryInput.getProvider().getUrlTemplate()
             : queryInput.getProvider().getUrlTemplateSingleCollection();
 
@@ -610,7 +623,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .resolveTemplate("tileRow", tile.getTileRow())
             .resolveTemplate("tileCol", tile.getTileCol())
             .resolveTemplate("fileExtension", mediaType.fileExtension());
-        if (Objects.nonNull(collectionId))
+        if (Objects.nonNull(tile.getCollectionId()))
             client = client.resolveTemplate("collectionId", tile.getCollectionId());
         Response response = client.request(mediaType.type()).get();
 
@@ -624,9 +637,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
-        InputStream stream = response.readEntity(InputStream.class);
+        byte[] content;
+        try {
+            content = response.readEntity(InputStream.class).readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not read map tile from TileServer.",e);
+        }
         Date lastModified = null;
-        EntityTag etag = getEtag(stream);
+        EntityTag etag = getEtag(content);
         Response.ResponseBuilder responseBuilder = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(responseBuilder))
             return responseBuilder.build();
@@ -640,7 +658,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                       null,
                                       true,
                                       String.format("%s_%d_%d_%d.%s", tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), tile.getOutputFormat().getMediaType().fileExtension()))
-            .entity(response.readEntity(InputStream.class))
+            .entity(content)
             .build();
     }
 

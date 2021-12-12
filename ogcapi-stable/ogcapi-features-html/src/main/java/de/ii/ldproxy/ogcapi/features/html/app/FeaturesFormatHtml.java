@@ -156,19 +156,6 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
                                                                   .filter(Objects::nonNull)
                                                                   .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        for (Map.Entry<String,FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
-            String collectionId = entry.getKey();
-            FeaturesHtmlConfiguration config = entry.getValue();
-            Optional<String> itemLabelFormat = config.getFeatureTitleTemplate();
-            if (itemLabelFormat.isPresent()) {
-                Pattern valuePattern = Pattern.compile("\\{\\{[\\w\\.]+( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
-                Matcher matcher = valuePattern.matcher(itemLabelFormat.get());
-                if (!matcher.find()) {
-                    builder.addWarnings(MessageFormat.format("The HTML Item Label Format ''{0}'' in collection ''{1}'' does not include a value pattern that can be replaced with a feature-specific value.", itemLabelFormat.get(), collectionId));
-                }
-            }
-        }
-
         Map<String, Collection<String>> keyMap = htmlConfigurationMap.entrySet()
                                                                       .stream()
                                                                       .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()

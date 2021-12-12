@@ -99,7 +99,7 @@ public abstract class Tile {
     @Value.Derived
     @Value.Auxiliary
     public String getCollectionId() {
-        return getCollectionIds().size()==1 ?
+        return !isDatasetTile() && getCollectionIds().size()==1 ?
                 getCollectionIds().get(0) :
                 null;
     }

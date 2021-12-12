@@ -94,6 +94,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
         Map<String, MinMax> getTileMatrixSetZoomLevels();
         String getPath();
         boolean getOnlyWebMercatorQuad();
+        List<String> getTileEncodings();
     }
 
     @Value.Immutable
