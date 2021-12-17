@@ -204,54 +204,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
 
     @Deprecated
     @Nullable
-    Integer getMaxPointPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxPointPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxPointPerTileDefault()) ?
-                getMaxPointPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxPointPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxLineStringPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxLineStringPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxLineStringPerTileDefault()) ?
-                getMaxLineStringPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxLineStringPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxPolygonPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxPolygonPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxPolygonPerTileDefault()) ?
-                getMaxPolygonPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxPolygonPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
     Boolean getIgnoreInvalidGeometries();
 
     @Value.Auxiliary

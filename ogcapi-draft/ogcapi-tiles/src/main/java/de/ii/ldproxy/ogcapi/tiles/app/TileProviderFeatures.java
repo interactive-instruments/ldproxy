@@ -74,15 +74,6 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract Integer getLimit();
 
     @Nullable
-    public abstract Integer getMaxPointPerTileDefault();
-
-    @Nullable
-    public abstract Integer getMaxLineStringPerTileDefault();
-
-    @Nullable
-    public abstract Integer getMaxPolygonPerTileDefault();
-
-    @Nullable
     public abstract Boolean getSingleCollectionEnabled();
 
     @Override
