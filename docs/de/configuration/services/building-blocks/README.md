@@ -2,9 +2,9 @@
 
 Die API-Funktionalität ist in Module, die sich an den OGC API Standards orientieren, aufgeteilt. Jedes Modul ist ein [OSGi](https://de.wikipedia.org/wiki/OSGi)-Bundle. Module können damit grundsätzlich zur Laufzeit hinzugefügt und wieder entfernt werden.
 
-Die ldproxy-Module werden nach der Stabilität der zugrundeliegenden Spezifikation unterschieden. Implementiert ein Modul einen verabschiedeten Standard oder einen Entwurf, der sich in der Schlußabstimmung befindet, wird es als "Stable" klassifiziert.
+Die ldproxy-Module werden nach der Stabilität der zugrundeliegenden Spezifikation unterschieden. Implementiert ein Modul einen verabschiedeten Standard oder einen Entwurf, der sich in der Schlussabstimmung befindet, wird es als "Stable" klassifiziert.
 
-Module, die Spezifikationsentwürfe implementieren, werden als "Draft" klassifiziert. Bei diesen Modulen gibt es i.d.R. noch Abweichungen vom erwarteten Verhalten oder von der in den aktuellen Entwürfen beschriebenen Spezifikation.
+Module, die Spezifikationsentwürfe oder eigene Erweiterungen implementieren, werden als "Draft" klassifiziert. Bei diesen Modulen gibt es i.d.R. noch Abweichungen vom erwarteten Verhalten oder von der in den aktuellen Entwürfen beschriebenen Spezifikation.
 
 Darüber hinaus sind weitere Module mit experimentellem Charakter als Community-Module verfügbar. Die Community-Module sind kein Bestandteil der ldproxy Docker-Container.
 
@@ -30,12 +30,15 @@ Grundsätzliche Regeln, die für alle API-Module gelten, finden Sie [hier](gener
 |[Coordinate Reference Systems](crs.md) |CRS |stable |Ja |Aktiviert die Unterstützung für Koordinatenreferenzsysteme neben dem Standardsystem CRS84.
 |[Collections Queryables](queryables.md) |QUERYABLES |draft |Nein |Aktiviert die Ressource "Queryables" für Feature Collections
 |[Collections Schema](schema.md) |SCHEMA |draft |Nein |Aktiviert die Ressource "Schema" für Feature Collections
+|[Features Custom Extensions](features-custom-extensions.md) |FEATURES_EXTENSIONS |draft |Nein |Erlaubt das Aktivieren von ldproxy-Erweiterungen für die Ressource "Features"
 |[Features GeoJSON-LD](geojson-ld.md) |GEO_JSON_LD |draft |Nein |Aktiviert JSON-LD-Erweiterungen in der GeoJSON-Ausgabe
 |[Features JSON-FG](json-fg.md) |JSON_FG |draft |Nein |Aktiviert die JSON-FG-Ausgabe für die Ressourcen "Features" und "Feature"
 |[Filter / CQL](filter.md) |FILTER |draft |Nein |Aktiviert die Angabe von CQL-Filtern für die Ressourcen "Features" und "Vector Tiles"
 |[Geometry Simplification](geometry-simplification.md) |GEOMETRY_SIMPLIFICATION |draft |Nein |Aktiviert die Option zur Vereinfachung von Geometrien nach Douglas-Peucker bei den Ressourcen "Features" und "Feature"
+|[Map Tiles](map-tiles.md) |MAP_TILES |draft |Nein |Aktiviert die Bereitstellung von aus Vector Tiles abgeleiteten Bitmap-Tiles, für den gesamten Datensatz und/oder einzelne Collections
 |[Projections](projections.md) |PROJECTIONS |draft |Nein |Aktiviert die Option zur Begrenzung der zurückgelieferten Feature-Eigenschaften bei den Ressourcen "Features", "Feature" und "Vector Tiles"
+|[Resources](resources.md) |RESOURCES |draft |Nein |Aktiviert die Unterstützung für die Bereitstellung und Verwaltung von zusätzlichen Ressourcen (vor allem für Kartensymbole, Sprites, usw. für das "Styles"-Modul)
 |[Sorting](sorting.md) |SORTING |draft |Nein |Aktiviert die Option zur Sortierung der zurückgelieferten Features bei der Ressource "Features"
-|[Styles](styles.md) |STYLES |draft |Nein |Aktiviert die Unterstützung für die Bereitstellung und Verwaltung von Styles (Mapbox Style oder SLD) und zugehöriger Ressourcen (Symbole, Sprites) in der API
+|[Styles](styles.md) |STYLES |draft |Nein |Aktiviert die Unterstützung für die Bereitstellung und Verwaltung von Styles (vor allem im Format Mapbox Style)
 |[Tiles](tiles.md) |TILES |draft |Nein |Aktiviert die Unterstützung für die Bereitstellung von Tiles im Format Mapbox Vector Tiles oder als Bitmaps für den gesamten Datensatz und/oder einzelne Collections
-|[Simple Transactions](transactional.md) |TRANSACTIONAL |draft |Nein |Aktiviert die Unterstützung für die Veränderung von Features unter Verwendung der Standardlogik der HTTP-Methoden POST/PUT/DELETE/PATCH
+|[Create/Replace/Update/Delete](transactional.md) |TRANSACTIONAL |draft |Nein |Aktiviert die Unterstützung für die Veränderung von Features unter Verwendung der Standardlogik der HTTP-Methoden POST/PUT/DELETE/PATCH

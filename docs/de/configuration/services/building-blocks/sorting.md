@@ -8,4 +8,4 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`sortables` |object |`{}` |Steuert, welche der Attribute in Queries für die Sortierung von Daten verwendet werden können. Erlaubt sind nur direkte Attribute (keine Attribute aus Arrays oder eingebetteten Objekten) der Datentypen `STRING`, `DATETIME`, `INTEGER` und `FLOAT`. Aktuell besteht die Einschränkung, dass alle verwendeten Attribute eindeutige Werte haben, siehe [Issue 488](https://github.com/interactive-instruments/ldproxy/issues/488).
+|`sortables` |object |`{}` |Steuert, welche der Attribute in Queries für die Sortierung von Daten verwendet werden können. Erlaubt sind nur direkte Attribute (keine Attribute aus Arrays oder eingebetteten Objekten) der Datentypen `STRING`, `DATETIME`, `INTEGER` und `FLOAT`.

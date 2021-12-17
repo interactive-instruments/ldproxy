@@ -27,6 +27,6 @@ Beispiel für die Angaben in der Konfigurationsdatei:
   - rel: describedby
     type: text/html
     title: Webseite mit weiteren Informationen
-    href: 'https://example.com/pfad/zu/dokument'
+    href: 'https://www.example.com/pfad/zu/dokument'
     hreflang: de
 ```

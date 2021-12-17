@@ -28,11 +28,12 @@ Beispiel für die Angaben in der Konfigurationsdatei:
   - rel: describedby
     type: text/html
     title: Webseite mit weiteren Informationen
-    href: 'https://example.com/pfad/zu/webseite'
+    href: 'https://www.example.com/pfad/zu/webseite'
     hreflang: de
   - rel: enclosure
     type: application/geopackage+sqlite3
     title: Download des Datensatzes als GeoPackage
-    href: 'https://example.com/pfad/zu/datei.gpkg'
+    href: 'https://www.example.com/pfad/zu/datei.gpkg'
     hreflang: de
+    length: 23517882
 ```

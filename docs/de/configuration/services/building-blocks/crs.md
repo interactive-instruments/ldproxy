@@ -4,13 +4,15 @@ Das Modul "CRS" kann für jede über ldproxy bereitgestellte API mit einem Featu
 
 Alle Koordinatentransformationen zwischen zwei Koordinatenreferenzsystemen erfolgen mit Geotools. Geotools entscheidet, welche Transformation verwendet wird, sofern mehrere verfügbar sind. Eine Konfigurationsmöglichkeit in ldproxy besteht nicht.
 
-Das Modul implementiert alle Vorgaben der Konformitätsklasse "Coordinate Reference System by Reference" von [OGC API - Features - Part 2: Coordinate Reference System by Reference 1.0.0-draft.1](http://docs.opengeospatial.org/DRAFTS/18-058.html).
+Das Modul implementiert alle Vorgaben der Konformitätsklasse "Coordinate Reference System by Reference" von [OGC API - Features - Part 2: Coordinate Reference System by Reference 1.0](http://www.opengis.net/doc/IS/ogcapi-features-2/1.0).
 
 In der Konfiguration können die folgenden Optionen gewählt werden:
 
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`additionalCrs` |object |`{}` |Steuert, welche weitere Koordinatenreferenzsysteme in einer API oder für eine Feature Collection unterstützt werden sollen.
+|`additionalCrs` |object |`{}` |Steuert, welche weitere Koordinatenreferenzsysteme in einer API oder für eine Feature Collection unterstützt werden sollen. Das native Koordinatenreferenzsystem der Daten und das Default-Koordinatenreferenzsystem der API sind automatisch aktiviert. Koordinatenreferenzsysteme werden über ihren EPSG-Code identifiziert (`code`). Zusätzlich ist in `forceAxisOrder` die Reihenfolge der Koordinatenachsen anzugeben (`NONE`: wie im Koordinatenreferenzsystem, `LON_LAT` oder `LAT_LON`: die Reihenfolge im Koordinatenreferenzsystem wird ignoriert und die angegebene Reihenfolge wird verwendet).
+
+Das Default-Koordinatenreferenzsystem `CRS84` entspricht `code: 4326, forceAxisOrder: LON_LAT`, `CRS84h` entspricht `code: 4979, forceAxisOrder: LON_LAT`.
 
 Beispiel für die Angaben in der Konfigurationsdatei:
 
@@ -24,3 +26,5 @@ Beispiel für die Angaben in der Konfigurationsdatei:
   - code: 4326
     forceAxisOrder: NONE
 ```
+
+Durch Angabe des Query-Parameters `crs` bei den Ressourcen "Features" und "Feature" können die Koordinaten in einem der konfigurierten Koordinatenreferenzsystemen angefordert werden.

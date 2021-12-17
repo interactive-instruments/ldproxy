@@ -18,7 +18,7 @@ Das Connection-Info-Objekt für SQL-Datenbanken wird wie folgt beschrieben:
 | --- | --- | --- | ---
 |`dialect` |enum |`PGIS` |`PGIS` für PostgreSQL/PostGIS, `GPKG` für GeoPackage oder SQLite/SpatiaLite.
 |`database` |string | |Der Name der Datenbank. Für `GPKG` der Pfad zur Datei, entweder absolut oder relativ zum [Daten-Verzeichnis](../../data-folder.md).
-|`host` |string | |Der Datenbankhost. Wird ein anderer Port als der Standardport verwendet, ist dieser durch einen Doppelpunkt getrennt anzugeben, z.B. `db:30305`. Nicht relevant für `GPKG`. 
+|`host` |string | |Der Datenbankhost. Wird ein anderer Port als der Standardport verwendet, ist dieser durch einen Doppelpunkt getrennt anzugeben, z.B. `db:30305`. Nicht relevant für `GPKG`.
 |`user` |string | |Der Benutzername. Nicht relevant für `GPKG`. 
 |`password` |string | |Das mit base64 kodierte Passwort des Benutzers. Nicht relevant für `GPKG`. 
 |`schemas` |array |`[]` |Die Namen der Schemas in der Datenbank, auf die zugegriffen werden soll. Nicht relevant für `GPKG`. 
@@ -28,8 +28,8 @@ Das Connection-Info-Objekt für SQL-Datenbanken wird wie folgt beschrieben:
 |`maxConnections` |integer |dynamic |*Deprecated* Siehe `pool.maxConnections`.
 |`minConnections` |integer |`maxConnections` |*Deprecated* Siehe `pool.minConnections`.
 |`maxThreads` |integer |dynamic |*Deprecated* Siehe `pool.maxConnections`.
-|`pathSyntax` |object |`{ 'defaultPrimaryKey': 'id', 'defaultSortKey': 'id' }` | *Deprecated* Siehe [SQL-Pfad-Defaults](#source-path-defaults). 
-|`computeNumberMatched` |boolean |`true` |*Deprecated* Siehe [Query-Generierung](#query-generation). 
+|`pathSyntax` |object |`{ 'defaultPrimaryKey': 'id', 'defaultSortKey': 'id' }` | *Deprecated* Siehe [SQL-Pfad-Defaults](#source-path-defaults).
+|`computeNumberMatched` |boolean |`true` |*Deprecated* Siehe [Query-Generierung](#query-generation).
 
 <a name="connection-pool"></a>
 
@@ -56,16 +56,6 @@ Defaults für die Pfad-Ausdrücke in `sourcePath`, siehe auch [SQL-Pfad-Syntax](
 |`sortKey` |string |`id` |Die Standard-Spalte die zur Sortierung von Reihen verwendet wird, wenn keine abweichende Spalte in `sourcePath` gesetzt wird. Es wird empfohlen, dass als Datentyp eine Ganzzahl verwendet wird.
 |`primaryKey` |string |`id` |Die Standard-Spalte die zur Analyse von Joins verwendet wird, wenn keine abweichende Spalte in `sourcePath` gesetzt wird.
 
-<a name="query-generation"></a>
-
-## Query-Generierung
-
-Optionen für die Query-Generierung.
-
-|Eigenschaft |Datentyp |Default |Beschreibung
-| --- | --- | --- | ---
-|`computeNumberMatched` |boolean |`true` |Steuert, ob bei Abfragen die Anzahl der selektierten Features berechnet und in `numberMatched` zurückgegeben werden soll oder ob dies aus Performancegründen unterbleiben soll. Bei großen Datensätzen empfiehlt es sich in der Regel, die Option zu deaktivieren.
-
 <a name="path-syntax"></a>
 
 ## SQL-Pfad-Syntax
@@ -85,3 +75,13 @@ Wenn z.B. in dem Beispiel oben nur Angaben zur Belegungskapazität selektiert we
 Ein vom Standard abweichender `sortKey` kann durch den Zusatz von `{sortKey=Spaltenname}` nach dem Tabellennamen angegeben werden.
 
 Ein vom Standard abweichender `primaryKey` kann durch den Zusatz von `{primaryKey=Spaltenname}` nach dem Tabellennamen angegeben werden.
+
+<a name="query-generation"></a>
+
+## Query-Generierung
+
+Optionen für die Query-Generierung in `queryGeneration`.
+
+|Eigenschaft |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`computeNumberMatched` |boolean |`true` |Steuert, ob bei Abfragen die Anzahl der selektierten Features berechnet und in `numberMatched` zurückgegeben werden soll oder ob dies aus Performancegründen unterbleiben soll. Bei großen Datensätzen empfiehlt es sich in der Regel, die Option zu deaktivieren.

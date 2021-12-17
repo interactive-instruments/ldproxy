@@ -12,13 +12,13 @@ Unterstützt werden derzeit die folgenden OGC-Standards bzw. aktuellen Entwürfe
 * [OGC API - Styles, Entwurf](https://docs.ogc.org/DRAFTS/20-009.html)
 * [Common Query Language (CQL2), Entwurf](https://docs.ogc.org/DRAFTS/21-0065.html)
 
-Die in ldproxy implementierte Funktionalität weicht bei Entwürfen aufgrund der dynamischen Entwicklung teilweise von der in den aktuellen Entwürfen beschriebenen Spezifikation ab.
+Die in ldproxy implementierte Funktionalität weicht bei Entwürfen aufgrund der dynamischen Entwicklung i.d.R. von der in den aktuellen Entwürfen beschriebenen Spezifikation ab.
 
 Zusätzlich werden verschiedene Erweiterungen, für die noch keine offiziellen Entwürfe vorliegen, unterstützt.
 
 ldproxy ist als [OGC-Referenzimplementierung für "OGC API - Features - Part 1: Core" und "OGC API - Features - Part 2: Coordinate Reference Systems by Reference" zertifiziert](http://www.ogc.org/resource/products/details/?pid=1705).
 
-<img src='https://portal.ogc.org/public_ogc/compliance/Certified_OGC_Compliant_Logo_Web.gif' alt='Certified OGC Compliant Logo' height='74' style='padding:0;margin:0;border:0;'/>
+<img src='https://cite.opengeospatial.org/teamengine/site/certification-logo.gif' alt='Certified OGC Compliant Logo' height='74' style='padding:0;margin:0;border:0;'/>
 
 ## Formate
 
@@ -34,13 +34,13 @@ ldproxy unterstützt die folgenden Formate, die von verschiedenen Tools und Bibl
   * [GeoJSON](http://tools.ietf.org/rfc/rfc7946.txt)
   * [JSON-FG](https://github.com/opengeospatial/ogc-feat-geo-json)
   * HTML
-  * [GML Simple Features Profile] (http://portal.opengeospatial.org/files/?artifact_id=42729) (nur für WFS-Feature-Provider)
+  * [GML Simple Features Profile](http://portal.opengeospatial.org/files/?artifact_id=42729) (nur für WFS-Feature-Provider)
 * Tiles
   * [Mapbox Vector Tiles 2.1](https://github.com/mapbox/vector-tile-spec/tree/master/2.1)
-  * PNG (nur für MBTiles-Tile-Provider)
-  * JPEG (nur für MBTiles-Tile-Provider)
+  * PNG (nur für MBTiles-Tile-Provider oder Map Tiles)
+  * JPEG (nur für MBTiles-Tile-Provider oder Map Tiles)
   * TIFF (nur für MBTiles-Tile-Provider)
-  * WebP (nur für MBTiles-Tile-Provider)
+  * WebP (nur für MBTiles-Tile-Provider oder Map Tiles)
 * Tileset-Beschreibungen
   * [TileJSON](https://github.com/mapbox/tilejson-spec)
 * Styles
@@ -67,7 +67,8 @@ Es werden drei Arten von Feature-Providern unterstützt:
 
 Alle Tiles in ldproxy werden über Tile-Provider bereitgestellt.
 
-Es werden zwei Arten von Tile-Providern unterstützt:
+Es werden drei Arten von Tile-Providern unterstützt:
 
 * Features, die von derselben API bereitgestellt werden
 * MBTiles
+* TileServer GL (nur für Map Tiles)

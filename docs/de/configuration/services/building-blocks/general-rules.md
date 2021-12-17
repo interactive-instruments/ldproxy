@@ -29,7 +29,7 @@ Alle Pfadangaben in dieser Dokumentation sind relativ zur Basis-URI des Deployme
 
 ## Transformationen
 
-In den API-Modulen, die Features verarbeiten ([Core](features-core.md), [GeoJSON](geojson.md), [JSON-FG](json-fg.md), [HTML](features-html.md), [Tiles](tiles.md)), können die Feature-Eigenschaften über Transformationen an die Anforderungen der Ausgabe angepasst werden.
+In den API-Modulen, die Features verarbeiten ([Core](features-core.md), [GeoJSON](geojson.md), [JSON-FG](json-fg.md), [HTML](features-html.md), [Tiles](tiles.md) mit dem Features-Tile-Provider), können die Feature-Eigenschaften über Transformationen an die Anforderungen der Ausgabe angepasst werden.
 
 Die Transformation der Werte erfolgt bei der Aufbereitung der Daten für die Rückgabe über die API. Die Datenhaltung selbst bleibt unverändert.
 

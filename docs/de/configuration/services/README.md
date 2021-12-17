@@ -16,7 +16,7 @@ Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/REA
 |`serviceType` |enum | |Stets `OGC_API`.
 |`enabled` |boolean |`true` |Steuert, ob die API mit dem Start von ldproxy aktiviert wird.
 |`shouldStart` |boolean |`true` |*Deprecated* Siehe `enabled`
-|`metadata` |object |`{}` |Über dieses Objekt können grundlegende Metadaten zur API (Version, Kontaktdaten, Lizenzinformationen) festgelegt werden. Erlaubt sind die folgenden Elemente (in Klammern werden die Ressourcen genannt, in denen die Angabe verwendet wird): `version` (API-Definition), `contactName` (API-Definition, HTML-Landing-Page), `contactUrl` (API-Definition, HTML-Landing-Page), `contactEmail` (API-Definition, HTML-Landing-Page), `contactPhone` (HTML-Landing-Page), `licenseName` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection), `licenseUrl` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection),  `keywords` (meta tags and schema:Dataset in HTML-Landing-Page), `attribution` (Landing-Page), `creatorName` (schema:Dataset in HTML), `creatorUrl` (schema:Dataset in HTML), `creatorLogoUrl` (schema:Dataset in HTML), `publisherName` (schema:Dataset in HTML), `publisherUrl` (schema:Dataset in HTML), `publisherLogoUrl` (schema:Dataset in HTML). Alle Angaben sind Strings, bis auf die Keywords, die als Array von Strings angegeben werden.
+|`metadata` |object |`{}` |Über dieses Objekt können grundlegende Metadaten zur API (Version, Kontaktdaten, Lizenzinformationen) festgelegt werden. Erlaubt sind die folgenden Elemente (in Klammern werden die Ressourcen genannt, in denen die Angabe verwendet wird): `version` (API-Definition), `contactName` (API-Definition, HTML-Landing-Page), `contactUrl` (API-Definition, HTML-Landing-Page), `contactEmail` (API-Definition, HTML-Landing-Page), `contactPhone` (HTML-Landing-Page), `licenseName` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection), `licenseUrl` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection),  `keywords` (Meta-Tags und schema:Dataset in HTML-Landing-Page), `attribution` (Landing-Page, Karten), `creatorName` (schema:Dataset in HTML), `creatorUrl` (schema:Dataset in HTML), `creatorLogoUrl` (schema:Dataset in HTML), `publisherName` (schema:Dataset in HTML), `publisherUrl` (schema:Dataset in HTML), `publisherLogoUrl` (schema:Dataset in HTML). Alle Angaben sind Strings, bis auf die Keywords, die als Array von Strings angegeben werden.
 |`tags` |array |`null` |Ordnet der API die aufgelisteten Tags zu. Die Tags müssen jeweils Strings ohne Leerzeichen sein. Die Tags werden im API-Katalog angezeigt und können über den Query-Parameter `tags` zur Filterung der in der API-Katalog-Antwort zurückgelieferten APIs verwendet werden, z.B. `tags=INSPIRE`.<br>_seit Version 2.1_
 |`externalDocs` |object |`{}` |Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der API verlinkt wird. Anzugeben sind die Eigenschaften `url` und `description`.
 |`defaultExtent` |object |`{'spatialComputed': true, 'temporalComputed': true}` |Es kann ein Standardwert für die räumliche (`spatial`) und/oder zeitliche (`temporal`) Ausdehnung der Daten angeben werden, die bei den Objektarten verwendet wird, wenn dort keine anderslautende Ausdehnung spezifiziert wird. Für die räumliche Ausdehnung sind die folgenden Eigenschaften anzugeben (alle Angaben in `CRS84`): `xmin`, `ymin`, `xmax`, `ymax`. Für die zeitliche Ausdehnung sind die folgenden Eigenschaften anzugeben (alle Angaben in Millisekunden seit dem 1.1.1970): `start`, `end`. Soll die räumliche Ausdehnung aus den Daten einer Objektart standardmäßig automatisch beim Start von ldproxy ermittelt werden, kann `spatialComputed` mit dem Wert `true` angegeben werden. Soll die zeitliche Ausdehnung aus den Daten einer Objektart standardmäßig automatisch beim Start von ldproxy ermittelt werden, kann `temporalComputed` mit dem Wert `true` angegeben werden. Bei großen Datenmengen verzögern diese Optionen allerdings die Zeitdauer, bis die API verfügbar ist. Hinweis: Es handelt sich hierbei nicht um die Ausdehnung des Datensatzes insgesamt, dieser wird stets automatisch aus den Ausdehnungen der einzelnen Objektarten ermittelt.
@@ -54,6 +54,8 @@ Ein Array dieser Modul-Konfigurationen steht auf der Ebene der gesamten API und 
 
 ## Eine API-Beispielkonfiguration
 
+TODO: Beispiel überarbeiten, auch in den einzelnen API-Modulen.
+
 ```yaml
 id: kita
 createdAt: 1598603585258
@@ -66,14 +68,14 @@ secured: false
 serviceType: OGC_API
 apiVersion: 1
 externalDocs:
-  url: "https://example.com/pfad/zum/dokument"
+  url: "https://www.example.com/pfad/zum/dokument"
   description: Weitere Informationen zu den Kita-Daten
-defaultExtent:
-  spatial:
-    xmin: 5.8663153
-    ymin: 47.2701114
-    xmax: 15.0419319
-    ymax: 55.099161
+metadata:
+  contactName: Erika Mustermann
+  contactEmail: mail@example.com
+  licenseName: Datenlizenz Deutschland - Namensnennung - Version 2.0
+  licenseUrl: https://www.govdata.de/dl-de/by-2-0
+  attribution: '&copy; Erika Mustermann, 2021'
 metadata:
   keywords:
   - Kinderbetreuung
@@ -90,12 +92,12 @@ api:
   - rel: describedby
     type: application/xml
     title: INSPIRE-Metadaten zum Datensatz
-    href: 'https://example.org/pfad/zu/metadaten'
+    href: 'https://www.example.com/pfad/zu/metadaten'
     hreflang: de
   - rel: enclosure
     type: text/csv
     title: Download der Daten als CSV
-    href: 'https://example.org/pfad/zu/datei.csv'
+    href: 'https://www.example.com/pfad/zu/datei.csv'
     hreflang: de
 collections:
   governmentalservice:
@@ -120,18 +122,18 @@ collections:
         - occupancy.numberOfOccupants
       transformations:
         pointOfContact.telephoneVoice:
-          null: 'bitte ausf(ue|ü)llen'
-        occupancy[].anzahl:
-          null: '0'
+          nullify: 'bitte ausf(ue|ü)llen'
+        occupancy.anzahl:
+          nullify: '0'
         inspireId:
           stringFormat: 'https://example.com/id/soziales/kindergarten/{{value}}'
     - buildingBlock: FEATURES_HTML
       itemLabelFormat: '{{name}}'
       transformations:
         geometry:
-          remove: OVERVIEW
-        occupancy[].typeOfOccupant:
-          remove: OVERVIEW
-        occupancy[].numberOfOccupants:
-          remove: OVERVIEW
+          remove: IN_COLLECTION
+        occupancy.typeOfOccupant:
+          remove: IN_COLLECTION
+        occupancy.numberOfOccupants:
+          remove: IN_COLLECTION
 ```

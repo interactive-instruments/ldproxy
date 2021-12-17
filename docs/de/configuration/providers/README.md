@@ -17,7 +17,7 @@ Jeder Feature-Provider wird in einer Konfigurationsdatei in einem Objekt mit den
 |`typeValidation` |enum |`NONE` |Steuert ob die Spezifikationen der Objektarten daraufhin geprüft werden, ob sie zur Datenquelle passen (nur für SQL). `NONE` heißt keine Prüfung. Bei `LAX` schlägt die Prüfung fehl und der Start des Providers wird verhindert, wenn Probleme festgestellt werden, die in jedem Fall zu Laufzeitfehlern führen würden. Probleme die abhängig von den tatsächlichen Daten zu Laufzeitfehlern führen könnten, werden als Warnung geloggt. Bei `STRICT` führen alle festgestellten Probleme zu einem Fehlstart. Der Provider wird also nur gestartet, wenn keine Risiken für Laufzeitfehler im Zusammenhang mit der Datenquelle identifiziert werden.
 |`auto` |boolean |`false` |Steuert, ob die Informationen zu `types` beim Start automatisch aus der Datenquelle bestimmt werden sollen (Auto-Modus). In diesem Fall sollte `types` nicht angegeben sein.
 |`autoPersist` |boolean |`false` |Steuert, ob die im Auto-Modus (`auto: true`) bestimmten Schemainformationen in die Konfigurationsdatei übernommen werden sollen. In diesem Fall werden `auto` und `autoPersist` beim nächsten Start automatisch aus der Datei entfernt. Liegt die Konfigurationsdatei in einem anderen Verzeichnis als unter `store/entities/providers` (siehe `additionalLocations`), so wird eine neue Datei in `store/entities/providers` erstellt. `autoPersist: true` setzt voraus, dass `store` sich nicht im `READ_ONLY`-Modus befindet.
-|`autoTypes` |boolean |`[]` |Liste von Quelltypen, die für  die Ableitung der `types` Definitionen im Auto-Modus berücksichtigt werden sollen. Funktioniert aktuell nur für [SQL](sql.md).
+|`autoTypes` |boolean |`[]` |Liste von Quelltypen, die für die Ableitung der `types` Definitionen im Auto-Modus berücksichtigt werden sollen. Funktioniert aktuell nur für [SQL](sql.md).
 
 <a name="feature-provider-types"></a>
 
@@ -33,10 +33,11 @@ Das Types-Objekt hat für jede Objektart einen Eintrag mit dem Identifikator der
 |`label` |string | |Eine Bezeichnung des Schemaobjekts, z.B. für die Angabe in der HTML-Ausgabe.
 |`description` |string | |Eine Beschreibung des Schemaobjekts, z.B. für die HTML-Ausgabe oder das JSON-Schema.
 |`properties` |object | |Nur bei `OBJECT` und `OBJECT_ARRAY`. Ein Objekt mit einer Eigenschaft pro Objekteigenschaft. Der Schüssel ist der Name der Objekteigenschaft, der Wert das Schema-Objekt zu der Objekteigenschaft.
-|`role` |enum |`null` |`ID` ist bei der Eigenschaft eines Objekts anzugeben, die für die `featureId` in der API zu verwenden ist. Diese Eigenschaft ist typischerweise die erste Eigenschaft im `properties`-Objekt. Erlaubte Zeichen in diesen Eigenschaften sind alle Zeichen bis auf das Leerzeichen (" ") und der Querstrich ("/"). `TYPE` ist bei der Eigenschaft eines Objekts anzugeben, die den Namen des Objekttyps enthält.
+|`role` |enum |`null` |Kennzeichnet besondere Bedeutungen der Eigenschaft.<ul><li><code>ID</code> ist bei der Eigenschaft eines Objekts anzugeben, die für die <code>featureId</code> in der API zu verwenden ist. Diese Eigenschaft ist typischerweise die erste Eigenschaft im <code>properties</code>-Objekt. Erlaubte Zeichen in diesen Eigenschaften sind alle Zeichen bis auf das Leerzeichen (" ") und der Querstrich ("/").</li><li><code>TYPE</code> ist optional bei der Eigenschaft eines Objekts anzugeben, die den Namen einer Unterobjektart enthält.</li><li>Hat eine Objektart mehrere Geometrieeigenschaften, dann ist <code>PRIMARY_GEOMETRY</code> bei der Eigenschaft anzugeben, die für <code>bbox</code>-Abfragen verwendet werden soll und die in GeoJSON in <code>geometry</code> oder in JSON-FG in <code>where</code> kodiert werden soll.</li><li>Hat eine Objektart mehrere zeitliche Eigenschaften, dann sollte <code>PRIMARY_INSTANT</code> bei der Eigenschaft angegeben werden, die für <code>datetime</code>-Abfragen verwendet werden soll, sofern ein Zeitpunkt die zeitliche Ausdehnung der Features beschreibt.</li><li>Ist die zeitliche Ausdehnung hingegen ein Zeitintervall, dann sind <code>PRIMARY_INTERVAL_START</code> und <code>PRIMARY_INTERVAL_END</code> bei den jeweiligen zeitlichen Eigenschaften anzugeben.</li></ul>
 |`objectType` |string | |Optional kann ein Name für den Typ spezifiziert werden. Der Name hat i.d.R. nur informativen Charakter und wird z.B. bei der Erzeugung von JSON-Schemas verwendet. Bei Eigenschaften, die als Web-Links nach RFC 8288 abgebildet werden sollen, ist immer "Link" anzugeben.
 |`geometryType` |enum | |Mit der Angabe kann der Geometrietype spezifiziert werden. Die Angabe ist nur bei Geometrieeigenschaften (`type: GEOMETRY`) relevant. Erlaubt sind die Simple-Feature-Geometrietypen, d.h. `POINT`, `MULTI_POINT`, `LINE_STRING`, `MULTI_LINE_STRING`, `POLYGON`, `MULTI_POLYGON`, `GEOMETRY_COLLECTION` und `ANY`.
-|`forcePolygonCCW` |boolean |`true` |Option zur Deaktivierung des Erzwingens der Orientierung von Polygonen, gegen den Uhrzeigersinn für äußere Ringe und mit dem Urzeigersinn für innere Ringe (nur für SQL).
+|`forcePolygonCCW` |boolean |`true` |Option zum Erzwingen der Orientierung von Polygonen, gegen den Uhrzeigersinn für äußere Ringe und mit dem Uhrzeigersinn für innere Ringe (nur für SQL).
+|`constraints` |object |`{}` |Optionale Beschreibung von Schema-Einschränkungen, vor allem für die Erzeugung von JSON-Schemas. Siehe [Constraints](constraints.md).
 |`transformations` |object |`{}` |Optionale Transformationen für die Eigenschaft, siehe [Transformationen](transformations.md).
 
 ## Die ConnectionInfo-Objekte
@@ -44,6 +45,8 @@ Das Types-Objekt hat für jede Objektart einen Eintrag mit dem Identifikator der
 Informationen zu den Datenquellen finden Sie auf separaten Seiten: [SQL](sql.md#connection-info) und [WFS](wfs.md#connection-info).
 
 ## Eine Feature-Provider-Beispielkonfiguration (SQL)
+
+TODO: Transformationen und Constraints ergänzen.
 
 ```yaml
 id: kita
@@ -57,14 +60,13 @@ connectionInfo:
   host: db
   database: kita
   user: postgres
-  password: cGxlYXNlY2hhbmdlbWUK
+  password: <base64-kodiertes-Passwort>
   dialect: PGIS
+sourcePathDefaults:
+  primaryKey: oid
+  sortKey: oid
+queryGeneration:
   computeNumberMatched: true
-  pathSyntax:
-    defaultPrimaryKey: oid
-    defaultSortKey: oid
-  schemas:
-  - public
 nativeCrs:
   code: 25832
   forceAxisOrder: NONE
@@ -81,10 +83,6 @@ types:
         role: ID
         label: Fachidentifikator
         description: Beschreibender eindeutiger Identifikator für Geo-Objekte in einem bestimmten Datenthema.
-      oid:
-        sourcePath: oid
-        type: INTEGER
-        label: Interner Identifikator
       inspireId:
         sourcePath: kitaid
         type: STRING
@@ -166,4 +164,5 @@ types:
         type: GEOMETRY
         geometryType: POINT
         label: Geometrie
+        role: PRIMARY_GEOMETRY
 ```
