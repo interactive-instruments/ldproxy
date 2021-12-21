@@ -1,6 +1,8 @@
 # Codelisten
 
-Codelisten können zum Übersetzen von Eigenschaftswerten in einen anderen Wert genutzt werden, meist für die HTML-Ausgabe. Die Codelisten liegen als YAML-Dateien im ldproxy-Datenverzeichnis unter dem relativen Pfad `store/entities/codelists/{codelistId}.yml`.
+Codelisten können zum Übersetzen von Eigenschaftswerten in einen anderen Wert genutzt werden, meist für die HTML-Ausgabe.
+
+## Konfiguration
 
 Die nachfolgende Tabelle beschreibt die Struktur der Codelisten-Dateien.
 
@@ -14,7 +16,9 @@ Die nachfolgende Tabelle beschreibt die Struktur der Codelisten-Dateien.
 
 Bei den Zielwerten in `entries` und bei `fallback` können auch [`stringFormat`-Transformationen](../providers/transformations.md) genutzt werden. Ist der transformierte Wert für die HTML-Ausgabe gedacht, dann kann auch Markdown-Markup verwendet werden, dieser wird bei der HTML-Ausgabe aufbereitet.
 
-Ein Beispiel, basierend auf der INSPIRE-Codelist [EnvironmentalDomain](https://inspire.ec.europa.eu/codeList/EnvironmentalDomain), der Werte wie "soil" auf das deutschsprachige Label in der INSPIRE-Codelist-Registry abbildet:
+### Beispiel
+
+Basierend auf der INSPIRE-Codelist [EnvironmentalDomain](https://inspire.ec.europa.eu/codeList/EnvironmentalDomain) werden Werte wie "soil" auf das deutschsprachige Label in der INSPIRE-Codelist-Registry abgebildet:
 
 ```yaml
 ---
@@ -34,3 +38,7 @@ entries:
   waste: Abfall
   water: Wasser
 ```
+
+## Speicherung
+
+Die Codelisten liegen als YAML-Dateien im ldproxy-Datenverzeichnis unter dem relativen Pfad `store/entities/codelists/{codelistId}.yml`.

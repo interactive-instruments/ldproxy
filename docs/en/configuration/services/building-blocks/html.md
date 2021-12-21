@@ -13,8 +13,8 @@ The module *HTML* may be enabled for every API. It is enabled by default. Provid
 |`legalUrl` |string |"" |URL for optional legal notice link on every site.
 |`privacyName` |string |"Privacy notice" |Label for optional privacy notice link on every site.
 |`privacyUrl` |string |"" |URL for optional privacy notice link on every site.
-|`mapBackgroundUrl` |string |"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" |URL template for background map tiles.
-|`mapAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |Source attribution for background map.
+|`basemapUrl` |string |"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" |URL template for background map tiles.
+|`basemapAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |Source attribution for background map.
 |`leafletUrl` |string |"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" |*Deprecated* See `mapBackgroundUrl`.
 |`leafletAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |*Deprecated* See `mapAttribution`.
 |`openLayersUrl` |string |"https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png" |*Deprecated* See `mapBackgroundUrl`.
@@ -33,10 +33,8 @@ The module *HTML* may be enabled for every API. It is enabled by default. Provid
   legalUrl: 'https://example.org/impressum/'
   privacyName: Datenschutzerklärung
   privacyUrl: 'https://example.org/datenschutzerklarung/'
-  mapBackgroundUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  mapAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
-    f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
-    class="link0" target="_new">Datenquellen</a>'
+  basemapUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
+  basemapAttribution: '&copy; <a href="https://www.bkg.bund.de" target="_new">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf" target="_new">Datenquellen</a>'
   footerText: 'Warnung: Bei den APIs auf diesem Server handelt es sich um Test-APIs während der Entwicklung.'
 ```
 

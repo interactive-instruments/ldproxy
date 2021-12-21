@@ -56,17 +56,6 @@ Defaults for the path expressions in `sourcePath`, also see [Source Path Syntax]
 |`sortKey` |string |`id` |The default column that is used to sort rows if no differing sort key is set in the [sourcePath](#path-syntax).
 |`primaryKey` |string |`id` |The default column that is used for join analysis if no differing primary key is set in the [sourcePath](#path-syntax).
 
-<a name="query-generation"></a>
-
-## Query Generation
-
-Options for query generation.
-
-|Option |Data Type |Default |Description
-| --- | --- | --- | ---
-|`computeNumberMatched` |boolean |`true` |Option to disable computation of the number of selected features for performance reasons that are returned in `numberMatched`. As a general rule this should be disabled for big datasets.
-
-
 <a name="path-syntax"></a>
 
 ## Source Path Syntax
@@ -86,3 +75,13 @@ To select capacity information only when the value is not NULL and greater than 
 A non-default sort key can be set by adding `{sortKey=columnName}` after the table name.
 
 A non-default primary key can be set by adding `{primaryKey=columnName}` after the table name.
+
+<a name="query-generation"></a>
+
+## Query Generation
+
+Options for query generation.
+
+|Option |Data Type |Default |Description
+| --- | --- | --- | ---
+|`computeNumberMatched` |boolean |`true` |Option to disable computation of the number of selected features for performance reasons that are returned in `numberMatched`. As a general rule this should be disabled for big datasets.

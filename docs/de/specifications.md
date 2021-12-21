@@ -39,8 +39,8 @@ ldproxy unterstützt die folgenden Formate, die von verschiedenen Tools und Bibl
   * [Mapbox Vector Tiles 2.1](https://github.com/mapbox/vector-tile-spec/tree/master/2.1)
   * PNG (nur für MBTiles-Tile-Provider oder Map Tiles)
   * JPEG (nur für MBTiles-Tile-Provider oder Map Tiles)
-  * TIFF (nur für MBTiles-Tile-Provider)
   * WebP (nur für MBTiles-Tile-Provider oder Map Tiles)
+  * TIFF (nur für MBTiles-Tile-Provider)
 * Tileset-Beschreibungen
   * [TileJSON](https://github.com/mapbox/tilejson-spec)
 * Styles
@@ -59,7 +59,6 @@ Es werden drei Arten von Feature-Providern unterstützt:
 * PostgreSQL-Datenbanken ab Version 9.6 mit PostGIS ab Version 2.4
   * Alle Tabellen eines Providers müssen in einer Datenbank und in einem Schema liegen. Jede Tabelle, außer Zwischentabellen, muss eine eindeutige Identifikator-Spalte besitzen (Primary Key bzw. mit Unique Index). Es wird empfohlen, Integer für die Identifikatoren zu verwenden.
 * GeoPackage
-  * Alle Tabellen eines Providers müssen in einer Datenbank und in einem Schema liegen. Jede Tabelle, außer Zwischentabellen, muss eine eindeutige Identifikator-Spalte besitzen (Primary Key bzw. mit Unique Index). Es wird empfohlen, Integer für die Identifikatoren zu verwenden.
 * OGC Web Feature Services (WFS)
   * Damit ein WFS angebunden werden kann, sollte er beim Datenzugriff über die GetFeature-Operation Paging über die Query-Parameter `COUNT` und `STARTINDEX` unterstützen.
 
