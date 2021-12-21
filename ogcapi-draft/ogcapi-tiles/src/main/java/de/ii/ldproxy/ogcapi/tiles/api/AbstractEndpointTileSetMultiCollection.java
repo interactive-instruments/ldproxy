@@ -98,8 +98,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
 
     protected Response getTileSet(OgcApiDataV2 apiData, ApiRequestContext requestContext, String definitionPath, String tileMatrixSetId) {
 
-        String path = "/tiles/{tileMatrixSetId}";
-        checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
+        checkPathParameter(extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
         TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
         TilesQueriesHandler.QueryInputTileSet queryInput = new ImmutableQueryInputTileSet.Builder()
