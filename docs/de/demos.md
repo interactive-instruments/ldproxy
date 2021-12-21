@@ -7,5 +7,7 @@ Die folgenden Links verweisen auf Landing Pages von öffentlich zugänglichen De
 * [OS Open Zoomstack, Großbritannien](https://demo.ldproxy.net/zoomstack)
 * [Satellitenbilder in niedriger Auflösung (OpenMapTiles-Preview)](https://demo.ldproxy.net/openmaptiles)
 * [Enumerationen und Codelisten der GeoInfoDok NEU](https://demo.ldproxy.net/geoinfodok)
+* [Straßennetz und Unfälle in NRW](https://demo.ldproxy.net/strassen)
+* [CShapes: Historische Ländergrenzen](https://demo.ldproxy.net/cshapes)
 
 Eine Schritt-für-Schritt-Beschreibung für die Einrichtung der Weinlagen-API finden Sie [hier](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/README.md).

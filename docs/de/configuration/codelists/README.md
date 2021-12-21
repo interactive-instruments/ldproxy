@@ -14,7 +14,7 @@ Die nachfolgende Tabelle beschreibt die Struktur der Codelisten-Dateien.
 
 Bei den Zielwerten in `entries` und bei `fallback` können auch [`stringFormat`-Transformationen](../providers/transformations.md) genutzt werden. Ist der transformierte Wert für die HTML-Ausgabe gedacht, dann kann auch Markdown-Markup verwendet werden, dieser wird bei der HTML-Ausgabe aufbereitet.
 
-Ein Beispiel, basierend auf der INSPIRE-Codelist [EnvironmentalDomain](https://inspire.ec.europa.eu/codeList/EnvironmentalDomain), der Werte wie "soil" auf einen Markdown-Link in die INSPIRE-Codelist-Registry abbildet:
+Ein Beispiel, basierend auf der INSPIRE-Codelist [EnvironmentalDomain](https://inspire.ec.europa.eu/codeList/EnvironmentalDomain), der Werte wie "soil" auf das deutschsprachige Label in der INSPIRE-Codelist-Registry abbildet:
 
 ```yaml
 ---
@@ -22,16 +22,15 @@ id: environmental-domain
 label: Umweltbereich, für den Umweltziele festgelegt werden können.
 sourceType: TEMPLATES
 entries:
-  soil: "[Boden](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  noise: "[Lärm](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  naturalResources: "[natürliche Ressourcen](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  climateAndClimateChange: "[Klima und Klimawandel](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  healthProtection: "[Gesundheitsschutz](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  air: "[Luft](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  water: "[Wasser](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  waste: "[Abfall](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  natureAndBiodiversity: "[Natur und biologische Vielfalt](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  sustainableDevelopment: "[nachhaltige Entwicklung](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-  landUse: "[Bodennutzung](https://inspire.ec.europa.eu/codelist/EnvironmentalDomain/{{value}})"
-fallback: "{{value}} (unbekannter Wert)"
+  air: Luft
+  climateAndClimateChange: Klima und Klimawandel
+  healthProtection: Gesundheitsschutz
+  landUse: Bodennutzung
+  naturalResources: natürliche Ressourcen
+  natureAndBiodiversity: Natur und biologische Vielfalt
+  noise: Lärm
+  soil: Boden
+  sustainableDevelopment: nachhaltige Entwicklung
+  waste: Abfall
+  water: Wasser
 ```

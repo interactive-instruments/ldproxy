@@ -16,13 +16,30 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 |`links` |array |`[]` |Ergänzt den "links"-Array von Features um die angegebenen Links. Alle Werte des Arrays müssen ein gültiges Link-Objekt mit `href` und `rel` sein.
 |`includeInGeoJson` |array |`[]` |Die Option ermöglicht, dass ausgewählte JSON-FG-Erweiterungen auch im GeoJSON-Encoding berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `when`, `where`, `coordRefSys`, `links``
 
-Beispiel für die Angaben in der Konfigurationsdatei:
+Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
 
 ```yaml
 - buildingBlock: JSON_FG
   enabled: true
   featureType: 
-  - 'aixm:Event'
-  includeInGeoJson:
-  - featureType
+  - nas:{{type}}
+```
+
+Ergänzende Angaben pro Feature Collection mit einem Attribut `F_CODE` (für das in der Provider-Konfiguration `role: TYPE` gesetzt wurde), um die Objektart zu setzen:
+
+```yaml
+- buildingBlock: JSON_FG
+  featureType: 
+  - nas:{{type}}
+```
+
+Hierdurch wird bei einem Wert von "GB075" im Attrubut `F_CODE` die Objektart wie folgt ausgegeben:
+
+```json
+{
+  "type": "Feature",
+  "id": 1,
+  "featureType": "nas:GB075",
+  ...
+}
 ```

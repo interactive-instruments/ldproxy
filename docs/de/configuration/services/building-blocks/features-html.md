@@ -18,26 +18,38 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 |`maximumPageSize` |int |`null` |Mit dieser Option kann für die HTML-Ausgabe ein eigener Maximalwert für den Parameter `limit` gesetzt werden. Sofern kein Wert angegeben ist, so gilt der Wert aus dem Modul "Features Core". Bei der Verwendung von CesiumJS als Map-Client wird ein Wert von 100 empfohlen.
 |`transformations` |object |`{}` |Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der HTML-Ausgabe [transformiert](general-rules.md#transformations) werden.
 
-Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API:
+Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
 
 ```yaml
 - buildingBlock: FEATURES_HTML
-  schemaOrgEnabled: false
-  mapPosition: TOP
+  enabled: true
+  style: 'topographic-with-basemap'
 ```
 
 Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
 
 ```yaml
-    - buildingBlock: FEATURES_HTML
-      itemLabelFormat: '{{name}}{{thematicId | prepend:'' ('' | append:'')''}}'
-      transformations:
-        geometry:
-          remove: IN_COLLECTION
-        occupancy.typeOfOccupant:
-          remove: IN_COLLECTION
-        occupancy.numberOfOccupants:
-          remove: IN_COLLECTION
+- buildingBlock: FEATURES_HTML
+  itemLabelFormat: '{{ZI005_FNA}}'
+  transformations:
+    F_CODE:
+      codelist: f_code
+    ZI001_SDV:
+      dateFormat: MM/dd/yyyy[', 'HH:mm:ss[' 'z]]
+    RTY:
+      codelist: rty
+    FCSUBTYPE:
+      codelist: fcsubtype
+    TRS:
+      codelist: trs
+    RIN_ROI:
+      codelist: roi
+    ZI016_WTC:
+      codelist: wtc
+    RLE:
+      codelist: rle
+    LOC:
+      codelist: loc
 ```
 
 Beispiel für die Verwendung von CesiumJS für Gebäudedaten, die teilweise aus Bauteilen zusammengesetzt sind. Als Fallback wird die Bodenplatte verwendet:

@@ -21,3 +21,5 @@ Es steht nur das Kachelschema [WebMercatorQuad](http://docs.opengeospatial.org/i
 |Option |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
 |`mapProvider` |object |`null` |Spezifiziert die Datenquelle für die Kacheln, unterstützt werden derzeit nur [TileServer-Tile-Provider](tiles.md#tile-provider-tileserver).
+
+Siehe den [TileServer-Tile-Provider im Modul "Tiles"](tiles.md#tile-provider-tileserver) für eine Beispielkonfiguration.

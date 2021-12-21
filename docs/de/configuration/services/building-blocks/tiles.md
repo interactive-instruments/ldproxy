@@ -93,41 +93,51 @@ Bei diesem Tile-Provider werden die Kacheln im Format Mapbox Vector Tiles aus de
 |`maxAbsoluteAreaChangeInPolygonRepair` | number |1.0 |Steuert die maximal erlaubte absolute Änderung der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte Polygongeometrie verwendet. Der Wert 1.0 entspricht einem "Pixel" im Kachelkoordinatensystem.
 |`transformations` |object |`{}` |Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe [transformiert](general-rules.md#transformations) werden.
 
-Beispiel für die Angaben in der Konfigurationsdatei für Gebäude:
+Beispiel für die Angaben in der Konfigurationsdatei aus der API für [Weinlagen in Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
+
+Auf API-Ebene:
 
 ```yaml
 - buildingBlock: TILES
   enabled: true
-  singleCollectionEnabled: true
-  multiCollectionEnabled: true
-  center:
-  - 7.5
-  - 51.5
-  minimumSizeInPixel: 0.75
-  zoomLevels:
-    WebMercatorQuad:
-      min: 12
-      max: 20
-      default: 16
+  cache: MBTILES
+  tileProvider:
+    type: FEATURES
+    multiCollectionEnabled: true
+    zoomLevels:
+      WebMercatorQuad:
+        min: 5
+        max: 16
+    seeding:
+      WebMercatorQuad:
+        min: 5
+        max: 11
+```
+
+Für die Weinlagen-Objekte (Aggregation von aneinander angrenzenden Objekten bis Zoomstufe 9):
+
+```yaml
+- buildingBlock: TILES
   rules:
     WebMercatorQuad:
-    - min: 12
-      max: 13
+    - min: 5
+      max: 7
       merge: true
       groupBy:
-      - anzahl_geschosse
-      - funktion
-      properties:
-      - anzahl_geschosse
-      - funktion
-      - name
-    - min: 14
-      max: 20
-      properties:
-      - anzahl_geschosse
-      - funktion
-      - name
-      - anschrift
+      - region
+    - min: 8
+      max: 8
+      merge: true
+      groupBy:
+      - region
+      - subregion
+    - min: 9
+      max: 9
+      merge: true
+      groupBy:
+      - region
+      - subregion
+      - cluster
 ```
 
 <a name="seeding-options"></a>
@@ -137,9 +147,44 @@ Beispiel für die Angaben in der Konfigurationsdatei für Gebäude:
 |Option |Data Type |Default |Description
 | --- | --- | --- | ---
 |`runOnStartup` |boolean |`true` |Steuert, ob das Seeding beim Start einer API ausgeführt wird.
-|`runPeriodic` |string |`null` |Ein Crontab-Pattern für die regelmäßige Ausführung des Seedings. Das Seeding wird stets nur einmal pro API zur gleichen Zeit ausgeführt, d.h. falls eine weitere Ausführung geplant ist, während die vorherige noch läuft, wird diese übersprungen.
+|`runPeriodic` |string |`null` |Ein Crontab-Pattern für die regelmäßige Ausführung des Seedings. Das Seeding wird stets nur einmal pro API zur gleichen Zeit ausgeführt, d.h. falls eine weitere Ausführung ansteht, während die vorherige noch läuft, wird diese übersprungen.
 |`purge` |boolean |`false` |Steuert, ob der Cache vor dem Seeding bereinigt wird.
 |`maxThreads` |integer |`1` |Die maximale Anzahl an Threads, die für das Seeding verwendet werden darf. Die tatsächlich verwendete Zahl der Threads hängt davon ab, wie viele Threads für [Hintergrundprozesse](../../global-configuration.md#background-tasks) zur Verfügung stehen, wenn das Seeding startet. Wenn mehr als ein Thread erlaubt sein soll, ist zunächst zu prüfen, ob genügend Threads für [Hintergrundprozesse](../../global-configuration.md#background-tasks) konfiguriert sind. Es ist zu berücksichtigen, dass alle APIs um die vorhandenen Threads für [Hintergrundprozesse](../../global-configuration.md#background-tasks) konkurrieren.
+
+Beispiel für eine einfache Konfiguration (kein Seeding beim Start, Neuaufbau des Cache zu jeder Stunde):
+
+```yaml
+- buildingBlock: TILES
+  tileProvider:
+    type: FEATURES
+    seedingOptions:
+      runOnStartup: false
+      runPeriodic: '0 * * * *'
+      purge: true
+```
+
+Beispiel für die Verwendung von mehreren Threads für das Seeding:
+
+```yaml
+- buildingBlock: TILES
+  tileProvider:
+    type: FEATURES
+    seedingOptions:
+      maxThreads: 2
+```
+
+Hierfür müssen in der globalen Konfiguration mindestens 4 Threads für Hintergrundprozesse konfiguriert sein, zum Beispiel:
+
+```yaml
+backgroundTasks:
+  maxThreads: 4
+```
+
+Durch diese Setzungen werden mehrere Hintergrundprozesse überhaupt erst ermöglicht. Selbst ohne Änderungen an den Seeding-Optionen würde dies also die parallele Ausführung des Seeding für 4 APIs ermöglichen.
+
+Wenn `maxThreads` in den Seeding-Optionen größer als 1 ist, bedeutet das, dass das Seeding in n Teile geteilt wird, wobei n die Anzahl der verfügbaren Threads ist, wenn das Seeding beginnt, begrenzt durch `seedingOptions.maxThreads`.
+
+Wenn man also zum Beispiel `seedingOptions.maxThreads` mit der angegebenen `cfg.yml` auf 2 setzt, wird das Seeding in 2 Teile aufgeteilt, wenn mindestens 2 der 4 Threads verfügbar sind. Wenn 3 Threads von anderen Diensten benutzt werden, wird es nicht aufgeteilt. Und wenn alle 4 Threads belegt sind, wird gewartet, bis mindestens 1 Thread frei wird.
 
 <a name="tile-provider-mbtiles"></a>
 
@@ -152,7 +197,7 @@ Bei diesem Tile-Provider werden die Kacheln über eine [MBTiles-Datei](https://g
 |`type` |string |`MBTILES` |Fester Wert, identifiziert die Tile-Provider-Art.
 |`filename` |string |`null` |Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
 
-Beispielkonfiguration:
+Beispielkonfiguration (aus der API [Satellitenbilder in niedriger Auflösung (OpenMapTiles-Preview)](https://demo.ldproxy.net/openmaptiles)):
 
 ```yaml
 - buildingBlock: TILES

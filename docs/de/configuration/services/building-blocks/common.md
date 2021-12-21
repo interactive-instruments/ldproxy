@@ -18,15 +18,3 @@ Es werden die folgenden konfigurierbaren Optionen unterstützt:
 | --- | --- | --- | ---
 |`additionalLinks` |array |`[]` |Erlaubt es, zusätzliche Links in der Landing Page zu ergänzen. Der Wert ist ein Array von Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende Text (`label`) und die Link-Relation (`rel`).
 |`caching` |object |`{}` |Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
-
-Beispiel für die Angaben in der Konfigurationsdatei:
-
-```yaml
-- buildingBlock: COMMON
-  additionalLinks:
-  - rel: describedby
-    type: text/html
-    title: Webseite mit weiteren Informationen
-    href: 'https://www.example.com/pfad/zu/dokument'
-    hreflang: de
-```

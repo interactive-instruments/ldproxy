@@ -50,8 +50,8 @@ Beispiel für die Angaben in der Konfigurationsdatei:
 
 ```yaml
 - buildingBlock: FOUNDATION
-  useLangParameter: false
   includeLinkHeader: true
-  apiCatalogLabel: 'APIs für INSPIRE-relevante Datensätze'
-  apiCatalogDescription: 'Alle Datensätze ...'
+  useLangParameter: false
+  apiCatalogLabel: 'Demonstration APIs using ldproxy'
+  apiCatalogDescription: 'The APIs below are available as examples for Web APIs that can be set up with <a href="https://github.com/interactive-instruments/ldproxy">ldproxy</a>.'
 ```

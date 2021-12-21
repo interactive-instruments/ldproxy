@@ -25,15 +25,24 @@ Beispiel für die Angaben in der Konfigurationsdatei:
 ```yaml
 - buildingBlock: COLLECTIONS
   additionalLinks:
-  - rel: describedby
-    type: text/html
-    title: Webseite mit weiteren Informationen
-    href: 'https://www.example.com/pfad/zu/webseite'
+  - rel: related
+    type: text/html 
+    title: 'Weinlagen-Online website (Provider: Landwirtschaftskammer Rheinland-Pfalz)'
+    href: 'http://weinlagen.lwk-rlp.de/portal/weinlagen.html'
+    hreflang: de
+  - rel: related
+    type: application/xml 
+    title: 'OGC Web Map Service with the data (Provider: Landwirtschaftskammer Rheinland-Pfalz)'
+    href: 'http://weinlagen.lwk-rlp.de/cgi-bin/mapserv?map=/data/_map/weinlagen/einzellagen_rlp.map&service=WMS&request=GetCapabilities'
+    hreflang: de
+  - rel: related
+    type: application/xml 
+    title: 'OGC Web Feature Service with the data (Provider: Landwirtschaftskammer Rheinland-Pfalz)'
+    href: 'http://weinlagen.lwk-rlp.de/geoserver/lwk/ows?service=WFS&request=getcapabilities'
     hreflang: de
   - rel: enclosure
-    type: application/geopackage+sqlite3
-    title: Download des Datensatzes als GeoPackage
-    href: 'https://www.example.com/pfad/zu/datei.gpkg'
+    type: application/x-shape
+    title: 'Download the data as a shapefile (Provider: Landwirtschaftskammer Rheinland-Pfalz)'
+    href: 'http://weinlagen.lwk-rlp.de/geoserver/lwk/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=lwk:Weinlagen&outputFormat=shape-zip'
     hreflang: de
-    length: 23517882
 ```

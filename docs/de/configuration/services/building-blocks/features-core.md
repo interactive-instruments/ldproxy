@@ -26,43 +26,37 @@ In der Konfiguration können die folgenden Optionen gewählt werden:
 |`transformations` |object |`{}` |Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in allen Datenformaten [transformiert](general-rules.md#transformations) werden.
 |`caching` |object |`{}` |Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
 
-Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API:
+Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (oder in den Defaults):
 
 ```yaml
 - buildingBlock: FEATURES_CORE
-  defaultCrs: CRS84
-  minimumPageSize: 1
-  defaultPageSize: 10
-  maximumPageSize: 10000
-  showsFeatureSelfLink: true
+  coordinatePrecision:
+    metre: 2
+    degree: 7
 ```
 
 Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
 
 ```yaml
 - buildingBlock: FEATURES_CORE
+  enabled: true
+  itemType: feature
   queryables:
     spatial:
     - geometry
     temporal:
-    - beginLifespanVersion
-    - endLifespanVersion
-    other:
+    - date
+    q:
     - name
-    - pointOfContact.address.postCode
-    - pointOfContact.address.adminUnit
-    - pointOfContact.telephoneVoice
+    - region
+    - subregion
+    - cluster
+    - village
+    - searchfield1
+    - searchfield2
+    other:
+    - registerId
+    - area_ha
   embeddedFeatureLinkRels:
   - self
-  - about
-  transformations:
-    pointOfContact.telephoneVoice:
-      nullify: 'bitte ausfüllen'
-    inspireId:
-      stringFormat: 'https://example.com/id/kinder/kita/{{value}}'
-    pointOfContact.address.thoroughfare:
-      stringFormat: "{{value | replace:'\\s*[0-9].*$':''}}"
-    pointOfContact.address.locatorDesignator:
-      null: '^\\D*$'
-      stringFormat: "{{value | replace:'^[^0-9]*':''}}"
 ```

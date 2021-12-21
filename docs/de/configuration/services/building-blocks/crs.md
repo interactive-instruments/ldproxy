@@ -25,6 +25,8 @@ Beispiel für die Angaben in der Konfigurationsdatei:
     forceAxisOrder: NONE
   - code: 4326
     forceAxisOrder: NONE
+  - code: 3857
+    forceAxisOrder: NONE
 ```
 
 Durch Angabe des Query-Parameters `crs` bei den Ressourcen "Features" und "Feature" können die Koordinaten in einem der konfigurierten Koordinatenreferenzsystemen angefordert werden.
