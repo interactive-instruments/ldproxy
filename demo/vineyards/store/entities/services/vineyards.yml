@@ -1,15 +1,14 @@
 ---
 id: vineyards
-createdAt: 1600610292106
-lastModified: 1600610292106
 entityStorageVersion: 2
 serviceType: OGC_API
 label: Vineyards in Rhineland-Palatinate, Germany
-description: 'Have you ever wondered where the wine that you are drinking comes from? If the wine comes from the wine-growing regions Mosel, Nahe, Rheinhessen, Pfalz, Ahr, or Mittelrhein you can find this information in this API.
-<br><br>
-The dataset shared by this API is the vineyard register (Weinbergsrolle) of Rhineland-Palatinate, available under an open-data license. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
-<br>
-<small>© Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=''http://weinlagen.lwk-rlp.de/'' target=''_blank''>weinlagen.lwk-rlp.de</a>; <a href=''http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html'' target=''_blank''>Regelungen zu Gewährleistung und Haftung</a></small>'
+description: |
+  Have you ever wondered where the wine that you are drinking comes from? If the wine comes from the wine-growing regions Mosel, Nahe, Rheinhessen, Pfalz, Ahr, or Mittelrhein you can find this information in this API.
+  <br><br>
+  The dataset shared by this API is the vineyard register (Weinbergsrolle) of Rhineland-Palatinate, available under an open-data license. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
+  <br>
+  <small>© Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href='http://weinlagen.lwk-rlp.de/' target='_blank'>weinlagen.lwk-rlp.de</a>; <a href='http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html' target=''_blank''>Regelungen zu Gewährleistung und Haftung</a></small>
 metadata:
   contactName: Jane Doe
   contactEmail: doe@example.com
@@ -64,19 +63,16 @@ api:
   legalUrl: https://www.example.com/legal
   privacyName: Privacy notice
   privacyUrl: https://www.example.com/privacy
-  leafletUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  leafletAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
-    f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
-    class="link0" target="_new">Datenquellen</a>; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" class="link0" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" class="link0" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
-  openLayersUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  openLayersAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
-    f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
-    class="link0" target="_new">Datenquellen</a>; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" class="link0" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" class="link0" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
+  basemapUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
+  basemapAttribution: '&copy; <a href="https://www.bkg.bund.de" target="_new">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf" target="_new">Datenquellen</a>'
+  defaultStyle: default
 - buildingBlock: SCHEMA
   enabled: true
 - buildingBlock: QUERYABLES
   enabled: true
 - buildingBlock: FILTER
+  enabled: true
+- buildingBlock: SORTING
   enabled: true
 - buildingBlock: PROJECTIONS
   enabled: true
@@ -84,25 +80,25 @@ api:
   enabled: true    
 - buildingBlock: TILES
   enabled: true
-  multiCollectionEnabled: true
-  zoomLevels:
-    WebMercatorQuad:
-      min: 5
-      max: 16
-      default: 8
-  seeding:
-    WebMercatorQuad:
-      min: 5
-      max: 11
-  center:
-  - 7.35
-  - 49.8
+  cache: MBTILES
+  tileProvider:
+    type: FEATURES
+    multiCollectionEnabled: true
+    zoomLevels:
+      WebMercatorQuad:
+        min: 5
+        max: 16
+    seeding:
+      WebMercatorQuad:
+        min: 5
+        max: 11
 - buildingBlock: STYLES
   enabled: true
   styleEncodings:
   - Mapbox
   - HTML
-  defaultStyle: default
+  deriveCollectionStyles: true
+  webmapWithPopup: true
 collections:
   vineyards:
     id: vineyards
@@ -128,18 +124,25 @@ collections:
         other:
         - registerId
         - area_ha
-      transformations:
-        area_ha:
-          stringFormat: '{{value | replace:''k. A.'':''unknown'' | replace:'','':''.''}}'
+    - buildingBlock: SORTING
+      enabled: true
+      sortables:
+      - name
+      - region
+      - subregion
+      - cluster
+      - village
+      - registerId
+      - area_ha
     - buildingBlock: FEATURES_HTML
-      itemLabelFormat: '{{searchfield2}}'
+      featureTitleTemplate: '{{searchfield2}}'
       transformations:
         village_info:
           remove: ALWAYS
         searchfield1:
-          remove: OVERVIEW
+          remove: IN_COLLECTION
         date:
-          remove: OVERVIEW
+          remove: IN_COLLECTION
           dateFormat: dd/MM/yyyy
     - buildingBlock: TILES
       rules:
@@ -162,5 +165,3 @@ collections:
           - region
           - subregion
           - cluster
-    - buildingBlock: STYLES
-      enabled: false
