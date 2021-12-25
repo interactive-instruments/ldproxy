@@ -270,12 +270,16 @@ function handleFormSubmit(event) {
    routeDefinition.inputs.preference = data.get('preference');
    routeDefinition.inputs.mode = data.get('mode');
    routeDefinition.inputs.additionalFlags = data.getAll('flags');
+   {{#supportsMaxWeight}}
    if (data.get('weight') !== '') {
      routeDefinition.inputs.weight = parseFloat(data.get('weight').replace(',','.'));
    }
+   {{/supportsMaxWeight}}
+   {{#supportsMaxHeight}}
    if (data.get('height') !== '') {
      routeDefinition.inputs.height = parseFloat(data.get('height').replace(',','.'));
    }
+   {{/supportsMaxHeight}}
    routeDefinition.inputs.waypoints.value.coordinates[0][0] = lngLatStart.lng;
    routeDefinition.inputs.waypoints.value.coordinates[0][1] = lngLatStart.lat;
    routeDefinition.inputs.waypoints.value.coordinates[1][0] = lngLatEnd.lng;
@@ -370,7 +374,7 @@ const firstCoordinate = (geometry) => {
 
 const showPopupProps = (map, popup) => (e) => {
     const lngLat = firstCoordinate(e.features[0].geometry);
-    let description = `<h5>${e.features[0].sourceLayer}</h5><hr/><table>`;
+    let description = `<h5>${e.features[0].properties['featureType']}</h5><hr/><table>`;
 
     Object.keys(e.features[0].properties)
        .sort()
@@ -448,8 +452,8 @@ var map = new maplibregl.Map({
         'filter': ['==', '$type', 'Point']
     }]
 },
-'center': [-118.0, 34.5],
-'zoom': 6
+'center': [{{centerX}}, {{centerY}}],
+'zoom': {{centerLevel}}
 });
 
 map.addControl(new maplibregl.ScaleControl());

@@ -163,9 +163,9 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
               segDescent.updateAndGet(v -> v - deltaZ);
           });
       aggAscent += segAscent.get();
-      propertyBuilder.get().put("ascent_m", segAscent.get());
+      propertyBuilder.get().put("ascent_m", String.format(Locale.US,"%.1f",segAscent.get()));
       aggDescent += segDescent.get();
-      propertyBuilder.get().put("descent_m", segDescent.get());
+      propertyBuilder.get().put("descent_m", String.format(Locale.US,"%.1f",segDescent.get()));
     }
 
     lastPoint = Geometry.Point.of(coordinates.get(coordCount-1));
