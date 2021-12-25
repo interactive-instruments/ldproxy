@@ -16,13 +16,13 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableRouteDefinitionInputs.Builder.class)
-public abstract class Route {
-
-    public enum STATUS {accepted, running, successful, failed}
-
-    public final String getType() { return "FeatureCollection"; }
-    public abstract Optional<String> getName();
-    public abstract STATUS getStatus();
-    public abstract List<Double> getBbox();
-    public abstract List<RouteComponent> getFeatures();
+public interface RouteDefinitionInputs {
+    Optional<String> getName();
+    Optional<String> getPreference();
+    Optional<String> getMode();
+    Optional<Double> getWeight();
+    Optional<Double> getHeight();
+    Optional<Obstacles> getObstacles();
+    List<String> getAdditionalFlags();
+    WaypointsWrapper getWaypoints();
 }

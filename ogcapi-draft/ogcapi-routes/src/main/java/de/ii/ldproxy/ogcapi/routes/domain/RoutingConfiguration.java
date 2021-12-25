@@ -35,7 +35,7 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     Boolean getIntermediateWaypoints();
 
     @Nullable
-    Boolean getLoadRestrictions();
+    Boolean getWeightRestrictions();
 
     @Nullable
     Boolean getHeightRestrictions();
@@ -43,14 +43,12 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     @Nullable
     Boolean getObstacles();
 
-    // TODO mode
-
     @Nullable
     String getSpeedLimitUnit();
 
-    Map<String, Preference> getPreferences();
-
     String getDefaultPreference();
+
+    String getDefaultMode();
 
     Map<String, RoutingFlag> getAdditionalFlags();
 
@@ -83,7 +81,6 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
         RoutingConfiguration src = (RoutingConfiguration) source;
 
         // always override the default configuration options
-        builder.preferences(getPreferences());
         builder.additionalFlags(getAdditionalFlags());
 
         return builder.build();

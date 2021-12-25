@@ -31,15 +31,38 @@
                             {{#defaultPreference}}
                                 <li>
                                     <input id="preference-{{key}}" name="preference" type="radio" value="{{key}}" checked="true"/>
-                                    <label class="inline" for="salutation-{{key}}">{{value}}</label>
+                                    <label class="inline" for="preference-{{key}}">{{value}}</label>
                                 </li>
                             {{/defaultPreference}}
                             {{#otherPreferences}}
                                 <li>
                                     <input id="preference-{{key}}" name="preference" type="radio" value="{{key}}"/>
-                                    <label class="inline" for="salutation-{{key}}">{{value}}</label>
+                                    <label class="inline" for="preference-{{key}}">{{value}}</label>
                                 </li>
                             {{/otherPreferences}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="mode">{{modeTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <ul class="list-unstyled">
+                            {{#defaultMode}}
+                                <li>
+                                    <input id="mode-{{key}}" name="mode" type="radio" value="{{key}}" checked="true"/>
+                                    <label class="inline" for="mode-{{key}}">{{value}}</label>
+                                </li>
+                            {{/defaultMode}}
+                            {{#otherModes}}
+                                <li>
+                                    <input id="mode-{{key}}" name="preference" type="radio" value="{{key}}"/>
+                                    <label class="inline" for="mode-{{key}}">{{value}}</label>
+                                </li>
+                            {{/otherModes}}
                         </ul>
                     </div>
                 </div>
@@ -232,6 +255,7 @@ function handleFormSubmit(event) {
       'inputs': {
          'name': '',
          'preference': '',
+         'mode': '',
          'additionalFlags': [],
          'waypoints': {
             'value': {
@@ -244,6 +268,7 @@ function handleFormSubmit(event) {
 
    routeDefinition.inputs.name = data.get('name');
    routeDefinition.inputs.preference = data.get('preference');
+   routeDefinition.inputs.mode = data.get('mode');
    routeDefinition.inputs.additionalFlags = data.getAll('flags');
    if (data.get('weight') !== '') {
      routeDefinition.inputs.weight = parseFloat(data.get('weight').replace(',','.'));
@@ -273,7 +298,6 @@ function handleFormSubmit(event) {
 
    const xhr = new XMLHttpRequest();
    xhr.onreadystatechange = function () {
-      // TODO error handling
       if (this.readyState === 4 && this.status === 200) {
          document.getElementById('spinner').classList.remove('lds-ring');
          document.querySelector('button').disabled = false;

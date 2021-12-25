@@ -25,16 +25,17 @@ import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableFeatureTransformationContextRoutes;
-import de.ii.ldproxy.ogcapi.routes.domain.Preference;
+import de.ii.xtraplatform.routes.sql.domain.Preference;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInputs;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionWrapper;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingFlag;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.cql.domain.Geometry;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -45,6 +46,7 @@ import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.ImmutableRouteQuery;
 import de.ii.xtraplatform.routes.sql.domain.RouteQuery;
+import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
@@ -141,11 +143,13 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         OgcApi api = requestContext.getApi();
         OgcApiDataV2 apiData = api.getData();
         MediaType contentType = queryInput.getContentType();
-        RouteDefinitionWrapper routeDefinition = parse(queryInput.getRequestBody(), false);
+        RouteDefinition routeDefinition = parse(queryInput.getRequestBody(), false);
         FeatureQuery query = queryInput.getQuery();
         FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
         RoutingConfiguration config = apiData.getExtension(RoutingConfiguration.class)
             .orElseThrow(() -> new IllegalStateException("No routing configuration found for the API."));
+        RoutesConfiguration providerConfig = featureProvider.getData().getExtension(RoutesConfiguration.class)
+            .orElseThrow(() -> new IllegalStateException("No routing configuration found for the feature provider of this API."));
 
         RouteFormatExtension outputFormat = api.getOutputFormat(
                 RouteFormatExtension.class,
@@ -154,35 +158,42 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                 Optional.empty())
             .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        RouteDefinition def = routeDefinition.getInputs();
+        RouteDefinitionInputs inputs = routeDefinition.getInputs();
 
         ImmutableRouteQuery.Builder routeQueryBuilder = ImmutableRouteQuery.builder()
             .start(routeDefinition.getStart())
             .end(routeDefinition.getEnd())
             .wayPoints(routeDefinition.getWaypoints());
 
-        String preference = Objects.requireNonNullElse(def.getPreference(),config.getDefaultPreference());
-        routeQueryBuilder = processPreference(preference, config.getPreferences(), routeQueryBuilder);
+        String preference = inputs.getPreference().orElse(config.getDefaultPreference());
+        routeQueryBuilder = processPreference(preference, providerConfig.getPreferences(), routeQueryBuilder);
+
+        String mode = inputs.getMode().orElse(config.getDefaultMode());
+        routeQueryBuilder = processMode(mode, providerConfig.getModes(), routeQueryBuilder);
 
         ImmutableList.Builder<String> flagBuilder = new ImmutableList.Builder<>();
-        for (String flag: def.getAdditionalFlags()) {
+        for (String flag: inputs.getAdditionalFlags()) {
             flagBuilder = processFlag(flag, config.getAdditionalFlags(), flagBuilder);
         }
         routeQueryBuilder.flags(flagBuilder.build());
 
-        if (Objects.nonNull(def.getWeight())) {
-            routeQueryBuilder.weight(def.getWeight());
+        if (!inputs.getWeight().isEmpty() && !Objects.requireNonNullElse(config.getWeightRestrictions(), false)) {
+            throw new IllegalArgumentException("This API does not support weight restrictions as part of the definition of a route.");
         }
+        routeQueryBuilder.weight(inputs.getWeight());
 
-        if (Objects.nonNull(def.getHeight())) {
-            routeQueryBuilder.height(def.getHeight());
+        if (!inputs.getHeight().isEmpty() && !Objects.requireNonNullElse(config.getHeightRestrictions(), false)) {
+            throw new IllegalArgumentException("This API does not support weight restrictions as part of the definition of a route.");
         }
+        routeQueryBuilder.height(inputs.getHeight());
 
-        if (Objects.nonNull(def.getObstacles())) {
-            routeQueryBuilder.obstacles(def.getObstacles().getWkt());
+        Optional<Geometry.MultiPolygon> obstacles = routeDefinition.getObstacles();
+        if (!obstacles.isEmpty() && !Objects.requireNonNullElse(config.getObstacles(), false)) {
+            throw new IllegalArgumentException("This API does not support obstacles as part of the definition of a route.");
         }
+        routeQueryBuilder.obstacles(obstacles);
 
-        EpsgCrs waypointCrs = routeDefinition.getCrs();
+        EpsgCrs waypointCrs = routeDefinition.getWaypointsCrs();
         if (!crsSupport.isSupported(apiData, waypointCrs)) {
             throw new IllegalArgumentException(String.format("The parameter 'coordRefSys' in the route definition is invalid: the crs '%s' is not supported", waypointCrs.toUriString()));
         }
@@ -245,7 +256,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .shouldSwapCoordinates(swapCoordinates)
             .isHitsOnlyIfMore(false)
             .showsFeatureSelfLink(false)
-            .name(Objects.requireNonNullElse(def.getName(),"Route"))
+            .name(inputs.getName().orElse("Route"))
             .format(outputFormat)
             .outputStream(new OutputStreamToByteConsumer())
             .startTimeNano(System.nanoTime())
@@ -283,13 +294,13 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                                       targetCrs,
                                       true,
                                       String.format("%s.%s",
-                                                    Objects.requireNonNullElse(def.getName(),"Route"),
+                                                    Objects.requireNonNullElse(inputs.getName(),"Route"),
                                                     outputFormat.getMediaType().fileExtension()))
             .entity(result)
             .build();
     }
 
-    static RouteDefinitionWrapper parse(byte[] content, boolean strict) {
+    static RouteDefinition parse(byte[] content, boolean strict) {
         // prepare Jackson mapper for deserialization
         final ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new Jdk8Module());
@@ -298,7 +309,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
         try {
             // parse input
-            return mapper.readValue(content, RouteDefinitionWrapper.class);
+            return mapper.readValue(content, RouteDefinition.class);
         } catch (IOException e) {
             throw new IllegalArgumentException("The content of the route definition is invalid.", e);
         }
@@ -342,6 +353,14 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         routeQueryBuilder
             .costColumn(pref.getCostColumn())
             .reverseCostColumn(pref.getReverseCostColumn());
+        return routeQueryBuilder;
+    }
+
+    private ImmutableRouteQuery.Builder processMode(@NotNull String mode, Map<String, String> modesConfig,
+                                                    ImmutableRouteQuery.Builder routeQueryBuilder) {
+        if (!modesConfig.containsKey(mode))
+            throw new IllegalArgumentException(String.format("Unknown mode '%s'. Known modes: %s", mode, String.join(", ", modesConfig.keySet())));
+        routeQueryBuilder.mode(mode);
         return routeQueryBuilder;
     }
 

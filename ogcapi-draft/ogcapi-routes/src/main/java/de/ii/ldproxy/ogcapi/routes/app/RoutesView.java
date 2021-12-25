@@ -35,6 +35,7 @@ public class RoutesView extends OgcApiView {
 
     public final String routeNameTitle;
     public final String preferenceTitle;
+    public final String modeTitle;
     public final String additionalFlagsTitle;
     public final String startLocationTitle;
     public final String endLocationTitle;
@@ -65,6 +66,7 @@ public class RoutesView extends OgcApiView {
         this.htmlDefaults = htmlDefaults;
         routeNameTitle = i18n.get("routeNameTitle", language);
         preferenceTitle = i18n.get("preferenceTitle", language);
+        modeTitle = i18n.get("modeTitle", language);
         additionalFlagsTitle = i18n.get("additionalFlagsTitle", language);
         startLocationTitle = i18n.get("startLocationTitle", language);
         endLocationTitle = i18n.get("endLocationTitle", language);
@@ -101,7 +103,7 @@ public class RoutesView extends OgcApiView {
             .build();
 
         this.supportsMaxWeight = apiData.getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getLoadRestrictions)
+            .map(RoutingConfiguration::getWeightRestrictions)
             .orElse(false);
         this.supportsMaxHeight = apiData.getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getHeightRestrictions)
@@ -120,12 +122,30 @@ public class RoutesView extends OgcApiView {
             .findFirst();
     }
 
+    public Optional<Map.Entry<String,String>> getDefaultMode() {
+        return templateInfo
+            .getModes()
+            .entrySet()
+            .stream()
+            .filter(entry -> entry.getKey().equals(templateInfo.getDefaultMode()))
+            .findFirst();
+    }
+
     public Set<Map.Entry<String,String>> getOtherPreferences() {
         return templateInfo
             .getPreferences()
             .entrySet()
             .stream()
             .filter(entry -> !entry.getKey().equals(templateInfo.getDefaultPreference()))
+            .collect(ImmutableSet.toImmutableSet());
+    }
+
+    public Set<Map.Entry<String,String>> getOtherModes() {
+        return templateInfo
+            .getModes()
+            .entrySet()
+            .stream()
+            .filter(entry -> !entry.getKey().equals(templateInfo.getDefaultMode()))
             .collect(ImmutableSet.toImmutableSet());
     }
 

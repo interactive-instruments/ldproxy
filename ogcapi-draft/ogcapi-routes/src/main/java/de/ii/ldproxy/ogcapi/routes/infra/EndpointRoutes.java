@@ -18,12 +18,12 @@ import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputRouteDefinitionForm;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinition;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionInputs;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionInfo;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionWrapper;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypointsWrapper;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypoints;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionWrapper;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.CORE;
+import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.MODE;
 
 /**
  * computes routes
@@ -87,14 +88,14 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
                           @Requires FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
-        this.schemaRouteDefinition = schemaGenerator.getSchema(RouteDefinitionWrapper.class);
+        this.schemaRouteDefinition = schemaGenerator.getSchema(RouteDefinition.class);
         this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
         this.providers = providers;
     }
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of(CORE);
+        return ImmutableList.of(CORE, MODE);
     }
 
     @Override
@@ -125,12 +126,12 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
             .flatMap(HtmlForm::getDefaults);
         if (defaults.isPresent()) {
             Waypoints waypoints = new ImmutableWaypoints.Builder().addCoordinates(defaults.get().getStart(), defaults.get().getEnd()).build();
-            ImmutableRouteDefinition.Builder builder = new ImmutableRouteDefinition.Builder();
+            ImmutableRouteDefinitionInputs.Builder builder = new ImmutableRouteDefinitionInputs.Builder();
             config.map(RoutingConfiguration::getDefaultPreference).ifPresent(pref -> builder.preference(pref));
             builder.waypoints(new ImmutableWaypointsWrapper.Builder().value(waypoints).build());
             defaults.get().getName().ifPresent(name -> builder.name(name));
             examples = ImmutableList.of(new ImmutableExample.Builder()
-                             .value(new ImmutableRouteDefinitionWrapper.Builder()
+                             .value(new ImmutableRouteDefinition.Builder()
                                         .inputs(builder.build())
                                         .build())
                              .build());
@@ -138,7 +139,7 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
         return ImmutableMap.of(REQUEST_MEDIA_TYPE.type(), new ImmutableApiMediaTypeContent.Builder()
             .ogcApiMediaType(REQUEST_MEDIA_TYPE)
             .schema(schemaRouteDefinition)
-            .schemaRef("#/components/schemas/RouteDefinition")
+            .schemaRef("#/components/schemas/RouteDefinitionInputs")
             .examples(examples)
             .build());
     }
@@ -206,11 +207,22 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
         OgcApiDataV2 apiData = api.getData();
         checkAuthorization(apiData, optionalUser);
 
-        Map<String, String> preferences = apiData.getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getPreferences)
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
+        ensureFeatureProviderSupportsRouting(featureProvider);
+
+        Map<String, String> preferences = featureProvider.getData().getExtension(RoutesConfiguration.class)
+            .map(RoutesConfiguration::getPreferences)
             .map(map -> map.entrySet()
                 .stream()
-                .map(entry -> new AbstractMap.SimpleImmutableEntry<String, String>(entry.getKey(), entry.getValue().getLabel()))
+                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().getLabel()))
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .orElse(ImmutableMap.of());
+
+        Map<String, String> modes = featureProvider.getData().getExtension(RoutesConfiguration.class)
+            .map(RoutesConfiguration::getModes)
+            .map(map -> map.entrySet()
+                .stream()
+                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()))
                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .orElse(ImmutableMap.of());
 
@@ -236,6 +248,13 @@ public class EndpointRoutes extends Endpoint implements ConformanceClass {
                               .preferences(preferences)
                               .defaultPreference(apiData.getExtension(RoutingConfiguration.class)
                                                      .map(RoutingConfiguration::getDefaultPreference)
+                                                     .orElse(preferences.keySet()
+                                                                 .stream()
+                                                                 .findFirst()
+                                                                 .orElseThrow()))
+                              .modes(modes)
+                              .defaultMode(apiData.getExtension(RoutingConfiguration.class)
+                                                     .map(RoutingConfiguration::getDefaultMode)
                                                      .orElse(preferences.keySet()
                                                                  .stream()
                                                                  .findFirst()

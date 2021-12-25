@@ -15,8 +15,6 @@ import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -34,7 +32,7 @@ public class ConformanceDeclarationWeight implements ConformanceClass {
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(RoutingConfiguration.class)
             .filter(ExtensionConfiguration::isEnabled)
-            .filter(RoutingConfiguration::getLoadRestrictions)
+            .filter(RoutingConfiguration::getWeightRestrictions)
             .isPresent();
     }
 
