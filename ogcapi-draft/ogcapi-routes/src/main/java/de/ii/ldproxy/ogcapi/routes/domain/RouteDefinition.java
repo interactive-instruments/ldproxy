@@ -10,6 +10,8 @@ package de.ii.ldproxy.ogcapi.routes.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import com.google.common.hash.Funnel;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.xtraplatform.cql.domain.Geometry;
 import de.ii.xtraplatform.cql.domain.ImmutableMultiPolygon;
 import de.ii.xtraplatform.cql.domain.ImmutablePoint;
@@ -17,7 +19,9 @@ import de.ii.xtraplatform.cql.domain.ImmutablePolygon;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -27,6 +31,8 @@ import java.util.stream.IntStream;
 @JsonDeserialize(builder = ImmutableRouteDefinition.Builder.class)
 public interface RouteDefinition {
   RouteDefinitionInputs getInputs();
+
+  List<Link> getLinks();
 
   @JsonIgnore
   @Value.Derived
@@ -121,4 +127,9 @@ public interface RouteDefinition {
     else
       return new Geometry.Coordinate(coord.get(0).doubleValue(), coord.get(1).doubleValue(), coord.get(2).doubleValue());
   }
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<RouteDefinition> FUNNEL = (from, into) -> {
+    RouteDefinitionInputs.FUNNEL.funnel(from.getInputs(), into);
+  };
 }

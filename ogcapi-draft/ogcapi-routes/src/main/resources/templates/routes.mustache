@@ -77,8 +77,8 @@
                         <ul class="list-unstyled">
                             {{#additionalFlags}}
                                 <li>
-                                    <input id="flag-{{key}}" name="flags" type="checkbox" value="{{key}}"/>
-                                    <label class="inline" for="flags-{{key}}">{{value}}</label>
+                                    <input id="flag-{{key}}" name="flags" type="checkbox" value="{{key}}" {{#value}}{{#default}}checked="{{.}}"{{/default}}{{/value}}/>
+                                    <label class="inline" for="flags-{{key}}">{{#value}}{{label}}{{/value}}</label>
                                 </li>
                             {{/additionalFlags}}
                         </ul>
@@ -186,8 +186,6 @@
             </div>
 
         </form>
-
-        <br/>
         <!-- debug
         <div class="results">
             <h2>Form Data</h2>
@@ -198,6 +196,21 @@
             <pre></pre>
         </div>
         -->
+        <br/>
+        {{#hasLinks}}
+        <h1>{{routesListTitle}}</h1>
+        <span>{{{routesListDescription}}}</span>
+        <div class="row my-2">
+            <div class="col-md-12">
+                <ul>
+                    {{#itemLinks}}
+                        <li><a href="{{href}}" target="_blank">{{title}}</a></li>
+                    {{/itemLinks}}
+                </ul>
+            </div>
+        </div>
+        {{/hasLinks}}
+        <br/>
     </div>
 </div>
 
@@ -239,10 +252,11 @@
 }
 </style>
 <script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
-<script src="https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
-<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.js"></script>
+<!-- TODO only pull the bits from turf that we need -->
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.js"></script>
 <link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.2.0/mapbox-gl-draw.css" type="text/css"/>
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.css" type="text/css"/>
 <script type="text/javascript">
 function handleFormSubmit(event) {
    event.preventDefault();
@@ -336,7 +350,7 @@ function handleFormSubmit(event) {
          } else if (problem.detail !== "" && problem.detail !== undefined) {
              errorElement.innerText = problem.detail;
          } else {
-             errorElement.innerText = "An error occurred. No route could be computed."; // TODO i18n
+             errorElement.innerText = "An error occurred. No route could be computed.";
          }
       }
    };

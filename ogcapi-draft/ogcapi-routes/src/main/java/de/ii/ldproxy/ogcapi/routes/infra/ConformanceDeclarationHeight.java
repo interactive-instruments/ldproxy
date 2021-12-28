@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.routes.app;
+package de.ii.ldproxy.ogcapi.routes.infra;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +22,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
+import de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting;
 import de.ii.ldproxy.ogcapi.routes.domain.Route;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;

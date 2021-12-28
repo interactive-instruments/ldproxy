@@ -22,7 +22,7 @@ public interface RouteDefinitionInfo {
   String getDefaultPreference();
   Map<String, String> getModes();
   String getDefaultMode();
-  Map<String, String> getAdditionalFlags();
+  Map<String, RoutingFlag> getAdditionalFlags();
   Map<String, String> getCrs();
 
   @SuppressWarnings("UnstableApiUsage")
@@ -51,7 +51,7 @@ public interface RouteDefinitionInfo {
         .sorted(Map.Entry.comparingByKey())
         .forEachOrdered(entry -> {
           into.putString(entry.getKey(), StandardCharsets.UTF_8);
-          into.putString(entry.getValue(), StandardCharsets.UTF_8);
+          RoutingFlag.FUNNEL.funnel(entry.getValue(), into);
         });
     from.getCrs()
         .entrySet()

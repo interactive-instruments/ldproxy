@@ -15,6 +15,7 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 
 import java.text.MessageFormat;
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -69,12 +70,21 @@ public abstract class Endpoint implements EndpointExtension {
                 .mode(apiValidation);
 
         try {
-            if (getFormats().isEmpty()) {
+            // compile and cache the API definition
+            ApiEndpointDefinition definition = getDefinition(apiData);
+
+            if (getFormats().isEmpty() &&
+                definition
+                .getResources()
+                .values()
+                .stream()
+                .map(r -> r.getOperations().keySet())
+                .flatMap(Collection::stream)
+                .anyMatch(m -> m.equalsIgnoreCase("get"))) {
+
                 builder.addStrictErrors(MessageFormat.format("The Endpoint class ''{0}'' does not support any output format.", this.getClass().getSimpleName()));
             }
 
-            // compile and cache the API definition
-            getDefinition(apiData);
 
         } catch (Exception exception) {
             String message = exception.getMessage();

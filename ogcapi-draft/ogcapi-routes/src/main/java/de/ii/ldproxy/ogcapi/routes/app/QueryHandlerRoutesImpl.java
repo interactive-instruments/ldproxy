@@ -7,29 +7,30 @@
  */
 package de.ii.ldproxy.ogcapi.routes.app;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.routes.app.json.RouteDefinitionFormatJson;
 import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableFeatureTransformationContextRoutes;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutes;
+import de.ii.ldproxy.ogcapi.routes.domain.Route;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionFormatExtension;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteRepository;
+import de.ii.ldproxy.ogcapi.routes.domain.Routes;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.xtraplatform.routes.sql.domain.Preference;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInputs;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
@@ -61,7 +62,6 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
@@ -85,18 +85,25 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
     private final CrsTransformerFactory crsTransformerFactory;
     private final EntityRegistry entityRegistry;
     private final CrsSupport crsSupport;
+    private final RouteRepository routeRepository;
 
     public QueryHandlerRoutesImpl(@Requires I18n i18n,
                                   @Requires CrsTransformerFactory crsTransformerFactory,
                                   @Requires EntityRegistry entityRegistry,
-                                  @Requires CrsSupport crsSupport) {
+                                  @Requires CrsSupport crsSupport,
+                                  @Requires RouteRepository routeRepository) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
         this.crsSupport = crsSupport;
+        this.routeRepository = routeRepository;
+
         this.queryHandlers = ImmutableMap.of(
-            Query.ROUTE_DEFINITION_FORM, QueryHandler.with(QueryInputRouteDefinitionForm.class, this::getForm),
-            Query.COMPUTE_ROUTE, QueryHandler.with(QueryInputComputeRoute.class, this::computeRoute)
+            Query.COMPUTE_ROUTE, QueryHandler.with(QueryInputComputeRoute.class, this::computeRoute),
+            Query.GET_ROUTES, QueryHandler.with(QueryInputRoutes.class, this::getRoutes),
+            Query.GET_ROUTE, QueryHandler.with(QueryInputRoute.class, this::getRoute),
+            Query.GET_ROUTE_DEFINITION, QueryHandler.with(QueryInputRoute.class, this::getRouteDefinition),
+            Query.DELETE_ROUTE, QueryHandler.with(QueryInputRoute.class, this::deleteRoute)
         );
     }
 
@@ -105,45 +112,11 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         return queryHandlers;
     }
 
-    private Response getForm(QueryInputRouteDefinitionForm queryInput, ApiRequestContext requestContext) {
-        OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
-
-        List<Link> links = ImmutableList.of();
-
-        RoutesFormatExtension outputFormatExtension = api.getOutputFormat(RoutesFormatExtension.class,
-                                                                          requestContext.getMediaType(), "/routes",
-                                                                          Optional.empty())
-            .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
-
-        Object entity = outputFormatExtension.getFormEntity(queryInput.getTemplateInfo(),
-                                                            requestContext.getApi(),
-                                                            requestContext);
-
-        Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(queryInput.getTemplateInfo(), RouteDefinitionInfo.FUNNEL, outputFormatExtension);
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
-
-        return prepareSuccessResponse(requestContext,
-                                      queryInput.getIncludeLinkHeader() ? links : null,
-                                      lastModified,
-                                      etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
-                                      null,
-                                      true,
-                                      String.format("route-definition-template.%s", outputFormatExtension.getMediaType().fileExtension()))
-            .entity(entity)
-            .build();
-    }
-
     private Response computeRoute(QueryInputComputeRoute queryInput, ApiRequestContext requestContext) {
         OgcApi api = requestContext.getApi();
         OgcApiDataV2 apiData = api.getData();
-        MediaType contentType = queryInput.getContentType();
-        RouteDefinition routeDefinition = parse(queryInput.getRequestBody(), false);
+        RouteDefinition routeDefinition = queryInput.getDefinition();
+        String routeId = queryInput.getRouteId();
         FeatureQuery query = queryInput.getQuery();
         FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
         RoutingConfiguration config = apiData.getExtension(RoutingConfiguration.class)
@@ -206,7 +179,8 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                                                                  .collect(Collectors.joining(","))));
         }
 
-        RouteQuery routeQuery = routeQueryBuilder.build();
+        RouteQuery routeQuery = routeQueryBuilder
+            .build();
         LOGGER.debug("Route Query: {}", routeQuery);
 
         query = ImmutableFeatureQuery.builder()
@@ -230,7 +204,15 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
-        List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
+        List<Link> links = ImmutableList.of();
+        if (Boolean.TRUE.equals(config.getManageRoutes())) {
+            links = new RoutesLinksGenerator().generateRouteLinks(routeId,
+                                                                  inputs.getName(),
+                                                                  requestContext.getUriCustomizer(),
+                                                                  requestContext.getMediaType(),
+                                                                  i18n,
+                                                                  requestContext.getLanguage());
+        }
 
         FeatureTransformationContextRoutes transformationContext = ImmutableFeatureTransformationContextRoutes.builder()
             .apiData(api.getData())
@@ -256,7 +238,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .shouldSwapCoordinates(swapCoordinates)
             .isHitsOnlyIfMore(false)
             .showsFeatureSelfLink(false)
-            .name(inputs.getName().orElse("Route"))
+            .name(inputs.getName())
             .format(outputFormat)
             .outputStream(new OutputStreamToByteConsumer())
             .startTimeNano(System.nanoTime())
@@ -287,6 +269,23 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         if (Objects.nonNull(response))
             return response.build();
 
+        // write routeDefinition and route if managing routes is enabled
+        if (Boolean.TRUE.equals(config.getManageRoutes())) {
+            try {
+                List<Link> definitionLinks = new RoutesLinksGenerator().generateRouteDefinitionLinks(routeId,
+                                                                                                     inputs.getName(),
+                                                                                                     requestContext.getUriCustomizer(),
+                                                                                                     RouteDefinitionFormatJson.MEDIA_TYPE,
+                                                                                                     i18n,
+                                                                                                     requestContext.getLanguage());
+                routeRepository.writeRouteAndDefinition(apiData, routeId, outputFormat, result, routeDefinition, definitionLinks);
+            } catch (IOException e) {
+                LOGGER.error("Could not store route in route repository.", e);
+                if (LOGGER.isDebugEnabled())
+                    LOGGER.debug("Stacktrace: ", e);
+            }
+        }
+
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
@@ -300,19 +299,119 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .build();
     }
 
-    static RouteDefinition parse(byte[] content, boolean strict) {
-        // prepare Jackson mapper for deserialization
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new Jdk8Module());
-        mapper.registerModule(new GuavaModule());
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, strict);
-        mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
+    private Response getRoutes(QueryInputRoutes queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
+        OgcApiDataV2 apiData = api.getData();
+
+        List<Link> links = ImmutableList.of();
+
+        RoutesFormatExtension outputFormatExtension = api.getOutputFormat(RoutesFormatExtension.class,
+                                                                          requestContext.getMediaType(),
+                                                                          "/routes",
+                                                                          Optional.empty())
+            .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
+
+        Routes routes = new ImmutableRoutes.Builder()
+            .from(routeRepository.getRoutes(apiData, requestContext))
+            .templateInfo(queryInput.getTemplateInfo())
+            .build();
+
+        Object entity = outputFormatExtension.getRoutesEntity(routes,
+                                                              requestContext.getApi(),
+                                                              requestContext);
+
+        Date lastModified = getLastModified(queryInput, api);
+        EntityTag etag = getEtag(routes, Routes.FUNNEL, outputFormatExtension);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      lastModified,
+                                      etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("route-definition-template.%s", outputFormatExtension.getMediaType().fileExtension()))
+            .entity(entity)
+            .build();
+    }
+
+    private Response getRoute(QueryInputRoute queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
+        OgcApiDataV2 apiData = api.getData();
+        String routeId = queryInput.getRouteId();
+
+        RouteFormatExtension format = api.getOutputFormat(RouteFormatExtension.class,
+                                                                requestContext.getMediaType(),
+                                                                "/routes/"+routeId,
+                                                                Optional.empty())
+            .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
+
+        Route route = routeRepository.getRoute(apiData, routeId, format);
+        byte[] content = format.getRouteAsByteArray(route, apiData, requestContext);
+
+        Date lastModified = routeRepository.getLastModified(apiData, routeId);
+        EntityTag etag = getEtag(content);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? route.getLinks() : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.%s", routeId, format.getFileExtension()))
+            .entity(content)
+            .build();
+    }
+
+    private Response getRouteDefinition(QueryInputRoute queryInput, ApiRequestContext requestContext) {
+        OgcApi api = requestContext.getApi();
+        OgcApiDataV2 apiData = api.getData();
+        String routeId = queryInput.getRouteId();
+        RouteDefinition routeDefinition = routeRepository.getRouteDefinition(apiData, queryInput.getRouteId());
+
+        RouteDefinitionFormatExtension outputFormat = api.getOutputFormat(RouteDefinitionFormatExtension.class,
+                                                                          requestContext.getMediaType(),
+                                                                          "/routes/"+routeId+"/definition",
+                                                                          Optional.empty())
+            .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
+
+        byte[] content = outputFormat.getRouteDefinitionAsByteArray(routeDefinition, apiData, requestContext);
+
+        Date lastModified = routeRepository.getLastModified(apiData, routeId);
+        EntityTag etag = getEtag(content);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        if (Objects.nonNull(response))
+            return response.build();
+
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? routeDefinition.getLinks() : null,
+                                      lastModified, etag,
+                                      queryInput.getCacheControl().orElse(null),
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.definition.%s", queryInput.getRouteId(), outputFormat.getMediaType().fileExtension()))
+            .entity(content)
+            .build();
+    }
+
+    private Response deleteRoute(QueryInputRoute queryInput, ApiRequestContext requestContext) {
+
         try {
-            // parse input
-            return mapper.readValue(content, RouteDefinition.class);
+            routeRepository.deleteRoute(requestContext.getApi().getData(),
+                                        queryInput.getRouteId());
         } catch (IOException e) {
-            throw new IllegalArgumentException("The content of the route definition is invalid.", e);
+            throw new WebApplicationException("Could not delete the route from the store.", e, Response.Status.INTERNAL_SERVER_ERROR);
         }
+
+        return Response.noContent()
+            .build();
     }
 
     private StreamingOutput stream(FeatureStream featureTransformStream,

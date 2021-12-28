@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.routes.app;
+package de.ii.ldproxy.ogcapi.routes.app.encoder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -14,15 +14,8 @@ import de.ii.ldproxy.ogcapi.domain.UnprocessableEntity;
 import de.ii.ldproxy.ogcapi.features.core.domain.Geometry;
 import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoute;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteEnd;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteOverview;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteSegment;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteStart;
-import de.ii.ldproxy.ogcapi.routes.domain.Route;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteEnd;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteOverview;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteSegment;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteStart;
+import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteComponent;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteComponent;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
@@ -30,7 +23,6 @@ import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.WebApplicationException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -43,7 +35,7 @@ import java.util.stream.IntStream;
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
 
-// TODO generalize options and make them configurable to avoid that the encoder is specific to one use case and source dataset
+// TODO do we need to create configurable options for the REM content?
 
 public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, FeatureRoutes> {
 
@@ -51,17 +43,17 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
 
   private final FeatureTransformationContextRoutes transformationContext;
   private final ImmutableRoute.Builder builder;
-  private RouteStart start;
+  private RouteComponent<Geometry.Point> start;
   private Geometry.Point lastPoint;
   private Double lastAngle;
   private List<Geometry.Coordinate> overviewGeometry;
-  private List<RouteSegment> segments;
+  private List<RouteComponent<Geometry.Point>> segments;
   private Double aggCost;
   private Double aggDuration;
   private Double aggLength;
   private Double aggAscent;
   private Double aggDescent;
-  private ImmutableRouteSegment.Builder segmentBuilder;
+  private ImmutableRouteComponent.Builder<Geometry.Point> segmentBuilder;
   private boolean firstSegment;
   private boolean is3d;
   private boolean isReverse;
@@ -132,10 +124,10 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     if (firstSegment) {
       firstSegment = false;
       Geometry.Coordinate firstCoord = coordinates.get(0);
-      start = ImmutableRouteStart.builder()
+      start = ImmutableRouteComponent.<Geometry.Point>builder()
           .id(2)
           .geometry(Geometry.Point.of(firstCoord))
-          .putProperties("featureType", RouteStart.FEATURE_TYPE)
+          .putProperties("featureType", "start")
           .build();
       overviewGeometry.add(firstCoord);
       is3d = firstCoord.size()==3;
@@ -184,10 +176,10 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
         .forEach(p -> {
           propertyBuilder.set(processProperty(id, p, propertyBuilder.get()));
         });
-    segmentBuilder = ImmutableRouteSegment.builder()
+    segmentBuilder = ImmutableRouteComponent.<Geometry.Point>builder()
         .geometry(lastPoint)
         .id(Integer.parseInt(id)+3)
-        .putProperties("featureType", RouteSegment.FEATURE_TYPE)
+        .putProperties("featureType", "segment")
         .putAllProperties(propertyBuilder.get().build());
   }
 
@@ -243,40 +235,40 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
 
   @Override
   public void onEnd(ModifiableContext context) {
-    if (Objects.nonNull(start) && Objects.nonNull(lastPoint)) {
-      builder.bbox(computeBbox());
-      long processingDuration = (System.nanoTime() - transformationContext.getStartTimeNano()) / 1000000;
-      ImmutableMap.Builder<String, Object> propertyBuilder = ImmutableMap.builder();
-      if (aggLength>0.0)
-        propertyBuilder.put("length_m", round(aggLength));
-      if (aggDuration>0.0)
-        propertyBuilder.put("duration_s", round(aggDuration));
-      if (aggAscent>0.0)
-        propertyBuilder.put("ascent_m", round(aggAscent));
-      if (aggDescent>0.0)
-        propertyBuilder.put("descent_m", round(aggDescent));
-      propertyBuilder.put("processingTime", Instant.now()
-          .truncatedTo(ChronoUnit.SECONDS)
-          .toString());
-      propertyBuilder.put("processingDuration_ms", round(processingDuration));
-      builder.addFeatures(ImmutableRouteOverview.builder()
-                              .id(1)
-                              .geometry(Geometry.LineString.of(overviewGeometry))
-                              .putProperties("featureType", RouteOverview.FEATURE_TYPE)
-                              .putAllProperties(propertyBuilder.build())
-                              .build(),
-                          start,
-                          ImmutableRouteEnd.builder()
-                              .id(3)
-                              .geometry(lastPoint)
-                              .putProperties("featureType", RouteEnd.FEATURE_TYPE)
-                              .build());
-      segments.add(segmentBuilder.build());
-      builder.addAllFeatures(segments);
-      builder.status(Route.STATUS.successful);
-    } else {
+    if (Objects.isNull(start) || Objects.isNull(lastPoint)) {
       throw new UnprocessableEntity("No route was found between the start and end location.");
     }
+
+    builder.bbox(computeBbox());
+    long processingDuration = (System.nanoTime() - transformationContext.getStartTimeNano()) / 1000000;
+    ImmutableMap.Builder<String, Object> propertyBuilder = ImmutableMap.builder();
+    if (aggLength>0.0)
+      propertyBuilder.put("length_m", round(aggLength));
+    if (aggDuration>0.0)
+      propertyBuilder.put("duration_s", round(aggDuration));
+    if (aggAscent>0.0)
+      propertyBuilder.put("ascent_m", round(aggAscent));
+    if (aggDescent>0.0)
+      propertyBuilder.put("descent_m", round(aggDescent));
+    propertyBuilder.put("processingTime", Instant.now()
+        .truncatedTo(ChronoUnit.SECONDS)
+        .toString());
+    propertyBuilder.put("processingDuration_ms", round(processingDuration));
+    builder.addFeatures(ImmutableRouteComponent.<Geometry.LineString>builder()
+                            .id(1)
+                            .geometry(Geometry.LineString.of(overviewGeometry))
+                            .putProperties("featureType", "overview")
+                            .putAllProperties(propertyBuilder.build())
+                            .build(),
+                        start,
+                        ImmutableRouteComponent.<Geometry.Point>builder()
+                            .id(3)
+                            .geometry(lastPoint)
+                            .putProperties("featureType", "end")
+                            .build());
+    segments.add(segmentBuilder.build());
+    builder.addAllFeatures(segments);
+    builder.links(transformationContext.getLinks());
     byte[] result = transformationContext.getFormat()
         .getRouteAsByteArray(builder.build(), transformationContext.getApiData(), transformationContext.getOgcApiRequest());
     push(result);

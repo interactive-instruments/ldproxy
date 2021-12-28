@@ -9,9 +9,11 @@ package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
+import com.google.common.hash.Funnel;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -28,7 +30,7 @@ public abstract class ObstaclesValue {
 
     @Value.Check
     void check() {
-        Preconditions.checkState(getType().equals("MultiPolygon"), "Waypoints is not a MultiPolygon geometry. Found: {}.", getType());
+        Preconditions.checkState(getType().equals("MultiPolygon"), "WaypointsValue is not a MultiPolygon geometry. Found: {}.", getType());
         Preconditions.checkState(getCoordinates().size()>=1, "At least one polygon is required. Found: {}.", getCoordinates().size());
         getCoordinates().stream()
             .flatMap(Collection::stream)
@@ -48,4 +50,15 @@ public abstract class ObstaclesValue {
         Preconditions.checkState(dimensions.stream().min(Comparator.naturalOrder()).orElse(2)>=2, "At least two coordinates are required per position. Found: {}.", dimensions.stream().min(Comparator.naturalOrder()).get());
         Preconditions.checkState(dimensions.stream().max(Comparator.naturalOrder()).orElse(3)<=3, "At most three coordinates are required per position. Found: {}.", dimensions.stream().max(Comparator.naturalOrder()).get());
     }
+
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<ObstaclesValue> FUNNEL = (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        from.getCoordinates().stream()
+            .flatMap(Collection::stream)
+            .flatMap(Collection::stream)
+            .flatMap(Collection::stream)
+            .forEach(into::putFloat);
+        into.putString(from.getCoordRefSys(), StandardCharsets.UTF_8);
+    };
 }

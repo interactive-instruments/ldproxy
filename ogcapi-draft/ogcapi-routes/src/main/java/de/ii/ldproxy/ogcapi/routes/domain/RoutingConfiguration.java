@@ -32,6 +32,9 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     String getFeatureType();
 
     @Nullable
+    Boolean getManageRoutes();
+
+    @Nullable
     Boolean getIntermediateWaypoints();
 
     @Nullable

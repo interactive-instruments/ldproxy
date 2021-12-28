@@ -5,12 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.routes.app;
+package de.ii.ldproxy.ogcapi.routes.infra;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -21,18 +22,18 @@ import java.util.List;
 @Component
 @Provides
 @Instantiate
-public class ConformanceDeclarationObstacles implements ConformanceClass {
+public class ConformanceDeclarationWeight implements ConformanceClass {
 
     @Override
     public List<String> getConformanceClassUris() {
-        return ImmutableList.of(CapabilityRouting.OBSTACLES);
+        return ImmutableList.of(CapabilityRouting.WEIGHT);
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(RoutingConfiguration.class)
             .filter(ExtensionConfiguration::isEnabled)
-            .filter(RoutingConfiguration::getObstacles)
+            .filter(RoutingConfiguration::getWeightRestrictions)
             .isPresent();
     }
 

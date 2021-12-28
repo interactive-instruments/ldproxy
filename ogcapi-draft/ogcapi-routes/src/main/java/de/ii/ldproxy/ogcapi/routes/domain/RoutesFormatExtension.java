@@ -16,15 +16,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 public interface RoutesFormatExtension extends FormatExtension {
 
     @Override
-    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(RoutingConfiguration.class)
-            .filter(RoutingConfiguration::getEnabled)
-            .map(RoutingConfiguration::getHtml)
-            .filter(HtmlForm::getEnabled)
-            .isPresent();
-    }
-
-    @Override
     default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return false;
     }
@@ -39,5 +30,5 @@ public interface RoutesFormatExtension extends FormatExtension {
         return "^/routes/?$";
     }
 
-    Object getFormEntity(RouteDefinitionInfo templateInfo, OgcApi api, ApiRequestContext requestContext);
+    Object getRoutesEntity(Routes routes, OgcApi api, ApiRequestContext requestContext);
 }

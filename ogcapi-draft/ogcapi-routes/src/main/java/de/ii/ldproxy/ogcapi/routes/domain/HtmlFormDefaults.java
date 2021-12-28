@@ -8,7 +8,6 @@
 package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

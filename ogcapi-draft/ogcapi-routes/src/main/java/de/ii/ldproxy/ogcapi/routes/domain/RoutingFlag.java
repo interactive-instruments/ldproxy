@@ -8,8 +8,10 @@
 package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Value.Immutable
@@ -20,4 +22,11 @@ public interface RoutingFlag {
     @Value.Default
     default boolean getDefault() { return false; }
     Optional<String> getProviderFlag();
+
+    @SuppressWarnings("UnstableApiUsage")
+    Funnel<RoutingFlag> FUNNEL = (from, into) -> {
+        into.putString(from.getLabel(), StandardCharsets.UTF_8);
+        into.putBoolean(from.getDefault());
+        from.getProviderFlag().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+    };
 }

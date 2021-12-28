@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.routes.app;
+package de.ii.ldproxy.ogcapi.routes.app.html;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
@@ -23,7 +23,7 @@ import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.routes.domain.HtmlForm;
 import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlFormDefaults;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
+import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
@@ -65,7 +65,16 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
     }
 
     @Override
-    public Object getFormEntity(RouteDefinitionInfo templateInfo, OgcApi api, ApiRequestContext requestContext) {
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return apiData.getExtension(RoutingConfiguration.class)
+            .filter(RoutingConfiguration::getEnabled)
+            .map(RoutingConfiguration::getHtml)
+            .filter(HtmlForm::getEnabled)
+            .isPresent();
+    }
+
+    @Override
+    public Object getRoutesEntity(Routes routes, OgcApi api, ApiRequestContext requestContext) {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String routesTitle = i18n.get("routesTitle", requestContext.getLanguage());
 
@@ -95,7 +104,7 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
             .orElse(ImmutableHtmlFormDefaults.builder().build());
 
         RoutesView view =
-            new RoutesView(api.getData(), templateInfo, htmlDefaults, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
+            new RoutesView(api.getData(), routes, htmlDefaults, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
         return view;
     }
 

@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinkGenerator;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -58,7 +58,7 @@ public class RoutesOnLandingPage implements LandingPageExtension {
             return landingPageBuilder;
         }
 
-        final RoutesLinkGenerator linkGenerator = new RoutesLinkGenerator();
+        final RoutesLinksGenerator linkGenerator = new RoutesLinksGenerator();
         final List<Link> links = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
         landingPageBuilder.addAllLinks(links);
 

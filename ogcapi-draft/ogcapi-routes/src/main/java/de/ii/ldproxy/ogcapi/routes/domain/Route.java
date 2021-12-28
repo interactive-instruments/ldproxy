@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -15,14 +16,13 @@ import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
-@JsonDeserialize(builder = ImmutableRouteDefinitionInputs.Builder.class)
+@JsonDeserialize(builder = ImmutableRoute.Builder.class)
 public abstract class Route {
-
-    public enum STATUS {accepted, running, successful, failed}
 
     public final String getType() { return "FeatureCollection"; }
     public abstract Optional<String> getName();
-    public abstract STATUS getStatus();
     public abstract List<Double> getBbox();
     public abstract List<RouteComponent> getFeatures();
+    public abstract List<Link> getLinks();
+
 }

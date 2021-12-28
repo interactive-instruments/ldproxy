@@ -10,20 +10,21 @@ package de.ii.ldproxy.ogcapi.routes.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ldproxy.ogcapi.features.core.domain.Geometry;
+import org.immutables.value.Value;
 
+import java.util.Map;
 import java.util.Optional;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@JsonSubTypes({
-    @JsonSubTypes.Type(value = RouteOverview.class, name = "overview"),
-    @JsonSubTypes.Type(value = RouteStart.class, name = "start"),
-    @JsonSubTypes.Type(value = RouteEnd.class, name = "end"),
-    @JsonSubTypes.Type(value = RouteSegment.class, name = "segment")
-})
-public abstract class RouteComponent {
+@Value.Immutable
+@Value.Style(deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableRouteComponent.Builder.class)
+public abstract class RouteComponent<T> {
 
   public final String getType() { return "Feature"; }
-
   @JsonInclude(JsonInclude.Include.NON_ABSENT)
   public abstract Optional<Integer> getId();
+  public abstract T getGeometry();
+  public abstract Map<String, Object> getProperties();
 }

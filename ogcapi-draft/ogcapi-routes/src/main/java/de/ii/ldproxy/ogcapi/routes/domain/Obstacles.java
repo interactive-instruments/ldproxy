@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -38,4 +39,9 @@ public interface Obstacles {
     default String getPos(List<Float> pos) {
         return pos.stream().map(String::valueOf).collect(Collectors.joining(" "));
     }
+
+    @SuppressWarnings("UnstableApiUsage")
+    Funnel<Obstacles> FUNNEL = (from, into) -> {
+        ObstaclesValue.FUNNEL.funnel(from.getValue(), into);
+    };
 }

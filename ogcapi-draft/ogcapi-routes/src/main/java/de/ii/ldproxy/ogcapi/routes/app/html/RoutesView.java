@@ -5,13 +5,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.routes.app;
+package de.ii.ldproxy.ogcapi.routes.app.html;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
@@ -22,7 +23,9 @@ import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
+import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutingFlag;
 
 import java.util.List;
 import java.util.Locale;
@@ -30,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class RoutesView extends OgcApiView {
 
@@ -52,17 +56,23 @@ public class RoutesView extends OgcApiView {
     public final boolean supportsMaxWeight;
     public final boolean supportsMaxHeight;
     public final boolean supportsObstacles;
+    public final String routesListTitle;
+    public final String routesListDescription;
 
     private final RouteDefinitionInfo templateInfo;
     private final HtmlFormDefaults htmlDefaults;
 
-    public RoutesView(OgcApiDataV2 apiData, RouteDefinitionInfo templateInfo, HtmlFormDefaults htmlDefaults, final List<NavigationDTO> breadCrumbs,
+    public RoutesView(OgcApiDataV2 apiData, Routes routes, HtmlFormDefaults htmlDefaults, final List<NavigationDTO> breadCrumbs,
                       String urlPrefix, HtmlConfiguration htmlConfig, boolean noIndex, I18n i18n, Optional<Locale> language) {
         super("routes.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
-              ImmutableList.of(),
+              routes.getLinks(),
               i18n.get("routesTitle", language),
-              i18n.get("routesDescription", language));
-        this.templateInfo = templateInfo;
+              apiData.getExtension(RoutingConfiguration.class)
+                  .map(RoutingConfiguration::getObstacles)
+                  .orElse(false)
+                  ? String.format("%s %s", i18n.get("routesDescription", language), i18n.get("routesDescriptionObstacles", language))
+                  : i18n.get("routesDescription", language));
+        this.templateInfo = routes.getTemplateInfo().orElse(null);
         this.htmlDefaults = htmlDefaults;
         routeNameTitle = i18n.get("routeNameTitle", language);
         preferenceTitle = i18n.get("preferenceTitle", language);
@@ -78,6 +88,8 @@ public class RoutesView extends OgcApiView {
         maxHeightTitle = i18n.get("maxHeightTitle", language);
         weightUnitTitle = i18n.get("weightUnitTitle", language);
         heightUnitTitle = i18n.get("heightUnitTitle", language);
+        routesListTitle = i18n.get("routesListTitle", language);
+        routesListDescription = i18n.get("routesListDescription", language);
 
         this.bbox = apiData.getSpatialExtent()
             .map(boundingBox -> ImmutableMap.of(
@@ -98,8 +110,9 @@ public class RoutesView extends OgcApiView {
                       .url("data:application/geo+json,{type:\"FeatureCollection\",features:[]}")
                       .build())
             .popup(MapClient.Popup.CLICK_PROPERTIES)
-            .styleUrl(Optional.ofNullable(null)) // TODO
-            .removeZoomLevelConstraints(false) // TODO
+            // TODO add support for a configurable style?
+            .styleUrl(Optional.ofNullable(null))
+            .removeZoomLevelConstraints(false)
             .build();
 
         this.supportsMaxWeight = apiData.getExtension(RoutingConfiguration.class)
@@ -149,7 +162,7 @@ public class RoutesView extends OgcApiView {
             .collect(ImmutableSet.toImmutableSet());
     }
 
-    public Set<Map.Entry<String,String>> getAdditionalFlags() {
+    public Set<Map.Entry<String, RoutingFlag>> getAdditionalFlags() {
         return templateInfo
             .getAdditionalFlags()
             .entrySet();
@@ -159,6 +172,17 @@ public class RoutesView extends OgcApiView {
         return !templateInfo
             .getAdditionalFlags()
             .isEmpty();
+    }
+
+    public boolean hasLinks() {
+        return links.stream()
+            .anyMatch(link -> Objects.equals(link.getRel(), "item"));
+    }
+
+    public List<Link> getItemLinks() {
+        return links.stream()
+            .filter(link -> Objects.equals(link.getRel(), "item"))
+            .collect(Collectors.toUnmodifiableList());
     }
 
     public Set<Map.Entry<String,String>> getCrs() {

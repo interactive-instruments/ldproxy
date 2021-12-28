@@ -21,6 +21,8 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.routes.sql.domain.Preference;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -57,6 +59,63 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
     }
 
     @Override
+    public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
+        ValidationResult result = ConformanceDeclarationExtension.super.onStartup(apiData, apiValidation);
+
+        if (apiValidation== ValidationResult.MODE.NONE)
+            return result;
+
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+            .from(result)
+            .mode(apiValidation);
+
+        // check that there is at least one preference/mode and that the default preference/mode is one of them
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
+
+        List<String> preferences = List.copyOf(featureProvider.getData().getExtension(RoutesConfiguration.class)
+                                                   .map(RoutesConfiguration::getPreferences)
+                                                   .map(Map::keySet)
+                                                   .orElse(ImmutableSet.of()));
+        if (preferences.isEmpty())
+            builder.addErrors("Routing: There must be at least one value for the routing preference.");
+        apiData.getExtension(RoutingConfiguration.class)
+            .map(RoutingConfiguration::getDefaultPreference)
+            .ifPresentOrElse(defaultPreference -> {
+                if (!preferences.contains(defaultPreference)) {
+                    builder.addErrors("Routing: The default preference '{}' is not one of the known preference values: {}.", defaultPreference, preferences.toString());
+                }
+            }, () -> builder.addErrors("Routing: No default preference has been configured."));
+
+        List<String> modes = List.copyOf(featureProvider.getData().getExtension(RoutesConfiguration.class)
+                                             .map(RoutesConfiguration::getModes)
+                                             .map(Map::keySet)
+                                             .orElse(ImmutableSet.of()));
+        if (modes.isEmpty())
+            builder.addErrors("Routing: There must be at least one value for the routing mode.");
+        apiData.getExtension(RoutingConfiguration.class)
+            .map(RoutingConfiguration::getDefaultMode)
+            .ifPresentOrElse(defaultMode -> {
+                if (!modes.contains(defaultMode)) {
+                    builder.addErrors("Routing: The default mode '{}' is not one of the known modes: {}.", defaultMode, modes.toString());
+                }
+            }, () -> builder.addErrors("Routing: No default mode has been configured."));
+        modes.forEach(mode -> {
+            if (!featureProvider.getData().getExtension(RoutesConfiguration.class)
+                .map(RoutesConfiguration::getFromToQuery)
+                .map(q -> q.containsKey(mode))
+                .orElse(false))
+                builder.addErrors("Routing: No 'fromToQuery' is specified for mode '{}'.", mode);
+            if (!featureProvider.getData().getExtension(RoutesConfiguration.class)
+                .map(RoutesConfiguration::getEdgesQuery)
+                .map(q -> q.containsKey(mode))
+                .orElse(false))
+                builder.addErrors("Routing: No 'edgesQuery' is specified for mode '{}'.", mode);
+        });
+
+        return builder.build();
+    }
+
+    @Override
     public ImmutableConformanceDeclaration.Builder process(ImmutableConformanceDeclaration.Builder builder,
                                                            OgcApiDataV2 apiData,
                                                            URICustomizer uriCustomizer,
@@ -70,7 +129,6 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
 
         FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
 
-        // TODO check on startup that there is at least one preference/mode and that the default preference/mode is one of them
         List<String> preferences = List.copyOf(featureProvider.getData().getExtension(RoutesConfiguration.class)
             .map(RoutesConfiguration::getPreferences)
             .map(Map::keySet)

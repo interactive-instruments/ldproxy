@@ -31,11 +31,13 @@ public class CapabilityRouting implements ApiBuildingBlock {
     public static String HEIGHT = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/height";
     public static String WEIGHT = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/weight";
     public static String OBSTACLES = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/obstacles";
+    public static String MANAGE_ROUTES = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/manage-routes";
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableRoutingConfiguration.Builder()
             .enabled(false)
+            .manageRoutes(false)
             .intermediateWaypoints(false)
             .weightRestrictions(false)
             .heightRestrictions(false)

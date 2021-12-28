@@ -20,12 +20,12 @@ import java.util.Optional;
 
 public interface QueryHandlerRoutes extends QueriesHandler<QueryHandlerRoutes.Query> {
 
-    enum Query implements QueryIdentifier {COMPUTE_ROUTE, ROUTE_DEFINITION_FORM}
+    enum Query implements QueryIdentifier {COMPUTE_ROUTE, DELETE_ROUTE, GET_ROUTES, GET_ROUTE, GET_ROUTE_DEFINITION}
 
     @Value.Immutable
     interface QueryInputComputeRoute extends QueryInput {
-        MediaType getContentType();
-        byte[] getRequestBody();
+        RouteDefinition getDefinition();
+        String getRouteId();
         FeatureQuery getQuery();
         FeatureProvider2 getFeatureProvider();
         String getFeatureTypeId();
@@ -35,7 +35,12 @@ public interface QueryHandlerRoutes extends QueriesHandler<QueryHandlerRoutes.Qu
     }
 
     @Value.Immutable
-    interface QueryInputRouteDefinitionForm extends QueryInput {
+    interface QueryInputRoutes extends QueryInput {
         RouteDefinitionInfo getTemplateInfo();
+    }
+
+    @Value.Immutable
+    interface QueryInputRoute extends QueryInput {
+        String getRouteId();
     }
 }
