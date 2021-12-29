@@ -16,6 +16,9 @@ import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableStyle;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
@@ -54,6 +57,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     public final String collectionInformationTitle;
     public final String mainLinksTitle;
     public final boolean isDataset;
+    public final MapClient mapClient;
 
     public String none;
 
@@ -67,7 +71,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
                 collection.getDescription()
                           .orElse(null),
                 uriCustomizer,
-                collection.getExtent());
+                collection.getExtent(), language);
         this.collection = collection;
         this.isDataset = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
 
@@ -104,6 +108,16 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
         this.styleInfosTitle = i18n.get ("styleInfosTitle", language);
         this.mainLinksTitle = i18n.get ("mainLinksTitle", language);
         this.collectionInformationTitle = i18n.get ("collectionInformationTitle", language);
+        this.mapClient = new ImmutableMapClient.Builder()
+            .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
+            .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
+                .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
+            .bounds(Optional.ofNullable(this.getBbox()))
+            .drawBounds(true)
+            .isInteractive(false)
+            .defaultStyle(new ImmutableStyle.Builder().color("red").build())
+            .build();
 
         this.none = i18n.get ("none", language);
     }
@@ -150,11 +164,11 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
                     .collect(Collectors.toUnmodifiableList());
     }
 
-    public Optional<Link> getTiles() {
+    public List<Link> getTiles() {
         return links
                 .stream()
                 .filter(link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
-                .findFirst();
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public Optional<Link> getStyles() {
@@ -168,13 +182,6 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "ldp-map"))
-                .findFirst();
-    }
-
-    public Optional<Link> getDapa() {
-        return links
-                .stream()
-                .filter(link -> Objects.equals(link.getRel(), "ogc-dapa-processes"))
                 .findFirst();
     }
 

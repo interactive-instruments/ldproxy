@@ -170,7 +170,6 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
         else if (format==MbtilesMetadata.MbtilesFormat.tiff)
             return "TIFF";
 
-        // TODO support bitmap formats
         throw new UnsupportedOperationException(String.format("Mbtiles format '%s' is currently not supported.", format));
     }
 }

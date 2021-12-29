@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -146,20 +147,16 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default Map<String, String> getQOrOtherFilterParameters() {
+    default List<String> getQOrOtherFilterParameters() {
         if (getQueryables().isPresent()) {
-            FeaturesCollectionQueryables queryables = getQueryables().get();
-            Map<String, String> parameters = new LinkedHashMap<>();
-
-            queryables.getQ()
-                      .forEach(property -> parameters.put(property, property));
-            queryables.getOther()
-                      .forEach(property -> parameters.put(property, property));
-
-            return parameters;
+            return Stream.concat(
+                getQueryables().get().getQ().stream(),
+                getQueryables().get().getOther().stream()
+            )
+                .collect(Collectors.toList());
         }
 
-        return ImmutableMap.of();
+        return ImmutableList.of();
     }
 
     @JsonIgnore

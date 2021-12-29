@@ -19,12 +19,17 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsView;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -37,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 @Component
 @Provides
 @Instantiate
@@ -47,18 +54,18 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
             .parameter("html")
             .build();
 
-    private final ExtensionRegistry extensionRegistry;
     private final I18n i18n;
     private final CollectionDynamicMetadataRegistry metadataRegistry;
     private final TileMatrixSetRepository tileMatrixSetRepository;
+    private final XtraPlatform xtraPlatform;
 
-    public TileSetsFormatHtml(@Requires ExtensionRegistry extensionRegistry,
-                              @Requires I18n i18n,
+    public TileSetsFormatHtml(@Requires I18n i18n,
                               @Requires CollectionDynamicMetadataRegistry metadataRegistry,
+                              @Requires XtraPlatform xtraPlatform,
                               @Requires TileMatrixSetRepository tileMatrixSetRepository) {
-        this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
         this.metadataRegistry = metadataRegistry;
+        this.xtraPlatform = xtraPlatform;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
@@ -68,12 +75,20 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
     }
 
     @Override
+    public String getPathPattern() {
+        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/tiles/?$";
+    }
+
+    @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
+        if (path.equals("/tiles") || path.equals("/collections/{collectionId}/tiles"))
+            return new ImmutableApiMediaTypeContent.Builder()
                 .schema(new StringSchema().example("<html>...</html>"))
                 .schemaRef("#/components/schemas/htmlSchema")
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
+
+        return null;
     }
 
     private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
@@ -124,20 +139,26 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                         .add(new NavigationDTO(tilesTitle))
                         .build();
 
-        HtmlConfiguration htmlConfig = collectionId.isPresent() ?
-                                            api.getData()
-                                                 .getCollections()
-                                                 .get(collectionId.get())
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null) :
-                                            api.getData()
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
+        Optional<HtmlConfiguration> htmlConfig = collectionId.isPresent() ?
+            api.getData().getExtension(HtmlConfiguration.class, collectionId.get()) :
+            api.getData().getExtension(HtmlConfiguration.class);
 
         Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
 
         Optional<BoundingBox> optionalBbox = collectionId.isEmpty() ? metadataRegistry.getSpatialExtent(api.getId()) : metadataRegistry.getSpatialExtent(api.getId(), collectionId.get());
         Optional<TemporalExtent> optionalInterval = collectionId.isEmpty() ? metadataRegistry.getTemporalExtent(api.getId()) : metadataRegistry.getTemporalExtent(api.getId(), collectionId.get());
-        return new TileSetsView(api.getData(), collectionId, optionalBbox.orElse(null), optionalInterval.orElse(null), tiles, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+
+        Optional<TilesConfiguration> tilesConfig = collectionId.isEmpty()
+                ? api.getData().getExtension(TilesConfiguration.class)
+                : api.getData().getExtension(TilesConfiguration.class, collectionId.get());
+        MapClient.Type mapClientType = tilesConfig.map(TilesConfiguration::getMapClientType)
+                                                  .orElse(MapClient.Type.MAP_LIBRE);
+        String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new)).toString();
+        String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(tilesConfig.map(TilesConfiguration::getStyle), collectionId, serviceUrl))
+                                    .orElse(null);
+        boolean removeZoomLevelConstraints = tilesConfig.map(TilesConfiguration::getRemoveZoomLevelConstraints)
+                                                        .orElse(false);
+
+        return new TileSetsView(api.getData(), collectionId, optionalBbox.orElse(null), optionalInterval.orElse(null), tiles, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), mapClientType, styleUrl, removeZoomLevelConstraints, htmlConfig.orElseThrow(), isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 }

@@ -19,12 +19,16 @@ import de.ii.ldproxy.ogcapi.domain.Metadata;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableStyle;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class OgcApiLandingPageView extends OgcApiDatasetView {
 
@@ -51,6 +55,7 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
     public String attributionTitle;
     public String none;
     public boolean isDataset;
+    public MapClient mapClient;
 
     public OgcApiLandingPageView(OgcApiDataV2 apiData, LandingPage apiLandingPage,
                                  final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
@@ -62,7 +67,8 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
                 apiLandingPage.getDescription()
                               .orElse(null),
                 uriCustomizer,
-                apiLandingPage.getExtent());
+                apiLandingPage.getExtent(),
+                language);
         this.apiLandingPage = apiLandingPage;
 
         this.spatialSearch = false;
@@ -92,6 +98,16 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
         this.externalDocsTitle = i18n.get ("externalDocsTitle", language);
         this.attributionTitle = i18n.get ("attributionTitle", language);
         this.none = i18n.get ("none", language);
+        this.mapClient = new ImmutableMapClient.Builder()
+            .backgroundUrl(Optional.ofNullable(htmlConfig.getLeafletUrl())
+                .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
+            .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
+                .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
+            .bounds(Optional.ofNullable(this.getBbox()))
+            .drawBounds(true)
+            .isInteractive(false)
+            .defaultStyle(new ImmutableStyle.Builder().color("red").build())
+            .build();
     }
 
     public List<Link> getDistributionLinks() {
@@ -105,24 +121,17 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
                 .findFirst();
     }
 
-    public Optional<Link> getTiles() {
+    public List<Link> getTiles() {
         return links
                 .stream()
                 .filter(link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
-                .findFirst();
+                .collect(Collectors.toUnmodifiableList());
     }
 
     public Optional<Link> getStyles() {
         return links
                 .stream()
                 .filter(link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/styles"))
-                .findFirst();
-    }
-
-    public Optional<Link> getDapa() {
-        return links
-                .stream()
-                .filter(link -> Objects.equals(link.getRel(), "ogc-dapa-processes"))
                 .findFirst();
     }
 

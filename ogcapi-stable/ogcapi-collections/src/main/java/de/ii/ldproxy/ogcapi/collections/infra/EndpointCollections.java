@@ -112,14 +112,14 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
                 "information about the collection.\n" +
                 "This information includes:\n\n" +
                 "* A local identifier for the collection that is unique for the dataset;\n" +
+                "* A title and description for the collection;\n" +
+                "* An indication of the spatial and temporal extent of the data in the collection;\n" +
                 "* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. " +
                 "The first CRS is the default coordinate reference system (the default is always WGS 84 with " +
                 "axis order longitude/latitude);\n" +
-                "* An optional title and description for the collection;\n" +
-                "* An optional extent that can be used to provide an indication of the spatial and temporal extent " +
-                "of the collection - typically derived from the data;\n" +
-                "* An optional indicator about the type of the items in the collection (the default value, " +
-                "if the indicator is not provided, is 'feature').");
+                "* The CRS in which the spatial geometries are stored in the data source (if data is requested in " +
+                "this CRS, the geometries are returned without any coordinate conversion);\n" +
+                "* An indicator about the type of the items in the collection (the default value is 'feature').");
         String path = "/collections";
         ImmutableOgcApiResourceSet.Builder resourceBuilder = new ImmutableOgcApiResourceSet.Builder()
                 .path(path)

@@ -129,17 +129,17 @@ docker restart ldproxy
 You can monitor the start-up in the log file (`docker logs -f ldproxy`) and you should see something like:
 
 ```text
-INFO  [2021-10-09 13:39:37,058]                          - --------------------------------------------------  
-INFO  [2021-10-09 13:39:37,059]                          - Starting ldproxy 3.0.0  
-INFO  [2021-10-09 13:39:52,960]                          - Started web server at http://localhost:7080  
-INFO  [2021-10-09 13:40:11,084]                          - Store mode: READ_WRITE  
-INFO  [2021-10-09 13:40:11,084]                          - Store location: /ldproxy/data/store  
-INFO  [2021-10-09 13:40:21,358]                vineyards - Feature provider with id 'vineyards' is in auto mode, generating configuration ...  
-INFO  [2021-10-09 13:40:22,530]                vineyards - Entity of type 'providers' with id 'vineyards' is in autoPersist mode, generated configuration was saved.  
-INFO  [2021-10-09 13:40:22,802]                vineyards - Service with id 'vineyards' is in auto mode, generating configuration ...  
-INFO  [2021-10-09 13:40:22,975]                vineyards - Entity of type 'services' with id 'vineyards' is in autoPersist mode, generated configuration was saved.  
-INFO  [2021-10-09 13:40:23,471]                vineyards - Feature provider with id 'vineyards' started successfully. (min connections=8, max connections=8, stream capacity=8)  
-INFO  [2021-10-09 13:40:23,671]                vineyards - Service with id 'vineyards' started successfully.  
+INFO  [2021-12-18 07:29:00,945]                          - --------------------------------------------------  
+INFO  [2021-12-18 07:29:00,948]                          - Starting ldproxy 3.1.0  
+INFO  [2021-12-18 07:29:16,899]                          - Started web server at http://localhost:7080  
+INFO  [2021-12-18 07:29:25,367]                          - Store mode: READ_WRITE  
+INFO  [2021-12-18 07:29:25,367]                          - Store location: /ldproxy/data/store  
+INFO  [2021-12-18 07:29:35,624]                vineyards - Feature provider with id 'vineyards' is in auto mode, generating configuration ...  
+INFO  [2021-12-18 07:29:37,879]                vineyards - Entity of type 'providers' with id 'vineyards' is in autoPersist mode, generated configuration was saved.  
+INFO  [2021-12-18 07:29:38,140]                vineyards - Service with id 'vineyards' is in auto mode, generating configuration ...  
+INFO  [2021-12-18 07:29:38,410]                vineyards - Entity of type 'services' with id 'vineyards' is in autoPersist mode, generated configuration was saved.  
+INFO  [2021-12-18 07:29:39,089]                vineyards - Feature provider with id 'vineyards' started successfully. (min connections=8, max connections=8, stream capacity=8)  
+INFO  [2021-12-18 07:29:39,400]                vineyards - Service with id 'vineyards' started successfully.  
 ```
 
 Congratulations, you are now ready to use the API, just open the [landing page](http://localhost:7080/rest/services/vineyards) or the [vineyards features](http://localhost:7080/rest/services/vineyards/collections/vineyards/items).
@@ -149,8 +149,8 @@ Have a look at the updated configuration files. They should like the following, 
 ```yaml
 ---
 id: vineyards
-createdAt: 1633786821320
-lastModified: 1633786821320
+createdAt: 1639812575490
+lastModified: 1639812575490
 entityStorageVersion: 2
 providerType: FEATURE
 featureProviderType: SQL
@@ -176,10 +176,11 @@ types:
         role: ID
       wlg_nr:
         sourcePath: wlg_nr
-        type: STRING
+        type: INTEGER
       datum:
         sourcePath: datum
         type: DATETIME
+        role: PRIMARY_INSTANT
       suchfeld:
         sourcePath: suchfeld
         type: STRING
@@ -216,14 +217,15 @@ types:
       wkb_geometry:
         sourcePath: wkb_geometry
         type: GEOMETRY
+        role: PRIMARY_GEOMETRY
         geometryType: MULTI_POLYGON
 ```
 
 ```yaml
 ---
 id: vineyards
-createdAt: 1633786821339
-lastModified: 1633786821339
+createdAt: 1639812575613
+lastModified: 1639812575613
 entityStorageVersion: 2
 label: vineyards
 serviceType: OGC_API
@@ -241,7 +243,7 @@ collections:
         - datum
 ```
 
-## Step 4: Finetuning the API configuration
+## Step 4: Fine-tuning the API configuration
 
 While the auto-generated API can be used as it is, the API configuration should always be updated to improve usability and the capabilities that the API offers.
 
@@ -264,6 +266,9 @@ The following changes have been made to the auto-generated provider configuratio
 * Document the schema of the features by adding `label` fields. The labels are, for example, used in the HTML representation.
 * Set `defaultLanguage` to `en` to document that the schema documentation is in English.
 * `ogc_fid` and `gid` are internal fields that are of no interest to users.
+* The `geometry` is tagged as the primary geometry of the vineyard features. Since the features only contain one geometry property, this setting in not strictly necessary.
+* The `date` is tagged as the primary temporal information of the vineyard features. Since the features only contain one temporal property, this setting in not strictly necessary.
+* Use a decimal point in area values (`area_ha`) and map "k. A." to "unknown.
 
 ### Updating the API configuration
 
@@ -292,7 +297,7 @@ metadata:
   publisherUrl: https://www.example.com/
   licenseName: Datenlizenz Deutschland - Namensnennung - Version 2.0
   licenseUrl: https://www.govdata.de/dl-de/by-2-0
-  attribution: '&copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" class="link0" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" class="link0" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
+  attribution: '&copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
 ```
 
 If you set up a local copy, please use your own contact details.
@@ -361,10 +366,12 @@ The following configuration parameters change how the API resources are presente
 * `schemaOrgEnabled` adds [schema.org](https://schema.org/) markup to HTML pages.
 * `collectionDescriptionsInOverview` shows the description of each feature collection in the page at `/collections`.
 * We add links to legal and privacy notices in the footer and link to hypothetical pages. If you set up a local copy, please link to your own pages.
-* ldproxy currently uses both Leaflet and OpenLayers for maps. We set the URLs for the background map as well as the proper data attribution. For the background map we use the TopPlus maps of the German mapping authorities instead of the default (OpenStreetMap).
+* We set the URLs for a basemap as well as the proper data attribution. For the background map we use the TopPlus Open maps of the German mapping authorities instead of the default (OpenStreetMap).
+* We configure a default style for use in map clients in HTML (used for tile sets, features and the default web map). See also "Enable styles" below.
 
 ```yaml
 - buildingBlock: HTML
+  enabled: true
   noIndexEnabled: true
   schemaOrgEnabled: true
   collectionDescriptionsInOverview: true
@@ -372,14 +379,9 @@ The following configuration parameters change how the API resources are presente
   legalUrl: https://www.example.com/legal
   privacyName: Privacy notice
   privacyUrl: https://www.example.com/privacy
-  leafletUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  leafletAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
-    f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
-    class="link0" target="_new">Datenquellen</a>; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" class="link0" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" class="link0" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
-  openLayersUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  openLayersAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
-    f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
-    class="link0" target="_new">Datenquellen</a>; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href="http://weinlagen.lwk-rlp.de/" class="link0" target="_blank">weinlagen.lwk-rlp.de</a>, <a href="http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html" class="link0" target="_blank">Regelungen zu Gewährleistung und Haftung</a>'
+  basemapUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
+  basemapAttribution: '&copy; <a href="https://www.bkg.bund.de" target="_new">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf" target="_new">Datenquellen</a>'
+  defaultStyle: default
 ```
 
 #### Support CQL filter expressions
@@ -389,6 +391,7 @@ The following building block configurations activate
 * a JSON schema resource for the vineyard features;
 * the publication of queryable properties in order to filter the dataset;
 * filter expressions using CQL2 (text and json);
+* the capability to return features sorted by selected properties;
 * the capability to return only selected properties; and
 * the capability to simplify geometries in responses using a Douglas-Peucker algorithm.
 
@@ -398,6 +401,8 @@ The following building block configurations activate
 - buildingBlock: QUERYABLES
   enabled: true
 - buildingBlock: FILTER
+  enabled: true
+- buildingBlock: SORTING
   enabled: true
 - buildingBlock: PROJECTIONS
   enabled: true
@@ -410,25 +415,23 @@ The following building block configurations activate
 The following building block configuration activates support for vector tiles for the dataset:
 
 * Vector tiles will be available for the [most commonly used tiling scheme](https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/) for the zoom levels 5 to 16.
-* The recommended default zoom level for maps is 8 with a center at 7.35°E, 49.8°N.
-* The server will pre-cache tiles for the zoom levels 5 to 11.
+* The server will pre-cache tiles in a MBTiles container for the zoom levels 5 to 11.
 
 ```yaml
 - buildingBlock: TILES
   enabled: true
-  multiCollectionEnabled: true
-  zoomLevels:
-    WebMercatorQuad:
-      min: 5
-      max: 16
-      default: 8
-  seeding:
-    WebMercatorQuad:
-      min: 5
-      max: 11
-  center:
-  - 7.35
-  - 49.8
+  cache: MBTILES
+  tileProvider:
+    type: FEATURES
+    multiCollectionEnabled: true
+    zoomLevels:
+      WebMercatorQuad:
+        min: 5
+        max: 16
+    seeding:
+      WebMercatorQuad:
+        min: 5
+        max: 11
 ```
 
 #### Enable styles
@@ -437,7 +440,8 @@ The following building block configuration activates support for map styles:
 
 * Styles will be encoded as [Mapbox styles](https://www.mapbox.com/mapbox-gl-js/style-spec/). In addition, the style can also be shown using a web map (encoding `HTML`).
 * The styles are provided as files with extension `.mbs` in folder `api-resources/styles/vineyards`.
-* A link to a web map with the default style `default` will be added to the landing page.
+* A link to a web map with the default style `default`, configured in the HTML module, will be added to the landing page.
+* To enable the use of styles on the collection level, including for the tiles and features resources, we also activate that styles for the collection is derived from the API-level style using `deriveCollectionStyles`.
 
 ```yaml
 - buildingBlock: STYLES
@@ -445,7 +449,7 @@ The following building block configuration activates support for map styles:
   styleEncodings:
   - Mapbox
   - HTML
-  defaultStyle: default
+  deriveCollectionStyles: true
 ```
 
 Copy the sample style [`default`](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/api-resources/styles/vineyards/default.mbs) to `api-resources/styles/vineyards/default.mbs`.
@@ -455,11 +459,11 @@ Copy the sample style [`default`](https://github.com/interactive-instruments/ldp
 In addition to the configuration of the API modules, we want to finetune the representation of the feature data in the feature collection `vineyards`. The configuration below makes the following changes:
 
 * Identify the spatial, temporal and regular properties that can be used in filters (in query parameters or in CQL expressions).
-* Use a decimal point in area values and map "k. A." to "unknown.
+* Support sorting of responses by selected properties.
 * Use the searchfield2 attribute as the label of the vineyard features in HTML.
 * Hide the `village_info` field in HTML.
-* Hide the searchfield1 attribute and the date in the HTML overviews, only show them on the pages for a single feature.
-* Aggregate vineyards on smaller scales.
+* Hide the searchfield1 attribute and the date in the HTML feature collections, only show them on the pages for a single feature.
+* Aggregate vineyards on smaller scales in vector tiles.
 
 Note that the title and description for the collection are inherited from the feature type defined in the provider configuration.
 
@@ -489,18 +493,25 @@ collections:
         other:
         - registerId
         - area_ha
-      transformations:
-        area_ha:
-          stringFormat: '{{value | replace:''k. A.'':''unknown'' | replace:'','':''.''}}'
+    - buildingBlock: SORTING
+      enabled: true
+      sortables:
+      - name
+      - region
+      - subregion
+      - cluster
+      - village
+      - registerId
+      - area_ha
     - buildingBlock: FEATURES_HTML
-      itemLabelFormat: '{{searchfield2}}'
+      featureTitleTemplate: '{{searchfield2}}'
       transformations:
         village_info:
           remove: ALWAYS
         searchfield1:
-          remove: OVERVIEW
+          remove: IN_COLLECTION
         date:
-          remove: OVERVIEW
+          remove: IN_COLLECTION
           dateFormat: dd/MM/yyyy
     - buildingBlock: TILES
       rules:
@@ -523,13 +534,11 @@ collections:
           - region
           - subregion
           - cluster
-    - buildingBlock: STYLES
-      enabled: false
 ```
 
 ## Step 5: Global configuration
 
-If the server will be available to other, configure the `externalUrl` in the `cfg.yml` file. For example:
+If the server will be made available to others, configure the `externalUrl` in the `cfg.yml` file. For example:
 
 ```yaml
 ---

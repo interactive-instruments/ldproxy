@@ -133,7 +133,7 @@
             <div class="col-md-2 font-weight-bold">{{spatialExtentTitle}}</div>
             {{^hideMap}}
                 <div class="col-md-10">
-                    <div id="map"></div>
+                    <div id="map" class="map-sm"></div>
                 </div>
             {{/hideMap}}
             {{#hideMap}}
@@ -148,18 +148,18 @@
         </div>
     {{/bbox}}
 
-    {{#temporalExtent}}
+    {{#temporalCoverageHtml}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{temporalExtentTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
                     <li>
-                        <span id="timeInterval"></span>
+                        <span id="timeInterval">{{.}}</span>
                     </li>
                 </ul>
             </div>
         </div>
-    {{/temporalExtent}}
+    {{/temporalCoverageHtml}}
 
     <h2>{{expertInformationTitle}}</h2>
 
@@ -208,9 +208,11 @@
 
 </div>
 
-{{> script}}
 
-<script src="{{urlPrefix}}/app/js/bbox.js" defer></script>
-<script src="{{urlPrefix}}/app/js/date.js" defer></script>
+{{> app-common}}
+
+{{^hideMap}}
+  {{> mapClient}}
+{{/hideMap}}
 
 {{> footer}}

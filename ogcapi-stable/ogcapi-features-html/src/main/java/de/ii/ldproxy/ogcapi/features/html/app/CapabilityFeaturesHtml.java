@@ -25,9 +25,11 @@ public class CapabilityFeaturesHtml implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableFeaturesHtmlConfiguration.Builder().enabled(true)
-                                                       .mapPosition(POSITION.AUTO)
-                                                       .build();
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+            .enabled(true)
+            .mapPosition(POSITION.AUTO)
+            .style("DEFAULT")
+            .build();
     }
 
 }

@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -15,11 +16,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
+import de.ii.ldproxy.ogcapi.tiles.app.TileProviderTileServer;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -43,12 +47,21 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     }
 
     @Nullable
-    TileProvider getTileProvider();
+    TileProvider getTileProvider(); // TODO add TileServer support
 
     List<String> getTileSetEncodings();
 
     @Nullable
     TileCacheType getCache();
+
+    @Nullable
+    MapClient.Type getMapClientType();
+
+    @Nullable
+    String getStyle();
+
+    @Nullable
+    Boolean getRemoveZoomLevelConstraints();
 
     @Deprecated
     List<String> getTileEncodings();
@@ -63,10 +76,12 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
         return !getTileEncodings().isEmpty() ?
                 getTileEncodings() :
                 getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getTileEncodings() :
+                        getTileProvider().getTileEncodings() :
                         getTileProvider() instanceof TileProviderMbtiles && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) ?
                                 ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) :
-                                ImmutableList.of();
+                                getTileProvider() instanceof TileProviderTileServer && Objects.nonNull(((TileProviderTileServer) getTileProvider()).getTileEncodings()) ?
+                                    getTileProvider().getTileEncodings() :
+                                    ImmutableList.of();
     }
 
     @Deprecated
@@ -117,7 +132,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     @JsonIgnore
     default boolean isSingleCollectionEnabled() {
         return Objects.equals(getSingleCollectionEnabled(), true)
-                || (getTileProvider() instanceof TileProviderFeatures && ((TileProviderFeatures) getTileProvider()).isSingleCollectionEnabled())
+                || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled())
                 || isEnabled();
     }
 
@@ -130,7 +145,7 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     @JsonIgnore
     default boolean isMultiCollectionEnabled() {
         return Objects.equals(getMultiCollectionEnabled(), true)
-            || (getTileProvider() instanceof TileProviderFeatures && ((TileProviderFeatures) getTileProvider()).isMultiCollectionEnabled())
+            || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled())
             || isEnabled();
     }
 
@@ -162,6 +177,15 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                         ImmutableMap.of();
     }
 
+    @Value.Auxiliary
+    @Value.Derived
+    @JsonIgnore
+    default Optional<SeedingOptions> getSeedingOptions() {
+        return getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getSeedingOptions()
+            : Optional.empty();
+    }
+
     @Deprecated
     @Nullable
     Integer getLimit();
@@ -175,54 +199,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                 getLimit() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getLimit() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxPointPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxPointPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxPointPerTileDefault()) ?
-                getMaxPointPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxPointPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxLineStringPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxLineStringPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxLineStringPerTileDefault()) ?
-                getMaxLineStringPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxLineStringPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxPolygonPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxPolygonPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxPolygonPerTileDefault()) ?
-                getMaxPolygonPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxPolygonPerTileDefault() :
                         null;
     }
 

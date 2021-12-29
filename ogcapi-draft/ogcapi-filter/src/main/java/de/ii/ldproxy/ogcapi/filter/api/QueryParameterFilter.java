@@ -42,7 +42,37 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
 
     @Override
     public String getDescription() {
-        return "Filter features in the collection using the query expression in the parameter value.";
+        return "Filter features in the collection using the query expression in the parameter value. Filter expressions " +
+            "are written in the Common Query Language (CQL), which is a candidate OGC standard. This API implements " +
+            "[version 1.0.0-draft.2 from January 2021](https://github.com/opengeospatial/ogcapi-features/releases/download/part3-1.0.0-draft.2/19-079.html). " +
+            "The recommended language for this query parameter is CQL Text (`filter-lang=cql-text`).\n\n" +
+            "CQL Text expressions are similar to SQL expressions and also support spatial, temporal and array predicates. " +
+            "All property references must be queryables of the collection and must be declared in the Queryables sub-resource " +
+            "of the collection.\n\n" +
+            "The following are examples of CQL Text expressions:\n\n" +
+            "* Logical operators (`AND`, `OR`, `NOT`) are supported\n" +
+            "* Simple comparison predicates (`=`, `<>`, `<`, `>`, `<=`, `>=`):\n" +
+            "  * `address.LocalityName = 'Bonn'`\n" +
+            "  * `measuredHeight > 10`\n" +
+            "  * `storeysAboveGround <= 4`\n" +
+            "  * `creationDate > '2017-12-31'`\n" +
+            "  * `creationDate < '2018-01-01'`\n" +
+            "  * `creationDate >= '2018-01-01' AND creationDate <= '2018-12-31'`\n" +
+            "* Advanced comparison operators (`LIKE`, `BETWEEN`, `IN`, `IS NULL`):\n" +
+            "  * `name LIKE '%Kirche%'`\n" +
+            "  * `measuredHeight BETWEEN 10 AND 20`\n" +
+            "  * `address.LocalityName IN ('Bonn', 'Köln', 'Düren')`\n" +
+            "  * `address.LocalityName NOT IN ('Bonn', 'Köln', 'Düren')`\n" +
+            "  * `name IS NULL`\n" +
+            "  * `name IS NOT NULL`\n" +
+            "* Spatial operators (the standard Simple Feature operators, e.g., `INTERSECTS`, `WITHIN`):\n" +
+            "  * `INTERSECTS( bbox, POLYGON((8 52, 9 52, 9 53, 8 53, 8 52)) )`\n" +
+            "* Temporal operators (`AFTER`, `BEFORE`, `DURING`)\n" +
+            "  * `creationDate AFTER 2018-01-01`\n" +
+            "  * `creationDate BEFORE 2018-01-01`\n" +
+            "  * `creationDate DURING 2018-01-01/2018-12-31`\n\n" +
+            "Warning: The final version of the Common Query Language standard will include a number of changes to the " +
+            "CQL Text language.";
     }
 
     @Override
@@ -78,7 +108,8 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
             isEnabledForApi(apiData) &&
                 method== HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                    definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
     private final Schema schema = new StringSchema();

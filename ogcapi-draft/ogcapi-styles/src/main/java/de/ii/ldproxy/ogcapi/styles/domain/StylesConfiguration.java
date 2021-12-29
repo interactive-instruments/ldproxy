@@ -43,6 +43,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     @Nullable
     Boolean getResourceManagerEnabled();
 
+    @Deprecated(since = "3.1.0")
     @Nullable
     String getDefaultStyle();
 

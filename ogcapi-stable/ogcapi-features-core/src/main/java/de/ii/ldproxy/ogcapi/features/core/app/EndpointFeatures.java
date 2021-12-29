@@ -12,7 +12,11 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataCount;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentSpatial;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentTemporal;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.MetadataType;
 import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -23,14 +27,15 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
-import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentSpatial;
-import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataExtentTemporal;
-import de.ii.ldproxy.ogcapi.common.domain.metadata.MetadataType;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
+import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.ParameterExtension;
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -52,12 +57,28 @@ import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.threeten.extra.Interval;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -69,20 +90,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
 
 @Component
 @Provides
@@ -289,15 +296,16 @@ public class EndpointFeatures extends EndpointSubCollection {
         generateDefinition(apiData, definitionBuilder, allQueryParameters, "/items",
             "retrieve features in the feature collection '",
             "The response is a document consisting of features in the collection. " +
-                "The features included in the response are determined by the server based on the query parameters of the request. " +
+                "The features included in the response are determined by the server based on the query parameters of the request.\n\n" +
                 "To support access to larger collections without overloading the client, the API supports paged access with links " +
-                "to the next page, if more features are selected that the page size. The `bbox` and `datetime` parameter can be " +
+                "to the next page, if more features are selected that the page size.\n\nThe `bbox` and `datetime` parameter can be " +
                 "used to select only a subset of the features in the collection (the features that are in the bounding box or time interval). " +
                 "The `bbox` parameter matches all features in the collection that are not associated with a location, too. " +
                 "The `datetime` parameter matches all features in the collection that are not associated with a time stamp or interval, too. " +
                 "The `limit` parameter may be used to control the subset of the selected features that should be returned in the response, " +
                 "the page size. Each page may include information about the number of selected and returned features (`numberMatched` " +
-                "and `numberReturned`) as well as links to support paging (link relation `next`).",
+                "and `numberReturned`) as well as links to support paging (link relation `next`).\n\nSee the details of this operation for " +
+                "a description of additional query parameters supported by this resource.",
             "FEATURES");
 
         generateDefinition(apiData, definitionBuilder, allQueryParameters, "/items/{featureId}",
@@ -386,8 +394,8 @@ public class EndpointFeatures extends EndpointSubCollection {
         Stream<OgcApiQueryParameter> generalList, OgcApiDataV2 apiData, String collectionId, String logPrefix) {
 
         Optional<FeaturesCoreConfiguration> coreConfiguration = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
-        final Map<String, String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
-            .orElse(ImmutableMap.of());
+        final List<String> filterableFields = coreConfiguration.map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
+            .orElse(ImmutableList.of());
 
         Map<String, List<PropertyTransformation>> transformations;
         if (coreConfiguration.isPresent()) {
@@ -402,7 +410,7 @@ public class EndpointFeatures extends EndpointSubCollection {
 
         List<OgcApiQueryParameter> build = Stream.concat(
             generalList,
-            filterableFields.keySet().stream()
+            filterableFields.stream()
                 .map(field -> {
                     Optional<Schema<?>> schema2 = featureSchema.flatMap(fs -> schemaGeneratorFeature.getQueryable(fs,
                         collectionData.get(), field));
@@ -413,11 +421,18 @@ public class EndpointFeatures extends EndpointSubCollection {
                             collectionId);
                         return null;
                     }
+                    String description = "Filter the collection by property '" + field + "'";
+                    if (Objects.nonNull(schema2.get().getTitle()) && !schema2.get().getTitle().isEmpty())
+                        description += " (" + schema2.get().getTitle() + ")";
+                    if (Objects.nonNull(schema2.get().getDescription()) && !schema2.get().getDescription().isEmpty())
+                        description += ": " + schema2.get().getDescription();
+                    else
+                        description += ".";
                     return new ImmutableQueryParameterTemplateQueryable.Builder()
                         .apiId(apiData.getId())
                         .collectionId(collectionId)
                         .name(field)
-                        .description("Filter the collection by property '" + field + "'")
+                        .description(description)
                         .schema(schema2.get())
                         .build();
                 })
@@ -462,7 +477,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .showsFeatureSelfLink(showsFeatureSelfLink)
                 .build();
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURES, queryInput, requestContext);
+        return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContext);
     }
 
     @GET
@@ -499,7 +514,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         if (Objects.nonNull(coreConfiguration.getCaching()) && Objects.nonNull(coreConfiguration.getCaching().getCacheControlItems()))
             queryInputBuilder.cacheControl(coreConfiguration.getCaching().getCacheControlItems());
 
-        return queryHandler.handle(FeaturesCoreQueriesHandlerImpl.Query.FEATURE, queryInputBuilder.build(), requestContext);
+        return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURE, queryInputBuilder.build(), requestContext);
     }
 
     private Optional<BoundingBox> computeBbox(OgcApiDataV2 apiData, String collectionId) throws IllegalStateException, CrsTransformationException {

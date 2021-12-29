@@ -1,22 +1,24 @@
 # Die API-Konfiguration
 
-Jede API-Konfiguration wird in einer Konfigurationsdatei in einem Objekt mit den folgenden Eigenschaften beschrieben. Werte ohne Defaultwert sind in diesem Fall Pflichtangaben.
+Jede API stellt eine OGC Web API bereit.
+
+Die Konfiguration einer API wird in einer Konfigurationsdatei in einem Objekt mit den folgenden Eigenschaften beschrieben. 
 
 Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/README.md), siehe `api` in der nachfolgenden Tabelle.
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`id` |string | |Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Feature-Providers. Erlaubt sind Buchstaben (A-Z, a-z), Ziffern (0-9), der Unterstrich ("_") und der Bindestrich ("-").
+|`id` |string | |*REQUIRED* Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Feature-Providers. Erlaubt sind Buchstaben (A-Z, a-z), Ziffern (0-9), der Unterstrich ("_") und der Bindestrich ("-").
 |`apiVersion` |integer |`null` |Ist ein Wert angegeben, dann wird eine Version im Pfad der API-URIs ergänzt. Ohne Angabe ist der Pfad zur Landing Page `/{id}`, wobei `{id}` der Identifikator der API ist. Ist der Wert angegeben, dann ist der Pfad zur Landing Page `/{id}/v{apiVersion}`, also z.B. `/{id}/v1` beim Wert 1.
 |`createdAt` |integer | |Zeitpunkt in Millisekunden seit dem 1.1.1970, an dem die Datei erzeugt wurde. Der Wert wird automatisch vom Manager bei der Erzeugung gesetzt und besitzt nur informativen Charakter.
 |`lastModified` |integer | |Zeitpunkt in Millisekunden seit dem 1.1.1970, an dem die Datei zuletzt geändert wurde. Der Wert wird automatisch vom Manager bei jeder Änderung gesetzt und besitzt nur informativen Charakter.
-|`entityStorageVersion` |integer | |Bezeichnet die Version des API-Definition-Konfigurationsdatei-Schemas. Diese Dokumentation bezieht sich auf die Version 2 und alle Dateien nach diesem Schema müssen den Wert 2 haben. Konfigurationen zu Version 1 werden automatisch auf Version 2 aktualisiert.
+|`entityStorageVersion` |integer | |*REQUIRED* Bezeichnet die Version des API-Definition-Konfigurationsdatei-Schemas. Diese Dokumentation bezieht sich auf die Version 2 und alle Dateien nach diesem Schema müssen den Wert 2 haben. Konfigurationen zu Version 1 werden automatisch auf Version 2 aktualisiert.
 |`label` |string |der Wert von `id` |Eine Bezeichnung der API, z.B. für die Präsentation zu Nutzern.
 |`description` |string |`null` |Eine Beschreibung der API, z.B. für die Präsentation zu Nutzern.
-|`serviceType` |enum | |Stets `OGC_API`.
+|`serviceType` |enum | |*REQUIRED* Stets `OGC_API`.
 |`enabled` |boolean |`true` |Steuert, ob die API mit dem Start von ldproxy aktiviert wird.
 |`shouldStart` |boolean |`true` |*Deprecated* Siehe `enabled`
-|`metadata` |object |`{}` |Über dieses Objekt können grundlegende Metadaten zur API (Version, Kontaktdaten, Lizenzinformationen) festgelegt werden. Erlaubt sind die folgenden Elemente (in Klammern werden die Ressourcen genannt, in denen die Angabe verwendet wird): `version` (API-Definition), `contactName` (API-Definition, HTML-Landing-Page), `contactUrl` (API-Definition, HTML-Landing-Page), `contactEmail` (API-Definition, HTML-Landing-Page), `contactPhone` (HTML-Landing-Page), `licenseName` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection), `licenseUrl` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection),  `keywords` (meta tags and schema:Dataset in HTML-Landing-Page), `attribution` (Landing-Page), `creatorName` (schema:Dataset in HTML), `creatorUrl` (schema:Dataset in HTML), `creatorLogoUrl` (schema:Dataset in HTML), `publisherName` (schema:Dataset in HTML), `publisherUrl` (schema:Dataset in HTML), `publisherLogoUrl` (schema:Dataset in HTML). Alle Angaben sind Strings, bis auf die Keywords, die als Array von Strings angegeben werden.
+|`metadata` |object |`{}` |Über dieses Objekt können grundlegende Metadaten zur API (Version, Kontaktdaten, Lizenzinformationen) festgelegt werden. Erlaubt sind die folgenden Elemente (in Klammern werden die Ressourcen genannt, in denen die Angabe verwendet wird): `version` (API-Definition), `contactName` (API-Definition, HTML-Landing-Page), `contactUrl` (API-Definition, HTML-Landing-Page), `contactEmail` (API-Definition, HTML-Landing-Page), `contactPhone` (HTML-Landing-Page), `licenseName` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection), `licenseUrl` (API-Definition, HTML-Landing-Page, Feature-Collections, Feature-Collection),  `keywords` (Meta-Tags und schema:Dataset in HTML-Landing-Page), `attribution` (Landing-Page, Karten), `creatorName` (schema:Dataset in HTML), `creatorUrl` (schema:Dataset in HTML), `creatorLogoUrl` (schema:Dataset in HTML), `publisherName` (schema:Dataset in HTML), `publisherUrl` (schema:Dataset in HTML), `publisherLogoUrl` (schema:Dataset in HTML). Alle Angaben sind Strings, bis auf die Keywords, die als Array von Strings angegeben werden.
 |`tags` |array |`null` |Ordnet der API die aufgelisteten Tags zu. Die Tags müssen jeweils Strings ohne Leerzeichen sein. Die Tags werden im API-Katalog angezeigt und können über den Query-Parameter `tags` zur Filterung der in der API-Katalog-Antwort zurückgelieferten APIs verwendet werden, z.B. `tags=INSPIRE`.<br>_seit Version 2.1_
 |`externalDocs` |object |`{}` |Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der API verlinkt wird. Anzugeben sind die Eigenschaften `url` und `description`.
 |`defaultExtent` |object |`{'spatialComputed': true, 'temporalComputed': true}` |Es kann ein Standardwert für die räumliche (`spatial`) und/oder zeitliche (`temporal`) Ausdehnung der Daten angeben werden, die bei den Objektarten verwendet wird, wenn dort keine anderslautende Ausdehnung spezifiziert wird. Für die räumliche Ausdehnung sind die folgenden Eigenschaften anzugeben (alle Angaben in `CRS84`): `xmin`, `ymin`, `xmax`, `ymax`. Für die zeitliche Ausdehnung sind die folgenden Eigenschaften anzugeben (alle Angaben in Millisekunden seit dem 1.1.1970): `start`, `end`. Soll die räumliche Ausdehnung aus den Daten einer Objektart standardmäßig automatisch beim Start von ldproxy ermittelt werden, kann `spatialComputed` mit dem Wert `true` angegeben werden. Soll die zeitliche Ausdehnung aus den Daten einer Objektart standardmäßig automatisch beim Start von ldproxy ermittelt werden, kann `temporalComputed` mit dem Wert `true` angegeben werden. Bei großen Datenmengen verzögern diese Optionen allerdings die Zeitdauer, bis die API verfügbar ist. Hinweis: Es handelt sich hierbei nicht um die Ausdehnung des Datensatzes insgesamt, dieser wird stets automatisch aus den Ausdehnungen der einzelnen Objektarten ermittelt.
@@ -28,13 +30,13 @@ Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/REA
 
 <a name="collection"></a>
 
-## Das Collection-Objekt für Objektarten aus einem Feature-Provider
+## Das Collection-Objekt
 
-Jedes Collection-Objekt beschreibt eine Objektart (derzeit werden nur Feature Collections von ldproxy unterstützt). Es setzt sich aus den folgenden Eigenschaften zusammen:
+Jedes Collection-Objekt beschreibt eine Objektart aus einem Feature Provider (derzeit werden nur Feature Collections von ldproxy unterstützt). Es setzt sich aus den folgenden Eigenschaften zusammen:
 
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
-|`id` |string | |Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Types im Feature-Provider. Erlaubt sind Buchstaben (A-Z, a-z), Ziffern (0-9), der Unterstrich ("_") und der Bindestrich ("-").
+|`id` |string | |*REQUIRED* Eindeutiger Identifikator der API. Typischerweise identisch mit dem Identifikator des Types im Feature-Provider. Erlaubt sind Buchstaben (A-Z, a-z), Ziffern (0-9), der Unterstrich ("_") und der Bindestrich ("-").
 |`label` |string |der Wert von `id` |Eine Bezeichnung der API, z.B. für die Präsentation zu Nutzern.
 |`description` |string |`null` |Eine Beschreibung des Schemaobjekts, z.B. für die Präsentation zu Nutzern.
 |`persistentUriTemplate` |string |`null` |Über die Feature-Ressource hat jedes Feature zwar eine feste URI, die für Links verwendet werden kann, allerdings ist die URI nur so lange stabil, wie die API stabil bleibt. Um von Veränderungen in der URI unabhängig zu sein, kann es sinnvoll oder gewünscht sein, API-unabhängige URIs für die Features zu definieren und von diesen URIs auf die jeweils gültige API-URI weiterzuleiten. Diese kananosche URI kann auch in ldproxy Konfiguriert und bei den Features kodiert werden. Hierfür ist ein Muster der Feature-URI anzugeben, wobei `{{value}}` als Ersetzungspunkt für den lokalen Identifikator des Features in der API angegeben werden kann.
@@ -42,7 +44,7 @@ Jedes Collection-Objekt beschreibt eine Objektart (derzeit werden nur Feature Co
 |`additionalLinks` |array |`[]` |Erlaubt es, zusätzliche Links bei jeder Objektart zu ergänzen. Der Wert ist ein Array von Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende Text (`label`) und die Link-Relation (`rel`).
 |`api` |array |`[]` |Ein Array mit der Konfiguration der [API-Module](building-blocks/README.md) für die Objektart.
 
-## Die Objekte für die Konfiguration von ldproxy-API-Modulen
+## API-Module
 
 Ein Array dieser Modul-Konfigurationen steht auf der Ebene der gesamten API und für jede Collection zur Verfügung. Die jeweils gültige Konfiguration ergibt sich aus der Priorisierung:
 
@@ -54,84 +56,8 @@ Ein Array dieser Modul-Konfigurationen steht auf der Ebene der gesamten API und 
 
 ## Eine API-Beispielkonfiguration
 
-```yaml
-id: kita
-createdAt: 1598603585258
-lastModified: 1598603585258
-entityStorageVersion: 2
-label: Kindertageseinrichtungen
-description: Hier steht eine Beschreibung der API und seiner Inhalte, die einem Nutzer erläutert, was ihm die API bietet.
-enabled: true
-secured: false
-serviceType: OGC_API
-apiVersion: 1
-externalDocs:
-  url: "https://example.com/pfad/zum/dokument"
-  description: Weitere Informationen zu den Kita-Daten
-defaultExtent:
-  spatial:
-    xmin: 5.8663153
-    ymin: 47.2701114
-    xmax: 15.0419319
-    ymax: 55.099161
-metadata:
-  keywords:
-  - Kinderbetreuung
-  - Kindertageseinrichtungen
-  - Kindertagesstätten
-  - Kindergarten
-  - Spielgruppen
-  - Kinder
-  - Kita
-  - INSPIRE
-api:
-- buildingBlock: COLLECTIONS
-  additionalLinks:
-  - rel: describedby
-    type: application/xml
-    title: INSPIRE-Metadaten zum Datensatz
-    href: 'https://example.org/pfad/zu/metadaten'
-    hreflang: de
-  - rel: enclosure
-    type: text/csv
-    title: Download der Daten als CSV
-    href: 'https://example.org/pfad/zu/datei.csv'
-    hreflang: de
-collections:
-  governmentalservice:
-    id: governmentalservice
-    label: Staatlicher Dienst
-    description: 'Staatliche Verwaltungs- und Sozialdienste wie öffentliche Verwaltung, Katastrophenschutz, Schulen und Krankenhäuser, die von öffentlichen oder privaten Einrichtungen erbracht werden, soweit sie in den Anwendungsbereich der Richtlinie 2007/2/EG fallen. Dieser Datensatz enthält Informationen zu Diensten der Kinderbetreuung.'
-    persistentUriTemplate: '{{value | prepend:''https://example.com/id/soziales/kindergarten/''}}'
-    extent:
-      spatialComputed: true
-    api:
-    - buildingBlock: FEATURES_CORE
-      featureType: governmentalservice
-      queryables:
-        spatial:
-        - geometry
-        other:
-        - name
-        - pointOfContact.address.postCode
-        - pointOfContact.address.adminUnit
-        - pointOfContact.telephoneVoice
-        - occupancy.typeOfOccupant
-        - occupancy.numberOfOccupants
-      transformations:
-        pointOfContact.telephoneVoice:
-          null: 'bitte ausf(ue|ü)llen'
-        occupancy[].anzahl:
-          null: '0'
-        inspireId:
-          stringFormat: 'https://example.com/id/soziales/kindergarten/{{value}}'
-    - buildingBlock: FEATURES_HTML
-      itemLabelFormat: '{{name}}'
-      transformations:
-        geometry:
-          remove: OVERVIEW
-        occupancy[].typeOfOccupant:
-          remove: OVERVIEW
-        occupancy[].numberOfOccupants:
-          remove: OVERVIEW
-```
+Als Beispiel siehe die [API-Konfiguration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml) der API [Weinlagen in Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
+
+## Speicherung
+
+API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml` im Datenverzeichnis.

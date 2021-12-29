@@ -1,30 +1,27 @@
 ---
 id: vineyards
-createdAt: 1633786821320
-lastModified: 1633786821320
 entityStorageVersion: 2
 providerType: FEATURE
 featureProviderType: SQL
 connectionInfo:
-  connectorType: SLICK
-  host: localhost
+  host: ${DB_HOST:-host.docker.internal}
   database: vineyards
   user: postgres
   password: <base64-encoded-password>
-  dialect: PGIS
 sourcePathDefaults:
   primaryKey: ogc_fid
   sortKey: ogc_fid
 nativeCrs:
   code: 25832
   forceAxisOrder: NONE
+defaultLanguage: en
 typeValidation: NONE
 types:
   vineyards:
     label: Vineyards
-    description: 'The vineyard register constitutes the authorized list of names of single vineyards, vineyards clusters (Großlagen), sub-regions (Bereiche) and wine-growing regions (Anbaugebiete) for the protected designation of origin for wines in the German state Rhineland-Palatinate. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP). 
-    <br>
-    The data for each vineyard includes the vineyard register number, the wine-growing region, the sub-region, the vineyard cluster, the name of the single vineyard, the village(s), the cadastral district(s) and the area with vines in hectares. The six-digit vineyard register number contains in the first digit the wine-growing region, in the second digit the sub-region, in the third and fourth digit the vineyard cluster and in the fifth and sixth digit the single vineyard.'
+    description: |
+      The vineyard register constitutes the authorized list of names of single vineyards, vineyards clusters (Großlagen), sub-regions (Bereiche) and wine-growing regions (Anbaugebiete) for the protected designation of origin for wines in the German state Rhineland-Palatinate. It is managed by the Chamber of Agriculture of Rhineland-Palatinate (Landwirtschaftskammer RLP).<br>
+      The data for each vineyard includes the vineyard register number, the wine-growing region, the sub-region, the vineyard cluster, the name of the single vineyard, the village(s), the cadastral district(s) and the area with vines in hectares. The six-digit vineyard register number contains in the first digit the wine-growing region, in the second digit the sub-region, in the third and fourth digit the vineyard cluster and in the fifth and sixth digit the single vineyard.
     sourcePath: /vineyards
     type: OBJECT
     properties:
@@ -41,6 +38,8 @@ types:
         sourcePath: rebflache_
         type: STRING
         label: Area in hectares
+        transformations:
+          stringFormat: '{{value | replace:''k. A.'':''unknown'' | replace:'','':''.''}}'
       region:
         sourcePath: anbaugebie
         type: STRING
@@ -75,9 +74,11 @@ types:
         label: Search field (option 2)
       date:
         sourcePath: datum
-        type: DATETIME
+        type: DATE
+        role: PRIMARY_INSTANT
         label: Validity date
       geometry:
         sourcePath: wkb_geometry
         type: GEOMETRY
+        role: PRIMARY_GEOMETRY
         geometryType: MULTI_POLYGON

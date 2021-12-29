@@ -8,12 +8,13 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Optional;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableTemporalExtent.Builder.class)
@@ -35,5 +36,13 @@ public interface TemporalExtent {
     @Nullable
     default Long getEnd() {
         return null;
+    }
+
+    default String humanReadable(Locale locale) {
+        DateFormat df = DateFormat.getDateInstance(DateFormat.SHORT, locale);
+
+        return String.format("%s - %s",
+            Optional.ofNullable(getStart()).map(start -> df.format(new Date(start))).orElse(".."),
+            Optional.ofNullable(getEnd()).map(end -> df.format(new Date(end))).orElse(".."));
     }
 }

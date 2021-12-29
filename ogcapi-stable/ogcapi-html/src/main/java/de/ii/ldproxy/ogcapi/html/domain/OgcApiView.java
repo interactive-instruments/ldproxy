@@ -84,4 +84,12 @@ public abstract class OgcApiView extends View {
     public String getDescription() {
         return description;
     }
+
+    public String getAttribution() {
+        if (Objects.nonNull(htmlConfig.getLeafletAttribution()))
+            return htmlConfig.getLeafletAttribution();
+        if (Objects.nonNull(htmlConfig.getOpenLayersAttribution()))
+            return htmlConfig.getOpenLayersAttribution();
+        return htmlConfig.getBasemapAttribution();
+    }
 }
