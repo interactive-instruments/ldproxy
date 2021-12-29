@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.domain.CollectionExtent;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
@@ -26,6 +27,7 @@ import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient.Type;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.slf4j.Logger;
@@ -75,7 +77,7 @@ public class FeatureCollectionView extends DatasetView {
     public final CesiumData cesiumData;
 
     public FeatureCollectionView(OgcApiDataV2 apiData,
-        FeatureTypeConfigurationOgcApi collectionData, String template,
+        FeatureTypeConfigurationOgcApi collectionData, BoundingBox spatialExtent, String template,
         URI uri, String name, String title, String description, String attribution,
         String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
         I18n i18n, Locale language, POSITION mapPosition,
@@ -91,13 +93,15 @@ public class FeatureCollectionView extends DatasetView {
         this.uriBuilder = new URICustomizer(uri);
         this.cesiumData = new CesiumData(features, geometryProperties);
 
-        this.bbox = apiData.getSpatialExtent(collectionData.getId())
-            .map(boundingBox -> ImmutableMap.of(
-            "minLng", Double.toString(boundingBox.getXmin()),
-            "minLat", Double.toString(boundingBox.getYmin()),
-            "maxLng", Double.toString(boundingBox.getXmax()),
-            "maxLat", Double.toString(boundingBox.getYmax())))
-            .orElse(null);
+        if (Objects.isNull(spatialExtent))
+            spatialExtent = apiData.getDefaultExtent()
+                .flatMap(CollectionExtent::getSpatial)
+                .orElse(null);
+        this.bbox = Objects.isNull(spatialExtent) ? null : ImmutableMap.of(
+            "minLng", Double.toString(spatialExtent.getXmin()),
+            "minLat", Double.toString(spatialExtent.getYmin()),
+            "maxLng", Double.toString(spatialExtent.getXmax()),
+            "maxLat", Double.toString(spatialExtent.getYmax()));
 
         if (mapClientType.equals(MapClient.Type.MAP_LIBRE)) {
             this.mapClient = new ImmutableMapClient.Builder()

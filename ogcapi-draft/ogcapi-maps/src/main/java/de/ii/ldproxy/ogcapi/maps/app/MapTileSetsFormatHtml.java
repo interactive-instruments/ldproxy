@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.maps.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -16,6 +17,7 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
@@ -24,6 +26,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -48,11 +51,14 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
             .build();
 
     private final I18n i18n;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public MapTileSetsFormatHtml(@Requires I18n i18n,
+                                 @Requires CollectionDynamicMetadataRegistry metadataRegistry,
                                  @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
+        this.metadataRegistry = metadataRegistry;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
@@ -126,12 +132,15 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
                         .add(new NavigationDTO(tilesTitle))
                         .build();
 
+        Optional<BoundingBox> optionalBbox = collectionId.isEmpty() ? metadataRegistry.getSpatialExtent(api.getId()) : metadataRegistry.getSpatialExtent(api.getId(), collectionId.get());
+        Optional<TemporalExtent> optionalInterval = collectionId.isEmpty() ? metadataRegistry.getTemporalExtent(api.getId()) : metadataRegistry.getTemporalExtent(api.getId(), collectionId.get());
+
         Optional<HtmlConfiguration> htmlConfig = collectionId.isPresent() ?
             api.getData().getExtension(HtmlConfiguration.class, collectionId.get()) :
             api.getData().getExtension(HtmlConfiguration.class);
 
         Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
 
-        return new TileSetsView(api.getData(), tiles, collectionId, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), MapClient.Type.MAP_LIBRE, null, false, htmlConfig.orElseThrow(), isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        return new TileSetsView(api.getData(), collectionId, optionalBbox.orElse(null), optionalInterval.orElse(null), tiles, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), MapClient.Type.MAP_LIBRE, null, false, htmlConfig.orElseThrow(), isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 }

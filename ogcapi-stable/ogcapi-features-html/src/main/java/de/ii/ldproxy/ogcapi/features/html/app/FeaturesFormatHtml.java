@@ -35,6 +35,7 @@ import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
@@ -313,6 +314,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             //ignore
         }
 
+        Optional<BoundingBox> optionalBbox = metadataRegistry.getSpatialExtent(apiData.getId(), featureType.getId());
+
         Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
         String attribution = apiData.getMetadata().flatMap(Metadata::getAttribution).orElse(null);
 
@@ -325,11 +328,10 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
                                                    .orElse(false);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, filterableFields, geometryProperties);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, optionalBbox.orElse(null), bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, filterableFields, geometryProperties);
 
         featureTypeDataset.temporalExtent = metadataRegistry.getTemporalExtent(apiData.getId(), featureType.getId()).orElse(null);
-        metadataRegistry.getSpatialExtent(apiData.getId(), featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
-
+        optionalBbox.ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
         featureTypeDataset.uriBuilder = uriCustomizer.copy()
                                                      .ensureParameter("f", MEDIA_TYPE.parameter());
@@ -370,6 +372,8 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
         }
 
+        Optional<BoundingBox> optionalBbox = metadataRegistry.getSpatialExtent(apiData.getId(), featureType.getId());
+
         Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
         String attribution = apiData.getMetadata().flatMap(Metadata::getAttribution).orElse(null);
 
@@ -382,9 +386,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
                                                    .orElse(false);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData,
-            featureType, "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints,
-            null, geometryProperties);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, optionalBbox.orElse(null), "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, null, geometryProperties);
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());
 
