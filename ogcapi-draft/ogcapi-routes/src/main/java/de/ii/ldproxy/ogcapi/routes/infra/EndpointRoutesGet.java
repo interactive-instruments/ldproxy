@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -176,15 +176,6 @@ public class EndpointRoutesGet extends Endpoint {
                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .orElse(ImmutableMap.of());
 
-        ImmutableMap<String, String> crsList = apiData.getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getHtml)
-            .map(HtmlForm::getCrs)
-            .orElse(ImmutableMap.of())
-            .entrySet()
-            .stream()
-            .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getValue().toUriString(), entry.getKey()))
-            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-
         QueryHandlerRoutes.QueryInputRoutes queryInput = new ImmutableQueryInputRoutes.Builder()
             .templateInfo(new ImmutableRouteDefinitionInfo.Builder()
                               .preferences(preferences)
@@ -202,7 +193,6 @@ public class EndpointRoutesGet extends Endpoint {
                                                            .findFirst()
                                                            .orElseThrow()))
                               .additionalFlags(additionalFlags)
-                              .crs(crsList)
                               .build())
             .build();
         return queryHandler.handle(QueryHandlerRoutes.Query.GET_ROUTES, queryInput, requestContext);

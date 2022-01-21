@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -183,12 +183,6 @@ public class RoutesView extends OgcApiView {
         return links.stream()
             .filter(link -> Objects.equals(link.getRel(), "item"))
             .collect(Collectors.toUnmodifiableList());
-    }
-
-    public Set<Map.Entry<String,String>> getCrs() {
-        return templateInfo
-            .getCrs()
-            .entrySet();
     }
 
     public String getRouteName() {
