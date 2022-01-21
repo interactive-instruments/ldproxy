@@ -110,7 +110,6 @@ public class RoutesView extends OgcApiView {
                       .url("data:application/geo+json,{type:\"FeatureCollection\",features:[]}")
                       .build())
             .popup(MapClient.Popup.CLICK_PROPERTIES)
-            // TODO add support for a configurable style?
             .styleUrl(Optional.ofNullable(null))
             .removeZoomLevelConstraints(false)
             .build();

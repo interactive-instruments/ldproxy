@@ -35,8 +35,6 @@ import java.util.stream.IntStream;
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
 
-// TODO do we need to create configurable options for the REM content?
-
 public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, FeatureRoutes> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderRoutes.class);
