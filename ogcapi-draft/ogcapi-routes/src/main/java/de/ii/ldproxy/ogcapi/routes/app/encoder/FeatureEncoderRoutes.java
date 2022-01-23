@@ -16,10 +16,12 @@ import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoute;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteComponent;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteComponent;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.geometries.domain.DouglasPeuckerLineSimplifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +36,13 @@ import java.util.stream.IntStream;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.round;
+import static java.lang.Math.sqrt;
 
 public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, FeatureRoutes> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderRoutes.class);
+
+  private static final double R = 6378137.0;
 
   private final FeatureTransformationContextRoutes transformationContext;
   private final ImmutableRoute.Builder builder;
@@ -237,6 +242,11 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       throw new UnprocessableEntity("No route was found between the start and end location.");
     }
 
+    if (is3d) {
+      transformationContext.getElevationProfileSimplificationTolerance()
+          .ifPresent(this::computeSimplifiedElevationProfile);
+    }
+
     builder.bbox(computeBbox());
     long processingDuration = (System.nanoTime() - transformationContext.getStartTimeNano()) / 1000000;
     ImmutableMap.Builder<String, Object> propertyBuilder = ImmutableMap.builder();
@@ -270,6 +280,52 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
     byte[] result = transformationContext.getFormat()
         .getRouteAsByteArray(builder.build(), transformationContext.getApiData(), transformationContext.getOgcApiRequest());
     push(result);
+  }
+
+  private void computeSimplifiedElevationProfile(double tolerance) {
+    // TODO determine from CRS, if we have a geographic CRS
+    boolean isLonLat = transformationContext.getCrs().getCode()==4979 && transformationContext.getCrs().getForceAxisOrder()== EpsgCrs.Force.LON_LAT;
+    double[] profile = new double[2 * overviewGeometry.size()];
+    double d = 0.0;
+    Geometry.Coordinate previous = overviewGeometry.get(0);
+    profile[0] = d;
+    profile[1] = previous.z;
+    for (int i = 1; i < overviewGeometry.size(); i++) {
+      Geometry.Coordinate current = overviewGeometry.get(i);
+      double dx = current.x-previous.x;
+      double dy = current.y-previous.y;
+      double dz = current.z-previous.z;
+      d += isLonLat
+          ? computeDistanceInMeter(dx, dy, dz, previous.y, current.y)
+          : sqrt(dx*dx + dy*dy + dz*dz);
+      profile[i*2] = d;
+      profile[i*2+1] = current.z;
+      previous = current;
+    }
+    DouglasPeuckerLineSimplifier simplifier = new DouglasPeuckerLineSimplifier(tolerance, 2);
+    double[] simplifiedProfile = simplifier.simplify(profile, overviewGeometry.size());
+    LOGGER.debug("From route geometry: ascent {}m, descent {}m, length {}m", round(aggAscent), round(aggDescent), round(profile[profile.length-2]));
+    aggAscent = 0.0;
+    aggDescent = 0.0;
+    for (int i = 1; i < simplifiedProfile.length/2; i++) {
+      final double diff = simplifiedProfile[i*2+1] - simplifiedProfile[i*2-1];
+      if (diff > 0)
+        aggAscent += diff;
+      else
+        aggDescent -= diff;
+    }
+    LOGGER.debug("From simplified elevation profile: ascent {}m, descent {}m, length {}m", round(aggAscent), round(aggDescent), round(simplifiedProfile[simplifiedProfile.length-2]));
+  }
+
+  // using the haversine formula, assumes that the Earth is a sphere
+  private double computeDistanceInMeter(double dx, double dy, double dz, double lat1, double lat2) {
+    final double dLon = dx * Math.PI/180.0;
+    final double dLat = dy * Math.PI/180.0;
+    final double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI/180.0) * Math.cos(lat2 * Math.PI/180.0) * Math.sin(dLon/2) * Math.sin(dLon/2);
+    final double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    final double dxy = R*c;
+    return sqrt(dxy*dxy + dz*dz);
   }
 
   private double computeAngle(Geometry.Coordinate p1, Geometry.Coordinate p2) {

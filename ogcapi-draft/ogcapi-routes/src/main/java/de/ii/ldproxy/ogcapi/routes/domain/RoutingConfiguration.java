@@ -68,6 +68,9 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     Map<String, Integer> getCoordinatePrecision();
 
     @Nullable
+    Double getElevationProfileSimplificationTolerance();
+
+    @Nullable
     HtmlForm getHtml();
 
     @Override
