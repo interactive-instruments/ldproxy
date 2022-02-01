@@ -7,11 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,22 +19,22 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.xtraplatform.cql.domain.And;
-import de.ii.xtraplatform.cql.domain.AnyInteracts;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.cql.domain.CqlDateTime;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Eq;
 import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
 import de.ii.xtraplatform.cql.domain.In;
-import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
+import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
-import de.ii.xtraplatform.cql.domain.TOverlaps;
+import de.ii.xtraplatform.cql.domain.TIntersects;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -48,9 +43,6 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-
-import java.util.HashMap;
-
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -72,6 +64,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
+import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
 
 
 @Component
@@ -313,7 +310,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                    }
                                                    if (filter.getValue()
                                                              .contains("*")) {
-                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue()), "*", null, null, null));
+                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
                                                    }
 
                                                    return CqlPredicate.of(Eq.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
@@ -354,7 +351,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         Envelope envelope = Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), sourceCrs);
 
-        return CqlPredicate.of(Intersects.of(geometryField, SpatialLiteral.of(envelope)));
+        return CqlPredicate.of(SIntersects.of(geometryField, SpatialLiteral.of(envelope)));
     }
 
     private void checkCoordinateRange(List<Double> coordinates, EpsgCrs crs) {
@@ -392,21 +389,17 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             throw new IllegalArgumentException("Invalid value for query parameter '" + PARAMETER_DATETIME + "'.", e);
         }
 
-        boolean atLeastOneInterval = timeField.contains(DATETIME_INTERVAL_SEPARATOR) || temporalLiteral.getType() == Interval.class;
-
-        if (atLeastOneInterval) {
-            Function intervalFunction = timeField.contains(DATETIME_INTERVAL_SEPARATOR)
-                    ? Function.of("interval", Splitter.on(DATETIME_INTERVAL_SEPARATOR)
+        if (timeField.contains(DATETIME_INTERVAL_SEPARATOR)) {
+            Function intervalFunction = Function.of("interval", Splitter.on(DATETIME_INTERVAL_SEPARATOR)
                                                       .splitToList(timeField)
                                                       .stream()
                                                       .map(Property::of)
-                                                      .collect(Collectors.toList()))
-                    : Function.of("interval", ImmutableList.of(Property.of(timeField), Property.of(timeField)));
+                                                      .collect(Collectors.toList()));
 
-            return Optional.of(CqlPredicate.of(AnyInteracts.of(intervalFunction, temporalLiteral)));
+            return Optional.of(CqlPredicate.of(TIntersects.of(intervalFunction, temporalLiteral)));
         }
 
-        return Optional.of(CqlPredicate.of(TEquals.of(timeField, temporalLiteral)));
+        return Optional.of(CqlPredicate.of(TIntersects.of(timeField, temporalLiteral)));
     }
 
     private Optional<CqlPredicate> qToCql(List<String> qFields, String qValue) {
