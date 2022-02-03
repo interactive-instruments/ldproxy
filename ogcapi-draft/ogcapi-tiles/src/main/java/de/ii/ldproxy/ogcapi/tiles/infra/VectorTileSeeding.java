@@ -289,7 +289,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             try {
                 queryHandler.handle(TilesQueriesHandler.Query.SINGLE_LAYER_TILE, queryInput, requestContext);
             } catch (Throwable e) {
-                LOGGER.debug("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
+                LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
             }
 
             currentTile[0] += 1;
@@ -435,7 +435,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             try {
                 queryHandler.handle(TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
             } catch (Throwable e) {
-                LOGGER.debug("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
+                LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
             }
 
             currentTile[0] += 1;
