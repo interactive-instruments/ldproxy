@@ -14,7 +14,7 @@
 
 1. Log messages for exceptions should in general be written in the web-layer classes, too. For exceptions that are internal errors, the messages should have "error" level and the stacktrace should be written with "debug" level. For example:
 
-   ```
+   ```java
    LOGGER.error("Feature provider with id '{}' could not be started: {}", getId(), e.getMessage());
    if (LOGGER.isDebugEnabled()) {
        LOGGER.debug("Stacktrace:", e);

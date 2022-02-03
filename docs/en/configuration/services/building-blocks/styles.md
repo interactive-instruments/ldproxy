@@ -30,7 +30,7 @@ Allowed characters for `{styleId}` and `{resourceId}` are all characters with th
 |`validationEnabled` |boolean |`false` |Option to validate styles when using POST and PUT by setting the query parameter `validate`. For details see conformance class *Validation of styles*.
 |`resourcesEnabled` |boolean |`false` |Option to support generic file resources, e.g. for symbols or sprites. For details see conformance class *Resources*.
 |`resourceManagerEnabled` |boolean |`false` |Option to manage file resources using PUT und DELETE. For details see conformance class *Manage resources*.
-|`defaultStyle` |string |`NONE` |_Deprecated_ Use the option with the same name in the HTML building block instead.
+|`defaultStyle` |string |`NONE` |_Deprecated_ See `defaultStyle` in [module HTML](html.md).
 |`webmapWithPopup` |boolean |`true` |Option to support popups in web maps for *Mapbox Style* styles that show attributes for the top-most object.
 |`webmapWithLayerControl` |boolean |`false` |Option to support layer controls in web maps for *Mapbox Style* styles. Allows to collectively enable and disable all layers for a certain feature collection.
 |`layerControlAllLayers` |boolean |`false` |Option to support layer controls for additional layers like background maps. Requires `webmapWithLayerControl: true`.

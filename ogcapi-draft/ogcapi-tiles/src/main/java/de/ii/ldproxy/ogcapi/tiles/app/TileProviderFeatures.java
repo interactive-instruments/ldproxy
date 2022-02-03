@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -72,15 +72,6 @@ public abstract class TileProviderFeatures extends TileProvider {
 
     @Nullable
     public abstract Integer getLimit();
-
-    @Nullable
-    public abstract Integer getMaxPointPerTileDefault();
-
-    @Nullable
-    public abstract Integer getMaxLineStringPerTileDefault();
-
-    @Nullable
-    public abstract Integer getMaxPolygonPerTileDefault();
 
     @Nullable
     public abstract Boolean getSingleCollectionEnabled();

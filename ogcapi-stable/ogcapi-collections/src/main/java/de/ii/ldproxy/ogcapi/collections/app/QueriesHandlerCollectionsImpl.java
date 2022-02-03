@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -28,6 +28,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -36,6 +37,7 @@ import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -127,7 +129,10 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         Collections responseObject = collections.build();
 
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(responseObject, Collections.FUNNEL, outputFormatExtension);
+        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(responseObject, Collections.FUNNEL, outputFormatExtension)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -188,7 +193,10 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         OgcApiCollection responseObject = ogcApiCollection.build();
 
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(responseObject, OgcApiCollection.FUNNEL, outputFormatExtension);
+        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData().getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(responseObject, OgcApiCollection.FUNNEL, outputFormatExtension)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

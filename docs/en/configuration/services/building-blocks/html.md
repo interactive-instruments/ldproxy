@@ -13,10 +13,12 @@ The module *HTML* may be enabled for every API. It is enabled by default. Provid
 |`legalUrl` |string |"" |URL for optional legal notice link on every site.
 |`privacyName` |string |"Privacy notice" |Label for optional privacy notice link on every site.
 |`privacyUrl` |string |"" |URL for optional privacy notice link on every site.
-|`leafletUrl` |string |"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" |URL template for Leaflet background map tiles.
-|`leafletAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |Source attribution for Leaflet background map.
-|`openLayersUrl` |string |"https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png" |URL template for OpenLayers background map tiles.
-|`openLayersAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |Source attribution for OpenLayers background map.
+|`basemapUrl` |string |"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" |URL template for background map tiles.
+|`basemapAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |Source attribution for background map.
+|`leafletUrl` |string |"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" |*Deprecated* See `mapBackgroundUrl`.
+|`leafletAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |*Deprecated* See `mapAttribution`.
+|`openLayersUrl` |string |"https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png" |*Deprecated* See `mapBackgroundUrl`.
+|`openLayersAttribution` |string |"&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors" |*Deprecated* See `mapAttribution`.
 |`footerText` |string |"" |Additional text shown in footer of every site.
 |`defaultStyle` |string |`NONE` |A default style in the style repository that is used in maps in the HTML representation of the features and tiles resources. If `NONE`, a simple wireframe style will be used with OpenStreetMap as a basemap. If the value is not `NONE`, the API landing page (or the collection page) will also contain a link to a web map with the style for the dataset (or the collection).
 
@@ -31,14 +33,8 @@ The module *HTML* may be enabled for every API. It is enabled by default. Provid
   legalUrl: 'https://example.org/impressum/'
   privacyName: Datenschutzerklärung
   privacyUrl: 'https://example.org/datenschutzerklarung/'
-  leafletUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  openLayersUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
-  leafletAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
-    f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
-    class="link0" target="_new">Datenquellen</a>'
-  openLayersAttribution: '&copy; <a href="https://www.bkg.bund.de" class="link0" target="_new">Bundesamt
-    f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf"
-    class="link0" target="_new">Datenquellen</a>'
+  basemapUrl: https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png
+  basemapAttribution: '&copy; <a href="https://www.bkg.bund.de" target="_new">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href="https://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf" target="_new">Datenquellen</a>'
   footerText: 'Warnung: Bei den APIs auf diesem Server handelt es sich um Test-APIs während der Entwicklung.'
 ```
 

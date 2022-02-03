@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -81,8 +81,10 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            // TODO: only include 2D (variants) of the CRSs
-            String defaultCrs = CRS84 /* TODO support 4 or 6 numbers
+            // TODO: include 2D (variants) of the CRSs
+            // default is currently always CRS84
+            String defaultCrs = CRS84
+            /* TODO support 4 or 6 numbers
             apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
                 .map(ImmutableEpsgCrs::toUriString)
@@ -118,7 +120,8 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
             } catch (Throwable e) {
                 throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: %s", BBOX_CRS, e.getMessage()), e);
             }
-            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, bboxCrs)) {
+            // CRS84 is always supported
+            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, bboxCrs) && !bboxCrs.equals(OgcCrs.CRS84)) {
                 throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", BBOX_CRS, bboxCrs.toUriString()));
             }
 

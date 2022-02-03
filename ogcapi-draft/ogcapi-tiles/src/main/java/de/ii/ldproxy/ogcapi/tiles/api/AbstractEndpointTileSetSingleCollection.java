@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -123,12 +123,12 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
 
     protected Response getTileSet(OgcApiDataV2 apiData,
                                   ApiRequestContext requestContext,
-                                  String path,
+                                  String definitionPath,
                                   String collectionId,
                                   String tileMatrixSetId) {
 
-        checkPathParameter(extensionRegistry, apiData, path, "collectionId", collectionId);
-        checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
+        checkPathParameter(extensionRegistry, apiData, definitionPath, "collectionId", collectionId);
+        checkPathParameter(extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
 
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
         TilesConfiguration tilesConfiguration = featureType.getExtension(TilesConfiguration.class).get();
@@ -139,6 +139,7 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
                 .tileMatrixSetId(tileMatrixSetId)
                 .center(tilesConfiguration.getCenterDerived())
                 .zoomLevels(tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId))
+                .path(definitionPath)
                 .build();
 
         return queryHandler.handle(TilesQueriesHandler.Query.TILE_SET, queryInput, requestContext);

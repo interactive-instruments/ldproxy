@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,6 +23,7 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -33,6 +34,7 @@ import java.util.Optional;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
@@ -124,7 +126,10 @@ public class QueryablesQueriesHandlerImpl implements QueryablesQueriesHandler {
             .getSchema(featureSchema, apiData, collectionData, schemaUri);
 
         Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(schema, JsonSchema.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || apiData.getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(schema, JsonSchema.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

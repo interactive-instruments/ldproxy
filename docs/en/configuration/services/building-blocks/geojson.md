@@ -8,9 +8,9 @@ The module *Features GeoJSON* may be enabled for every API with a feature provid
 
 |Option |Data Type |Default |Description
 | --- | --- | --- | ---
-|`nestedObjectStrategy` |enum |`NEST` |Option to nest (`NEST`) or flatten ('FLATTEN') complex object structures defined in the feature provider types. For `FLATTEN` the value of `multiplicityStrategy` has to be `SUFFIX`, for `NEST` it has to be `ARRAY`.
-|`multiplicityStrategy` |enum |`ARRAY` |Option to pass through (`ARRAY`) or flatten ('SUFFIX') complex array structures defined in the feature provider types. For `SUFFIX` the value of `nestedObjectStrategy` has to be `FLATTEN`, for `ARRAY` it has to be `NEST`.
-|`separator` |string |"." |The separator used in property names for `FLATTEN`/`SUFFIX` if the property is complex or multiple. For arrays the property name is formed by the original property name followed by pairs of separator and array position. For objects the property name is formed by concatenating the original property separated by the given separator.
+|`nestedObjectStrategy` |enum |`NEST` |*Deprecated* Use the [`flatten` transformation](../../providers/transformations.md) instead.
+|`multiplicityStrategy` |enum |`ARRAY` |*Deprecated* Use the [`flatten` transformation](../../providers/transformations.md) instead.
+|`separator` |string |"." |*Deprecated* Use the [`flatten` transformation](../../providers/transformations.md) instead.
 |`transformations` |object |`{}` |Optional transformations for feature properties for GeoJSON, see [transformations](README.md#transformations).
 
 ### Examples
@@ -19,8 +19,6 @@ The module *Features GeoJSON* may be enabled for every API with a feature provid
 
 ```yaml
 - buildingBlock: GEO_JSON
-  nestedObjectStrategy: NESTED
-  multiplicityStrategy: ARRAY
 ```
 
 ```json
@@ -62,8 +60,9 @@ The module *Features GeoJSON* may be enabled for every API with a feature provid
 
 ```yaml
 - buildingBlock: GEO_JSON
-  nestedObjectStrategy: FLATTEN 
-  multiplicityStrategy: SUFFIX
+  transformations:  
+    '*':
+      flatten: '.'
 ```
 
 ```json

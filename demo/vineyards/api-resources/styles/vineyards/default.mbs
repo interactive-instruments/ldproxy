@@ -12,19 +12,13 @@
     "vineyards" : {
       "type" : "vector",
       "tiles" : [ "{serviceUrl}/collections/vineyards/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt" ],
-      "maxzoom" : 16
+      "maxzoom" : 16,
+      "attribution" : "&copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=\"http://weinlagen.lwk-rlp.de/\" target=\"_blank\">weinlagen.lwk-rlp.de</a>, <a href=\"http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html\" target=\"_blank\">Regelungen zu Gewährleistung und Haftung</a>"
     },
     "basemap" : {
       "type" : "raster",
       "tiles" : [ "https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png" ],
-      "attribution" : "&copy; <a href=\"http://www.bkg.bund.de\" class=\"link0\" target=\"_new\">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href=\"http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\" class=\"link0\" target=\"_new\">Datenquellen</a>; &copy; Landwirtschaftskammer RLP (2020), dl-de/by-2-0, <a href=\"http://weinlagen.lwk-rlp.de/\" class=\"link0\" target=\"_blank\">weinlagen.lwk-rlp.de</a>, <a href=\"http://weinlagen.lwk-rlp.de/portal/nutzungsbedingungen/gewaehrleistung-haftung.html\" class=\"link0\" target=\"_blank\">Regelungen zu Gewährleistung und Haftung</a>"
-    },
-    "dem": {
-        "type": "raster-dem",
-        "tiles": [ "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png" ],
-        "tileSize": 256,
-        "maxzoom": 14,
-        "encoding": "terrarium"
+      "attribution" : "&copy; <a href=\"http://www.bkg.bund.de\" target=\"_new\">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> (2020), <a href=\"http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\" target=\"_new\">Datenquellen</a>"
     }
   },
   "glyphs": "https://go-spatial.github.io/carto-assets/fonts/{fontstack}/{range}.pbf",
@@ -35,20 +29,6 @@
     "layout" : {
       "visibility" : "visible"
     }
-  }, {
-      "id": "Terrain",
-      "type": "hillshade",
-      "source": "dem",
-      "paint": {
-          "hillshade-illumination-direction": 315,
-          "hillshade-exaggeration": 0.8,
-          "hillshade-shadow-color": "#11001a",
-          "hillshade-highlight-color": "#fffcd6",
-          "hillshade-accent-color": "#1b0029"
-      },
-      "layout" : {
-        "visibility" : "none"
-      }
   }, {
     "type" : "fill",
     "source-layer" : "vineyards",

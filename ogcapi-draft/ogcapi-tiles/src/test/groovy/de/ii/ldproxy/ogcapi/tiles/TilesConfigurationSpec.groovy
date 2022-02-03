@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,9 +33,6 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
                 .multiCollectionEnabled(true)
                 .ignoreInvalidGeometries(true)
                 .limit(1)
-                .maxPointPerTileDefault(1)
-                .maxLineStringPerTileDefault(1)
-                .maxPolygonPerTileDefault(1)
                 .maxRelativeAreaChangeInPolygonRepair(1)
                 .maxAbsoluteAreaChangeInPolygonRepair(1)
                 .minimumSizeInPixel(1)
@@ -70,9 +67,6 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
                 .multiCollectionEnabled(false)
                 .ignoreInvalidGeometries(false)
                 .limit(10)
-                .maxPointPerTileDefault(10)
-                .maxLineStringPerTileDefault(10)
-                .maxPolygonPerTileDefault(10)
                 .maxRelativeAreaChangeInPolygonRepair(10)
                 .maxAbsoluteAreaChangeInPolygonRepair(10)
                 .minimumSizeInPixel(10)

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.app.TilesLinkGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetLinks;
@@ -34,6 +35,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -107,7 +109,10 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                .build();
 
         Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(tileMatrixSets, TileMatrixSets.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileMatrixSets, TileMatrixSets.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -148,7 +153,10 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                         .build();
 
         Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

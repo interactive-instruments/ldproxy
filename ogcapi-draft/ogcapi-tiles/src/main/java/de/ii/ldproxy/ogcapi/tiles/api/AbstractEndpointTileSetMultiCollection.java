@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -98,8 +98,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
 
     protected Response getTileSet(OgcApiDataV2 apiData, ApiRequestContext requestContext, String definitionPath, String tileMatrixSetId) {
 
-        String path = "/tiles/{tileMatrixSetId}";
-        checkPathParameter(extensionRegistry, apiData, path, "tileMatrixSetId", tileMatrixSetId);
+        checkPathParameter(extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
         TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
         TilesQueriesHandler.QueryInputTileSet queryInput = new ImmutableQueryInputTileSet.Builder()

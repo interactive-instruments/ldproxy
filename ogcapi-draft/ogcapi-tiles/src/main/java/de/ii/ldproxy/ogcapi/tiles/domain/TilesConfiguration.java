@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -199,54 +199,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
                 getLimit() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getLimit() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxPointPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxPointPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxPointPerTileDefault()) ?
-                getMaxPointPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxPointPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxLineStringPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxLineStringPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxLineStringPerTileDefault()) ?
-                getMaxLineStringPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxLineStringPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxPolygonPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxPolygonPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxPolygonPerTileDefault()) ?
-                getMaxPolygonPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxPolygonPerTileDefault() :
                         null;
     }
 
