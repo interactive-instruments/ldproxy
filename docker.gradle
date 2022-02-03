@@ -16,12 +16,13 @@ dockerBuildImage {
     outputs.upToDateWhen { dockerCopyDistResources.state.upToDate && dockerDistTar.state.upToDate }
 }
 
+//TODO: move everything to application plugin, remove docker plugin
 task dockerRun(type: Exec) {
     dependsOn dockerBuildImage
     if (org.gradle.internal.os.OperatingSystem.current().isLinux()) {
         commandLine 'docker', 'run', '--rm', '-i', '--network=host', '-v', "${project.findProperty('data') ?: "$buildDir/data"}:/ldproxy/data", '-e', 'XTRAPLATFORM_ENV=DEVELOPMENT', '-e', "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=${project.findProperty('debug') ? 'y' : 'n'},address=*:5005", docker.javaApplication.tag
     } else {
-        commandLine 'docker', 'run', '--rm', '-i', '-p', '7080:7080', '-p', '5005:5005', '-v', "${project.findProperty('data') ?: "$buildDir/data"}:/ldproxy/data", '-e', 'XTRAPLATFORM_ENV=DEVELOPMENT', '-e', "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=${project.findProperty('debug') ? 'y' : 'n'},address=*:5005", docker.javaApplication.tag
+        commandLine 'docker', 'run', '--rm', '-i', '-p', '7080:7080', '-p', '7081:7081', '-p', '5005:5005', '-v', "${project.findProperty('data') ?: "$buildDir/data"}:/ldproxy/data", '-e', 'XTRAPLATFORM_ENV=DEVELOPMENT', '-e', "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=${project.findProperty('debug') ? 'y' : 'n'},address=*:5005", docker.javaApplication.tag
     }
 }
 
