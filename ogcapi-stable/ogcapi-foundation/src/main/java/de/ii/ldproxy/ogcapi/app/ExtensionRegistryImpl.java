@@ -38,7 +38,7 @@ public class ExtensionRegistryImpl implements ExtensionRegistry {
     private final BundleContext bundleContext;
     private final List<ApiExtension> apiExtensions;
 
-    ExtensionRegistryImpl(@Context BundleContext bundleContext) {
+    protected ExtensionRegistryImpl(@Context BundleContext bundleContext) {
         this.apiExtensions = new ArrayList<>();
         this.bundleContext = bundleContext;
     }

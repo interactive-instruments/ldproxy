@@ -9,43 +9,21 @@ package de.ii.ldproxy.ogcapi.maps.app;
 
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
 @Instantiate
 public class CapabilityMapTiles implements ApiBuildingBlock {
-
-    private final ExtensionRegistry extensionRegistry;
-    private final FeaturesCoreProviders providers;
-    private final FeaturesQuery queryParser;
-    private final SchemaInfo schemaInfo;
-    private final TileMatrixSetRepository tileMatrixSetRepository;
-
-    public CapabilityMapTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
-                              @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo,
-                              @Requires TileMatrixSetRepository tileMatrixSetRepository) {
-        this.extensionRegistry = extensionRegistry;
-        this.queryParser = queryParser;
-        this.providers = providers;
-        this.schemaInfo = schemaInfo;
-        this.tileMatrixSetRepository = tileMatrixSetRepository;
-    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {

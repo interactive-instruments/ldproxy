@@ -9,14 +9,17 @@ package de.ii.ldproxy.ogcapi.features.html.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.util.StdConverter;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -43,6 +46,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @JsonAlias("itemLabelFormat")
   Optional<String> getFeatureTitleTemplate();
 
+  @JsonSerialize(converter = IgnoreLinksWildcardSerializer.class)
   @Override
   Map<String, List<PropertyTransformation>> getTransformations();
 
@@ -106,6 +110,24 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
     }
 
     return this;
+  }
+
+  class IgnoreLinksWildcardSerializer extends StdConverter<Map<String, List<PropertyTransformation>>, Map<String, List<PropertyTransformation>>> {
+
+    @Override
+    public Map<String, List<PropertyTransformation>> convert(
+        Map<String, List<PropertyTransformation>> value) {
+      if (value.containsKey(LINK_WILDCARD) && value.get(LINK_WILDCARD).stream().anyMatch(transformation -> transformation.getReduceStringFormat().isPresent())) {
+
+        return value.entrySet().stream()
+            .filter(entry -> !Objects.equals(entry.getKey(), LINK_WILDCARD)
+                || entry.getValue().size() != 1
+                || entry.getValue().get(0).getReduceStringFormat().isEmpty())
+            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+      }
+
+      return value;
+    }
   }
 
   @Override

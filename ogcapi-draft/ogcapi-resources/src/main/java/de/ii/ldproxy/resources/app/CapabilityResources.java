@@ -9,23 +9,15 @@ package de.ii.ldproxy.resources.app;
 
 import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.resources.domain.ImmutableResourcesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
 @Instantiate
 public class CapabilityResources implements ApiBuildingBlock {
-
-    private final ExtensionRegistry extensionRegistry;
-
-    public CapabilityResources(@Requires ExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
-    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
