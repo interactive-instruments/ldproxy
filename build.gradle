@@ -24,7 +24,8 @@ dependencies {
     }
 
     // bundles to include in this application
-    bundle subprojects
+    //bundle subprojects
+    bundle subprojects.findAll {it.name != 'ldproxy-cfg'}
 }
 
 tasks.run {

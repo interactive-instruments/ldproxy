@@ -14,11 +14,11 @@ subprojects {
         options.annotationProcessorGeneratedSourcesDirectory = generatedSourceDir
         outputs.dir(generatedSourceDir)
     }
-
+    if (it.name != "ldproxy-cfg") {
     jar {
         manifest {
             instructionFirst 'Import-Package', "!org.immutables.value"
         }
     }
-    
+    }
 }

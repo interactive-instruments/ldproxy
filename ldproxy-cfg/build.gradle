@@ -1,0 +1,59 @@
+plugins {
+  id 'com.github.johnrengelman.shadow' version '5.2.0'
+}
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+ext {
+  dropwizardVersion = '2.0.21'
+  jacksonVersion = '2.10.5'
+  moduleJars = parent.configurations.featureBundles.resolvedConfiguration.firstLevelModuleDependencies.collectMany {it.moduleArtifacts + it.children.collectMany {it.moduleArtifacts}}
+}
+
+configurations {
+  embed
+}
+//TODO: jackson jr???
+dependencies {
+  embed(group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion)
+  embed(group: 'io.dropwizard', name: 'dropwizard-client', version: dropwizardVersion)
+  api(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35')
+  //api(group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.35')
+}
+
+tasks.replace('jar', ShadowJar)
+
+tasks.jar {
+  from sourceSets.main.output
+  archiveClassifier.set("")
+  configurations = [project.configurations.embed, parent.configurations.featureBundles]
+  /*dependencies {
+    exclude(dependency {
+      return !it.moduleGroup.startsWith('io.dropwizard') && !it.moduleGroup.startsWith('de.interactive') && !it.moduleGroup.startsWith('com.fasterxml') && !it.moduleGroup.startsWith('com.google')
+    })
+  }*/
+  include '**/*.class'
+  include {
+    return it.name.endsWith('.jar') && (moduleJars.any {art -> it.name == art.file.name} || it.name.startsWith('jackson-') || it.name.startsWith('guava') || /*it.name.startsWith('slf4j-') ||*/ it.name.startsWith('commons-lang') ||  it.name.startsWith('commons-text') || it.name.startsWith('dropwizard-') || it.name.startsWith('snakeyaml') || it.name.startsWith('caffeine') || it.name.startsWith('jetty') || it.name.startsWith('javax.servlet') || it.name.startsWith('jakarta.ws') || it.name.startsWith('httpclient') || it.name.startsWith('metrics'))
+  }
+  exclude 'module-info.class'
+  exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  minimize()
+  relocate('com', 'shadow.com')
+  relocate('io', 'shadow.io')
+  relocate('javax', 'shadow.javax')
+  relocate('org', 'shadow.org') {
+    exclude 'org.slf4j.*'
+    exclude 'org.w3c.dom.*'
+  }
+}
+
+artifacts {
+  apiElements tasks.jar
+  runtimeElements tasks.jar
+  archives tasks.jar
+}
+
+publishing {
+  publications.named('default').get().setArtifacts([tasks.jar])
+}
+

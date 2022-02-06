@@ -11,7 +11,10 @@ task m {
 task c {
     dependsOn gradle.includedBuild('ldproxy').task(':check')
 }
-task t {
-    dependsOn gradle.includedBuild('ogcapi-stable').task(':ogcapi-features-geojson:test')
+task cfg {
+    dependsOn gradle.includedBuild('ldproxy').task(':ldproxy-cfg:publish')
+}
+task cfglocal {
+    dependsOn gradle.includedBuild('ldproxy').task(':ldproxy-cfg:publishToMavenLocal')
 }
 
