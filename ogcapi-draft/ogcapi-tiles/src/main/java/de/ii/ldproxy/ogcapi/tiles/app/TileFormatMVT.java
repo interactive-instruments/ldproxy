@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
@@ -25,6 +26,7 @@ import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFromFeatureQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
@@ -36,7 +38,11 @@ import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
@@ -81,15 +87,18 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
             .parameter("mvt")
             .build();
 
+    private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
     private final TileCache tileCache;
     private final CrsSupport crsSupport;
     private final CrsInfo crsInfo;
 
-    public TileFormatMVT(@Requires FeaturesQuery queryParser,
+    public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
+                         @Requires FeaturesQuery queryParser,
                          @Requires TileCache tileCache,
                          @Requires CrsSupport crsSupport,
                          @Requires CrsInfo crsInfo) {
+        this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
         this.tileCache = tileCache;
         this.crsSupport = crsSupport;
@@ -207,7 +216,28 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
             parameter.transformQuery(collectionData, queryBuilder, queryParameters, apiData);
         }
 
-        CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(filterableFields.get(PARAMETER_BBOX), tile.getBoundingBox()));
+        BoundingBox bbox = tile.getBoundingBox();
+        try {
+            // reduce bbox to the area in which there is data (to avoid coordinate transformation issues
+            // with large scale and data that is stored in a regional, projected CRS)
+            final EpsgCrs crs = bbox.getEpsgCrs();
+            final Optional<BoundingBox> dataBbox = apiData.getSpatialExtent(collectionId, crsTransformerFactory, crs);
+            if (dataBbox.isPresent()) {
+                bbox = ImmutableList.of(bbox, dataBbox.get())
+                    .stream()
+                    .map(BoundingBox::toArray)
+                    .reduce((doubles, doubles2) -> new double[]{
+                        Math.max(doubles[0], doubles2[0]),
+                        Math.max(doubles[1], doubles2[1]),
+                        Math.min(doubles[2], doubles2[2]),
+                        Math.min(doubles[3], doubles2[3])})
+                    .map(doubles -> BoundingBox.of(doubles[0], doubles[1], doubles[2], doubles[3], crs))
+                    .orElse(bbox);
+            }
+        } catch (CrsTransformationException e) {
+            // ignore
+        }
+        CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(filterableFields.get(PARAMETER_BBOX), bbox));
         if (predefFilter != null || !filters.isEmpty()) {
             Optional<CqlFilter> otherFilter = Optional.empty();
             Optional<CqlFilter> configFilter = Optional.empty();
