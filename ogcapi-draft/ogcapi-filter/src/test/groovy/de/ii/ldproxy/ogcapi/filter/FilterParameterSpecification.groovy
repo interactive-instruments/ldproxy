@@ -9,7 +9,6 @@ package de.ii.ldproxy.ogcapi.filter
 
 import de.ii.xtraplatform.cql.app.CqlImpl
 import de.ii.xtraplatform.cql.domain.Cql
-import java.util.stream.IntStream
 import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
@@ -20,6 +19,7 @@ import spock.lang.Specification
 /** These test assume that the following APIs are available:
  * <ul>
  *     <li>daraa (same data and configuration as https://demo.ldproxy.net/daraa)
+ *     <li>geoinfodok (same data and configuration as https://demo.ldproxy.net/geoinfodok)
  * </ul>
  */
 @Requires({env['SUT_URL'] != null})
@@ -28,11 +28,15 @@ class FilterParameterSpecification extends Specification {
     static final String SUT_URL = System.getenv('SUT_URL')
     static final String API_PATH_DARAA = "/daraa"
     static final String CULTURE_PNT = "CulturePnt"
-    static final String TRANSPORTATION_GROUND_CRV = "TransportationGroundCrv"
+    static final String AERONAUTIC_CRV = "AeronauticCrv"
     static final String CULTURE_PNT_PATH = API_PATH_DARAA + "/collections/" + CULTURE_PNT + "/items"
+    static final String AERONAUTIC_CRV_PATH = API_PATH_DARAA + "/collections/" + AERONAUTIC_CRV + "/items"
     static final String API_PATH_GEOINFODOK = "/geoinfodok"
     static final String AX_GEBAEUDEFUNKTION = "ax_gebaeudefunktion"
     static final String AX_GEBAEUDEFUNKTION_PATH = API_PATH_GEOINFODOK + "/collections/" + AX_GEBAEUDEFUNKTION + "/items"
+    static final String API_PATH_CSHAPES = "/cshapes"
+    static final String BOUNDARY = "boundary"
+    static final String BOUNDARY_PATH = API_PATH_CSHAPES + "/collections/" + BOUNDARY + "/items"
     static final String GEO_JSON = "application/geo+json";
     static final String JSON = "application/json";
 
@@ -47,51 +51,66 @@ class FilterParameterSpecification extends Specification {
     @Shared
     def allCulturePntFeatures = getRequest(restClient, CULTURE_PNT_PATH, null)
     @Shared
-    def collection = getRequest(restClient, API_PATH_DARAA + "/collections/" + CULTURE_PNT, null)
+    def allAeronauticCrvFeatures = getRequest(restClient, AERONAUTIC_CRV_PATH, [limit:limit])
+    @Shared
+    def collection = getRequest(restClient, API_PATH_DARAA + "/collections/" + AERONAUTIC_CRV, null)
     @Shared
     def envelopeCollection = "ENVELOPE(" + String.join(",", collection.responseData.extent.spatial.bbox[0].stream().map( n -> String.valueOf(n)).toList()) + ")"
     @Shared
-    def id = allCulturePntFeatures.responseData.features[0].id
+    def idPnt = allCulturePntFeatures.responseData.features[0].id
     @Shared
-    def lon = allCulturePntFeatures.responseData.features[0].geometry.coordinates[0] as double
+    def lonPnt = allCulturePntFeatures.responseData.features[0].geometry.coordinates[0] as double
     @Shared
-    def lat = allCulturePntFeatures.responseData.features[0].geometry.coordinates[1] as double
+    def latPnt = allCulturePntFeatures.responseData.features[0].geometry.coordinates[1] as double
     @Shared
-    def delta = 0.01
+    def idCrv = allAeronauticCrvFeatures.responseData.features[7].id
     @Shared
-    def envelopeFeature = "ENVELOPE(" + String.join(",", String.valueOf(lon-delta), String.valueOf(lat-delta), String.valueOf(lon+delta), String.valueOf(lat+delta)) + ")"
+    def lonCrv = allAeronauticCrvFeatures.responseData.features[7].geometry.coordinates[0][0][0] as double
     @Shared
-    def polygonFeature = "POLYGON((" + String.join(",",
-            String.valueOf(lon-delta)+" "+String.valueOf(lat),
-            String.valueOf(lon)+" "+String.valueOf(lat-delta),
-            String.valueOf(lon+delta)+" "+String.valueOf(lat),
-            String.valueOf(lon)+" "+String.valueOf(lat+delta),
-            String.valueOf(lon-delta)+" "+String.valueOf(lat)) + "))"
+    def latCrv = allAeronauticCrvFeatures.responseData.features[7].geometry.coordinates[0][0][1] as double
     @Shared
-    def pointFeature = "POINT(" + String.valueOf(lon) + " " + String.valueOf(lat) + ")"
+    def delta = 0.02
+    @Shared
+    def envelopeCrv = "ENVELOPE(" + String.join(",", String.valueOf(lonCrv-delta), String.valueOf(latCrv-delta), String.valueOf(lonCrv+delta), String.valueOf(latCrv+delta)) + ")"
+    @Shared
+    def polygonCrv = "POLYGON((" + String.join(",",
+            String.valueOf(lonCrv-delta)+" "+String.valueOf(latCrv),
+            String.valueOf(lonCrv)+" "+String.valueOf(latCrv-delta),
+            String.valueOf(lonCrv+delta)+" "+String.valueOf(latCrv),
+            String.valueOf(lonCrv)+" "+String.valueOf(latCrv+delta),
+            String.valueOf(lonCrv-delta)+" "+String.valueOf(latCrv)) + "))"
+    @Shared
+    def pointCrv = "POINT(" + String.valueOf(lonCrv) + " " + String.valueOf(latCrv) + ")"
+    @Shared
+    def pointPnt = "POINT(" + String.valueOf(lonPnt) + " " + String.valueOf(latPnt) + ")"
     @Shared
     def epsg4326 = "http://www.opengis.net/def/crs/EPSG/0/4326"
     @Shared
-    def envelopeFeature4326 = "ENVELOPE(" + String.join(",", String.valueOf(lat-delta), String.valueOf(lon-delta), String.valueOf(lat+delta), String.valueOf(lon+delta)) + ")"
+    def envelopeCrv4326 = "ENVELOPE(" + String.join(",", String.valueOf(latCrv-delta), String.valueOf(lonCrv-delta), String.valueOf(latCrv+delta), String.valueOf(lonCrv+delta)) + ")"
     @Shared
-    def polygonFeature4326 = "POLYGON((" + String.join(",",
-            String.valueOf(lat)+" "+String.valueOf(lon-delta),
-            String.valueOf(lat-delta)+" "+String.valueOf(lon),
-            String.valueOf(lat)+" "+String.valueOf(lon+delta),
-            String.valueOf(lat+delta)+" "+String.valueOf(lon),
-            String.valueOf(lat)+" "+String.valueOf(lon-delta)) + "))"
+    def polygonCrv4326 = "POLYGON((" + String.join(",",
+            String.valueOf(latCrv)+" "+String.valueOf(lonCrv-delta),
+            String.valueOf(latCrv-delta)+" "+String.valueOf(lonCrv),
+            String.valueOf(latCrv)+" "+String.valueOf(lonCrv+delta),
+            String.valueOf(latCrv+delta)+" "+String.valueOf(lonCrv),
+            String.valueOf(latCrv)+" "+String.valueOf(lonCrv-delta)) + "))"
     @Shared
-    def pointFeature4326 = "POINT(" + String.valueOf(lat) + " " + String.valueOf(lon) + ")"
+    def pointCrv4326 = "POINT(" + String.valueOf(latCrv) + " " + String.valueOf(lonCrv) + ")"
+    @Shared
+    def pointPnt4326 = "POINT(" + String.valueOf(latPnt) + " " + String.valueOf(lonPnt) + ")"
     @Shared
     def allAxGebaeudefunktion = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, [limit:limit])
+    @Shared
+    def allBoundaries = getRequest(restClient, BOUNDARY_PATH, [limit:limit])
 
     def "Preconditions Daraa"() {
-        given: "CulturePnt features in the Daraa dataset"
+        given: "CulturePnt and AeronauticCrv features in the Daraa dataset"
 
         when: "Fetch all features"
 
         then: "Success and returns JSON"
         assertSuccess(allCulturePntFeatures)
+        assertSuccess(allAeronauticCrvFeatures)
         assertSuccess(collection)
     }
 
@@ -102,6 +121,15 @@ class FilterParameterSpecification extends Specification {
 
         then: "Success and returns JSON"
         assertSuccess(allAxGebaeudefunktion)
+    }
+
+    def "Preconditions CShapes"() {
+        given: "Boundary features"
+
+        when: "Fetch all features"
+
+        then: "Success and returns JSON"
+        assertSuccess(allBoundaries)
     }
 
     // Comparison predicates
@@ -797,6 +825,21 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<propertyAndLiteralString6.responseData.numberReturned; i++) {
             assertFeature(propertyAndLiteralString6.responseData.features[i], propertyAndLiteralString6Check.get(i))
         }
+
+        when: "8. Data is selected using a filter F_CODE LiKe '%''%'"
+        def propertyAndLiteralString7 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe '%''%'"))
+        def propertyAndLiteralString7Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.F_CODE.contains('\'') ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralString7)
+
+        and: "Returns the same number of features"
+        propertyAndLiteralString7.responseData.numberReturned == propertyAndLiteralString7Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteralString7.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralString7.responseData.features[i], propertyAndLiteralString7Check.get(i))
+        }
     }
 
     def "Case-insensistive and accent-insensitive comparisons"() {
@@ -1094,55 +1137,55 @@ class FilterParameterSpecification extends Specification {
     // Spatial predicates, including filter-crs
 
     def "Operator S_INTERSECTS"() {
-        given: "CulturePnt features in the Daraa dataset"
+        given: "AeronauticCrv features in the Daraa dataset"
 
         when: "1. Data is selected using a filter s_InterSectS(geometry,geometry)"
-        def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "s_InterSectS(geometry,geometry)"))
+        def twoProperties = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery( "s_InterSectS(geometry,geometry)"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(twoProperties)
 
         and: "Returns all features"
-        twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
+        twoProperties.responseData.numberReturned == allAeronauticCrvFeatures.responseData.numberReturned
 
         when: "2. Data is selected using a filter s_InterSectS(geometry,<bbox of collection>)"
-        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "s_InterSectS(geometry," + envelopeCollection + ")"))
+        def propertyAndLiteral = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery( "s_InterSectS(geometry," + envelopeCollection + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral)
 
         and: "Returns the same number of features"
-        propertyAndLiteral.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
+        propertyAndLiteral.responseData.numberReturned == allAeronauticCrvFeatures.responseData.numberReturned
 
         when: "3. Data is selected using a filter s_InterSectS(<bbox of collection>,geometry)"
-        def propertyAndLiterala = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "s_InterSectS(" + envelopeCollection + ",geometry)"))
+        def propertyAndLiterala = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery( "s_InterSectS(" + envelopeCollection + ",geometry)"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiterala)
 
         and: "Returns the same number of features"
-        propertyAndLiterala.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
+        propertyAndLiterala.responseData.numberReturned == allAeronauticCrvFeatures.responseData.numberReturned
 
         when: "4. Data is selected using a filter s_InterSectS(geometry,<bbox around first feature>)"
-        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "s_InterSectS(geometry," + envelopeFeature + ")"))
+        def propertyAndLiteral2 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery( "s_InterSectS(geometry," + envelopeCrv + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral2)
 
         and: "Returns the feature"
-        propertyAndLiteral2.responseData.features.stream().anyMatch(f -> f.id == id)
+        propertyAndLiteral2.responseData.features.stream().anyMatch(f -> f.id == idCrv)
 
         when: "5. Data is selected using a filter s_InterSectS(<bbox around first feature>,geometry)"
-        def propertyAndLiteral2a = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "s_InterSectS(" + envelopeFeature + ",geometry)"))
+        def propertyAndLiteral2a = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery( "s_InterSectS(" + envelopeCrv + ",geometry)"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral2a)
 
         and: "Returns the feature"
-        propertyAndLiteral2a.responseData.features.stream().anyMatch(f -> f.id == id)
+        propertyAndLiteral2a.responseData.features.stream().anyMatch(f -> f.id == idCrv)
 
         when: "6. The same request using EPSG:4326"
-        def propertyAndLiteral2b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326( "s_InterSectS(geometry," + envelopeFeature4326 + ")"))
+        def propertyAndLiteral2b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326( "s_InterSectS(geometry," + envelopeCrv4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral2b)
@@ -1151,16 +1194,16 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral2, propertyAndLiteral2b)
 
         when: "7. Data is selected using a filter s_InterSectS(geometry,<polygon around first feature>)"
-        def propertyAndLiteral3 = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "s_InterSectS(geometry," + polygonFeature + ")"))
+        def propertyAndLiteral3 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery( "s_InterSectS(geometry," + polygonCrv + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral3)
 
         and: "Returns the feature"
-        propertyAndLiteral3.responseData.features.stream().anyMatch(f -> f.id == id)
+        propertyAndLiteral3.responseData.features.stream().anyMatch(f -> f.id == idCrv)
 
         when: "8. The same request using EPSG:4326"
-        def propertyAndLiteral3b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326( "s_InterSectS(geometry," + polygonFeature4326 + ")"))
+        def propertyAndLiteral3b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326( "s_InterSectS(geometry," + polygonCrv4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral3b)
@@ -1170,11 +1213,11 @@ class FilterParameterSpecification extends Specification {
     }
 
     def "Operator S_DISJOINT"() {
-        given: "CulturePnt features in the Daraa dataset"
+        given: "AeronauticCrv features in the Daraa dataset"
 
         when: "1. Data is selected using a filter NoT s_DisJoinT(geometry,<polygon around first feature>)"
-        def propertyAndLiteral4 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT s_DisJoinT(geometry," + polygonFeature + ")"))
-        def propertyAndLiteral4Check = getRequest(restClient, CULTURE_PNT_PATH, getQuery( "s_InterSectS(geometry," + polygonFeature + ")"))
+        def propertyAndLiteral4 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("NoT s_DisJoinT(geometry," + polygonCrv + ")"))
+        def propertyAndLiteral4Check = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery( "s_InterSectS(geometry," + polygonCrv + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral4)
@@ -1186,7 +1229,7 @@ class FilterParameterSpecification extends Specification {
         }
 
         when: "2. The same request using EPSG:4326"
-        def propertyAndLiteral4b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT s_DisJoinT(geometry," + polygonFeature4326 + ")"))
+        def propertyAndLiteral4b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("NoT s_DisJoinT(geometry," + polygonCrv4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral4b)
@@ -1195,17 +1238,17 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral4, propertyAndLiteral4b)
 
         when: "3. Data is selected using a filter s_DisJoinT(geometry,<polygon around first feature>)"
-        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("s_DisJoinT(geometry," + polygonFeature + ")"))
+        def propertyAndLiteral5 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_DisJoinT(geometry," + polygonCrv + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral5)
 
         and: "Returns the feature"
-        propertyAndLiteral5.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned - propertyAndLiteral4Check.responseData.numberReturned
-        propertyAndLiteral5.responseData.features.stream().noneMatch( f -> f.id == id )
+        propertyAndLiteral5.responseData.numberReturned == allAeronauticCrvFeatures.responseData.numberReturned - propertyAndLiteral4Check.responseData.numberReturned
+        propertyAndLiteral5.responseData.features.stream().noneMatch( f -> f.id == idCrv )
 
         when: "4. The same request using EPSG:4326"
-        def propertyAndLiteral5b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("s_DisJoinT(geometry," + polygonFeature4326 + ")"))
+        def propertyAndLiteral5b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("s_DisJoinT(geometry," + polygonCrv4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral5b)
@@ -1218,7 +1261,7 @@ class FilterParameterSpecification extends Specification {
         given: "CulturePnt features in the Daraa dataset"
 
         when: "1. Data is selected using a filter s_EqualS(geometry,<point of first feature>)"
-        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("s_EqualS(geometry, " + pointFeature + ")"))
+        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("s_EqualS(geometry, " + pointPnt + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral6)
@@ -1228,7 +1271,7 @@ class FilterParameterSpecification extends Specification {
         assertFeature(propertyAndLiteral6.responseData.features[0], allCulturePntFeatures.responseData.features[0])
 
         when: "2. The same request using EPSG:4326"
-        def propertyAndLiteral6b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("s_EqualS(geometry, " + pointFeature4326 + ")"))
+        def propertyAndLiteral6b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("s_EqualS(geometry, " + pointPnt4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral6b)
@@ -1237,7 +1280,7 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral6, propertyAndLiteral6b)
 
         when: "3. Data is selected using a filter NoT s_EqualS(geometry,<point of first feature>)"
-        def propertyAndLiteral7 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT s_EqualS(geometry, " + pointFeature + ")"))
+        def propertyAndLiteral7 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT s_EqualS(geometry, " + pointPnt + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral7)
@@ -1246,7 +1289,7 @@ class FilterParameterSpecification extends Specification {
         propertyAndLiteral7.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned - 1
 
         when: "4. The same request using EPSG:4326"
-        def propertyAndLiteral7b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT s_EqualS(geometry, " + pointFeature4326 + ")"))
+        def propertyAndLiteral7b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT s_EqualS(geometry, " + pointPnt4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral7b)
@@ -1256,20 +1299,20 @@ class FilterParameterSpecification extends Specification {
     }
 
     def "Operator S_WITHIN"() {
-        given: "CulturePnt features in the Daraa dataset"
+        given: "AeronauticCrv features in the Daraa dataset"
 
         when: "1. Data is selected using a filter s_WithiN(geometry,<polygon around first feature>)"
-        def propertyAndLiteral8 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("s_WithiN(geometry, " + polygonFeature + ")"))
+        def propertyAndLiteral8 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_WithiN(geometry, " + polygonCrv + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral8)
 
         and: "Returns the feature"
         propertyAndLiteral8.responseData.numberReturned > 0
-        propertyAndLiteral8.responseData.features.stream().anyMatch( f -> f.id == id )
+        propertyAndLiteral8.responseData.features.stream().anyMatch( f -> f.id == idCrv )
 
         when: "2. The same request using EPSG:4326"
-        def propertyAndLiteral8b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("s_WithiN(geometry, " + polygonFeature4326 + ")"))
+        def propertyAndLiteral8b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("s_WithiN(geometry, " + polygonCrv4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral8b)
@@ -1278,17 +1321,17 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral8, propertyAndLiteral8b)
 
         when: "3. Data is selected using a filter NoT s_WithiN(geometry,<polygon around first feature>)"
-        def propertyAndLiteral9 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT s_WithiN(geometry, " + polygonFeature + ")"))
+        def propertyAndLiteral9 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("NoT s_WithiN(geometry, " + polygonCrv + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral9)
 
         and: "Returns everything but the feature"
-        propertyAndLiteral9.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned - propertyAndLiteral8.responseData.numberReturned
-        propertyAndLiteral9.responseData.features.stream().noneMatch( f -> f.id == id )
+        propertyAndLiteral9.responseData.numberReturned == allAeronauticCrvFeatures.responseData.numberReturned - propertyAndLiteral8.responseData.numberReturned
+        propertyAndLiteral9.responseData.features.stream().noneMatch( f -> f.id == idCrv )
 
         when: "4. The same request using EPSG:4326"
-        def propertyAndLiteral9b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT s_WithiN(geometry, " + polygonFeature4326 + ")"))
+        def propertyAndLiteral9b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("NoT s_WithiN(geometry, " + polygonCrv4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral9b)
@@ -1297,16 +1340,16 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral9, propertyAndLiteral9b)
 
         when: "5. Data is selected using a filter s_WithiN(<point of first feature>,<polygon around first feature>)"
-        def propertyAndLiteral10 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("s_WithiN(" + pointFeature + ", " + polygonFeature + ")"))
+        def propertyAndLiteral10 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_WithiN(" + pointCrv + ", " + polygonCrv + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral10)
 
         and: "Returns all features"
-        propertyAndLiteral10.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
+        propertyAndLiteral10.responseData.numberReturned == allAeronauticCrvFeatures.responseData.numberReturned
 
         when: "6. The same request using EPSG:4326"
-        def propertyAndLiteral10b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("s_WithiN(" + pointFeature4326 + ", " + polygonFeature4326 + ")"))
+        def propertyAndLiteral10b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("s_WithiN(" + pointCrv4326 + ", " + polygonCrv4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral10b)
@@ -1315,16 +1358,16 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral10, propertyAndLiteral10b)
 
         when: "7. Data is selected using a filter NoT s_WithiN(geometry,<polygon around first feature>)"
-        def propertyAndLiteral11 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("NoT s_WithiN(" + pointFeature + ", " + polygonFeature + ")"))
+        def propertyAndLiteral11 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("NoT s_WithiN(geometry, " + polygonCrv + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral11)
 
-        and: "Returns no feature"
-        propertyAndLiteral11.responseData.numberReturned == 0
+        and: "Returns 12 features"
+        propertyAndLiteral11.responseData.numberReturned == 12
 
         when: "8. The same request using EPSG:4326"
-        def propertyAndLiteral11b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("NoT s_WithiN(" + pointFeature4326 + ", " + polygonFeature4326 + ")"))
+        def propertyAndLiteral11b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("NoT s_WithiN(geometry, " + polygonCrv4326 + ")"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral11b)
@@ -1333,15 +1376,127 @@ class FilterParameterSpecification extends Specification {
         assertSameResult(propertyAndLiteral11, propertyAndLiteral11b)
     }
 
-    // TODO tests for TOUCHES, OVERLAPS, CROSSES using other collections with line string/polygon geometry
+    def "Operator S_TOUCHES"() {
+        given: "AeronauticCrv features in the Daraa dataset"
+
+        when: "1. Data is selected using a filter s_ToUcHeS(geometry,<start point of first feature>)"
+        def propertyAndLiteral12 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_ToUcHeS(geometry, " + pointCrv + ")"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral12)
+
+        and: "Returns the feature"
+        propertyAndLiteral12.responseData.numberReturned > 0
+        propertyAndLiteral12.responseData.features.stream().anyMatch( f -> f.id == idCrv )
+
+        and: "Returns also connected features"
+        propertyAndLiteral12.responseData.numberReturned > 1
+
+        when: "2. The same request using EPSG:4326"
+        def propertyAndLiteral12b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("s_ToUcHeS(geometry, " + pointCrv4326 + ")"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral12b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral12, propertyAndLiteral12b)
+
+        when: "3. Data is selected using a filter s_ToUcHeS(geometry,<polygon around first feature>)"
+        def propertyAndLiteral14 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_ToUcHeS(geometry, " + polygonCrv + ")"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral14)
+
+        and: "Returns no feature"
+        propertyAndLiteral14.responseData.numberReturned == 0
+
+        when: "4. The same request using EPSG:4326"
+        def propertyAndLiteral14b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("s_ToUcHeS(geometry, " + polygonCrv4326 + ")"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral14b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral14, propertyAndLiteral14b)
+
+        when: "5. Data is selected using a filter s_ToUcHeS(geometry,geometry)"
+        def propertyAndLiteral15 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_ToUcHeS(geometry,geometry)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral15)
+
+        and: "Returns no feature"
+        propertyAndLiteral15.responseData.numberReturned == 0
+    }
+
+    def "Operator S_OVERLAPS"() {
+        given: "CulturePnt features in the Daraa dataset"
+
+        when: "1. Data is selected using a filter s_OvErLaPs(geometry,<start point of first feature>)"
+        def propertyAndLiteral16 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("s_OvErLaPs(geometry, " + pointPnt + ")"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral16)
+
+        and: "Returns no feature"
+        propertyAndLiteral16.responseData.numberReturned == 0
+
+        when: "2. The same request using EPSG:4326"
+        def propertyAndLiteral16b = getRequest(restClient, CULTURE_PNT_PATH, getQuery4326("s_OvErLaPs(geometry, " + pointPnt4326 + ")"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral16b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral16, propertyAndLiteral16b)
+
+        when: "3. Data is selected using a filter s_OvErLaPs(geometry,geometry)"
+        def propertyAndLiteral17 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_OvErLaPs(geometry,geometry)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral17)
+
+        and: "Returns no feature"
+        propertyAndLiteral17.responseData.numberReturned == 0
+    }
+
+    def "Operator S_CROSSES"() {
+        given: "AeronauticCrv features in the Daraa dataset"
+
+        when: "1. Data is selected using a filter s_CrOsSeS(geometry,<polygon around first feature>)"
+        def propertyAndLiteral18 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_CrOsSeS(geometry, " + polygonCrv + ")"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral18)
+
+        and: "Returns one feature"
+        propertyAndLiteral18.responseData.numberReturned == 1
+
+        when: "2. The same request using EPSG:4326"
+        def propertyAndLiteral18b = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery4326("s_CrOsSeS(geometry, " + polygonCrv4326 + ")"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral18b)
+
+        and: "Returns the same result"
+        assertSameResult(propertyAndLiteral18, propertyAndLiteral18b)
+
+        when: "5. Data is selected using a filter s_CrOsSeS(geometry,geometry)"
+        def propertyAndLiteral19 = getRequest(restClient, AERONAUTIC_CRV_PATH, getQuery("s_CrOsSeS(geometry,geometry)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral19)
+
+        and: "Returns no feature"
+        propertyAndLiteral19.responseData.numberReturned == 0
+    }
+
 
     // Temporal predicates
-    // TODO ANYINTERACTS, TEQUALS, AFTER, BEFORE and DURING are the only implemented predicates;
-    //      add tests for BEGINS, BEGUNBY, TCONTAINS, ENDEDBY, ENDS, MEETS, METBY, TOVERLAPS,
-    //      OVERLAPPEDBY once they are implemented
+    // TODO add tests for the other temporal operators
 
     def "Operator T_INTERSECTS"() {
-        given: "CulturePnt features in the Daraa dataset"
+        given: "CulturePnt features in the Daraa dataset and Boundary features in the CShapes dataset"
 
         when: "1. Data is selected using a filter t_IntErSectS(ZI001_SDV, INTERVAL('2011-12-01T00:00:00Z','2011-12-31T23:59:59Z'))"
         def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_IntErSectS(ZI001_SDV, INTERVAL('2011-12-01T00:00:00Z','2011-12-31T23:59:59Z'))"))
@@ -1397,7 +1552,7 @@ class FilterParameterSpecification extends Specification {
         and: "Returns all features"
         assertSameResult(propertyAndLiteral4, allCulturePntFeatures)
 
-        when: "5. Data is selected using a filter t_IntErSectS(ZI001_SDV, DATE('2011-12-27'))"
+        when: "5. Data is selected using a filter t_IntErSectS(ZI001_SDV,DATE('2011-12-27'))"
         def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_IntErSectS(ZI001_SDV, DATE('2011-12-27'))"))
         def propertyAndLiteral5Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2011-12-27' && f.properties.ZI001_SDV < '2011-12-28' ).toList()
 
@@ -1507,6 +1662,205 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns no features"
         propertyAndLiteral15.responseData.numberReturned == 0
+
+        when: "15. Data is selected using a filter CASEI(name) LIKE CASEI('%Germany%') AND T_INTERSECTS(INTERVAL(cowbegin,cowend),INTERVAL('1955-01-01','1990-10-02'))"
+        def boundary = getRequest(restClient, BOUNDARY_PATH, getQuery("CASEI(name) LIKE CASEI('%Germany%') AND T_INTERSECTS(INTERVAL(cowbegin,cowend),INTERVAL('1955-01-01','1990-10-02'))"))
+        def boundaryCheck = allBoundaries.responseData.features.stream().filter( f -> f.properties.name.toLowerCase().startsWith("germany") && !(f.properties.cowend < '1955-01-01' || f.properties.cowbegin >= '1990-10-03')).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(boundary)
+
+        and: "Returns the same number of features"
+        boundary.responseData.numberReturned == boundaryCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<boundary.responseData.numberReturned; i++) {
+            assertFeature(boundary.responseData.features[i], boundaryCheck.get(i))
+        }
+    }
+
+    def "Operator T_DISJOINT"() {
+        given: "CulturePnt features in the Daraa dataset"
+
+        when: "1. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, INTERVAL('2011-12-01T00:00:00Z','2011-12-31T23:59:59Z'))"
+        def propertyAndLiteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, INTERVAL('2011-12-01T00:00:00Z','2011-12-31T23:59:59Z'))"))
+        def propertyAndLiteralCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2011-12' || f.properties.ZI001_SDV > '2012' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "2. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, INTERVAL('..','2011-12-31T23:59:59Z'))"
+        def propertyAndLiteral2 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, INTERVAL('..','2011-12-31T23:59:59Z'))"))
+        def propertyAndLiteral2Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2012' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral2)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral2.responseData.numberReturned == propertyAndLiteral2Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral2.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral2.responseData.features[i], propertyAndLiteral2Check.get(i))
+        }
+
+        when: "3. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, INTERVAL('2012-01-01T00:00:00Z','..'))"
+        def propertyAndLiteral3 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, INTERVAL('2012-01-01T00:00:00Z','..'))"))
+        def propertyAndLiteral3Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2012' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral3)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral3.responseData.numberReturned == propertyAndLiteral3Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral3.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral3.responseData.features[i], propertyAndLiteral3Check.get(i))
+        }
+
+        when: "4. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, INTERVAL('..','..'))"
+        def propertyAndLiteral4 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, INTERVAL('..','..'))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral4)
+
+        and: "Returns no features"
+        propertyAndLiteral4.responseData.numberReturned == 0
+
+        when: "5. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, DATE('2011-12-27'))"
+        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, DATE('2011-12-27'))"))
+        def propertyAndLiteral5Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2011-12-27' || f.properties.ZI001_SDV >= '2011-12-28' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral5)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral5.responseData.numberReturned == propertyAndLiteral5Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral5.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral5.responseData.features[i], propertyAndLiteral5Check.get(i))
+        }
+
+        when: "6. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, TIMESTAMP('2011-12-26T20:55:27Z'))"
+        def propertyAndLiteral6 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, TIMESTAMP('2011-12-26T20:55:27Z'))"))
+        def propertyAndLiteral6Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV != '2011-12-26T20:55:27Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral6)
+
+        and: "Returns the same number of features"
+        propertyAndLiteral6.responseData.numberReturned == propertyAndLiteral6Check.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteral6.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteral6.responseData.features[i], propertyAndLiteral6Check.get(i))
+        }
+
+        when: "7. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, ZI001_SDV)"
+        def propertyAndLiteral7 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, ZI001_SDV)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral7)
+
+        and: "Returns no features"
+        propertyAndLiteral7.responseData.numberReturned == 0
+
+        when: "8. Data is selected using a filter t_DiSjOiNt(INTERVAL('2011-12-01T00:00:00Z','2011-12-31T23:59:59Z'), ZI001_SDV)"
+        def propertyAndLiteral8 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(INTERVAL('2011-12-01T00:00:00Z','2011-12-31T23:59:59Z'), ZI001_SDV)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral8)
+
+        and: "Returns the same features"
+        assertSameResult(propertyAndLiteral8, propertyAndLiteral)
+
+        when: "9. Data is selected using a filter t_DiSjOiNt(INTERVAL('..','2011-12-31T23:59:59Z'), ZI001_SDV)"
+        def propertyAndLiteral9 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(INTERVAL('..','2011-12-31T23:59:59Z'), ZI001_SDV)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral9)
+
+        and: "Returns the same features"
+        assertSameResult(propertyAndLiteral9, propertyAndLiteral2)
+
+        when: "10. Data is selected using a filter t_DiSjOiNt(INTERVAL('2012-01-01T00:00:00Z','..'), ZI001_SDV)"
+        def propertyAndLiteral10 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(INTERVAL('2012-01-01T00:00:00Z','..'), ZI001_SDV)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral10)
+
+        and: "Returns the same features"
+        assertSameResult(propertyAndLiteral10, propertyAndLiteral3)
+
+        when: "11. Data is selected using a filter t_DiSjOiNt(INTERVAL('..','..'), ZI001_SDV)"
+        def propertyAndLiteral11 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(INTERVAL('..','..'), ZI001_SDV)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral11)
+
+        and: "Returns the same features"
+        assertSameResult(propertyAndLiteral11, propertyAndLiteral4)
+
+        when: "12. Data is selected using a filter t_DiSjOiNt(DATE('2011-12-27'), ZI001_SDV)"
+        def propertyAndLiteral12 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(DATE('2011-12-27'), ZI001_SDV)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral12)
+
+        and: "Returns the same features"
+        assertSameResult(propertyAndLiteral12, propertyAndLiteral5)
+
+        when: "13. Data is selected using a filter t_DiSjOiNt(TIMESTAMP('2011-12-26T20:55:27Z'), ZI001_SDV)"
+        def propertyAndLiteral13 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(TIMESTAMP('2011-12-26T20:55:27Z'), ZI001_SDV)"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral13)
+
+        and: "Returns the same features"
+        assertSameResult(propertyAndLiteral13, propertyAndLiteral6)
+
+        when: "14. Data is selected using a filter t_DiSjOiNt(TIMESTAMP('2011-12-26T20:55:27Z'), INTERVAL('2011-01-01','2011-12-31'))"
+        def propertyAndLiteral14 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(TIMESTAMP('2011-12-26T20:55:27Z'), INTERVAL('2011-01-01','2011-12-31'))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral14)
+
+        and: "Returns all features"
+        assertSameResult(propertyAndLiteral14, allCulturePntFeatures)
+
+        when: "14. Data is selected using a filter t_DiSjOiNt(INTERVAL('..','2010-12-26'), INTERVAL('2011-01-01','2011-12-31'))"
+        def propertyAndLiteral15 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(INTERVAL('..','2010-12-26'), INTERVAL('2011-01-01','2011-12-31'))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteral15)
+
+        and: "Returns all features"
+        assertSameResult(propertyAndLiteral15, allCulturePntFeatures)
+
+        when: "15. Data is selected using a filter CASEI(name) LIKE CASEI('%Germany%') AND T_DISJOINT(INTERVAL(cowbegin,cowend),INTERVAL('1955-01-01','1990-10-02'))"
+        def boundary = getRequest(restClient, BOUNDARY_PATH, getQuery("CASEI(name) LIKE CASEI('%Germany%') AND T_DISJOINT(INTERVAL(cowbegin,cowend),INTERVAL('1955-01-01','1990-10-02'))"))
+        def boundaryCheck = allBoundaries.responseData.features.stream().filter( f -> f.properties.name.toLowerCase().startsWith("germany") && (f.properties.cowend < '1955-01-01' || f.properties.cowbegin >= '1990-10-03')).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(boundary)
+
+        and: "Returns the same number of features"
+        boundary.responseData.numberReturned == boundaryCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<boundary.responseData.numberReturned; i++) {
+            assertFeature(boundary.responseData.features[i], boundaryCheck.get(i))
+        }
     }
 
     def "Operator T_EQUALS"() {
@@ -1549,6 +1903,15 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<datetime3.responseData.numberReturned; i++) {
             assertFeature(datetime3.responseData.features[i], propertyAndLiteralCheck.get(i))
         }
+
+        when: "4. Data is selected using a filter T_EqualS(InTeRvAl(ZI001_SDV,'..'),InTeRvAl(ZI001_SDV,'..'))"
+        def intervals = getRequest(restClient, CULTURE_PNT_PATH, getQuery("T_EqualS(InTeRvAl(ZI001_SDV,'..'),InTeRvAl(ZI001_SDV,'..'))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(intervals)
+
+        and: "Returns all features"
+        twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
     }
 
     def "Operator T_AFTER"() {
@@ -1568,6 +1931,59 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
             assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
         }
+
+        when: "2. Data is selected using a filter T_AFTER(TIMESTAMP('2011-12-31T23:59:59Z'), ZI001_SDV)"
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("T_AFTER(TIMESTAMP('2011-12-31T23:59:59Z'), ZI001_SDV)"))
+        def literalAndPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2011-12-31T23:59:59Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndProperty)
+
+        and: "Returns the same number of features"
+        literalAndProperty.responseData.numberReturned == literalAndPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<literalAndProperty.responseData.numberReturned; i++) {
+            assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
+        }
+
+        when: "3. Data is selected using a filter T_AFTER(TIMESTAMP('2011-12-31T23:59:59Z'), TIMESTAMP('2011-12-31T23:59:59Z'))"
+        def literalAndliteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("T_AFTER(TIMESTAMP('2011-12-31T23:59:59Z'), TIMESTAMP('2011-12-31T23:59:59Z'))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndliteral)
+
+        and: "Returns the same number of features"
+        literalAndliteral.responseData.numberReturned == 0
+
+        when: "4. Data is selected using a filter T_AFTER(ZI001_SDV, INTERVAL('2011-01-01T00:00:00Z', '2011-12-31T23:59:59Z'))"
+        def propertyAndLiteralInterval = getRequest(restClient, CULTURE_PNT_PATH, getQuery("T_AFTER(ZI001_SDV,INTERVAL('2011-01-01T00:00:00Z','2011-12-31T23:59:59Z'))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralInterval)
+
+        and: "Returns the same number of features"
+        propertyAndLiteralInterval.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteralInterval.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralInterval.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "5. Data is selected using a filter CASEI(name) LIKE CASEI('%Germany%') AND T_AFTER(INTERVAL(cowbegin,cowend),INTERVAL('1955-05-05','1990-10-02'))"
+        def boundary = getRequest(restClient, BOUNDARY_PATH, getQuery("CASEI(name) LIKE CASEI('%Germany%') AND T_AFTER(INTERVAL(cowbegin,cowend),INTERVAL('1955-05-05','1990-10-02'))"))
+        def boundaryCheck = allBoundaries.responseData.features.stream().filter( f -> f.properties.name.toLowerCase().startsWith("germany") && f.properties.cowbegin > '1990-10-02').toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(boundary)
+
+        and: "Returns the same number of features"
+        boundary.responseData.numberReturned == boundaryCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<boundary.responseData.numberReturned; i++) {
+            assertFeature(boundary.responseData.features[i], boundaryCheck.get(i))
+        }
     }
 
     def "Operator T_BEFORE"() {
@@ -1586,6 +2002,59 @@ class FilterParameterSpecification extends Specification {
         and: "Returns the same feature arrays"
         for (int i=0; i<propertyAndLiteral.responseData.numberReturned; i++) {
             assertFeature(propertyAndLiteral.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "2. Data is selected using a filter T_BeForE(TIMESTAMP('2011-12-31T23:59:59Z'), ZI001_SDV)"
+        def literalAndProperty = getRequest(restClient, CULTURE_PNT_PATH, getQuery("T_BeForE(TIMESTAMP('2011-12-31T23:59:59Z'), ZI001_SDV)"))
+        def literalAndPropertyCheck = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2011-12-31T23:59:59Z' ).toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndProperty)
+
+        and: "Returns the same number of features"
+        literalAndProperty.responseData.numberReturned == literalAndPropertyCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<literalAndProperty.responseData.numberReturned; i++) {
+            assertFeature(literalAndProperty.responseData.features[i], literalAndPropertyCheck.get(i))
+        }
+
+        when: "3. Data is selected using a filter T_BeForE(TIMESTAMP('2011-12-31T23:59:59Z'), TIMESTAMP('2011-12-31T23:59:59Z'))"
+        def literalAndliteral = getRequest(restClient, CULTURE_PNT_PATH, getQuery("T_BeForE(TIMESTAMP('2011-12-31T23:59:59Z'), TIMESTAMP('2011-12-31T23:59:59Z'))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(literalAndliteral)
+
+        and: "Returns the same number of features"
+        literalAndliteral.responseData.numberReturned == 0
+
+        when: "4. Data is selected using a filter T_BeForE(ZI001_SDV, INTERVAL('2011-12-31T23:59:59Z', '..'))"
+        def propertyAndLiteralInterval = getRequest(restClient, CULTURE_PNT_PATH, getQuery("T_BeForE(ZI001_SDV, INTERVAL('2011-12-31T23:59:59Z','..'))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(propertyAndLiteralInterval)
+
+        and: "Returns the same number of features"
+        propertyAndLiteralInterval.responseData.numberReturned == propertyAndLiteralCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<propertyAndLiteralInterval.responseData.numberReturned; i++) {
+            assertFeature(propertyAndLiteralInterval.responseData.features[i], propertyAndLiteralCheck.get(i))
+        }
+
+        when: "5. Data is selected using a filter CASEI(name) LIKE CASEI('%Germany%') AND T_BEFORE(INTERVAL(cowbegin,cowend),INTERVAL('1990-10-03','2020-12-31'))"
+        def boundary = getRequest(restClient, BOUNDARY_PATH, getQuery("CASEI(name) LIKE CASEI('%Germany%') AND T_BEFORE(INTERVAL(cowbegin,cowend),INTERVAL('1990-10-03','2020-12-31'))"))
+        def boundaryCheck = allBoundaries.responseData.features.stream().filter( f -> f.properties.name.toLowerCase().startsWith("germany") && f.properties.cowend < '1990-10-03').toList()
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(boundary)
+
+        and: "Returns the same number of features"
+        boundary.responseData.numberReturned == boundaryCheck.size()
+
+        and: "Returns the same feature arrays"
+        for (int i=0; i<boundary.responseData.numberReturned; i++) {
+            assertFeature(boundary.responseData.features[i], boundaryCheck.get(i))
         }
     }
 

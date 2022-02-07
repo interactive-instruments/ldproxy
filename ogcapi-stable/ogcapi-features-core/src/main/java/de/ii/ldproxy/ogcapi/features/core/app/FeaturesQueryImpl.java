@@ -20,7 +20,6 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.cql.domain.CqlDateTime;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Eq;
@@ -33,7 +32,6 @@ import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
-import de.ii.xtraplatform.cql.domain.TEquals;
 import de.ii.xtraplatform.cql.domain.TIntersects;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -50,7 +48,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
 
 import javax.measure.unit.NonSI;
 import javax.measure.unit.SI;
@@ -384,7 +381,11 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         TemporalLiteral temporalLiteral;
         try {
-            temporalLiteral = TemporalLiteral.of(timeValue);
+            if (timeValue.contains(DATETIME_INTERVAL_SEPARATOR)) {
+                temporalLiteral = TemporalLiteral.of(Splitter.on(DATETIME_INTERVAL_SEPARATOR).splitToList(timeValue));
+            } else {
+                temporalLiteral = TemporalLiteral.of(timeValue);
+            }
         } catch (Throwable e) {
             throw new IllegalArgumentException("Invalid value for query parameter '" + PARAMETER_DATETIME + "'.", e);
         }
@@ -399,7 +400,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             return Optional.of(CqlPredicate.of(TIntersects.of(intervalFunction, temporalLiteral)));
         }
 
-        return Optional.of(CqlPredicate.of(TIntersects.of(timeField, temporalLiteral)));
+        return Optional.of(CqlPredicate.of(TIntersects.of(Property.of(timeField), temporalLiteral)));
     }
 
     private Optional<CqlPredicate> qToCql(List<String> qFields, String qValue) {

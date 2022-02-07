@@ -127,12 +127,16 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
     @Override
     public List<String> getConformanceClassUris() {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/simple-cql",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/enhanced-spatial-operators",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/arrays",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/cql-text",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/cql-json");
+                                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/basic-cql2",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/advanced-comparison-operators",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/basic-spatial-operators",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/spatial-operators",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/temporal-operators",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/array-operators",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/property-property",
+                                "http://www.opengis.net/spec/cql2/0.0/conf/cql2-text");
     }
 
     @Override
