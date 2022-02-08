@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableCollection;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext.Event;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoderDefault;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import java.io.IOException;
 import java.util.Iterator;
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FeatureEncoderGeoJson extends FeatureTokenEncoder<EncodingAwareContextGeoJson> {
+public class FeatureEncoderGeoJson extends FeatureTokenEncoderDefault<EncodingAwareContextGeoJson> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderGeoJson.class);
 
