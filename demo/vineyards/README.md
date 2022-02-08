@@ -17,7 +17,7 @@ This description assumes that the following preparation steps have been complete
 
 The dataset can be downloaded from the website of the Landwirtschaftskammer: Go to the [download page](http://weinlagen.lwk-rlp.de/portal/funktionen-anleitung/download.html) or use the [direct shapefile download link](http://weinlagen.lwk-rlp.de/geoserver/lwk/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=lwk:Weinlagen&outputFormat=shape-zip).
 
-If you do not want to deal with shapefiles, you can also use the SQL dump ([DDL](vineyards.ddl.sql) and [DML](vineyards.dml.sql)).
+If you do not want to deal with shapefiles, you can also use the SQL dump ([DDL](db/vineyards.ddl.sql) and [DML](db/vineyards.dml.sql)).
 
 ## Step 2: Load the data
 
