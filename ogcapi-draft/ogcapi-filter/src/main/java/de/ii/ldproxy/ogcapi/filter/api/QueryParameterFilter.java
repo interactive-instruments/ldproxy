@@ -45,7 +45,7 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
         return "Filter features in the collection using the query expression in the parameter value. Filter expressions " +
             "are written in the Common Query Language (CQL), which is a candidate OGC standard. This API implements " +
             "[version 1.0.0-draft.2 from January 2021](https://github.com/opengeospatial/ogcapi-features/releases/download/part3-1.0.0-draft.2/19-079.html). " +
-            "The recommended language for this query parameter is CQL Text (`filter-lang=cql-text`).\n\n" +
+            "The recommended language for this query parameter is CQL Text (`filter-lang=cql2-text`).\n\n" +
             "CQL Text expressions are similar to SQL expressions and also support spatial, temporal and array predicates. " +
             "All property references must be queryables of the collection and must be declared in the Queryables sub-resource " +
             "of the collection.\n\n" +

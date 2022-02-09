@@ -730,6 +730,7 @@ class FilterParameterSpecification extends Specification {
     def "Operator like"() {
         given: "CulturePnt features in the Daraa dataset"
 
+        /* no longer allowed in the grammar
         when: "1. Data is selected using a filter F_CODE LiKe F_CODE"
         def twoProperties = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe F_CODE"))
 
@@ -738,6 +739,7 @@ class FilterParameterSpecification extends Specification {
 
         and: "Returns all features"
         twoProperties.responseData.numberReturned == allCulturePntFeatures.responseData.numberReturned
+         */
 
         when: "2. Data is selected using a filter F_CODE LiKe 'AL0%'"
         def propertyAndLiteralString = getRequest(restClient, CULTURE_PNT_PATH, getQuery("F_CODE LiKe 'AL0%'"))
@@ -1677,6 +1679,15 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<boundary.responseData.numberReturned; i++) {
             assertFeature(boundary.responseData.features[i], boundaryCheck.get(i))
         }
+
+        when: "16. Data is selected using a filter T_INTERSECTS(INTERVAL(cowbegin,'..'),INTERVAL('..',cowend))"
+        def boundary2 = getRequest(restClient, BOUNDARY_PATH, getQuery("T_INTERSECTS(INTERVAL(cowbegin,'..'),INTERVAL('..',cowend))"))
+
+        then: "Success and returns GeoJSON"
+        assertSuccess(boundary2)
+
+        and: "Returns the same number of features"
+        boundary2.responseData.numberReturned == allBoundaries.responseData.features.size()
     }
 
     def "Operator T_DISJOINT"() {

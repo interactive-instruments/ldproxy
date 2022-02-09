@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
@@ -82,13 +83,16 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
     private final TileCache tileCache;
+    private final FeaturesCoreProviders providers;
 
     public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires FeaturesQuery queryParser,
-                         @Requires TileCache tileCache) {
+                         @Requires TileCache tileCache,
+                         @Requires FeaturesCoreProviders providers) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
         this.tileCache = tileCache;
+        this.providers = providers;
     }
 
     @Override
@@ -206,19 +210,20 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
         if (predefFilter != null || !filters.isEmpty()) {
             Optional<CqlFilter> otherFilter = Optional.empty();
             Optional<CqlFilter> configFilter = Optional.empty();
+            boolean useTIntersects = providers.getFeatureProvider(apiData).map(provider -> provider.supportsTIntersects()).orElse(false);
             if (!filters.isEmpty()) {
                 Optional<String> filterLang = uriCustomizer.getQueryParams().stream()
                         .filter(param -> "filter-lang".equals(param.getName()))
                         .map(NameValuePair::getValue)
                         .findFirst();
                 Cql.Format cqlFormat = Cql.Format.TEXT;
-                if (filterLang.isPresent() && "cql-json".equals(filterLang.get())) {
+                if (filterLang.isPresent() && "cql2-json".equals(filterLang.get())) {
                     cqlFormat = Cql.Format.JSON;
                 }
-                otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat);
+                otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat, useTIntersects);
             }
             if (predefFilter != null) {
-                configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
+                configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT, useTIntersects);
             }
             CqlFilter combinedFilter;
             if (otherFilter.isPresent() && configFilter.isPresent()) {

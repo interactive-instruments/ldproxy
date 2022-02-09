@@ -289,12 +289,12 @@ public class CapabilityTiles implements ApiBuildingBlock {
                                     builder.addStrictErrors(MessageFormat.format("A filter in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to end at level ''{2}'', but the maximum level is ''{3}''.", collectionId, tileMatrixSetId, filter.getMax(), zoomLevelsCfg.getMax()));
                                 }
                                 if (filter.getFilter().isPresent()) {
-                                    // try to convert the filter to CQL-text
+                                    // try to convert the filter to CQL2-text
                                     String expression = filter.getFilter().get();
                                     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
                                     final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
                                     try {
-                                        queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
+                                        queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT, false);
                                     } catch (Exception e) {
                                         builder.addErrors(MessageFormat.format("A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}", expression, collectionId, tileMatrixSetId, e.getMessage()));
                                     }

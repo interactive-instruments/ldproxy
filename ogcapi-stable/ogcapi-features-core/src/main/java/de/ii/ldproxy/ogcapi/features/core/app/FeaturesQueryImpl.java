@@ -186,13 +186,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         if (!filters.isEmpty()) {
             Cql.Format cqlFormat = Cql.Format.TEXT;
             EpsgCrs crs = OgcCrs.CRS84;
-            if (parameters.containsKey("filter-lang") && "cql-json".equals(parameters.get("filter-lang"))) {
+            if (parameters.containsKey("filter-lang") && "cql2-json".equals(parameters.get("filter-lang"))) {
                 cqlFormat = Cql.Format.JSON;
             }
             if (parameters.containsKey("filter-crs")) {
                 crs = EpsgCrs.fromString(parameters.get("filter-crs"));
             }
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, cqlFormat, crs);
+            boolean useTIntersects = providers.getFeatureProvider(apiData).map(provider -> provider.supportsTIntersects()).orElse(false);
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, cqlFormat, crs, useTIntersects);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -233,13 +234,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     @Override
     public Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                                  Set<String> filterParameters, Cql.Format cqlFormat) {
+                                                  Set<String> filterParameters, Cql.Format cqlFormat,
+                                                  boolean useTIntersects) {
 
         Map<String, String> filtersFromQuery = getFiltersFromQuery(query, filterableFields, filterParameters);
 
         if (!filtersFromQuery.isEmpty()) {
 
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), cqlFormat, OgcCrs.CRS84);
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), cqlFormat, OgcCrs.CRS84, useTIntersects);
         }
 
         return Optional.empty();
@@ -268,7 +270,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
-                                                  List<String> qFields, Cql.Format cqlFormat, EpsgCrs crs) {
+                                                  List<String> qFields, Cql.Format cqlFormat, EpsgCrs crs,
+                                                  boolean useTIntersects) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
@@ -292,7 +295,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                    if (filterParameters.contains(filter.getKey())) {
                                                        CqlPredicate cqlPredicate;
                                                        try {
-                                                           cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs);
+                                                           cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs, useTIntersects);
                                                        } catch (Throwable e) {
                                                            throw new IllegalArgumentException(String.format("The parameter '%s' is invalid", filter.getKey()), e);
                                                        }
