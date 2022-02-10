@@ -139,7 +139,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
 
     try {
       Geometry tileGeometry = TileGeometryUtil
-          .getTileGeometry(featureGeometry.get(), affineTransformation, clipGeometry, reducer, tilePrecisionModel, minimumSizeInPixel, maxRelativeAreaChangeInPolygonRepair, maxAbsoluteAreaChangeInPolygonRepair);
+          .getTileGeometry(featureGeometry.get(), affineTransformation, clipGeometry, tilePrecisionModel, minimumSizeInPixel);
       if (Objects.isNull(tileGeometry)) {
         return;
       }
