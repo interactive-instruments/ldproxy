@@ -20,15 +20,9 @@ import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import io.swagger.v3.oas.models.media.ObjectSchema
-import org.glassfish.jersey.internal.MapPropertiesDelegate
-import org.glassfish.jersey.internal.PropertiesDelegate
-import org.glassfish.jersey.server.ApplicationHandler
-import org.glassfish.jersey.server.ContainerRequest
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
-import javax.ws.rs.core.Request
-import javax.ws.rs.core.SecurityContext
 
 class LandingPageSpec extends Specification {
 
@@ -186,7 +180,7 @@ class LandingPageSpec extends Specification {
                     return ImmutableList.of((T) new ConformanceClass() {
 
                         @Override
-                        List<String> getConformanceClassUris() {
+                        List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
                             return ImmutableList.of('http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/core')
                         }
 

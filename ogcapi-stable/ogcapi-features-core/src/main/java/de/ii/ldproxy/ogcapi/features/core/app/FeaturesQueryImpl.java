@@ -29,11 +29,13 @@ import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
-import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
-import de.ii.xtraplatform.cql.domain.TIntersects;
+import de.ii.xtraplatform.cql.domain.SpatialOperation;
+import de.ii.xtraplatform.cql.domain.SpatialOperator;
+import de.ii.xtraplatform.cql.domain.TemporalOperation;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
+import de.ii.xtraplatform.cql.domain.TemporalOperator;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -192,8 +194,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             if (parameters.containsKey("filter-crs")) {
                 crs = EpsgCrs.fromString(parameters.get("filter-crs"));
             }
-            boolean useTIntersects = providers.getFeatureProvider(apiData).map(provider -> provider.supportsTIntersects()).orElse(false);
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, cqlFormat, crs, useTIntersects);
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, cqlFormat, crs);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -234,14 +235,13 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     @Override
     public Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                                  Set<String> filterParameters, Cql.Format cqlFormat,
-                                                  boolean useTIntersects) {
+                                                  Set<String> filterParameters, Cql.Format cqlFormat) {
 
         Map<String, String> filtersFromQuery = getFiltersFromQuery(query, filterableFields, filterParameters);
 
         if (!filtersFromQuery.isEmpty()) {
 
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), cqlFormat, OgcCrs.CRS84, useTIntersects);
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), cqlFormat, OgcCrs.CRS84);
         }
 
         return Optional.empty();
@@ -270,8 +270,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
-                                                  List<String> qFields, Cql.Format cqlFormat, EpsgCrs crs,
-                                                  boolean useTIntersects) {
+                                                  List<String> qFields, Cql.Format cqlFormat, EpsgCrs crs) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
@@ -295,7 +294,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                    if (filterParameters.contains(filter.getKey())) {
                                                        CqlPredicate cqlPredicate;
                                                        try {
-                                                           cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs, useTIntersects);
+                                                           cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs);
                                                        } catch (Throwable e) {
                                                            throw new IllegalArgumentException(String.format("The parameter '%s' is invalid", filter.getKey()), e);
                                                        }
@@ -351,7 +350,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         Envelope envelope = Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), sourceCrs);
 
-        return CqlPredicate.of(SIntersects.of(geometryField, SpatialLiteral.of(envelope)));
+        return CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, geometryField, SpatialLiteral.of(envelope)));
     }
 
     private void checkCoordinateRange(List<Double> coordinates, EpsgCrs crs) {
@@ -400,10 +399,10 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                       .map(Property::of)
                                                       .collect(Collectors.toList()));
 
-            return Optional.of(CqlPredicate.of(TIntersects.of(intervalFunction, temporalLiteral)));
+            return Optional.of(CqlPredicate.of(TemporalOperation.of(TemporalOperator.T_INTERSECTS, intervalFunction, temporalLiteral)));
         }
 
-        return Optional.of(CqlPredicate.of(TIntersects.of(Property.of(timeField), temporalLiteral)));
+        return Optional.of(CqlPredicate.of(TemporalOperation.of(TemporalOperator.T_INTERSECTS, Property.of(timeField), temporalLiteral)));
     }
 
     private Optional<CqlPredicate> qToCql(List<String> qFields, String qValue) {

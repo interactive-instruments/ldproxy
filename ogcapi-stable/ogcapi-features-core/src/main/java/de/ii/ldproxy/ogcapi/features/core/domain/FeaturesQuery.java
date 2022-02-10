@@ -36,6 +36,6 @@ public interface FeaturesQuery {
 
   Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
                                            Set<String> filterParameters,
-                                           Cql.Format cqlFormat, boolean useTIntersects);
+                                           Cql.Format cqlFormat);
 
 }

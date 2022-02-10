@@ -13,12 +13,15 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
@@ -27,6 +30,17 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
 
     private static final String FILTER_LANG_CQL2_TEXT = "cql2-text";
     private static final String FILTER_LANG_CQL2_JSON = "cql2-json";
+
+    private final FeaturesCoreProviders providers;
+
+    public QueryParameterFilterLang(@Requires FeaturesCoreProviders providers) {
+        this.providers = providers;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).map(FeatureProvider2::supportsQueries).orElse(false);
+    }
 
     @Override
     public String getName() {
@@ -63,12 +77,12 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
     private final Schema<String> schema = new StringSchema()._enum(ImmutableList.of(FILTER_LANG_CQL2_TEXT))._default(FILTER_LANG_CQL2_TEXT);
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }
 

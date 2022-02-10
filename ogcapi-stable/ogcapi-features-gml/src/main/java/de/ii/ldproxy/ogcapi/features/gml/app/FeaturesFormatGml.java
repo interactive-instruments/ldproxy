@@ -52,7 +52,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2");
     }
 

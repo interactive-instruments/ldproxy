@@ -115,7 +115,7 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs");
     }
 }

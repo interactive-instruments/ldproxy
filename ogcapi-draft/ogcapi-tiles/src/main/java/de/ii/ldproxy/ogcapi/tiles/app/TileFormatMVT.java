@@ -19,7 +19,6 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
@@ -35,7 +34,8 @@ import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
-import de.ii.xtraplatform.cql.domain.SIntersects;
+import de.ii.xtraplatform.cql.domain.SpatialOperation;
+import de.ii.xtraplatform.cql.domain.SpatialOperator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -86,16 +86,13 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
     private final TileCache tileCache;
-    private final FeaturesCoreProviders providers;
 
     public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires FeaturesQuery queryParser,
-                         @Requires TileCache tileCache,
-                         @Requires FeaturesCoreProviders providers) {
+                         @Requires TileCache tileCache) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
         this.tileCache = tileCache;
-        this.providers = providers;
     }
 
     @Override
@@ -230,11 +227,10 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
         } catch (CrsTransformationException e) {
             // ignore
         }
-        CqlPredicate spatialPredicate = CqlPredicate.of(SIntersects.of(filterableFields.get(PARAMETER_BBOX), bbox));
+        CqlPredicate spatialPredicate = CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, filterableFields.get(PARAMETER_BBOX), bbox));
         if (predefFilter != null || !filters.isEmpty()) {
             Optional<CqlFilter> otherFilter = Optional.empty();
             Optional<CqlFilter> configFilter = Optional.empty();
-            boolean useTIntersects = providers.getFeatureProvider(apiData).map(provider -> provider.supportsTIntersects()).orElse(false);
             if (!filters.isEmpty()) {
                 Optional<String> filterLang = uriCustomizer.getQueryParams().stream()
                         .filter(param -> "filter-lang".equals(param.getName()))
@@ -244,10 +240,10 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                 if (filterLang.isPresent() && "cql2-json".equals(filterLang.get())) {
                     cqlFormat = Cql.Format.JSON;
                 }
-                otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat, useTIntersects);
+                otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat);
             }
             if (predefFilter != null) {
-                configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT, useTIntersects);
+                configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
             }
             CqlFilter combinedFilter;
             if (otherFilter.isPresent() && configFilter.isPresent()) {
