@@ -38,8 +38,7 @@ public interface TileFromFeatureQuery {
 
   MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException;
 
-  double getMaxAllowableOffsetNative(Tile tile);
-  double getMaxAllowableOffsetCrs84(Tile tile);
+  double getMaxAllowableOffset(Tile tile);
 
   default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
       FeatureTransformationContextTiles transformationContext) {

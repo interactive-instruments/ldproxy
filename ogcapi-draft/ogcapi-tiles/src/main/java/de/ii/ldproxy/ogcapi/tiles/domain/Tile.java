@@ -207,7 +207,7 @@ public abstract class Tile {
     public BoundingBox getBoundingBox(EpsgCrs crs,
                                        CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
-        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(getTileMatrixSet().getCrs(), crs);
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(getTileMatrixSet().getCrs(), crs, true);
 
         if (transformer.isEmpty()) {
             return bboxTileMatrixSetCrs;
