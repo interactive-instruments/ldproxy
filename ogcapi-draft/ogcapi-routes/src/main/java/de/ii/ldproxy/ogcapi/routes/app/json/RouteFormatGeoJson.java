@@ -58,7 +58,7 @@ public class RouteFormatGeoJson implements ConformanceClass, RouteFormatExtensio
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/rem/0.0/conf/rem",
                                 "http://www.opengis.net/spec/rem/0.0/conf/rem-overview",
                                 "http://www.opengis.net/spec/rem/0.0/conf/rem-segment");

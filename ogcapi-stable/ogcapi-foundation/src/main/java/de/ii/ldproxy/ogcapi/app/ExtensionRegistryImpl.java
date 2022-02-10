@@ -62,7 +62,7 @@ public class ExtensionRegistryImpl implements ExtensionRegistry {
             if (apiExtension instanceof ConformanceClass) {
                 final ConformanceClass conformanceClass = (ConformanceClass) apiExtension;
 
-                LOGGER.debug("CONFORMANCE CLASS {}", conformanceClass.getConformanceClassUris().toString());
+                LOGGER.debug("CONFORMANCE CLASS {}", conformanceClass.getClass().getSimpleName());
             }
 
             if (apiExtension instanceof FormatExtension) {

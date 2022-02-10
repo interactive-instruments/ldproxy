@@ -16,7 +16,10 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
+import de.ii.xtraplatform.feature.provider.sql.app.FeatureProviderSql;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -24,16 +27,29 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 @Component
 @Provides
 @Instantiate
 public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
+
+    private final FeaturesCoreProviders providers;
+
+    public QueryParameterFilter(@Requires FeaturesCoreProviders providers) {
+        this.providers = providers;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).map(FeatureProvider2::supportsQueries).orElse(false);
+    }
 
     @Override
     public String getName() {
@@ -45,7 +61,7 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
         return "Filter features in the collection using the query expression in the parameter value. Filter expressions " +
             "are written in the Common Query Language (CQL), which is a candidate OGC standard. This API implements " +
             "[version 1.0.0-draft.2 from January 2021](https://github.com/opengeospatial/ogcapi-features/releases/download/part3-1.0.0-draft.2/19-079.html). " +
-            "The recommended language for this query parameter is CQL Text (`filter-lang=cql-text`).\n\n" +
+            "The recommended language for this query parameter is CQL Text (`filter-lang=cql2-text`).\n\n" +
             "CQL Text expressions are similar to SQL expressions and also support spatial, temporal and array predicates. " +
             "All property references must be queryables of the collection and must be declared in the Queryables sub-resource " +
             "of the collection.\n\n" +
@@ -112,27 +128,40 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
                  definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
-    private final Schema schema = new StringSchema();
+    private final Schema<String> schema = new StringSchema();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/simple-cql",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/enhanced-spatial-operators",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/arrays",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/cql-text",
-                "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/cql-json");
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>()
+            .add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter",
+                 "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/basic-cql2",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/advanced-comparison-operators",
+                 // TODO disabled for now because this currently includes ACCENTI()
+                 // "http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/basic-spatial-operators",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/spatial-operators",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/temporal-operators",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/array-operators",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/property-property",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/cql2-text");
+
+        providers.getFeatureProvider(apiData).ifPresent(provider -> {
+            if (provider.supportsQueries() && provider.queries().supportsAccenti())
+                builder.add("http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison");
+        });
+
+        return builder.build();
     }
 
     @Override

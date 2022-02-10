@@ -148,7 +148,7 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of(MANAGE_ROUTES);
     }
 }

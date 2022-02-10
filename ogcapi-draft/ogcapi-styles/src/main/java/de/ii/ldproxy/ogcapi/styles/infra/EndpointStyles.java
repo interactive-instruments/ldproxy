@@ -45,7 +45,7 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/core");
     }
 

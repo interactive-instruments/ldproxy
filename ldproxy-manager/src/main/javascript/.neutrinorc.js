@@ -7,7 +7,7 @@ const package = require("./package.json");
 module.exports = {
   options: {
     root: __dirname,
-    output: "../../../build/javascript/manager",
+    output: "../../../build/generated/src/main/resources/manager",
   },
   use: [
     airbnb(),

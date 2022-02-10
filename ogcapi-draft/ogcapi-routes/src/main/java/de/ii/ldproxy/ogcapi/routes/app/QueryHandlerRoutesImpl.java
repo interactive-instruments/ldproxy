@@ -198,8 +198,6 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             sourceCrs = featureProvider.crs()
                 .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
-                .needsCoordinateSwap();
         }
 
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
@@ -235,7 +233,6 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
-            .shouldSwapCoordinates(swapCoordinates)
             .isHitsOnlyIfMore(false)
             .showsFeatureSelfLink(false)
             .name(inputs.getName())

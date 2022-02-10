@@ -65,8 +65,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.MediaType;
 import org.apache.felix.ipojo.annotations.Component;
@@ -116,7 +114,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html", "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/html");
     }
 

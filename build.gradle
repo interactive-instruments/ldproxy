@@ -27,9 +27,22 @@ dependencies {
     bundle subprojects
 }
 
+ext {
+    useNativeRun = org.gradle.internal.os.OperatingSystem.current().isLinux()
+            ? project.findProperty('runInDocker') != 'true'
+            : project.findProperty('runInDocker') == 'false'
+}
+
 tasks.run {
     debug = project.findProperty('debug') ?: false
-    args = project.findProperty('data') ? [project.findProperty('data')] : args 
+    args = project.findProperty('data') ? [project.findProperty('data')] : args
+    onlyIf {useNativeRun}
+    doFirst {
+        println "useNativeRun: ${useNativeRun}, isLinux: ${org.gradle.internal.os.OperatingSystem.current().isLinux()}, runInDocker: ${project.findProperty('runInDocker')}"
+        if (useNativeRun && !org.gradle.internal.os.OperatingSystem.current().isLinux()) {
+            logger.warn("WARNING: Running natively is not supported for '${System.getProperty("os.name")}' and will most likely lead to errors.")
+        }
+    }
 }
 
 tasks.test {

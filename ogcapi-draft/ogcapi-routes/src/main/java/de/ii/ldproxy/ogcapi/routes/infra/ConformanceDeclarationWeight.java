@@ -25,7 +25,7 @@ import java.util.List;
 public class ConformanceDeclarationWeight implements ConformanceClass {
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of(CapabilityRouting.WEIGHT);
     }
 
