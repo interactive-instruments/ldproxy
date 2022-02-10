@@ -18,7 +18,6 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,7 +34,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
             .build();
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/sld-11");
     }
 

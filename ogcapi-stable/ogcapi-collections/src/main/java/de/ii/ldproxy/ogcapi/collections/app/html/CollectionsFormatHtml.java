@@ -45,7 +45,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/html");
     }
 

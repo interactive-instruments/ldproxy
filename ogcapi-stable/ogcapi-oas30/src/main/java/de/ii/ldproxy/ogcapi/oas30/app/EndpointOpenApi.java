@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.oas30.app;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -27,7 +28,7 @@ public class EndpointOpenApi implements ConformanceClass {
     private static Logger LOGGER = LoggerFactory.getLogger(EndpointOpenApi.class);
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30", "http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/oas30");
     }
 

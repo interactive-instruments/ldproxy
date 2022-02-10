@@ -31,7 +31,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Handle responses under '/tiles'.
@@ -50,7 +49,7 @@ public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMul
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
                                 "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/dataset-tilesets");
     }

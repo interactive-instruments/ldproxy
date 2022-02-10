@@ -34,7 +34,7 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
     final static Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/sorting");
     }
 

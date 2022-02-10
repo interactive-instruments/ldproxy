@@ -24,7 +24,6 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.xtraplatform.cql.domain.And;
-import de.ii.xtraplatform.cql.domain.AnyInteracts;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
@@ -32,14 +31,16 @@ import de.ii.xtraplatform.cql.domain.Eq;
 import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
 import de.ii.xtraplatform.cql.domain.In;
-import de.ii.xtraplatform.cql.domain.Intersects;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
-import de.ii.xtraplatform.cql.domain.TEquals;
+import de.ii.xtraplatform.cql.domain.SpatialOperation;
+import de.ii.xtraplatform.cql.domain.SpatialOperator;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
+import de.ii.xtraplatform.cql.domain.TemporalOperation;
+import de.ii.xtraplatform.cql.domain.TemporalOperator;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -65,7 +66,6 @@ import org.apache.felix.ipojo.annotations.Requires;
 import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
 
 
 @Component
@@ -186,7 +186,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         if (!filters.isEmpty()) {
             Cql.Format cqlFormat = Cql.Format.TEXT;
             EpsgCrs crs = OgcCrs.CRS84;
-            if (parameters.containsKey("filter-lang") && "cql-json".equals(parameters.get("filter-lang"))) {
+            if (parameters.containsKey("filter-lang") && "cql2-json".equals(parameters.get("filter-lang"))) {
                 cqlFormat = Cql.Format.JSON;
             }
             if (parameters.containsKey("filter-crs")) {
@@ -215,7 +215,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         Optional<FeatureSchema> featureSchema = providers.getFeatureSchema(apiData, collectionData);
 
         featureSchema.flatMap(SchemaBase::getPrimaryGeometry)
-            .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
+                     .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
 
         featureSchema.flatMap(SchemaBase::getPrimaryInterval)
             .ifPresentOrElse(
@@ -307,7 +307,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                    }
                                                    if (filter.getValue()
                                                              .contains("*")) {
-                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue()), "*", null, null, null));
+                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
                                                    }
 
                                                    return CqlPredicate.of(Eq.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
@@ -348,7 +348,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         Envelope envelope = Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), sourceCrs);
 
-        return CqlPredicate.of(Intersects.of(geometryField, SpatialLiteral.of(envelope)));
+        return CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, geometryField, SpatialLiteral.of(envelope)));
     }
 
     private void checkCoordinateRange(List<Double> coordinates, EpsgCrs crs) {
@@ -381,26 +381,26 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         TemporalLiteral temporalLiteral;
         try {
+            if (timeValue.contains(DATETIME_INTERVAL_SEPARATOR)) {
+                temporalLiteral = TemporalLiteral.of(Splitter.on(DATETIME_INTERVAL_SEPARATOR).splitToList(timeValue));
+            } else {
             temporalLiteral = TemporalLiteral.of(timeValue);
+            }
         } catch (Throwable e) {
             throw new IllegalArgumentException("Invalid value for query parameter '" + PARAMETER_DATETIME + "'.", e);
         }
 
-        boolean atLeastOneInterval = timeField.contains(DATETIME_INTERVAL_SEPARATOR) || temporalLiteral.getType() == Interval.class;
-
-        if (atLeastOneInterval) {
-            Function intervalFunction = timeField.contains(DATETIME_INTERVAL_SEPARATOR)
-                    ? Function.of("interval", Splitter.on(DATETIME_INTERVAL_SEPARATOR)
+        if (timeField.contains(DATETIME_INTERVAL_SEPARATOR)) {
+            Function intervalFunction = Function.of("interval", Splitter.on(DATETIME_INTERVAL_SEPARATOR)
                                                       .splitToList(timeField)
                                                       .stream()
                                                       .map(Property::of)
-                                                      .collect(Collectors.toList()))
-                    : Function.of("interval", ImmutableList.of(Property.of(timeField), Property.of(timeField)));
+                                                      .collect(Collectors.toList()));
 
-            return Optional.of(CqlPredicate.of(AnyInteracts.of(intervalFunction, temporalLiteral)));
+            return Optional.of(CqlPredicate.of(TemporalOperation.of(TemporalOperator.T_INTERSECTS, intervalFunction, temporalLiteral)));
         }
 
-        return Optional.of(CqlPredicate.of(TEquals.of(timeField, temporalLiteral)));
+        return Optional.of(CqlPredicate.of(TemporalOperation.of(TemporalOperator.T_INTERSECTS, Property.of(timeField), temporalLiteral)));
     }
 
     private Optional<CqlPredicate> qToCql(List<String> qFields, String qValue) {

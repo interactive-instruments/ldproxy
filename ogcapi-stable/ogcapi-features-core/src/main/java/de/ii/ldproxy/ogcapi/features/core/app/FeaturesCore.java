@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -27,7 +28,7 @@ public class FeaturesCore implements ConformanceClass {
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesCore.class);
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core", "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/core");
     }
 

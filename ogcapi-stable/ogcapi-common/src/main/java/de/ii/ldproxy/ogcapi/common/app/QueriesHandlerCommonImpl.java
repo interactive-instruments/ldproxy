@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.common.app;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.*;
 import de.ii.ldproxy.ogcapi.domain.*;
@@ -23,11 +22,9 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Variant;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -169,7 +166,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         ImmutableConformanceDeclaration.Builder builder = new ImmutableConformanceDeclaration.Builder()
                 .links(links)
                 .conformsTo(conformanceClasses.stream()
-                                              .map(ConformanceClass::getConformanceClassUris)
+                                              .map(conformanceClass -> conformanceClass.getConformanceClassUris(requestContext.getApi().getData()))
                                               .flatMap(List::stream)
                                               .distinct()
                                               .collect(Collectors.toUnmodifiableList()));
