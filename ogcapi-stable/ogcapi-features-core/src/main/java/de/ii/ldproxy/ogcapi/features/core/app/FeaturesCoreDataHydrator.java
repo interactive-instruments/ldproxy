@@ -343,7 +343,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                       !boundingBox.getEpsgCrs()
                                                   .equals(OgcCrs.CRS84h)) {
                                       try {
-                                          Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
+                                          Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84, true);
                                           if (transformer.isPresent()) {
                                               boundingBox = transformer.get()
                                                                        .transformBoundingBox(boundingBox);

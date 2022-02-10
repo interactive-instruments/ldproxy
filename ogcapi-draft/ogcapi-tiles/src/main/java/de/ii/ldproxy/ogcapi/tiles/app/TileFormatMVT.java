@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -36,6 +37,7 @@ import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.Intersects;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -51,9 +53,11 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.http.NameValuePair;
+import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.measure.Unit;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -86,13 +90,19 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
     private final TileCache tileCache;
+    private final CrsSupport crsSupport;
+    private final CrsInfo crsInfo;
 
     public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires FeaturesQuery queryParser,
-                         @Requires TileCache tileCache) {
+                         @Requires TileCache tileCache,
+                         @Requires CrsSupport crsSupport,
+                         @Requires CrsInfo crsInfo) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
         this.tileCache = tileCache;
+        this.crsSupport = crsSupport;
+        this.crsInfo = crsInfo;
     }
 
     @Override
@@ -168,8 +178,8 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                                                                           .type(featureTypeId)
                                                                           .limit(Objects.requireNonNullElse(tilesConfiguration.getLimitDerived(),LIMIT_DEFAULT))
                                                                           .offset(0)
-                                                                          .crs(tile.getTileMatrixSet().getCrs());
-                                                                          //.maxAllowableOffset(getMaxAllowableOffsetNative(tile));
+                                                                          .crs(tile.getTileMatrixSet().getCrs())
+                                                                          .maxAllowableOffset(getMaxAllowableOffset(tile));
 
         final Map<String, List<Rule>> rules = tilesConfiguration.getRulesDerived();
         if (!queryParameters.containsKey("properties") && (Objects.nonNull(rules) && rules.containsKey(tileMatrixSetId))) {
@@ -331,25 +341,20 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     }
 
     @Override
-    public double getMaxAllowableOffsetNative(Tile tile) {
+    public double getMaxAllowableOffset(Tile tile) {
         double maxAllowableOffsetTileMatrixSet = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-        double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units once we have better CRS support
-        return maxAllowableOffsetNative;
-    }
+        Unit<?> tmsCrsUnit = crsInfo.getUnit(tile.getTileMatrixSet().getCrs());
+        EpsgCrs nativeCrs = crsSupport.getStorageCrs(tile.getApiData(), Optional.empty());
+        Unit<?> nativeCrsUnit = crsInfo.getUnit(nativeCrs);
+        if (tmsCrsUnit.equals(nativeCrsUnit))
+            return maxAllowableOffsetTileMatrixSet;
+        else if (tmsCrsUnit.equals(Units.DEGREE) && nativeCrsUnit.equals(Units.METRE))
+            return maxAllowableOffsetTileMatrixSet * 111333.0;
+        else if (tmsCrsUnit.equals(Units.METRE) && nativeCrsUnit.equals(Units.DEGREE))
+            return maxAllowableOffsetTileMatrixSet / 111333.0;
 
-    @Override
-    public double getMaxAllowableOffsetCrs84(Tile tile) {
-        double maxAllowableOffsetCrs84 = 0;
-        try {
-            maxAllowableOffsetCrs84 = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), OgcCrs.CRS84, crsTransformerFactory);
-        } catch (CrsTransformationException e) {
-            LOGGER.error("CRS transformation error while computing maxAllowableOffsetCrs84: {}.", e.getMessage());
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Stacktrace:", e);
-            }
-        }
-
-        return maxAllowableOffsetCrs84;
+        LOGGER.error("TileFormatMVT.getMaxAllowableOffset: Cannot convert between axis units '{}' and '{}'.", tmsCrsUnit.getName(), nativeCrsUnit.getName());
+        return 0;
     }
 
     /**
