@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -46,7 +46,7 @@ public class StylesLinkGenerator {
                         .title(i18n.get("stylesLink",language))
                         .build());
 
-        if (defaultStyle.isPresent())
+        if (defaultStyle.isPresent() && !defaultStyle.get().equals("NONE"))
             builder.add(new ImmutableLink.Builder()
                                 .href(uriBuilder.copy()
                                              .ensureNoTrailingSlash()

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -91,7 +91,7 @@ public abstract class Tile {
 
     /**
      *
-     * @return {@code true}, if the tile is a tile for the /tiles resources
+     * @return {@code true}, if the tile is a tile for the /tiles or /map/tiles resources
      */
     public abstract boolean isDatasetTile();
 
@@ -99,7 +99,7 @@ public abstract class Tile {
     @Value.Derived
     @Value.Auxiliary
     public String getCollectionId() {
-        return getCollectionIds().size()==1 ?
+        return !isDatasetTile() && getCollectionIds().size()==1 ?
                 getCollectionIds().get(0) :
                 null;
     }
@@ -207,7 +207,7 @@ public abstract class Tile {
     public BoundingBox getBoundingBox(EpsgCrs crs,
                                        CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
         BoundingBox bboxTileMatrixSetCrs = getBoundingBox();
-        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(getTileMatrixSet().getCrs(), crs);
+        Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(getTileMatrixSet().getCrs(), crs, true);
 
         if (transformer.isEmpty()) {
             return bboxTileMatrixSetCrs;

@@ -49,6 +49,23 @@ Supported tile matrix sets include [WebMercatorQuad](http://docs.opengeospatial.
 |`cache` |string |`FILES` |`FILES` saves each tile as a file in the file system. `MBTILES` saves each tile in an MBTiles file (one MBTiles file per tile set).
 |`limit` |integer |100000 |Maximum number of features contained in a single tile per query.
 |`minimumSizeInPixel`| number |0.5 |Features with line geometries shorter that the given value are excluded from tiles. Features with surface geometries smaller than the square of the given value are excluded from the tiles. The value `0.5` corresponds to half a "pixel" in the used coordinate reference system.
+|`maxRelativeAreaChangeInPolygonRepair` | number |0.1 |Maximum allowed relative change of surface sizes when attempting to fix an invalid surface geometry. The fixed geometry is only used when the condition is met. The value `0.1` means 10%.
+|`maxAbsoluteAreaChangeInPolygonRepair` | number |1.0 |Maximum allowed absolute change of surface sizes when attempting to fix an invalid surface geometry. The fixed geometry is only used when the condition is met. The value `1.0` corresponds to one "pixel" in the used coordinate reference system.
+|`mapClientType` |enum |`MAP_LIBRE` |The map client library to use to display tile sets in the HTML representation. The default is MapLibre GL (`MAP_LIBRE`), which requires that the `WebMercatorQuad` tiling scheme is used in one of the tile sets and it will only display tiles in that tiling scheme. OpenLayers (`OPEN_LAYERS`) can be used for tile sets in other tiling schemes.
+|`style` |string |`DEFAULT` |An optional Mapbox style in the style repository to use for the map in the HTML representation of a tile sets resource. If set to `DEFAULT`, the `defaultStyle` configured in the [HTML configuration](html.md) is used. If set to `NONE`, aa simple wireframe style will be used with OpenStreetMap as a basemap. The value is ignored, if the map client is not MapLibre.
+|`removeZoomLevelConstraints` |boolean |`false` |If `true`, any `minzoom` or `maxzoom` members are removed from the vector layers. The value is ignored, if the map client is not MapLibre or `style` is `NONE`.
+
+TODO: link from tileProvider.seedingOptions
+<a name="seeding-options"></a>
+
+### Seeding options
+
+|Option |Data Type |Default |Description
+| --- | --- | --- | ---
+|`runOnStartup` |boolean |`true` |If disabled the seeding will not be run when the API starts.
+|`runPeriodic` |string |`null` |A crontab pattern to run the seeding periodically. There will only ever be one seeding in progress, so if the next run is scheduled before the last one finished, it will be skipped.
+|`purge` |boolean |`false` |If enabled the tile cache will be purged before the seeding starts.
+|`maxThreads` |integer |`1` |The maximum number of threads the seeding is allowed to use. The actual number of threads used depends on the number of available background task threads when the seeding is about to start. If you want to allow more than thread, first check if sufficient background task threads are configured. Take into account that the seeding for multiple APIs will compete for the available background task threads.
 
 ### Example
 

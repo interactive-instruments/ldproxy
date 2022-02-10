@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,17 +7,15 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.domain;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
-import de.ii.ldproxy.ogcapi.features.html.app.HtmlPropertyTransformations;
-import de.ii.ldproxy.ogcapi.features.html.app.ImmutableHtmlPropertyTransformations;
-import de.ii.xtraplatform.codelists.domain.Codelist;
-import java.util.AbstractMap;
-import java.util.LinkedHashMap;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -26,66 +24,88 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new", attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableFeaturesHtmlConfiguration.Builder.class)
-public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, FeatureTransformations {
+public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   abstract class Builder extends ExtensionConfiguration.Builder {
 
   }
 
   enum LAYOUT {CLASSIC, COMPLEX_OBJECTS}
+  enum POSITION {AUTO, TOP, RIGHT}
 
+  @Deprecated(since = "3.1.0")
   @Nullable
   LAYOUT getLayout();
 
-  // TODO duplicate from HtmlConfiguration
   @Nullable
-  Boolean getSchemaOrgEnabled();
+  POSITION getMapPosition();
 
-  Optional<String> getItemLabelFormat();
+  @JsonAlias("itemLabelFormat")
+  Optional<String> getFeatureTitleTemplate();
 
   @Override
-  Map<String, PropertyTransformation> getTransformations();
+  Map<String, List<PropertyTransformation>> getTransformations();
 
-  default Map<String, HtmlPropertyTransformations> getTransformations(
-      Optional<FeatureTransformations> baseTransformations,
-      Map<String, Codelist> codelists,
-      String serviceUrl, boolean isOverview) {
-    Map<String, ImmutableHtmlPropertyTransformations.Builder> mapBuilder = new LinkedHashMap<>();
+  @Nullable
+  MapClient.Type getMapClientType();
 
-    baseTransformations.ifPresent(base -> base.getSchemaTransformations(isOverview)
-        .forEach((propertyName, schemaTransformers) -> {
-          mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
-          mapBuilder.get(propertyName)
-              .addAllSchemaTransformers(schemaTransformers);
-        }));
+  @Nullable
+  String getStyle();
 
-    this.getSchemaTransformations(isOverview)
-        .forEach((propertyName, schemaTransformers) -> {
-          mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
-          mapBuilder.get(propertyName)
-              .addAllSchemaTransformers(schemaTransformers);
-        });
+  @Nullable
+  Boolean getRemoveZoomLevelConstraints();
 
-    baseTransformations.ifPresent(base -> base.getValueTransformations(codelists, serviceUrl)
-        .forEach((propertyName, valueTransformers) -> {
-          mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
-          mapBuilder.get(propertyName)
-              .addAllValueTransformers(valueTransformers);
-        }));
+  @Nullable
+  List<String> getGeometryProperties();
 
-    this.getValueTransformations(codelists, serviceUrl)
-        .forEach((propertyName, valueTransformers) -> {
-          mapBuilder.putIfAbsent(propertyName, new ImmutableHtmlPropertyTransformations.Builder());
-          mapBuilder.get(propertyName)
-              .addAllValueTransformers(valueTransformers);
-        });
+  @Nullable
+  Integer getMaximumPageSize();
 
-    return mapBuilder.entrySet()
-        .stream()
-        .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()
-            .build()))
-        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+  @Value.Check
+  default FeaturesHtmlConfiguration backwardsCompatibility() {
+    if (getLayout() == LAYOUT.CLASSIC
+      && (!hasTransformation(PropertyTransformations.WILDCARD, transformations ->
+        transformations.getFlatten().isPresent()))) {
+      Map<String, List<PropertyTransformation>> transformations = withTransformation(PropertyTransformations.WILDCARD,
+          new ImmutablePropertyTransformation.Builder()
+          .flatten(".")
+          .build());
 
+        return new ImmutableFeaturesHtmlConfiguration.Builder()
+            .from(this)
+            .mapPosition(POSITION.RIGHT)
+            .transformations(transformations)
+            .build();
+    }
+
+    if (getLayout() == LAYOUT.COMPLEX_OBJECTS && getMapPosition() != POSITION.TOP) {
+      return new ImmutableFeaturesHtmlConfiguration.Builder()
+          .from(this)
+          .mapPosition(POSITION.TOP)
+          .build();
+    }
+
+    return this;
+  }
+
+  String LINK_WILDCARD = "*{objectType=Link}";
+
+  @Value.Check
+  default FeaturesHtmlConfiguration transformLinks() {
+    if (!hasTransformation(LINK_WILDCARD, transformation -> transformation.getReduceStringFormat().isPresent())) {
+
+      Map<String, List<PropertyTransformation>> transformations = withTransformation(LINK_WILDCARD,
+          new ImmutablePropertyTransformation.Builder()
+          .reduceStringFormat("<a href=\"{{href}}\">{{title}}</a>")
+          .build());
+
+      return new ImmutableFeaturesHtmlConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
+    }
+
+    return this;
   }
 
   @Override
@@ -95,21 +115,10 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Featu
 
   @Override
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-    ImmutableFeaturesHtmlConfiguration.Builder builder = new ImmutableFeaturesHtmlConfiguration.Builder()
+    return new ImmutableFeaturesHtmlConfiguration.Builder()
         .from(source)
-        .from(this);
-
-    Map<String, PropertyTransformation> mergedTransformations = new LinkedHashMap<>(
-        ((FeaturesHtmlConfiguration) source).getTransformations());
-    getTransformations().forEach((key, transformation) -> {
-      if (mergedTransformations.containsKey(key)) {
-        mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
-      } else {
-        mergedTransformations.put(key, transformation);
-      }
-    });
-    builder.transformations(mergedTransformations);
-
-    return builder.build();
+        .from(this)
+        .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations())
+        .build();
   }
 }

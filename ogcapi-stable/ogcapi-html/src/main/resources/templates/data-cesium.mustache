@@ -1,0 +1,15 @@
+{{#isCesium}}
+{{#cesiumData}}
+
+<script type="text/javascript">
+  globalThis._cesium = {
+    getExtent: (Rectangle) => {{featureExtent}},
+    addEntities: (viewer, Color, Cartesian3) => {
+      {{#mapEntities}}{{{.}}}{{/mapEntities}}
+      viewer.zoomTo(viewer.entities);
+    },
+  }
+</script>
+
+{{/cesiumData}}
+{{/isCesium}}

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -40,7 +40,15 @@ public class CrsSupportImpl implements CrsSupport {
     }
 
     @Override
+    public boolean isEnabled(OgcApiDataV2 apiData) {
+        return apiData.getExtension(CrsConfiguration.class).filter(cfg -> cfg.isEnabled()).isPresent();
+    }
+
+    @Override
     public List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData) {
+        if (!isEnabled(apiData))
+            return ImmutableList.of();
+
         return getSupportedCrsList(apiData, null);
     }
 
@@ -77,7 +85,7 @@ public class CrsSupportImpl implements CrsSupport {
     @Override
     public EpsgCrs getStorageCrs(OgcApiDataV2 apiData,
                                  Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
-        FeatureProvider2 provider = featureTypeConfiguration.isPresent() ? providers.getFeatureProvider(apiData, featureTypeConfiguration.get()) : providers.getFeatureProvider(apiData);
+        FeatureProvider2 provider = featureTypeConfiguration.isPresent() ? providers.getFeatureProviderOrThrow(apiData, featureTypeConfiguration.get()) : providers.getFeatureProviderOrThrow(apiData);
 
         if (!provider.supportsCrs()) {
             throw new IllegalStateException("Provider has no CRS support.");

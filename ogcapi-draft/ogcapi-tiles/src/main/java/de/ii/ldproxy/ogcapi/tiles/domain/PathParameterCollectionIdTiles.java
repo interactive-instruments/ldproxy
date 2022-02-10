@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -61,7 +61,7 @@ public class PathParameterCollectionIdTiles extends AbstractPathParameterCollect
                 .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access tiles configuration for API ''{0}'' and collection ''{1}''.", apiData.getId(), collectionId)));
 
         return tilesConfiguration.isEnabled() &&
-               tilesConfiguration.getSingleCollectionEnabledDerived() &&
+               tilesConfiguration.isSingleCollectionEnabled() &&
                definitionPath.startsWith("/collections/{collectionId}/tiles");
     }
 

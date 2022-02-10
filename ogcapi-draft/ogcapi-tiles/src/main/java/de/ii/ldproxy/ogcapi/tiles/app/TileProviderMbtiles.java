@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,8 +9,17 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile;
+import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
+import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
@@ -36,7 +45,11 @@ public abstract class TileProviderMbtiles extends TileProvider {
     public abstract String getTileEncoding();
 
     @JsonIgnore
-    @Nullable
+    @Value.Auxiliary
+    @Value.Derived
+    public List<String> getTileEncodings() { return Objects.nonNull(getTileEncoding()) ? ImmutableList.of(getTileEncoding()) : ImmutableList.of(); }
+
+    @JsonIgnore
     public abstract List<Double> getCenter();
 
     @Override
@@ -45,19 +58,51 @@ public abstract class TileProviderMbtiles extends TileProvider {
     public boolean requiresQuerySupport() { return false; }
 
     @Override
-    public TileProvider mergeInto(TileProvider src) {
-        if (Objects.isNull(src) || !(src instanceof TileProviderMbtiles))
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isMultiCollectionEnabled() {
+        return true;
+    }
+
+    @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public boolean isSingleCollectionEnabled() {
+        return false;
+    }
+
+    @Override
+    public TileProvider mergeInto(TileProvider source) {
+        if (Objects.isNull(source) || !(source instanceof TileProviderMbtiles))
             return this;
 
+        TileProviderMbtiles src = (TileProviderMbtiles) source;
+
         ImmutableTileProviderMbtiles.Builder builder = ImmutableTileProviderMbtiles.builder()
-                                                                                   .from((TileProviderMbtiles) src)
+                                                                                   .from(src)
                                                                                    .from(this);
 
-        if (Objects.nonNull(getCenter()))
+        if (!getCenter().isEmpty())
             builder.center(getCenter());
-        else if (Objects.nonNull(((TileProviderMbtiles)src).getCenter()))
-            builder.center(((TileProviderMbtiles)src).getCenter());
+        else if (!src.getCenter().isEmpty())
+            builder.center(src.getCenter());
 
         return builder.build();
+    }
+
+    @Override
+    @JsonIgnore
+    @Value.Derived
+    public QueryInput getQueryInput(OgcApiDataV2 apiData, URICustomizer uriCustomizer,
+                                    Map<String, String> queryParameters, List<OgcApiQueryParameter> allowedParameters,
+                                    QueryInput genericInput, Tile tile) {
+
+        return new ImmutableQueryInputTileMbtilesTile.Builder()
+            .from(genericInput)
+            .tile(tile)
+            .provider(this)
+            .build();
     }
 }

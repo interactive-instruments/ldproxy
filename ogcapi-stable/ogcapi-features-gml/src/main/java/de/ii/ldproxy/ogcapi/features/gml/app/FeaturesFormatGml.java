@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -89,10 +89,8 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
     public Optional<FeatureConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
         return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
                                                                                                     .from(transformationContext)
-                                                                                                    .namespaces(((ConnectionInfoWfsHttp) ((WithConnectionInfo<?>)providers.getFeatureProvider(transformationContext.getApiData())
-                                                                                                                                                  .getData())
-                                                                                                                                                              .getConnectionInfo())
-                                                                                                            .getNamespaces())
+                                                                                                    .namespaces(((ConnectionInfoWfsHttp) ((WithConnectionInfo<?>)providers.getFeatureProviderOrThrow(transformationContext.getApiData())
+                                                                                                                                                                          .getData()).getConnectionInfo()).getNamespaces())
                                                                                                     .build()));
     }
 

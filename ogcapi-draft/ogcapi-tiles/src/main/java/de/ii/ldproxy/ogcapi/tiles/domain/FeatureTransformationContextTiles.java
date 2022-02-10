@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,45 +9,22 @@ package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import org.immutables.value.Value;
-
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
-public abstract class FeatureTransformationContextTiles implements FeatureTransformationContext {
+public interface FeatureTransformationContextTiles extends FeatureTransformationContext {
 
-    public abstract Map<String, Object> getProcessingParameters();
+  Map<String, Object> processingParameters();
 
-    public abstract Tile getTile();
-    public abstract TileCache getTileCache();
-    public abstract CrsTransformerFactory getCrsTransformerFactory();
+  Tile tile();
 
-    @Value.Derived
-    public TilesConfiguration getConfiguration() {
-        TilesConfiguration configuration = null;
+  TileCache getTileCache();
 
-        Optional<TilesConfiguration> baseConfiguration = getApiData().getExtension(TilesConfiguration.class);
-
-        Optional<TilesConfiguration> collectionConfiguration = Optional.ofNullable(getApiData().getCollections()
-                .get(getCollectionId()))
-                .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(TilesConfiguration.class));
-
-        if (collectionConfiguration.isPresent()) {
-            configuration = collectionConfiguration.get();
-        }
-
-        if (baseConfiguration.isPresent()) {
-            if (Objects.isNull(configuration)) {
-                configuration = baseConfiguration.get();
-            } else {
-                configuration = (TilesConfiguration) configuration.mergeInto(baseConfiguration.get());
-            }
-        }
-
-        return configuration;
-    }
+  @Value.Lazy
+  default TilesConfiguration tilesConfiguration() {
+    return getConfiguration(TilesConfiguration.class);
+  }
 
 }

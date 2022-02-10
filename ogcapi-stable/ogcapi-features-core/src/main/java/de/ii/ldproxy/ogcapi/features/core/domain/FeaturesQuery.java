@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,7 +31,10 @@ public interface FeaturesQuery {
                                        int defaultPageSize, int maxPageSize, Map<String, String> parameters,
                                        List<OgcApiQueryParameter> allowedParameters);
 
-    Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
+  Map<String, String> getFilterableFields(OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData);
+
+  Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
                                            Set<String> filterParameters,
                                            Cql.Format cqlFormat);
 

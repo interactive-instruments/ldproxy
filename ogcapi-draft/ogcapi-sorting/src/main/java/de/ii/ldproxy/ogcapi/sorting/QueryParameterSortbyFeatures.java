@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -51,8 +51,9 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
     @Override
     public String getDescription() {
         return "Sort the results based on the properties identified by this parameter. " +
-                "The parameter value is a comma-separated list of property names, where each parameter name " +
-                "may be preceeded by a '+' (ascending, default) or '-' (descending).";
+            "The parameter value is a comma-separated list of property names that can be used to sort results (sortables), " +
+            "where each parameter name " +
+            "may be preceeded by a '+' (ascending, default) or '-' (descending).";
     }
 
     @Override

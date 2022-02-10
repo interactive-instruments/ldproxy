@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -33,7 +33,8 @@ public class QueryParameterFTileSets extends QueryParameterF {
 
     @Override
     protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return definitionPath.endsWith("/tiles");
+        return (definitionPath.equals("/tiles") ||
+            definitionPath.equals("/collections/{collectionId}/tiles"));
     }
 
     @Override

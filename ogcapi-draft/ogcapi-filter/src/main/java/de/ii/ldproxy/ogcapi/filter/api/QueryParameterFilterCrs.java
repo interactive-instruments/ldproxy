@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,11 +11,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -49,7 +54,8 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
                 isEnabledForApi(apiData) &&
                 method == HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                        definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
     @Override
@@ -59,7 +65,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
 
     @Override
     public String getDescription() {
-        return "Specify which of the supported CRSs to use to encode geometric values in a filter expression";
+        return "Specify which of the supported CRSs to use to encode geometric values in a filter expression (parameter 'filter'). Default is WGS84 longitude/latitude.";
     }
 
     private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
@@ -70,11 +76,18 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey("*")) {
+            // TODO: only include 2D (variants) of the CRSs
+            String defaultCrs = CRS84 /* TODO support 4 or 6 numbers
+            apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                .map(ImmutableEpsgCrs::toUriString)
+                .orElse(CRS84) */;
             List<String> crsList = crsSupport.getSupportedCrsList(apiData)
-                                             .stream()
-                                             .map(EpsgCrs::toUriString)
-                                             .collect(ImmutableList.toImmutableList());
-            schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(crsList)._default(CRS84));
+                .stream()
+                .map(crs ->crs.equals(OgcCrs.CRS84h) ? OgcCrs.CRS84 : crs)
+                .map(EpsgCrs::toUriString)
+                .collect(ImmutableList.toImmutableList());
+            schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(crsList)._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get("*");
     }
@@ -85,11 +98,20 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+            // always support both default CRSs
+            String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                .map(ImmutableEpsgCrs::toUriString)
+                .orElse(CRS84);
+            ImmutableList.Builder<String> crsListBuilder = new ImmutableList.Builder<>();
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
-                                             .stream()
-                                             .map(EpsgCrs::toUriString)
-                                             .collect(ImmutableList.toImmutableList());
-            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
+                .stream()
+                .map(EpsgCrs::toUriString)
+                .collect(ImmutableList.toImmutableList());
+            crsListBuilder.addAll(crsList);
+            if (!crsList.contains(CRS84))
+                crsListBuilder.add(CRS84);
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsListBuilder.build())._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
     }
@@ -107,7 +129,8 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
             } catch (Throwable e) {
                 throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: %s", FILTER_CRS, e.getMessage()), e);
             }
-            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, filterCrs)) {
+            // CRS84 is always supported
+            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, filterCrs) && !filterCrs.equals(OgcCrs.CRS84)) {
                 throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", FILTER_CRS, filterCrs.toUriString()));
             }
 
@@ -116,5 +139,10 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
             return ImmutableMap.copyOf(newParameters);
         }
         return parameters;
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return FilterConfiguration.class;
     }
 }

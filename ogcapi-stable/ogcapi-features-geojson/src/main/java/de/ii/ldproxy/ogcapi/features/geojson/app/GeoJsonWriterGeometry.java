@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,17 +7,25 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping;
-import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesWriterJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
+import de.ii.xtraplatform.crs.domain.CoordinateTuple;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.features.domain.SchemaBase;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.function.Consumer;
+import org.apache.felix.ipojo.annotations.Requires;
 
 /**
  * @author zahnen
@@ -27,194 +35,207 @@ import java.util.function.Consumer;
 @Instantiate
 public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
-    @Override
-    public GeoJsonWriterGeometry create() {
-        return new GeoJsonWriterGeometry();
+    private final CrsTransformerFactory crsTransformerFactory;
+
+    public GeoJsonWriterGeometry(@Requires CrsTransformerFactory crsTransformerFactory) {
+        this.crsTransformerFactory = crsTransformerFactory;
     }
 
-    private int geometryNestingDepth = 0;
+    private boolean suppressPrimaryGeometry;
     private boolean geometryOpen;
-    private boolean hasGeometry;
-    private GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE currentGeometryType;
+    private boolean hasPrimaryGeometry;
+    private boolean inPrimaryGeometry;
+    private final List<String> pos = new ArrayList<>();
+    // TODO: move coordinate conversion to WGS 84 to the transformation pipeline,
+    //       see https://github.com/interactive-instruments/ldproxy/issues/521
+    private CrsTransformer crsTransformerGeometry;
+
+    @Override
+    public GeoJsonWriterGeometry create() {
+        return new GeoJsonWriterGeometry(crsTransformerFactory);
+    }
 
     @Override
     public int getSortPriority() {
         return 30;
     }
 
-    private void reset() {
-        this.geometryNestingDepth = 0;
-        this.geometryOpen = false;
-        this.hasGeometry = false;
-    }
-
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        reset();
-
-        next.accept(transformationContext);
-    }
-
-    @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-
-        if (!geometryOpen && !hasGeometry && !transformationContext.getState()
-                                                                   .isBuffering()) {
-            // buffer properties until geometry arrives
-            transformationContext.startBuffering();
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        suppressPrimaryGeometry = context.encoding().getSuppressPrimaryGeometry();
+        crsTransformerGeometry = null;
+        if (!suppressPrimaryGeometry && context.encoding().getForceDefaultCrs()) {
+            EpsgCrs sourceCrs = context.encoding().getTargetCrs();
+            EpsgCrs targetCrs = context.encoding().getDefaultCrs();
+            if (!Objects.equals(sourceCrs, targetCrs)) {
+                crsTransformerGeometry = crsTransformerFactory.getTransformer(sourceCrs, targetCrs).orElse(null);
+            }
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onCoordinates(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.getState()
-                                 .getCurrentGeometryType()
-                                 .isPresent()
-                && transformationContext.getState()
-                                        .getCoordinatesWriterBuilder()
-                                        .isPresent()
-                && transformationContext.getState()
-                                        .getCurrentValue()
-                                        .isPresent()) {
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        hasPrimaryGeometry = false;
+        inPrimaryGeometry = false;
 
-            this.currentGeometryType = transformationContext.getState()
-                                                            .getCurrentGeometryType()
-                                                            .get();
-            int currentGeometryNestingChange = currentGeometryType == GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.LINE_STRING ? 0 : transformationContext.getState()
-                                                                                                                                                           .getCurrentGeometryNestingChange();
+        next.accept(context);
+    }
 
-            // handle nesting
-            if (!geometryOpen) {
+    @Override
+    public void onObjectStart(EncodingAwareContextGeoJson context,
+        Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (context.schema()
+                   .filter(SchemaBase::isSpatial)
+                   .isPresent()
+                && context.geometryType().isPresent()) {
+            if (suppressPrimaryGeometry && context.schema().get().isPrimaryGeometry()) {
+                inPrimaryGeometry = true;
+            } else {
+                if (context.schema().get().isPrimaryGeometry()) {
+                    hasPrimaryGeometry = true;
+                    inPrimaryGeometry = true;
+                    context.encoding().stopBuffering();
+
+                    context.encoding().getJson()
+                           .writeFieldName("geometry");
+                } else {
+                    context.encoding().getJson()
+                           .writeFieldName(context.schema().get().getName());
+                }
+
+                context.encoding().getJson()
+                       .writeStartObject();
+                context.encoding().getJson()
+                       .writeStringField("type", GEO_JSON_GEOMETRY_TYPE.forGmlType(context.geometryType().get()).toString());
+                context.encoding().getJson()
+                       .writeFieldName("coordinates");
+
                 this.geometryOpen = true;
-                this.hasGeometry = true;
-                //TODO: to FeatureTransformerGeoJson
-                this.geometryNestingDepth = currentGeometryNestingChange;
-
-                transformationContext.stopBuffering();
-
-                transformationContext.getJson()
-                                     .writeFieldName("geometry");
-                transformationContext.getJson()
-                                     .writeStartObject();
-                transformationContext.getJson()
-                                     .writeStringField("type", currentGeometryType.toString());
-                transformationContext.getJson()
-                                     .writeFieldName("coordinates");
-                if (currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POINT &&
-                    currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.MULTI_POINT) {
-                    transformationContext.getJson()
-                                         .writeStartArray();
-                }
-
-                // TODO
-                /*switch (currentGeometryType) {
-                    case MULTI_POLYGON:
-                        //json.writeStartArray();
-                    case POLYGON:
-                    case MULTI_LINE_STRING:
-                        json.writeStartArray();
-                }*/
-
-                for (int i = 0; i < currentGeometryNestingChange; i++) {
-                    transformationContext.getJson()
-                                         .writeStartArray();
-                }
-            } else if (currentGeometryNestingChange > 0) {
-                for (int i = 0; i < currentGeometryNestingChange; i++) {
-                    transformationContext.getJson()
-                                         .writeEndArray();
-                }
-                for (int i = 0; i < currentGeometryNestingChange; i++) {
-                    transformationContext.getJson()
-                                         .writeStartArray();
-                }
             }
-
-            Writer coordinatesWriter = transformationContext.getState()
-                                                            .getCoordinatesWriterBuilder()
-                                                            .get()
-                                                            //TODO
-                                                            .coordinatesWriter(ImmutableCoordinatesWriterJson.of(transformationContext.getJson(), 2))
-                                                            .build();
-            coordinatesWriter.write(transformationContext.getState()
-                                                         .getCurrentValue()
-                                                         .get());
-            coordinatesWriter.close();
+        } else {
+            startBufferingIfNecessary(context);
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onGeometryEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onArrayStart(EncodingAwareContextGeoJson context,
+        Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
-        next.accept(transformationContext);
-
-        // close geometry field and stop buffering
-        closeGeometryIfAny(transformationContext);
-
-    }
-
-    @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-
-        // close geometry if no coordinates were written and stop buffering
-        closeGeometryIfNone(transformationContext);
-
-        // next chain for extensions
-        next.accept(transformationContext);
-    }
-
-    private void closeGeometryIfAny(FeatureTransformationContextGeoJson transformationContext) throws IOException {
         if (geometryOpen) {
-            this.geometryOpen = false;
-
-            // close nesting braces
-            for (int i = 0; i < geometryNestingDepth; i++) {
-                transformationContext.getJson()
-                                     .writeEndArray();
-            }
-
-            this.geometryNestingDepth = 0;
-
-        /*switch (geometryType.get()) {
-            case MULTI_POLYGON:
-                //json.writeEndArray();
-            case POLYGON:
-            case MULTI_LINE_STRING:
-                json.writeEndArray();
-        }*/
-
-            //close coordinates
-            if (currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.POINT &&
-                currentGeometryType != GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.MULTI_POINT) {
-                transformationContext.getJson()
-                                     .writeEndArray();
-            }
-
-            //close geometry object
-            transformationContext.getJson()
-                                 .writeEndObject();
-
-            transformationContext.flushBuffer();
+            context.encoding().getJson()
+                .writeStartArray();
+        } else if (!suppressPrimaryGeometry || !inPrimaryGeometry) {
+            startBufferingIfNecessary(context);
         }
+
+        next.accept(context);
     }
 
-    private void closeGeometryIfNone(FeatureTransformationContextGeoJson transformationContext) throws IOException {
+    @Override
+    public void onArrayEnd(EncodingAwareContextGeoJson context,
+        Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
-        if (!hasGeometry) {
-            transformationContext.stopBuffering();
+        if (geometryOpen) {
+            if (!pos.isEmpty()) {
+                if (Objects.isNull(crsTransformerGeometry)) {
+                    // fallback
+                    for (String p : pos)
+                        context.encoding().getJson().writeRawValue(p);
+                } else {
+                    CoordinateTuple coord = crsTransformerGeometry.transform(new CoordinateTuple(pos.get(0), pos.get(1)));
+                    context.encoding().getJson().writeRawValue(BigDecimal.valueOf(coord.getX()).setScale(7, RoundingMode.HALF_DOWN).toPlainString());
+                    context.encoding().getJson().writeRawValue(BigDecimal.valueOf(coord.getY()).setScale(7, RoundingMode.HALF_DOWN).toPlainString());
+                    if (pos.size()==3)
+                        context.encoding().getJson().writeRawValue(pos.get(2));
+                }
+                pos.clear();
+            }
+
+            context.encoding().getJson()
+                .writeEndArray();
+        }
+
+        next.accept(context);
+    }
+
+    @Override
+    public void onObjectEnd(EncodingAwareContextGeoJson context,
+        Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (context.schema()
+            .filter(SchemaBase::isSpatial)
+            .isPresent()
+            && geometryOpen) {
+
+            boolean stopBuffering = context.schema().get().isPrimaryGeometry();
+            if (stopBuffering) {
+                context.encoding().stopBuffering();
+            }
+
+            geometryOpen = false;
+            inPrimaryGeometry = false;
+
+            // close geometry object
+            context.encoding().getJson()
+                .writeEndObject();
+
+            if (stopBuffering) {
+                context.encoding().flushBuffer();
+            }
+        }
+
+        next.accept(context);
+    }
+
+    @Override
+    public void onValue(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+
+        if (geometryOpen) {
+            if (inPrimaryGeometry && context.encoding().getForceDefaultCrs()) {
+                // we buffer the whole coordinate in case we force WGS84 as the CRS in "geometry"
+                pos.add(context.value());
+            } else {
+                context.encoding().getJson()
+                       .writeRawValue(context.value());
+            }
+        } else if (!suppressPrimaryGeometry || !inPrimaryGeometry) {
+            startBufferingIfNecessary(context);
+        }
+
+        next.accept(context);
+    }
+
+    @Override
+    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+
+        // write null geometry if none was written for this feature
+        if (!hasPrimaryGeometry) {
+            context.encoding().stopBuffering();
 
             // null geometry
-            transformationContext.getJson()
-                                 .writeFieldName("geometry");
-            transformationContext.getJson()
-                                 .writeNull();
+            context.encoding().getJson()
+                .writeFieldName("geometry");
+            context.encoding().getJson()
+                .writeNull();
 
-            transformationContext.flushBuffer();
+            context.encoding().flushBuffer();
         }
-        this.hasGeometry = false;
+
+        next.accept(context);
+    }
+
+    private void startBufferingIfNecessary(EncodingAwareContextGeoJson context) {
+        if (!geometryOpen && !hasPrimaryGeometry && !context.encoding().getState()
+                                                            .isBuffering()) {
+            // buffer properties until primary geometry arrives
+            try {
+                context.encoding().startBuffering();
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
     }
 }

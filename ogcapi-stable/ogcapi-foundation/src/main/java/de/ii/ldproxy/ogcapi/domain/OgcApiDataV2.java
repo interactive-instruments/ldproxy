@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -110,6 +110,10 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     //behaves exactly like Map<String, FeatureTypeConfigurationOgcApi>, but supports mergeable builder deserialization
     //(immutables attributeBuilder does not work with maps yet)
     public abstract BuildableMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder> getCollections();
+
+    public Optional<FeatureTypeConfigurationOgcApi> getCollectionData(String collectionId) {
+        return Optional.ofNullable(getCollections().get(collectionId));
+    }
 
     @Override
     @Value.Derived
@@ -254,7 +258,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     private BoundingBox transformSpatialExtent(BoundingBox spatialExtent, CrsTransformerFactory crsTransformerFactory, EpsgCrs targetCrs) throws CrsTransformationException {
-        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
+        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs, true);
 
         if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
             return crsTransformer.get()

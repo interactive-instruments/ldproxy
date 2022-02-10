@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -29,13 +29,10 @@ import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -46,10 +43,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -80,12 +79,16 @@ public class EndpointTransactional extends EndpointSubCollection {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).supportsTransactions();
+        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData)
+                                                          .map(FeatureProvider2::supportsTransactions)
+                                                          .orElse(false);
     }
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return super.isEnabledForApi(apiData, collectionId) && providers.getFeatureProvider(apiData).supportsTransactions();
+        return super.isEnabledForApi(apiData, collectionId) && providers.getFeatureProvider(apiData)
+                                                                        .map(FeatureProvider2::supportsTransactions)
+                                                                        .orElse(false);
     }
 
     @Override
@@ -174,7 +177,7 @@ public class EndpointTransactional extends EndpointSubCollection {
     public Response postItems(@Auth Optional<User> optionalUser, @PathParam("id") String id,
                               @Context OgcApi service, @Context ApiRequestContext apiRequestContext,
                               @Context HttpServletRequest request, InputStream requestBody) {
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
@@ -193,7 +196,7 @@ public class EndpointTransactional extends EndpointSubCollection {
                             @Context ApiRequestContext apiRequestContext, @Context HttpServletRequest request,
                             InputStream requestBody) {
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 
@@ -207,7 +210,7 @@ public class EndpointTransactional extends EndpointSubCollection {
     public Response deleteItem(@Auth Optional<User> optionalUser, @Context OgcApi service,
                                @PathParam("id") String id, @PathParam("featureid") final String featureId) {
 
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(service.getData(), service.getData().getCollections().get(id));
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(service.getData(), service.getData().getCollections().get(id));
 
         checkTransactional(featureProvider);
 

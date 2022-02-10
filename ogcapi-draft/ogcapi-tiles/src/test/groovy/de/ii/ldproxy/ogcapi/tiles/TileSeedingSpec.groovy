@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,9 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.tiles
 
-import de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet.WebMercatorQuad
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.EpsgCrs
+import spock.lang.Ignore
 import spock.lang.Specification
 
 class TileSeedingSpec extends Specification{
@@ -20,7 +21,7 @@ class TileSeedingSpec extends Specification{
         given: "a zoom Level of 0 and a spatial extent of the following Tile: zoom level 8, row 103, col 153"
 
         def zoomLevel = 0
-        def tilingScheme = new WebMercatorQuad()
+        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow()
 
         def crsTransformation = null
 
@@ -51,7 +52,8 @@ class TileSeedingSpec extends Specification{
         given: "a zoom Level of 10 and a spatial extent with default values"
 
         def zoomLevel = 10
-        def tilingScheme = new WebMercatorQuad()
+        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow();
+
 
         def crsTransformation = null
 
@@ -83,15 +85,15 @@ class TileSeedingSpec extends Specification{
         given: "a zoom Level of 12 and a spatial extent of the following Tile: zoom level 8, row 103, col 153"
 
         def zoomLevel = 12
-        def tilingScheme = new WebMercatorQuad()
+        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow()
 
         def crsTransformation = null
 
         //coordinates from http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ in EPSG: 3857
-        def xMin = 3913575.8482010253
-        def yMin = 3757032.814272985
-        def xMax = 4070118.8821290657
-        def yMax = 3913575.8482010253
+        def xMin = 3913580.0
+        def yMin = 3757040.0
+        def xMax = 4070110.0
+        def yMax = 3913570.0
 
         def targetCrs = EpsgCrs.of(3857)
         def bbox = BoundingBox.of(xMin, yMin, xMax, yMax, targetCrs)
@@ -103,8 +105,8 @@ class TileSeedingSpec extends Specification{
         then: 'it should return a map with min/max row/col values'
 
         result.minTileCol == 2448
-        result.maxTileCol == 2464
-        result.minTileRow == 1647
+        result.maxTileCol == 2463
+        result.minTileRow == 1648
         result.maxTileRow == 1663
 
     }

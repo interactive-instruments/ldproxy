@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,10 +8,13 @@
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -35,7 +38,11 @@ public interface FeatureTransformationContext {
         FEATURE_END,
         PROPERTY,
         COORDINATES,
-        GEOMETRY_END
+        GEOMETRY_END,
+        ARRAY_START,
+        OBJECT_START,
+        OBJECT_END,
+        ARRAY_END
     }
 
     OgcApiDataV2 getApiData();
@@ -48,7 +55,16 @@ public interface FeatureTransformationContext {
 
     Optional<CrsTransformer> getCrsTransformer();
 
+    Optional<EpsgCrs> getSourceCrs();
+
     EpsgCrs getDefaultCrs();
+
+    @Value.Derived
+    default EpsgCrs getTargetCrs() {
+        if (getCrsTransformer().isPresent())
+            return getCrsTransformer().get().getTargetCrs();
+        return getSourceCrs().orElse(getDefaultCrs());
+    };
 
     List<Link> getLinks();
 
@@ -109,6 +125,12 @@ public interface FeatureTransformationContext {
                                  .toString();
     }
 
+    @Value.Derived
+    @Value.Auxiliary
+    default Optional<FeatureTypeConfigurationOgcApi> getCollection() {
+        return Optional.ofNullable(getApiData().getCollections().get(getCollectionId()));
+    }
+
     // TODO: to geometry simplification module
     @Value.Default
     default double getMaxAllowableOffset() {
@@ -121,8 +143,8 @@ public interface FeatureTransformationContext {
     }
 
     @Value.Default
-    default int getGeometryPrecision() {
-        return 0;
+    default List<Integer> getGeometryPrecision() {
+        return ImmutableList.of(0, 0, 0);
     }
 
     abstract class State {
@@ -139,5 +161,11 @@ public interface FeatureTransformationContext {
         public abstract List<Integer> getCurrentMultiplicity();
 
         public abstract Optional<String> getCurrentValue();
+    }
+
+    default <T extends ExtensionConfiguration> T getConfiguration(Class<T> clazz) {
+        return Optional.ofNullable(getApiData().getCollections().get(getCollectionId()))
+            .flatMap(featureTypeConfiguration -> featureTypeConfiguration.getExtension(clazz))
+            .or(() -> getApiData().getExtension(clazz)).orElseThrow();
     }
 }

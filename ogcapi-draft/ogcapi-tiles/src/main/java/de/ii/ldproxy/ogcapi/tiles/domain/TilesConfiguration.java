@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -15,34 +16,52 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformations;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
+import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ldproxy.ogcapi.tiles.app.TileProviderMbtiles;
+import de.ii.ldproxy.ogcapi.tiles.app.TileProviderTileServer;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
+import static de.ii.ldproxy.ogcapi.tiles.app.CapabilityTiles.MINIMUM_SIZE_IN_PIXEL;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public interface TilesConfiguration extends ExtensionConfiguration, FeatureTransformations, CachingConfiguration {
+public interface TilesConfiguration extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
 
-    enum TileCacheType { FILES, MBTILES }
+    enum TileCacheType { FILES, MBTILES, NONE }
 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
     @Nullable
-    TileProvider getTileProvider();
+    TileProvider getTileProvider(); // TODO add TileServer support
 
     List<String> getTileSetEncodings();
 
     @Nullable
     TileCacheType getCache();
+
+    @Nullable
+    MapClient.Type getMapClientType();
+
+    @Nullable
+    String getStyle();
+
+    @Nullable
+    Boolean getRemoveZoomLevelConstraints();
 
     @Deprecated
     List<String> getTileEncodings();
@@ -57,28 +76,28 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         return !getTileEncodings().isEmpty() ?
                 getTileEncodings() :
                 getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getTileEncodings() :
+                        getTileProvider().getTileEncodings() :
                         getTileProvider() instanceof TileProviderMbtiles && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) ?
                                 ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding()) :
-                                ImmutableList.of();
+                                getTileProvider() instanceof TileProviderTileServer && Objects.nonNull(((TileProviderTileServer) getTileProvider()).getTileEncodings()) ?
+                                    getTileProvider().getTileEncodings() :
+                                    ImmutableList.of();
     }
 
     @Deprecated
-    @Nullable
     List<Double> getCenter();
 
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
     default List<Double> getCenterDerived() {
-        return Objects.nonNull(getCenter()) ?
+        return !getCenter().isEmpty() ?
                 getCenter() :
                 getTileProvider() instanceof TileProviderFeatures ?
                         ((TileProviderFeatures) getTileProvider()).getCenter() :
                         getTileProvider() instanceof TileProviderMbtiles ?
                                 ((TileProviderMbtiles) getTileProvider()).getCenter() :
-                                null;
+                                ImmutableList.of();
     }
 
     @Deprecated
@@ -97,6 +116,13 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
                                 ImmutableMap.of();
     }
 
+    @Value.Auxiliary
+    @Value.Derived
+    @JsonIgnore
+    default Set<String> getTileMatrixSets() {
+        return getZoomLevelsDerived().keySet();
+    }
+
     @Deprecated
     @Nullable
     Boolean getSingleCollectionEnabled();
@@ -104,13 +130,10 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
-    default Boolean getSingleCollectionEnabledDerived() {
-        return Objects.nonNull(getSingleCollectionEnabled()) ?
-                getSingleCollectionEnabled() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getSingleCollectionEnabled() :
-                        getEnabled();
+    default boolean isSingleCollectionEnabled() {
+        return Objects.equals(getSingleCollectionEnabled(), true)
+                || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled())
+                || isEnabled();
     }
 
     @Deprecated
@@ -120,13 +143,10 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
-    default Boolean getMultiCollectionEnabledDerived() {
-        return Objects.nonNull(getMultiCollectionEnabled()) ?
-                getMultiCollectionEnabled() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMultiCollectionEnabled() :
-                        getEnabled();
+    default boolean isMultiCollectionEnabled() {
+        return Objects.equals(getMultiCollectionEnabled(), true)
+            || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled())
+            || isEnabled();
     }
 
     @Deprecated
@@ -157,6 +177,15 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
                         ImmutableMap.of();
     }
 
+    @Value.Auxiliary
+    @Value.Derived
+    @JsonIgnore
+    default Optional<SeedingOptions> getSeedingOptions() {
+        return getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getSeedingOptions()
+            : Optional.empty();
+    }
+
     @Deprecated
     @Nullable
     Integer getLimit();
@@ -175,66 +204,15 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
 
     @Deprecated
     @Nullable
-    Integer getMaxPointPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxPointPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxPointPerTileDefault()) ?
-                getMaxPointPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxPointPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxLineStringPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxLineStringPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxLineStringPerTileDefault()) ?
-                getMaxLineStringPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxLineStringPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
-    Integer getMaxPolygonPerTileDefault();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    @Nullable
-    default Integer getMaxPolygonPerTileDefaultDerived() {
-        return Objects.nonNull(getMaxPolygonPerTileDefault()) ?
-                getMaxPolygonPerTileDefault() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxPolygonPerTileDefault() :
-                        null;
-    }
-
-    @Deprecated
-    @Nullable
     Boolean getIgnoreInvalidGeometries();
 
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
-    default Boolean getIgnoreInvalidGeometriesDerived() {
-        return Objects.nonNull(getIgnoreInvalidGeometries()) ?
-                getIgnoreInvalidGeometries() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getIgnoreInvalidGeometries() :
-                        null;
+    default boolean isIgnoreInvalidGeometriesDerived() {
+        return Objects.equals(getIgnoreInvalidGeometries(), true)
+            || (getTileProvider() instanceof TileProviderFeatures && ((TileProviderFeatures) getTileProvider()).isIgnoreInvalidGeometries())
+            || isEnabled();
     }
 
     @Deprecated
@@ -272,13 +250,12 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
-    default Double getMaxRelativeAreaChangeInPolygonRepairDerived() {
-        return Objects.nonNull(getMaxRelativeAreaChangeInPolygonRepair()) ?
-                getMaxRelativeAreaChangeInPolygonRepair() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxRelativeAreaChangeInPolygonRepair() :
-                        null;
+    default double getMaxRelativeAreaChangeInPolygonRepairDerived() {
+        return Objects.requireNonNullElse(getMaxRelativeAreaChangeInPolygonRepair(),
+            Objects.requireNonNullElse(getTileProvider() instanceof TileProviderFeatures
+                    ? ((TileProviderFeatures) getTileProvider()).getMaxRelativeAreaChangeInPolygonRepair()
+                    : null,
+                MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR));
     }
 
     @Deprecated
@@ -288,13 +265,12 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
-    default Double getMaxAbsoluteAreaChangeInPolygonRepairDerived() {
-        return Objects.nonNull(getMaxAbsoluteAreaChangeInPolygonRepair()) ?
-                getMaxAbsoluteAreaChangeInPolygonRepair() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMaxAbsoluteAreaChangeInPolygonRepair() :
-                        null;
+    default double getMaxAbsoluteAreaChangeInPolygonRepairDerived() {
+        return Objects.requireNonNullElse(getMaxAbsoluteAreaChangeInPolygonRepair(),
+            Objects.requireNonNullElse(getTileProvider() instanceof TileProviderFeatures
+                    ? ((TileProviderFeatures) getTileProvider()).getMaxAbsoluteAreaChangeInPolygonRepair()
+                    : null,
+                MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR));
     }
 
     @Deprecated
@@ -304,13 +280,12 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     @Value.Auxiliary
     @Value.Derived
     @JsonIgnore
-    @Nullable
-    default Double getMinimumSizeInPixelDerived() {
-        return Objects.nonNull(getMinimumSizeInPixel()) ?
-                getMinimumSizeInPixel() :
-                getTileProvider() instanceof TileProviderFeatures ?
-                        ((TileProviderFeatures) getTileProvider()).getMinimumSizeInPixel() :
-                        null;
+    default double getMinimumSizeInPixelDerived() {
+        return Objects.requireNonNullElse(getMinimumSizeInPixel(),
+            Objects.requireNonNullElse(getTileProvider() instanceof TileProviderFeatures
+                    ? ((TileProviderFeatures) getTileProvider()).getMinimumSizeInPixel()
+                    : null,
+                MINIMUM_SIZE_IN_PIXEL));
     }
 
     @Override
@@ -323,7 +298,8 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
     default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
         ImmutableTilesConfiguration.Builder builder = ((ImmutableTilesConfiguration.Builder) source.getBuilder())
                 .from(source)
-                .from(this);
+                .from(this)
+                .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations());
 
         TilesConfiguration src = (TilesConfiguration) source;
 
@@ -345,16 +321,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
             }
         });
         builder.tileSetEncodings(tileSetEncodings);
-
-        Map<String, PropertyTransformation> mergedTransformations = Objects.nonNull(src.getTransformations()) ? Maps.newLinkedHashMap(src.getTransformations()) : Maps.newLinkedHashMap();
-        getTransformations().forEach((key, transformation) -> {
-            if (mergedTransformations.containsKey(key)) {
-                mergedTransformations.put(key, transformation.mergeInto(mergedTransformations.get(key)));
-            } else {
-                mergedTransformations.put(key, transformation);
-            }
-        });
-        builder.transformations(mergedTransformations);
 
         Map<String, MinMax> mergedSeeding = Objects.nonNull(src.getSeeding()) ? Maps.newLinkedHashMap(src.getSeeding()) : Maps.newLinkedHashMap();
         if (Objects.nonNull(getSeeding()))
@@ -381,9 +347,9 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
             getFilters().forEach(mergedFilters::put);
         builder.filters(mergedFilters);
 
-        if (Objects.nonNull(getCenter()))
+        if (!getCenter().isEmpty())
             builder.center(getCenter());
-        else if (Objects.nonNull(src.getCenter()))
+        else if (!src.getCenter().isEmpty())
             builder.center(src.getCenter());
 
         return builder.build();
@@ -420,6 +386,24 @@ public interface TilesConfiguration extends ExtensionConfiguration, FeatureTrans
         }
 
         return responseBuilder.build();
+    }
+
+    @Value.Check
+    default TilesConfiguration alwaysFlatten() {
+        if (!hasTransformation(PropertyTransformations.WILDCARD, transformation -> transformation.getFlatten().isPresent())) {
+
+            Map<String, List<PropertyTransformation>> transformations = withTransformation(PropertyTransformations.WILDCARD,
+                new ImmutablePropertyTransformation.Builder()
+                .flatten(".")
+                .build());
+
+            return new ImmutableTilesConfiguration.Builder()
+                .from(this)
+                .transformations(transformations)
+                .build();
+        }
+
+        return this;
     }
 
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,6 +21,7 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.osgi.framework.BundleContext;
 
+import javax.ws.rs.NotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -69,11 +70,11 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
         if (config.isPresent()
                 && config.get().isEnabled()
-                && config.get().getMultiCollectionEnabledDerived()
+                && config.get().isMultiCollectionEnabled()
                 && config.get().getTileProvider() instanceof TileProviderMbtiles) {
             TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
             Path path = getTileProvider(apiData, provider.getFilename());
-            String key = String.join("/", apiData.getId(), CapabilityVectorTiles.DATASET_TILES);
+            String key = String.join("/", apiData.getId(), CapabilityTiles.DATASET_TILES);
             try {
                 mbtiles.put(key, new MbtilesTileset(path));
             } catch (Exception e) {
@@ -85,7 +86,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
             config = apiData.getExtension(TilesConfiguration.class, collectionId);
             if (config.isPresent()
                     && config.get().isEnabled()
-                    && config.get().getSingleCollectionEnabledDerived()
+                    && config.get().isSingleCollectionEnabled()
                     && config.get().getTileProvider() instanceof TileProviderMbtiles) {
                 TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
                 Path path = getTileProvider(apiData, provider.getFilename());
@@ -113,11 +114,11 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
 
     @Override
     public InputStream getTile(Path tileProvider, Tile tile) {
-        String key = String.join("/", tile.getApiData().getId(), tile.isDatasetTile() ? CapabilityVectorTiles.DATASET_TILES : tile.getCollectionId());
+        String key = String.join("/", tile.getApiData().getId(), tile.isDatasetTile() ? CapabilityTiles.DATASET_TILES : tile.getCollectionId());
         MbtilesTileset tileset = mbtiles.get(key);
         try {
-            return tileset.getTile(tile).orElseThrow(() -> new javax.ws.rs.NotFoundException());
-        } catch (Exception e) {
+            return tileset.getTile(tile).orElseThrow(NotFoundException::new);
+        } catch (SQLException | IOException e) {
             throw new RuntimeException(String.format("Error accessing tile %d/%d/%d in dataset '%s' in Mbtiles file '%s', format '%s'.",
                                                      tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(),
                                                      tile.getApiData().getId(), tileProvider.toString(), tile.getOutputFormat().getExtension()), e);
@@ -142,7 +143,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
         List<Number> center = tileset.getMetadata().getCenter();
         if (center.size()==3)
             return Optional.of(Math.round(center.get(2).floatValue()));
-        return  Optional.empty();
+        return Optional.empty();
     }
 
     @Override
@@ -151,7 +152,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
         List<Number> center = tileset.getMetadata().getCenter();
         if (center.size()>=2)
             return ImmutableList.of(center.get(0).doubleValue(), center.get(1).doubleValue());
-        return null;
+        return ImmutableList.of();
     }
 
     @Override
@@ -160,8 +161,15 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
         MbtilesMetadata.MbtilesFormat format = tileset.getMetadata().getFormat();
         if (format==MbtilesMetadata.MbtilesFormat.pbf)
             return "MVT";
+        else if (format==MbtilesMetadata.MbtilesFormat.jpg)
+            return "JPEG";
+        else if (format==MbtilesMetadata.MbtilesFormat.png)
+            return "PNG";
+        else if (format==MbtilesMetadata.MbtilesFormat.webp)
+            return "WEBP";
+        else if (format==MbtilesMetadata.MbtilesFormat.tiff)
+            return "TIFF";
 
-        // TODO support bitmap formats
         throw new UnsupportedOperationException(String.format("Mbtiles format '%s' is currently not supported.", format));
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -21,6 +21,7 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -38,26 +39,34 @@ public class SchemaInfoImpl implements SchemaInfo {
     /**
      * @param featureType
      * @param withArrayBrackets
+     * @param withObjects
      * @return the list of all property names of the feature type
      */
     @Override
-    public List<String> getPropertyNames(FeatureSchema featureType, boolean withArrayBrackets) {
+    public List<String> getPropertyNames(FeatureSchema featureType, boolean withArrayBrackets,
+        boolean withObjects) {
         if (Objects.isNull(featureType))
             return ImmutableList.of();
 
         return featureType.getProperties()
                           .stream()
-                          .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets))
+                          .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets,
+                              withObjects))
                           .flatMap(List::stream)
                           .collect(Collectors.toList());
     }
 
-    private List<String> getPropertyNames(FeatureSchema property, String basePath, boolean withArrayBrackets) {
+    private List<String> getPropertyNames(FeatureSchema property, String basePath,
+        boolean withArrayBrackets, boolean withObjects) {
         List<String> propertyNames = new Vector<>();
         if (property.isObject()) {
+            if (withObjects) {
+                propertyNames.add(getPropertyName(property, basePath, withArrayBrackets));
+            }
             property.getProperties()
                     .stream()
-                    .forEach(subProperty -> propertyNames.addAll(getPropertyNames(subProperty, getPropertyName(property, basePath, withArrayBrackets), withArrayBrackets)));
+                    .forEach(subProperty -> propertyNames.addAll(getPropertyNames(subProperty, getPropertyName(property, basePath, withArrayBrackets), withArrayBrackets,
+                        false)));
         } else {
             propertyNames.add(getPropertyName(property, basePath, withArrayBrackets));
         }
@@ -145,11 +154,16 @@ public class SchemaInfoImpl implements SchemaInfo {
 
     @Override
     public List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId, boolean withSpatial, boolean withArrayBrackets) {
-        FeatureSchema schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
-        return schema.getProperties()
+        Optional<FeatureSchema> schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
+        if (schema.isEmpty())
+            return ImmutableList.of();
+
+        return schema.get()
+                     .getProperties()
                      .stream()
                      .filter(featureProperty -> !featureProperty.isSpatial() || withSpatial)
-                     .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets))
+                     .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets,
+                         false))
                      .flatMap(List::stream)
                      .collect(Collectors.toList());
     }

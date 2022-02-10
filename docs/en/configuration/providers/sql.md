@@ -43,6 +43,7 @@ Settings for the connection pool.
 |`minConnections` |integer |`maxConnections` |Minimum number of connections to the database that are maintained.
 |`idleTimeout` |string |`10m` |The maximum amount of time that a connection is allowed to sit idle in the pool. Only applies to connections beyond the `minConnections` limit. A value of 0 means that idle connections are never removed from the pool.
 |`initFailFast` |boolean |`true` |If disabled the provider will wait longer for the first database connection to be established. Has no effect if `minConnections` is `0`. Should normally be disabled only on development systems.
+|`shared` |boolean |`false` |If enabled for multiple providers with matching `host`, `database` and `user`, a single connection pool will be shared between these providers. If any of the other `connectionInfo` options do not match, the provider startup will fail.
 
 <a name="source-path-defaults"></a>
 
@@ -54,17 +55,6 @@ Defaults for the path expressions in `sourcePath`, also see [Source Path Syntax]
 | --- | --- | --- | ---
 |`sortKey` |string |`id` |The default column that is used to sort rows if no differing sort key is set in the [sourcePath](#path-syntax).
 |`primaryKey` |string |`id` |The default column that is used for join analysis if no differing primary key is set in the [sourcePath](#path-syntax).
-
-<a name="query-generation"></a>
-
-## Query Generation
-
-Options for query generation.
-
-|Option |Data Type |Default |Description
-| --- | --- | --- | ---
-|`computeNumberMatched` |boolean |`true` |Option to disable computation of the number of selected features for performance reasons that are returned in `numberMatched`. As a general rule this should be disabled for big datasets.
-
 
 <a name="path-syntax"></a>
 
@@ -85,3 +75,13 @@ To select capacity information only when the value is not NULL and greater than 
 A non-default sort key can be set by adding `{sortKey=columnName}` after the table name.
 
 A non-default primary key can be set by adding `{primaryKey=columnName}` after the table name.
+
+<a name="query-generation"></a>
+
+## Query Generation
+
+Options for query generation.
+
+|Option |Data Type |Default |Description
+| --- | --- | --- | ---
+|`computeNumberMatched` |boolean |`true` |Option to disable computation of the number of selected features for performance reasons that are returned in `numberMatched`. As a general rule this should be disabled for big datasets.

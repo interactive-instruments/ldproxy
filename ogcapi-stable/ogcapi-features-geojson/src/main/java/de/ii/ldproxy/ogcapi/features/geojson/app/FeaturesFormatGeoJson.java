@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,44 +11,36 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ldproxy.ogcapi.features.core.domain.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -60,6 +52,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.MediaType;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
 
 /**
  * @author zahnen
@@ -153,9 +150,9 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
             String collectionId = entry.getKey();
             GeoJsonConfiguration config = entry.getValue();
 
-            if (config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() != FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX) {
+            if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.SUFFIX) {
                 builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
-            } else if (config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.NEST && config.getMultiplicityStrategy() != FeatureTransformerGeoJson.MULTIPLICITY.ARRAY) {
+            } else if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.NEST && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.ARRAY) {
                 builder.addStrictErrors(MessageFormat.format("The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.", collectionId, config.getMultiplicityStrategy()));
             }
 
@@ -184,9 +181,11 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                               .collect(Collectors.toUnmodifiableSet());
         for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
             String collectionId = entry.getKey();
-            for (Map.Entry<String, PropertyTransformation> entry2 : entry.getValue().getTransformations().entrySet()) {
+            for (Map.Entry<String, List<PropertyTransformation>> entry2 : entry.getValue().getTransformations().entrySet()) {
                 String property = entry2.getKey();
-                builder = entry2.getValue().validate(builder, collectionId, property, codelists);
+                for (PropertyTransformation transformation: entry2.getValue()) {
+                    builder = transformation.validate(builder, collectionId, property, codelists);
+                }
             }
         }
 
@@ -208,19 +207,13 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                   .next();
         }
         if (!collectionId.equals("{collectionId}")) {
-        Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
-                                                                     .get(collectionId)
-                                                                     .getExtension(GeoJsonConfiguration.class);
-        boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                              .isPresent();
-        SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
-        if (path.matches("/collections/[^//]+/items/?")) {
-            schemaRef = schemaGeneratorFeatureCollection.getSchemaReferenceOpenApi(collectionId, type);
-            schema = schemaGeneratorFeatureCollection.getSchemaOpenApi(apiData, collectionId, type);
-        } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-            schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
-            schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
-        }
+            if (path.matches("/collections/[^//]+/items/?")) {
+                schemaRef = schemaGeneratorFeatureCollection.getSchemaReference(collectionId);
+                schema = schemaGeneratorFeatureCollection.getSchema(apiData, collectionId);
+            } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
+                schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
+                schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
+            }
         }
         // TODO example
         return new ImmutableApiMediaTypeContent.Builder()
@@ -248,15 +241,9 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
                                       .next();
             }
             if (!collectionId.equals("{collectionId}")) {
-            // TODO change to MUTABLES
-            Optional<GeoJsonConfiguration> geoJsonConfiguration = apiData.getCollections()
-                                                                         .get(collectionId)
-                                                                         .getExtension(GeoJsonConfiguration.class);
-            boolean flatten = geoJsonConfiguration.filter(config -> config.getNestedObjectStrategy() == FeatureTransformerGeoJson.NESTED_OBJECTS.FLATTEN && config.getMultiplicityStrategy() == FeatureTransformerGeoJson.MULTIPLICITY.SUFFIX)
-                                                  .isPresent();
-            SchemaGeneratorFeature.SCHEMA_TYPE type = flatten ? SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES_FLAT : SchemaGeneratorFeature.SCHEMA_TYPE.RETURNABLES;
-                schema = schemaGeneratorFeature.getSchemaOpenApi(apiData, collectionId, type);
-                schemaRef = schemaGeneratorFeature.getSchemaReferenceOpenApi(collectionId, type);
+            //TODO: implement getMutablesSchema with SchemaDeriverOpenApiMutables
+                schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
+                schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
             }
             return new ImmutableApiMediaTypeContent.Builder()
                     .schema(schema)
@@ -274,35 +261,43 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     }
 
     @Override
-    public boolean canTransformFeatures() {
+    public boolean canEncodeFeatures() {
         return true;
     }
 
     @Override
-    public Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContext transformationContext,
-                                                               Optional<Locale> language) {
+    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+        FeatureTransformationContext transformationContext,
+        Optional<Locale> language) {
 
         // TODO support language
         ImmutableSortedSet<GeoJsonWriter> geoJsonWriters = geoJsonWriterRegistry.getGeoJsonWriters()
-                                                                                .stream()
-                                                                                .map(GeoJsonWriter::create)
-                                                                                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.comparingInt(GeoJsonWriter::getSortPriority)));
+            .stream()
+            .map(GeoJsonWriter::create)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.comparingInt(GeoJsonWriter::getSortPriority)));
 
-        return Optional.of(new FeatureTransformerGeoJson(ImmutableFeatureTransformationContextGeoJson.builder()
-                                                                                                     .from(transformationContext)
-                                                                                                     .geoJsonConfig(transformationContext.getApiData().getCollections().get(transformationContext.getCollectionId()).getExtension(GeoJsonConfiguration.class).get())
-                                                                                                     .prettify(Optional.ofNullable(transformationContext.getOgcApiRequest()
-                                                                                                                                                        .getParameters()
-                                                                                                                                                        .get("pretty"))
-                                                                                                                       .filter(value -> Objects.equals(value, "true"))
-                                                                                                                       .isPresent() ||
-                                                                                                               (transformationContext.getApiData().getCollections().get(transformationContext.getCollectionId()).getExtension(GeoJsonConfiguration.class).get().getUseFormattedJsonOutput()))
-                                                                                                     .debugJson(Optional.ofNullable(transformationContext.getOgcApiRequest()
-                                                                                                                                                        .getParameters()
-                                                                                                                                                        .get("debug"))
-                                                                                                                       .filter(value -> Objects.equals(value, "true"))
-                                                                                                                       .isPresent())
-                                                                                                     .build(), geoJsonWriters));
+        ImmutableFeatureTransformationContextGeoJson transformationContextGeoJson = ImmutableFeatureTransformationContextGeoJson
+            .builder()
+            .from(transformationContext)
+            .geoJsonConfig(transformationContext.getApiData().getCollections()
+                .get(transformationContext.getCollectionId())
+                .getExtension(GeoJsonConfiguration.class).get())
+            .prettify(Optional.ofNullable(transformationContext.getOgcApiRequest()
+                .getParameters()
+                .get("pretty"))
+                .filter(value -> Objects.equals(value, "true"))
+                .isPresent() ||
+                (transformationContext.getApiData().getCollections()
+                    .get(transformationContext.getCollectionId())
+                    .getExtension(GeoJsonConfiguration.class).get().getUseFormattedJsonOutput()))
+            .debugJson(Optional.ofNullable(transformationContext.getOgcApiRequest()
+                .getParameters()
+                .get("debug"))
+                .filter(value -> Objects.equals(value, "true"))
+                .isPresent())
+            .build();
+
+        return Optional.of(new FeatureEncoderGeoJson(transformationContextGeoJson, geoJsonWriters));
     }
 
 }

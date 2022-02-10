@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,6 +31,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
             .type(new MediaType("application", "vnd.ogc.sld+xml", ImmutableMap.of("version", "1.1")))
             .label("SLD 1.1")
             .parameter("sld11")
+            .fileExtension("sld")
             .build();
 
     @Override

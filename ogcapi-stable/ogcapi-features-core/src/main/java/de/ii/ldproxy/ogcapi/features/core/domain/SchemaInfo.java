@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,8 @@ import java.util.Map;
 
 public interface SchemaInfo {
 
-    List<String> getPropertyNames(FeatureSchema featureType, boolean withArrayBrackets);
+    List<String> getPropertyNames(FeatureSchema featureType, boolean withArrayBrackets,
+        boolean withObjects);
 
     Map<String, String> getNameTitleMap(FeatureSchema featureType);
 

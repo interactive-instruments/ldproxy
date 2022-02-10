@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,11 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
-import de.ii.ldproxy.ogcapi.features.geojson.app.FeatureWriterGeoJson;
-
 /**
  * @author zahnen
  */
-public interface GeoJsonWriter extends FeatureWriterGeoJson<FeatureTransformationContextGeoJson> {
+public interface GeoJsonWriter extends FeatureWriterGeoJson<EncodingAwareContextGeoJson> {
     GeoJsonWriter create();
 }

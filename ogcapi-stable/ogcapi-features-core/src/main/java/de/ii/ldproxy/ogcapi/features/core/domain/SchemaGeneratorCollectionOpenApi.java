@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,15 +11,15 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.media.Schema;
 
 public interface SchemaGeneratorCollectionOpenApi {
-    String getSchemaReferenceOpenApi();
+    String getSchemaReference();
 
-    Schema getSchemaOpenApi();
+    Schema<?> getSchema();
 
-    String getSchemaReferenceOpenApi(String collectionId, SchemaGeneratorFeature.SCHEMA_TYPE type);
+    String getSchemaReference(String collectionId);
 
-    Schema getSchemaOpenApi(OgcApiDataV2 apiData, String collectionId, SchemaGeneratorFeature.SCHEMA_TYPE type);
+    Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId);
 
-    String getSchemaReferenceByName(String name, SchemaGeneratorFeature.SCHEMA_TYPE type);
+    String getSchemaReferenceForName(String name);
 
-    Schema getSchemaOpenApiForName(String name, SchemaGeneratorFeature.SCHEMA_TYPE type);
+    Schema<?> getSchemaForName(String name);
 }

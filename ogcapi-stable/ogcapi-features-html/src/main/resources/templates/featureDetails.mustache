@@ -1,6 +1,6 @@
 {{> header}}
 
-{{#classic}}
+{{#isMapRight}}
 <div class="row">
     <div class="col-md-6">
         <ul class="list-unstyled">
@@ -13,16 +13,17 @@
     </div>
     {{^hideMap}}
     <div class="col-md-6">
-        <div id="map"></div>
+        <div id="map" class="map-sm"></div>
     </div>
     {{/hideMap}}
 </div>
-{{/classic}}
-{{#complexObjects}}
+{{/isMapRight}}
+
+{{#isMapTop}}
 {{^hideMap}}
     <div class="row my-2">
         <div class="col-md-12">
-            <div id="map"></div>
+            <div id="map" class="map-sm"></div>
         </div>
     </div>
 {{/hideMap}}
@@ -38,22 +39,13 @@
         </ul>
     </div>
 </div>
-{{/complexObjects}}
+{{/isMapTop}}
 
-{{#classic}}
-{{#additionalFeatures}}
-    <!-- TODO this belongs to the nearby module -->
-    <div class="my-4">
-        <h2 class="my-4">{{name}}</h2>
-        {{#values}}
-            {{{value}}}
-        {{/values}}
-    </div>
-{{/additionalFeatures}}
-{{/classic}}
 
-{{> script}}
+{{> app-common}}
 
-<script src="{{urlPrefix}}/app/js/featureDetails.js" defer></script>
+{{^hideMap}}
+  {{> mapClient}}
+{{/hideMap}}
 
 {{> footer}}

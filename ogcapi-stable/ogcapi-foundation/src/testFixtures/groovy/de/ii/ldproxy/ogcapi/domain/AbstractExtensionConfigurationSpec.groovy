@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -14,12 +14,11 @@ abstract class AbstractExtensionConfigurationSpec extends Specification{
 
     abstract def getUseCases()
 
-    @Unroll //TODO: should not be needed, spock 2.0 unrolls by default
     def "merge #usecase"() {
 
         when: "#when"
 
-        def actual = source.mergeInto(target)
+        def actual = source.mergeInto((ExtensionConfiguration)target)
 
         then: "#then"
 

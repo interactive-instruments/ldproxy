@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -16,7 +16,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -42,13 +42,16 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     final FeaturesCoreProviders providers;
     final FeatureProcessInfo featureProcessInfo;
     protected ConcurrentMap<Integer, Schema> schemaMap = new ConcurrentHashMap<>();
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public PathParameterTileMatrixSetId(@Requires ExtensionRegistry extensionRegistry,
                                         @Requires FeaturesCoreProviders providers,
-                                        @Requires FeatureProcessInfo featureProcessInfo) {
+                                        @Requires FeatureProcessInfo featureProcessInfo,
+                                        @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;
         this.providers = providers;
         this.featureProcessInfo = featureProcessInfo;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
     @Override
@@ -60,7 +63,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     public List<String> getValues(OgcApiDataV2 apiData) {
         List<String> tmsSetMultiCollection = apiData.getExtension(TilesConfiguration.class)
                                                     .filter(TilesConfiguration::isEnabled)
-                                                    .filter(TilesConfiguration::getMultiCollectionEnabledDerived)
+                                                    .filter(TilesConfiguration::isMultiCollectionEnabled)
                                                     .map(TilesConfiguration::getZoomLevelsDerived)
                                                     .map(Map::keySet)
                                                     .orElse(ImmutableSet.of())
@@ -79,10 +82,9 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
 
         tmsSet.addAll(tmsSetMultiCollection);
 
-        return extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                                .map(TileMatrixSet::getId)
-                                .filter(tmsSet::contains)
-                                .collect(Collectors.toUnmodifiableList());
+        return tmsSet.stream()
+                     .filter(tms -> tileMatrixSetRepository.get(tms).isPresent())
+                     .collect(ImmutableList.toImmutableList());
     }
 
     @Override

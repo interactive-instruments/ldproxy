@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,16 +7,26 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 
 /**
  * @author zahnen
@@ -40,114 +50,87 @@ public class GeoJsonWriterId implements GeoJsonWriter {
         return 10;
     }
 
-    private void reset() {
-        this.currentId = null;
-        this.writeAtFeatureEnd = false;
-    }
-
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext,
-                        Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        reset();
-
-        next.accept(transformationContext);
-    }
-
-    @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
-                             Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(EncodingAwareContextGeoJson context,
+                             Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
         if (writeAtFeatureEnd) {
             this.writeAtFeatureEnd = false;
 
             if (Objects.nonNull(currentId)) {
                 if (currentIdIsInteger)
-                    transformationContext.getJson()
-                                         .writeNumberField("id", Long.valueOf(currentId));
+                    context.encoding().getJson()
+                                         .writeNumberField("id", Long.parseLong(currentId));
                 else
-                    transformationContext.getJson()
+                    context.encoding().getJson()
                                          .writeStringField("id", currentId);
-                writeLink(transformationContext, currentId);
+                addLinks(context, currentId);
                 this.currentId = null;
                 this.currentIdIsInteger = false;
             }
         }
 
-        // next chain for extensions
-        next.accept(transformationContext);
-
+        next.accept(context);
     }
 
     @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
-                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.getState()
-                                 .getCurrentFeatureProperty()
-                                 .isPresent()
-                || transformationContext.getState()
-                                        .getCurrentValue()
-                                        .isPresent()) {
+    public void onValue(EncodingAwareContextGeoJson context,
+                           Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
-            final FeatureProperty currentFeatureProperty = transformationContext.getState()
-                                                                                .getCurrentFeatureProperty()
-                                                                                .get();
-            String currentValue = transformationContext.getState()
-                                                       .getCurrentValue()
-                                                       .get();
+        if (context.schema().isPresent() && Objects.nonNull(context.value())) {
+            FeatureSchema currentSchema = context.schema().get();
 
-            if (currentFeatureProperty.isId()) {
-                boolean isInteger = (currentFeatureProperty.getType() == FeatureProperty.Type.INTEGER);
+            if (currentSchema.isId()) {
+                String id = context.value();
+
+                boolean isInteger = currentSchema.getType() == Type.INTEGER;
                 if (writeAtFeatureEnd) {
-                    currentId = currentValue;
+                    currentId = id;
                     currentIdIsInteger = isInteger;
                 } else {
                     if (isInteger)
-                        transformationContext.getJson()
-                                             .writeNumberField("id", Long.valueOf(currentValue));
+                        context.encoding().getJson()
+                            .writeNumberField("id", Long.parseLong(id));
                     else
-                        transformationContext.getJson()
-                                             .writeStringField("id", currentValue);
+                        context.encoding().getJson()
+                            .writeStringField("id", id);
 
-                    writeLink(transformationContext, currentValue);
+                    addLinks(context, context.value());
                 }
-
             } else {
                 this.writeAtFeatureEnd = true;
             }
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onCoordinates(FeatureTransformationContextGeoJson transformationContext,
-                              Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onCoordinates(EncodingAwareContextGeoJson context,
+                              Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         this.writeAtFeatureEnd = true;
 
-        // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
-    private void writeLink(FeatureTransformationContextGeoJson transformationContext,
-                           String featureId) throws IOException {
-        if (transformationContext.isFeatureCollection() &&
-                transformationContext.getShowsFeatureSelfLink() &&
+    private void addLinks(EncodingAwareContextGeoJson context,
+                          String featureId) throws IOException {
+        if (context.encoding().isFeatureCollection() &&
                 Objects.nonNull(featureId) &&
                 !featureId.isEmpty()) {
-            transformationContext.getJson()
-                                 .writeFieldName("links");
-            transformationContext.getJson()
-                                 .writeStartArray(1);
-            transformationContext.getJson()
-                                 .writeStartObject();
-            transformationContext.getJson()
-                                 .writeStringField("rel", "self");
-            transformationContext.getJson()
-                                 .writeStringField("href", transformationContext.getServiceUrl() + "/collections/" + transformationContext.getCollectionId() + "/items/" + featureId);
-            transformationContext.getJson()
-                                 .writeEndObject();
-            transformationContext.getJson()
-                                 .writeEndArray();
+            context.encoding().getState().addCurrentFeatureLinks(new ImmutableLink.Builder().rel("self")
+                                                                                        .href(context.encoding().getServiceUrl() + "/collections/" + context.encoding().getCollectionId() + "/items/" + featureId)
+                                                                                        .build());
+            Optional<String> template = context.encoding()
+                                               .getApiData()
+                                               .getCollections()
+                                               .get(context.encoding().getCollectionId())
+                                               .getPersistentUriTemplate();
+            if (template.isPresent()) {
+                context.encoding().getState().addCurrentFeatureLinks(new ImmutableLink.Builder().rel("canonical")
+                                                                                            .href(StringTemplateFilters.applyTemplate(template.get(), featureId))
+                                                                                            .build());
+            }
         }
     }
 }

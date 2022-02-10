@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -25,6 +25,11 @@ public interface ApiMediaType {
     @Value.Default
     default String parameter() {
         return type().getSubtype().contains("+") ? type().getSubtype().substring(type().getSubtype().lastIndexOf("+")+1)  : type().getSubtype();
+    }
+
+    @Value.Default
+    default String fileExtension() {
+        return parameter();
     }
 
     @Value.Default

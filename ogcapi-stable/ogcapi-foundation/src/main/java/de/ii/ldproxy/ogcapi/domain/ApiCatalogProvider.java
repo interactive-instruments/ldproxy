@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -59,12 +59,6 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
     }
 
     public abstract Response getServiceListing(List<ServiceData> services, URI uri, Optional<Locale> language) throws URISyntaxException;
-
-    @Override
-    public Response getStaticAsset(String path) {
-
-        throw new RuntimeException(String.format("Static assets not supported for class '%s'. File requested at path '%s'.", this.getClass().getSimpleName(), path));
-    }
 
     public abstract ApiMediaType getApiMediaType();
 

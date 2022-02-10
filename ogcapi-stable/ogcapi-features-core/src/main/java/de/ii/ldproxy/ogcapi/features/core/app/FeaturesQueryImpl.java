@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,26 +39,15 @@ import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.cql.domain.TEquals;
-import de.ii.xtraplatform.cql.domain.TOverlaps;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
-
-import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -68,6 +57,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.measure.Unit;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.kortforsyningen.proj.Units;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.threeten.extra.Interval;
 
 
 @Component
@@ -81,16 +79,16 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesQueryImpl.class);
 
     private final ExtensionRegistry extensionRegistry;
-    private final CrsTransformerFactory crsTransformerFactory;
+    private final CrsInfo crsInfo;
     private final FeaturesCoreProviders providers;
     private final Cql cql;
 
     public FeaturesQueryImpl(@Requires ExtensionRegistry extensionRegistry,
-                             @Requires CrsTransformerFactory crsTransformerFactory,
+                             @Requires CrsInfo crsInfo,
                              @Requires FeaturesCoreProviders providers,
                              @Requires Cql cql) {
         this.extensionRegistry = extensionRegistry;
-        this.crsTransformerFactory = crsTransformerFactory;
+        this.crsInfo = crsInfo;
         this.providers = providers;
         this.cql = cql;
     }
@@ -133,9 +131,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                               int minimumPageSize,
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters,
                                               List<OgcApiQueryParameter> allowedParameters) {
-        final Map<String, String> filterableFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
-                                                                   .map(FeaturesCoreConfiguration::getAllFilterParameters)
-                                                                   .orElse(ImmutableMap.of());
+        final Map<String, String> filterableFields = getFilterableFields(apiData, collectionData);
+
         final List<String> qFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
                                                    .map(FeaturesCoreConfiguration::getQProperties)
                                                    .orElse(ImmutableList.of());
@@ -205,6 +202,33 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         }
 
         return processCoordinatePrecision(queryBuilder, coreConfiguration).build();
+    }
+
+    @Override
+    public Map<String, String> getFilterableFields(OgcApiDataV2 apiData,
+        FeatureTypeConfigurationOgcApi collectionData) {
+        Map<String, String> queryables = new LinkedHashMap<>(collectionData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(FeaturesCoreConfiguration::getAllFilterParameters)
+            .orElse(ImmutableMap.of()));
+
+        Optional<FeatureSchema> featureSchema = providers.getFeatureSchema(apiData, collectionData);
+
+        featureSchema.flatMap(SchemaBase::getPrimaryGeometry)
+            .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
+
+        featureSchema.flatMap(SchemaBase::getPrimaryInterval)
+            .ifPresentOrElse(
+                interval -> queryables.put(PARAMETER_DATETIME, String.format("%s%s%s",
+                    interval.first().getFullPathAsString(),
+                    DATETIME_INTERVAL_SEPARATOR,
+                    interval.second().getFullPathAsString())),
+                () -> featureSchema.flatMap(SchemaBase::getPrimaryInstant)
+                    .ifPresent(instant -> queryables.put(PARAMETER_DATETIME, instant.getFullPathAsString())));
+
+        return ImmutableMap.<String, String>builder()
+            .putAll(queryables)
+            .build();
     }
 
     @Override
@@ -434,24 +458,25 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         // so we need to build the query to get the CRS
         ImmutableFeatureQuery query = queryBuilder.build();
         if (!coreConfiguration.getCoordinatePrecision().isEmpty() && query.getCrs().isPresent()) {
-            Integer precision = null;
-            // TODO we need to handle different units per axis, right now we just look at the first axis
-            //      and assume that the vertical precision would be less digits than the horizontal one
-            try {
-                Unit<?> unit = crsTransformerFactory.getCrsUnit(query.getCrs().get());
-                if (unit.equals(SI.METRE)) {
+            Integer precision;
+            List<Unit<?>> units = crsInfo.getAxisUnits(query.getCrs().get());
+            ImmutableList.Builder<Integer> precisionListBuilder = new ImmutableList.Builder<>();
+            for (Unit<?> unit : units) {
+                if (unit.equals(Units.METRE)) {
                     precision = coreConfiguration.getCoordinatePrecision().get("meter");
                     if (Objects.isNull(precision))
                         precision = coreConfiguration.getCoordinatePrecision().get("metre");
-                } else if (unit.equals(NonSI.DEGREE_ANGLE)) {
+                } else if (unit.equals(Units.DEGREE)) {
                     precision = coreConfiguration.getCoordinatePrecision().get("degree");
                 } else {
-                    LOGGER.debug("Coordinate precision could not be set, unrecognised unit found: '{}'.", unit.toString());
+                    LOGGER.debug("Coordinate precision could not be set, unrecognised unit found: '{}'.", unit.getName());
+                    return queryBuilder;
                 }
-                if (Objects.nonNull(precision))
-                    queryBuilder.geometryPrecision(precision);
-            } catch (Throwable e) {
-                LOGGER.debug("Coordinate precision could not be set: {}'.", e.getMessage());
+                precisionListBuilder.add(precision);
+            }
+            List<Integer> precisionList = precisionListBuilder.build();
+            if (!precisionList.isEmpty()) {
+                queryBuilder.geometryPrecision(precisionList);
             }
         }
         return queryBuilder;

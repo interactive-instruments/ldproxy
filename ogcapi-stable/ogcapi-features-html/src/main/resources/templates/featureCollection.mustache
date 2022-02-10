@@ -7,7 +7,7 @@
     <br/>
 </div>
 
-<div id="app-wrapper" class="mb-5">
+<div id="filter" class="mb-5">
 <div class="row mb-3">
 <div class="col-md-3 font-weight-bold py-1">
 Filter
@@ -15,7 +15,7 @@ Filter
 </div>
 </div>
 
-{{#classic}}
+{{#isMapRight}}
     <div class="row">
         <div class="col-md-6">
 
@@ -34,13 +34,13 @@ Filter
         </div>
         {{^hideMap}}
             <div class="col-md-6">
-                <div id="map"></div>
+                <div id="map" class="map-sm"></div>
             </div>
         {{/hideMap}}
     </div>
-{{/classic}}
+{{/isMapRight}}
 
-{{#complexObjects}}
+{{#isMapTop}}
     {{^hideMap}}
         <div class="row">
             <div class="col-md-12">
@@ -49,7 +49,7 @@ Filter
         </div>
         <div class="row my-2">
             <div class="col-md-12">
-                <div id="map"></div>
+                <div id="map" class="map-sm"></div>
             </div>
         </div>
         <br/>
@@ -72,10 +72,14 @@ Filter
 
         </div>
     </div>
-{{/complexObjects}}
+{{/isMapTop}}
 
-{{> script}}
+{{> app-common}}
 
-<script src="{{urlPrefix}}/app/js/featureCollection.js"></script>
+{{^hideMap}}
+  {{> mapClient}}
+{{/hideMap}}
+
+{{> filterEditor}}
 
 {{> footer}}

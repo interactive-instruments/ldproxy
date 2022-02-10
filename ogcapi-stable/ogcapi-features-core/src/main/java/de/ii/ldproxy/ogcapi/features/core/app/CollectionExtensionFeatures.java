@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -57,8 +57,10 @@ public class CollectionExtensionFeatures implements CollectionExtension {
         collection.title(featureType.getLabel())
                   .description(featureType.getDescription())
                   .itemType(featureType.getExtension(FeaturesCoreConfiguration.class)
+                                       .filter(ExtensionConfiguration::isEnabled)
                                        .flatMap(FeaturesCoreConfiguration::getItemType)
-                                       .map(itemType -> itemType.toString()));
+                                       .map(itemType -> itemType.toString())
+                                       .orElse(FeaturesCoreConfiguration.ItemType.unknown.toString()));
 
         URICustomizer uriBuilder = uriCustomizer
                 .copy()

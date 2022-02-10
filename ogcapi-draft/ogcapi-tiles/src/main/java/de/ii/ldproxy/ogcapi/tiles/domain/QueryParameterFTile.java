@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -12,10 +12,16 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 @Provides
@@ -33,7 +39,8 @@ public class QueryParameterFTile extends QueryParameterF {
 
     @Override
     protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
+        return (definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
+            definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
     }
 
     @Override
@@ -45,4 +52,43 @@ public class QueryParameterFTile extends QueryParameterF {
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return TilesConfiguration.class;
     }
+
+    // TODO: remove the getSchema methods again, this is a temporary solution/hack to remove any MapTile formats
+
+    @Override
+    public Schema getSchema(OgcApiDataV2 apiData) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey("*")) {
+            List<String> fEnum = new ArrayList<>();
+            extensionRegistry.getExtensionsForType(getFormatClass())
+                .stream()
+                .filter(f -> !f.getClass().getSimpleName().startsWith("Map")) // TODO
+                .filter(f -> f.isEnabledForApi(apiData))
+                .filter(f -> !f.getMediaType().parameter().equals("*"))
+                .forEach(f -> fEnum.add(f.getMediaType().parameter()));
+            schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(fEnum));
+        }
+        return schemaMap.get(apiHashCode).get("*");
+    }
+
+    @Override
+    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+        int apiHashCode = apiData.hashCode();
+        if (!schemaMap.containsKey(apiHashCode))
+            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+            List<String> fEnum = new ArrayList<>();
+            extensionRegistry.getExtensionsForType(getFormatClass())
+                .stream()
+                .filter(f -> !f.getClass().getSimpleName().startsWith("Map")) // TODO
+                .filter(f -> f.isEnabledForApi(apiData, collectionId))
+                .filter(f -> !f.getMediaType().parameter().equals("*"))
+                .forEach(f -> fEnum.add(f.getMediaType().parameter()));
+            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
+        }
+        return schemaMap.get(apiHashCode).get(collectionId);
+    }
+
 }

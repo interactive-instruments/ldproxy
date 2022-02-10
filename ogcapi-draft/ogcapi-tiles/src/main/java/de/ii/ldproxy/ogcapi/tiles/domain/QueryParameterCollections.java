@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -87,7 +87,7 @@ public class QueryParameterCollections extends ApiExtensionCache implements OgcA
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-        return config.isPresent() && config.get().getMultiCollectionEnabledDerived() && config.get().getTileProvider().requiresQuerySupport();
+        return config.isPresent() && config.get().isEnabled() && config.get().isMultiCollectionEnabled() && config.get().getTileProvider().requiresQuerySupport();
     }
 
     @Override

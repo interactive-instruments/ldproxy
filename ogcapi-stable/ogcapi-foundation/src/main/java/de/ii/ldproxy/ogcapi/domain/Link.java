@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -31,6 +31,10 @@ public abstract class Link {
     @Nullable
     @XmlAttribute
     public abstract String getType();
+
+    @Nullable
+    @XmlAttribute
+    public abstract String getAnchor();
 
     @Nullable
     @XmlAttribute
@@ -89,6 +93,12 @@ public abstract class Link {
             return "HTML";
         else if (mediaType.toLowerCase().split(";")[0].equals("application/flatgeobuf"))
             return "FlatGeobuf";
+        else if (mediaType.toLowerCase().split(";")[0].endsWith("fg+json"))
+            return "JSON-FG";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/vnd.ogc.city+json"))
+            return "CityJSON";
+        else if (mediaType.toLowerCase().split(";")[0].equals("application/vnd.ogc.city+json-seq"))
+            return "CityJSON-Seq";
         else if (mediaType.toLowerCase().split(";")[0].endsWith("+xml"))
             return "XML";
         else if (mediaType.toLowerCase().split(";")[0].endsWith("+json"))

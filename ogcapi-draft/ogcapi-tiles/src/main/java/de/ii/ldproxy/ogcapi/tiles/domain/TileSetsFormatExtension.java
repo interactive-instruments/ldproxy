@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,7 +19,7 @@ public interface TileSetsFormatExtension extends GenericFormatExtension {
 
     @Override
     default String getPathPattern() {
-        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/tiles/?$";
+        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?(?:/map)?/tiles/?$";
     }
 
     Object getTileSetsEntity(TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext);

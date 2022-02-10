@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -22,13 +22,14 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableMbtilesMetadata.Builder.class)
 public abstract class MbtilesMetadata {
 
-    public enum MbtilesFormat { pbf, jpg, png, webp;
+    public enum MbtilesFormat { pbf, jpg, png, webp, tiff;
         public static MbtilesFormat of(String value) {
             switch (value) {
                 case "pbf": return pbf;
                 case "jpg": return jpg;
                 case "png": return png;
                 case "webp": return webp;
+                case "tiff": return tiff;
             }
             return null;
         }

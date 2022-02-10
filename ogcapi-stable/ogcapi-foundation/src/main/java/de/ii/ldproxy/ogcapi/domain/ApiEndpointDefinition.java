@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Value.Immutable
 public abstract class ApiEndpointDefinition {
@@ -41,13 +42,20 @@ public abstract class ApiEndpointDefinition {
     public static final int SORT_PRIORITY_FEATURES_JSONLD_CONTEXT = 1100;
     public static final int SORT_PRIORITY_QUERYABLES = 1200;
     public static final int SORT_PRIORITY_SCHEMA = 1300;
+    public static final int SORT_PRIORITY_FEATURES_EXTENSIONS = 1400;
     public static final int SORT_PRIORITY_TILE_SETS = 1500;
     public static final int SORT_PRIORITY_TILE_SET = 1510;
     public static final int SORT_PRIORITY_TILE = 1520;
     public static final int SORT_PRIORITY_TILE_SETS_COLLECTION = 1530;
     public static final int SORT_PRIORITY_TILE_SET_COLLECTION = 1540;
     public static final int SORT_PRIORITY_TILE_COLLECTION = 1550;
-    public static final int SORT_PRIORITY_TILE_MATRIX_SETS = 1590;
+    public static final int SORT_PRIORITY_MAP_TILE_SETS = 1600;
+    public static final int SORT_PRIORITY_MAP_TILE_SET = 1610;
+    public static final int SORT_PRIORITY_MAP_TILE = 1620;
+    public static final int SORT_PRIORITY_MAP_TILE_SETS_COLLECTION = 1630;
+    public static final int SORT_PRIORITY_MAP_TILE_SET_COLLECTION = 1640;
+    public static final int SORT_PRIORITY_MAP_TILE_COLLECTION = 1650;
+    public static final int SORT_PRIORITY_TILE_MATRIX_SETS = 1700;
     public static final int SORT_PRIORITY_STYLES = 2000;
     public static final int SORT_PRIORITY_STYLESHEET = 2010;
     public static final int SORT_PRIORITY_STYLE_METADATA = 2020;
@@ -234,6 +242,13 @@ public abstract class ApiEndpointDefinition {
                             case "POST":
                                 pathItem.post(op);
                                 isMutation = true;
+                                if (operation.getRequestBody().isPresent()) {
+                                    Set<javax.ws.rs.core.MediaType> mediaTypes = operation.getRequestBody().get().getContent().keySet();
+                                    if (mediaTypes.size()==1 && mediaTypes.iterator().next().equals(javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED_TYPE)) {
+                                        isMutation = false;
+                                        status406 = true;
+                                    }
+                                }
                                 break;
                             case "PUT":
                                 pathItem.put(op);

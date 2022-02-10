@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,9 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -18,8 +16,6 @@ import org.apache.felix.ipojo.annotations.Provides;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
 
@@ -36,72 +32,63 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
         return new GeoJsonWriterMetadata();
     }
 
-    private boolean linksWritten;
-
     @Override
     public int getSortPriority() {
         return 20;
     }
 
-    private void reset() {
-        this.linksWritten = false;
-    }
-
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        reset();
+    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
-        if (transformationContext.isFeatureCollection()) {
-            // extendable
-            // TODO move isLastPage up to Wfs3Service
-            // next chain for links? would allow to defer output until onEnd
-            OptionalLong numberReturned = transformationContext.getState()
-                                                               .getNumberReturned();
-            OptionalLong numberMatched = transformationContext.getState()
-                                                              .getNumberMatched();
-            boolean isLastPage = numberReturned.orElse(0) < transformationContext.getLimit();
+        if (context.encoding().isFeatureCollection()) {
+            OptionalLong numberReturned = context.metadata().getNumberReturned();
+            OptionalLong numberMatched = context.metadata().getNumberMatched();
 
-            this.writeLinksIfAny(transformationContext.getJson(), transformationContext.getLinks(), isLastPage);
+            /* TODO
+            boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
+            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), isLastPage);
+             */
 
             if (numberReturned.isPresent()) {
-                transformationContext.getJson()
+                context.encoding().getJson()
                                      .writeNumberField("numberReturned", numberReturned.getAsLong());
             }
             if (numberMatched.isPresent()) {
-                transformationContext.getJson()
+                context.encoding().getJson()
                                      .writeNumberField("numberMatched", numberMatched.getAsLong());
             }
-            transformationContext.getJson()
+            context.encoding().getJson()
                                  .writeStringField("timeStamp", Instant.now()
                                                                        .truncatedTo(ChronoUnit.SECONDS)
                                                                        .toString());
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
+    /* TODO
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (!transformationContext.isFeatureCollection()) {
-            this.writeLinksIfAny(transformationContext.getJson(), transformationContext.getLinks(), false);
+    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (!context.encoding().isFeatureCollection()) {
+            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), false);
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext, Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
 
-        if (!transformationContext.isFeatureCollection()) {
-            this.writeLinksIfAny(transformationContext.getJson(), transformationContext.getLinks(), false);
+        if (!context.encoding().isFeatureCollection()) {
+            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), false);
         }
     }
 
     private void writeLinksIfAny(JsonGenerator json, List<Link> links, boolean isLastPage) throws IOException {
-        if (!linksWritten && !links.isEmpty()) {
+        if (!links.isEmpty()) {
             json.writeFieldName("links");
             json.writeStartArray();
 
@@ -120,8 +107,7 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
             }
 
             json.writeEndArray();
-
-            this.linksWritten = true;
         }
     }
+     */
 }

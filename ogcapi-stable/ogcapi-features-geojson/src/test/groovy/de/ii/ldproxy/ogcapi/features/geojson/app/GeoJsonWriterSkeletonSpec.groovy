@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,17 +9,11 @@ package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
 import de.ii.ldproxy.ogcapi.features.geojson.app.GeoJsonWriterSkeleton
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformerGeoJson
-import de.ii.xtraplatform.features.domain.FeatureType
-import de.ii.xtraplatform.features.domain.ImmutableFeatureType
-import spock.lang.Shared
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson
+import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureEncoderGeoJson
 import spock.lang.Specification
 
 class GeoJsonWriterSkeletonSpec extends Specification {
-
-    @Shared FeatureType featureMapping = new ImmutableFeatureType.Builder().name("f1")
-            .build()
 
     def "GeoJsonWriterSkeleton middleware given a feature collection"() {
         given:
@@ -60,13 +54,13 @@ class GeoJsonWriterSkeletonSpec extends Specification {
 
     private void writeFeature(ByteArrayOutputStream outputStream,
                               boolean isCollection) throws IOException, URISyntaxException {
-        FeatureTransformationContextGeoJson transformationContext = GeoJsonWriterSetupUtil.createTransformationContext(outputStream, isCollection)
-        FeatureTransformerGeoJson transformer = new FeatureTransformerGeoJson(transformationContext, ImmutableList.of(new GeoJsonWriterSkeleton()))
+        EncodingAwareContextGeoJson context = GeoJsonWriterSetupUtil.createTransformationContext(outputStream, isCollection)
+        FeatureEncoderGeoJson encoder = new FeatureEncoderGeoJson(context.encoding(), ImmutableList.of(new GeoJsonWriterSkeleton()));
 
-        transformer.onStart(OptionalLong.empty(), OptionalLong.empty())
-        transformer.onFeatureStart(featureMapping)
-        transformer.onFeatureEnd()
-        transformer.onEnd()
+        encoder.onStart(context)
+        encoder.onFeatureStart(context)
+        encoder.onFeatureEnd(context)
+        encoder.onEnd(context)
     }
 
 }

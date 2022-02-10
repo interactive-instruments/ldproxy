@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -20,6 +20,7 @@ class HtmlConfigurationSpec extends AbstractExtensionConfigurationSpec implement
                 .enabled(true)
                 .noIndexEnabled(true)
                 .schemaOrgEnabled(true)
+                .sendEtags(false)
                 .collectionDescriptionsInOverview(true)
                 .legalName("foo")
                 .legalUrl("foo")
@@ -50,6 +51,7 @@ class HtmlConfigurationSpec extends AbstractExtensionConfigurationSpec implement
                 .enabled(false)
                 .noIndexEnabled(false)
                 .schemaOrgEnabled(false)
+                .sendEtags(false)
                 .collectionDescriptionsInOverview(false)
                 .legalName("bar")
                 .legalUrl("bar")

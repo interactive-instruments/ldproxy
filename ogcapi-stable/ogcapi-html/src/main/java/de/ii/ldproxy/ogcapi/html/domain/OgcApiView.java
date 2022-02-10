@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -83,5 +83,13 @@ public abstract class OgcApiView extends View {
 
     public String getDescription() {
         return description;
+    }
+
+    public String getAttribution() {
+        if (Objects.nonNull(htmlConfig.getLeafletAttribution()))
+            return htmlConfig.getLeafletAttribution();
+        if (Objects.nonNull(htmlConfig.getOpenLayersAttribution()))
+            return htmlConfig.getOpenLayersAttribution();
+        return htmlConfig.getBasemapAttribution();
     }
 }

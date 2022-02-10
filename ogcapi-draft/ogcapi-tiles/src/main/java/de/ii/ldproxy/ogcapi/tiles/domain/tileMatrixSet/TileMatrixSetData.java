@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -37,8 +37,6 @@ public abstract class TileMatrixSetData extends PageRepresentationWithId {
 
     public abstract String getCrs();
 
-    // TODO Ignore for now, wait for resolution of https://github.com/opengeospatial/ogcapi-code-sprint-2021-05/issues/38
-    @JsonIgnore
     public abstract Optional<URI> getWellKnownScaleSet();
 
     public abstract Optional<URI> getUri();

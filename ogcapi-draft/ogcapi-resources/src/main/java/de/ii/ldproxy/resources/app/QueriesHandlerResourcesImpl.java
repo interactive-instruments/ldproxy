@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,6 +19,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
@@ -37,6 +38,7 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
@@ -133,15 +135,21 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                                   .map(Instant::ofEpochMilli)
                                   .map(Date::from)
                                   .orElse(Date.from(Instant.now()));
-        EntityTag etag = getEtag(resources, Resources.FUNNEL, format);
+        EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || apiData.getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(resources, Resources.FUNNEL, format)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("resources.%s", format.getMediaType().fileExtension()))
                 .entity(format.getResourcesEntity(resources, apiData, requestContext))
                 .build();
     }
@@ -190,13 +198,15 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, null,
+        return prepareSuccessResponse(requestContext, null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      resourceId)
                 .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
                 .type(contentType)
-                .header("Content-Disposition", "inline; filename=\""+resourceId+"\"")
                 .build();
     }
 }

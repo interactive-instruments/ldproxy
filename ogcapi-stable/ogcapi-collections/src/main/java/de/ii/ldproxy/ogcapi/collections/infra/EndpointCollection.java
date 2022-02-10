@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -177,14 +177,14 @@ public class EndpointCollection extends EndpointSubCollection {
                         "(path `/collections/{collectionId}/items`,link relation `items`) as well as key " +
                         "information about the collection. This information includes:\n\n" +
                         "* A local identifier for the collection that is unique for the dataset;\n" +
+                        "* A title and description for the collection;\n" +
+                        "* An indication of the spatial and temporal extent of the data in the collection;\n" +
                         "* A list of coordinate reference systems (CRS) in which geometries may be returned by the server. " +
                         "The first CRS is the default coordinate reference system (the default is always WGS 84 with " +
                         "axis order longitude/latitude);\n" +
-                        "* An optional title and description for the collection;\n" +
-                        "* An optional extent that can be used to provide an indication of the spatial and temporal extent " +
-                        "of the collection - typically derived from the data;\n" +
-                        "* An optional indicator about the type of the items in the collection (the default value, " +
-                        "if the indicator is not provided, is 'feature').");
+                        "* The CRS in which the spatial geometries are stored in the data source (if data is requested in " +
+                        "this CRS, the geometries are returned without any coordinate conversion);\n" +
+                        "* An indicator about the type of the items in the collection (the default value is 'feature').");
                 String resourcePath = "/collections/" + collectionId;
                 ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                         .path(resourcePath)

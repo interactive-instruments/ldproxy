@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -30,8 +30,10 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableQueryInputTileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableQueryInputTileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsQueriesHandler;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
@@ -59,14 +61,17 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMatrixSets.class);
     private static final List<String> TAGS = ImmutableList.of("Discover and fetch tiling schemes");
 
-    private final TileMatrixSetsQueriesHandler queryHandler;
     private final FeaturesCoreProviders providers;
+    private final TileMatrixSetsQueriesHandler queryHandler;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     EndpointTileMatrixSets(@Requires ExtensionRegistry extensionRegistry,
                            @Requires TileMatrixSetsQueriesHandler queryHandler,
-                           @Requires FeaturesCoreProviders providers) {
+                           @Requires FeaturesCoreProviders providers,
+                           @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
         this.providers = providers;
     }
 
@@ -89,15 +94,20 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        // currently no vector tiles support for WFS backends
-        if (!providers.getFeatureProvider(apiData).supportsHighLoad())
-            return false;
-
-        Optional<TilesConfiguration> extension = apiData.getExtension(TilesConfiguration.class);
-
-        return extension
-                .filter(TilesConfiguration::isEnabled)
-                .isPresent();
+        Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
+        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+            // Tiles are pre-generated as a static tile set
+            return config.filter(ExtensionConfiguration::isEnabled)
+                         .isPresent();
+        } else {
+            // Tiles are generated on-demand from a data source
+            if (config.filter(TilesConfiguration::isEnabled)
+                      .isEmpty()) return false;
+            // currently no vector tiles support for WFS backends
+            return providers.getFeatureProvider(apiData)
+                            .map(FeatureProvider2::supportsHighLoad)
+                            .orElse(false);
+        }
     }
 
     @Override
@@ -152,23 +162,20 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
             throw new NotFoundException("Tile matrix sets are not available in this API.");
 
         ImmutableSet<TileMatrixSet> tmsSet = getPathParameters(extensionRegistry, api.getData(), "/tileMatrixSets/{tileMatrixSetId}").stream()
-                                                                                                                                     .filter(param -> param.getName().equalsIgnoreCase("tileMatrixSetId"))
-                                                                                                                                     .findFirst()
-                                                                                                                                     .map(param -> param.getValues(api.getData())
-                                   .stream()
-                                   .map(tileMatrixSetId -> extensionRegistry.getExtensionsForType(TileMatrixSet.class)
-                                                                                                              .stream()
-                                                                                                              .filter(tms -> tileMatrixSetId.equals(tms.getId()))
-                                                                                                              .findAny())
-                                   .filter(Optional::isPresent)
-                                   .map(Optional::get)
-                                   .collect(ImmutableSet.toImmutableSet()))
-                                                                                                                                     .orElse(ImmutableSet.of());
+            .filter(param -> param.getName().equalsIgnoreCase("tileMatrixSetId"))
+            .findFirst()
+            .map(param -> param.getValues(api.getData())
+                .stream()
+                .map(tileMatrixSetRepository::get)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(ImmutableSet.toImmutableSet()))
+            .orElse(ImmutableSet.of());
 
         TileMatrixSetsQueriesHandler.QueryInputTileMatrixSets queryInput = new ImmutableQueryInputTileMatrixSets.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .tileMatrixSets(tmsSet)
-                .build();
+            .from(getGenericQueryInput(api.getData()))
+            .tileMatrixSets(tmsSet)
+            .build();
 
         return queryHandler.handle(TileMatrixSetsQueriesHandler.Query.TILE_MATRIX_SETS, queryInput, requestContext);
     }
@@ -188,9 +195,9 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
         checkPathParameter(extensionRegistry, api.getData(), "/tileMatrixSets/{tileMatrixSetId}", "tileMatrixSetId", tileMatrixSetId);
 
         TileMatrixSetsQueriesHandler.QueryInputTileMatrixSet queryInput = new ImmutableQueryInputTileMatrixSet.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .tileMatrixSetId(tileMatrixSetId)
-                .build();
+            .from(getGenericQueryInput(api.getData()))
+            .tileMatrixSetId(tileMatrixSetId)
+            .build();
 
         return queryHandler.handle(TileMatrixSetsQueriesHandler.Query.TILE_MATRIX_SET, queryInput, requestContext);
     }

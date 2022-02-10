@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -42,7 +42,7 @@ public class QueryParameterSkipGeometry extends ApiExtensionCache implements Ogc
 
     @Override
     public String getDescription() {
-        return "This option can be used to skip response geometries for each feature.";
+        return "Use this option to exclude geometries from the response for each feature.";
     }
 
     @Override

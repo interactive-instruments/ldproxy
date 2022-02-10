@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.*;
 import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
@@ -128,18 +129,23 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                                    requestContext);
 
         Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension);
+        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("landing-page.%s", outputFormatExtension.getMediaType().fileExtension()))
                 .entity(entity)
                 .build();
     }
@@ -184,18 +190,23 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                                    requestContext.getApi(),
                                                                    requestContext);
         Date lastModified = getLastModified(queryInput, requestContext.getApi());
-        EntityTag etag = getEtag(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension);
+        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || requestContext.getApi().getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext.getApi(), requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),
                                       queryInput.getExpires().orElse(null),
-                                      null)
+                                      null,
+                                      true,
+                                      String.format("conformance-declaration.%s", outputFormatExtension.getMediaType().fileExtension()))
                 .entity(entity)
                 .build();
     }

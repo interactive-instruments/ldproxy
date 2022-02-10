@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
@@ -33,6 +34,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -86,16 +88,23 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
 
         Date lastModified = styles.getLastModified()
                                   .orElse(Date.from(Instant.now()));
-        EntityTag etag = getEtag(styles, Styles.FUNNEL, format);
+        EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(styles, Styles.FUNNEL, format)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext,
+        return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? styles.getLinks() : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("styles.%s", format.getMediaType().fileExtension()))
                 .entity(format.getStylesEntity(styles, apiData, collectionId, requestContext))
                 .build();
     }
@@ -130,12 +139,14 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, links,
+        return prepareSuccessResponse(requestContext, links,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.%s", styleId, format.getFileExtension()))
                 .entity(format.getStyleEntity(stylesheetContent, apiData, collectionId, styleId, requestContext))
-                .header("Content-Disposition", "inline; filename=\""+styleId+"."+format.getFileExtension()+"\"")
                 .build();
     }
 
@@ -154,15 +165,22 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
                                                                                           String.join(", ", styleRepository.getStyleMetadataFormatStream(apiData, collectionId).map(f -> f.getMediaType().type().toString()).collect(Collectors.toUnmodifiableList())))));
 
         Date lastModified = styleRepository.getStyleLastModified(apiData, collectionId, queryInput.getStyleId());
-        EntityTag etag = getEtag(metadata, StyleMetadata.FUNNEL, format);
+        EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(metadata, StyleMetadata.FUNNEL, format)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? metadata.getLinks() : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? metadata.getLinks() : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().fileExtension()))
                 .entity(format.getStyleMetadataEntity(metadata, apiData, collectionId, requestContext))
                 .build();
     }

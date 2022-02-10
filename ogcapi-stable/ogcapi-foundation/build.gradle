@@ -18,8 +18,8 @@ jar {
 apply plugin: 'groovy'
 sourceSets.main.groovy.srcDirs += file('src/testFixtures/groovy')
 dependencies {
-    compileOnly "org.codehaus.groovy:groovy:3.0.6"
-    compileOnly "org.spockframework:spock-core:2.0-M4-groovy-3.0"
+    compileOnly "org.codehaus.groovy:groovy:3.+"
+    compileOnly "org.spockframework:spock-core:2.+"
 }
 jar {
     manifest {

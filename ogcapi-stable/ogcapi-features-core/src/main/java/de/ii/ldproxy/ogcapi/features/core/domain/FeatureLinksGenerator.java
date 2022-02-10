@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -53,4 +53,37 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
 
         return builder.build();
     }
+
+    public List<Link> generateLinksReduced(URICustomizer uriBuilder,
+                                    ApiMediaType mediaType,
+                                    List<ApiMediaType> alternateMediaTypes,
+                                    ApiMediaType collectionMediaType,
+                                    String canonicalUri,
+                                    I18n i18n,
+                                    Optional<Locale> language)
+    {
+        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>();
+
+        if (canonicalUri!=null)
+            builder.add(new ImmutableLink.Builder()
+                                .href(canonicalUri)
+                                .rel("canonical")
+                                .title(i18n.get("persistentLink",language))
+                                .build());
+
+        builder.add(new ImmutableLink.Builder()
+                            .href(uriBuilder
+                                          .copy()
+                                          .clearParameters()
+                                          .ensureParameter("f",collectionMediaType.parameter())
+                                          .removeLastPathSegments(2)
+                                          .toString())
+                            .rel("collection")
+                            .type(collectionMediaType.type().toString())
+                            .title(i18n.get("collectionLink",language))
+                            .build());
+
+        return builder.build();
+    }
+
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,7 +35,11 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
 
     @Override
     public String getDescription() {
-        return "Language of the query expression in the 'filter' parameter.";
+        return "Language of the query expression in the 'filter' parameter. Supported are 'cql-text' (default) and 'cql-json', " +
+            "specified in the OGC candidate standard 'Common Query Language'. 'cql-text' is an SQL-like text encoding for " +
+            "filter expressions that also supports spatial, temporal and array predicates. 'cql-json' is a JSON encoding of " +
+            "that grammar, suitable for use as part of a JSON object that represents a query. The use of 'cql-text' is recommended " +
+            "for filter expressions in the 'filter' parameter.";
     }
 
     @Override

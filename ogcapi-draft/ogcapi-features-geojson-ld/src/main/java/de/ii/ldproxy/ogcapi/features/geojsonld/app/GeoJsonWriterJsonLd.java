@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,20 +8,23 @@
 package de.ii.ldproxy.ogcapi.features.geojsonld.app;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojsonld.domain.GeoJsonLdConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
 import java.util.stream.Collectors;
 
 @Component
@@ -42,116 +45,104 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
     }
 
     @Override
-    public void onStart(FeatureTransformationContextGeoJson transformationContext,
-                        Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.isFeatureCollection()) {
-            Optional<GeoJsonLdConfiguration> jsonLdOptions = transformationContext.getApiData()
+    public void onStart(EncodingAwareContextGeoJson context,
+                        Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (context.encoding().isFeatureCollection()) {
+            Optional<GeoJsonLdConfiguration> jsonLdOptions = context.encoding().getApiData()
                                                                                   .getCollections()
-                                                                                  .get(transformationContext.getCollectionId())
+                                                                                  .get(context.encoding().getCollectionId())
                                                                                   .getExtension(GeoJsonLdConfiguration.class);
 
             if (jsonLdOptions.isPresent() && jsonLdOptions.get().isEnabled()) {
-                writeContext(transformationContext, jsonLdOptions.get()
-                                                                 .getContext());
-                writeJsonLdType(transformationContext, ImmutableList.of("geojson:FeatureCollection"));
+                writeContext(context.encoding(), jsonLdOptions.get().getContext());
+                writeJsonLdType(context.encoding(), ImmutableList.of("geojson:FeatureCollection"));
             }
         }
 
         currentTypes = ImmutableList.of();
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureStart(FeatureTransformationContextGeoJson transformationContext,
-                               Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        Optional<GeoJsonLdConfiguration> jsonLdOptions = transformationContext.getApiData()
+    public void onFeatureStart(EncodingAwareContextGeoJson context,
+                               Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        Optional<GeoJsonLdConfiguration> jsonLdOptions = context.encoding().getApiData()
                                                                      .getCollections()
-                                                                     .get(transformationContext.getCollectionId())
+                                                                     .get(context.encoding().getCollectionId())
                                                                      .getExtension(GeoJsonLdConfiguration.class);
 
         if (jsonLdOptions.isPresent() && jsonLdOptions.get().isEnabled()) {
-            if (!transformationContext.isFeatureCollection()) {
-                writeContext(transformationContext, jsonLdOptions.get()
-                                                                 .getContext());
+            if (!context.encoding().isFeatureCollection()) {
+                writeContext(context.encoding(), jsonLdOptions.get().getContext());
             }
 
             currentTypes = jsonLdOptions.map(GeoJsonLdConfiguration::getTypes)
-                                        .orElse(ImmutableList.of("geojson:Feature"));
+                .orElse(ImmutableList.of("geojson:Feature"));
 
             if (currentTypes.stream().noneMatch(type -> type.contains("{{type}}"))) {
-                writeJsonLdType(transformationContext, currentTypes);
+                writeJsonLdType(context.encoding(), currentTypes);
                 currentTypes = ImmutableList.of();
             }
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onFeatureEnd(FeatureTransformationContextGeoJson transformationContext,
-                             Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
+    public void onFeatureEnd(EncodingAwareContextGeoJson context,
+                             Consumer<EncodingAwareContextGeoJson> next) throws IOException {
 
         if (!currentTypes.isEmpty()) {
-            writeJsonLdType(transformationContext, currentTypes);
+            writeJsonLdType(context.encoding(), currentTypes);
         }
 
         // next chain for extensions
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     @Override
-    public void onProperty(FeatureTransformationContextGeoJson transformationContext,
-                           Consumer<FeatureTransformationContextGeoJson> next) throws IOException {
-        if (transformationContext.getState()
-                                 .getCurrentFeatureProperty()
-                                 .isPresent()
-                || transformationContext.getState()
-                                        .getCurrentValue()
-                                        .isPresent()) {
+    public void onValue(EncodingAwareContextGeoJson context,
+                           Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+        if (context.schema().isPresent()
+                || Objects.nonNull(context.value())) {
 
-            final FeatureProperty currentFeatureProperty = transformationContext.getState()
-                                                                                .getCurrentFeatureProperty()
-                                                                                .get();
-            String currentValue = transformationContext.getState()
-                                                       .getCurrentValue()
-                                                       .get();
+            final FeatureSchema currentSchema = context.schema().get();
+            String currentValue = context.value();
 
-            if (currentFeatureProperty.isId()) {
+            if (currentSchema.isId()) {
 
-                Optional<String> jsonLdId = transformationContext.getApiData()
+                Map<String, String> substitutions = ImmutableMap.of(
+                    "featureId", currentValue,
+                    "serviceUrl", context.encoding().getServiceUrl(),
+                    "collectionId", context.encoding().getCollectionId()
+                );
+
+                Optional<String> jsonLdId = context.encoding().getApiData()
                                                                  .getCollections()
-                                                                 .get(transformationContext.getCollectionId())
+                                                                 .get(context.encoding().getCollectionId())
                                                                  .getExtension(GeoJsonLdConfiguration.class)
                                                                  .filter(GeoJsonLdConfiguration::isEnabled)
                                                                  .flatMap(GeoJsonLdConfiguration::getIdTemplate)
-                                                                 .map(idTemplate -> {
-                                                                     String currentUri = StringTemplateFilters.applyTemplate(idTemplate, currentValue, isHtml -> {
-                                                                     }, "featureId");
-                                                                     currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getServiceUrl(), isHtml -> {
-                                                                     }, "serviceUrl");
-                                                                     currentUri = StringTemplateFilters.applyTemplate(currentUri, transformationContext.getCollectionId(), isHtml -> {
-                                                                     }, "collectionId");
-                                                                     return currentUri;
-                                                                 });
+                                                                 .map(idTemplate -> StringTemplateFilters.applyTemplate(idTemplate, substitutions::get));
 
 
                 if (jsonLdId.isPresent()) {
-                    transformationContext.getJson()
+                    context.encoding().getJson()
                                          .writeStringField("@id", jsonLdId.get());
                 }
             }
 
-            if (currentFeatureProperty.isType() && !currentTypes.isEmpty()) {
+            if (currentSchema.isType() && !currentTypes.isEmpty()) {
                 currentTypes = currentTypes.stream()
                                            .map(type -> type.replace("{{type}}", currentValue))
                                            .collect(Collectors.toUnmodifiableList());
             }
         }
 
-        next.accept(transformationContext);
+        next.accept(context);
     }
 
     private void writeContext(FeatureTransformationContextGeoJson transformationContext,

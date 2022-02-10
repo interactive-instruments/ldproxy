@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.hash.Funnel;
@@ -15,9 +16,12 @@ import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NONE)
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = JsonSchemaString.class, name = "string"),
         @JsonSubTypes.Type(value = JsonSchemaNumber.class, name = "number"),
@@ -54,4 +58,15 @@ public abstract class JsonSchema extends PageRepresentation {
             JsonSchemaOneOf.FUNNEL.funnel((JsonSchemaOneOf) from, into);
     };
 
+
+    @JsonIgnore
+    @Value.Auxiliary
+    public abstract Optional<String> getName();
+
+    @JsonIgnore
+    @Value.Default
+    @Value.Auxiliary
+    public boolean isRequired() {
+        return false;
+    }
 }

@@ -1,11 +1,14 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ldproxy.ogcapi.styles.app;
+
+import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,36 +28,28 @@ import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaGeneratorGeoJson;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
-import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStylesheetMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyles;
+import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStylesheetMetadata;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
-import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
-import de.ii.ldproxy.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.Styles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
+import de.ii.ldproxy.ogcapi.styles.domain.StylesheetMetadata;
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -73,9 +68,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Context;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Component
 @Provides
@@ -91,20 +94,23 @@ public class StyleRepositoryFiles implements StyleRepository {
     private final ObjectMapper patchMapperLenient;
     private final ObjectMapper patchMapperStrict;
     private final ObjectMapper metadataMapper;
-    private final SchemaGeneratorGeoJson schemaGeneratorFeature;
     private final XtraPlatform xtraPlatform;
+    private final FeaturesCoreProviders providers;
+    private final EntityRegistry entityRegistry;
 
     public StyleRepositoryFiles(@Context BundleContext bundleContext,
                                 @Requires ExtensionRegistry extensionRegistry,
                                 @Requires I18n i18n,
-                                @Requires SchemaGeneratorGeoJson schemaGeneratorFeature,
-                                @Requires XtraPlatform xtraPlatform) throws IOException {
+                                @Requires XtraPlatform xtraPlatform,
+                                @Requires FeaturesCoreProviders providers,
+                                @Requires EntityRegistry entityRegistry) throws IOException {
         this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
                                 .resolve("styles");
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
-        this.schemaGeneratorFeature = schemaGeneratorFeature;
         this.xtraPlatform = xtraPlatform;
+        this.providers = providers;
+        this.entityRegistry = entityRegistry;
         this.defaultLinkGenerator = new DefaultLinksGenerator();
         java.nio.file.Files.createDirectories(stylesStore);
         this.patchMapperLenient = new ObjectMapper();
@@ -366,7 +372,7 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                                        .title(title.orElse(styleId))
                                                                        .stylesheets(stylesheets);
         if (format.isPresent()) {
-            builder.layers(format.get().deriveLayerMetadata(getStylesheet(apiData, collectionId, styleId, format.get(), requestContext, true), apiData, schemaGeneratorFeature));
+            builder.layers(format.get().deriveLayerMetadata(getStylesheet(apiData, collectionId, styleId, format.get(), requestContext, true), apiData, providers, entityRegistry));
         }
         StyleMetadata metadata = builder.build();
 
@@ -461,7 +467,7 @@ public class StyleRepositoryFiles implements StyleRepository {
                                                       OgcApiDataV2 apiData,
                                                       Optional<String> collectionId) {
         Optional<StylesConfiguration> config = (collectionId.isEmpty() ? apiData : apiData.getCollections().get(collectionId.get())).getExtension(StylesConfiguration.class);
-        if (config.isPresent()) {
+        if (config.isPresent() && config.get().isEnabled()) {
             List<String> formatLabels = getStyleFormatStream(apiData, collectionId).map(format -> format.getMediaType().label())
                                                                                    .collect(Collectors.toUnmodifiableList());
             for (String encoding : config.get().getStyleEncodings()) {
@@ -472,11 +478,49 @@ public class StyleRepositoryFiles implements StyleRepository {
 
             // check that the default stylesheet for the web map exists
             String defaultStyle = config.get().getDefaultStyle();
-            if (Objects.nonNull(defaultStyle)) {
+            if (Objects.isNull(defaultStyle)) {
+                defaultStyle = (collectionId.isEmpty() ? apiData : apiData.getCollections().get(collectionId.get()))
+                        .getExtension(HtmlConfiguration.class)
+                        .map(HtmlConfiguration::getDefaultStyle)
+                        .orElse("NONE");
+            }
+            if (!defaultStyle.equals("NONE")) {
+                String finalDefaultStyle = defaultStyle;
                 boolean exists = getStyleFormatStream(apiData, collectionId).filter(StyleFormatExtension::getAsDefault)
-                                                                            .anyMatch(format -> stylesheetExists(apiData, collectionId, defaultStyle, format, true));
+                                                                            .anyMatch(format -> stylesheetExists(apiData, collectionId, finalDefaultStyle, format, true));
                 if (!exists) {
-                    builder.addStrictErrors(MessageFormat.format("The default style ''{0}'' specified in the STYLES module configuration does not exist.", defaultStyle));
+                    if (collectionId.isPresent())
+                        builder.addWarnings(MessageFormat.format("The default style ''{0}'' specified in the HTML module configuration does not exist for collection ''{1}'' and no link to the web map will be created.", defaultStyle, collectionId.get()));
+                    else
+                        builder.addWarnings(MessageFormat.format("The default style ''{0}'' specified in the HTML module configuration does not exist and no link to the web map will be created.", defaultStyle));
+                }
+            }
+
+            if (collectionId.isPresent()) {
+                // all feature access is on the collection level
+                final String style = apiData.getExtension(FeaturesHtmlConfiguration.class, collectionId.get()).map(FeaturesHtmlConfiguration::getStyle).orElse(defaultStyle);
+                if (!style.equals("NONE") && !style.equals("DEFAULT")) {
+                    boolean exists = getStyleFormatStream(apiData, collectionId).filter(StyleFormatExtension::getAsDefault)
+                        .anyMatch(format -> stylesheetExists(apiData, collectionId, style, format, true));
+                    if (!exists) {
+                        builder.addWarnings(MessageFormat.format("The style ''{0}'' specified in the FEATURES_HTML module configuration does not exist for collection ''{1}''. 'NONE' will be used instead.", style, collectionId.get()));
+                    }
+                }
+            }
+
+            final String style = (collectionId.isEmpty()
+                ? apiData.getExtension(TilesConfiguration.class)
+                : apiData.getExtension(TilesConfiguration.class, collectionId.get()))
+                .map(TilesConfiguration::getStyle)
+                .orElse(defaultStyle);
+            if (!style.equals("NONE") && !style.equals("DEFAULT")) {
+                boolean exists = getStyleFormatStream(apiData, collectionId).filter(StyleFormatExtension::getAsDefault)
+                    .anyMatch(format -> stylesheetExists(apiData, collectionId, style, format, true));
+                if (!exists) {
+                    if (collectionId.isPresent())
+                        builder.addWarnings(MessageFormat.format("The style ''{0}'' specified in the TILES module configuration does not exist for collection ''{1}''. 'NONE' will be used instead.", style, collectionId.get()));
+                    else
+                        builder.addWarnings(MessageFormat.format("The style ''{0}'' specified in the TILES module configuration does not exist. 'NONE' will be used instead.", style));
                 }
             }
         }

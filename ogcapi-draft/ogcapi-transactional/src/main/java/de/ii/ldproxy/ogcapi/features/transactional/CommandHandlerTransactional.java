@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,46 +7,33 @@
  */
 package de.ii.ldproxy.ogcapi.features.transactional;
 
-import akka.Done;
-import akka.japi.function.Creator;
-import akka.stream.IOResult;
-import akka.stream.javadsl.Keep;
-import akka.stream.javadsl.RunnableGraph;
-import akka.stream.javadsl.Sink;
-import akka.stream.javadsl.Source;
-import akka.stream.javadsl.StreamConverters;
-import akka.util.ByteString;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-import de.ii.xtraplatform.features.geojson.domain.FeatureDecoderGeoJson;
-import de.ii.xtraplatform.features.domain.FeatureDecoder;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
-import de.ii.xtraplatform.features.domain.FeatureTransformer;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
-import de.ii.xtraplatform.features.geojson.domain.GeoJsonStreamParser;
-import de.ii.xtraplatform.features.geojson.domain.MappingSwapper;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Response;
+import de.ii.xtraplatform.features.json.domain.FeatureTokenDecoderGeoJson;
+import de.ii.xtraplatform.streams.domain.Reactive.Source;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
-import java.util.function.Function;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.Response;
 
 public class CommandHandlerTransactional {
 
 
     public Response postItemsResponse(
-            FeatureTransactions featureProvider,
-            ApiMediaType mediaType, URICustomizer uriCustomizer, String collectionName,
-            InputStream requestBody) {
+        FeatureTransactions featureProvider,
+        ApiMediaType mediaType,
+        URICustomizer uriCustomizer, String collectionName,
+        InputStream requestBody) {
 
-        FeatureDecoder.WithSource featureSource = getFeatureSource(mediaType, requestBody);
+        FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
 
         //TODO: collectionName != featureType
-        FeatureTransactions.MutationResult result = featureProvider.createFeatures(collectionName, featureSource);
+        FeatureTransactions.MutationResult result = featureProvider.createFeatures(collectionName, featureTokenSource);
 
         if (result.getError().isPresent()) {
             //TODO: see FeaturesCoreQueryHandler
@@ -78,14 +65,15 @@ public class CommandHandlerTransactional {
     }
 
     public Response putItemResponse(
-            FeatureTransactions featureProvider,
-            ApiMediaType mediaType, String collectionName, String featureId,
-            InputStream requestBody) {
+        FeatureTransactions featureProvider,
+        ApiMediaType mediaType,
+        String collectionName, String featureId,
+        InputStream requestBody) {
 
-        FeatureDecoder.WithSource featureSource = getFeatureSource(mediaType, requestBody);
+        FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
 
         //TODO: collectionName != featureType
-        FeatureTransactions.MutationResult result = featureProvider.updateFeature(collectionName, featureSource, featureId);
+        FeatureTransactions.MutationResult result = featureProvider.updateFeature(collectionName, featureId, featureTokenSource);
 
         if (result.getError().isPresent()) {
             //TODO: see FeaturesCoreQueryHandler
@@ -111,26 +99,13 @@ public class CommandHandlerTransactional {
                        .build();
     }
 
-    private FeatureDecoder.WithSource getFeatureSource(ApiMediaType mediaType, InputStream requestBody) {
+    //TODO: to InputFormat extension matching the mediaType
+    private static FeatureTokenSource getFeatureSource(
+        ApiMediaType mediaType,
+        InputStream requestBody) {
 
-        //TODO: to inputformat extension, for the time being make it static
-        FeatureDecoderGeoJson featureDecoderGeoJson = new FeatureDecoderGeoJson();
+        FeatureTokenDecoderGeoJson featureTokenDecoderGeoJson = new FeatureTokenDecoderGeoJson();
 
-        Source<ByteString, CompletionStage<IOResult>> source = StreamConverters.fromInputStream((Creator<InputStream>) () -> requestBody);
-
-        return featureDecoderGeoJson.withSource(source);
-    }
-
-    // TODO
-    private Function<FeatureTransformer, RunnableGraph<CompletionStage<Done>>> getFeatureTransformStream(
-            ApiMediaType mediaType, FeatureTypeMapping featureTypeMapping, InputStream requestBody) {
-        return featureTransformer -> {
-            MappingSwapper mappingSwapper = new MappingSwapper();
-            Sink<ByteString, CompletionStage<Done>> transformer = GeoJsonStreamParser.transform(mappingSwapper.swapMapping(featureTypeMapping, "SQL"), featureTransformer);
-            return StreamConverters.fromInputStream((Creator<InputStream>) () -> requestBody)
-                                   .toMat(transformer, Keep.right());
-
-            //return CompletableFuture.completedFuture(Done.getInstance());
-        };
+        return Source.inputStream(requestBody).via(featureTokenDecoderGeoJson);
     }
 }

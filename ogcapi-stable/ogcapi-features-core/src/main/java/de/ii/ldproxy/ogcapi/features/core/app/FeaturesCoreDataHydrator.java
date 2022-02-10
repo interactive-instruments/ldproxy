@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -83,7 +83,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
     @Override
     public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
-        FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData);
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
 
         OgcApiDataV2 data = apiData;
         if (data.isAuto() && data.getCollections()
@@ -326,10 +326,12 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                       .stream()
                       .map(entry -> {
 
-                          FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, entry.getValue());
+                          Optional<FeatureProvider2> featureProvider = providers.getFeatureProvider(apiData, entry.getValue());
+                          if (featureProvider.isEmpty())
+                              return null;
 
-                          if (hasMissingBbox(apiData, entry.getValue().getId()) && featureProvider.supportsExtents()) {
-                              Optional<BoundingBox> spatialExtent = featureProvider.extents()
+                          if (hasMissingBbox(apiData, entry.getValue().getId()) && featureProvider.get().supportsExtents()) {
+                              Optional<BoundingBox> spatialExtent = featureProvider.get().extents()
                                                                                    .getSpatialExtent(entry.getValue()
                                                                                                           .getId());
 
@@ -341,7 +343,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                                       !boundingBox.getEpsgCrs()
                                                   .equals(OgcCrs.CRS84h)) {
                                       try {
-                                          Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
+                                          Optional<CrsTransformer> transformer = crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84, true);
                                           if (transformer.isPresent()) {
                                               boundingBox = transformer.get()
                                                                        .transformBoundingBox(boundingBox);
@@ -401,9 +403,11 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                 .entrySet()
                 .stream()
                 .map(entry -> {
-                    FeatureProvider2 featureProvider = providers.getFeatureProvider(apiData, entry.getValue());
+                    Optional<FeatureProvider2> featureProvider = providers.getFeatureProvider(apiData, entry.getValue());
+                    if (featureProvider.isEmpty())
+                        return null;
 
-                    if (hasMissingInterval(apiData, entry.getValue().getId()) && featureProvider.supportsExtents()) {
+                    if (hasMissingInterval(apiData, entry.getValue().getId()) && featureProvider.get().supportsExtents()) {
 
                         List<String> temporalQueryables = entry.getValue()
                                 .getExtension(FeaturesCoreConfiguration.class)
@@ -414,10 +418,10 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                         if (!temporalQueryables.isEmpty()) {
                             Optional<Interval> interval;
                             if (temporalQueryables.size() >= 2) {
-                                interval = featureProvider.extents()
+                                interval = featureProvider.get().extents()
                                         .getTemporalExtent(entry.getValue().getId(), temporalQueryables.get(0), temporalQueryables.get(1));
                             } else {
-                                interval = featureProvider.extents()
+                                interval = featureProvider.get().extents()
                                         .getTemporalExtent(entry.getValue().getId(), temporalQueryables.get(0));
                             }
 

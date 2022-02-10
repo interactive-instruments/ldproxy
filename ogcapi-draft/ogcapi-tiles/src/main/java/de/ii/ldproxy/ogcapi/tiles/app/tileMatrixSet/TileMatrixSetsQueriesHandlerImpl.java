@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,11 +15,13 @@ import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.domain.QueryInput;
-import de.ii.ldproxy.ogcapi.tiles.app.VectorTilesLinkGenerator;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ldproxy.ogcapi.tiles.app.TilesLinkGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetLinks;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
@@ -33,6 +35,7 @@ import org.apache.felix.ipojo.annotations.Requires;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -51,11 +54,14 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
     private final I18n i18n;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
     private final ExtensionRegistry extensionRegistry;
+    private final TileMatrixSetRepository tileMatrixSetRepository;
 
     public TileMatrixSetsQueriesHandlerImpl(@Requires I18n i18n,
-                                            @Requires ExtensionRegistry extensionRegistry) {
+                                            @Requires ExtensionRegistry extensionRegistry,
+                                            @Requires TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
+        this.tileMatrixSetRepository = tileMatrixSetRepository;
 
         this.queryHandlers = ImmutableMap.of(
                 Query.TILE_MATRIX_SETS,
@@ -77,7 +83,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         TileMatrixSetsFormatExtension outputFormat = api.getOutputFormat(TileMatrixSetsFormatExtension.class, requestContext.getMediaType(), path, Optional.empty())
                                                         .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
 
-        final VectorTilesLinkGenerator vectorTilesLinkGenerator = new VectorTilesLinkGenerator();
+        final TilesLinkGenerator tilesLinkGenerator = new TilesLinkGenerator();
 
         List<Link> links = new TileMatrixSetsLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
                                                                             requestContext.getMediaType(),
@@ -93,25 +99,31 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                                                                                           .id(tileMatrixSet.getId())
                                                                                                                                           .title(tileMatrixSet.getTileMatrixSetData().getTitle())
                                                                                                                                           .tileMatrixSetURI(tileMatrixSet.getURI().map(URI::toString))
-                                                                                                                                          .links(vectorTilesLinkGenerator.generateTileMatrixSetsLinks(requestContext.getUriCustomizer(),
-                                                                                                                                                                                                      tileMatrixSet.getId(),
-                                                                                                                                                                                                      i18n,
-                                                                                                                                                                                                      requestContext.getLanguage()))
+                                                                                                                                          .links(tilesLinkGenerator.generateTileMatrixSetsLinks(requestContext.getUriCustomizer(),
+                                                                                                                                                                                                tileMatrixSet.getId(),
+                                                                                                                                                                                                i18n,
+                                                                                                                                                                                                requestContext.getLanguage()))
                                                                                                                                           .build())
                                                                                          .collect(Collectors.toList()))
                                                                .links(links)
                                                                .build();
 
         Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(tileMatrixSets, TileMatrixSets.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileMatrixSets, TileMatrixSets.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("tileMatrixSets.%s", outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getTileMatrixSetsEntity(tileMatrixSets, api, requestContext))
                 .build();
     }
@@ -132,10 +144,8 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                 i18n,
                 requestContext.getLanguage());
 
-        TileMatrixSet tileMatrixSet = extensionRegistry.getExtensionsForType(TileMatrixSet.class).stream()
-                                                       .filter(tms -> tms.getId().equals(tileMatrixSetId))
-                                                       .findAny()
-                                                       .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
+        TileMatrixSet tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
+                                                             .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
         TileMatrixSetData tileMatrixSetData = ImmutableTileMatrixSetData.builder()
                                                                         .from(tileMatrixSet.getTileMatrixSetData())
@@ -143,15 +153,21 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                         .build();
 
         Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat);
+        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(api, requestContext, queryInput.getIncludeLinkHeader() ? links : null,
+        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
                                       lastModified, etag,
                                       queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null), null)
+                                      queryInput.getExpires().orElse(null),
+                                      null,
+                                      true,
+                                      String.format("%s.%s", tileMatrixSetId, outputFormat.getMediaType().fileExtension()))
                 .entity(outputFormat.getTileMatrixSetEntity(tileMatrixSetData, api, requestContext))
                 .build();
     }

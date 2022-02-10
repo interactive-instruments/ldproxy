@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -32,6 +32,7 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
     private static ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(new MediaType("application", "vnd.oai.openapi+json", ImmutableMap.of("version", "3.0")))
             .label("JSON")
+            .parameter("json")
             .build();
 
     private final ExtendableOpenApiDefinition openApiDefinition;

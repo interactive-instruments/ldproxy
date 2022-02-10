@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,16 +7,18 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.xtraplatform.features.domain.FeatureConsumer;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
-
-import java.util.Locale;
-import java.util.Optional;
-
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 import static de.ii.ldproxy.ogcapi.features.core.app.PathParameterFeatureIdFeatures.FEATURE_ID_PATTERN;
+
+import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.xtraplatform.features.domain.FeatureConsumer;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.FeatureTransformer2;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.Locale;
+import java.util.Optional;
 
 public interface FeatureFormatExtension extends FormatExtension {
 
@@ -30,7 +32,7 @@ public interface FeatureFormatExtension extends FormatExtension {
         return false;
     }
 
-    default boolean canTransformFeatures() {
+    default boolean canEncodeFeatures() {
         return false;
     }
 
@@ -42,4 +44,23 @@ public interface FeatureFormatExtension extends FormatExtension {
         return Optional.empty();
     }
 
+    default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+      FeatureTransformationContext transformationContext,
+      Optional<Locale> language) {
+        return Optional.empty();
+    }
+
+    default Optional<PropertyTransformations> getPropertyTransformations(FeatureTypeConfigurationOgcApi collectionData) {
+
+        Optional<PropertyTransformations> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
+            .map(featuresCoreConfiguration -> ((PropertyTransformations)featuresCoreConfiguration));
+
+        Optional<PropertyTransformations> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
+            .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
+            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration));
+
+
+        return formatTransformations.map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
+        .or(() -> coreTransformations);
+    }
 }

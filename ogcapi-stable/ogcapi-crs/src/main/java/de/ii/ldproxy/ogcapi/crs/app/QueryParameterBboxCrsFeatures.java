@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -17,7 +17,10 @@ import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -59,7 +62,7 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
 
     @Override
     public String getDescription() {
-        return "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude (http://www.opengis.net/def/crs/OGC/1.3/CRS84).";
+        return "The coordinate reference system of the `bbox` parameter. Default is WGS84 longitude/latitude.";
     }
 
     @Override
@@ -78,12 +81,21 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+            // TODO: include 2D (variants) of the CRSs
+            // default is currently always CRS84
+            String defaultCrs = CRS84
+            /* TODO support 4 or 6 numbers
+            apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                .map(ImmutableEpsgCrs::toUriString)
+                .orElse(CRS84) */;
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
-                                             .stream()
-                                             .map(EpsgCrs::toUriString)
-                                             .collect(ImmutableList.toImmutableList());
+                .stream()
+                .map(crs ->crs.equals(OgcCrs.CRS84h) ? OgcCrs.CRS84 : crs)
+                .map(EpsgCrs::toUriString)
+                .collect(ImmutableList.toImmutableList());
             schemaMap.get(apiHashCode)
-                     .put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
+                     .put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
     }
@@ -108,7 +120,8 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
             } catch (Throwable e) {
                 throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: %s", BBOX_CRS, e.getMessage()), e);
             }
-            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, bboxCrs)) {
+            // CRS84 is always supported
+            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, bboxCrs) && !bboxCrs.equals(OgcCrs.CRS84)) {
                 throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", BBOX_CRS, bboxCrs.toUriString()));
             }
 

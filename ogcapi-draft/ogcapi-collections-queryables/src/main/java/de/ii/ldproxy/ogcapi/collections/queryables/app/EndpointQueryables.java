@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -98,7 +98,13 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
             for (String collectionId : collectionIds) {
                 final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
                 final String operationSummary = "retrieve the queryables of the feature collection '" + collectionId + "'";
-                Optional<String> operationDescription = Optional.empty(); // TODO once the specification is more stable
+                Optional<String> operationDescription = Optional.of("The Queryables resources identifies the properties that can be " +
+                    "referenced in filter expressions to select specific features that meet the criteria identified in the filter. " +
+                    "The response is a JSON Schema document that describes a single JSON object where each property is a queryable.\n\n" +
+                    "Note: The queryables schema does not specify a schema of any object that can be retrieved from the API.\n\n" +
+                    "The descriptive metadata (title and description of the property) as well as the schema information (data type and " +
+                    "constraints like a list of allowed values or minimum/maxmimum values are provided to support clients to construct" +
+                    "meaningful queries for the data.");
                 String resourcePath = "/collections/" + collectionId + subSubPath;
                 ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                         .path(resourcePath)
