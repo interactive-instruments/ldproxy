@@ -10,7 +10,7 @@ The API based on the configuration described on this page is available at [https
 
 This description assumes that the following preparation steps have been completed.
 
-* ldproxy has been [deployed](deployment.md). All file paths on this page are relative to the data directory of the deployment.
+* ldproxy has been [deployed](../../docs/en/deployment.md). All file paths on this page are relative to the data directory of the deployment.
 * A PostgreSQL deployment (version 9.6 or later) with PostGIS (version 2.4 or later) is availble.
 
 ## Step 1: Getting the data
