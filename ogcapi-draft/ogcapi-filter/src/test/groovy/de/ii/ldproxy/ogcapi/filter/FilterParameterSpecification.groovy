@@ -17,6 +17,9 @@ import spock.lang.Requires
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.util.stream.Collectors
+import java.util.stream.IntStream
+
 /** These test assume that the following APIs are available:
  * <ul>
  *     <li>daraa (same data and configuration as https://demo.ldproxy.net/daraa)
@@ -2197,7 +2200,6 @@ class FilterParameterSpecification extends Specification {
             assertFeature(propertyAndLiteralNested2.responseData.features[i], propertyAndLiteralNested2Check.get(i))
         }
 
-        /* TODO position() does not work
         when: "1c. Data is selected using a nested filter A_ContainS(theme[position()=1].concept, ['DLKM', 'Basis-DLM', 'DLM50'])"
         def propertyAndLiteralNestedPosition = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("A_ContainS(theme[position()=1].concept, ['DLKM', 'Basis-DLM', 'DLM50'])"))
         def propertyAndLiteralNestedPositionCheck = allAxGebaeudefunktion.responseData.features.stream().filter(f -> {
@@ -2230,7 +2232,7 @@ class FilterParameterSpecification extends Specification {
             def selectedThemes = IntStream.range(0, themes.size())
                     .filter(i -> i>0)
                     .mapToObj(i-> themes.get(i))
-                    .toList()
+                    .collect(Collectors.toList())
             if (selectedThemes.size()==0)
                 return false
             return selectedThemes.stream()
@@ -2251,7 +2253,6 @@ class FilterParameterSpecification extends Specification {
         for (int i=0; i<propertyAndLiteralNestedPosition2.responseData.numberReturned; i++) {
             assertFeature(propertyAndLiteralNestedPosition2.responseData.features[i], propertyAndLiteralNestedPosition2Check.get(i))
         }
-         */
 
         when: "2. Data is selected using a filter A_ContainS(['DLKM', 'Basis-DLM', 'DLM50'], theme.concept)"
         def propertyAndLiteral2 = getRequest(restClient, AX_GEBAEUDEFUNKTION_PATH, getQuery("A_ContainS(['DLKM', 'Basis-DLM', 'DLM50'], theme.concept)"))
