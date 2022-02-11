@@ -115,6 +115,7 @@ public class RoutesView extends OgcApiView {
                 .color("#00f")
                 .lineWidth(5)
                 .circleRadius(6)
+                .circleMinZoom(12)
                 .build())
             .build();
 
