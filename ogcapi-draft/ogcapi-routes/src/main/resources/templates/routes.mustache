@@ -10,14 +10,14 @@
                 <div id="map" class="map-md"></div>
             </div>
         </div>
-        <form class="contact-form">
+        <form id="form">
             <div class="row my-3">
                 <div class="input-group">
                     <div class="col-md-3 font-weight-bold">
                         <label for="name">{{routeNameTitle}}</label>
                     </div>
                     <div class="col-md-9">
-                        <input id="name" name="name" type="text" size="64" value="{{routeName}}"/>
+                        <input class="form-control" id="name" name="name" type="text" size="64" value="{{routeName}}"/>
                     </div>
                 </div>
             </div>
@@ -29,15 +29,15 @@
                     <div class="col-md-9">
                         <ul class="list-unstyled">
                             {{#defaultPreference}}
-                                <li>
-                                    <input id="preference-{{key}}" name="preference" type="radio" value="{{key}}" checked="true"/>
-                                    <label class="inline" for="preference-{{key}}">{{value}}</label>
+                                <li class="form-check">
+                                    <input class="form-check-input" id="preference-{{key}}" name="preference" type="radio" value="{{key}}" checked="true"/>
+                                    <label class="form-check-label" for="preference-{{key}}">{{value}}</label>
                                 </li>
                             {{/defaultPreference}}
                             {{#otherPreferences}}
-                                <li>
-                                    <input id="preference-{{key}}" name="preference" type="radio" value="{{key}}"/>
-                                    <label class="inline" for="preference-{{key}}">{{value}}</label>
+                                <li class="form-check">
+                                    <input class="form-check-input" id="preference-{{key}}" name="preference" type="radio" value="{{key}}"/>
+                                    <label class="form-check-label" for="preference-{{key}}">{{value}}</label>
                                 </li>
                             {{/otherPreferences}}
                         </ul>
@@ -52,15 +52,15 @@
                     <div class="col-md-9">
                         <ul class="list-unstyled">
                             {{#defaultMode}}
-                                <li>
-                                    <input id="mode-{{key}}" name="mode" type="radio" value="{{key}}" checked="true"/>
-                                    <label class="inline" for="mode-{{key}}">{{value}}</label>
+                                <li class="form-check">
+                                    <input class="form-check-input" id="mode-{{key}}" name="mode" type="radio" value="{{key}}" checked="true"/>
+                                    <label class="form-check-label" for="mode-{{key}}">{{value}}</label>
                                 </li>
                             {{/defaultMode}}
                             {{#otherModes}}
-                                <li>
-                                    <input id="mode-{{key}}" name="preference" type="radio" value="{{key}}"/>
-                                    <label class="inline" for="mode-{{key}}">{{value}}</label>
+                                <li class="form-check">
+                                    <input class="form-check-input" id="mode-{{key}}" name="preference" type="radio" value="{{key}}"/>
+                                    <label class="form-check-label" for="mode-{{key}}">{{value}}</label>
                                 </li>
                             {{/otherModes}}
                         </ul>
@@ -76,9 +76,9 @@
                     <div class="col-md-9">
                         <ul class="list-unstyled">
                             {{#additionalFlags}}
-                                <li>
-                                    <input id="flag-{{key}}" name="flags" type="checkbox" value="{{key}}" {{#value}}{{#default}}checked="{{.}}"{{/default}}{{/value}}/>
-                                    <label class="inline" for="flags-{{key}}">{{#value}}{{label}}{{/value}}</label>
+                                <li class="form-check">
+                                    <input class="form-check-input" id="flag-{{key}}" name="flags" type="checkbox" value="{{key}}" {{#value}}{{#default}}checked="{{.}}"{{/default}}{{/value}}/>
+                                    <label class="form-check-label" for="flags-{{key}}">{{#value}}{{label}}{{/value}}</label>
                                 </li>
                             {{/additionalFlags}}
                         </ul>
@@ -93,7 +93,7 @@
                             <label for="weight">{{maxWeightTitle}}</label>
                         </div>
                         <div class="col-md-9">
-                            <input id="weight" name="weight" type="number" step="any"/>
+                            <input class="form-control" id="weight" name="weight" type="number" step="any"/>
                             <label class="inline" for="weight">{{weightUnitTitle}}</label>
                         </div>
                     </div>
@@ -106,7 +106,7 @@
                             <label for="height">{{maxHeightTitle}}</label>
                         </div>
                         <div class="col-md-9">
-                            <input id="height" name="height" type="number" step="any"/>
+                            <input class="form-control" id="height" name="height" type="number" step="any"/>
                             <label class="inline" for="height">{{heightUnitTitle}}</label>
                         </div>
                     </div>
@@ -117,8 +117,10 @@
                 </div>
                 <div class="col-md-9">
                     <input name="secret" type="hidden" value="route-definition-form"/>
-                    <button type="submit">{{computeRouteButton}}</button>
-                    <div id="spinner"><div></div><div></div><div></div><div></div></div>
+                    <button id="submit" type="button" class="btn btn-primary" onClick="globalThis._route.compute(new FormData(document.getElementById('form')))">
+                      {{computeRouteButton}}
+                      <span id="spinner" class="spinner-border spinner-border-sm d-none"></span>
+                    </button>
                 </div>
             </div>
             <div class="row my-3">
@@ -160,300 +162,7 @@
     </div>
 </div>
 
-<!-- TODO move css and js; use mapClient -->
-<style type="text/css">
-.lds-ring {
-  display: inline-block;
-  position: relative;
-  height: 20px;
-}
-.lds-ring div {
-  box-sizing: border-box;
-  display: block;
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  margin: 2px;
-  border: 2px solid #404040;
-  border-radius: 50%;
-  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  border-color: #404040 transparent transparent transparent;
-}
-.lds-ring div:nth-child(1) {
-  animation-delay: -0.45s;
-}
-.lds-ring div:nth-child(2) {
-  animation-delay: -0.3s;
-}
-.lds-ring div:nth-child(3) {
-  animation-delay: -0.15s;
-}
-@keyframes lds-ring {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-</style>
-<script src="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.js"></script>
-<!-- TODO only pull the bits from turf that we need -->
-<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
-<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.js"></script>
-<link href="https://unpkg.com/maplibre-gl@1.15.2/dist/maplibre-gl.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.3.0/mapbox-gl-draw.css" type="text/css"/>
-<script type="text/javascript">
-function handleFormSubmit(event) {
-   event.preventDefault();
 
-   const lngLatStart = markerStart.getLngLat();
-   const lngLatEnd = markerEnd.getLngLat();
-   const data = new FormData(event.target);
-
-   const routeDefinition = {
-      'inputs': {
-         'name': '',
-         'preference': '',
-         'mode': '',
-         'additionalFlags': [],
-         'waypoints': {
-            'value': {
-               'type': 'MultiPoint',
-               'coordinates': [[0, 0], [0, 0]]
-            }
-         }
-      }
-   };
-
-   routeDefinition.inputs.name = data.get('name');
-   routeDefinition.inputs.preference = data.get('preference');
-   routeDefinition.inputs.mode = data.get('mode');
-   routeDefinition.inputs.additionalFlags = data.getAll('flags');
-   {{#supportsMaxWeight}}
-   if (data.get('weight') !== '') {
-     routeDefinition.inputs.weight = parseFloat(data.get('weight').replace(',','.'));
-   }
-   {{/supportsMaxWeight}}
-   {{#supportsMaxHeight}}
-   if (data.get('height') !== '') {
-     routeDefinition.inputs.height = parseFloat(data.get('height').replace(',','.'));
-   }
-   {{/supportsMaxHeight}}
-   routeDefinition.inputs.waypoints.value.coordinates[0][0] = lngLatStart.lng;
-   routeDefinition.inputs.waypoints.value.coordinates[0][1] = lngLatStart.lat;
-   routeDefinition.inputs.waypoints.value.coordinates[1][0] = lngLatEnd.lng;
-   routeDefinition.inputs.waypoints.value.coordinates[1][1] = lngLatEnd.lat;
-
-   {{#supportsObstacles}}
-   const drawData = draw.getAll();
-    if (drawData.features.length > 0) {
-        routeDefinition.inputs.obstacles = {};
-        routeDefinition.inputs.obstacles.value = turf.combine(drawData).features[0].geometry;
-    }
-   {{/supportsObstacles}}
-
-   var routeDefJsonString = JSON.stringify(routeDefinition, null, 2);
-
-   /* debug
-   const results = document.querySelector('.results pre');
-   results.innerText = routeDefJsonString;
-   */
-
-   const xhr = new XMLHttpRequest();
-   xhr.onreadystatechange = function () {
-      if (this.readyState === 4 && this.status === 200) {
-         document.getElementById('spinner').classList.remove('lds-ring');
-         document.querySelector('button').disabled = false;
-
-         const routeJson = JSON.parse(this.responseText);
-         map.getSource('route').setData(routeJson);
-
-         const bbox = routeJson['bbox'];
-         if (bbox) {
-            const bounds = (bbox.length === 4) ? [ [ bbox[0], bbox[1] ], [ bbox[2], bbox[3] ] ] : [ [ bbox[0], bbox[1] ], [ bbox[3], bbox[4] ] ];
-            map.fitBounds( bounds, {
-                padding: 50,
-                maxZoom: 16,
-                duration: 500
-            });
-         }
-
-         /* debug
-         const routeElement = document.querySelector('.route pre');
-         routeElement.innerText = JSON.stringify(routeJson, null, 2);
-         */
-      } else if (this.readyState === 4) {
-         document.getElementById('spinner').classList.remove('lds-ring');
-         document.querySelector('button').disabled = false;
-
-         const problem = JSON.parse(this.responseText);
-         const errorElement = document.querySelector('.error p');
-         if (problem.title !== "" && problem.detail !== "" && problem.title !== undefined && problem.detail !== undefined) {
-             errorElement.innerText = problem.title + ": " + problem.detail;
-         } else if (problem.title !== "" && problem.title !== undefined) {
-             errorElement.innerText = problem.title;
-         } else if (problem.detail !== "" && problem.detail !== undefined) {
-             errorElement.innerText = problem.detail;
-         } else {
-             errorElement.innerText = "An error occurred. No route could be computed.";
-         }
-      }
-   };
-   xhr.open('POST', './routes');
-   xhr.setRequestHeader('Content-Type', 'application/json');
-   xhr.setRequestHeader('Accept', 'application/geo+json,application/problem+json;q=0.9,application/json;q=0.8');
-   xhr.send(routeDefJsonString);
-
-   document.querySelector('.error p').innerText = "";
-   document.querySelector('button').disabled = true;
-   document.getElementById('spinner').classList.add('lds-ring');
-}
-
-const changeCursor = (map, cursor) => {
-    const canvas = map.getCanvas();
-    canvas.style.cursor = cursor;
-};
-
-const firstCoordinate = (geometry) => {
-    switch (geometry.type) {
-        case 'Point':
-            return geometry.coordinates;
-        case 'LineString':
-        case 'MultiPoints':
-            return geometry.coordinates[0];
-        case 'Polygon':
-        case 'MultiLineString':
-            return geometry.coordinates[0][0];
-        case 'MultiPolygon':
-            return geometry.coordinates[0][0][0];
-        default:
-            return null;
-    }
-};
-
-const showPopupProps = (map, popup) => (e) => {
-    const lngLat = firstCoordinate(e.features[0].geometry);
-    let description = `<h5>${e.features[0].properties['featureType']}</h5><hr/><table>`;
-
-    Object.keys(e.features[0].properties)
-       .sort()
-       .forEach((prop) => {
-          description += `<tr><td title="${prop}" class="pr-4"><strong>${prop}</strong></td><td title="${e.features[0].properties[prop]}">${e.features[0].properties[prop]}</td></tr>`;
-       });
-
-    description += '</table>';
-
-    // Ensure that if the map is zoomed out such that multiple
-    // copies of the feature are visible, the popup appears
-    // over the copy being pointed to.
-    while (Math.abs(e.lngLat.lng - lngLat[0]) > 180) {
-       lngLat[0] += e.lngLat.lng > lngLat[0] ? 360 : -360;
-    }
-
-    if (lngLat && description) {
-       popup.setLngLat(lngLat).setHTML(description).addTo(map);
-    }
-};
-
-const popup = new maplibregl.Popup({
-    closeButton: true,
-    closeOnClick: true,
-    maxWidth: '60%',
-    className: 'popup-props',
-});
-
-var map = new maplibregl.Map({
-'container': 'map',
-'style': {
-   'version': 8,
-   'sources': {
-      'basemap': {
-         'type': 'raster',
-         'tiles': [
-            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
-         ],
-         'scheme': 'xyz',
-         'attribution': '&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
-      },
-      'route': {
-            'type': 'geojson',
-            'data': { 'type': 'FeatureCollection', 'features': [] }
-      }
-   },
-   'layers': [{
-        'id': 'background',
-        'type': 'raster',
-        'source': 'basemap'
-   },{
-        'id': 'overview',
-        'type': 'line',
-        'source': 'route',
-        'layout': {
-            'line-join': 'round',
-            'line-cap': 'round'
-        },
-        'paint': {
-            'line-color': '#00f',
-            'line-width': 5
-        },
-        'filter': ['==', '$type', 'LineString']
-    },{
-        'id': 'segment',
-        'type': 'circle',
-        'source': 'route',
-        'minzoom': 12,
-        'paint': {
-            'circle-radius': 6,
-            'circle-color': '#00f'
-        },
-        'filter': ['==', '$type', 'Point']
-    }]
-},
-'center': [{{centerX}}, {{centerY}}],
-'zoom': {{centerLevel}}
-});
-
-map.addControl(new maplibregl.ScaleControl());
-map.addControl(new maplibregl.NavigationControl());
-
-map.on('mouseenter', 'overview', () => changeCursor(map, 'pointer'));
-map.on('mouseleave', 'overview', () => changeCursor(map, ''));
-map.on('click', 'overview', showPopupProps(map, popup));
-map.on('mouseenter', 'segment', () => changeCursor(map, 'pointer'));
-map.on('mouseleave', 'segment', () => changeCursor(map, ''));
-map.on('click', 'segment', showPopupProps(map, popup));
-
-{{#supportsObstacles}}
-const draw = new MapboxDraw({
-    displayControlsDefault: false,
-    controls: {
-    polygon: true,
-    trash: true
-    }
-});
-map.addControl(draw);
-{{/supportsObstacles}}
-
-var start = document.getElementById('start');
-var markerStart = new maplibregl.Marker({
-    draggable: true,
-    color: 'blue'
-})
-.setLngLat([{{startX}}, {{startY}}])
-.addTo(map);
-var end = document.getElementById('end'); 
-var markerEnd = new maplibregl.Marker({
-    draggable: true,
-    color: 'green'
-})
-.setLngLat([{{endX}}, {{endY}}])
-.addTo(map);
-
-const form = document.querySelector('.contact-form');
-form.addEventListener('submit', handleFormSubmit);
-</script>
+{{> routeClient}}
 
 {{> footer}}

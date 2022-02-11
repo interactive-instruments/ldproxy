@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ldproxy.ogcapi.html.domain.ImmutableSource;
+import de.ii.ldproxy.ogcapi.html.domain.ImmutableStyle;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
@@ -104,14 +105,17 @@ public class RoutesView extends OgcApiView {
                                .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
             .attribution(Optional.ofNullable(htmlConfig.getLeafletAttribution())
                              .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
-            .bounds(Optional.ofNullable(bbox))
             .data(new ImmutableSource.Builder()
                       .type(MapClient.Source.TYPE.geojson)
-                      .url("data:application/geo+json,{type:\"FeatureCollection\",features:[]}")
+                      .url("{\"type\":\"FeatureCollection\",\"features\":[]}")
+                      .isData(true)
                       .build())
             .popup(MapClient.Popup.CLICK_PROPERTIES)
-            .styleUrl(Optional.ofNullable(null))
-            .removeZoomLevelConstraints(false)
+            .defaultStyle(new ImmutableStyle.Builder()
+                .color("#00f")
+                .lineWidth(5)
+                .circleRadius(6)
+                .build())
             .build();
 
         this.supportsMaxWeight = apiData.getExtension(RoutingConfiguration.class)

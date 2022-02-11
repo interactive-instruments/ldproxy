@@ -21,6 +21,7 @@ import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.SchemaMapping;
 import de.ii.xtraplatform.geometries.domain.DouglasPeuckerLineSimplifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +79,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
   }
 
   @Override
-  public void onStart(ModifiableContext context) {
+  public void onStart(ModifiableContext<FeatureSchema, SchemaMapping> context) {
     transformationContext.getName().ifPresent(builder::name);
     context.metadata().getNumberMatched().ifPresent(num -> LOGGER.debug("numberMatched {}", num));
     context.metadata().getNumberReturned().ifPresent(num -> LOGGER.debug("numberReturned {}", num));
@@ -237,7 +238,7 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
   }
 
   @Override
-  public void onEnd(ModifiableContext context) {
+  public void onEnd(ModifiableContext<FeatureSchema, SchemaMapping> context) {
     if (Objects.isNull(start) || Objects.isNull(lastPoint)) {
       throw new UnprocessableEntity("No route was found between the start and end location.");
     }
