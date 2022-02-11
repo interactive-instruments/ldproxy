@@ -3,9 +3,13 @@ import React from "react";
 import PropTypes from "prop-types";
 
 import { useMaplibreUIEffect } from "react-maplibre-ui";
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import combine from "@turf/combine";
 import { geoJsonLayers, hoverLayers, vectorLayers } from "../styles";
 import { getBounds, getFeaturesWithIdAsProperty, idProperty } from "../geojson";
 import { addPopup, addPopupProps } from "./popup";
+
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 const setStyleGeoJson = (map, styleUrl, removeZoomLevelConstraints) => {
   // eslint-disable-next-line no-undef
@@ -175,6 +179,12 @@ const addData = (
 
       if (popup === "HOVER_ID") {
         addPopup(map, maplibre, hoverLayers);
+      } else if (popup === "CLICK_PROPERTIES") {
+        addPopupProps(
+          map,
+          maplibre,
+          defaultLayers.map((l) => l.id)
+        );
       }
     }
   } else if (dataType === "vector") {
@@ -292,7 +302,7 @@ const MapLibreConfiguration = ({
       );
     }
     if (custom) {
-      custom(map, maplibre);
+      custom(map, maplibre, MapboxDraw, { combine });
     }
   }, []);
 
