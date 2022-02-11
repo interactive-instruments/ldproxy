@@ -201,6 +201,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
         final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
+        final Map<String, String> queryableTypes = queryParser.getQueryableTypes(apiData, collectionData);
 
         Set<String> filterParameters = ImmutableSet.of();
         for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -251,10 +252,10 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                 if (filterLang.isPresent() && "cql2-json".equals(filterLang.get())) {
                     cqlFormat = Cql.Format.JSON;
                 }
-                otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat);
+                otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), queryableTypes, cqlFormat);
             }
             if (predefFilter != null) {
-                configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
+                configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), queryableTypes, Cql.Format.TEXT);
             }
             CqlFilter combinedFilter;
             if (otherFilter.isPresent() && configFilter.isPresent()) {

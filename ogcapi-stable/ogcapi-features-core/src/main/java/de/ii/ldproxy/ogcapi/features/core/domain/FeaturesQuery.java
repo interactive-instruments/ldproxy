@@ -20,22 +20,24 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface FeaturesQuery {
-    FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                       FeaturesCoreConfiguration coreConfiguration,
-                                       Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
-                                       String featureId);
+  FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
+                                     FeaturesCoreConfiguration coreConfiguration,
+                                     Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
+                                     String featureId);
 
-    FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                       FeaturesCoreConfiguration coreConfiguration,
-                                       int minimumPageSize,
-                                       int defaultPageSize, int maxPageSize, Map<String, String> parameters,
-                                       List<OgcApiQueryParameter> allowedParameters);
+  FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
+                                     FeaturesCoreConfiguration coreConfiguration,
+                                     int minimumPageSize,
+                                     int defaultPageSize, int maxPageSize, Map<String, String> parameters,
+                                     List<OgcApiQueryParameter> allowedParameters);
 
   Map<String, String> getFilterableFields(OgcApiDataV2 apiData,
-      FeatureTypeConfigurationOgcApi collectionData);
+                                          FeatureTypeConfigurationOgcApi collectionData);
+
+  Map<String, String> getQueryableTypes(OgcApiDataV2 apiData,
+                                        FeatureTypeConfigurationOgcApi collectionData);
 
   Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                           Set<String> filterParameters,
-                                           Cql.Format cqlFormat);
-
+                                         Set<String> filterParameters, Map<String, String> queryableTypes,
+                                         Cql.Format cqlFormat);
 }
