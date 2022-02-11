@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.ApiErrorMessage;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExceptionFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.FormatNotSupportedException;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import org.apache.felix.ipojo.annotations.Component;
@@ -72,7 +73,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
         // content negotiation for the error response
         ImmutableSet<ApiMediaType> supportedMediaTypes = extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class)
                                                                           .stream()
-                                                                          .map(format -> format.getMediaType())
+                                                                          .map(FormatExtension::getMediaType)
                                                                           .collect(ImmutableSet.toImmutableSet());
         Optional<ApiMediaType> mediaType = contentNegotiation.negotiate(request, httpHeaders, uriInfo, supportedMediaTypes);
         ExceptionFormatExtension exceptionFormat =

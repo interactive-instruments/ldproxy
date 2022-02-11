@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 
 import java.util.List;
@@ -20,19 +21,25 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface FeaturesQuery {
-    FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                       FeaturesCoreConfiguration coreConfiguration,
-                                       Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
-                                       String featureId);
+  FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
+                                     EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
+                                     Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
+                                     String featureId);
 
-    FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                       FeaturesCoreConfiguration coreConfiguration,
-                                       int minimumPageSize,
-                                       int defaultPageSize, int maxPageSize, Map<String, String> parameters,
-                                       List<OgcApiQueryParameter> allowedParameters);
+  FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
+                                     EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
+                                     int minimumPageSize,
+                                     int defaultPageSize, int maxPageSize, Map<String, String> parameters,
+                                     List<OgcApiQueryParameter> allowedParameters);
+
+  FeatureQuery requestToBareFeatureQuery(OgcApiDataV2 apiData, String featureTypeId,
+                                         EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
+                                         int minimumPageSize,
+                                         int defaultPageSize, int maxPageSize, Map<String, String> parameters,
+                                         List<OgcApiQueryParameter> allowedParameters);
 
   Map<String, String> getFilterableFields(OgcApiDataV2 apiData,
-      FeatureTypeConfigurationOgcApi collectionData);
+                                          FeatureTypeConfigurationOgcApi collectionData);
 
   Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
                                            Set<String> filterParameters,

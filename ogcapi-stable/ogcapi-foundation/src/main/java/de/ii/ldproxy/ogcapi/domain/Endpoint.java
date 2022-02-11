@@ -15,6 +15,7 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 
 import java.text.MessageFormat;
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import org.slf4j.Logger;
@@ -33,12 +35,19 @@ public abstract class Endpoint implements EndpointExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Endpoint.class);
 
-    protected static final Map<HttpMethods, String> SUCCESS_STATUS = ImmutableMap.of(
+    protected enum OPERATION_TYPE {RESOURCE, PROCESS}
+
+    protected static final Map<HttpMethods, String> SUCCESS_STATUS_RESOURCE = ImmutableMap.of(
             HttpMethods.GET, "200",
             HttpMethods.POST, "201",
             HttpMethods.PUT, "204",
             HttpMethods.PATCH, "204",
             HttpMethods.DELETE, "204"
+    );
+
+    protected static final Map<HttpMethods, String> SUCCESS_STATUS_PROCESSING = ImmutableMap.of(
+        HttpMethods.GET, "200",
+        HttpMethods.POST, "200"
     );
 
     protected final ExtensionRegistry extensionRegistry;
@@ -61,12 +70,21 @@ public abstract class Endpoint implements EndpointExtension {
                 .mode(apiValidation);
 
         try {
-            if (getFormats().isEmpty()) {
+            // compile and cache the API definition
+            ApiEndpointDefinition definition = getDefinition(apiData);
+
+            if (getFormats().isEmpty() &&
+                definition
+                .getResources()
+                .values()
+                .stream()
+                .map(r -> r.getOperations().keySet())
+                .flatMap(Collection::stream)
+                .anyMatch(m -> m.equalsIgnoreCase("get"))) {
+
                 builder.addStrictErrors(MessageFormat.format("The Endpoint class ''{0}'' does not support any output format.", this.getClass().getSimpleName()));
             }
 
-            // compile and cache the API definition
-            getDefinition(apiData);
 
         } catch (Exception exception) {
             String message = exception.getMessage();
@@ -159,7 +177,7 @@ public abstract class Endpoint implements EndpointExtension {
                                         String operationSummary, Optional<String> operationDescription,
                                         Optional<ExternalDocumentation> externalDocs, List<String> tags) {
         ImmutableApiResponse.Builder responseBuilder = new ImmutableApiResponse.Builder()
-                .statusCode(SUCCESS_STATUS.get(method))
+                .statusCode(SUCCESS_STATUS_RESOURCE.get(method))
                 .description("The operation was executed successfully.")
                 .headers(headers.stream().filter(header -> header.isResponseHeader()).collect(Collectors.toUnmodifiableList()));
         if (method== HttpMethods.GET && !content.isEmpty())
@@ -177,6 +195,38 @@ public abstract class Endpoint implements EndpointExtension {
                     .content(content)
                     .description(method== HttpMethods.POST ? "The new resource to be added." : "The new resource to be updated.")
                     .build());
+        return operationBuilder.build();
+    }
+
+    // TODO consolidate with the other addOperation methods
+    protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, OPERATION_TYPE opType,
+                                        Map<MediaType, ApiMediaTypeContent> requestContent,
+                                        Map<MediaType, ApiMediaTypeContent> responseContent,
+                                        List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers, String path,
+                                        String operationSummary, Optional<String> operationDescription,
+                                        Optional<ExternalDocumentation> externalDocs, List<String> tags) {
+        ImmutableApiResponse.Builder responseBuilder = new ImmutableApiResponse.Builder()
+            .statusCode(opType==OPERATION_TYPE.RESOURCE ? SUCCESS_STATUS_RESOURCE.get(method) : SUCCESS_STATUS_PROCESSING.get(method))
+            .description("The operation was executed successfully.")
+            .headers(headers.stream().filter(ApiHeader::isResponseHeader).collect(Collectors.toUnmodifiableList()));
+        if (!requestContent.isEmpty())
+            responseBuilder.content(responseContent)
+                .description(opType==OPERATION_TYPE.RESOURCE
+                                 ? (method== HttpMethods.POST ? "The new resource to be added." : "The new resource to be updated.")
+                                 : "The process result.");
+        ImmutableApiOperation.Builder operationBuilder = new ImmutableApiOperation.Builder()
+            .summary(operationSummary)
+            .description(operationDescription)
+            .externalDocs(externalDocs)
+            .tags(tags)
+            .queryParameters(queryParameters)
+            .headers(headers.stream().filter(ApiHeader::isRequestHeader).collect(Collectors.toUnmodifiableList()))
+            .success(responseBuilder.build());
+        if (responseContent!=null)
+            operationBuilder.requestBody(new ImmutableApiRequestBody.Builder()
+                                             .content(requestContent)
+                                             .description(opType==OPERATION_TYPE.RESOURCE ? "The resource." : "The information to process.")
+                                             .build());
         return operationBuilder.build();
     }
 
@@ -215,6 +265,14 @@ public abstract class Endpoint implements EndpointExtension {
                 .map(f -> f.getContent(apiData, path))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
+    }
+
+    protected Map<MediaType, ApiMediaTypeContent> getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
+        return getFormats().stream()
+            .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+            .map(f -> f.getContent(apiData, path, method))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
     }
 
     protected QueryInput getGenericQueryInput(OgcApiDataV2 apiData) {

@@ -111,7 +111,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
             // always support both default CRSs
             String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
-                .map(ImmutableEpsgCrs::toUriString)
+                .map(EpsgCrs::toUriString)
                 .orElse(CRS84);
             ImmutableList.Builder<String> crsListBuilder = new ImmutableList.Builder<>();
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
