@@ -88,6 +88,11 @@ public interface MapClient {
 
     String getUrl();
 
+    @Value.Default
+    default boolean isData() {
+      return false;
+    }
+
     Multimap<String, List<String>> getLayers();
   }
 

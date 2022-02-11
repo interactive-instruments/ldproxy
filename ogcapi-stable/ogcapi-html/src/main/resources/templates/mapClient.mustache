@@ -27,7 +27,12 @@
       drawBounds: {{drawBounds}},
     {{/bounds}}
     {{#data}}
-      dataUrl: '{{{url}}}',
+     {{#isData}}
+      dataUrl:  {{{url}}},
+     {{/isData}}
+     {{^isData}}
+      dataUrl:  '{{{url}}}',
+     {{/isData}}
       dataType: '{{type}}',
       dataLayers: {
         {{#layers.entries}}
