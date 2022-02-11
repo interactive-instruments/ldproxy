@@ -14167,12 +14167,12 @@ fsevents@^1.2.7:
 
 "react-maplibre-ui@patch:react-maplibre-ui@npm:2.0.0#.yarn/patches/react-maplibre-ui-npm-2.0.0-641e2a759e::locator=%40ogcapi%2Fhtml%40workspace%3A.":
   version: 2.0.0
-  resolution: "react-maplibre-ui@patch:react-maplibre-ui@npm%3A2.0.0#.yarn/patches/react-maplibre-ui-npm-2.0.0-641e2a759e::version=2.0.0&hash=76de50&locator=%40ogcapi%2Fhtml%40workspace%3A."
+  resolution: "react-maplibre-ui@patch:react-maplibre-ui@npm%3A2.0.0#.yarn/patches/react-maplibre-ui-npm-2.0.0-641e2a759e::version=2.0.0&hash=66a129&locator=%40ogcapi%2Fhtml%40workspace%3A."
   dependencies:
     maplibre-gl: 1.14.0
   peerDependencies:
     react: ">=16"
-  checksum: 68577dadbcae423f4b14d02ec3f08a21ac4d9a3d0e03bc9e09db58f00d56f1aef9dc434bc73b704e7c4cc47bae1f8400cc549a0359c8ecd2f945fd9b68058ea8
+  checksum: 884ff755de11a26999796b931ef50d1c3d2365eae0830a6cef9ead0a4693000550a104e12160ba2bff443ca02df5cbea37da40b2510f091fb2308a27441f5eb9
   languageName: node
   linkType: hard
 
