@@ -81,17 +81,18 @@ public abstract class OgcApiDatasetView extends OgcApiView {
             .add("service-doc")
             .add("describedby")
             .add("data")
-            .add("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/data")
             .add("items")
-            .add("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/items")
-            .add("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/tilesets-\\w+")
-            .add("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/styles")
+            .add("tilesets-\\w+")
+            .add("styles")
+            .add("routes")
             .add("ldp-map")
             .build();
 
         return links
                 .stream()
-                .filter(link -> !link.getRel().matches("^(?:" + String.join("|", ignoreRels) + ")$"))
+                .filter(link -> !link.getRel()
+                    .replace("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/","")
+                    .matches("^(?:" + String.join("|", ignoreRels) + ")$"))
                 .collect(Collectors.toList());
     }
 

@@ -72,7 +72,7 @@ const MapLibre = ({
         controls={interactive}
         showCompass={showCompass}
         defaultStyle={defaultStyle}
-        fitBounds={!drawBounds}
+        fitBounds={!drawBounds && bounds}
         popup={popup}
         custom={custom}
       />

@@ -225,7 +225,6 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
                                      return apiDef.matches("/"+entrypoint+subPath, method);
                                  return false;
                              })
-                             .filter(endpoint -> endpoint.isEnabledForApi(dataset))
                              .findFirst();
     }
 

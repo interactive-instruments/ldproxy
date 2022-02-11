@@ -1,0 +1,134 @@
+
+{{> app-common}}
+
+{{> mapClient}}
+
+<script type="text/javascript">
+
+  const getXY = point => Array.isArray(point) ? point : [point.lng, point.lat];
+
+  globalThis._route = {
+    start: [{{startX}}, {{startY}}],
+    end: [{{endX}}, {{endY}}],
+    {{#supportsMaxWeight}}
+    supportsMaxWeight: true,
+    {{/supportsMaxWeight}}
+    {{#supportsMaxHeight}}
+    supportsMaxHeight: true,
+    {{/supportsMaxHeight}}
+    {{#supportsObstacles}}
+    supportsObstacles: true,
+    {{/supportsObstacles}}
+    updateMap: (data, bbox) => {},
+    updateError: (problem) => {
+     const errorElement = document.querySelector('.error p');
+     if (problem.title !== "" && problem.detail !== "" && problem.title !== undefined && problem.detail !== undefined) {
+         errorElement.innerText = problem.title + ": " + problem.detail;
+     } else if (problem.title !== "" && problem.title !== undefined) {
+         errorElement.innerText = problem.title;
+     } else if (problem.detail !== "" && problem.detail !== undefined) {
+         errorElement.innerText = problem.detail;
+     } else {
+         errorElement.innerText = "An error occurred. No route could be computed.";
+     }
+    },
+    compute: (data) => {
+      const drawData = globalThis._route.supportsObstacles ? globalThis._route.draw.getAll() : undefined;
+      const routeDefinition = {
+        inputs: {
+           name: data.get('name'),
+           preference: data.get('preference'),
+           mode: data.get('mode'),
+           additionalFlags: data.getAll('flags'),
+           weight: globalThis._route.supportsMaxWeight && data.get('weight') ? parseFloat(data.get('weight').replace(',','.')) : undefined,
+           height: globalThis._route.supportsMaxHeight && data.get('height') ? parseFloat(data.get('height').replace(',','.')) : undefined,
+           obstacles: globalThis._route.supportsObstacles && drawData && drawData.features.length > 0 ? {value: globalThis._route.turf.combine(drawData).features[0].geometry} : undefined,
+           waypoints: {
+              value: {
+                 type: 'MultiPoint',
+                 coordinates: [getXY(globalThis._route.start), getXY(globalThis._route.end)]
+              }
+           }
+        }
+     };
+
+     fetch('./routes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/geo+json,application/problem+json;q=0.9,application/json;q=0.8'
+      },
+      body: JSON.stringify(routeDefinition)
+     })
+      .then(response => {
+        return Promise.all([response.json(), Promise.resolve(!response.ok)]);
+      })
+      .then(response => {
+        if (response[1]) {
+         globalThis._route.updateError(response[0])
+        } else {
+         globalThis._route.updateMap(response[0], response[0]['bbox'])
+        }
+      })
+      .catch(error => {
+        globalThis._route.updateError(error)
+      })
+      .finally(() => {
+        document.getElementById('spinner').classList.add('d-none');
+        document.getElementById('submit').disabled = false;
+        document.getElementById('map').scrollIntoView({behavior: "smooth"});
+      });
+
+      document.querySelector('.error p').innerText = "";
+      document.getElementById('submit').disabled = true;
+      document.getElementById('spinner').classList.remove('d-none');
+    }
+  }
+
+  globalThis._map.center = [{{centerX}}, {{centerY}}]
+  globalThis._map.zoom = {{centerLevel}}
+  globalThis._map.custom = (map, maplibre, MapboxDraw, turf) => {
+
+    new maplibre.Marker({
+      draggable: true,
+      color: 'blue'
+    })
+    .setLngLat(globalThis._route.start)
+    .on('dragend', event => globalThis._route.start = event.target.getLngLat())
+    .addTo(map);
+
+    new maplibre.Marker({
+      draggable: true,
+      color: 'green'
+    })
+    .setLngLat(globalThis._route.end)
+    .on('dragend', event => globalThis._route.end = event.target.getLngLat())
+    .addTo(map);
+
+    globalThis._route.updateMap = (data, bbox) => {
+      map.getSource('data').setData(data);
+
+      if (bbox) {
+        const bounds = (bbox.length === 4) ? [ [ bbox[0], bbox[1] ], [ bbox[2], bbox[3] ] ] : [ [ bbox[0], bbox[1] ], [ bbox[3], bbox[4] ] ];
+        map.fitBounds( bounds, {
+            padding: 50,
+            maxZoom: 16,
+            duration: 500
+        });
+     }
+    }
+
+    if (globalThis._route.supportsObstacles) {
+      globalThis._route.turf = turf;
+      globalThis._route.draw = new MapboxDraw({
+          displayControlsDefault: false,
+          controls: {
+          polygon: true,
+          trash: true
+          }
+      });
+      map.addControl(globalThis._route.draw);
+    }
+  }
+
+</script>

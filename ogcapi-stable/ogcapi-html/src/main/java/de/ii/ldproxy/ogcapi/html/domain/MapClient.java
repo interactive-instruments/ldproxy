@@ -88,6 +88,11 @@ public interface MapClient {
 
     String getUrl();
 
+    @Value.Default
+    default boolean isData() {
+      return false;
+    }
+
     Multimap<String, List<String>> getLayers();
   }
 
@@ -110,8 +115,28 @@ public interface MapClient {
     }
 
     @Value.Default
+    default int getCircleMinZoom() {
+      return 0;
+    }
+
+    @Value.Default
+    default int getCircleMaxZoom() {
+      return 24;
+    }
+
+    @Value.Default
     default int getLineWidth() {
       return 4;
+    }
+
+    @Value.Default
+    default int getLineMinZoom() {
+      return 0;
+    }
+
+    @Value.Default
+    default int getLineMaxZoom() {
+      return 24;
     }
 
     @Value.Default
@@ -122,6 +147,16 @@ public interface MapClient {
     @Value.Default
     default int getOutlineWidth() {
       return 2;
+    }
+
+    @Value.Default
+    default int getPolygonMinZoom() {
+      return 0;
+    }
+
+    @Value.Default
+    default int getPolygonMaxZoom() {
+      return 24;
     }
   }
 }
