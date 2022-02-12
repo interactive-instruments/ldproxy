@@ -10,14 +10,14 @@ The API based on the configuration described on this page is available at [https
 
 This description assumes that the following preparation steps have been completed.
 
-* ldproxy has been [deployed](deployment.md). All file paths on this page are relative to the data directory of the deployment.
+* ldproxy has been [deployed](../../docs/en/deployment.md). All file paths on this page are relative to the data directory of the deployment.
 * A PostgreSQL deployment (version 9.6 or later) with PostGIS (version 2.4 or later) is availble.
 
 ## Step 1: Getting the data
 
 The dataset can be downloaded from the website of the Landwirtschaftskammer: Go to the [download page](http://weinlagen.lwk-rlp.de/portal/funktionen-anleitung/download.html) or use the [direct shapefile download link](http://weinlagen.lwk-rlp.de/geoserver/lwk/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=lwk:Weinlagen&outputFormat=shape-zip).
 
-If you do not want to deal with shapefiles, you can also use the SQL dump ([DDL](vineyards.ddl.sql) and [DML](vineyards.dml.sql)).
+If you do not want to deal with shapefiles, you can also use the SQL dump ([DDL](db/vineyards.ddl.sql) and [DML](db/vineyards.dml.sql)).
 
 ## Step 2: Load the data
 

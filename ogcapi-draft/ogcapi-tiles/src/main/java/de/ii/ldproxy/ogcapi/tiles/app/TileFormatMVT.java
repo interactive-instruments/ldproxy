@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,8 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
@@ -34,9 +36,13 @@ import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
-import de.ii.xtraplatform.cql.domain.Intersects;
+import de.ii.xtraplatform.cql.domain.SpatialOperation;
+import de.ii.xtraplatform.cql.domain.SpatialOperator;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -48,9 +54,11 @@ import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;
 import org.apache.felix.ipojo.annotations.Requires;
 import org.apache.http.NameValuePair;
+import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.measure.Unit;
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,13 +91,19 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesQuery queryParser;
     private final TileCache tileCache;
+    private final CrsSupport crsSupport;
+    private final CrsInfo crsInfo;
 
     public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires FeaturesQuery queryParser,
-                         @Requires TileCache tileCache) {
+                         @Requires TileCache tileCache,
+                         @Requires CrsSupport crsSupport,
+                         @Requires CrsInfo crsInfo) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
         this.tileCache = tileCache;
+        this.crsSupport = crsSupport;
+        this.crsInfo = crsInfo;
     }
 
     @Override
@@ -165,8 +179,8 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                                                                           .type(featureTypeId)
                                                                           .limit(Objects.requireNonNullElse(tilesConfiguration.getLimitDerived(),LIMIT_DEFAULT))
                                                                           .offset(0)
-                                                                          .crs(tile.getTileMatrixSet().getCrs());
-                                                                          //.maxAllowableOffset(getMaxAllowableOffsetNative(tile));
+                                                                          .crs(tile.getTileMatrixSet().getCrs())
+                                                                          .maxAllowableOffset(getMaxAllowableOffset(tile));
 
         final Map<String, List<Rule>> rules = tilesConfiguration.getRulesDerived();
         if (!queryParameters.containsKey("properties") && (Objects.nonNull(rules) && rules.containsKey(tileMatrixSetId))) {
@@ -203,7 +217,28 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
             parameter.transformQuery(collectionData, queryBuilder, queryParameters, apiData);
         }
 
-        CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(filterableFields.get(PARAMETER_BBOX), tile.getBoundingBox()));
+        BoundingBox bbox = tile.getBoundingBox();
+        try {
+            // reduce bbox to the area in which there is data (to avoid coordinate transformation issues
+            // with large scale and data that is stored in a regional, projected CRS)
+            final EpsgCrs crs = bbox.getEpsgCrs();
+            final Optional<BoundingBox> dataBbox = apiData.getSpatialExtent(collectionId, crsTransformerFactory, crs);
+            if (dataBbox.isPresent()) {
+                bbox = ImmutableList.of(bbox, dataBbox.get())
+                    .stream()
+                    .map(BoundingBox::toArray)
+                    .reduce((doubles, doubles2) -> new double[]{
+                        Math.max(doubles[0], doubles2[0]),
+                        Math.max(doubles[1], doubles2[1]),
+                        Math.min(doubles[2], doubles2[2]),
+                        Math.min(doubles[3], doubles2[3])})
+                    .map(doubles -> BoundingBox.of(doubles[0], doubles[1], doubles[2], doubles[3], crs))
+                    .orElse(bbox);
+            }
+        } catch (CrsTransformationException e) {
+            // ignore
+        }
+        CqlPredicate spatialPredicate = CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, filterableFields.get(PARAMETER_BBOX), bbox));
         if (predefFilter != null || !filters.isEmpty()) {
             Optional<CqlFilter> otherFilter = Optional.empty();
             Optional<CqlFilter> configFilter = Optional.empty();
@@ -213,7 +248,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                         .map(NameValuePair::getValue)
                         .findFirst();
                 Cql.Format cqlFormat = Cql.Format.TEXT;
-                if (filterLang.isPresent() && "cql-json".equals(filterLang.get())) {
+                if (filterLang.isPresent() && "cql2-json".equals(filterLang.get())) {
                     cqlFormat = Cql.Format.JSON;
                 }
                 otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat);
@@ -307,25 +342,20 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     }
 
     @Override
-    public double getMaxAllowableOffsetNative(Tile tile) {
+    public double getMaxAllowableOffset(Tile tile) {
         double maxAllowableOffsetTileMatrixSet = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-        double maxAllowableOffsetNative = maxAllowableOffsetTileMatrixSet; // TODO convert to native CRS units once we have better CRS support
-        return maxAllowableOffsetNative;
-    }
+        Unit<?> tmsCrsUnit = crsInfo.getUnit(tile.getTileMatrixSet().getCrs());
+        EpsgCrs nativeCrs = crsSupport.getStorageCrs(tile.getApiData(), Optional.empty());
+        Unit<?> nativeCrsUnit = crsInfo.getUnit(nativeCrs);
+        if (tmsCrsUnit.equals(nativeCrsUnit))
+            return maxAllowableOffsetTileMatrixSet;
+        else if (tmsCrsUnit.equals(Units.DEGREE) && nativeCrsUnit.equals(Units.METRE))
+            return maxAllowableOffsetTileMatrixSet * 111333.0;
+        else if (tmsCrsUnit.equals(Units.METRE) && nativeCrsUnit.equals(Units.DEGREE))
+            return maxAllowableOffsetTileMatrixSet / 111333.0;
 
-    @Override
-    public double getMaxAllowableOffsetCrs84(Tile tile) {
-        double maxAllowableOffsetCrs84 = 0;
-        try {
-            maxAllowableOffsetCrs84 = tile.getTileMatrixSet().getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), OgcCrs.CRS84, crsTransformerFactory);
-        } catch (CrsTransformationException e) {
-            LOGGER.error("CRS transformation error while computing maxAllowableOffsetCrs84: {}.", e.getMessage());
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Stacktrace:", e);
-            }
-        }
-
-        return maxAllowableOffsetCrs84;
+        LOGGER.error("TileFormatMVT.getMaxAllowableOffset: Cannot convert between axis units '{}' and '{}'.", tmsCrsUnit.getName(), nativeCrsUnit.getName());
+        return 0;
     }
 
     /**

@@ -91,7 +91,7 @@
                 <ul class="list-unstyled">
                     {{#additionalLinks}}
                         <li>
-                            <a itemprop="url" href="{{href}}">{{title}}</a>
+                            <a href="{{href}}">{{title}}</a>
                         </li>
                     {{/additionalLinks}}
                     {{^additionalLinks}}
@@ -139,7 +139,7 @@
                                     <li>{{attributesTitle}}: {{.}}</li>
                                 {{/attributeList}}
                                 {{#sampleData}}
-                                    <li><a itemprop="url" href="{{href}}" target="_blank">{{#title}}{{.}}{{/title}}{{^title}}{{sampleDataTitle}}{{/title}}</a></li>
+                                    <li><a href="{{href}}" target="_blank">{{#title}}{{.}}{{/title}}{{^title}}{{sampleDataTitle}}{{/title}}</a></li>
                                 {{/sampleData}}
                             </ul>
                             <br/>

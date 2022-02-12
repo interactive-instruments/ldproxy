@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -38,8 +38,7 @@ public interface TileFromFeatureQuery {
 
   MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException;
 
-  double getMaxAllowableOffsetNative(Tile tile);
-  double getMaxAllowableOffsetCrs84(Tile tile);
+  double getMaxAllowableOffset(Tile tile);
 
   default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
       FeatureTransformationContextTiles transformationContext) {

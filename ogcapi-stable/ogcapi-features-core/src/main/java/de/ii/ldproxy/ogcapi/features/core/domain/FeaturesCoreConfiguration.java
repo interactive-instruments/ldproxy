@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.CachingConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
@@ -85,6 +86,9 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
 
     Map<String, Integer> getCoordinatePrecision();
 
+    @Nullable
+    Boolean getSupportPostOnItems();
+
     @Override
     Map<String, List<PropertyTransformation>> getTransformations();
 
@@ -93,7 +97,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     @JsonIgnore
     @Value.Derived
     @Value.Auxiliary
-    default ImmutableEpsgCrs getDefaultEpsgCrs() {
+    default EpsgCrs getDefaultEpsgCrs() {
         return ImmutableEpsgCrs.copyOf(getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84);
     }
 

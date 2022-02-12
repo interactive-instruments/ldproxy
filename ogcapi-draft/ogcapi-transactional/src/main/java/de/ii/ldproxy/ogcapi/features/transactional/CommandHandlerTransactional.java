@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.features.transactional;
 
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.json.domain.FeatureTokenDecoderGeoJson;
@@ -24,9 +25,10 @@ public class CommandHandlerTransactional {
 
 
     public Response postItemsResponse(
-            FeatureTransactions featureProvider,
-            ApiMediaType mediaType, URICustomizer uriCustomizer, String collectionName,
-            InputStream requestBody) {
+        FeatureTransactions featureProvider,
+        ApiMediaType mediaType,
+        URICustomizer uriCustomizer, String collectionName,
+        InputStream requestBody) {
 
         FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
 
@@ -63,9 +65,10 @@ public class CommandHandlerTransactional {
     }
 
     public Response putItemResponse(
-            FeatureTransactions featureProvider,
-            ApiMediaType mediaType, String collectionName, String featureId,
-            InputStream requestBody) {
+        FeatureTransactions featureProvider,
+        ApiMediaType mediaType,
+        String collectionName, String featureId,
+        InputStream requestBody) {
 
         FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
 
@@ -96,14 +99,13 @@ public class CommandHandlerTransactional {
                        .build();
     }
 
-    private FeatureTokenSource getFeatureSource(ApiMediaType mediaType, InputStream requestBody) {
-        //TODO: to inputformat extension, for the time being make it static
-        //FeatureDecoderGeoJson featureDecoderGeoJson = new FeatureDecoderGeoJson();
+    //TODO: to InputFormat extension matching the mediaType
+    private static FeatureTokenSource getFeatureSource(
+        ApiMediaType mediaType,
+        InputStream requestBody) {
 
         FeatureTokenDecoderGeoJson featureTokenDecoderGeoJson = new FeatureTokenDecoderGeoJson();
 
         return Source.inputStream(requestBody).via(featureTokenDecoderGeoJson);
-
-        //return featureDecoderGeoJson.withSource(ReactiveStream.Source.of(requestBody));
     }
 }

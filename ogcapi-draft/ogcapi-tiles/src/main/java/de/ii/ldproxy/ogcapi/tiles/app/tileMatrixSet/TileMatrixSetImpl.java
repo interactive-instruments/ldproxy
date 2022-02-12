@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -178,7 +178,7 @@ public class TileMatrixSetImpl implements TileMatrixSet {
     public BoundingBox getBoundingBoxCrs84(CrsTransformerFactory crsTransformerFactory) throws CrsTransformationException {
         if (getCrs().equals(OgcCrs.CRS84))
             return getBoundingBox();
-        CrsTransformer crsTransformer = crsTransformerFactory.getTransformer(getCrs(), OgcCrs.CRS84)
+        CrsTransformer crsTransformer = crsTransformerFactory.getTransformer(getCrs(), OgcCrs.CRS84, true)
                                                              .orElseThrow(() -> new IllegalStateException(String.format("Could not transform the bounding box of tile matrix set '%s' to CRS84.", getId())));
         return crsTransformer.transformBoundingBox(getBoundingBox());
     }

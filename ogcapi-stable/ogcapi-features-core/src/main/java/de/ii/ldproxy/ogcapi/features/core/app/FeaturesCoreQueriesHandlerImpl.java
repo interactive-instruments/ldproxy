@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,7 +11,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.I18n;
@@ -30,6 +29,7 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -41,6 +41,7 @@ import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
@@ -121,9 +122,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     private Response getItemsResponse(QueryInputFeatures queryInput, ApiRequestContext requestContext) {
 
         OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
         FeatureQuery query = queryInput.getQuery();
+
         Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
         boolean onlyHitsIfMore = false; // TODO check
 
@@ -179,7 +180,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         ensureFeatureProviderSupportsQueries(featureProvider);
 
         Optional<CrsTransformer> crsTransformer = Optional.empty();
-        boolean swapCoordinates = false;
 
         EpsgCrs sourceCrs = null;
         EpsgCrs targetCrs = query.getCrs()
@@ -188,10 +188,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             sourceCrs = featureProvider.crs()
                                        .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
-                                                                          .needsCoordinateSwap();
         }
-
 
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
@@ -214,7 +211,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .crsTransformer(crsTransformer)
                 .codelists(entityRegistry.getEntitiesForType(Codelist.class)
                                          .stream()
-                                         .collect(Collectors.toMap(c -> c.getId(), c -> c)))
+                                         .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
                 .defaultCrs(defaultCrs)
                 .sourceCrs(Optional.ofNullable(sourceCrs))
                 .links(links)
@@ -226,7 +223,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .offset(query.getOffset())
                 .maxAllowableOffset(query.getMaxAllowableOffset())
                 .geometryPrecision(query.getGeometryPrecision())
-                .shouldSwapCoordinates(swapCoordinates)
                 .isHitsOnlyIfMore(onlyHitsIfMore)
                 .showsFeatureSelfLink(showsFeatureSelfLink);
 

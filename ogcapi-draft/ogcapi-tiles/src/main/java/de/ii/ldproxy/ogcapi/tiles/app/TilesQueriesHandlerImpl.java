@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -319,7 +319,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         // process parameters and generate query
         Optional<CrsTransformer> crsTransformer = Optional.empty();
-        boolean swapCoordinates = false;
 
         EpsgCrs targetCrs = query.getCrs()
                                  .orElse(queryInput.getDefaultCrs());
@@ -327,8 +326,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             EpsgCrs sourceCrs = featureProvider.crs()
                                                .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
-                                                                          .needsCoordinateSwap();
         }
 
         List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
@@ -353,7 +350,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .collectionId(collectionId)
                     .ogcApiRequest(requestContext)
                     .crsTransformer(crsTransformer)
-                    .shouldSwapCoordinates(swapCoordinates)
                     .codelists(entityRegistry.getEntitiesForType(Codelist.class)
                                              .stream()
                                              .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
@@ -407,15 +403,12 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         // process parameters and generate query
         Optional<CrsTransformer> crsTransformer = Optional.empty();
-        boolean swapCoordinates = false;
 
         EpsgCrs targetCrs = tileMatrixSet.getCrs();
         if (featureProvider.supportsCrs()) {
             EpsgCrs sourceCrs = featureProvider.crs()
                     .getNativeCrs();
             crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-            swapCoordinates = crsTransformer.isPresent() && crsTransformer.get()
-                                                                          .needsCoordinateSwap();
         }
 
         List<Link> links = new DefaultLinksGenerator().generateLinks(requestContext.getUriCustomizer(),
@@ -463,7 +456,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                         .collectionId(collectionId)
                         .ogcApiRequest(requestContext)
                         .crsTransformer(crsTransformer)
-                        .shouldSwapCoordinates(swapCoordinates)
                         .codelists(entityRegistry.getEntitiesForType(Codelist.class)
                                                  .stream()
                                                  .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))

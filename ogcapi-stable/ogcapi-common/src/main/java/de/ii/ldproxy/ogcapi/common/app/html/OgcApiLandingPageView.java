@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -39,7 +39,6 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
     public String dataSourceUrl;
     public String keywords;
     public String keywordsWithQuotes;
-    public Metadata metadata;
     public boolean spatialSearch;
     public String dataTitle;
     public String apiDefinitionTitle;
@@ -135,6 +134,13 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
                 .findFirst();
     }
 
+    public Optional<Link> getRoutes() {
+        return links
+                .stream()
+                .filter(link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/routes"))
+                .findFirst();
+    }
+
     public Optional<Link> getMap() {
         return links
                 .stream()
@@ -162,5 +168,12 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
 
     public Optional<String> getSchemaOrgDataset() {
         return Optional.of(getSchemaOrgDataset(apiData, Optional.empty(), uriCustomizer.copy(), false));
+    }
+
+    public boolean getContactInfo() {
+        return getMetadata().filter(md -> md.getContactEmail().isPresent()
+            || md.getContactUrl().isPresent()
+            || md.getContactName().isPresent()
+            || md.getContactPhone().isPresent()).isPresent();
     }
 }

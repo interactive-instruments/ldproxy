@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -86,6 +86,12 @@ public interface ParameterExtension extends ApiExtension {
 
     default ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureType,
                                                          ImmutableFeatureQuery.Builder queryBuilder,
+                                                         Map<String, String> parameters,
+                                                         OgcApiDataV2 apiData) {
+        return queryBuilder;
+    }
+
+    default ImmutableFeatureQuery.Builder transformQuery(ImmutableFeatureQuery.Builder queryBuilder,
                                                          Map<String, String> parameters,
                                                          OgcApiDataV2 apiData) {
         return queryBuilder;

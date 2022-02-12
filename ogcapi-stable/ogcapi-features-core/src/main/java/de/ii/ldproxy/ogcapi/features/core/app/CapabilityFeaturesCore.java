@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -32,6 +32,7 @@ public class CapabilityFeaturesCore implements ApiBuildingBlock {
                                                                .minimumPageSize(MINIMUM_PAGE_SIZE)
                                                                .defaultPageSize(DEFAULT_PAGE_SIZE)
                                                                .maximumPageSize(MAX_PAGE_SIZE)
+                                                               .supportPostOnItems(false)
                                                                .showsFeatureSelfLink(false)
                                                                .build();
     }

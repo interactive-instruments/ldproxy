@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.google.common.collect.ImmutableSet;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -69,7 +70,11 @@ public abstract class ApiEndpointDefinition {
     public static final int SORT_PRIORITY_RESOURCES = 2100;
     public static final int SORT_PRIORITY_RESOURCE = 2110;
     public static final int SORT_PRIORITY_RESOURCES_MANAGER = 2120;
-
+    public static final int SORT_PRIORITY_ROUTES_POST = 2500;
+    public static final int SORT_PRIORITY_ROUTES_GET = 2510;
+    public static final int SORT_PRIORITY_ROUTE_GET = 2520;
+    public static final int SORT_PRIORITY_ROUTE_DELETE = 2530;
+    public static final int SORT_PRIORITY_ROUTE_DEFINITION = 2540;
 
     public static final int SORT_PRIORITY_DUMMY = Integer.MAX_VALUE;
 
@@ -182,8 +187,10 @@ public abstract class ApiEndpointDefinition {
                         String method = operationEntry.getKey();
                         boolean status400 = false;
                         boolean status404 = false;
+                        boolean status405 = true;
                         boolean status406 = method.equals("GET");
-                        boolean status415 = method.equals("POST") || method.equals("PUT");
+                        boolean status415 = method.equals("POST") || method.equals("PUT") || method.equals("PATCH");
+                        boolean status422 = method.equals("POST");
                         ApiOperation operation = operationEntry.getValue();
                         if (!operation.getSuccess().isPresent())
                             // skip
@@ -245,6 +252,11 @@ public abstract class ApiEndpointDefinition {
                                 if (operation.getRequestBody().isPresent()) {
                                     Set<javax.ws.rs.core.MediaType> mediaTypes = operation.getRequestBody().get().getContent().keySet();
                                     if (mediaTypes.size()==1 && mediaTypes.iterator().next().equals(javax.ws.rs.core.MediaType.APPLICATION_FORM_URLENCODED_TYPE)) {
+                                        // URL-encoded form
+                                        isMutation = false;
+                                        status406 = true;
+                                    } else if (operation.getSuccess().stream().anyMatch(response -> ImmutableSet.of("200", "202", "204").contains(response.getStatusCode()))) {
+                                        // Processing request
                                         isMutation = false;
                                         status406 = true;
                                     }
@@ -329,19 +341,25 @@ public abstract class ApiEndpointDefinition {
 
                         if (status400) {
                             response = new io.swagger.v3.oas.models.responses.ApiResponse();
-                            response.$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter");
+                            response.description("Bad Request");
                             responses.addApiResponse("400", response);
                         }
 
                         if (status404) {
                             response = new io.swagger.v3.oas.models.responses.ApiResponse();
-                            response.$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/responses/NotFound");
+                            response.description("Not Found");
                             responses.addApiResponse("404", response);
+                        }
+
+                        if (status405) {
+                            response = new io.swagger.v3.oas.models.responses.ApiResponse();
+                            response.description("Method Not Allowed");
+                            responses.addApiResponse("405", response);
                         }
 
                         if (status406) {
                             response = new io.swagger.v3.oas.models.responses.ApiResponse();
-                            response.$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/responses/NotAcceptable");
+                            response.description("Not Acceptable");
                             responses.addApiResponse("406", response);
                         }
 
@@ -351,8 +369,14 @@ public abstract class ApiEndpointDefinition {
                             responses.addApiResponse("415", response);
                         }
 
+                        if (status422) {
+                            response = new io.swagger.v3.oas.models.responses.ApiResponse();
+                            response.description("Unprocessable Entity");
+                            responses.addApiResponse("422", response);
+                        }
+
                         response = new io.swagger.v3.oas.models.responses.ApiResponse();
-                        response.$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/responses/ServerError");
+                        response.description("Server Error");
                         responses.addApiResponse("500", response);
 
                         op.responses(responses);

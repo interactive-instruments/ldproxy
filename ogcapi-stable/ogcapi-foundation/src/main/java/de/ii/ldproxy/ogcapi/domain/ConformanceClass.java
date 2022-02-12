@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -11,5 +11,5 @@ package de.ii.ldproxy.ogcapi.domain;
 import java.util.List;
 
 public interface ConformanceClass extends ApiExtension {
-    List<String> getConformanceClassUris();
+    List<String> getConformanceClassUris(OgcApiDataV2 apiData);
 }

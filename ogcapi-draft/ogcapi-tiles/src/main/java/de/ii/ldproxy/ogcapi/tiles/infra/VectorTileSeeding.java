@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -289,7 +289,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             try {
                 queryHandler.handle(TilesQueriesHandler.Query.SINGLE_LAYER_TILE, queryInput, requestContext);
             } catch (Throwable e) {
-                LOGGER.debug("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
+                LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
             }
 
             currentTile[0] += 1;
@@ -435,7 +435,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             try {
                 queryHandler.handle(TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
             } catch (Throwable e) {
-                LOGGER.debug("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
+                LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
             }
 
             currentTile[0] += 1;

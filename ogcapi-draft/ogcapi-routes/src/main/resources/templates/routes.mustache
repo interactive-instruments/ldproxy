@@ -1,0 +1,168 @@
+{{> header}}
+
+<div class="row">
+    <div class="col-md-10">
+        <h1>{{title}}</h1>
+        <span>{{{description}}}</span>
+        <br/>
+        <div class="row my-2">
+            <div class="col-md-12">
+                <div id="map" class="map-md"></div>
+            </div>
+        </div>
+        <form id="form">
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="name">{{routeNameTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <input class="form-control" id="name" name="name" type="text" size="64" value="{{routeName}}"/>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="preference">{{preferenceTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <ul class="list-unstyled">
+                            {{#defaultPreference}}
+                                <li class="form-check">
+                                    <input class="form-check-input" id="preference-{{key}}" name="preference" type="radio" value="{{key}}" checked="true"/>
+                                    <label class="form-check-label" for="preference-{{key}}">{{value}}</label>
+                                </li>
+                            {{/defaultPreference}}
+                            {{#otherPreferences}}
+                                <li class="form-check">
+                                    <input class="form-check-input" id="preference-{{key}}" name="preference" type="radio" value="{{key}}"/>
+                                    <label class="form-check-label" for="preference-{{key}}">{{value}}</label>
+                                </li>
+                            {{/otherPreferences}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="mode">{{modeTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <ul class="list-unstyled">
+                            {{#defaultMode}}
+                                <li class="form-check">
+                                    <input class="form-check-input" id="mode-{{key}}" name="mode" type="radio" value="{{key}}" checked="true"/>
+                                    <label class="form-check-label" for="mode-{{key}}">{{value}}</label>
+                                </li>
+                            {{/defaultMode}}
+                            {{#otherModes}}
+                                <li class="form-check">
+                                    <input class="form-check-input" id="mode-{{key}}" name="preference" type="radio" value="{{key}}"/>
+                                    <label class="form-check-label" for="mode-{{key}}">{{value}}</label>
+                                </li>
+                            {{/otherModes}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {{#hasAdditionalFlags}}
+            <div class="row my-3">
+                <div class="input-group">
+                    <div class="col-md-3 font-weight-bold">
+                        <label for="flags">{{additionalFlagsTitle}}</label>
+                    </div>
+                    <div class="col-md-9">
+                        <ul class="list-unstyled">
+                            {{#additionalFlags}}
+                                <li class="form-check">
+                                    <input class="form-check-input" id="flag-{{key}}" name="flags" type="checkbox" value="{{key}}" {{#value}}{{#default}}checked="{{.}}"{{/default}}{{/value}}/>
+                                    <label class="form-check-label" for="flags-{{key}}">{{#value}}{{label}}{{/value}}</label>
+                                </li>
+                            {{/additionalFlags}}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {{/hasAdditionalFlags}}
+            {{#supportsMaxWeight}}
+                <div class="row my-3">
+                    <div class="input-group">
+                        <div class="col-md-3 font-weight-bold">
+                            <label for="weight">{{maxWeightTitle}}</label>
+                        </div>
+                        <div class="col-md-9">
+                            <input class="form-control" id="weight" name="weight" type="number" step="any"/>
+                            <label class="inline" for="weight">{{weightUnitTitle}}</label>
+                        </div>
+                    </div>
+                </div>
+            {{/supportsMaxWeight}}
+            {{#supportsMaxHeight}}
+                <div class="row my-3">
+                    <div class="input-group">
+                        <div class="col-md-3 font-weight-bold">
+                            <label for="height">{{maxHeightTitle}}</label>
+                        </div>
+                        <div class="col-md-9">
+                            <input class="form-control" id="height" name="height" type="number" step="any"/>
+                            <label class="inline" for="height">{{heightUnitTitle}}</label>
+                        </div>
+                    </div>
+                </div>
+            {{/supportsMaxHeight}}
+            <div class="row my-3">
+                <div class="col-md-3 font-weight-bold">
+                </div>
+                <div class="col-md-9">
+                    <input name="secret" type="hidden" value="route-definition-form"/>
+                    <button id="submit" type="button" class="btn btn-primary" onClick="globalThis._route.compute(new FormData(document.getElementById('form')))">
+                      {{computeRouteButton}}
+                      <span id="spinner" class="spinner-border spinner-border-sm d-none"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="row my-3">
+                <div class="col-md-3 font-weight-bold">
+                </div>
+                <div class="col-md-9">
+                    <div class="error">
+                        <p></p>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+        <!-- debug
+        <div class="results">
+            <h2>Form Data</h2>
+            <pre></pre>
+        </div>
+        <div class="route">
+            <h2>Route</h2>
+            <pre></pre>
+        </div>
+        -->
+        <br/>
+        {{#hasLinks}}
+        <h1>{{routesListTitle}}</h1>
+        <span>{{{routesListDescription}}}</span>
+        <div class="row my-2">
+            <div class="col-md-12">
+                <ul>
+                    {{#itemLinks}}
+                        <li><a href="{{href}}" target="_blank">{{title}}</a></li>
+                    {{/itemLinks}}
+                </ul>
+            </div>
+        </div>
+        {{/hasLinks}}
+        <br/>
+    </div>
+</div>
+
+
+{{> routeClient}}
+
+{{> footer}}

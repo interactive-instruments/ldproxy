@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 interactive instruments GmbH
+ * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -49,7 +49,6 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     // TODO: move coordinate conversion to WGS 84 to the transformation pipeline,
     //       see https://github.com/interactive-instruments/ldproxy/issues/521
     private CrsTransformer crsTransformerGeometry;
-    private boolean swapCoordinatesGeometry;
 
     @Override
     public GeoJsonWriterGeometry create() {
@@ -65,13 +64,11 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
         suppressPrimaryGeometry = context.encoding().getSuppressPrimaryGeometry();
         crsTransformerGeometry = null;
-        swapCoordinatesGeometry = false;
         if (!suppressPrimaryGeometry && context.encoding().getForceDefaultCrs()) {
             EpsgCrs sourceCrs = context.encoding().getTargetCrs();
             EpsgCrs targetCrs = context.encoding().getDefaultCrs();
             if (!Objects.equals(sourceCrs, targetCrs)) {
                 crsTransformerGeometry = crsTransformerFactory.getTransformer(sourceCrs, targetCrs).orElse(null);
-                swapCoordinatesGeometry = Objects.nonNull(crsTransformerGeometry) && crsTransformerGeometry.needsCoordinateSwap();
             }
         }
 
@@ -149,7 +146,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
                     for (String p : pos)
                         context.encoding().getJson().writeRawValue(p);
                 } else {
-                    CoordinateTuple coord = crsTransformerGeometry.transform(new CoordinateTuple(pos.get(0), pos.get(1)), swapCoordinatesGeometry);
+                    CoordinateTuple coord = crsTransformerGeometry.transform(new CoordinateTuple(pos.get(0), pos.get(1)));
                     context.encoding().getJson().writeRawValue(BigDecimal.valueOf(coord.getX()).setScale(7, RoundingMode.HALF_DOWN).toPlainString());
                     context.encoding().getJson().writeRawValue(BigDecimal.valueOf(coord.getY()).setScale(7, RoundingMode.HALF_DOWN).toPlainString());
                     if (pos.size()==3)
