@@ -11,34 +11,14 @@ import com.google.common.collect.ImmutableList
 import de.ii.ldproxy.ogcapi.app.I18nDefault
 import de.ii.ldproxy.ogcapi.app.OgcApiEntity
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollectionsImpl
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension
-import de.ii.ldproxy.ogcapi.collections.domain.Collections
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionsExtension
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension
-import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollectionsConfiguration
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection
+import de.ii.ldproxy.ogcapi.collections.domain.*
 import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollection
 import de.ii.ldproxy.ogcapi.collections.infra.EndpointCollections
-import de.ii.ldproxy.ogcapi.common.app.metadata.CollectionDynamicMetadataRegistryImpl
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableCommonConfiguration
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry
 import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionMetadataEntry
 import de.ii.ldproxy.ogcapi.common.domain.metadata.MetadataType
-import de.ii.ldproxy.ogcapi.domain.ApiExtension
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType
-import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2
-import de.ii.ldproxy.ogcapi.domain.ImmutableRequestContext
-import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent
-import de.ii.ldproxy.ogcapi.domain.OgcApi
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2
-import de.ii.ldproxy.ogcapi.domain.TemporalExtent
+import de.ii.ldproxy.ogcapi.domain.*
 import de.ii.ldproxy.ogcapi.features.core.app.CollectionExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.app.CollectionsExtensionFeatures
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension
@@ -48,13 +28,10 @@ import de.ii.ldproxy.ogcapi.html.domain.ImmutableHtmlConfiguration
 import de.ii.ldproxy.ogcapi.json.domain.ImmutableJsonConfiguration
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.CrsTransformationException
-import de.ii.xtraplatform.crs.domain.CrsTransformer
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import spock.lang.Specification
 
-import javax.measure.unit.Unit
 import javax.ws.rs.core.MediaType
 import java.time.Instant
 import java.util.stream.Collectors
@@ -63,7 +40,7 @@ class OgcApiCoreSpecCollections extends Specification {
 
     static final ExtensionRegistry registry = createExtensionRegistry()
     static final OgcApiDataV2 datasetData = createDatasetData()
-    static final de.ii.ldproxy.ogcapi.app.OgcApiEntity api = createOgcApiApiEntity()
+    static final OgcApiEntity api = createOgcApiApiEntity()
     static final ApiRequestContext requestContext = createRequestContext()
     static QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry, new I18nDefault())
     static final EndpointCollections collectionsEndpoint = createCollectionsEndpoint()

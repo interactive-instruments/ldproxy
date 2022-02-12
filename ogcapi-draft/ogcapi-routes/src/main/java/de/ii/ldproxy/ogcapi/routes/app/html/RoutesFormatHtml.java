@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.routes.app.html;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
@@ -26,6 +27,7 @@ import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -37,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Provides
@@ -53,9 +56,12 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
     private final Schema schemaHtml;
     public final static String SCHEMA_REF_HTML = "#/components/schemas/htmlSchema";
     private final I18n i18n;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
-    public RoutesFormatHtml(@Requires I18n i18n) {
+    public RoutesFormatHtml(@Requires I18n i18n,
+                            @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.i18n = i18n;
+        this.metadataRegistry = metadataRegistry;
         schemaHtml = new StringSchema().example("<html>...</html>");
     }
 
@@ -103,8 +109,10 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
             .flatMap(HtmlForm::getDefaults)
             .orElse(ImmutableHtmlFormDefaults.builder().build());
 
+        Optional<BoundingBox> bbox = metadataRegistry.getSpatialExtent(api.getId());
+
         RoutesView view =
-            new RoutesView(api.getData(), routes, htmlDefaults, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
+            new RoutesView(api.getData(), routes, htmlDefaults, bbox, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
         return view;
     }
 

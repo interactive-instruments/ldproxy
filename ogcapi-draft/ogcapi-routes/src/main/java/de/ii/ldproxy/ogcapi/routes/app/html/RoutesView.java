@@ -27,6 +27,7 @@ import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInfo;
 import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingFlag;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.List;
 import java.util.Locale;
@@ -63,7 +64,7 @@ public class RoutesView extends OgcApiView {
     private final RouteDefinitionInfo templateInfo;
     private final HtmlFormDefaults htmlDefaults;
 
-    public RoutesView(OgcApiDataV2 apiData, Routes routes, HtmlFormDefaults htmlDefaults, final List<NavigationDTO> breadCrumbs,
+    public RoutesView(OgcApiDataV2 apiData, Routes routes, HtmlFormDefaults htmlDefaults, Optional<BoundingBox> bbox, final List<NavigationDTO> breadCrumbs,
                       String urlPrefix, HtmlConfiguration htmlConfig, boolean noIndex, I18n i18n, Optional<Locale> language) {
         super("routes.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
               routes.getLinks(),
@@ -92,7 +93,7 @@ public class RoutesView extends OgcApiView {
         routesListTitle = i18n.get("routesListTitle", language);
         routesListDescription = i18n.get("routesListDescription", language);
 
-        this.bbox = apiData.getSpatialExtent()
+        this.bbox = bbox
             .map(boundingBox -> ImmutableMap.of(
                 "minLng", Double.toString(boundingBox.getXmin()),
                 "minLat", Double.toString(boundingBox.getYmin()),

@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.common.domain.metadata.CollectionDynamicMetadataRegistry;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
@@ -26,7 +27,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFromFeatureQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
@@ -43,7 +43,6 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
@@ -93,17 +92,20 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     private final TileCache tileCache;
     private final CrsSupport crsSupport;
     private final CrsInfo crsInfo;
+    private final CollectionDynamicMetadataRegistry metadataRegistry;
 
     public TileFormatMVT(@Requires CrsTransformerFactory crsTransformerFactory,
                          @Requires FeaturesQuery queryParser,
                          @Requires TileCache tileCache,
                          @Requires CrsSupport crsSupport,
-                         @Requires CrsInfo crsInfo) {
+                         @Requires CrsInfo crsInfo,
+                         @Requires CollectionDynamicMetadataRegistry metadataRegistry) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.queryParser = queryParser;
         this.tileCache = tileCache;
         this.crsSupport = crsSupport;
         this.crsInfo = crsInfo;
+        this.metadataRegistry = metadataRegistry;
     }
 
     @Override
@@ -222,7 +224,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
             // reduce bbox to the area in which there is data (to avoid coordinate transformation issues
             // with large scale and data that is stored in a regional, projected CRS)
             final EpsgCrs crs = bbox.getEpsgCrs();
-            final Optional<BoundingBox> dataBbox = apiData.getSpatialExtent(collectionId, crsTransformerFactory, crs);
+            final Optional<BoundingBox> dataBbox = metadataRegistry.getSpatialExtent(apiData.getId(), collectionId, crs);
             if (dataBbox.isPresent()) {
                 bbox = ImmutableList.of(bbox, dataBbox.get())
                     .stream()
