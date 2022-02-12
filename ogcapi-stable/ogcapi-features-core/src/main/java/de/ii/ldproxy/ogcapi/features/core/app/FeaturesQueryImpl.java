@@ -370,16 +370,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                        cql.checkTypes(cqlPredicate, queryableTypes);
 
                                                        return cqlPredicate;
-
-                                                       /* TODO cleanup
-                                                       List<String> incompatibleTypes = cql.checkTypes(cqlPredicate, queryableTypes);
-
-                                                       if (incompatibleTypes.isEmpty()) {
-                                                           return cqlPredicate;
-                                                       } else {
-                                                           throw new IllegalArgumentException(String.format("The parameter '%s' is invalid. The following predicates or functions have incompatible type: [%s].", filter.getKey(), String.join("]; [", incompatibleTypes)));
-                                                       }
-                                                        */
                                                    }
                                                    if (filter.getValue()
                                                              .contains("*")) {
