@@ -99,12 +99,13 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                .orElse(null));
 
         ImmutableLandingPage.Builder builder = new ImmutableLandingPage.Builder()
-                .title(apiData.getLabel())
-                .description(apiData.getDescription().orElse(""))
-                .externalDocs(apiData.getExternalDocs())
-                .extent(Optional.ofNullable(spatialExtent))
-                .links(links)
-                .addAllLinks(queryInput.getAdditionalLinks());
+            .title(apiData.getLabel())
+            .description(apiData.getDescription().orElse(""))
+            .attribution(apiData.getMetadata().flatMap(Metadata::getAttribution))
+            .externalDocs(apiData.getExternalDocs())
+            .extent(Optional.ofNullable(spatialExtent))
+            .links(links)
+            .addAllLinks(queryInput.getAdditionalLinks());
 
         for (LandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
             builder = ogcApiLandingPageExtension.process(builder,
