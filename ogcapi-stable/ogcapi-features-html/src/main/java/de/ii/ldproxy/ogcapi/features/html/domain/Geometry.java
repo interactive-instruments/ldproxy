@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -25,6 +27,7 @@ public interface Geometry<T> {
 
   List<T> getCoordinates();
 
+  @JsonProperty("coordRefSys")
   Optional<EpsgCrs> getCrs();
 
   List<Coordinate> getCoordinatesFlat();
@@ -59,11 +62,17 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates();
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default boolean is3d() {
       return getCoordinates().get(0).size()==3;
     }
@@ -95,11 +104,17 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates();
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default boolean is3d() {
       return getCoordinates().get(0).size()==3;
     }
@@ -146,6 +161,9 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates().stream()
           .map(Geometry::getCoordinates)
@@ -154,6 +172,9 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default boolean is3d() {
       return getCoordinates().get(0).getCoordinates().get(0).size()==3;
     }
@@ -189,6 +210,9 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates().stream()
           .map(Geometry::getCoordinates)
@@ -197,6 +221,9 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default boolean is3d() {
       return !getCoordinates().isEmpty() && getCoordinates().get(0).is3d();
     }
@@ -230,6 +257,9 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates().stream()
           .map(Geometry::getCoordinates)
@@ -238,6 +268,9 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default boolean is3d() {
       return !getCoordinates().isEmpty() && getCoordinates().get(0).is3d();
     }
@@ -271,6 +304,9 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default List<Coordinate> getCoordinatesFlat() {
       return getCoordinates().stream()
           .map(Geometry::getCoordinates)
@@ -281,6 +317,9 @@ public interface Geometry<T> {
     }
 
     @Override
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
     default boolean is3d() {
       return !getCoordinates().isEmpty() && getCoordinates().get(0).is3d();
     }

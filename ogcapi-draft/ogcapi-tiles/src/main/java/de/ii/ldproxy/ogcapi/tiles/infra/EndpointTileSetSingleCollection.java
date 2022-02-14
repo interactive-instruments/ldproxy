@@ -51,7 +51,7 @@ public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSing
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset");
     }
 

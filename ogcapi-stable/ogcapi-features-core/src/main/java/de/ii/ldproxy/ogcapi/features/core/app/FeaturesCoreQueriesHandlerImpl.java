@@ -29,6 +29,7 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -123,6 +124,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         OgcApi api = requestContext.getApi();
         String collectionId = queryInput.getCollectionId();
         FeatureQuery query = queryInput.getQuery();
+
         Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
         boolean onlyHitsIfMore = false; // TODO check
 

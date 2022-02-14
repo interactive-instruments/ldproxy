@@ -26,11 +26,11 @@
         <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
     </div>
     {{/styles}}
-    {{#dapa}}
+    {{#routes}}
     <div class="row my-1">
         <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
     </div>
-    {{/dapa}}
+    {{/routes}}
     <br/>
 
     <h2>{{apiInformationTitle}}</h2>
@@ -68,64 +68,62 @@
     {{/externalDocs}}
 
     {{#metadata}}
+    {{#contactInfo}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{providerTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                {{#contactName}}
+                    <li>{{{.}}}</li>
+                {{/contactName}}
+                {{#contactUrl}}
+                    <li><a href="{{.}}" target="_blank">{{.}}</a></li>
+                {{/contactUrl}}
+                {{#contactEmail}}
+                    <li>{{.}}</li>
+                {{/contactEmail}}
+                {{#contactPhone}}
+                    <li>{{.}}</li>
+                {{/contactPhone}}
+            </ul>
+        </div>
+    </div>
+    {{/contactInfo}}
+    {{#licenseName}}
         <div class="row my-3">
-            <div class="col-md-2 font-weight-bold">{{providerTitle}}</div>
+            <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
             <div class="col-md-10">
-                <ul class="list-unstyled" itemprop="creator" itemscope itemtype="http://schema.org/Organization">
-                    {{#contactName}}
-                        <li>{{{.}}}</li>
-                    {{/contactName}}
-                    {{#contactUrl}}
-                        <li><a href="{{.}}" target="_blank">{{.}}</a></li>
-                    {{/contactUrl}}
-                    <li>
-                        <ul class="list-unstyled">
-                            {{#contactEmail}}
-                                <li>{{.}}</li>
-                            {{/contactEmail}}
-                            {{#contactPhone}}
-                                <li>{{.}}</li>
-                            {{/contactPhone}}
-                        </ul>
-                    </li>
+                <ul class="list-unstyled">
+                    <li>{{{.}}}</li>
+                    {{#licenseUrl}}
+                    <li><a href="{{.}}">{{.}}</a></li>
+                    {{/licenseUrl}}
                 </ul>
             </div>
         </div>
-        {{#licenseName}}
-            <div class="row my-3">
-                <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
-                <div class="col-md-10">
-                    <ul class="list-unstyled">
-                        <li>{{{.}}}</li>
-                        {{#licenseUrl}}
-                        <li><a href="{{.}}">{{.}}</a></li>
-                        {{/licenseUrl}}
-                    </ul>
-                </div>
+    {{/licenseName}}
+    {{^licenseName}}
+        {{#licenseUrl}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li><a href="{{.}}">{{.}}</a></li>
+                </ul>
             </div>
-        {{/licenseName}}
-        {{^licenseName}}
-            {{#licenseUrl}}
-            <div class="row my-3">
-                <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
-                <div class="col-md-10">
-                    <ul class="list-unstyled">
-                        <li><a href="{{.}}">{{.}}</a></li>
-                    </ul>
-                </div>
+        </div>
+        {{/licenseUrl}}
+    {{/licenseName}}
+    {{#attribution}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{attributionTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li>{{{.}}}</li>
+                </ul>
             </div>
-            {{/licenseUrl}}
-        {{/licenseName}}
-        {{#attribution}}
-            <div class="row my-3">
-                <div class="col-md-2 font-weight-bold">{{attributionTitle}}</div>
-                <div class="col-md-10">
-                    <ul class="list-unstyled">
-                        <li>{{{.}}}</li>
-                    </ul>
-                </div>
-            </div>
-        {{/attribution}}
+        </div>
+    {{/attribution}}
     {{/metadata}}
 
     {{#bbox}}

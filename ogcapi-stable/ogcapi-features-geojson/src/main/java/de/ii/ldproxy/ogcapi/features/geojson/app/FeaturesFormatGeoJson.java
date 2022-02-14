@@ -101,7 +101,7 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of(CONFORMANCE_CLASS_FEATURES, CONFORMANCE_CLASS_RECORDS);
     }
 

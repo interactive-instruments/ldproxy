@@ -80,7 +80,7 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
                                              .collect(ImmutableList.toImmutableList());
             String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
-                .map(ImmutableEpsgCrs::toUriString)
+                .map(EpsgCrs::toUriString)
                     .orElse(CRS84);
             schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
         }
@@ -115,7 +115,7 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-2/1.0/conf/crs");
     }
 }

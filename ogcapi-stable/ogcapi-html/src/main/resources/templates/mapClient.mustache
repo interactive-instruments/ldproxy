@@ -27,7 +27,12 @@
       drawBounds: {{drawBounds}},
     {{/bounds}}
     {{#data}}
-      dataUrl: '{{{url}}}',
+     {{#isData}}
+      dataUrl:  {{{url}}},
+     {{/isData}}
+     {{^isData}}
+      dataUrl:  '{{{url}}}',
+     {{/isData}}
       dataType: '{{type}}',
       dataLayers: {
         {{#layers.entries}}
@@ -40,9 +45,15 @@
           color: '{{color}}',
           opacity: {{opacity}},
           circleRadius: {{circleRadius}},
+          circleMinZoom: {{#circleMinZoom}}{{.}}{{/circleMinZoom}}{{^circleMinZoom}}undefined{{/circleMinZoom}},
+          circleMaxZoom: {{#circleMaxZoom}}{{.}}{{/circleMaxZoom}}{{^circleMaxZoom}}undefined{{/circleMaxZoom}},
           lineWidth: {{lineWidth}},
+          lineMinZoom: {{#lineMinZoom}}{{.}}{{/lineMinZoom}}{{^lineMinZoom}}undefined{{/lineMinZoom}},
+          lineMaxZoom: {{#lineMaxZoom}}{{.}}{{/lineMaxZoom}}{{^lineMaxZoom}}undefined{{/lineMaxZoom}},
           fillOpacity: {{fillOpacity}},
           outlineWidth: {{outlineWidth}},
+          polygonMinZoom: {{#polygonMinZoom}}{{.}}{{/polygonMinZoom}}{{^polygonMinZoom}}undefined{{/polygonMinZoom}},
+          polygonMaxZoom: {{#polygonMaxZoom}}{{.}}{{/polygonMaxZoom}}{{^polygonMaxZoom}}undefined{{/polygonMaxZoom}},
       },
     {{/defaultStyle}}
     {{#popup}}

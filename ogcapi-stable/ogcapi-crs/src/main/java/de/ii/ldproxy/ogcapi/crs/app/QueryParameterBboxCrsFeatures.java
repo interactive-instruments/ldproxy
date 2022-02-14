@@ -87,7 +87,7 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
             /* TODO support 4 or 6 numbers
             apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
-                .map(ImmutableEpsgCrs::toUriString)
+                .map(EpsgCrs::toUriString)
                 .orElse(CRS84) */;
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
                 .stream()

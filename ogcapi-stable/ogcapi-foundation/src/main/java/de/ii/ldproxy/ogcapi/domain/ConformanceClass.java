@@ -11,5 +11,5 @@ package de.ii.ldproxy.ogcapi.domain;
 import java.util.List;
 
 public interface ConformanceClass extends ApiExtension {
-    List<String> getConformanceClassUris();
+    List<String> getConformanceClassUris(OgcApiDataV2 apiData);
 }

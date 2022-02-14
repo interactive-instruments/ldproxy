@@ -21,7 +21,6 @@ import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FoundationValidator;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceSet;
@@ -63,7 +62,7 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/collections");
     }
 

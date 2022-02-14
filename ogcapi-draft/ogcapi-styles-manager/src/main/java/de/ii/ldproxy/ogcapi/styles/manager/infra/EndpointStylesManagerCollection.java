@@ -16,20 +16,16 @@ import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.manager.domain.ImmutableQueryInputStyleCreateReplace;
 import de.ii.ldproxy.ogcapi.styles.manager.domain.ImmutableQueryInputStyleDelete;
@@ -54,8 +50,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -82,7 +76,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
     }
 
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/manage-styles");
     }
 

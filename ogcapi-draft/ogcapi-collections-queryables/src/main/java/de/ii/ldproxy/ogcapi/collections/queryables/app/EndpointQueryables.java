@@ -61,7 +61,7 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
 
     /* TODO wait for updates on Features Part n: Schemas
     @Override
-    public List<String> getConformanceClassUris() {
+    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-n/0.0/conf/queryables");
     }
     */

@@ -17,10 +17,12 @@ import de.ii.ldproxy.ogcapi.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.apache.felix.ipojo.annotations.Component;
@@ -43,9 +45,17 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
     public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
 
     private final CrsSupport crsSupport;
+    private final FeaturesCoreProviders providers;
 
-    public QueryParameterFilterCrs(@Requires CrsSupport crsSupport) {
+    public QueryParameterFilterCrs(@Requires CrsSupport crsSupport,
+                                   @Requires FeaturesCoreProviders providers) {
         this.crsSupport = crsSupport;
+        this.providers = providers;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).map(FeatureProvider2::supportsQueries).orElse(false);
     }
 
     @Override
@@ -68,10 +78,10 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
         return "Specify which of the supported CRSs to use to encode geometric values in a filter expression (parameter 'filter'). Default is WGS84 longitude/latitude.";
     }
 
-    private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<Integer, ConcurrentMap<String,Schema<?>>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -93,7 +103,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -101,7 +111,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
             // always support both default CRSs
             String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
-                .map(ImmutableEpsgCrs::toUriString)
+                .map(EpsgCrs::toUriString)
                 .orElse(CRS84);
             ImmutableList.Builder<String> crsListBuilder = new ImmutableList.Builder<>();
             List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))

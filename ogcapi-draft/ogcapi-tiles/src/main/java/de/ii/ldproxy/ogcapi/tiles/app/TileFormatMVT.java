@@ -35,7 +35,8 @@ import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
-import de.ii.xtraplatform.cql.domain.Intersects;
+import de.ii.xtraplatform.cql.domain.SpatialOperation;
+import de.ii.xtraplatform.cql.domain.SpatialOperator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -235,7 +236,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
         } catch (CrsTransformationException e) {
             // ignore
         }
-        CqlPredicate spatialPredicate = CqlPredicate.of(Intersects.of(filterableFields.get(PARAMETER_BBOX), bbox));
+        CqlPredicate spatialPredicate = CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, filterableFields.get(PARAMETER_BBOX), bbox));
         if (predefFilter != null || !filters.isEmpty()) {
             Optional<CqlFilter> otherFilter = Optional.empty();
             Optional<CqlFilter> configFilter = Optional.empty();
@@ -245,7 +246,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                         .map(NameValuePair::getValue)
                         .findFirst();
                 Cql.Format cqlFormat = Cql.Format.TEXT;
-                if (filterLang.isPresent() && "cql-json".equals(filterLang.get())) {
+                if (filterLang.isPresent() && "cql2-json".equals(filterLang.get())) {
                     cqlFormat = Cql.Format.JSON;
                 }
                 otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat);
