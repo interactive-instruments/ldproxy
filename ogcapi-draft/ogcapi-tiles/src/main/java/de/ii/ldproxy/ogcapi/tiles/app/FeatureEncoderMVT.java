@@ -47,14 +47,11 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
   private final TileMatrixSet tileMatrixSet;
   private final VectorTileEncoder tileEncoder;
   private final AffineTransformation affineTransformation;
-  private final double maxRelativeAreaChangeInPolygonRepair;
-  private final double maxAbsoluteAreaChangeInPolygonRepair;
   private final double minimumSizeInPixel;
   private final String layerName;
   private final List<String> properties;
   private final boolean allProperties;
   private final PrecisionModel tilePrecisionModel;
-  private final GeometryPrecisionReducer reducer;
   private final GeometryFactory geometryFactoryTile;
   private final GeometryFactory geometryFactoryWorld;
   private final Polygon clipGeometry;
@@ -66,8 +63,6 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
   private long processingStart;
   private Long featureStart = null;
   private long featureCount = 0;
-  private long featureDuration = 0;
-  private long returned = 0;
   private long written = 0;
 
   public FeatureEncoderMVT(FeatureTransformationContextTiles encodingContext) {
@@ -78,14 +73,11 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
     this.tileMatrixSet = tile.getTileMatrixSet();
     this.tileEncoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
     this.affineTransformation = tile.createTransformNativeToTile();
-    this.maxRelativeAreaChangeInPolygonRepair = tilesConfiguration.getMaxRelativeAreaChangeInPolygonRepairDerived();
-    this.maxAbsoluteAreaChangeInPolygonRepair = tilesConfiguration.getMaxAbsoluteAreaChangeInPolygonRepairDerived();
     this.minimumSizeInPixel = tilesConfiguration.getMinimumSizeInPixelDerived();
     this.layerName = Objects.requireNonNullElse(collectionId, "layer");
     this.properties = encodingContext.getFields();
     this.allProperties = properties.contains("*");
     this.tilePrecisionModel = new PrecisionModel((double)tileMatrixSet.getTileExtent() / (double)tileMatrixSet.getTileSize());
-    this.reducer = new GeometryPrecisionReducer(tilePrecisionModel);
     this.geometryFactoryTile = new GeometryFactory(tilePrecisionModel);
     this.geometryFactoryWorld = new GeometryFactory();
 
@@ -131,6 +123,10 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
 
   @Override
   public void onFeature(FeatureMVT feature) {
+    if (Objects.isNull(featureStart))
+      featureStart = System.nanoTime();
+    featureCount++;
+
     Optional<Geometry> featureGeometry = feature.getJtsGeometry(geometryFactoryWorld);
 
     if (featureGeometry.isEmpty()) {
@@ -217,9 +213,17 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
       long transformerDuration = (System.nanoTime() - transformerStart) / 1000000;
       long processingDuration = (System.nanoTime() - processingStart) / 1000000;
       int kiloBytes = mvt.length/1024;
-      String text = String.format("Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
-          collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), context.metadata().getNumberReturned().orElse(0), written,
-          transformerDuration, processingDuration, featureDuration / 1000000, featureCount == 0 ? 0 : featureDuration / featureCount / 1000000, mergerDuration, encoderDuration, kiloBytes);
+      String text;
+      if (Objects.nonNull(featureStart)) {
+        long featureDuration = (System.nanoTime() - featureStart) / 1000000;
+        text = String.format("Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
+                             collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), context.metadata().getNumberReturned().orElse(0), written,
+                             transformerDuration, processingDuration, featureDuration, featureCount == 0 ? 0 : featureDuration / featureCount, mergerDuration, encoderDuration, kiloBytes);
+      } else {
+        text = String.format("Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, encoding: %dms, size: %dkB.",
+                             collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), context.metadata().getNumberReturned().orElse(0), written,
+                             transformerDuration, processingDuration, encoderDuration, kiloBytes);
+      }
       if (processingDuration > 200 || kiloBytes > 50)
         LOGGER.debug(text);
       else
