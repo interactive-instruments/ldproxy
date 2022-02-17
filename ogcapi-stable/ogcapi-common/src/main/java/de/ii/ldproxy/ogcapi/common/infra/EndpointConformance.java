@@ -8,6 +8,16 @@
 package de.ii.ldproxy.ogcapi.common.infra;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputConformance;
 import de.ii.ldproxy.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;

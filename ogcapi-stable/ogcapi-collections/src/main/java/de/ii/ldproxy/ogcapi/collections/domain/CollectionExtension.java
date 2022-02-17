@@ -8,6 +8,11 @@
 package de.ii.ldproxy.ogcapi.collections.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ContentExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.domain.*;
 
 import java.util.List;

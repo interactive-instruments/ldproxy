@@ -8,11 +8,10 @@
 package de.ii.ldproxy.ogcapi.crs.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 
-import java.util.List;
 import java.util.Set;
 
 @Value.Immutable

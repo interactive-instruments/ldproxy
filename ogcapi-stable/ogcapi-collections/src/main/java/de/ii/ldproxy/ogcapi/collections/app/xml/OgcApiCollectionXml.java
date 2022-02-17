@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.collections.app.xml;
 
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;

@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.domain;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiResource;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiResource;
 import org.immutables.value.Value;
 
 /**

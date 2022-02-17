@@ -9,6 +9,11 @@ package de.ii.ldproxy.ogcapi.crs.app;
 
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;

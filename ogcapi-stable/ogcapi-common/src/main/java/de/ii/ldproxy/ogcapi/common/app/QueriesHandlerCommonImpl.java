@@ -8,6 +8,19 @@
 package de.ii.ldproxy.ogcapi.common.app;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Metadata;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueryIdentifier;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ldproxy.ogcapi.common.domain.*;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;

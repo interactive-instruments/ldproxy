@@ -7,10 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.html.domain
 
-import de.ii.ldproxy.ogcapi.domain.AbstractExtensionConfigurationSpec
-import de.ii.ldproxy.ogcapi.domain.MergeBase
-import de.ii.ldproxy.ogcapi.domain.MergeMinimal
-import de.ii.ldproxy.ogcapi.domain.MergeSimple
+import de.ii.ldproxy.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeBase
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeMinimal
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeSimple
 
 @SuppressWarnings('ClashingTraitMethods')
 class HtmlConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<HtmlConfiguration>, MergeMinimal<HtmlConfiguration>, MergeSimple<HtmlConfiguration> {

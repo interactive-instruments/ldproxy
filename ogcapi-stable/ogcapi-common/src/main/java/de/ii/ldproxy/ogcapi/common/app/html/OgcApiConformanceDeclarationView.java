@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.common.app.html;
 
 import com.google.common.base.Charsets;
-import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;

@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.common.app.html;
 
 import com.google.common.base.Charsets;
-import de.ii.ldproxy.ogcapi.domain.ApiErrorMessage;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiErrorMessage;
 import io.dropwizard.views.View;
 
 public class OgcApiErrorView extends View {

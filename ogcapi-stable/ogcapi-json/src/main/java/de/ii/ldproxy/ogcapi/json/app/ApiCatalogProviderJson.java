@@ -7,11 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.json.app;
 
-import de.ii.ldproxy.ogcapi.domain.ApiCatalog;
-import de.ii.ldproxy.ogcapi.domain.ApiCatalogProvider;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalog;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalogProvider;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
 import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.services.domain.ServiceData;

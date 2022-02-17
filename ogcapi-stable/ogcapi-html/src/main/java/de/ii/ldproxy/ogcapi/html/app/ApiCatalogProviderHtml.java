@@ -7,7 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.html.app;
 
-import com.google.common.io.Resources;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalog;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalogProvider;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.ImmutableHtmlConfiguration;
@@ -22,10 +27,8 @@ import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;

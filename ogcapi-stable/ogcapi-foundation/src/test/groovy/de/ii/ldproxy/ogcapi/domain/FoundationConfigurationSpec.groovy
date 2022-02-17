@@ -7,6 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.domain
 
+import de.ii.ldproxy.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
+import de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeBase
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeMinimal
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeSimple
+
 @SuppressWarnings('ClashingTraitMethods')
 class FoundationConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<FoundationConfiguration>, MergeMinimal<FoundationConfiguration>, MergeSimple<FoundationConfiguration> {
     @Override

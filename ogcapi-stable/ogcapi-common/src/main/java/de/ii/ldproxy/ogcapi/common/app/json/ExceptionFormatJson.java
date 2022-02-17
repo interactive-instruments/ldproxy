@@ -7,9 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.common.app.json;
 
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.domain.ApiErrorMessage;
-import de.ii.ldproxy.ogcapi.domain.ExceptionFormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiErrorMessage;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExceptionFormatExtension;
 import io.dropwizard.jersey.errors.ErrorEntityWriter;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;

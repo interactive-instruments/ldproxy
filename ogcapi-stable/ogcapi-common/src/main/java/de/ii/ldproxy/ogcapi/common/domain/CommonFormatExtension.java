@@ -8,6 +8,8 @@
 package de.ii.ldproxy.ogcapi.common.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.*;
 
 @AutoMultiBind

@@ -10,16 +10,12 @@ package de.ii.ldproxy.ogcapi.common.domain;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import com.google.common.hash.PrimitiveSink;
-import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable

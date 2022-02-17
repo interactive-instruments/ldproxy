@@ -8,12 +8,7 @@
 package de.ii.ldproxy.ogcapi.common.domain;
 
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.Objects;
 import java.util.Optional;
 
 public class OgcApiExtent {

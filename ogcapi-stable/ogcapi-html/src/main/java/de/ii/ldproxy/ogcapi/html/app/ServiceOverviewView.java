@@ -9,9 +9,9 @@ package de.ii.ldproxy.ogcapi.html.app;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ApiCatalog;
-import de.ii.ldproxy.ogcapi.domain.ApiCatalogEntry;
-import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalog;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalogEntry;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;

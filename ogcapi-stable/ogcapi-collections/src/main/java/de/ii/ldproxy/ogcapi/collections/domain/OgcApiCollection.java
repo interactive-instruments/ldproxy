@@ -11,8 +11,8 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;

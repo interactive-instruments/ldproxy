@@ -8,12 +8,18 @@
 package de.ii.ldproxy.ogcapi.crs.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -30,7 +36,8 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 @Provides
 @Instantiate
-public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
+public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcApiQueryParameter,
+    ConformanceClass {
 
     public static final String CRS = "crs";
     public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
@@ -93,7 +100,8 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
     }
 
     @Override
-    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+    public ImmutableFeatureQuery.Builder transformQuery(
+        FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDataV2 apiData) {
 

@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.common.app.xml;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.domain.xml.OgcApiXml;
-import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;

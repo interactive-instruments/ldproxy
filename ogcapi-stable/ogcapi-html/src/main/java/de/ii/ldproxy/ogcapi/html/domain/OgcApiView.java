@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.html.domain;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import io.dropwizard.views.View;
 
 import javax.annotation.Nullable;
