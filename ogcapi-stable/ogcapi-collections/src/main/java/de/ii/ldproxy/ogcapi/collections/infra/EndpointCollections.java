@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.QueriesHandlerCollections;
@@ -35,19 +36,16 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointCollections extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollections.class);
@@ -55,8 +53,9 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
 
     private final QueriesHandlerCollections queryHandler;
 
-    public EndpointCollections(@Requires ExtensionRegistry extensionRegistry,
-                               @Requires QueriesHandlerCollections queryHandler) {
+    @Inject
+    public EndpointCollections(ExtensionRegistry extensionRegistry,
+                               QueriesHandlerCollections queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app.html;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -23,18 +24,15 @@ import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Optional;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CollectionsFormatHtml implements CollectionsFormatExtension, ConformanceClass {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -46,7 +44,8 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
     private final I18n i18n;
     private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    public CollectionsFormatHtml(@Requires I18n i18n) {
+    @Inject
+    public CollectionsFormatHtml(I18n i18n) {
         this.i18n = i18n;
     }
 

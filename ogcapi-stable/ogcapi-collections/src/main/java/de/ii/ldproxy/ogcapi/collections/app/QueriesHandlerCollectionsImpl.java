@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
@@ -29,10 +30,8 @@ import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.immutables.value.Value;
 
 import javax.ws.rs.NotAcceptableException;
@@ -46,9 +45,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections {
 
     private final I18n i18n;
@@ -71,8 +69,8 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
     private final ExtensionRegistry extensionRegistry;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
-
-    public QueriesHandlerCollectionsImpl(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    @Inject
+    public QueriesHandlerCollectionsImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
         this.queryHandlers = ImmutableMap.of(

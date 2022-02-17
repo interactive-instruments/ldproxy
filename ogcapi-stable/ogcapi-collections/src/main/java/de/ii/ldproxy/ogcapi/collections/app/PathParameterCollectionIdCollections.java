@@ -7,16 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class PathParameterCollectionIdCollections extends AbstractPathParameterCollectionId {
+
+    @Inject
+    public PathParameterCollectionIdCollections() {
+    }
 
     @Override
     public String getId() {

@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app;
 
-import com.google.common.collect.ImmutableList;
+import wcom.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;

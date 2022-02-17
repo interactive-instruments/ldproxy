@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -22,26 +23,24 @@ import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CollectionsOnLandingPage implements LandingPageExtension {
 
     private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
 
-    public CollectionsOnLandingPage(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    @Inject
+    public CollectionsOnLandingPage(ExtensionRegistry extensionRegistry, I18n i18n) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
     }

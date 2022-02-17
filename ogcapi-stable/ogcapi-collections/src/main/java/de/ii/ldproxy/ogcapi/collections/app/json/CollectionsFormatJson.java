@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app.json;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -20,20 +21,17 @@ import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CollectionsFormatJson implements CollectionsFormatExtension, ConformanceClass {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -47,7 +45,8 @@ public class CollectionsFormatJson implements CollectionsFormatExtension, Confor
     private final Schema schemaCollection;
     public final static String SCHEMA_REF_COLLECTION = "#/components/schemas/Collection";
 
-    public CollectionsFormatJson(@Requires SchemaGenerator schemaGenerator) {
+    @Inject
+    public CollectionsFormatJson(SchemaGenerator schemaGenerator) {
         schemaCollections = schemaGenerator.getSchema(Collections.class);
         schemaCollection = schemaGenerator.getSchema(OgcApiCollection.class);
     }

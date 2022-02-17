@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.app.xml;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -18,18 +19,16 @@ import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.domain.*;
 import io.swagger.v3.oas.models.media.ObjectSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import javax.ws.rs.core.MediaType;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CollectionsFormatXml implements CollectionsFormatExtension {
 
     private static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -37,6 +36,10 @@ public class CollectionsFormatXml implements CollectionsFormatExtension {
             .label("XML")
             .parameter("xml")
             .build();
+
+    @Inject
+    public CollectionsFormatXml() {
+    }
 
     @Override
     public ApiMediaType getMediaType() {
