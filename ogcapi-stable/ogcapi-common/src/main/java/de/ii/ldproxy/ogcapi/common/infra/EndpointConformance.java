@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
@@ -27,10 +28,8 @@ import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,9 +40,8 @@ import java.util.List;
 import java.util.Optional;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointConformance extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointConformance.class);
@@ -52,8 +50,9 @@ public class EndpointConformance extends Endpoint {
 
     private final QueriesHandlerCommon queryHandler;
 
-    public EndpointConformance(@Requires ExtensionRegistry extensionRegistry,
-                               @Requires QueriesHandlerCommon queryHandler) {
+    @Inject
+    public EndpointConformance(ExtensionRegistry extensionRegistry,
+                               QueriesHandlerCommon queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.QueriesHandlerCommon;
@@ -36,20 +37,17 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointLandingPage extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLandingPage.class);
@@ -57,8 +55,9 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
 
     private final QueriesHandlerCommon queryHandler;
 
-    public EndpointLandingPage(@Requires ExtensionRegistry extensionRegistry,
-                               @Requires QueriesHandlerCommon queryHandler) {
+    @Inject
+    public EndpointLandingPage(ExtensionRegistry extensionRegistry,
+                               QueriesHandlerCommon queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.app.html;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
@@ -15,22 +16,20 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ApiErrorMessage;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExceptionFormatExtension;
 import io.dropwizard.jersey.errors.ErrorEntityWriter;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import javax.ws.rs.core.MediaType;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class ExceptionFormatHtml extends ErrorEntityWriter<ApiErrorMessage, OgcApiErrorView> implements ExceptionFormatExtension {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
             .build();
 
-
+    @Inject
     public ExceptionFormatHtml() {
         super(MediaType.TEXT_HTML_TYPE, OgcApiErrorView.class);
     }

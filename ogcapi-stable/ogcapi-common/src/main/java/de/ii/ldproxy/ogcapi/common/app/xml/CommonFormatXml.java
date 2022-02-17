@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.app.xml;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -17,18 +18,16 @@ import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage;
 import de.ii.ldproxy.ogcapi.domain.*;
 import io.swagger.v3.oas.models.media.ObjectSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CommonFormatXml implements CommonFormatExtension {
 
     private static final ApiMediaType MEDIA_TYPE = new
@@ -37,6 +36,10 @@ public class CommonFormatXml implements CommonFormatExtension {
             .label("XML")
             .parameter("xml")
             .build();
+
+    @Inject
+    public CommonFormatXml() {
+    }
 
     @Override
     public ApiMediaType getMediaType() {

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.app.json;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -21,10 +22,8 @@ import de.ii.ldproxy.ogcapi.common.domain.LandingPage;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -34,9 +33,8 @@ import java.util.stream.Collectors;
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CommonFormatJson implements CommonFormatExtension, ConformanceClass {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -50,7 +48,8 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
     private final Schema schemaConformance;
     public final static String SCHEMA_REF_CONFORMANCE = "#/components/schemas/ConformanceDeclaration";
 
-    public CommonFormatJson(@Requires SchemaGenerator schemaGenerator) {
+    @Inject
+    public CommonFormatJson(SchemaGenerator schemaGenerator) {
         schemaLandingPage = schemaGenerator.getSchema(LandingPage.class);
         schemaConformance = schemaGenerator.getSchema(ConformanceDeclaration.class);
     }

@@ -7,20 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class QueryParameterFCommon extends QueryParameterF {
 
-    public QueryParameterFCommon(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public QueryParameterFCommon(ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 

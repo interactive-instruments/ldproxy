@@ -7,23 +7,18 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityCommon implements ApiBuildingBlock {
 
-    private final ExtensionRegistry extensionRegistry;
-
-    public CapabilityCommon(@Requires ExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+    @Inject
+    public CapabilityCommon() {
     }
 
     @Override

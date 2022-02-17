@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.app.json;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
@@ -18,16 +19,14 @@ import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import java.math.BigDecimal;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class ExceptionFormatJson extends ErrorEntityWriter<ApiErrorMessage, ApiErrorMessage> implements ExceptionFormatExtension {
 
     private final Schema schema;
@@ -39,6 +38,7 @@ public class ExceptionFormatJson extends ErrorEntityWriter<ApiErrorMessage, ApiE
             .fileExtension("json")
             .build();
 
+    @Inject
     public ExceptionFormatJson() {
         super(MEDIA_TYPE.type(), ApiErrorMessage.class);
         // cannot yet use SchemaGenerator to generate the schema from the ApiErrorMessage class, so we generate the schema manually
