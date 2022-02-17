@@ -7,31 +7,29 @@
  */
 package de.ii.ldproxy.ogcapi.features.html.app;
 
-import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.xtraplatform.base.domain.AppContext;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 //TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be moved to community
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class QueryParameterBareHtml extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final Schema schema = new BooleanSchema()._default(false);
     private final boolean allowDebug;
 
-    public QueryParameterBareHtml(@Requires XtraPlatform xtraPlatform) {
-        this.allowDebug = xtraPlatform.isDevEnv();
+    @Inject
+    public QueryParameterBareHtml(AppContext appContext) {
+        this.allowDebug = appContext.isDevEnv();
     }
 
     @Override

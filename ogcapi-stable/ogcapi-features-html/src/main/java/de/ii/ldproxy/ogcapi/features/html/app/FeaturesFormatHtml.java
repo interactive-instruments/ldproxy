@@ -9,20 +9,9 @@ package de.ii.ldproxy.ogcapi.features.html.app;
 
 import static de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi.DEFAULT_FLATTENING_SEPARATOR;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.Metadata;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -30,13 +19,21 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Metadata;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
-import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
@@ -47,8 +44,9 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import de.ii.xtraplatform.streams.domain.Http;
-import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
+import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import de.ii.xtraplatform.web.domain.Dropwizard;
+import de.ii.xtraplatform.web.domain.MustacheRenderer;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
@@ -66,15 +64,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtension {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -95,22 +89,20 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
     private final Dropwizard dropwizard;
     private final EntityRegistry entityRegistry;
-    private final Http http;
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
     private final FeaturesCoreValidation featuresCoreValidator;
-    private final XtraPlatform xtraPlatform;
+    private final AppContext appContext;
 
-    public FeaturesFormatHtml(@Requires Dropwizard dropwizard, @Requires EntityRegistry entityRegistry,
-                              @Requires Http http, @Requires I18n i18n, @Requires FeaturesCoreProviders providers,
-                              @Requires FeaturesCoreValidation featuresCoreValidator, @Requires XtraPlatform xtraPlatform) {
+    public FeaturesFormatHtml(Dropwizard dropwizard, EntityRegistry entityRegistry,
+                              I18n i18n, FeaturesCoreProviders providers,
+                              FeaturesCoreValidation featuresCoreValidator, AppContext appContext) {
         this.dropwizard = dropwizard;
         this.entityRegistry = entityRegistry;
-        this.http = http;
         this.i18n = i18n;
         this.providers = providers;
         this.featuresCoreValidator = featuresCoreValidator;
-        this.xtraPlatform = xtraPlatform;
+        this.appContext = appContext;
     }
 
     @Override
@@ -312,7 +304,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
                                              .orElse(MapClient.Type.MAP_LIBRE);
-        String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
+        String serviceUrl = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
         String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(config.map(FeaturesHtmlConfiguration::getStyle), Optional.of(featureType.getId()), serviceUrl))
                                     .orElse(null);
         boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
@@ -369,7 +361,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
                                              .orElse(MapClient.Type.MAP_LIBRE);
-        String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
+        String serviceUrl = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
         String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(config.map(FeaturesHtmlConfiguration::getStyle), Optional.of(featureType.getId()), serviceUrl))
                                     .orElse(null);
         boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
