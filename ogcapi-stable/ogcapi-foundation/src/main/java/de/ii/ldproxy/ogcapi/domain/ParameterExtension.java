@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.base.Splitter;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaValidatorImpl;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@AutoMultiBind
 public interface ParameterExtension extends ApiExtension {
 
     Schema SCHEMA = new StringSchema();

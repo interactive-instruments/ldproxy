@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.infra.json.SchemaValidatorImpl;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+@AutoMultiBind
 public interface ApiHeader extends ApiExtension {
 
     Schema SCHEMA = new StringSchema();

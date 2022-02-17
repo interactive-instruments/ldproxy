@@ -7,12 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.collections.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
+@AutoMultiBind
 public interface CollectionsFormatExtension extends GenericFormatExtension {
 
     @Override

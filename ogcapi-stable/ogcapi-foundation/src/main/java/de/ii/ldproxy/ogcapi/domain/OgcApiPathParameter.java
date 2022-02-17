@@ -7,9 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import java.util.List;
 import java.util.Optional;
 
+@AutoMultiBind
 public interface OgcApiPathParameter extends ParameterExtension {
     default boolean getExplodeInOpenApi(OgcApiDataV2 apiData) { return false; }
     List<String> getValues(OgcApiDataV2 apiData);

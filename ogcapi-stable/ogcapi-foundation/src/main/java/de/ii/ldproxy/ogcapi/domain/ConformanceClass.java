@@ -8,8 +8,10 @@
 package de.ii.ldproxy.ogcapi.domain;
 
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import java.util.List;
 
+@AutoMultiBind
 public interface ConformanceClass extends ApiExtension {
     List<String> getConformanceClassUris(OgcApiDataV2 apiData);
 }

@@ -7,9 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import java.util.Optional;
 import java.util.Set;
 
+@AutoMultiBind
 public interface OgcApiQueryParameter extends ParameterExtension {
 
     default String getStyle() { return "form"; }

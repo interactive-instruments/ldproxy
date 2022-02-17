@@ -7,11 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+@AutoMultiBind
 public interface ApiExtension {
 
   default boolean isEnabledForApi(OgcApiDataV2 apiData) {

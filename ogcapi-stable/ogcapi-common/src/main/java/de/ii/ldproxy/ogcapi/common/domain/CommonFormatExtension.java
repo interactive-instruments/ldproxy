@@ -7,8 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.domain.*;
 
+@AutoMultiBind
 public interface CommonFormatExtension extends GenericFormatExtension {
 
     /*

@@ -7,9 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.xtraplatform.services.domain.ServiceBackgroundTask;
 
 
+@AutoMultiBind
 public interface OgcApiBackgroundTask extends ApiExtension, ServiceBackgroundTask<OgcApi> {
 
 }

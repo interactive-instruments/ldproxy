@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.xtraplatform.auth.domain.User;
@@ -21,6 +22,7 @@ import java.util.Optional;
 
 import static de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition.SORT_PRIORITY_DUMMY;
 
+@AutoMultiBind
 public interface EndpointExtension extends ApiExtension {
 
     ApiEndpointDefinition DEFAULT_DEFINITION = new ImmutableApiEndpointDefinition.Builder()

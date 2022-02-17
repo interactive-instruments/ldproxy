@@ -7,10 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+@AutoMultiBind
 public interface ApiCatalogExtension extends ContentExtension {
 
     ImmutableApiCatalog.Builder process(ImmutableApiCatalog.Builder apiCatalogBuilder,

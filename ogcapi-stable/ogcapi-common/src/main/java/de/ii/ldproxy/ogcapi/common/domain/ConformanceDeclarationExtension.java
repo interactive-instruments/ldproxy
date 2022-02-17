@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ContentExtension;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+@AutoMultiBind
 public interface ConformanceDeclarationExtension extends ContentExtension {
 
     ImmutableConformanceDeclaration.Builder process(ImmutableConformanceDeclaration.Builder conformanceDeclarationBuilder,

@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
+
+@AutoMultiBind
 public interface ExceptionFormatExtension extends FormatExtension {
 
     @Override

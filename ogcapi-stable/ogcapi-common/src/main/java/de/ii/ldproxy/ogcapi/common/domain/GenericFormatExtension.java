@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
@@ -16,6 +17,7 @@ import de.ii.ldproxy.ogcapi.xml.domain.XmlConfiguration;
 
 import java.util.Map;
 
+@AutoMultiBind
 public interface GenericFormatExtension extends FormatExtension {
 
     Map<String, Class<? extends ExtensionConfiguration>> FORMAT_MAP =

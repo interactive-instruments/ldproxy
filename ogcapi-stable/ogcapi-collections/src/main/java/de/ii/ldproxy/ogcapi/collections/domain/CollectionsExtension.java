@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ContentExtension;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+@AutoMultiBind
 public interface CollectionsExtension extends ContentExtension {
 
     ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder,
