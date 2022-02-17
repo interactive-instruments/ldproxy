@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
@@ -18,25 +19,23 @@ import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class LandingPageExtensionOpenApi implements LandingPageExtension {
 
     private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
 
-    public LandingPageExtensionOpenApi(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    @Inject
+    public LandingPageExtensionOpenApi(ExtensionRegistry extensionRegistry, I18n i18n) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
     }

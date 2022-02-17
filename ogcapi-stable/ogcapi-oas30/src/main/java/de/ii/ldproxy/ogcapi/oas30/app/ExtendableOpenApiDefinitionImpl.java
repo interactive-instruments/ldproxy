@@ -7,15 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.Metadata;
-import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.Metadata;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension;
-import de.ii.xtraplatform.runtime.domain.AuthConfig;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.base.domain.AuthConfig;
+import de.ii.xtraplatform.base.domain.AppContext;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -24,11 +26,9 @@ import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.felix.ipojo.annotations.*;
-import org.apache.felix.ipojo.whiteboard.Wbp;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,31 +39,18 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 
-@Component
-@Provides
-@Instantiate
-@Wbp(
-        filter = "(objectClass=de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension)",
-        onArrival = "onArrival",
-        onDeparture = "onDeparture")
+@Singleton
+@AutoBind
 public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinition {
 
     private static Logger LOGGER = LoggerFactory.getLogger(ExtendableOpenApiDefinitionImpl.class);
 
-    private final BundleContext bundleContext;
     private final AuthConfig authConfig;
-    private Set<OpenApiExtension> openApiExtensions;
+    private final ExtensionRegistry extensionRegistry;
 
-    public ExtendableOpenApiDefinitionImpl(@Requires XtraPlatform xtraPlatform, @Context BundleContext bundleContext) {
-        this.authConfig = xtraPlatform.getConfiguration().auth;
-        this.bundleContext = bundleContext;
-    }
-
-    private Set<OpenApiExtension> getOpenApiExtensions() {
-        if (Objects.isNull(openApiExtensions)) {
-            this.openApiExtensions = new TreeSet<>(Comparator.comparingInt(OpenApiExtension::getSortPriority));
-        }
-        return openApiExtensions;
+    @Inject
+    public ExtendableOpenApiDefinitionImpl(AppContext appContext, ExtensionRegistry extensionRegistry) {
+        this.authConfig = appContext.getConfiguration().auth;
     }
 
     @Override
@@ -131,7 +118,8 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
             // TODO update with examples and details (f enums, lang enums, etc.)
 
-            getOpenApiExtensions().stream()
+            extensionRegistry.getExtensionsForType(OpenApiExtension.class)
+                .stream()
                     .sorted(Comparator.comparing(OpenApiExtension::getSortPriority))
                     .forEachOrdered(openApiExtension -> openApiExtension.process(openAPI, apiData));
 
@@ -154,20 +142,4 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
             throw new RuntimeException("OpenAPI document could not be created", e);
         }
     }
-
-    private synchronized void onArrival(ServiceReference<OpenApiExtension> ref) {
-        final OpenApiExtension openApiExtension = bundleContext.getService(ref);
-
-        getOpenApiExtensions().add(openApiExtension);
-    }
-
-    private synchronized void onDeparture(ServiceReference<OpenApiExtension> ref) {
-        final OpenApiExtension openApiExtension = bundleContext.getService(ref);
-
-        if (Objects.nonNull(openApiExtension)) {
-            getOpenApiExtensions().remove(openApiExtension);
-        }
-    }
-
-
 }

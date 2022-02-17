@@ -7,21 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import de.ii.xtraplatform.openapi.domain.OpenApiViewerResource;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,9 +23,8 @@ import javax.ws.rs.core.Response;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class OpenApiHtml implements ApiDefinitionFormatExtension {
 
     private static Logger LOGGER = LoggerFactory.getLogger(OpenApiHtml.class);
@@ -45,8 +37,9 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
     private final ExtendableOpenApiDefinition openApiDefinition;
     private final OpenApiViewerResource openApiViewerResource;
 
-    public OpenApiHtml(@Requires ExtendableOpenApiDefinition openApiDefinition,
-                       @Requires(optional = true) OpenApiViewerResource openApiViewerResource) {
+    @Inject
+    public OpenApiHtml(ExtendableOpenApiDefinition openApiDefinition,
+                       OpenApiViewerResource openApiViewerResource) {
         this.openApiDefinition = openApiDefinition;
         this.openApiViewerResource = openApiViewerResource;
     }

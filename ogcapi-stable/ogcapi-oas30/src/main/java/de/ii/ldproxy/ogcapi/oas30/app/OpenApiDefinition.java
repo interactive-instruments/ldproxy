@@ -7,25 +7,24 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Comparator;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class OpenApiDefinition implements OpenApiExtension {
 
     private final ExtensionRegistry extensionRegistry;
 
-    public OpenApiDefinition(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public OpenApiDefinition(ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 

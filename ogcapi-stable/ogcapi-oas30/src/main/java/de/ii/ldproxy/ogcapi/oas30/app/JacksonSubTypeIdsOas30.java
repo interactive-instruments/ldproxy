@@ -7,22 +7,24 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
-import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 
 import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class JacksonSubTypeIdsOas30 implements JacksonSubTypeIds {
+
+    @Inject
+    JacksonSubTypeIdsOas30() {
+    }
+
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()

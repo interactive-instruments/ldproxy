@@ -7,25 +7,28 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointOpenApi implements ConformanceClass {
 
     private static Logger LOGGER = LoggerFactory.getLogger(EndpointOpenApi.class);
+
+    @Inject
+    EndpointOpenApi() {
+    }
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {

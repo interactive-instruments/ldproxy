@@ -7,15 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import io.swagger.v3.oas.models.media.ObjectSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,9 +22,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class OpenApiYaml implements ApiDefinitionFormatExtension {
 
     private static Logger LOGGER = LoggerFactory.getLogger(OpenApiYaml.class);
@@ -37,7 +35,8 @@ public class OpenApiYaml implements ApiDefinitionFormatExtension {
 
     private final ExtendableOpenApiDefinition openApiDefinition;
 
-    public OpenApiYaml(@Requires ExtendableOpenApiDefinition openApiDefinition) {
+    @Inject
+    public OpenApiYaml(ExtendableOpenApiDefinition openApiDefinition) {
         this.openApiDefinition = openApiDefinition;
     }
 

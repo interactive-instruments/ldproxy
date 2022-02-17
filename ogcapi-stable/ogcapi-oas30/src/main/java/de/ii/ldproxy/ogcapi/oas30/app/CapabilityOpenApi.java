@@ -7,18 +7,21 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
-import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.oas30.domain.ImmutableOas30Configuration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityOpenApi implements ApiBuildingBlock {
+
+    @Inject
+    CapabilityOpenApi() {
+    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
