@@ -7,40 +7,36 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class GeojsonDataHydrator implements OgcApiDataHydratorExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GeojsonDataHydrator.class);
 
     private final FeaturesCoreProviders providers;
 
-    public GeojsonDataHydrator(@Requires FeaturesCoreProviders providers) {
+    @Inject
+    public GeojsonDataHydrator(FeaturesCoreProviders providers) {
         this.providers = providers;
     }
 

@@ -7,21 +7,24 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
-import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityGeoJson implements ApiBuildingBlock {
+
+    @Inject
+    CapabilityGeoJson() {
+    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {

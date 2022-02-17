@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
-import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.consumerMayThrow;
+import static de.ii.xtraplatform.base.domain.util.LambdaWithException.consumerMayThrow;
 
 import com.google.common.collect.ImmutableCollection;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;

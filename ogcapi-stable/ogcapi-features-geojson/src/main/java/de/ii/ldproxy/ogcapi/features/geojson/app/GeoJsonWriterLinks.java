@@ -8,38 +8,33 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureLinksGenerator;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import java.io.IOException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class GeoJsonWriterLinks implements GeoJsonWriter {
+
+    @Inject
+    public GeoJsonWriterLinks() {
+    }
 
     @Override
     public GeoJsonWriterLinks create() {

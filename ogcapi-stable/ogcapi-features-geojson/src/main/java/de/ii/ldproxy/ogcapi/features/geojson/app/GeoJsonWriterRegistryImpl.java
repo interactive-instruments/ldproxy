@@ -7,61 +7,32 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
+import dagger.Lazy;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.whiteboard.Wbp;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
-@Wbp(
-        filter = "(objectClass=de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter)",
-        onArrival = "onArrival",
-        onDeparture = "onDeparture")
+@Singleton
+@AutoBind
 public class GeoJsonWriterRegistryImpl implements GeoJsonWriterRegistry {
 
-    private final BundleContext bundleContext;
-    private final List<GeoJsonWriter> geoJsonWriters;
+    private final Lazy<Set<GeoJsonWriter>> geoJsonWriters;
 
-    public GeoJsonWriterRegistryImpl(@Context BundleContext bundleContext) {
-        this.geoJsonWriters = new ArrayList<>();
-        this.bundleContext = bundleContext;
+    @Inject
+    public GeoJsonWriterRegistryImpl(Lazy<Set<GeoJsonWriter>> geoJsonWriters) {
+        this.geoJsonWriters = geoJsonWriters;
     }
 
     @Override
     public List<GeoJsonWriter> getGeoJsonWriters() {
-        return geoJsonWriters;
-    }
-
-    private synchronized void onArrival(ServiceReference<GeoJsonWriter> ref) {
-        try {
-            final GeoJsonWriter geoJsonWriter = bundleContext.getService(ref);
-
-            geoJsonWriters.add(geoJsonWriter);
-        } catch (Throwable e) {
-            //LOGGER.error("E", e);
-        }
-    }
-
-    private synchronized void onDeparture(ServiceReference<GeoJsonWriter> ref) {
-        final GeoJsonWriter geoJsonWriter = bundleContext.getService(ref);
-
-        if (Objects.nonNull(geoJsonWriter)) {
-
-            geoJsonWriters.remove(geoJsonWriter);
-        }
+        return ImmutableList.copyOf(geoJsonWriters.get());
     }
 }

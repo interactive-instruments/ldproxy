@@ -7,19 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -31,6 +23,13 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -52,18 +51,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExtension {
 
     private static final String CONFORMANCE_CLASS_FEATURES = "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson";
@@ -86,12 +82,13 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
     private final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
     private final GeoJsonWriterRegistry geoJsonWriterRegistry;
 
-    public FeaturesFormatGeoJson(@Requires FeaturesCoreProviders providers,
-                                 @Requires EntityRegistry entityRegistry,
-                                 @Requires FeaturesCoreValidation featuresCoreValidator,
-                                 @Requires SchemaGeneratorOpenApi schemaGeneratorFeature,
-                                 @Requires SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-                                 @Requires GeoJsonWriterRegistry geoJsonWriterRegistry) {
+    @Inject
+    public FeaturesFormatGeoJson(FeaturesCoreProviders providers,
+                                 EntityRegistry entityRegistry,
+                                 FeaturesCoreValidation featuresCoreValidator,
+                                 SchemaGeneratorOpenApi schemaGeneratorFeature,
+                                 SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
+                                 GeoJsonWriterRegistry geoJsonWriterRegistry) {
         this.providers = providers;
         this.entityRegistry = entityRegistry;
         this.featuresCoreValidator = featuresCoreValidator;

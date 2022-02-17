@@ -7,25 +7,28 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.OptionalLong;
 import java.util.function.Consumer;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class GeoJsonWriterMetadata implements GeoJsonWriter {
+
+    @Inject
+    public GeoJsonWriterMetadata() {
+    }
 
     @Override
     public GeoJsonWriterMetadata create() {

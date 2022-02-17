@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
@@ -22,22 +23,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
     private final CrsTransformerFactory crsTransformerFactory;
 
-    public GeoJsonWriterGeometry(@Requires CrsTransformerFactory crsTransformerFactory) {
+    @Inject
+    public GeoJsonWriterGeometry(CrsTransformerFactory crsTransformerFactory) {
         this.crsTransformerFactory = crsTransformerFactory;
     }
 

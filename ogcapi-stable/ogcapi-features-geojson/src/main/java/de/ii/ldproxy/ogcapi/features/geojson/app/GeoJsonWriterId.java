@@ -7,34 +7,30 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
-import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
+import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class GeoJsonWriterId implements GeoJsonWriter {
+
+    @Inject
+    public GeoJsonWriterId() {
+    }
 
     @Override
     public GeoJsonWriterId create() {

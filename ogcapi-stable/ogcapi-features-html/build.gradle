@@ -1,4 +1,5 @@
 dependencies {
+    provided project(":ogcapi-foundation")
     provided project(":ogcapi-common")
     provided project(":ogcapi-features-core")
 }

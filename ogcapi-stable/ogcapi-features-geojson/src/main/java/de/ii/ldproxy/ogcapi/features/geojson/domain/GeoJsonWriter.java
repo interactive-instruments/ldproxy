@@ -7,9 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
+
 /**
  * @author zahnen
  */
+@AutoMultiBind
 public interface GeoJsonWriter extends FeatureWriterGeoJson<EncodingAwareContextGeoJson> {
     GeoJsonWriter create();
 }

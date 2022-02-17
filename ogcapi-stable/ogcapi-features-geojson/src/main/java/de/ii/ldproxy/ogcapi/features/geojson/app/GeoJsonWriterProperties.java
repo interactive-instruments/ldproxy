@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -19,24 +20,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class GeoJsonWriterProperties implements GeoJsonWriter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GeoJsonWriterProperties.class);
 
   private boolean currentStarted;
 
+  @Inject
   public GeoJsonWriterProperties() {
   }
 
