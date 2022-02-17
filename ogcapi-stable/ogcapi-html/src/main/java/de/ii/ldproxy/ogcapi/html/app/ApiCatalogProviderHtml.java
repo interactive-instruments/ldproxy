@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.html.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalog;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalogProvider;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
@@ -16,15 +17,15 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.ImmutableHtmlConfiguration;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.Identifier;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
-import org.apache.felix.ipojo.annotations.*;
-import org.osgi.framework.BundleContext;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -33,9 +34,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class ApiCatalogProviderHtml extends ApiCatalogProvider {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -44,8 +44,9 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
             .parameter("html")
             .build();
 
-    public ApiCatalogProviderHtml(@Context BundleContext bundleContext, @Requires XtraPlatform xtraPlatform, @Requires I18n i18n, @Requires EntityDataDefaultsStore defaultsStore, @Requires ExtensionRegistry extensionRegistry) {
-        super(bundleContext, xtraPlatform, i18n, defaultsStore, extensionRegistry);
+    @Inject
+    public ApiCatalogProviderHtml(AppContext appContext, I18n i18n, EntityDataDefaultsStore defaultsStore, ExtensionRegistry extensionRegistry) {
+        super(appContext, i18n, defaultsStore, extensionRegistry);
     }
 
     private HtmlConfiguration getHtmlConfig() {

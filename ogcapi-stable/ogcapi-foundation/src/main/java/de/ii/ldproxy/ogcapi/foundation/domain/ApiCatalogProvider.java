@@ -8,16 +8,13 @@
 package de.ii.ldproxy.ogcapi.foundation.domain;
 
 import com.google.common.base.Splitter;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.services.domain.ServiceListingProvider;
 import de.ii.xtraplatform.store.domain.Identifier;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -31,19 +28,16 @@ import java.util.stream.Collectors;
 
 public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiExtension {
 
-    protected final BundleContext bundleContext;
-    protected final XtraPlatform xtraPlatform;
+    protected final AppContext appContext;
     protected final I18n i18n;
     protected final EntityDataDefaultsStore defaultsStore;
     protected final ExtensionRegistry extensionRegistry;
 
-    public ApiCatalogProvider(@Context BundleContext bundleContext,
-                              @Requires XtraPlatform xtraPlatform,
-                              @Requires I18n i18n,
-                              @Requires EntityDataDefaultsStore defaultsStore,
-                              @Requires ExtensionRegistry extensionRegistry) {
-        this.bundleContext = bundleContext;
-        this.xtraPlatform = xtraPlatform;
+    public ApiCatalogProvider(AppContext appContext,
+                              I18n i18n,
+                              EntityDataDefaultsStore defaultsStore,
+                              ExtensionRegistry extensionRegistry) {
+        this.appContext = appContext;
         this.i18n = i18n;
         this.defaultsStore = defaultsStore;
         this.extensionRegistry = extensionRegistry;
@@ -63,7 +57,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
     public abstract ApiMediaType getApiMediaType();
 
     private Optional<URI> getExternalUri() {
-        return Optional.ofNullable(xtraPlatform.getServicesUri());
+        return Optional.of(appContext.getUri().resolve("rest/services"));
     }
 
     private void customizeUri(final URICustomizer uriCustomizer) {

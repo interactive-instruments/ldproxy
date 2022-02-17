@@ -7,22 +7,25 @@
  */
 package de.ii.ldproxy.ogcapi.html.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
-import de.ii.xtraplatform.dropwizard.domain.PerClassMustacheResolver;
-import de.ii.xtraplatform.dropwizard.domain.PartialMustacheResolver;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import de.ii.xtraplatform.web.domain.PerClassMustacheResolver;
+import de.ii.xtraplatform.web.domain.PartialMustacheResolver;
 
 import java.io.Reader;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  *  Reuse the per class loader, but switch to the HTML module context.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class MustacheResolverFallback extends PerClassMustacheResolver implements PartialMustacheResolver {
+
+    @Inject
+    MustacheResolverFallback() {
+    }
 
     // TODO sortPriority is higher than PerClassMustacheResolver; in case of a name collision or an attempt to overload
     //      a template that exists in the HTML module locally, the HTML module template will always be used
