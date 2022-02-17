@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.crs.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
@@ -17,25 +18,23 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CrsSupportImpl implements CrsSupport {
 
     private final FeaturesCoreProviders providers;
 
-    public CrsSupportImpl(@Requires FeaturesCoreProviders providers) {
+    @Inject
+    public CrsSupportImpl(FeaturesCoreProviders providers) {
         this.providers = providers;
     }
 

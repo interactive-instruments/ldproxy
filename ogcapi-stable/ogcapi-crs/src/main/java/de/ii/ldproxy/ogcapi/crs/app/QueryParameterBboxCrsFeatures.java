@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.crs.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
@@ -21,20 +22,17 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
     public static final String BBOX = "bbox";
@@ -44,7 +42,8 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements 
 
     private final CrsSupport crsSupport;
 
-    public QueryParameterBboxCrsFeatures(@Requires CrsSupport crsSupport) {
+    @Inject
+    public QueryParameterBboxCrsFeatures(CrsSupport crsSupport) {
         this.crsSupport = crsSupport;
     }
 

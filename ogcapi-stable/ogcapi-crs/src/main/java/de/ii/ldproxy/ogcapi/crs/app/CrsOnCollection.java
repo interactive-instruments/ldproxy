@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.crs.app;
 
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -23,28 +24,26 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * add CRS information to the collection information
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CrsOnCollection implements CollectionExtension {
 
     private final FeaturesCoreProviders providers;
     private final CrsSupport crsSupport;
 
-    public CrsOnCollection(@Requires FeaturesCoreProviders providers,
-                           @Requires CrsSupport crsSupport) {
+    @Inject
+    public CrsOnCollection(FeaturesCoreProviders providers,
+                           CrsSupport crsSupport) {
         this.providers = providers;
         this.crsSupport = crsSupport;
     }

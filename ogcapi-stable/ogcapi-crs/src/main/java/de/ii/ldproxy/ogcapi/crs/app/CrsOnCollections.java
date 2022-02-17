@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.crs.app;
 
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
@@ -18,26 +19,24 @@ import de.ii.ldproxy.ogcapi.collections.domain.CollectionsExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * add CRS information to the collection information (default list of coordinate reference systems)
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CrsOnCollections implements CollectionsExtension {
 
     private final CrsSupport crsSupport;
 
-    public CrsOnCollections(@Requires CrsSupport crsSupport) {
+    @Inject
+    public CrsOnCollections(CrsSupport crsSupport) {
         this.crsSupport = crsSupport;
     }
 

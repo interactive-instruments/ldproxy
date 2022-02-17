@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.crs.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ldproxy.ogcapi.crs.domain.ImmutableCrsConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
@@ -20,21 +21,19 @@ import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.Optional;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityCrs implements ApiBuildingBlock {
 
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesCoreProviders featuresCoreProviders;
 
-    public CapabilityCrs(@Requires CrsTransformerFactory crsTransformerFactory, @Requires FeaturesCoreProviders featuresCoreProviders) {
+    @Inject
+    public CapabilityCrs(CrsTransformerFactory crsTransformerFactory, FeaturesCoreProviders featuresCoreProviders) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.featuresCoreProviders = featuresCoreProviders;
     }
