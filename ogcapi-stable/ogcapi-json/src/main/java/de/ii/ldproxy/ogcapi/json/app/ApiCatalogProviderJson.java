@@ -7,18 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.json.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalog;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalogProvider;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
-import org.apache.felix.ipojo.annotations.*;
-import org.osgi.framework.BundleContext;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -27,9 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class ApiCatalogProviderJson extends ApiCatalogProvider {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -38,8 +38,9 @@ public class ApiCatalogProviderJson extends ApiCatalogProvider {
             .parameter("json")
             .build();
 
-    public ApiCatalogProviderJson(@Context BundleContext bundleContext, @Requires XtraPlatform xtraPlatform, @Requires I18n i18n, @Requires EntityDataDefaultsStore defaultsStore, @Requires ExtensionRegistry extensionRegistry) {
-        super(bundleContext, xtraPlatform, i18n, defaultsStore, extensionRegistry);
+    @Inject
+    public ApiCatalogProviderJson(AppContext appContext, I18n i18n, EntityDataDefaultsStore defaultsStore, ExtensionRegistry extensionRegistry) {
+        super(appContext, i18n, defaultsStore, extensionRegistry);
     }
 
     // TODO: move externalUri handling to XtraplatformRequestContext in ServicesResource
