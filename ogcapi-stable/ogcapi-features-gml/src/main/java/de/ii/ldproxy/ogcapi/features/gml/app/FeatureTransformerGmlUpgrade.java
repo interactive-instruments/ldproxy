@@ -7,19 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.features.gml.app;
 
+import static de.ii.xtraplatform.base.domain.util.LambdaWithException.biConsumerMayThrow;
+import static de.ii.xtraplatform.base.domain.util.LambdaWithException.consumerMayThrow;
+
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.escape.Escaper;
 import com.google.common.xml.XmlEscapers;
-import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.xml.domain.XMLNamespaceNormalizer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -31,9 +31,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
-
-import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.biConsumerMayThrow;
-import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.consumerMayThrow;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author zahnen

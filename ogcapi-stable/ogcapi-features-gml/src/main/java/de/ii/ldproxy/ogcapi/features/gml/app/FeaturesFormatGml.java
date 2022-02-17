@@ -7,9 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.features.gml.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -17,11 +18,9 @@ import de.ii.xtraplatform.feature.provider.wfs.domain.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.WithConnectionInfo;
 import io.swagger.v3.oas.models.media.ObjectSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Optional;
@@ -29,9 +28,8 @@ import java.util.Optional;
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtension {
 
     private static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -47,7 +45,8 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
 
     private final FeaturesCoreProviders providers;
 
-    public FeaturesFormatGml(@Requires FeaturesCoreProviders providers) {
+    @Inject
+    public FeaturesFormatGml(FeaturesCoreProviders providers) {
         this.providers = providers;
     }
 
