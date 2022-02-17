@@ -23,23 +23,13 @@ import de.ii.xtraplatform.store.domain.KeyPathAliasUnwrap;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
 import de.ii.xtraplatform.store.domain.entities.handler.Entity;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.StaticServiceProperty;
 
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Component
-@Provides(properties = {
-        @StaticServiceProperty(name = Entity.TYPE_KEY, type = "java.lang.String", value = Service.TYPE),
-        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiDataV2.SERVICE_TYPE)
-})
-@Instantiate
+//TODO: to factory
 public class OgcApiDataV2Defaults implements EntityDataDefaults<OgcApiDataV2> {
 
     private final ExtensionRegistry extensionRegistry;

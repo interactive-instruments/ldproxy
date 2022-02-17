@@ -13,30 +13,19 @@ import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.store.domain.entities.EntityHydrator;
 import de.ii.xtraplatform.store.domain.entities.handler.Entity;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.StaticServiceProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.List;
 
-@Component
-@Provides(properties = {
-        @StaticServiceProperty(name = Entity.TYPE_KEY, type = "java.lang.String", value = Service.TYPE),
-        @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiDataV2.SERVICE_TYPE)
-})
-@Instantiate
 public class OgcApiDatasetHydrator implements EntityHydrator<OgcApiDataV2> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiDatasetHydrator.class);
 
     private final ExtensionRegistry extensionRegistry;
 
-    public OgcApiDatasetHydrator(@Requires ExtensionRegistry extensionRegistry) {
+    public OgcApiDatasetHydrator(ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 

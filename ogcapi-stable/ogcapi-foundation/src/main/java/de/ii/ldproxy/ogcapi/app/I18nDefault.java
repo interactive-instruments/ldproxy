@@ -7,22 +7,25 @@
  */
 package de.ii.ldproxy.ogcapi.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.domain.I18n;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 
 import java.util.*;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class I18nDefault implements I18n {
 
     private static final Map<Locale, ResourceBundle> LOCALE_RESOURCE_BUNDLE_MAP = ImmutableMap.of(
             Locale.ENGLISH, ResourceBundle.getBundle("i18n-en"),
             Locale.GERMAN, ResourceBundle.getBundle("i18n-de"));
+
+    @Inject
+    public I18nDefault() {
+    }
 
     @Override
     public String get(String key) {

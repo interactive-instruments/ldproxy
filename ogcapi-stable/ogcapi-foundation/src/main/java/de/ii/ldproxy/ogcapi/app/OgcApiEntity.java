@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.app;
 
+import dagger.assisted.Assisted;
+import dagger.assisted.AssistedInject;
 import de.ii.ldproxy.ogcapi.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
@@ -20,7 +22,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityComponent;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.store.domain.entities.handler.Entity;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +44,9 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
     private final ExtensionRegistry extensionRegistry;
 
-    public OgcApiEntity(@Requires ExtensionRegistry extensionRegistry) {
+    @AssistedInject
+    public OgcApiEntity(ExtensionRegistry extensionRegistry, @Assisted OgcApiDataV2 data) {
+        super(data);
         this.extensionRegistry = extensionRegistry;
     }
 

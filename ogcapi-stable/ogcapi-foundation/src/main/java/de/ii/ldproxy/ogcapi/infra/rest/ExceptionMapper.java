@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.ApiErrorMessage;
 import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
@@ -15,11 +16,8 @@ import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.domain.FormatNotSupportedException;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.apache.felix.ipojo.annotations.Validate;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +35,8 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 @Provider
 public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
 
@@ -56,14 +53,10 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
 
     private final ContentNegotiation contentNegotiation;
 
-    public ExceptionMapper(@Requires ExtensionRegistry extensionRegistry) {
-        contentNegotiation = new ContentNegotiation();
+    @Inject
+    public ExceptionMapper(ExtensionRegistry extensionRegistry) {
+        this.contentNegotiation = new ContentNegotiation();
         this.extensionRegistry = extensionRegistry;
-    }
-
-    @Validate
-    void onStart() {
-        LOGGER.debug("OGC API EXCEPTION WRITER");
     }
 
     @Override

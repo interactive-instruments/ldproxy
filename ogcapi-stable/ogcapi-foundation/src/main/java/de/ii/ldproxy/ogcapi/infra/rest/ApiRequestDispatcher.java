@@ -7,11 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.app.OgcApiEntity;
 import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
-import org.apache.felix.ipojo.annotations.*;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,24 +23,17 @@ import javax.annotation.security.PermitAll;
 import javax.ws.rs.*;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import java.net.URI;
 import java.text.MessageFormat;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition.SORT_PRIORITY_DUMMY;
 
-
-@Component
-@Provides(properties = {
-        @StaticServiceProperty(name = ServiceEndpoint.SERVICE_TYPE_KEY, type = "java.lang.String", value = "OGC_API")
-})
-@Instantiate
-
+@Singleton
+@AutoBind
 @PermitAll
 public class ApiRequestDispatcher implements ServiceEndpoint {
 
@@ -52,16 +48,22 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
     private final ExtensionRegistry extensionRegistry;
     private final RequestInjectableContext ogcApiInjectableContext;
-    private final XtraPlatform xtraPlatform;
+    private final AppContext appContext;
     private final ContentNegotiation contentNegotiation;
 
-    ApiRequestDispatcher(@Requires ExtensionRegistry extensionRegistry,
-                         @Requires RequestInjectableContext ogcApiInjectableContext,
-                         @Requires XtraPlatform xtraPlatform) {
+    @Inject
+    ApiRequestDispatcher(ExtensionRegistry extensionRegistry,
+                         RequestInjectableContext ogcApiInjectableContext,
+        AppContext appContext) {
         this.extensionRegistry = extensionRegistry;
         this.ogcApiInjectableContext = ogcApiInjectableContext;
-        this.xtraPlatform = xtraPlatform;
+        this.appContext = appContext;
         this.contentNegotiation = new ContentNegotiation();
+    }
+
+    @Override
+    public String getServiceType() {
+        return OgcApiDataV2.SERVICE_TYPE;
     }
 
     @Path("")
@@ -251,7 +253,8 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
         return extensionRegistry.getExtensionsForType(EndpointExtension.class);
     }
 
+    //TODO: from ServicesContext
     private Optional<URI> getExternalUri() {
-        return Optional.ofNullable(xtraPlatform.getServicesUri());
+        return Optional.of(appContext.getUri().resolve("rest/services"));
     }
 }

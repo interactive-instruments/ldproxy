@@ -7,14 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,16 +31,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class OptionsEndpoint implements EndpointExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OptionsEndpoint.class);
 
     private final ExtensionRegistry extensionRegistry;
 
-    public OptionsEndpoint(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public OptionsEndpoint(ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 

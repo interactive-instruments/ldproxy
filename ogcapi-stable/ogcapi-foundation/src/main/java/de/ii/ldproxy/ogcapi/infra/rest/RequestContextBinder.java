@@ -7,29 +7,31 @@
  */
 package de.ii.ldproxy.ogcapi.infra.rest;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.domain.RequestInjectableContext;
 import de.ii.xtraplatform.services.domain.ServiceInjectableContext;
 import java.util.function.Supplier;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.ext.Provider;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.internal.inject.Binder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 @Provider
 public class RequestContextBinder extends AbstractBinder implements Binder, RequestInjectableContext {
 
     public static final String OGCAPI_REQUEST_CONTEXT_KEY = "OGCAPI_REQUEST";
+
+    @Inject
+    public RequestContextBinder() {
+    }
 
     @Override
     public void inject(ContainerRequestContext containerRequestContext, ApiRequestContext apiRequestContext) {

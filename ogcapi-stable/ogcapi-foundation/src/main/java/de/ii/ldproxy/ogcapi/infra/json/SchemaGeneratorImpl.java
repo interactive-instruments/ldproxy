@@ -7,11 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.infra.json;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
 import io.swagger.v3.oas.models.media.*;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,14 +27,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class SchemaGeneratorImpl implements SchemaGenerator {
 
-    private ConcurrentMap<String, Schema> schemaMap = new ConcurrentHashMap<>();
-
     private static final Logger LOGGER = LoggerFactory.getLogger(SchemaGeneratorImpl.class);
+
+    private final ConcurrentMap<String, Schema> schemaMap;
+
+    @Inject
+    public SchemaGeneratorImpl() {
+        this.schemaMap = new ConcurrentHashMap<>();
+    }
 
     // TODO complete and make robust
     public Schema getSchema(Class clazz) {
