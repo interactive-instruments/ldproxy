@@ -7,29 +7,25 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.ExtendableConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
 
     private final EntityRegistry entityRegistry;
 
-    public FeaturesCoreProvidersImpl(@Requires EntityRegistry entityRegistry) {
+    @Inject
+    public FeaturesCoreProvidersImpl(EntityRegistry entityRegistry) {
         this.entityRegistry = entityRegistry;
     }
 

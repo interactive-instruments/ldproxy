@@ -12,14 +12,12 @@ import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguratio
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
@@ -58,19 +56,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.measure.Unit;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeaturesQueryImpl implements FeaturesQuery {
 
     private static final Splitter ARRAY_SPLITTER = Splitter.on(',')
@@ -83,10 +78,11 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     private final FeaturesCoreProviders providers;
     private final Cql cql;
 
-    public FeaturesQueryImpl(@Requires ExtensionRegistry extensionRegistry,
-                             @Requires CrsInfo crsInfo,
-                             @Requires FeaturesCoreProviders providers,
-                             @Requires Cql cql) {
+    @Inject
+    public FeaturesQueryImpl(ExtensionRegistry extensionRegistry,
+                             CrsInfo crsInfo,
+                             FeaturesCoreProviders providers,
+                             Cql cql) {
         this.extensionRegistry = extensionRegistry;
         this.crsInfo = crsInfo;
         this.providers = providers;

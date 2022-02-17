@@ -7,22 +7,25 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
-import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.domain.foundation.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.domain.foundation.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DEFAULT_PAGE_SIZE;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.MAX_PAGE_SIZE;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.MINIMUM_PAGE_SIZE;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityFeaturesCore implements ApiBuildingBlock {
+
+    @Inject
+    CapabilityFeaturesCore() {
+    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {

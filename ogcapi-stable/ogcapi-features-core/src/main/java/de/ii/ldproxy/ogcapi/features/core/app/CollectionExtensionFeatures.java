@@ -7,36 +7,35 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CollectionExtensionFeatures implements CollectionExtension {
 
     private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
 
-    public CollectionExtensionFeatures(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    @Inject
+    public CollectionExtensionFeatures(ExtensionRegistry extensionRegistry, I18n i18n) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
     }

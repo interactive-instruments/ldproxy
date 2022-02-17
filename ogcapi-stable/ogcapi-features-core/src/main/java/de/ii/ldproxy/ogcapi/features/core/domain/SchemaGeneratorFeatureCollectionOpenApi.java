@@ -7,20 +7,18 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class SchemaGeneratorFeatureCollectionOpenApi implements SchemaGeneratorCollectionOpenApi {
 
     final static Schema<?> GENERIC = new ObjectSchema()
@@ -34,7 +32,8 @@ public class SchemaGeneratorFeatureCollectionOpenApi implements SchemaGeneratorC
 
     private final SchemaGeneratorOpenApi schemaGeneratorFeature;
 
-    public SchemaGeneratorFeatureCollectionOpenApi(@Requires SchemaGeneratorOpenApi schemaGeneratorFeature) {
+    @Inject
+    public SchemaGeneratorFeatureCollectionOpenApi(SchemaGeneratorOpenApi schemaGeneratorFeature) {
         this.schemaGeneratorFeature = schemaGeneratorFeature;
     }
 

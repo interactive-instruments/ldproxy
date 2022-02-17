@@ -7,19 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.CollectionExtent;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.TemporalExtent;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -36,10 +27,8 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.Metadata;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.ArrayList;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
@@ -51,9 +40,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesCoreDataHydrator.class);
@@ -62,9 +50,10 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
     private final CrsTransformerFactory crsTransformerFactory;
     private final FeaturesCoreValidation featuresCoreValidator;
 
-    public FeaturesCoreDataHydrator(@Requires FeaturesCoreProviders providers,
-                                    @Requires CrsTransformerFactory crsTransformerFactory,
-                                    @Requires FeaturesCoreValidation featuresCoreValidator) {
+    @Inject
+    public FeaturesCoreDataHydrator(FeaturesCoreProviders providers,
+                                    CrsTransformerFactory crsTransformerFactory,
+                                    FeaturesCoreValidation featuresCoreValidator) {
         this.providers = providers;
         this.crsTransformerFactory = crsTransformerFactory;
         this.featuresCoreValidator = featuresCoreValidator;

@@ -7,29 +7,27 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeaturesCoreValidator implements FeaturesCoreValidation {
 
     private final SchemaInfo schemaInfo;
 
-    public FeaturesCoreValidator(@Requires SchemaInfo schemaInfo) {
+    @Inject
+    public FeaturesCoreValidator(SchemaInfo schemaInfo) {
         this.schemaInfo = schemaInfo;
     }
 

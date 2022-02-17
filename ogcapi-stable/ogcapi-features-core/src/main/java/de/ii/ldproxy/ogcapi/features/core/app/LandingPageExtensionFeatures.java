@@ -7,28 +7,29 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
-import de.ii.ldproxy.ogcapi.domain.I18n;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class LandingPageExtensionFeatures implements LandingPageExtension {
 
     private final I18n i18n;
 
-    public LandingPageExtensionFeatures(I18n i18n) {
+    @Inject
+    LandingPageExtensionFeatures(I18n i18n) {
         this.i18n = i18n;
     }
 

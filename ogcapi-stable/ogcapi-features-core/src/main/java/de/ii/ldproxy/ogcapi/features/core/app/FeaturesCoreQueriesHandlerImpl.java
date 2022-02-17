@@ -9,16 +9,10 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.QueryHandler;
-import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureLinksGenerator;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -30,7 +24,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
+import de.ii.xtraplatform.web.domain.Dropwizard;
 import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -45,11 +39,9 @@ import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
-import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,9 +64,8 @@ import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesCoreQueriesHandlerImpl.class);
@@ -85,10 +76,11 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     private final MetricRegistry metricRegistry;
     private final EntityRegistry entityRegistry;
 
-    public FeaturesCoreQueriesHandlerImpl(@Requires I18n i18n,
-                                          @Requires CrsTransformerFactory crsTransformerFactory,
-                                          @Requires Dropwizard dropwizard,
-                                          @Requires EntityRegistry entityRegistry) {
+    @Inject
+    public FeaturesCoreQueriesHandlerImpl(I18n i18n,
+                                          CrsTransformerFactory crsTransformerFactory,
+                                          Dropwizard dropwizard,
+                                          EntityRegistry entityRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;

@@ -7,13 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -22,22 +22,16 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.swagger.v3.oas.models.media.Schema;
-import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
 
     public static final String DEFAULT_FLATTENING_SEPARATOR = ".";
@@ -46,8 +40,9 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
     private final FeaturesCoreProviders providers;
     private final EntityRegistry entityRegistry;
 
-    public SchemaGeneratorFeatureOpenApi(@Requires FeaturesCoreProviders providers,
-                                         @Requires EntityRegistry entityRegistry) {
+    @Inject
+    public SchemaGeneratorFeatureOpenApi(FeaturesCoreProviders providers,
+                                         EntityRegistry entityRegistry) {
         this.providers = providers;
         this.entityRegistry = entityRegistry;
     }

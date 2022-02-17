@@ -7,26 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
-import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ApiOperation;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.ParameterExtension;
+import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
@@ -49,10 +36,8 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,9 +64,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointFeatures extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFeatures.class);
@@ -94,13 +78,14 @@ public class EndpointFeatures extends EndpointSubCollection {
     private final FeaturesCoreQueriesHandler queryHandler;
     private final FeaturesCoreValidation featuresCoreValidator;
 
-    public EndpointFeatures(@Requires ExtensionRegistry extensionRegistry,
-                            @Requires EntityRegistry entityRegistry,
-                            @Requires FeaturesCoreProviders providers,
-                            @Requires FeaturesQuery ogcApiFeaturesQuery,
-                            @Requires FeaturesCoreQueriesHandler queryHandler,
-                            @Requires FeaturesCoreValidation featuresCoreValidator,
-                            @Requires SchemaGeneratorOpenApi schemaGeneratorFeature) {
+    @Inject
+    public EndpointFeatures(ExtensionRegistry extensionRegistry,
+                            EntityRegistry entityRegistry,
+                            FeaturesCoreProviders providers,
+                            FeaturesQuery ogcApiFeaturesQuery,
+                            FeaturesCoreQueriesHandler queryHandler,
+                            FeaturesCoreValidation featuresCoreValidator,
+                            SchemaGeneratorOpenApi schemaGeneratorFeature) {
         super(extensionRegistry);
         this.entityRegistry = entityRegistry;
         this.providers = providers;

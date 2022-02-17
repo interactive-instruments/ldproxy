@@ -7,26 +7,27 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app.processing;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcess;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
-import org.apache.felix.ipojo.annotations.*;
-
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeatureProcessInfoImpl implements FeatureProcessInfo {
 
     private final ExtensionRegistry extensionRegistry;
     private final I18n i18n;
 
-    public FeatureProcessInfoImpl(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n) {
+    @Inject
+    public FeatureProcessInfoImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
     }
