@@ -63,19 +63,19 @@ import static de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition.SORT_PRIORITY_FE
 @Component
 @Provides
 @Instantiate
-public class EndpointFeaturesExtensions extends EndpointSubCollection {
+public class EndpointPostOnItems extends EndpointSubCollection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFeaturesExtensions.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointPostOnItems.class);
     private static final List<String> TAGS = ImmutableList.of("Access data");
 
     private final FeaturesCoreProviders providers;
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreQueriesHandler queryHandler;
 
-    public EndpointFeaturesExtensions(@Requires ExtensionRegistry extensionRegistry,
-                                      @Requires FeaturesCoreProviders providers,
-                                      @Requires FeaturesQuery ogcApiFeaturesQuery,
-                                      @Requires FeaturesCoreQueriesHandler queryHandler) {
+    public EndpointPostOnItems(@Requires ExtensionRegistry extensionRegistry,
+                               @Requires FeaturesCoreProviders providers,
+                               @Requires FeaturesQuery ogcApiFeaturesQuery,
+                               @Requires FeaturesCoreQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.providers = providers;
         this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
@@ -93,7 +93,7 @@ public class EndpointFeaturesExtensions extends EndpointSubCollection {
             apiData.getCollections().get(collectionId).getEnabled() &&
             apiData.getExtension(FeaturesExtensionsConfiguration.class, collectionId)
                 .filter(ExtensionConfiguration::isEnabled)
-                .filter(FeaturesExtensionsConfiguration::getPostOnItems)
+                .filter(FeaturesExtensionsConfiguration::shouldSupportPostOnItems)
                 .isPresent();
     }
 

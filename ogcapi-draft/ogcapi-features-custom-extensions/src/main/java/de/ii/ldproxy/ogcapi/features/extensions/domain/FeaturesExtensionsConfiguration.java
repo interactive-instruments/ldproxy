@@ -7,11 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.features.extensions.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -23,6 +29,14 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
 
     @Nullable
     Boolean getPostOnItems();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean shouldSupportPostOnItems() {
+        return Objects.equals(getPostOnItems(), true);
+    }
+
 
     @Nullable
     Boolean getIntersectsParameter();
