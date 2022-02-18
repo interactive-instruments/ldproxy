@@ -9,16 +9,15 @@ package de.ii.ldproxy.ogcapi.features.transactional;
 
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityTransactional implements ApiBuildingBlock {
 
     @Override

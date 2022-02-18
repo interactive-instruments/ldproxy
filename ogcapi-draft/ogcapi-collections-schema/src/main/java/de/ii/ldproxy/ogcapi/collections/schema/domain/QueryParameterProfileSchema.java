@@ -7,26 +7,24 @@
  */
 package de.ii.ldproxy.ogcapi.collections.schema.domain;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.common.domain.QueryParameterProfile;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class QueryParameterProfileSchema extends QueryParameterProfile {
 
     final static List<String> PROFILES = ImmutableList.of("2019-09", "07");
 
-    public QueryParameterProfileSchema(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public QueryParameterProfileSchema(ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 

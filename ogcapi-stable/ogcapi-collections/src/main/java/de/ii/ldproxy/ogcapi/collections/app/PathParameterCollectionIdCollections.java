@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 @Singleton
 @AutoBind

@@ -25,6 +25,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import javax.ws.rs.core.MediaType;
 
 /**

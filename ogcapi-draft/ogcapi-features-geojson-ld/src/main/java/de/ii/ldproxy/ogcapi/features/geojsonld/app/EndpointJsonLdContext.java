@@ -7,31 +7,33 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojsonld.app;
 
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
+import de.ii.ldproxy.ogcapi.features.geojsonld.domain.GeoJsonLdConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.geojsonld.domain.GeoJsonLdConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import de.ii.xtraplatform.base.domain.AppContext;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
@@ -39,22 +41,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointJsonLdContext extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointJsonLdContext.class);
@@ -62,11 +54,12 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
 
     private final java.nio.file.Path contextDirectory;
 
-    EndpointJsonLdContext(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                          @Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    EndpointJsonLdContext(AppContext appContext, ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
-        this.contextDirectory = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                     .resolve("json-ld-contexts");
+        this.contextDirectory = appContext.getDataDir()
+            .resolve(API_RESOURCES_DIR)
+            .resolve("json-ld-contexts");
     }
 
     @Override

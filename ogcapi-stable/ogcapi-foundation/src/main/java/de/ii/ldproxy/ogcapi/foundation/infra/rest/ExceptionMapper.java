@@ -18,6 +18,7 @@ import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

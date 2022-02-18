@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
@@ -21,22 +22,12 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetDat
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetLinks;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsLinksGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsQueriesHandler;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -45,10 +36,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHandler {
 
     private final I18n i18n;
@@ -56,9 +53,10 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
     private final ExtensionRegistry extensionRegistry;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public TileMatrixSetsQueriesHandlerImpl(@Requires I18n i18n,
-                                            @Requires ExtensionRegistry extensionRegistry,
-                                            @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    public TileMatrixSetsQueriesHandlerImpl(I18n i18n,
+                                            ExtensionRegistry extensionRegistry,
+                                            TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
         this.tileMatrixSetRepository = tileMatrixSetRepository;

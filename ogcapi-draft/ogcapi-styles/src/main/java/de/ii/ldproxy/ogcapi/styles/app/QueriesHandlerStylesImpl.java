@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -27,15 +28,6 @@ import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.Styles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -44,10 +36,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
 
     private final I18n i18n;
@@ -55,7 +52,8 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
     private final ExtensionRegistry extensionRegistry;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
-    public QueriesHandlerStylesImpl(@Requires ExtensionRegistry extensionRegistry, @Requires I18n i18n, @Requires StyleRepository styleRepository) {
+    @Inject
+    public QueriesHandlerStylesImpl(ExtensionRegistry extensionRegistry, I18n i18n, StyleRepository styleRepository) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
         this.styleRepository = styleRepository;

@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.foundation.infra.rest;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

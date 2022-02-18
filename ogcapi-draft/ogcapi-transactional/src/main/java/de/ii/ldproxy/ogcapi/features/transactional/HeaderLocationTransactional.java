@@ -14,13 +14,12 @@ import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class HeaderLocationTransactional extends ApiExtensionCache implements ApiHeader {
 
     private final Schema schema = new StringSchema().format("uri");

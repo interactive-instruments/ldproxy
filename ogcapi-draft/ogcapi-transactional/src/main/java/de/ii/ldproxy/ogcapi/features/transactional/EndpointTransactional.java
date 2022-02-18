@@ -7,9 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.features.transactional;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
@@ -23,8 +26,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
@@ -33,6 +34,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -43,10 +46,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,9 +53,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointTransactional extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTransactional.class);
@@ -65,8 +63,9 @@ public class EndpointTransactional extends EndpointSubCollection {
     private final FeaturesCoreProviders providers;
     private final CommandHandlerTransactional commandHandler;
 
-    public EndpointTransactional(@Requires ExtensionRegistry extensionRegistry,
-                                 @Requires FeaturesCoreProviders providers) {
+    @Inject
+    public EndpointTransactional(ExtensionRegistry extensionRegistry,
+                                 FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.providers = providers;
         this.commandHandler = new CommandHandlerTransactional();

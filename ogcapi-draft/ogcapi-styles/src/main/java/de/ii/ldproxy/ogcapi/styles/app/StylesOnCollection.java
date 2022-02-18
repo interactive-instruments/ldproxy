@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
@@ -20,32 +21,29 @@ import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 
 /**
  * add styles information to the collection
  *
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class StylesOnCollection implements CollectionExtension {
 
     private final I18n i18n;
     private final StyleRepository styleRepo;
 
-    public StylesOnCollection(@Requires I18n i18n,
-                              @Requires StyleRepository styleRepo) throws IOException {
+    @Inject
+    public StylesOnCollection(I18n i18n,
+                              StyleRepository styleRepo) throws IOException {
         this.styleRepo = styleRepo;
         this.i18n = i18n;
     }

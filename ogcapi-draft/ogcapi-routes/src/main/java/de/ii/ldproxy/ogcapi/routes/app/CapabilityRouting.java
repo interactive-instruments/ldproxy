@@ -14,15 +14,14 @@ import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlForm;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutingConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DefaultCrs.CRS84;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityRouting implements ApiBuildingBlock {
 
     public static String CORE = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/core";

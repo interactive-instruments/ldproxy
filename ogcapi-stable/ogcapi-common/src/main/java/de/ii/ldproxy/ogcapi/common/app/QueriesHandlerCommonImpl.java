@@ -43,6 +43,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;

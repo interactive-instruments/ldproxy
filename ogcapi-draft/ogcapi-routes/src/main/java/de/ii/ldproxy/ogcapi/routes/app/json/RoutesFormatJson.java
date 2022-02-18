@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.routes.app.json;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -17,23 +18,18 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.routes.domain.HtmlForm;
 import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class RoutesFormatJson implements RoutesFormatExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoutesFormatJson.class);
@@ -47,8 +43,9 @@ public class RoutesFormatJson implements RoutesFormatExtension {
     public final static String SCHEMA_REF_ROUTES = "#/components/schemas/Routes";
     private final I18n i18n;
 
-    public RoutesFormatJson(@Requires SchemaGenerator schemaGenerator,
-                            @Requires I18n i18n) {
+    @Inject
+    public RoutesFormatJson(SchemaGenerator schemaGenerator,
+                            I18n i18n) {
         this.i18n = i18n;
         schemaRoutes = schemaGenerator.getSchema(Routes.class);
     }

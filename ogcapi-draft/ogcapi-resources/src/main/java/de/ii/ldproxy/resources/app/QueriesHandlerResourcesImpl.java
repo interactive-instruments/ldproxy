@@ -7,61 +7,47 @@
  */
 package de.ii.ldproxy.resources.app;
 
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
-import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ldproxy.resources.domain.QueriesHandlerResources;
 import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
 import de.ii.ldproxy.resources.domain.ResourcesFormatExtension;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-
+import de.ii.xtraplatform.base.domain.AppContext;
+import java.io.File;
+import java.io.IOException;
+import java.net.URLConnection;
+import java.nio.file.Files;
+import java.text.MessageFormat;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
-
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
 
     private final I18n i18n;
@@ -69,13 +55,15 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
     private final java.nio.file.Path resourcesStore;
 
-    public QueriesHandlerResourcesImpl(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                       @Requires ExtensionRegistry extensionRegistry,
-                                       @Requires I18n i18n) {
+    @Inject
+    public QueriesHandlerResourcesImpl(AppContext appContext,
+                                       ExtensionRegistry extensionRegistry,
+                                       I18n i18n) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
-        this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                   .resolve("resources");
+        this.resourcesStore = appContext.getDataDir()
+            .resolve(API_RESOURCES_DIR)
+            .resolve("resources");
         if (!resourcesStore.toFile().exists()) {
             resourcesStore.toFile().mkdirs();
         }

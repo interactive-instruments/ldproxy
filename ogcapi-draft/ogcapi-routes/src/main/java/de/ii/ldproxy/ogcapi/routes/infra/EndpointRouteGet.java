@@ -7,10 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.routes.infra;
 
+import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.MANAGE_ROUTES;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
@@ -19,7 +20,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
@@ -29,36 +29,23 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputRoute;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteRepository;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.DELETE;
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.MANAGE_ROUTES;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointRouteGet extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteGet.class);
@@ -67,8 +54,9 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
 
     private final QueryHandlerRoutes queryHandler;
 
-    public EndpointRouteGet(@Requires ExtensionRegistry extensionRegistry,
-                            @Requires QueryHandlerRoutes queryHandler) {
+    @Inject
+    public EndpointRouteGet(ExtensionRegistry extensionRegistry,
+                            QueryHandlerRoutes queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

@@ -8,6 +8,7 @@
 package de.ii.ldproxy.ogcapi.maps.app;
 
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
@@ -22,14 +23,11 @@ import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 
 /**
@@ -37,16 +35,16 @@ import java.util.Optional;
  *
  *
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class MapTilesOnCollection implements CollectionExtension {
 
     private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
 
-    public MapTilesOnCollection(@Requires I18n i18n,
-                                @Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public MapTilesOnCollection(I18n i18n,
+                                ExtensionRegistry extensionRegistry) {
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
     }

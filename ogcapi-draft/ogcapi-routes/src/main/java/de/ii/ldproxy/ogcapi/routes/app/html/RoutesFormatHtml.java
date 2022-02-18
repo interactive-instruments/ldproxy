@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.routes.app.html;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -28,19 +29,15 @@ import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
-import java.util.List;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class RoutesFormatHtml implements RoutesFormatExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RoutesFormatHtml.class);
@@ -54,7 +51,8 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
     public final static String SCHEMA_REF_HTML = "#/components/schemas/htmlSchema";
     private final I18n i18n;
 
-    public RoutesFormatHtml(@Requires I18n i18n) {
+    @Inject
+    public RoutesFormatHtml(I18n i18n) {
         this.i18n = i18n;
         schemaHtml = new StringSchema().example("<html>...</html>");
     }

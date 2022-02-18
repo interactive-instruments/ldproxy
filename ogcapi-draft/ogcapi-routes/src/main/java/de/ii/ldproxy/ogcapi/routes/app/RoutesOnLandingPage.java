@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.routes.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
@@ -17,27 +18,24 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * add styles information to the landing page
  *
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class RoutesOnLandingPage implements LandingPageExtension {
 
     private final I18n i18n;
 
-    public RoutesOnLandingPage(@Requires I18n i18n) {
+    @Inject
+    public RoutesOnLandingPage(I18n i18n) {
         this.i18n = i18n;
     }
 

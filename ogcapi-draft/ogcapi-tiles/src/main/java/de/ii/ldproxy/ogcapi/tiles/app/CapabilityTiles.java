@@ -7,18 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
@@ -35,12 +36,6 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.sqlite.SQLiteJDBCLoader;
-
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.List;
@@ -48,10 +43,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.sqlite.SQLiteJDBCLoader;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityTiles implements ApiBuildingBlock {
 
     public static final int LIMIT_DEFAULT = 100000;
@@ -66,9 +63,10 @@ public class CapabilityTiles implements ApiBuildingBlock {
     private final SchemaInfo schemaInfo;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public CapabilityTiles(@Requires ExtensionRegistry extensionRegistry, @Requires FeaturesQuery queryParser,
-                           @Requires FeaturesCoreProviders providers, @Requires SchemaInfo schemaInfo,
-                           @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    public CapabilityTiles(ExtensionRegistry extensionRegistry, FeaturesQuery queryParser,
+                           FeaturesCoreProviders providers, SchemaInfo schemaInfo,
+                           TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;
         this.queryParser = queryParser;
         this.providers = providers;

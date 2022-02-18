@@ -7,38 +7,34 @@
  */
 package de.ii.ldproxy.ogcapi.collections.schema.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.schema.app.ImmutableQueryInputSchema;
-import de.ii.ldproxy.ogcapi.collections.schema.domain.QueriesHandlerSchema;
 import de.ii.ldproxy.ogcapi.collections.schema.app.QueriesHandlerSchemaImpl;
+import de.ii.ldproxy.ogcapi.collections.schema.domain.QueriesHandlerSchema;
 import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaConfiguration;
 import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaFormatExtension;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtendableConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -46,13 +42,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointSchema extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointSchema.class);
@@ -61,8 +55,9 @@ public class EndpointSchema extends EndpointSubCollection {
 
     private final QueriesHandlerSchema queryHandler;
 
-    public EndpointSchema(@Requires ExtensionRegistry extensionRegistry,
-                          @Requires QueriesHandlerSchema queryHandler) {
+    @Inject
+    public EndpointSchema(ExtensionRegistry extensionRegistry,
+                          QueriesHandlerSchema queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

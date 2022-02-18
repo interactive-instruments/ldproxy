@@ -7,8 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,6 +19,8 @@ import com.github.fge.jsonpatch.JsonPatchException;
 import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
@@ -28,8 +29,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleEntry;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStyleMetadata;
@@ -47,7 +46,7 @@ import de.ii.ldproxy.ogcapi.styles.domain.StylesLinkGenerator;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import java.io.File;
@@ -55,7 +54,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Arrays;
@@ -68,21 +66,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.inject.Inject;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class StyleRepositoryFiles implements StyleRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleRepositoryFiles.class);
@@ -94,21 +86,22 @@ public class StyleRepositoryFiles implements StyleRepository {
     private final ObjectMapper patchMapperLenient;
     private final ObjectMapper patchMapperStrict;
     private final ObjectMapper metadataMapper;
-    private final XtraPlatform xtraPlatform;
+    private final AppContext appContext;
     private final FeaturesCoreProviders providers;
     private final EntityRegistry entityRegistry;
 
-    public StyleRepositoryFiles(@Context BundleContext bundleContext,
-                                @Requires ExtensionRegistry extensionRegistry,
-                                @Requires I18n i18n,
-                                @Requires XtraPlatform xtraPlatform,
-                                @Requires FeaturesCoreProviders providers,
-                                @Requires EntityRegistry entityRegistry) throws IOException {
-        this.stylesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                .resolve("styles");
+    @Inject
+    public StyleRepositoryFiles(AppContext appContext,
+                                ExtensionRegistry extensionRegistry,
+                                I18n i18n,
+                                FeaturesCoreProviders providers,
+                                EntityRegistry entityRegistry) throws IOException {
+        this.stylesStore = appContext.getDataDir()
+            .resolve(API_RESOURCES_DIR)
+            .resolve("styles");
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
-        this.xtraPlatform = xtraPlatform;
+        this.appContext = appContext;
         this.providers = providers;
         this.entityRegistry = entityRegistry;
         this.defaultLinkGenerator = new DefaultLinksGenerator();
@@ -395,7 +388,7 @@ public class StyleRepositoryFiles implements StyleRepository {
                                          .addAllLinks(links)
                                          .build();
 
-        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         return metadata.replaceParameters(serviceUrl);
     }

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
@@ -17,7 +18,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
@@ -26,25 +26,21 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.List;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointQueryables extends EndpointSubCollection /* implements ConformanceClass */ {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointQueryables.class);
@@ -53,8 +49,9 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
 
     private final QueryablesQueriesHandler queryHandler;
 
-    public EndpointQueryables(@Requires ExtensionRegistry extensionRegistry,
-                              @Requires QueryablesQueriesHandler queryHandler) {
+    @Inject
+    public EndpointQueryables(ExtensionRegistry extensionRegistry,
+                              QueryablesQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

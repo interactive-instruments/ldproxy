@@ -15,6 +15,7 @@ import de.ii.xtraplatform.web.domain.PartialMustacheResolver;
 import java.io.Reader;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
  *  Reuse the per class loader, but switch to the HTML module context.

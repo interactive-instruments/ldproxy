@@ -23,6 +23,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.text.MessageFormat;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;

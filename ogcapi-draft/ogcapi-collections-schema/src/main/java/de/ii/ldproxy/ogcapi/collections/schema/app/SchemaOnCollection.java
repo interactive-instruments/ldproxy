@@ -8,32 +8,33 @@
 package de.ii.ldproxy.ogcapi.collections.schema.app;
 
 
-import de.ii.ldproxy.ogcapi.collections.schema.app.SchemaLinkGenerator;
-import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.*;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * add the schema link to the collection information
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class SchemaOnCollection implements CollectionExtension {
 
     private final I18n i18n;
 
-    public SchemaOnCollection(@Requires I18n i18n) {
+    @Inject
+    public SchemaOnCollection(I18n i18n) {
         this.i18n = i18n;
     }
 

@@ -31,15 +31,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.CACHE_DIR;
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
  * Access to the cache for tile files.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class TileMatrixSetRepositoryImpl implements TileMatrixSetRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileMatrixSetRepositoryImpl.class);

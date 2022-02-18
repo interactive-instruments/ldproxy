@@ -19,6 +19,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import java.util.Comparator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 @Singleton
 @AutoBind

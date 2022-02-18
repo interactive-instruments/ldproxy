@@ -7,23 +7,22 @@
  */
 package de.ii.ldproxy.resources.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.resources.domain.ImmutableResourcesConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityResources implements ApiBuildingBlock {
 
     private final ExtensionRegistry extensionRegistry;
 
-    public CapabilityResources(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public CapabilityResources(ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 

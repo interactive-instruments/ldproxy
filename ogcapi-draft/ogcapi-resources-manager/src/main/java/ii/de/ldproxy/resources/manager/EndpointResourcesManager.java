@@ -7,13 +7,15 @@
  */
 package ii.de.ldproxy.resources.manager;
 
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
@@ -28,15 +30,19 @@ import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.AppContext;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -47,26 +53,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * creates, updates and deletes a resource from the service
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointResourcesManager extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
@@ -74,12 +68,13 @@ public class EndpointResourcesManager extends Endpoint {
 
     private final java.nio.file.Path resourcesStore;
 
-    public EndpointResourcesManager(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                 @Requires ExtensionRegistry extensionRegistry) throws IOException {
+    @Inject
+    public EndpointResourcesManager(AppContext appContext, ExtensionRegistry extensionRegistry) throws IOException {
         super(extensionRegistry);
 
-        this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                   .resolve("resources");
+        this.resourcesStore = appContext.getDataDir()
+            .resolve(API_RESOURCES_DIR)
+            .resolve("resources");
         Files.createDirectories(resourcesStore);
     }
 

@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.maps.app;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -19,27 +22,21 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsView;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
+import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsView;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 
-import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -50,8 +47,9 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
     private final I18n i18n;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public MapTileSetsFormatHtml(@Requires I18n i18n,
-                                 @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    public MapTileSetsFormatHtml(I18n i18n,
+                                 TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
     }

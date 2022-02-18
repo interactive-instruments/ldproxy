@@ -7,47 +7,40 @@
  */
 package de.ii.ldproxy.ogcapi.maps.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileSetMultiCollection;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
+import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
+import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Handle responses under '/map/tiles/{tileMatrixSetId}'.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointMapTileSetMultiCollection extends AbstractEndpointTileSetMultiCollection {
 
     private static final List<String> TAGS = ImmutableList.of("Access multi-layer map tiles");
 
-    EndpointMapTileSetMultiCollection(@Requires ExtensionRegistry extensionRegistry,
-                                      @Requires TilesQueriesHandler queryHandler,
-                                      @Requires FeaturesCoreProviders providers) {
+    @Inject
+    EndpointMapTileSetMultiCollection(ExtensionRegistry extensionRegistry,
+                                      TilesQueriesHandler queryHandler,
+                                      FeaturesCoreProviders providers) {
         super(extensionRegistry, queryHandler, providers);
     }
 

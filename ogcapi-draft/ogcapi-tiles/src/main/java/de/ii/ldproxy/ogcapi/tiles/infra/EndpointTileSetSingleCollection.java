@@ -7,7 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
@@ -16,37 +18,33 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileSetSingleCollection;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
+import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
 
 /**
  * Handle responses under '/collections/{collectionId}/tiles/{tileMatrixSetId}'.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSingleCollection implements ConformanceClass {
 
     private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
 
 
-    EndpointTileSetSingleCollection(@Requires ExtensionRegistry extensionRegistry,
-                                    @Requires TilesQueriesHandler queryHandler,
-                                    @Requires FeaturesCoreProviders providers) {
+    @Inject
+    EndpointTileSetSingleCollection(ExtensionRegistry extensionRegistry,
+                                    TilesQueriesHandler queryHandler,
+                                    FeaturesCoreProviders providers) {
         super(extensionRegistry, queryHandler, providers);
     }
 

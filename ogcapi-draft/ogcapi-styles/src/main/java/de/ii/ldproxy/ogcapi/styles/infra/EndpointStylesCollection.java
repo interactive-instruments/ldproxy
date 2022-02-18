@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -27,13 +28,10 @@ import de.ii.ldproxy.ogcapi.styles.domain.ImmutableQueryInputStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesFormatExtension;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -41,15 +39,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * fetch list of styles associated with a collection
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointStylesCollection extends EndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStylesCollection.class);
@@ -58,8 +55,9 @@ public class EndpointStylesCollection extends EndpointSubCollection implements C
 
     private final QueriesHandlerStyles queryHandler;
 
-    public EndpointStylesCollection(@Requires ExtensionRegistry extensionRegistry,
-                                    @Requires QueriesHandlerStyles queryHandler) {
+    @Inject
+    public EndpointStylesCollection(ExtensionRegistry extensionRegistry,
+                                    QueriesHandlerStyles queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

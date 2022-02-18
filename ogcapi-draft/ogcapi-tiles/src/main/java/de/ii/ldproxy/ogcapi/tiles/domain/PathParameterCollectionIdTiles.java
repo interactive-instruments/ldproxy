@@ -13,17 +13,16 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class PathParameterCollectionIdTiles extends AbstractPathParameterCollectionId {
 
     @Override

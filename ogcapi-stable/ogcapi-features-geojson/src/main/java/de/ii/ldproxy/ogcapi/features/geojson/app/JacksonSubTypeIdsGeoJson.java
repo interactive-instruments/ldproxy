@@ -18,6 +18,7 @@ import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
  * @author zahnen

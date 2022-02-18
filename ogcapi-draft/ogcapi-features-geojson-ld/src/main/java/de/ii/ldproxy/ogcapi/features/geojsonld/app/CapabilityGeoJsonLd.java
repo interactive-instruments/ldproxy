@@ -10,14 +10,13 @@ package de.ii.ldproxy.ogcapi.features.geojsonld.app;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojsonld.domain.ImmutableGeoJsonLdConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityGeoJsonLd implements ApiBuildingBlock {
 
     @Override

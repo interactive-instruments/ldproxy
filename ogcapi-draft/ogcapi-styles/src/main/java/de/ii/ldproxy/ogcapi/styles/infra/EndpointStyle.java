@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
@@ -16,7 +17,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
@@ -24,38 +24,34 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableQueryInputStyle;
 import de.ii.ldproxy.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
+import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * fetch the stylesheet of a style
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointStyle extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyle.class);
@@ -66,10 +62,11 @@ public class EndpointStyle extends Endpoint {
     private final QueriesHandlerStyles queryHandler;
     private final I18n i18n;
 
-    public EndpointStyle(@Requires ExtensionRegistry extensionRegistry,
-                         @Requires StyleRepository styleRepository,
-                         @Requires I18n i18n,
-                         @Requires QueriesHandlerStyles queryHandler) {
+    @Inject
+    public EndpointStyle(ExtensionRegistry extensionRegistry,
+                         StyleRepository styleRepository,
+                         I18n i18n,
+                         QueriesHandlerStyles queryHandler) {
         super(extensionRegistry);
         this.styleRepository = styleRepository;
         this.i18n = i18n;

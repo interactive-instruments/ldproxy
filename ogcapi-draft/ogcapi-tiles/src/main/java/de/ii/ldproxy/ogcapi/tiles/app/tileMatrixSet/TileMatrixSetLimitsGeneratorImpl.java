@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
-import com.google.common.collect.ImmutableList;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.app.TilesHelper;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
@@ -15,33 +15,26 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 
 /**
  * This class is responsible for generating a list of tileMatrixSetLimits in json responses for /tiles and /collections/{collectionsId}/tiles requests.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGenerator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileMatrixSetLimitsGeneratorImpl.class);
     private final CrsTransformerFactory crsTransformerFactory;
 
-    public TileMatrixSetLimitsGeneratorImpl(@Requires CrsTransformerFactory crsTransformerFactory) {
+    @Inject
+    public TileMatrixSetLimitsGeneratorImpl(CrsTransformerFactory crsTransformerFactory) {
         this.crsTransformerFactory = crsTransformerFactory;
     }
 

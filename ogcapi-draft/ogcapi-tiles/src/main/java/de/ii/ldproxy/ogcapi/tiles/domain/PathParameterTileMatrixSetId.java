@@ -8,32 +8,29 @@
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
 
     public static final String TMS_REGEX = "\\w+";
@@ -44,10 +41,11 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     protected ConcurrentMap<Integer, Schema> schemaMap = new ConcurrentHashMap<>();
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public PathParameterTileMatrixSetId(@Requires ExtensionRegistry extensionRegistry,
-                                        @Requires FeaturesCoreProviders providers,
-                                        @Requires FeatureProcessInfo featureProcessInfo,
-                                        @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    public PathParameterTileMatrixSetId(ExtensionRegistry extensionRegistry,
+                                        FeaturesCoreProviders providers,
+                                        FeatureProcessInfo featureProcessInfo,
+                                        TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;
         this.providers = providers;
         this.featureProcessInfo = featureProcessInfo;

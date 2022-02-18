@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSIT
 import de.ii.ldproxy.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
  * @author zahnen

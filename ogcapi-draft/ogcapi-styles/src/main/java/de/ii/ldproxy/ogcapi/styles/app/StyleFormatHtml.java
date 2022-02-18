@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.styles.app;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ArrayListMultimap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -27,29 +28,21 @@ import de.ii.ldproxy.ogcapi.styles.domain.MbStyleVectorSource;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
-import de.ii.xtraplatform.store.domain.legacy.KeyValueStore;
+import de.ii.xtraplatform.base.domain.AppContext;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class StyleFormatHtml implements StyleFormatExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatHtml.class);
@@ -62,16 +55,15 @@ public class StyleFormatHtml implements StyleFormatExtension {
 
     private final Schema schemaStyle;
     private final SchemaGenerator schemaGenerator;
-    private final KeyValueStore keyValueStore;
-    private final XtraPlatform xtraPlatform;
+    private final AppContext appContext;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/htmlSchema";
 
-    public StyleFormatHtml(@Requires SchemaGenerator schemaGenerator, @Requires KeyValueStore keyValueStore,
-                           @Requires XtraPlatform xtraPlatform) {
+    @Inject
+    public StyleFormatHtml(SchemaGenerator schemaGenerator,
+                           AppContext appContext) {
         schemaStyle = new StringSchema().example("<html>...</html>");
         this.schemaGenerator = schemaGenerator;
-        this.keyValueStore = keyValueStore;
-        this.xtraPlatform = xtraPlatform;
+        this.appContext = appContext;
     }
 
     @Override
@@ -129,7 +121,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     // TODO centralize
     @Override
     public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, String collectionId, String styleId) {
-        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
         if (mbStyleOriginal.isEmpty() ||
@@ -163,7 +155,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     @Override
     public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
 
-        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
 
         if (collectionId.isPresent())

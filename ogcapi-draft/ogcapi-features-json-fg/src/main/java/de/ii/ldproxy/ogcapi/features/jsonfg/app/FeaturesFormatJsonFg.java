@@ -7,15 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
@@ -27,6 +21,13 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.WhereConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -34,20 +35,16 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class FeaturesFormatJsonFg implements FeatureFormatExtension {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -66,10 +63,11 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
     private final GeoJsonWriterRegistry geoJsonWriterRegistry;
     private final CrsTransformerFactory crsTransformerFactory;
 
-    public FeaturesFormatJsonFg(@Requires SchemaGeneratorOpenApi schemaGeneratorFeature,
-                                @Requires SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-                                @Requires GeoJsonWriterRegistry geoJsonWriterRegistry,
-                                @Requires CrsTransformerFactory crsTransformerFactory) {
+    @Inject
+    public FeaturesFormatJsonFg(SchemaGeneratorOpenApi schemaGeneratorFeature,
+                                SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
+                                GeoJsonWriterRegistry geoJsonWriterRegistry,
+                                CrsTransformerFactory crsTransformerFactory) {
         this.schemaGeneratorFeature = schemaGeneratorFeature;
         this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
         this.geoJsonWriterRegistry = geoJsonWriterRegistry;

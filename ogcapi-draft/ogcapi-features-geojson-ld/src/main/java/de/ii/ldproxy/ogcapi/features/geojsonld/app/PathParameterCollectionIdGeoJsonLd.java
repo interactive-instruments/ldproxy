@@ -9,13 +9,12 @@ package de.ii.ldproxy.ogcapi.features.geojsonld.app;
 
 import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class PathParameterCollectionIdGeoJsonLd extends AbstractPathParameterCollectionId {
 
     @Override

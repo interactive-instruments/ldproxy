@@ -7,66 +7,57 @@
  */
 package de.ii.ldproxy.ogcapi.routes.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiHeader;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.routes.domain.HtmlForm;
-import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputRoutes;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionInfo;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRouteDefinitionInputs;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypoints;
-import de.ii.ldproxy.ogcapi.routes.domain.ImmutableWaypointsValue;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
-import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingFlag;
-import de.ii.ldproxy.ogcapi.routes.domain.WaypointsValue;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.CORE;
-import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.MODE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * computes routes
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointRoutesGet extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRoutesGet.class);
@@ -75,9 +66,10 @@ public class EndpointRoutesGet extends Endpoint {
     private final QueryHandlerRoutes queryHandler;
     private final FeaturesCoreProviders providers;
 
-    public EndpointRoutesGet(@Requires ExtensionRegistry extensionRegistry,
-                             @Requires QueryHandlerRoutes queryHandler,
-                             @Requires FeaturesCoreProviders providers) {
+    @Inject
+    public EndpointRoutesGet(ExtensionRegistry extensionRegistry,
+                             QueryHandlerRoutes queryHandler,
+                             FeaturesCoreProviders providers) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
         this.providers = providers;

@@ -16,9 +16,9 @@ import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import org.osgi.framework.BundleContext;
 
 import javax.ws.rs.NotFoundException;
@@ -34,15 +34,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 /**
  * Access tiles in Mbtiles files.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
 
     private static final String TILES_DIR_NAME = "tiles";

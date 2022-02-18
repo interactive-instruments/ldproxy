@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
  * add CRS information to the collection information (default list of coordinate reference systems)

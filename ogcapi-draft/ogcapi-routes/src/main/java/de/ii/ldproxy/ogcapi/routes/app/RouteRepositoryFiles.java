@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.routes.app;
 
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
@@ -28,43 +30,30 @@ import de.ii.ldproxy.ogcapi.routes.domain.RouteRepository;
 import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class RouteRepositoryFiles implements RouteRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteRepositoryFiles.class);
@@ -76,11 +65,12 @@ public class RouteRepositoryFiles implements RouteRepository {
     private final RoutesLinksGenerator routesLinkGenerator;
     private final ObjectMapper mapper;
 
-    public RouteRepositoryFiles(@Context BundleContext bundleContext,
-                                @Requires ExtensionRegistry extensionRegistry,
-                                @Requires I18n i18n) throws IOException {
-        this.routesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                .resolve("routes");
+    public RouteRepositoryFiles(AppContext appContext,
+                                ExtensionRegistry extensionRegistry,
+                                I18n i18n) throws IOException {
+        this.routesStore = appContext.getDataDir()
+            .resolve(API_RESOURCES_DIR)
+            .resolve("routes");
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
         this.defaultLinkGenerator = new DefaultLinksGenerator();

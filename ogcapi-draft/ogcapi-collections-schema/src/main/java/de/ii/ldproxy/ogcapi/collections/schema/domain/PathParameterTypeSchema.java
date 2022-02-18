@@ -12,22 +12,22 @@ import de.ii.ldproxy.ogcapi.common.domain.PathParameterType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class PathParameterTypeSchema extends PathParameterType {
 
     final static List<String> TYPES = ImmutableList.of("feature", "collection");
     final static String SCHEMA_TYPE_PATTERN = "[\\w\\-]+";
 
-    public PathParameterTypeSchema(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public PathParameterTypeSchema(ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 

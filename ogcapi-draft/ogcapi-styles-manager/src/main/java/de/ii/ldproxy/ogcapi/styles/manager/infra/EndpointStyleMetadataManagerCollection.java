@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.manager.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
@@ -15,7 +16,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
@@ -32,13 +32,13 @@ import de.ii.ldproxy.ogcapi.styles.manager.domain.QueriesHandlerStylesManager;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -49,18 +49,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * update style metadata
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointStyleMetadataManagerCollection extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleMetadataManagerCollection.class);
@@ -68,8 +64,9 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
 
     private final QueriesHandlerStylesManager queryHandler;
 
-    public EndpointStyleMetadataManagerCollection(@Requires ExtensionRegistry extensionRegistry,
-                                                  @Requires QueriesHandlerStylesManager queryHandler) {
+    @Inject
+    public EndpointStyleMetadataManagerCollection(ExtensionRegistry extensionRegistry,
+                                                  QueriesHandlerStylesManager queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

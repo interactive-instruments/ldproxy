@@ -7,28 +7,22 @@
  */
 package de.ii.ldproxy.resources.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ldproxy.resources.domain.ResourcesFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.Link;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class ResourcesFormatJson implements ResourcesFormatExtension {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -40,7 +34,8 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
     private final Schema schemaResources;
     public final static String SCHEMA_REF_RESOURCES = "#/components/schemas/Resources";
 
-    public ResourcesFormatJson(@Requires SchemaGenerator schemaGenerator) {
+    @Inject
+    public ResourcesFormatJson(SchemaGenerator schemaGenerator) {
         schemaResources = schemaGenerator.getSchema(Resources.class);
     }
 

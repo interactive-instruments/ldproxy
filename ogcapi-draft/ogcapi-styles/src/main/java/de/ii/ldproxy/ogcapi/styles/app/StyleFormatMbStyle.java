@@ -12,7 +12,9 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -23,14 +25,13 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleLayer;
 import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleLayer;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -41,17 +42,14 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatMbStyle.class);
@@ -63,12 +61,13 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             .fileExtension("json")
             .build();
 
-    private final XtraPlatform xtraPlatform;
+    private final AppContext appContext;
     private final Schema schemaStyle;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/MbStyleStylesheet";
 
-    public StyleFormatMbStyle(@Requires XtraPlatform xtraPlatform, @Requires SchemaGenerator schemaGenerator) {
-        this.xtraPlatform = xtraPlatform;
+    @Inject
+    public StyleFormatMbStyle(AppContext appContext, SchemaGenerator schemaGenerator) {
+        this.appContext = appContext;
         this.schemaStyle = schemaGenerator.getSchema(MbStyleStylesheet.class);
     }
 
@@ -131,7 +130,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     @Override
     public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
-        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         return parse(stylesheetContent, serviceUrl, true, false);
     }
@@ -143,7 +142,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     @Override
     public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, String collectionId, String styleId) {
-        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
         if (mbStyleOriginal.isEmpty() ||
@@ -182,7 +181,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         OgcApiDataV2 apiData,
         FeaturesCoreProviders providers,
         EntityRegistry entityRegistry) {
-        URICustomizer uriCustomizer = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         Optional<MbStyleStylesheet> mbStyle = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
         if (mbStyle.isEmpty())

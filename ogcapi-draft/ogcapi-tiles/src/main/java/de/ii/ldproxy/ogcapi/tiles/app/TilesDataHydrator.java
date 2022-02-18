@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -20,30 +21,27 @@ import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class TilesDataHydrator implements OgcApiDataHydratorExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TilesDataHydrator.class);
 
     private final StaticTileProviderStore staticTileProviderStore;
 
-    public TilesDataHydrator(@Requires StaticTileProviderStore staticTileProviderStore) {
+  @Inject
+  public TilesDataHydrator(StaticTileProviderStore staticTileProviderStore) {
         this.staticTileProviderStore = staticTileProviderStore;
     }
 

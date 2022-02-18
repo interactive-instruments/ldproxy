@@ -7,55 +7,44 @@
  */
 package de.ii.ldproxy.resources.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.*;
-import de.ii.ldproxy.ogcapi.styles.domain.QueriesHandlerStyles;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
-import de.ii.ldproxy.resources.app.ImmutableResource;
-import de.ii.ldproxy.resources.app.ImmutableResources;
-import de.ii.ldproxy.resources.app.Resources;
-import de.ii.ldproxy.resources.app.ResourcesLinkGenerator;
-import de.ii.ldproxy.resources.domain.ImmutableQueryInputResource;
 import de.ii.ldproxy.resources.domain.ImmutableQueryInputResources;
 import de.ii.ldproxy.resources.domain.QueriesHandlerResources;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesFormatExtension;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * fetch list of resources available in an API
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointResources extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResources.class);
@@ -65,10 +54,10 @@ public class EndpointResources extends Endpoint {
     private final I18n i18n;
     private final QueriesHandlerResources queryHandler;
 
-    public EndpointResources(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                             @Requires ExtensionRegistry extensionRegistry,
-                             @Requires I18n i18n,
-                             @Requires QueriesHandlerResources queryHandler) {
+    @Inject
+    public EndpointResources(ExtensionRegistry extensionRegistry,
+                             I18n i18n,
+                             QueriesHandlerResources queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
         this.i18n = i18n;

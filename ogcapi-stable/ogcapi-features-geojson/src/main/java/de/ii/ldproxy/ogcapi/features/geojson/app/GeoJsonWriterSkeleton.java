@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
  * @author zahnen

@@ -16,6 +16,7 @@ import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

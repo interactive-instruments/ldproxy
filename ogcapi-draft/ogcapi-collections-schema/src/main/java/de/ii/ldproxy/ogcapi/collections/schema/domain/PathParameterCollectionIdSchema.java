@@ -11,14 +11,13 @@ package de.ii.ldproxy.ogcapi.collections.schema.domain;
 import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class PathParameterCollectionIdSchema extends AbstractPathParameterCollectionId {
 
     @Override

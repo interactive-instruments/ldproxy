@@ -11,34 +11,26 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.Link;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -50,7 +42,8 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     private final Schema schemaStyleMetadata;
     public final static String SCHEMA_REF_STYLE_METADATA = "#/components/schemas/StyleMetadata";
 
-    public StyleMetadataFormatJson(@Requires SchemaGenerator schemaGenerator) {
+    @Inject
+    public StyleMetadataFormatJson(SchemaGenerator schemaGenerator) {
         schemaStyleMetadata = schemaGenerator.getSchema(StyleMetadata.class);
     }
 

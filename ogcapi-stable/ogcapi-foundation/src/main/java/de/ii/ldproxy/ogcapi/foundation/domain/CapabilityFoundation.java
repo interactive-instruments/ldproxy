@@ -10,6 +10,7 @@ package de.ii.ldproxy.ogcapi.foundation.domain;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 @Singleton
 @AutoBind

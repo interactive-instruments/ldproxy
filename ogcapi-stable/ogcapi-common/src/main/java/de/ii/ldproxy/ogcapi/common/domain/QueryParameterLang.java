@@ -21,6 +21,7 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 @Singleton
 @AutoBind

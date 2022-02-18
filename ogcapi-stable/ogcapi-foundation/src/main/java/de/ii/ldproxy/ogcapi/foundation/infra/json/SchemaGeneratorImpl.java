@@ -12,6 +12,7 @@ import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
 import io.swagger.v3.oas.models.media.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

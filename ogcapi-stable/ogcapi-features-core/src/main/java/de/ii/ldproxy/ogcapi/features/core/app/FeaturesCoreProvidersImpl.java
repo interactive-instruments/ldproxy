@@ -19,6 +19,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 @Singleton
 @AutoBind

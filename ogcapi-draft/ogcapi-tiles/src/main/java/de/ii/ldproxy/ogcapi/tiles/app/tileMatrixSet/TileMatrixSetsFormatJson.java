@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -19,16 +20,12 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
 
     public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -42,7 +39,8 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     private final Schema schemaStyleTileMatrixSet;
     public final static String SCHEMA_REF_TILE_MATRIX_SET = "#/components/schemas/TileMatrixSet";
 
-    public TileMatrixSetsFormatJson(@Requires SchemaGenerator schemaGenerator) {
+    @Inject
+    public TileMatrixSetsFormatJson(SchemaGenerator schemaGenerator) {
         schemaStyleTileMatrixSet = schemaGenerator.getSchema(TileMatrixSetData.class);
         schemaStyleTileMatrixSets = schemaGenerator.getSchema(TileMatrixSets.class);
     }

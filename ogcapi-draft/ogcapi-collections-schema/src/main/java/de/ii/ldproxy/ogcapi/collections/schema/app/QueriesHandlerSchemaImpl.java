@@ -7,9 +7,15 @@
  */
 package de.ii.ldproxy.ogcapi.collections.schema.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.schema.domain.QueriesHandlerSchema;
 import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
@@ -21,11 +27,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -38,20 +39,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.immutables.value.Value;
 
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
 
     public enum Query implements QueryIdentifier {SCHEMA}
@@ -73,7 +71,8 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
     private final JsonSchemaCache schemaCache;
     private final JsonSchemaCache schemaCacheCollection;
 
-    public QueriesHandlerSchemaImpl(@Requires I18n i18n, @Requires FeaturesCoreProviders providers, @Requires EntityRegistry entityRegistry) {
+    @Inject
+    public QueriesHandlerSchemaImpl(I18n i18n, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
         this.i18n = i18n;
         this.providers = providers;
         this.queryHandlers = ImmutableMap.of(

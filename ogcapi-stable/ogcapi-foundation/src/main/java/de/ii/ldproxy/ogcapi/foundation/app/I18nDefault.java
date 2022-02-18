@@ -14,6 +14,7 @@ import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import java.util.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 @Singleton
 @AutoBind

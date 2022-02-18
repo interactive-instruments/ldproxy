@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.maps.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
@@ -21,28 +22,25 @@ import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * add tiling information to the dataset metadata
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class MapTilesOnLandingPage implements LandingPageExtension {
 
     private final I18n i18n;
     private final ExtensionRegistry extensionRegistry;
 
-    public MapTilesOnLandingPage(@Requires I18n i18n,
-                                 @Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public MapTilesOnLandingPage(I18n i18n,
+                                 ExtensionRegistry extensionRegistry) {
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
     }

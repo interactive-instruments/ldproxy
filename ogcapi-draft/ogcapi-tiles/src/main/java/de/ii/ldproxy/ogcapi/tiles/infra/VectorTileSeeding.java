@@ -7,8 +7,11 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
@@ -21,8 +24,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileMultiLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTile;
@@ -34,27 +35,20 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.services.domain.TaskContext;
-import java.sql.SQLException;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -62,15 +56,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is responsible for a automatic generation of the Tiles.
  * The range is specified in the config.
  * The automatic generation is executed, when the server is started/restarted.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VectorTileSeeding.class);
@@ -79,24 +76,25 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
     private final ExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TileCache tileCache;
-    private final XtraPlatform xtraPlatform;
+    private final AppContext appContext;
     private final FeaturesCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public VectorTileSeeding(@Requires CrsTransformerFactory crsTransformerFactory,
-                             @Requires ExtensionRegistry extensionRegistry,
-                             @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                             @Requires TileCache tileCache,
-                             @Requires XtraPlatform xtraPlatform,
-                             @Requires FeaturesCoreProviders providers,
-                             @Requires TilesQueriesHandler queryHandler,
-                             @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    public VectorTileSeeding(CrsTransformerFactory crsTransformerFactory,
+                             ExtensionRegistry extensionRegistry,
+                             TileMatrixSetLimitsGenerator limitsGenerator,
+                             TileCache tileCache,
+                             AppContext appContext,
+                             FeaturesCoreProviders providers,
+                             TilesQueriesHandler queryHandler,
+                             TileMatrixSetRepository tileMatrixSetRepository) {
         this.crsTransformerFactory = crsTransformerFactory;
         this.extensionRegistry = extensionRegistry;
         this.limitsGenerator = limitsGenerator;
         this.tileCache = tileCache;
-        this.xtraPlatform = xtraPlatform;
+        this.appContext = appContext;
         this.providers = providers;
         this.queryHandler = queryHandler;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
@@ -252,7 +250,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             }
 
             URI uri;
-            String uriString = String.format("%s/%s/collections/%s/tiles/%s/%s/%s/%s", xtraPlatform.getServicesUri(), apiData.getId(), collectionId, tileMatrixSet.getId(), level, row, col);
+            String uriString = String.format("%s/%s/collections/%s/tiles/%s/%s/%s/%s", appContext.getUri().resolve("rest/services"), apiData.getId(), collectionId, tileMatrixSet.getId(), level, row, col);
             try {
                 uri = new URI(uriString);
             } catch (URISyntaxException e) {
@@ -374,7 +372,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             }
 
             URI uri;
-            String uriString = String.format("%s/%s/tiles/%s/%s/%s/%s", xtraPlatform.getServicesUri(), apiData.getId(), tileMatrixSet.getId(), level, row, col);
+            String uriString = String.format("%s/%s/tiles/%s/%s/%s/%s", appContext.getUri().resolve("rest/services"), apiData.getId(), tileMatrixSet.getId(), level, row, col);
             try {
                 uri = new URI(uriString);
             } catch (URISyntaxException e) {

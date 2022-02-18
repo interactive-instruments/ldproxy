@@ -7,19 +7,41 @@
  */
 package de.ii.ldproxy.ogcapi.routes.infra;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.CORE;
+import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.MODE;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.hash.Hashing;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiHeader;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
+import de.ii.ldproxy.ogcapi.foundation.domain.Example;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableExample;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.routes.domain.HtmlForm;
 import de.ii.ldproxy.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
@@ -32,7 +54,6 @@ import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteRepository;
-import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.WaypointsValue;
 import de.ii.xtraplatform.auth.domain.User;
@@ -45,13 +66,14 @@ import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -59,22 +81,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.CORE;
-import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.MODE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * computes routes
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
 
     public static final ApiMediaType REQUEST_MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -93,12 +107,13 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     private ObjectMapper mapper;
     private final RouteRepository routeRepository;
 
-    public EndpointRoutesPost(@Requires ExtensionRegistry extensionRegistry,
-                              @Requires QueryHandlerRoutes queryHandler,
-                              @Requires SchemaGenerator schemaGenerator,
-                              @Requires FeaturesQuery ogcApiFeaturesQuery,
-                              @Requires FeaturesCoreProviders providers,
-                              @Requires RouteRepository routeRepository) {
+    @Inject
+    public EndpointRoutesPost(ExtensionRegistry extensionRegistry,
+                              QueryHandlerRoutes queryHandler,
+                              SchemaGenerator schemaGenerator,
+                              FeaturesQuery ogcApiFeaturesQuery,
+                              FeaturesCoreProviders providers,
+                              RouteRepository routeRepository) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
         this.schemaRouteDefinition = schemaGenerator.getSchema(RouteDefinition.class);

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
@@ -15,7 +16,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
@@ -26,13 +26,10 @@ import de.ii.ldproxy.ogcapi.styles.domain.ImmutableQueryInputStyle;
 import de.ii.ldproxy.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -40,15 +37,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * fetch list the metadata of a style
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointStyleMetadata extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleMetadata.class);
@@ -57,8 +53,9 @@ public class EndpointStyleMetadata extends Endpoint {
 
     private final QueriesHandlerStyles queryHandler;
 
-    public EndpointStyleMetadata(@Requires ExtensionRegistry extensionRegistry,
-                                 @Requires QueriesHandlerStyles queryHandler) {
+    @Inject
+    public EndpointStyleMetadata(ExtensionRegistry extensionRegistry,
+                                 QueriesHandlerStyles queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

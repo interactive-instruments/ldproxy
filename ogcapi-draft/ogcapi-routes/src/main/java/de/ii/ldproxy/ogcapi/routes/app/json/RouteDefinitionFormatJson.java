@@ -10,6 +10,8 @@ package de.ii.ldproxy.ogcapi.routes.app.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -18,22 +20,17 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class RouteDefinitionFormatJson implements RouteDefinitionFormatExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteDefinitionFormatJson.class);
@@ -47,8 +44,9 @@ public class RouteDefinitionFormatJson implements RouteDefinitionFormatExtension
     private final Schema schemaRouteDefinition;
     public final static String SCHEMA_REF_ROUTE_DEFINITION = "#/components/schemas/RouteDefinition";
 
-    public RouteDefinitionFormatJson(@Requires SchemaGenerator schemaGenerator,
-                                     @Requires GeoJsonWriterRegistry geoJsonWriterRegistry) {
+    @Inject
+    public RouteDefinitionFormatJson(SchemaGenerator schemaGenerator,
+                                     GeoJsonWriterRegistry geoJsonWriterRegistry) {
         this.schemaRouteDefinition = schemaGenerator.getSchema(RouteDefinition.class);
     }
 

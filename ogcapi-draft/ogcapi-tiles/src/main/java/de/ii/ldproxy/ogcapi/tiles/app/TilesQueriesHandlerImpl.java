@@ -7,9 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
@@ -21,8 +24,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
@@ -39,8 +40,8 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -57,23 +58,6 @@ import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReducedTransformed;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -90,10 +74,23 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TilesQueriesHandlerImpl.class);
@@ -109,15 +106,16 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     private final FeaturesCoreProviders providers;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public TilesQueriesHandlerImpl(@Requires I18n i18n,
-                                   @Requires CrsTransformerFactory crsTransformerFactory,
-                                   @Requires EntityRegistry entityRegistry,
-                                   @Requires ExtensionRegistry extensionRegistry,
-                                   @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                                   @Requires TileCache tileCache,
-                                   @Requires StaticTileProviderStore staticTileProviderStore,
-                                   @Requires FeaturesCoreProviders providers,
-                                   @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    public TilesQueriesHandlerImpl(I18n i18n,
+                                   CrsTransformerFactory crsTransformerFactory,
+                                   EntityRegistry entityRegistry,
+                                   ExtensionRegistry extensionRegistry,
+                                   TileMatrixSetLimitsGenerator limitsGenerator,
+                                   TileCache tileCache,
+                                   StaticTileProviderStore staticTileProviderStore,
+                                   FeaturesCoreProviders providers,
+                                   TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;

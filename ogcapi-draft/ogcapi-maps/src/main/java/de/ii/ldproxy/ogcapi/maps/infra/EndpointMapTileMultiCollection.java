@@ -7,24 +7,22 @@
  */
 package de.ii.ldproxy.ogcapi.maps.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.api.AbstractEndpointTileMultiCollection;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileProvider;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
@@ -32,13 +30,11 @@ import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
@@ -46,20 +42,16 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handle responses under '/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointMapTileMultiCollection.class);
@@ -68,14 +60,15 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
 
     private final Client client;
 
-    EndpointMapTileMultiCollection(@Requires FeaturesCoreProviders providers,
-                                   @Requires ExtensionRegistry extensionRegistry,
-                                   @Requires TilesQueriesHandler queryHandler,
-                                   @Requires CrsTransformerFactory crsTransformerFactory,
-                                   @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                                   @Requires TileCache cache,
-                                   @Requires StaticTileProviderStore staticTileProviderStore,
-                                   @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    EndpointMapTileMultiCollection(FeaturesCoreProviders providers,
+                                   ExtensionRegistry extensionRegistry,
+                                   TilesQueriesHandler queryHandler,
+                                   CrsTransformerFactory crsTransformerFactory,
+                                   TileMatrixSetLimitsGenerator limitsGenerator,
+                                   TileCache cache,
+                                   StaticTileProviderStore staticTileProviderStore,
+                                   TileMatrixSetRepository tileMatrixSetRepository) {
         super(providers, extensionRegistry, queryHandler, crsTransformerFactory, limitsGenerator, cache, staticTileProviderStore, tileMatrixSetRepository);
         this.client = ClientBuilder.newClient();
     }

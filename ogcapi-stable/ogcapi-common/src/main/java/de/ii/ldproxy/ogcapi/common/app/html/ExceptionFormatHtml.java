@@ -21,6 +21,7 @@ import io.dropwizard.jersey.errors.ErrorEntityWriter;
 import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import javax.ws.rs.core.MediaType;
 
 @Singleton

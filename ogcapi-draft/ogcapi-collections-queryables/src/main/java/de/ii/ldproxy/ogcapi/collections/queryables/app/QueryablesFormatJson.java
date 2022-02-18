@@ -20,7 +20,9 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -33,6 +35,10 @@ public class QueryablesFormatJson implements QueryablesFormatExtension {
             .label("JSON")
             .parameter("json")
             .build();
+
+    @Inject
+    QueryablesFormatJson() {
+    }
 
     @Override
     public ApiMediaType getMediaType() {

@@ -7,14 +7,13 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.CACHE_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesTileset;
@@ -26,9 +25,10 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
+import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -57,21 +56,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
+import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Access to the cache for tile files.
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class TileCacheImpl implements TileCache {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TileCacheImpl.class);
@@ -92,17 +85,19 @@ public class TileCacheImpl implements TileCache {
     /**
      * set data directory
      */
-    public TileCacheImpl(@Context BundleContext bundleContext,
-                         @Requires TileMatrixSetLimitsGenerator limitsGenerator,
-                         @Requires FeaturesCoreProviders providers,
-                         @Requires SchemaInfo schemaInfo,
-                         @Requires ExtensionRegistry extensionRegistry,
-                         @Requires EntityRegistry entityRegistry,
-                         @Requires TileMatrixSetRepository tileMatrixSetRepository,
-                         @Requires CrsTransformerFactory crsTransformerFactory) throws IOException {
+    @Inject
+    public TileCacheImpl(AppContext appContext,
+                         TileMatrixSetLimitsGenerator limitsGenerator,
+                         FeaturesCoreProviders providers,
+                         SchemaInfo schemaInfo,
+                         ExtensionRegistry extensionRegistry,
+                         EntityRegistry entityRegistry,
+                         TileMatrixSetRepository tileMatrixSetRepository,
+                         CrsTransformerFactory crsTransformerFactory) throws IOException {
         // the ldproxy data directory, in development environment this would be ./build/data
-        this.cacheStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), CACHE_DIR)
-                               .resolve(TILES_DIR_NAME);
+        this.cacheStore = appContext.getDataDir()
+            .resolve(CACHE_DIR)
+            .resolve(TILES_DIR_NAME);
         this.limitsGenerator = limitsGenerator;
         this.providers = providers;
         this.schemaInfo = schemaInfo;

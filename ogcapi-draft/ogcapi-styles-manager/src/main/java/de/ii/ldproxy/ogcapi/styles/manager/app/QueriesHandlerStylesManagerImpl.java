@@ -7,15 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.manager.app;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.github.fge.jsonpatch.JsonPatchException;
-import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
@@ -24,37 +16,26 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
-import de.ii.ldproxy.ogcapi.json.domain.JsonConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
-import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ldproxy.ogcapi.styles.manager.domain.QueriesHandlerStylesManager;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.swing.text.Style;
-import javax.ws.rs.BadRequestException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
 
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class QueriesHandlerStylesManagerImpl implements QueriesHandlerStylesManager {
 
     private final I18n i18n;
@@ -62,9 +43,10 @@ public class QueriesHandlerStylesManagerImpl implements QueriesHandlerStylesMana
     private final ExtensionRegistry extensionRegistry;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
-    public QueriesHandlerStylesManagerImpl(@Requires ExtensionRegistry extensionRegistry,
-                                           @Requires I18n i18n,
-                                           @Requires StyleRepository styleRepository) {
+    @Inject
+    public QueriesHandlerStylesManagerImpl(ExtensionRegistry extensionRegistry,
+                                           I18n i18n,
+                                           StyleRepository styleRepository) {
         this.extensionRegistry = extensionRegistry;
         this.i18n = i18n;
         this.styleRepository = styleRepository;

@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import javax.measure.Unit;
 import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;

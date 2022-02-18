@@ -19,6 +19,7 @@ import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 //TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be moved to community
 @Singleton

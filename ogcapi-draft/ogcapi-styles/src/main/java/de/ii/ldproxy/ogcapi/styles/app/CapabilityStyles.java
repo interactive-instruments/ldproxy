@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -14,19 +15,17 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityStyles implements ApiBuildingBlock {
 
     private final ExtensionRegistry extensionRegistry;
 
-    public CapabilityStyles(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public CapabilityStyles(ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 

@@ -15,9 +15,9 @@ import de.ii.xtraplatform.features.domain.SortKey;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,9 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class QueryParameterSortbyFeatures extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
 
     final static Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.manager.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
@@ -32,13 +33,13 @@ import de.ii.ldproxy.ogcapi.styles.manager.domain.ImmutableQueryInputStyleDelete
 import de.ii.ldproxy.ogcapi.styles.manager.domain.QueriesHandlerStylesManager;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -50,18 +51,14 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * creates, updates and deletes a style from the service
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointStylesManagerCollection extends EndpointSubCollection implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStylesManagerCollection.class);
@@ -69,8 +66,9 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
 
     private final QueriesHandlerStylesManager queryHandler;
 
-    public EndpointStylesManagerCollection(@Requires ExtensionRegistry extensionRegistry,
-                                           @Requires QueriesHandlerStylesManager queryHandler) {
+    @Inject
+    public EndpointStylesManagerCollection(ExtensionRegistry extensionRegistry,
+                                           QueriesHandlerStylesManager queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

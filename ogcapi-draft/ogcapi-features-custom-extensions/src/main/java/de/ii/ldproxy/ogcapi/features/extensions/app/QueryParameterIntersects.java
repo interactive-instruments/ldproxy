@@ -22,33 +22,31 @@ import de.ii.ldproxy.ogcapi.features.extensions.domain.FeaturesExtensionsConfigu
 import de.ii.ldproxy.ogcapi.features.extensions.domain.GeometryHelperWKT;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.streams.domain.Http;
-import de.ii.xtraplatform.streams.domain.HttpClient;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
-@Provides
-@Instantiate
+//TODO: http
+@Singleton
+@AutoBind
 public class QueryParameterIntersects extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final FeaturesCoreProviders providers;
     private final GeometryHelperWKT geometryHelper;
-    private final HttpClient httpClient;
+    //private final HttpClient httpClient;
 
-    public QueryParameterIntersects(@Requires FeaturesCoreProviders providers,
-                                    @Requires GeometryHelperWKT geometryHelper,
-                                    @Requires Http http) {
+    @Inject
+    public QueryParameterIntersects(FeaturesCoreProviders providers,
+                                    GeometryHelperWKT geometryHelper
+                                    /*Http http*/) {
         this.providers = providers;
         this.geometryHelper = geometryHelper;
-        this.httpClient = http.getDefaultClient();
+        //this.httpClient = http.getDefaultClient();
     }
 
     @Override
@@ -137,7 +135,7 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
     }
 
     private String getGeometry(String coordRef) {
-        String response = httpClient.getAsString(coordRef);
+        String response = null;//TODO httpClient.getAsString(coordRef);
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = null;

@@ -7,46 +7,47 @@
  */
 package de.ii.ldproxy.resources.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.osgi.framework.BundleContext;
-
+import de.ii.xtraplatform.base.domain.AppContext;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-
-import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * add resources link to the landing page
  *
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class ResourcesOnLandingPage implements LandingPageExtension {
 
     private final I18n i18n;
     private final Path resourcesStore;
 
-    public ResourcesOnLandingPage(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext,
-                                  @Requires I18n i18n) throws IOException {
-        this.resourcesStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                   .resolve("resources");
+    @Inject
+    public ResourcesOnLandingPage(AppContext appContext,
+                                  I18n i18n) throws IOException {
+        this.resourcesStore = appContext.getDataDir()
+            .resolve(API_RESOURCES_DIR)
+            .resolve("resources");
         Files.createDirectories(resourcesStore);
         this.i18n = i18n;
     }

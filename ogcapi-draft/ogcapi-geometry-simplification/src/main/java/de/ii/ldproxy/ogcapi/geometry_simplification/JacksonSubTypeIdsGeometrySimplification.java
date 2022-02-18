@@ -10,9 +10,9 @@ package de.ii.ldproxy.ogcapi.geometry_simplification;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 import java.util.Map;
 
@@ -20,9 +20,8 @@ import java.util.Map;
 /**
  * @author zahnen
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class JacksonSubTypeIdsGeometrySimplification implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {

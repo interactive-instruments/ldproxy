@@ -7,49 +7,43 @@
  */
 package de.ii.ldproxy.ogcapi.routes.app;
 
+import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.CORE;
+import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.MODE;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclarationExtension;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableConformanceDeclaration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.routes.sql.domain.Preference;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.CORE;
-import static de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting.MODE;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * add routes information to the conformance declaration
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExtension {
 
     private final FeaturesCoreProviders providers;
 
-    public RoutesOnConformanceDeclaration(@Requires FeaturesCoreProviders providers) {
+    @Inject
+    public RoutesOnConformanceDeclaration(FeaturesCoreProviders providers) {
         this.providers = providers;
     }
 

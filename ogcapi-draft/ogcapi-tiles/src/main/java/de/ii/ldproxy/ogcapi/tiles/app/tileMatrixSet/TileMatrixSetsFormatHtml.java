@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -22,17 +23,13 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -42,7 +39,8 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
 
     private final I18n i18n;
 
-    public TileMatrixSetsFormatHtml(@Requires I18n i18n) {
+    @Inject
+    public TileMatrixSetsFormatHtml(I18n i18n) {
         this.i18n = i18n;
     }
 

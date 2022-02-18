@@ -7,16 +7,19 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.base.domain.AppConfiguration;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.dropwizard.domain.Dropwizard;
-import de.ii.xtraplatform.runtime.domain.LogContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.web.domain.DropwizardPlugin;
 import io.dropwizard.servlets.tasks.Task;
+import io.dropwizard.setup.Environment;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
@@ -25,9 +28,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -35,9 +37,9 @@ import org.slf4j.MDC;
 /**
  * @author zahnen
  */
-@Component
-@Instantiate
-public class PurgeTileCacheTask extends Task {
+@Singleton
+@AutoBind
+public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PurgeTileCacheTask.class);
   private static final Splitter SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
@@ -46,15 +48,20 @@ public class PurgeTileCacheTask extends Task {
   private final TileMatrixSetRepository tileMatrixSetRepository;
   private final TileCache tileCache;
 
-  protected PurgeTileCacheTask(@Requires Dropwizard dropwizard,
-      @Requires EntityRegistry entityRegistry,
-      @Requires TileMatrixSetRepository tileMatrixSetRepository, @Requires TileCache tileCache) {
+  @Inject
+  protected PurgeTileCacheTask(
+      EntityRegistry entityRegistry,
+      TileMatrixSetRepository tileMatrixSetRepository,
+      TileCache tileCache) {
     super("purge-tile-cache");
     this.entityRegistry = entityRegistry;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
     this.tileCache = tileCache;
+  }
 
-    dropwizard.getEnvironment().admin().addTask(this);
+  @Override
+  public void init(AppConfiguration configuration, Environment environment) {
+    environment.admin().addTask(this);
   }
 
   @Override

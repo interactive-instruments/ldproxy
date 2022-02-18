@@ -11,13 +11,12 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableWhereConfiguration;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityJsonFg implements ApiBuildingBlock {
 
     @Override

@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app.html;
 
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -25,24 +28,18 @@ import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsView;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.xtraplatform.dropwizard.domain.XtraPlatform;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.base.domain.AppContext;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 
-import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class TileSetsFormatHtml implements TileSetsFormatExtension {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
@@ -51,14 +48,15 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
             .build();
 
     private final I18n i18n;
-    private final XtraPlatform xtraPlatform;
+    private final AppContext appContext;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    public TileSetsFormatHtml(@Requires I18n i18n,
-                              @Requires XtraPlatform xtraPlatform,
-                              @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    public TileSetsFormatHtml(I18n i18n,
+                              AppContext appContext,
+                              TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
-        this.xtraPlatform = xtraPlatform;
+        this.appContext = appContext;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
@@ -143,7 +141,7 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                 : api.getData().getExtension(TilesConfiguration.class, collectionId.get());
         MapClient.Type mapClientType = tilesConfig.map(TilesConfiguration::getMapClientType)
                                                   .orElse(MapClient.Type.MAP_LIBRE);
-        String serviceUrl = new URICustomizer(xtraPlatform.getServicesUri()).ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new)).toString();
+        String serviceUrl = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new)).toString();
         String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(tilesConfig.map(TilesConfiguration::getStyle), collectionId, serviceUrl))
                                     .orElse(null);
         boolean removeZoomLevelConstraints = tilesConfig.map(TilesConfiguration::getRemoveZoomLevelConstraints)

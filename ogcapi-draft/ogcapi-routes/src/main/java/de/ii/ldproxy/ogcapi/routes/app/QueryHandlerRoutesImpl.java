@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.routes.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
@@ -22,17 +23,16 @@ import de.ii.ldproxy.ogcapi.routes.app.json.RouteDefinitionFormatJson;
 import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableFeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutes;
-import de.ii.ldproxy.ogcapi.routes.domain.Route;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionFormatExtension;
-import de.ii.ldproxy.ogcapi.routes.domain.RouteRepository;
-import de.ii.ldproxy.ogcapi.routes.domain.Routes;
-import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
-import de.ii.xtraplatform.routes.sql.domain.Preference;
 import de.ii.ldproxy.ogcapi.routes.domain.QueryHandlerRoutes;
+import de.ii.ldproxy.ogcapi.routes.domain.Route;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinition;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionInputs;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
+import de.ii.ldproxy.ogcapi.routes.domain.RouteRepository;
+import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
+import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingFlag;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -46,24 +46,13 @@ import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.ImmutableRouteQuery;
+import de.ii.xtraplatform.routes.sql.domain.Preference;
 import de.ii.xtraplatform.routes.sql.domain.RouteQuery;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -74,10 +63,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
-@Component
-@Instantiate
-@Provides
+@Singleton
+@AutoBind
 public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
     private final I18n i18n;
@@ -87,11 +84,12 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
     private final CrsSupport crsSupport;
     private final RouteRepository routeRepository;
 
-    public QueryHandlerRoutesImpl(@Requires I18n i18n,
-                                  @Requires CrsTransformerFactory crsTransformerFactory,
-                                  @Requires EntityRegistry entityRegistry,
-                                  @Requires CrsSupport crsSupport,
-                                  @Requires RouteRepository routeRepository) {
+    @Inject
+    public QueryHandlerRoutesImpl(I18n i18n,
+                                  CrsTransformerFactory crsTransformerFactory,
+                                  EntityRegistry entityRegistry,
+                                  CrsSupport crsSupport,
+                                  RouteRepository routeRepository) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;

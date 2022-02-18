@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.routes.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
@@ -27,27 +28,23 @@ import de.ii.ldproxy.ogcapi.routes.domain.RouteDefinitionFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * fetch the definition of a route
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointRouteDefinition extends Endpoint {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteDefinition.class);
@@ -56,8 +53,9 @@ public class EndpointRouteDefinition extends Endpoint {
 
     private final QueryHandlerRoutes queryHandler;
 
-    public EndpointRouteDefinition(@Requires ExtensionRegistry extensionRegistry,
-                                   @Requires QueryHandlerRoutes queryHandler) {
+    @Inject
+    public EndpointRouteDefinition(ExtensionRegistry extensionRegistry,
+                                   QueryHandlerRoutes queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
     }

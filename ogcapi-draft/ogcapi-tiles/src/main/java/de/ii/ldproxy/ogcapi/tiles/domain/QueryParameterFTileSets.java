@@ -7,22 +7,21 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class QueryParameterFTileSets extends QueryParameterF {
 
-    protected QueryParameterFTileSets(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    protected QueryParameterFTileSets(ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 

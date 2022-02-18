@@ -7,38 +7,34 @@
  */
 package de.ii.ldproxy.ogcapi.filter.api;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApiQueryParameter {
 
     public static final String FILTER_CRS = "filter-crs";
@@ -47,8 +43,9 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
     private final CrsSupport crsSupport;
     private final FeaturesCoreProviders providers;
 
-    public QueryParameterFilterCrs(@Requires CrsSupport crsSupport,
-                                   @Requires FeaturesCoreProviders providers) {
+    @Inject
+    public QueryParameterFilterCrs(CrsSupport crsSupport,
+                                   FeaturesCoreProviders providers) {
         this.crsSupport = crsSupport;
         this.providers = providers;
     }

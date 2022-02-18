@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.resources.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
@@ -15,19 +16,16 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesFormatExtension;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class QueryParameterFResources extends QueryParameterF {
 
-    public QueryParameterFResources(@Requires ExtensionRegistry extensionRegistry) {
+    @Inject
+    public QueryParameterFResources(ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
     }
 

@@ -7,8 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -25,7 +27,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableQueryInputTileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableQueryInputTileMatrixSets;
@@ -34,28 +35,24 @@ import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * fetch tiling schemes / tile matrix sets that have been configured for an API
  */
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMatrixSets.class);
@@ -65,10 +62,11 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
     private final TileMatrixSetsQueriesHandler queryHandler;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
-    EndpointTileMatrixSets(@Requires ExtensionRegistry extensionRegistry,
-                           @Requires TileMatrixSetsQueriesHandler queryHandler,
-                           @Requires FeaturesCoreProviders providers,
-                           @Requires TileMatrixSetRepository tileMatrixSetRepository) {
+    @Inject
+    EndpointTileMatrixSets(ExtensionRegistry extensionRegistry,
+                           TileMatrixSetsQueriesHandler queryHandler,
+                           FeaturesCoreProviders providers,
+                           TileMatrixSetRepository tileMatrixSetRepository) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
         this.tileMatrixSetRepository = tileMatrixSetRepository;

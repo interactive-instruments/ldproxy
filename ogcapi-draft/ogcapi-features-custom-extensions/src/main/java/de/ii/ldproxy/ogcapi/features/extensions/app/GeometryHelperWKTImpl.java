@@ -12,9 +12,9 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.features.extensions.domain.GeometryHelperWKT;
 import de.ii.ldproxy.ogcapi.features.html.domain.Geometry;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import com.github.azahnen.dagger.annotations.AutoBind;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,9 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class GeometryHelperWKTImpl implements GeometryHelperWKT {
 
     static final String NUMBER_REGEX_NOGROUP = "[+-]?\\d+\\.?\\d*";

@@ -10,7 +10,9 @@ package de.ii.ldproxy.ogcapi.routes.app.json;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -20,23 +22,18 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ldproxy.ogcapi.routes.domain.Route;
 import de.ii.ldproxy.ogcapi.routes.domain.RouteFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
+import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
-import java.util.List;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class RouteFormatGeoJson implements ConformanceClass, RouteFormatExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteFormatGeoJson.class);
@@ -51,8 +48,9 @@ public class RouteFormatGeoJson implements ConformanceClass, RouteFormatExtensio
     private final Schema schemaRouteExchangeModel;
     public final static String SCHEMA_REF_REM = "#/components/schemas/RouteExchangeModel";
 
-    public RouteFormatGeoJson(@Requires SchemaGenerator schemaGenerator,
-                              @Requires GeoJsonWriterRegistry geoJsonWriterRegistry) {
+    @Inject
+    public RouteFormatGeoJson(SchemaGenerator schemaGenerator,
+                              GeoJsonWriterRegistry geoJsonWriterRegistry) {
         this.geoJsonWriterRegistry = geoJsonWriterRegistry;
         this.schemaRouteExchangeModel = schemaGenerator.getSchema(Route.class);
     }
