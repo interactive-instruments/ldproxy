@@ -13,22 +13,19 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ldproxy.ogcapi.features.geojson.app.FeaturesFormatGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.app.JsonGeneratorDebug;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 /**
  * @author zahnen

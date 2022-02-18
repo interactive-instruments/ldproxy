@@ -10,34 +10,29 @@ package de.ii.ldproxy.ogcapi.oas30.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.Metadata;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ldproxy.ogcapi.foundation.domain.Metadata;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension;
-import de.ii.xtraplatform.base.domain.AuthConfig;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.base.domain.AuthConfig;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
+import java.io.IOException;
+import java.util.Comparator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
 
 @Singleton
 @AutoBind
@@ -51,6 +46,7 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
     @Inject
     public ExtendableOpenApiDefinitionImpl(AppContext appContext, ExtensionRegistry extensionRegistry) {
         this.authConfig = appContext.getConfiguration().auth;
+        this.extensionRegistry = extensionRegistry;
     }
 
     @Override

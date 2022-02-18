@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;

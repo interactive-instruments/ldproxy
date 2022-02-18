@@ -7,14 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.foundation.domain;
 
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityFoundation implements ApiBuildingBlock {
+
+    @Inject
+    CapabilityFoundation() {
+    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {

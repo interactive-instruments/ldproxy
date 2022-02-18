@@ -8,14 +8,14 @@
 package de.ii.ldproxy.ogcapi.features.html.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import de.ii.xtraplatform.dropwizard.domain.MustacheRenderer;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
-import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
+import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import de.ii.xtraplatform.web.domain.MustacheRenderer;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;

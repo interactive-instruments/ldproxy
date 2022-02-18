@@ -13,6 +13,7 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.base.domain.AppContext;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;

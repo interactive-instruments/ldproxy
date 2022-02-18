@@ -8,20 +8,20 @@
 package de.ii.ldproxy.ogcapi.collections.app.xml;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.collections.domain.Collections;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -66,7 +66,7 @@ public class CollectionsFormatXml implements CollectionsFormatExtension {
     @Override
     public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
                                       OgcApi api, ApiRequestContext requestContext) {
-        return new OgcApiCollectionsXml(new ImmutableCollections.Builder()
+        return new OgcApiCollectionsXml(ImmutableCollections.builder()
                 .addCollections(ogcApiCollection)
                 .build());
     }

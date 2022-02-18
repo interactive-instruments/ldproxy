@@ -14,9 +14,9 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.Metadata;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.ImmutableCollectionExtent;
-import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableCollectionExtent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableMetadata;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.xtraplatform.store.domain.KeyPathAlias;
 import de.ii.xtraplatform.store.domain.KeyPathAliasUnwrap;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
@@ -32,7 +32,7 @@ public class OgcApiDataV2Defaults implements EntityDataDefaults<OgcApiDataV2> {
 
     private final ExtensionRegistry extensionRegistry;
 
-    public OgcApiDataV2Defaults(@Requires ExtensionRegistry extensionRegistry) {
+    public OgcApiDataV2Defaults(ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
     }
 

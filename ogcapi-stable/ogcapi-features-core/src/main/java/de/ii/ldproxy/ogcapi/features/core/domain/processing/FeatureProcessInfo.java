@@ -7,8 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain.processing;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import java.util.List;
 
 public interface FeatureProcessInfo {

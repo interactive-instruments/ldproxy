@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Optional;

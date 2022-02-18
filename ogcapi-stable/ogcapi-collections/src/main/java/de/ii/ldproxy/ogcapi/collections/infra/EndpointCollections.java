@@ -10,10 +10,10 @@ package de.ii.ldproxy.ogcapi.collections.infra;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputCollections;
-import de.ii.ldproxy.ogcapi.collections.domain.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -23,8 +23,8 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.FoundationValidator;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceSet;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
@@ -138,7 +138,7 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
                                         .map(CollectionsConfiguration::getAdditionalLinks)
                                         .orElse(ImmutableList.of());
 
-        QueriesHandlerCollectionsImpl.QueryInputCollections queryInput = new ImmutableQueryInputCollections.Builder()
+        QueriesHandlerCollectionsImpl.QueryInputCollections queryInput = ImmutableQueryInputCollections.builder()
                 .from(getGenericQueryInput(api.getData()))
                 .additionalLinks(additionalLinks)
                 .build();

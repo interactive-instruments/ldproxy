@@ -13,8 +13,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ContentExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.domain.*;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;

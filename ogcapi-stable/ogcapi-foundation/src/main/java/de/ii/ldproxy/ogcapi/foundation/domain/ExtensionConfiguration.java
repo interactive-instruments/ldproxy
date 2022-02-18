@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.google.common.base.CaseFormat;
-import de.ii.xtraplatform.dropwizard.domain.JacksonProvider;
+import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.store.domain.entities.Mergeable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;

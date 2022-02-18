@@ -8,11 +8,14 @@
 package de.ii.ldproxy.ogcapi.oas30.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.domain.foundation.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.EndpointExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import de.ii.ldproxy.ogcapi.oas30.domain.OpenApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
-
 import java.util.Comparator;
 import javax.inject.Inject;
 import javax.inject.Singleton;

@@ -11,11 +11,11 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.collections.app.ImmutableQueryInputFeatureCollection;
-import de.ii.ldproxy.ogcapi.collections.domain.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.QueriesHandlerCollections;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -26,8 +26,8 @@ import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.FoundationValidator;
 import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiResourceAuxiliary;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
@@ -211,7 +211,7 @@ public class EndpointCollection extends EndpointSubCollection {
                                         .get(collectionId)
                                         .getAdditionalLinks();
 
-        QueriesHandlerCollectionsImpl.QueryInputFeatureCollection queryInput = new ImmutableQueryInputFeatureCollection.Builder()
+        QueriesHandlerCollectionsImpl.QueryInputFeatureCollection queryInput = ImmutableQueryInputFeatureCollection.builder()
                 .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
                 .additionalLinks(additionalLinks)

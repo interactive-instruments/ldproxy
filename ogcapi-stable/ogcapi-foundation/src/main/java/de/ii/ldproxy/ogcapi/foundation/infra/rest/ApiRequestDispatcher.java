@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.foundation.infra.rest;
 
+import static de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_DUMMY;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -15,33 +17,40 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ldproxy.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.RequestInjectableContext;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.security.PermitAll;
-import javax.ws.rs.*;
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotAllowedException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_DUMMY;
+import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind

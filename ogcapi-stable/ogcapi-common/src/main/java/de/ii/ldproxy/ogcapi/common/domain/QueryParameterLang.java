@@ -16,10 +16,8 @@ import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.*;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;

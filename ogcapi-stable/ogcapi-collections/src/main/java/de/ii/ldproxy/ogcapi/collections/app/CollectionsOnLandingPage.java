@@ -9,21 +9,20 @@ package de.ii.ldproxy.ogcapi.collections.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
-import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionsConfiguration;
-import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
-import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
-import de.ii.ldproxy.ogcapi.domain.*;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;

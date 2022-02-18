@@ -7,9 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.app;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
-
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import javax.ws.rs.core.Response;
 
 public interface ExtendableOpenApiDefinition {

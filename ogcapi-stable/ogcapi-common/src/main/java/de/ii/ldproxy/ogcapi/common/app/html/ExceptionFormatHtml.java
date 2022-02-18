@@ -8,21 +8,23 @@
 package de.ii.ldproxy.ogcapi.common.app.html;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiErrorMessage;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiErrorMessage;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExceptionFormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import io.dropwizard.jersey.errors.ErrorEntityWriter;
 import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 import javax.ws.rs.core.MediaType;
 
 @Singleton
-@AutoBind
+@AutoBind(interfaces = {ExceptionFormatExtension.class, FormatExtension.class, ApiExtension.class}) //TODO: workaround for issue in dagger-auto
 public class ExceptionFormatHtml extends ErrorEntityWriter<ApiErrorMessage, OgcApiErrorView> implements ExceptionFormatExtension {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()

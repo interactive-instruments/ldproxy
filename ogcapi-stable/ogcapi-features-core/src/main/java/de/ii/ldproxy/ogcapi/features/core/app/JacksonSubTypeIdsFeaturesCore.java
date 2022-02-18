@@ -9,10 +9,9 @@ package de.ii.ldproxy.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.foundation.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;

@@ -13,20 +13,19 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ApiCatalogProvider;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind

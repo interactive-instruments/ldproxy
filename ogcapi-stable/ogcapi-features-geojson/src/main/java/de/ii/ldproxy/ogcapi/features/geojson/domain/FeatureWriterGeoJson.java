@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.features.core.domain.EncodingAwareContext;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
 
@@ -16,6 +17,7 @@ import java.util.function.Consumer;
 /**
  * @author zahnen
  */
+@AutoMultiBind
 public interface FeatureWriterGeoJson<T extends EncodingAwareContext<?>> {
 
     int getSortPriority();

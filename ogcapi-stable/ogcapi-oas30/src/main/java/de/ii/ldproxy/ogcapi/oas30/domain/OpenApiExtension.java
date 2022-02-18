@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.oas30.domain;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.ApiExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtension;
 import io.swagger.v3.oas.models.OpenAPI;
 
 public interface OpenApiExtension extends ApiExtension {

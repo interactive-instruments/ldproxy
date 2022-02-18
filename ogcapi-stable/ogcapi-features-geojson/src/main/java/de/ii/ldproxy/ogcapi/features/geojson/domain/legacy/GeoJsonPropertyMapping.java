@@ -10,7 +10,6 @@ package de.ii.ldproxy.ogcapi.features.geojson.domain.legacy;
 import de.ii.ldproxy.ogcapi.collections.domain.AbstractOgcApiFeaturesGenericMapping;
 import de.ii.ldproxy.ogcapi.collections.domain.legacy.OgcApiFeaturesGenericMapping;
 import de.ii.xtraplatform.features.domain.legacy.TargetMapping;
-
 import java.util.List;
 
 /**

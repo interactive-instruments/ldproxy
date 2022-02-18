@@ -7,12 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojson.domain;
 
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;

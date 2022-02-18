@@ -10,13 +10,12 @@ package de.ii.ldproxy.ogcapi.features.core.domain.processing;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.Example;
-import de.ii.ldproxy.ogcapi.domain.ExternalDocumentation;
-import org.immutables.value.Value;
-
+import de.ii.ldproxy.ogcapi.foundation.domain.Example;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExternalDocumentation;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)

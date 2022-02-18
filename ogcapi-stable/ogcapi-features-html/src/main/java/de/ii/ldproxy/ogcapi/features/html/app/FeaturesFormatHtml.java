@@ -25,6 +25,8 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.foundation.domain.Metadata;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
@@ -64,6 +66,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
@@ -94,6 +97,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     private final FeaturesCoreValidation featuresCoreValidator;
     private final AppContext appContext;
 
+    @Inject
     public FeaturesFormatHtml(Dropwizard dropwizard, EntityRegistry entityRegistry,
                               I18n i18n, FeaturesCoreProviders providers,
                               FeaturesCoreValidation featuresCoreValidator, AppContext appContext) {

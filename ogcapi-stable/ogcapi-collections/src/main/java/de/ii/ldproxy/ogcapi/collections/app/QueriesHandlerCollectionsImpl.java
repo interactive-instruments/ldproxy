@@ -102,7 +102,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                         i18n,
                         requestContext.getLanguage());
 
-        ImmutableCollections.Builder collections = new ImmutableCollections.Builder()
+        ImmutableCollections.Builder collections = ImmutableCollections.builder()
                 .title(apiData.getLabel())
                 .description(apiData.getDescription().orElse(""))
                 .links(links)

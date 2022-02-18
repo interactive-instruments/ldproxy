@@ -9,6 +9,9 @@ package de.ii.ldproxy.ogcapi.crs.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
+import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -16,15 +19,10 @@ import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
-import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

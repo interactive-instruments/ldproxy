@@ -9,6 +9,12 @@ package de.ii.ldproxy.ogcapi.common.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputConformance;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
+import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
+import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
+import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
+import de.ii.ldproxy.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -16,28 +22,22 @@ import de.ii.ldproxy.ogcapi.foundation.domain.Endpoint;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputConformance;
-import de.ii.ldproxy.ogcapi.common.domain.QueriesHandlerCommon;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl;
-import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
-import de.ii.ldproxy.ogcapi.common.domain.CommonConfiguration;
-import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
+import java.util.List;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Singleton

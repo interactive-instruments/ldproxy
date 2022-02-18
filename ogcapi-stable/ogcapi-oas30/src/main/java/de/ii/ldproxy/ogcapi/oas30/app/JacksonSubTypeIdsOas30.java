@@ -9,10 +9,9 @@ package de.ii.ldproxy.ogcapi.oas30.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;

@@ -8,13 +8,17 @@
 package de.ii.ldproxy.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionsExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
-import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;

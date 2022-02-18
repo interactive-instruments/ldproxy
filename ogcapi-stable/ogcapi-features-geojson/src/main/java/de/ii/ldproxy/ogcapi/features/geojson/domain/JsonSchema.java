@@ -11,10 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
-
-import java.nio.charset.StandardCharsets;
-import java.util.Map;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
 import java.util.Optional;
 import org.immutables.value.Value;
 

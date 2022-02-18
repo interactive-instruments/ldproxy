@@ -7,17 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.app;
 
-import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.domain.foundation.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.foundation.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DEFAULT_PAGE_SIZE;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.MAX_PAGE_SIZE;
 import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.MINIMUM_PAGE_SIZE;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @AutoBind

@@ -15,6 +15,8 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;

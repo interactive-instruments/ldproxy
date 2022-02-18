@@ -10,21 +10,19 @@ package de.ii.ldproxy.ogcapi.crs.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
+import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
-import de.ii.ldproxy.ogcapi.crs.domain.CrsConfiguration;
-import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
-import de.ii.ldproxy.ogcapi.domain.*;
-import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;

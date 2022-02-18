@@ -7,11 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.common.domain;
 
+import static de.ii.xtraplatform.base.domain.util.LambdaWithException.mayThrow;
+import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableMetadata;
-import de.ii.ldproxy.ogcapi.domain.ImmutableTemporalExtent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableMetadata;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableTemporalExtent;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.foundation.domain.Metadata;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
@@ -22,8 +25,6 @@ import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
-
-import javax.annotation.Nullable;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.List;
@@ -32,9 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84;
-import static de.ii.xtraplatform.dropwizard.domain.LambdaWithException.mayThrow;
+import javax.annotation.Nullable;
 
 public abstract class OgcApiDatasetView extends OgcApiView {
 

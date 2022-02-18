@@ -13,9 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
-import de.ii.ldproxy.ogcapi.domain.foundation.*;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -25,10 +23,25 @@ import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -36,22 +49,6 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.models.media.Schema;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -63,6 +60,21 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
@@ -233,7 +245,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         return definitionBuilder.build();
     }
 
-    private void generateDefinition(OgcApiDataV2 apiData, Builder definitionBuilder,
+    private void generateDefinition(OgcApiDataV2 apiData, ImmutableApiEndpointDefinition.Builder definitionBuilder,
         ImmutableList<OgcApiQueryParameter> allQueryParameters, String subSubPath, String summary, String description,
         String logPrefix, boolean postUrlencoded) {
 
@@ -294,7 +306,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         }
     }
 
-    private void generateCollectionDefinition(OgcApiDataV2 apiData, Builder definitionBuilder,
+    private void generateCollectionDefinition(OgcApiDataV2 apiData, ImmutableApiEndpointDefinition.Builder definitionBuilder,
         String subSubPath, String path, List<OgcApiPathParameter> pathParameters,
         Stream<OgcApiQueryParameter> queryParameters, String collectionId,
         String summary, String description, String logPrefix, boolean postUrlencoded) {
@@ -305,7 +317,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         final String operationSummary = summary + collectionId + "'";
         final Optional<String> operationDescription = Optional.of(description);
         String resourcePath = "/collections/" + collectionId + subSubPath;
-        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+        ImmutableOgcApiResourceData.Builder resourceBuilder = ImmutableOgcApiResourceData.builder()
             .path(resourcePath)
             .pathParameters(pathParameters);
 
@@ -365,7 +377,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                         description += ": " + schema2.get().getDescription();
                     else
                         description += ".";
-                    return new ImmutableQueryParameterTemplateQueryable.Builder()
+                    return ImmutableQueryParameterTemplateQueryable.builder()
                         .apiId(apiData.getId())
                         .collectionId(collectionId)
                         .name(field)

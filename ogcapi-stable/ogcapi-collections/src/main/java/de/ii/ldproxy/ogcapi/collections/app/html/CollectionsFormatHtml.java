@@ -9,27 +9,27 @@ package de.ii.ldproxy.ogcapi.collections.app.html;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ldproxy.ogcapi.collections.domain.Collections;
+import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
+import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.collections.domain.Collections;
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionsFormatExtension;
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-
+import java.util.List;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import java.util.List;
-import java.util.Optional;
 
 @Singleton
 @AutoBind

@@ -7,10 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-
 import java.util.List;
 import java.util.Map;
 

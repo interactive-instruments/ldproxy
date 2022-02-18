@@ -9,6 +9,16 @@ package de.ii.ldproxy.ogcapi.common.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
+import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension;
+import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration;
+import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclarationExtension;
+import de.ii.ldproxy.ogcapi.common.domain.ImmutableConformanceDeclaration;
+import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ldproxy.ogcapi.common.domain.LandingPage;
+import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
+import de.ii.ldproxy.ogcapi.common.domain.OgcApiExtent;
+import de.ii.ldproxy.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
@@ -22,18 +32,8 @@ import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.foundation.domain.TemporalExtent;
-import de.ii.ldproxy.ogcapi.common.domain.*;
-import de.ii.ldproxy.ogcapi.domain.*;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.immutables.value.Value;
-
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -41,6 +41,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.immutables.value.Value;
 
 @Singleton
 @AutoBind

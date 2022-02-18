@@ -10,12 +10,14 @@ package de.ii.ldproxy.ogcapi.features.core.domain.processing;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.ProcessExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ProcessExtension;
 import io.swagger.v3.oas.models.media.Schema;
-
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import javax.ws.rs.core.MediaType;
-import java.util.*;
 
 // TODO
 public interface FeatureProcess extends ProcessExtension {

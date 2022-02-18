@@ -9,18 +9,24 @@ package de.ii.ldproxy.ogcapi.oas30.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.common.domain.ApiDefinitionFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.foundation.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatNotSupportedException;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.oas30.domain.Oas30Configuration;
 import de.ii.xtraplatform.openapi.domain.OpenApiViewerResource;
 import io.swagger.v3.oas.models.media.Schema;
+import java.text.MessageFormat;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.text.MessageFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind

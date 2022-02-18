@@ -8,12 +8,14 @@
 package de.ii.ldproxy.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.domain.foundation.*;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtendableConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
