@@ -8,7 +8,7 @@
 package de.ii.ldproxy.resources.app;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;

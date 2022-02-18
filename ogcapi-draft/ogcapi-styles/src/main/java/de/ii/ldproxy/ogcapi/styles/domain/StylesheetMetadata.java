@@ -11,8 +11,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.Metadata2;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Metadata2;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

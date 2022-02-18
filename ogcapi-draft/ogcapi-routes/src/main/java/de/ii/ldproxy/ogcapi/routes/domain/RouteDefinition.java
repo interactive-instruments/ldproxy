@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.xtraplatform.cql.domain.Geometry;
 import de.ii.xtraplatform.cql.domain.ImmutableMultiPolygon;
 import de.ii.xtraplatform.cql.domain.ImmutablePoint;

@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.routes.app.encoder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import de.ii.ldproxy.ogcapi.domain.UnprocessableEntity;
+import de.ii.ldproxy.ogcapi.foundation.domain.UnprocessableEntity;
 import de.ii.ldproxy.ogcapi.features.core.domain.Geometry;
 import de.ii.ldproxy.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoute;

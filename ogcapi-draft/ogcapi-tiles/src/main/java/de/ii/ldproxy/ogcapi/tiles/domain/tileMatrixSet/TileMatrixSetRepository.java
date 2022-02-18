@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
-import de.ii.ldproxy.ogcapi.domain.ApiExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 

@@ -10,10 +10,10 @@ package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiPathParameter;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;

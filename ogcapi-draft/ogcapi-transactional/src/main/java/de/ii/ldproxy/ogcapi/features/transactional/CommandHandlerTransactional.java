@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.transactional;
 
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;

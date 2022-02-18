@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.geometry_simplification;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;

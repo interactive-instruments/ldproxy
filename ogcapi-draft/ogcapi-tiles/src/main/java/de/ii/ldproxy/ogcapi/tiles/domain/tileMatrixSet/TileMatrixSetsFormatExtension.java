@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 
 public interface TileMatrixSetsFormatExtension extends GenericFormatExtension {
 

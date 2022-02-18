@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.styles.manager.app;
 
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;

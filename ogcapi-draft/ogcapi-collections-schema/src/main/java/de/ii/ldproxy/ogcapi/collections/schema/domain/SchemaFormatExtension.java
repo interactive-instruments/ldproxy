@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.collections.schema.domain;
 
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;

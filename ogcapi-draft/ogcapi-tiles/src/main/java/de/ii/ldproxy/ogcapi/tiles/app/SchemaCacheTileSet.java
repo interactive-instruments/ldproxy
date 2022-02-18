@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;

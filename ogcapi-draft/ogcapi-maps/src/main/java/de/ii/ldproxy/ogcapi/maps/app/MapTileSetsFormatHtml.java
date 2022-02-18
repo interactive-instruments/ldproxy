@@ -8,14 +8,14 @@
 package de.ii.ldproxy.ogcapi.maps.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.html.domain.MapClient;
 import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;

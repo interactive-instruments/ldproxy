@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
 import org.apache.felix.ipojo.annotations.Component;

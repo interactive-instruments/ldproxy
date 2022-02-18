@@ -7,18 +7,21 @@
  */
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ldproxy.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class CapabilityQueryables implements ApiBuildingBlock {
+
+    @Inject
+    CapabilityQueryables() {
+    }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {

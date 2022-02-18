@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
 import de.ii.ldproxy.ogcapi.collections.schema.domain.SchemaConfiguration;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;

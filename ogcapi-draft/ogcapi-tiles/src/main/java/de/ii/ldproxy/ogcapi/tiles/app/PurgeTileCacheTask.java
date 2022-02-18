@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.base.Splitter;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.crs.domain.BoundingBox;

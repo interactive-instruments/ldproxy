@@ -8,9 +8,9 @@
 package de.ii.ldproxy.resources.infra;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.app.ImmutableResource;

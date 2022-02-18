@@ -7,12 +7,12 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;

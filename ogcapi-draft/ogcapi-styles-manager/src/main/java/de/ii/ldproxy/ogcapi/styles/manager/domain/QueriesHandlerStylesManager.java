@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.styles.manager.domain;
 
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
-import de.ii.ldproxy.ogcapi.domain.QueryIdentifier;
-import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueriesHandler;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueryIdentifier;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
 import org.immutables.value.Value;
 
 import javax.ws.rs.core.MediaType;

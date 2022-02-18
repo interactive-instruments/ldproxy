@@ -9,12 +9,12 @@ package de.ii.ldproxy.ogcapi.styles.app;
 
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleRepository;

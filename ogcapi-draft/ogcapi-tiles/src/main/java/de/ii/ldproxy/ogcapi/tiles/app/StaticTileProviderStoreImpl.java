@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesTileset;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;

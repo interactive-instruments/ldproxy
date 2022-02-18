@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.routes.app;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableHtmlForm;
 import de.ii.ldproxy.ogcapi.routes.domain.ImmutableRoutingConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;

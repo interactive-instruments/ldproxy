@@ -7,9 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.routes.domain;
 
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 
 import java.io.IOException;

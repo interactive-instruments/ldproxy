@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.sorting;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SortKey;
 import io.swagger.v3.oas.models.media.ArraySchema;

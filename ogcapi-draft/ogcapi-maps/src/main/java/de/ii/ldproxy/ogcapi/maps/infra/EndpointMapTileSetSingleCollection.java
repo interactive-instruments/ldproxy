@@ -8,13 +8,13 @@
 package de.ii.ldproxy.ogcapi.maps.infra;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;

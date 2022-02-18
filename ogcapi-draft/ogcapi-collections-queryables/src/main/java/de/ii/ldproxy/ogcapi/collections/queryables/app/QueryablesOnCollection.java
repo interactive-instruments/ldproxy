@@ -9,10 +9,10 @@ package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
 
 import de.ii.ldproxy.ogcapi.collections.queryables.domain.QueryablesConfiguration;
-import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;
 import org.apache.felix.ipojo.annotations.Provides;

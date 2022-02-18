@@ -7,14 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app.json;
 
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.SchemaGenerator;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;

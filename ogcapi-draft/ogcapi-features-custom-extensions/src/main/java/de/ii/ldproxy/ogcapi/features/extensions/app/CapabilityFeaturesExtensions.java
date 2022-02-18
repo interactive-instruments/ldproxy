@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.extensions.app;
 
-import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.extensions.domain.ImmutableFeaturesExtensionsConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

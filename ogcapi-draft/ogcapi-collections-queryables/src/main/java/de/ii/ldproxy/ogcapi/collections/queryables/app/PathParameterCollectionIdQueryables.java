@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
 
 import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import org.apache.felix.ipojo.annotations.Component;
 import org.apache.felix.ipojo.annotations.Instantiate;

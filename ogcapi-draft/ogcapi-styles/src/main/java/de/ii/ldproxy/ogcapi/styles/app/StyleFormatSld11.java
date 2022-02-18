@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.styles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import io.swagger.v3.oas.models.media.ObjectSchema;

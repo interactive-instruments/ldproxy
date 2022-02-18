@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 

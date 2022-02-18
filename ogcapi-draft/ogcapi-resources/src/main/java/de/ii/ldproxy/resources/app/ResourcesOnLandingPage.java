@@ -7,10 +7,10 @@
  */
 package de.ii.ldproxy.resources.app;
 
-import de.ii.ldproxy.ogcapi.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;

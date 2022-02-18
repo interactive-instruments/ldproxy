@@ -9,12 +9,12 @@ package de.ii.ldproxy.ogcapi.projections;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.ArraySchema;

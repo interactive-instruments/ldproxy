@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.collections.schema.app;
 
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonSchema;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaArray;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaDocument;

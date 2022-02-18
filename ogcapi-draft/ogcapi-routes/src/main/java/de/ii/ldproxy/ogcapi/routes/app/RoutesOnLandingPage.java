@@ -9,12 +9,12 @@ package de.ii.ldproxy.ogcapi.routes.app;
 
 import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
-import de.ii.ldproxy.ogcapi.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.URICustomizer;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import org.apache.felix.ipojo.annotations.Component;

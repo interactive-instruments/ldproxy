@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSets;
 import org.immutables.value.Value;

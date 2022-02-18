@@ -8,10 +8,10 @@
 package de.ii.ldproxy.ogcapi.styles.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.ImmutableStylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import org.apache.felix.ipojo.annotations.Component;

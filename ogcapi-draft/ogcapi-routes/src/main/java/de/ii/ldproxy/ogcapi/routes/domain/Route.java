@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import org.immutables.value.Value;
 
 import java.util.List;

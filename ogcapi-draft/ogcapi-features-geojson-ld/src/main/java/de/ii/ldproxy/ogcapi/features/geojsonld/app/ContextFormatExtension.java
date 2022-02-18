@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.features.geojsonld.app;
 
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 
 import java.io.IOException;
 import java.io.InputStream;

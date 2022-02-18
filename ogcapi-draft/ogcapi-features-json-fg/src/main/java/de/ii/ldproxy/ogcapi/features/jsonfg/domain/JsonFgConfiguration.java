@@ -8,8 +8,8 @@
 package de.ii.ldproxy.ogcapi.features.jsonfg.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

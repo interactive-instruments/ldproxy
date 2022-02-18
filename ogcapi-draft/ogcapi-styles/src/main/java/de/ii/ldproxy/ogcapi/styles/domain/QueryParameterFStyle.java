@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.styles.domain;
 
 import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
-import de.ii.ldproxy.ogcapi.domain.*;
+import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import org.apache.felix.ipojo.annotations.Component;

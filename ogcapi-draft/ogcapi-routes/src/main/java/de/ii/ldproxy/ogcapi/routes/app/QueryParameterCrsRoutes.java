@@ -9,11 +9,11 @@ package de.ii.ldproxy.ogcapi.routes.app;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
-import de.ii.ldproxy.ogcapi.domain.ApiExtensionCache;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;

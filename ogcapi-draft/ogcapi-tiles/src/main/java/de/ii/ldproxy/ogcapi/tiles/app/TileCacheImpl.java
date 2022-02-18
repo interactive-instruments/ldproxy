@@ -11,8 +11,8 @@ import static de.ii.ldproxy.ogcapi.domain.FoundationConfiguration.CACHE_DIR;
 import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;

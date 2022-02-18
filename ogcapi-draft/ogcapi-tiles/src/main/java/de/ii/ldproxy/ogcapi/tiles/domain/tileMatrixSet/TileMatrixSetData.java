@@ -11,11 +11,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.Metadata2;
-import de.ii.ldproxy.ogcapi.domain.MetadataDates;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentation;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Metadata2;
+import de.ii.ldproxy.ogcapi.foundation.domain.MetadataDates;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 
 import java.net.URI;

@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 

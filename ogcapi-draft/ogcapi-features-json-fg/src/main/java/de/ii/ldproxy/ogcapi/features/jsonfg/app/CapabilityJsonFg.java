@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
-import de.ii.ldproxy.ogcapi.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.ImmutableWhereConfiguration;
 import org.apache.felix.ipojo.annotations.Component;

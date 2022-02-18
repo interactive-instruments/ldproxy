@@ -9,12 +9,12 @@ package de.ii.ldproxy.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.ImmutableOgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataHydratorExtension;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMinMax;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableTilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.MinMax;

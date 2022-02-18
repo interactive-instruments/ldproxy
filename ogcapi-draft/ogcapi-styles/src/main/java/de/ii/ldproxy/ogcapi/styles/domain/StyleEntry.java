@@ -10,9 +10,9 @@ package de.ii.ldproxy.ogcapi.styles.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.Metadata2;
-import de.ii.ldproxy.ogcapi.domain.PageRepresentationWithId;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.Metadata2;
+import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;

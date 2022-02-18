@@ -8,9 +8,9 @@
 package de.ii.ldproxy.ogcapi.routes.infra;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.routes.app.CapabilityRouting;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutingConfiguration;
 import org.apache.felix.ipojo.annotations.Component;

@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.collections.schema.domain;
 
 import de.ii.ldproxy.ogcapi.collections.schema.app.QueriesHandlerSchemaImpl;
-import de.ii.ldproxy.ogcapi.domain.QueriesHandler;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueriesHandler;
 
 public interface QueriesHandlerSchema extends QueriesHandler<QueriesHandlerSchemaImpl.Query> {
 }

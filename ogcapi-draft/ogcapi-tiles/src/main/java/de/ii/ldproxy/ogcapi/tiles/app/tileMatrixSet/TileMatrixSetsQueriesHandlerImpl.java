@@ -8,13 +8,13 @@
 package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.I18n;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.QueryHandler;
-import de.ii.ldproxy.ogcapi.domain.QueryInput;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
+import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
 import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.app.TilesLinkGenerator;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetData;

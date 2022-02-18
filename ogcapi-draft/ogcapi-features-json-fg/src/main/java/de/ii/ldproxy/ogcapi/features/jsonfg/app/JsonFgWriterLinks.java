@@ -9,8 +9,8 @@ package de.ii.ldproxy.ogcapi.features.jsonfg.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink;
-import de.ii.ldproxy.ogcapi.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;

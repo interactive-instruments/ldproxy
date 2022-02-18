@@ -8,9 +8,9 @@
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.Link;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
 
 import java.util.List;
