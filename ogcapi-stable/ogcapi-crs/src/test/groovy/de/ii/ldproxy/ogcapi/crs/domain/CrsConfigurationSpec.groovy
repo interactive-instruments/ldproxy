@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.crs.domain
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.foundation.domain.*
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 
 @SuppressWarnings('ClashingTraitMethods')

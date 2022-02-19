@@ -8,12 +8,12 @@
 package de.ii.ldproxy.ogcapi.collections.domain
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.domain.AbstractExtensionConfigurationSpec
-import de.ii.ldproxy.ogcapi.domain.ImmutableLink
-import de.ii.ldproxy.ogcapi.domain.MergeBase
-import de.ii.ldproxy.ogcapi.domain.MergeCollection
-import de.ii.ldproxy.ogcapi.domain.MergeMinimal
-import de.ii.ldproxy.ogcapi.domain.MergeSimple
+import de.ii.ldproxy.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeBase
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeCollection
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeMinimal
+import de.ii.ldproxy.ogcapi.foundation.domain.MergeSimple
 
 @SuppressWarnings('ClashingTraitMethods')
 class CollectionsConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<CollectionsConfiguration>, MergeMinimal<CollectionsConfiguration>, MergeSimple<CollectionsConfiguration>, MergeCollection<CollectionsConfiguration> {

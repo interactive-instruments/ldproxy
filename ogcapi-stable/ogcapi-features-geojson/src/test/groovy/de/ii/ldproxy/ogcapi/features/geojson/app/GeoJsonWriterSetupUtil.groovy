@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.geojson.app
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.foundation.domain.*
 import de.ii.ldproxy.ogcapi.features.geojson.domain.*
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.OgcCrs

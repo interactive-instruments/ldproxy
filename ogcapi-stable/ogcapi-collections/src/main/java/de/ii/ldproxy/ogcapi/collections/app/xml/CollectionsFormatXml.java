@@ -67,7 +67,7 @@ public class CollectionsFormatXml implements CollectionsFormatExtension {
     @Override
     public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
                                       OgcApi api, ApiRequestContext requestContext) {
-        return new OgcApiCollectionsXml(ImmutableCollections.builder()
+        return new OgcApiCollectionsXml(new ImmutableCollections.Builder()
                 .addCollections(ogcApiCollection)
                 .build());
     }

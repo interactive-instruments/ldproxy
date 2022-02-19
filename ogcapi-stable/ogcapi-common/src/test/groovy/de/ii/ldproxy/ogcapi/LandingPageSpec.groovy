@@ -8,15 +8,15 @@
 package de.ii.ldproxy.ogcapi
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.app.I18nDefault
-import de.ii.ldproxy.ogcapi.app.OgcApiEntity
+import de.ii.ldproxy.ogcapi.foundation.app.I18nDefault
+import de.ii.ldproxy.ogcapi.foundation.app.OgcApiEntity
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputConformance
 import de.ii.ldproxy.ogcapi.common.app.ImmutableQueryInputLandingPage
 import de.ii.ldproxy.ogcapi.common.app.QueriesHandlerCommonImpl
 import de.ii.ldproxy.ogcapi.common.domain.CommonFormatExtension
 import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage
-import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.foundation.domain.*
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import io.swagger.v3.oas.models.media.ObjectSchema
@@ -114,8 +114,7 @@ class LandingPageSpec extends Specification {
     }
 
     static def createDatasetEntity() {
-        def entity = new OgcApiEntity(createExtensionRegistry())
-        entity.setData(datasetData)
+        def entity = new OgcApiEntity(createExtensionRegistry(), datasetData)
         return entity
     }
 

@@ -3,17 +3,18 @@ plugins {
 }
 
 dependencies {
-    api project(":ogcapi-foundation")
+    provided project(":ogcapi-foundation")
 }
 
 ext {
     generatedResourcesDir = new File(project.buildDir, 'generated/src/main/resources/')
 }
 
-compileJava {
+/*compileJava {
     project.sourceSets.main.resources { srcDir generatedResourcesDir }
     outputs.dir(generatedResourcesDir)
-}
+}*/
+project.sourceSets.main.output.dir(generatedResourcesDir)
 
 jar {
     manifest {

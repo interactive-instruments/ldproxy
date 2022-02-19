@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.domain
 
-import de.ii.ldproxy.ogcapi.infra.json.SchemaGeneratorImpl
+import de.ii.ldproxy.ogcapi.foundation.infra.json.SchemaGeneratorImpl
 import de.ii.ldproxy.ogcapi.common.domain.LandingPage
 import de.ii.ldproxy.ogcapi.common.domain.ConformanceDeclaration
 import io.swagger.v3.oas.models.media.ArraySchema

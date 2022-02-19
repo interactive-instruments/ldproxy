@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.ogcapi.features.core.domain
 
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi
-import de.ii.ldproxy.ogcapi.domain.ImmutableFeatureTypeConfigurationOgcApi
+import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi
 import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableSchemaConstraints
@@ -16,18 +16,21 @@ import de.ii.xtraplatform.features.domain.SchemaBase
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry
 import de.ii.xtraplatform.store.app.entities.EntityRegistryImpl
+import de.ii.xtraplatform.store.domain.entities.EntityFactory
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
 import spock.lang.Shared
 import spock.lang.Specification
+import dagger.Lazy
 
 class SchemaGeneratorFeatureOpenApiSpec extends Specification {
 
     @Shared SchemaGeneratorFeatureOpenApi schemaGenerator
 
     def setupSpec() {
-        schemaGenerator = new SchemaGeneratorFeatureOpenApi(null, new EntityRegistryImpl(null))
+        Lazy<Set<EntityFactory>> factories = () -> [] as Set
+        schemaGenerator = new SchemaGeneratorFeatureOpenApi(null, new EntityRegistryImpl(factories))
     }
 
     def 'Test Open API schema generation for QUERYABLES type'() {

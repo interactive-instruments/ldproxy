@@ -318,7 +318,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         final String operationSummary = summary + collectionId + "'";
         final Optional<String> operationDescription = Optional.of(description);
         String resourcePath = "/collections/" + collectionId + subSubPath;
-        ImmutableOgcApiResourceData.Builder resourceBuilder = ImmutableOgcApiResourceData.builder()
+        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
             .path(resourcePath)
             .pathParameters(pathParameters);
 
@@ -378,7 +378,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                         description += ": " + schema2.get().getDescription();
                     else
                         description += ".";
-                    return ImmutableQueryParameterTemplateQueryable.builder()
+                    return new ImmutableQueryParameterTemplateQueryable.Builder()
                         .apiId(apiData.getId())
                         .collectionId(collectionId)
                         .name(field)

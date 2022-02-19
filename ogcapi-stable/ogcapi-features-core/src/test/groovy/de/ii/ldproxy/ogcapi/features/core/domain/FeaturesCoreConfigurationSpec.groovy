@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.core.domain
 
 import com.google.common.collect.ImmutableMap
-import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.foundation.domain.*
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
