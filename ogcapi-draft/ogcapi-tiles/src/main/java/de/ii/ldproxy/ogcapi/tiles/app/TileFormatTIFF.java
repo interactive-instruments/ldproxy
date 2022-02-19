@@ -30,6 +30,10 @@ public class TileFormatTIFF extends TileFormatExtension {
             .parameter("tiff")
             .build();
 
+    @Inject
+    TileFormatTIFF() {
+    }
+
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;

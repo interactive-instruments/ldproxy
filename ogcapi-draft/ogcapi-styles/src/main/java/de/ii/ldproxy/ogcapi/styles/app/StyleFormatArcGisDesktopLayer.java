@@ -35,6 +35,10 @@ public class StyleFormatArcGisDesktopLayer implements StyleFormatExtension {
             .parameter("lyr")
             .build();
 
+    @Inject
+    StyleFormatArcGisDesktopLayer() {
+    }
+
     @Override
     public boolean isEnabledByDefault() {
         return false;

@@ -29,6 +29,10 @@ public class JsonFgWriterCrs implements GeoJsonWriter {
 
     boolean isEnabled;
 
+    @Inject
+    JsonFgWriterCrs() {
+    }
+
     @Override
     public JsonFgWriterCrs create() {
         return new JsonFgWriterCrs();

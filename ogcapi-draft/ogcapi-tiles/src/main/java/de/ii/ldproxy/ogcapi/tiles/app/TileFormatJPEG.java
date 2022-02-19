@@ -36,6 +36,10 @@ public class TileFormatJPEG extends TileFormatExtension {
             .parameter("jpeg")
             .build();
 
+    @Inject
+    TileFormatJPEG() {
+    }
+
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;

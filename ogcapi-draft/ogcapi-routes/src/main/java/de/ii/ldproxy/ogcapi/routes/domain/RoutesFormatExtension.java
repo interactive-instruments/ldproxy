@@ -7,12 +7,14 @@
  */
 package de.ii.ldproxy.ogcapi.routes.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 
+@AutoMultiBind
 public interface RoutesFormatExtension extends FormatExtension {
 
     @Override

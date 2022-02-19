@@ -29,6 +29,10 @@ public class QueryParameterSkipGeometry extends ApiExtensionCache implements Ogc
 
     private static final Schema<?> SCHEMA = new BooleanSchema()._default(false);
 
+    @Inject
+    QueryParameterSkipGeometry() {
+    }
+
     @Override
     public String getId(String collectionId) {
         return String.format("%s_%s", getName(), collectionId);

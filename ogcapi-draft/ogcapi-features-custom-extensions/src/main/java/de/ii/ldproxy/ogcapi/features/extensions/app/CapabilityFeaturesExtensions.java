@@ -19,6 +19,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class CapabilityFeaturesExtensions implements ApiBuildingBlock {
 
+    @Inject
+    CapabilityFeaturesExtensions() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFeaturesExtensionsConfiguration.Builder()

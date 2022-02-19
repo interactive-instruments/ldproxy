@@ -31,6 +31,10 @@ public class PathParameterStyleId implements OgcApiPathParameter {
 
     public static final String STYLE_ID_PATTERN = "[^/]+";
 
+    @Inject
+    PathParameterStyleId() {
+    }
+
     @Override
     public String getPattern() {
         return STYLE_ID_PATTERN;

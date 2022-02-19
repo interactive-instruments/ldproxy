@@ -30,7 +30,6 @@ import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
-import org.apache.felix.ipojo.annotations.Requires;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +40,10 @@ import java.util.Optional;
 @Singleton
 @AutoBind
 public class ConformanceDeclarationHeight implements ConformanceClass {
+
+    @Inject
+    ConformanceDeclarationHeight() {
+    }
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {

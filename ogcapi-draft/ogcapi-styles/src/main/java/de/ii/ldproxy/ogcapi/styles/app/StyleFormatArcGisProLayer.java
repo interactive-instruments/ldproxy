@@ -35,6 +35,10 @@ public class StyleFormatArcGisProLayer implements StyleFormatExtension {
             .parameter("lyrx")
             .build();
 
+    @Inject
+    StyleFormatArcGisProLayer() {
+    }
+
     @Override
     public boolean isEnabledByDefault() {
         return false;

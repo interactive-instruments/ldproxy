@@ -35,11 +35,11 @@ import de.ii.ldproxy.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfigurat
 import de.ii.ldproxy.ogcapi.features.html.domain.legacy.MicrodataMapping;
 import de.ii.ldproxy.ogcapi.features.html.domain.legacy.MicrodataPropertyMapping;
 import de.ii.ldproxy.ogcapi.features.geojsonld.domain.GeoJsonLdConfiguration;
-import de.ii.xtraplatform.feature.provider.sql.domain.ConnectionInfoSql;
-import de.ii.xtraplatform.feature.provider.sql.domain.FeatureActionTrigger;
-import de.ii.xtraplatform.feature.provider.sql.domain.ImmutableConnectionInfoSql;
-import de.ii.xtraplatform.feature.provider.wfs.domain.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.feature.provider.wfs.domain.ImmutableConnectionInfoWfsHttp;
+import de.ii.xtraplatform.features.sql.domain.ConnectionInfoSql;
+import de.ii.xtraplatform.features.sql.domain.FeatureActionTrigger;
+import de.ii.xtraplatform.features.sql.domain.ImmutableConnectionInfoSql;
+import de.ii.xtraplatform.features.sql.domain.ConnectionInfoWfsHttp;
+import de.ii.xtraplatform.features.sql.domain.ImmutableConnectionInfoWfsHttp;
 import de.ii.xtraplatform.feature.transformer.api.FeatureProviderDataTransformer;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeMapping;
 import de.ii.xtraplatform.feature.transformer.api.SourcePathMapping;
@@ -60,7 +60,6 @@ import de.ii.xtraplatform.store.domain.entities.handler.Entity;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
-import org.apache.felix.ipojo.annotations.StaticServiceProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,12 +71,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
+/*@Component
 @Provides(properties = {
         @StaticServiceProperty(name = Entity.TYPE_KEY, type = "java.lang.String", value = Service.TYPE),
         @StaticServiceProperty(name = Entity.SUB_TYPE_KEY, type = "java.lang.String", value = OgcApiDataV2.SERVICE_TYPE)
 })
-@Instantiate
+@Instantiate*/
 @SuppressWarnings("deprecation")
 public class OgcApiApiMigrationV1V2 implements EntityMigration<OgcApiDataV1, OgcApiDataV2> {
 

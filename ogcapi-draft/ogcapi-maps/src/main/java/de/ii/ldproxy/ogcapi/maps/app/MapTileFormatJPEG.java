@@ -31,6 +31,10 @@ public class MapTileFormatJPEG extends MapTileFormatExtension {
             .parameter("jpeg")
             .build();
 
+    @Inject
+    MapTileFormatJPEG() {
+    }
+
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;

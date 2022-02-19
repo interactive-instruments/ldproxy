@@ -20,6 +20,11 @@ import java.util.Map;
 @Singleton
 @AutoBind
 public class JacksonSubTypeIdsTiles implements JacksonSubTypeIds {
+
+    @Inject
+    JacksonSubTypeIdsTiles() {
+    }
+
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()

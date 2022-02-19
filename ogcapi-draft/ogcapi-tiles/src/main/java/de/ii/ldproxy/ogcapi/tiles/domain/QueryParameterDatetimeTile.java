@@ -21,6 +21,10 @@ import java.util.Optional;
 @AutoBind
 public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime {
 
+    @Inject
+    QueryParameterDatetimeTile() {
+    }
+
     @Override
     public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->

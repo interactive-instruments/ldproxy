@@ -43,7 +43,7 @@ public class StylesOnCollection implements CollectionExtension {
 
     @Inject
     public StylesOnCollection(I18n i18n,
-                              StyleRepository styleRepo) throws IOException {
+                              StyleRepository styleRepo) {
         this.styleRepo = styleRepo;
         this.i18n = i18n;
     }

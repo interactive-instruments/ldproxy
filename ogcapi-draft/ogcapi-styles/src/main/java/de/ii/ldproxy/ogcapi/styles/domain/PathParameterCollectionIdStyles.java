@@ -25,6 +25,10 @@ import java.util.stream.Collectors;
 @AutoBind
 public class PathParameterCollectionIdStyles extends AbstractPathParameterCollectionId {
 
+    @Inject
+    PathParameterCollectionIdStyles() {
+    }
+
     @Override
     public List<String> getValues(OgcApiDataV2 apiData) {
         if (!apiCollectionMap.containsKey(apiData.hashCode())) {

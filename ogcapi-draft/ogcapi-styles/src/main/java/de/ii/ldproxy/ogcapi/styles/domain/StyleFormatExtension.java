@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.styles.domain;
 
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -22,6 +23,7 @@ import java.util.Optional;
 /**
  * ApiExtension for a style encoding at /{serviceId}/styles/{styleId}
  */
+@AutoMultiBind
 public interface StyleFormatExtension extends FormatExtension {
 
     @Override

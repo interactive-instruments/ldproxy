@@ -30,6 +30,10 @@ import java.util.concurrent.ConcurrentMap;
 @AutoBind
 public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApiQueryParameter {
 
+    @Inject
+    QueryParameterLimitTile() {
+    }
+
     @Override
     public String getId() {
         return "limitTile";

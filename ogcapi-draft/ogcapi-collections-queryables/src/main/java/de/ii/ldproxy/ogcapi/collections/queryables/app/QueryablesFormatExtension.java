@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.collections.queryables.app;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
@@ -17,6 +18,7 @@ import java.util.List;
 
 import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
+@AutoMultiBind
 public interface QueryablesFormatExtension extends GenericFormatExtension {
 
     default String getPathPattern() {

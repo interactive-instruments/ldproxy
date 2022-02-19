@@ -28,6 +28,10 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
 
     static public String JSON_KEY = "where";
 
+    @Inject
+    JsonFgWriterWhere() {
+    }
+
     @Override
     public JsonFgWriterWhere create() {
         return new JsonFgWriterWhere();

@@ -8,7 +8,7 @@
 package de.ii.ldproxy.ogcapi.features.jsonfg.domain
 
 
-import de.ii.ldproxy.ogcapi.domain.*
+import de.ii.ldproxy.ogcapi.foundation.domain.*
 
 @SuppressWarnings('ClashingTraitMethods')
 class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<JsonFgConfiguration>, MergeMinimal<JsonFgConfiguration>, MergeSimple<JsonFgConfiguration>, MergeMap<JsonFgConfiguration>, MergeNested<JsonFgConfiguration> {

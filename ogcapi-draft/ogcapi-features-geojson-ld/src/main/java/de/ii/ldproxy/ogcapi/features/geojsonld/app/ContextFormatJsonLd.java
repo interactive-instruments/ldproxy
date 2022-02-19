@@ -32,6 +32,10 @@ public class ContextFormatJsonLd implements ContextFormatExtension {
             .parameter("jsonld")
             .build();
 
+    @Inject
+    ContextFormatJsonLd() {
+    }
+
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;

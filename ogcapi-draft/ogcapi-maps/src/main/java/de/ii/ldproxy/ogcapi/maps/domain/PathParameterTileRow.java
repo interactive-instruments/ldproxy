@@ -25,6 +25,10 @@ import java.util.List;
 @AutoBind
 public class PathParameterTileRow implements OgcApiPathParameter {
 
+    @Inject
+    PathParameterTileRow() {
+    }
+
     @Override
     public String getPattern() {
         return "\\d+";

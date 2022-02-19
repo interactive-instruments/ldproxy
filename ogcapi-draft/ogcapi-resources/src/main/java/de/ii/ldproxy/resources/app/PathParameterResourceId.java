@@ -32,6 +32,10 @@ public class PathParameterResourceId implements OgcApiPathParameter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterResourceId.class);
 
+    @Inject
+    PathParameterResourceId() {
+    }
+
     @Override
     public String getPattern() {
         return "[^/]+";

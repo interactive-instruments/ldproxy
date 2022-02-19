@@ -21,6 +21,10 @@ import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult.Builder;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,12 +48,25 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
 
     @Inject
     public ResourcesOnLandingPage(AppContext appContext,
-                                  I18n i18n) throws IOException {
+                                  I18n i18n)  {
         this.resourcesStore = appContext.getDataDir()
             .resolve(API_RESOURCES_DIR)
             .resolve("resources");
-        Files.createDirectories(resourcesStore);
         this.i18n = i18n;
+    }
+
+    @Override
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+            .mode(apiValidation);
+
+        try {
+            Files.createDirectories(resourcesStore);
+        } catch (IOException e) {
+           builder.addErrors();
+        }
+
+        return builder.build();
     }
 
     @Override

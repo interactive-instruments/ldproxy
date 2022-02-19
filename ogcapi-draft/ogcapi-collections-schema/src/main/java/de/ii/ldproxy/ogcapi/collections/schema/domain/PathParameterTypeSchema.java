@@ -15,7 +15,6 @@ import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
-import org.apache.felix.ipojo.annotations.Requires;
 
 import java.util.List;
 

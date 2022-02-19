@@ -14,12 +14,14 @@ import com.google.common.io.Resources;
 import de.ii.ldproxy.ogcapi.foundation.domain.*;
 import de.ii.ldproxy.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
+import de.ii.xtraplatform.base.domain.AppLifeCycle;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import java.util.concurrent.Executors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
-import org.apache.felix.ipojo.annotations.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -36,7 +38,7 @@ import java.util.Optional;
 
 @Singleton
 @AutoBind
-public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension {
+public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension, AppLifeCycle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatSld10.class);
 
@@ -49,12 +51,13 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension 
 
     private Optional<Validator> validator;
 
-    public StyleFormatSld10() {
+    @Inject
+    StyleFormatSld10() {
         validator = Optional.empty();
     }
 
-    @Validate
-    void onStart() {
+    @Override
+    public void onStart() {
         Executors.newSingleThreadExecutor().submit(() -> {
             try {
                 SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

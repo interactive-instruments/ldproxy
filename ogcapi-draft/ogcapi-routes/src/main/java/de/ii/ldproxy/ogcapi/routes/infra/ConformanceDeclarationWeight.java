@@ -23,6 +23,10 @@ import java.util.List;
 @AutoBind
 public class ConformanceDeclarationWeight implements ConformanceClass {
 
+    @Inject
+    ConformanceDeclarationWeight() {
+    }
+
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of(CapabilityRouting.WEIGHT);

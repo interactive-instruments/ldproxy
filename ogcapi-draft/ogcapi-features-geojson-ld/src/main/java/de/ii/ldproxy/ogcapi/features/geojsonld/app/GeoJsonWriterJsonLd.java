@@ -15,7 +15,7 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.geojsonld.domain.GeoJsonLdConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
+import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +32,10 @@ import java.util.stream.Collectors;
 public class GeoJsonWriterJsonLd implements GeoJsonWriter {
 
     List<String> currentTypes;
+
+    @Inject
+    GeoJsonWriterJsonLd() {
+    }
 
     @Override
     public GeoJsonWriterJsonLd create() {

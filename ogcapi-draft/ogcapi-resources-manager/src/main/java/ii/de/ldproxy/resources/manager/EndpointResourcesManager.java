@@ -31,6 +31,9 @@ import de.ii.ldproxy.resources.domain.ResourceFormatExtension;
 import de.ii.ldproxy.resources.domain.ResourcesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import java.io.File;
 import java.io.IOException;
@@ -69,13 +72,26 @@ public class EndpointResourcesManager extends Endpoint {
     private final java.nio.file.Path resourcesStore;
 
     @Inject
-    public EndpointResourcesManager(AppContext appContext, ExtensionRegistry extensionRegistry) throws IOException {
+    public EndpointResourcesManager(AppContext appContext, ExtensionRegistry extensionRegistry) {
         super(extensionRegistry);
 
         this.resourcesStore = appContext.getDataDir()
             .resolve(API_RESOURCES_DIR)
             .resolve("resources");
-        Files.createDirectories(resourcesStore);
+    }
+
+    @Override
+    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+            .mode(apiValidation);
+
+        try {
+            Files.createDirectories(resourcesStore);
+        } catch (IOException e) {
+            builder.addErrors();
+        }
+
+        return builder.build();
     }
 
     @Override

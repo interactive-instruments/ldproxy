@@ -19,6 +19,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class CapabilityJsonFg implements ApiBuildingBlock {
 
+    @Inject
+    CapabilityJsonFg() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableJsonFgConfiguration.Builder().enabled(false)

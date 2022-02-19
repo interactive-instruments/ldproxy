@@ -22,6 +22,10 @@ import java.util.Map;
 @AutoBind
 public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
+    @Inject
+    QueryParameterMaxAllowableOffsetFeatures() {
+    }
+
     @Override
     public String getName() {
         return "maxAllowableOffset";

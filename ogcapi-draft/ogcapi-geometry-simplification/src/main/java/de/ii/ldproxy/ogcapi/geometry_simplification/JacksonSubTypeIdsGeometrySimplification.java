@@ -23,6 +23,11 @@ import java.util.Map;
 @Singleton
 @AutoBind
 public class JacksonSubTypeIdsGeometrySimplification implements JacksonSubTypeIds {
+
+    @Inject
+    JacksonSubTypeIdsGeometrySimplification() {
+    }
+
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
@@ -31,6 +32,7 @@ import de.ii.ldproxy.ogcapi.routes.domain.Routes;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ldproxy.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +49,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import org.slf4j.Logger;
@@ -54,7 +58,7 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class RouteRepositoryFiles implements RouteRepository {
+public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RouteRepositoryFiles.class);
 
@@ -65,9 +69,10 @@ public class RouteRepositoryFiles implements RouteRepository {
     private final RoutesLinksGenerator routesLinkGenerator;
     private final ObjectMapper mapper;
 
+    @Inject
     public RouteRepositoryFiles(AppContext appContext,
                                 ExtensionRegistry extensionRegistry,
-                                I18n i18n) throws IOException {
+                                I18n i18n) {
         this.routesStore = appContext.getDataDir()
             .resolve(API_RESOURCES_DIR)
             .resolve("routes");
@@ -75,12 +80,20 @@ public class RouteRepositoryFiles implements RouteRepository {
         this.extensionRegistry = extensionRegistry;
         this.defaultLinkGenerator = new DefaultLinksGenerator();
         this.routesLinkGenerator = new RoutesLinksGenerator();
-        Files.createDirectories(routesStore);
         this.mapper = new ObjectMapper();
         mapper.registerModule(new Jdk8Module());
         mapper.registerModule(new GuavaModule());
         mapper.configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    @Override
+    public void onStart() {
+        try {
+            Files.createDirectories(routesStore);
+        } catch (IOException e) {
+            LOGGER.error("Could not create styles repository: " + e.getMessage());
+        }
     }
 
     @Override

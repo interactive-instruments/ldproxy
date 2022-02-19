@@ -32,6 +32,10 @@ public class CapabilityRouting implements ApiBuildingBlock {
     public static String OBSTACLES = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/obstacles";
     public static String MANAGE_ROUTES = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/manage-routes";
 
+    @Inject
+    CapabilityRouting() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableRoutingConfiguration.Builder()

@@ -23,6 +23,10 @@ import java.util.List;
 @AutoBind
 public class ConformanceDeclarationObstacles implements ConformanceClass {
 
+    @Inject
+    ConformanceDeclarationObstacles() {
+    }
+
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of(CapabilityRouting.OBSTACLES);

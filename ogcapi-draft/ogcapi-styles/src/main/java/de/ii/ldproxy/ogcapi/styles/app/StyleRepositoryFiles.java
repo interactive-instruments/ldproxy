@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import com.google.common.collect.ImmutableList;
@@ -47,6 +48,7 @@ import de.ii.ldproxy.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import java.io.File;
@@ -67,6 +69,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
@@ -75,7 +78,7 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class StyleRepositoryFiles implements StyleRepository {
+public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StyleRepositoryFiles.class);
 
@@ -95,7 +98,7 @@ public class StyleRepositoryFiles implements StyleRepository {
                                 ExtensionRegistry extensionRegistry,
                                 I18n i18n,
                                 FeaturesCoreProviders providers,
-                                EntityRegistry entityRegistry) throws IOException {
+                                EntityRegistry entityRegistry) {
         this.stylesStore = appContext.getDataDir()
             .resolve(API_RESOURCES_DIR)
             .resolve("styles");
@@ -105,7 +108,6 @@ public class StyleRepositoryFiles implements StyleRepository {
         this.providers = providers;
         this.entityRegistry = entityRegistry;
         this.defaultLinkGenerator = new DefaultLinksGenerator();
-        java.nio.file.Files.createDirectories(stylesStore);
         this.patchMapperLenient = new ObjectMapper();
         patchMapperLenient.registerModule(new Jdk8Module());
         patchMapperLenient.registerModule(new GuavaModule());
@@ -121,6 +123,15 @@ public class StyleRepositoryFiles implements StyleRepository {
         metadataMapper.registerModule(new Jdk8Module());
         metadataMapper.registerModule(new GuavaModule());
         metadataMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    }
+
+    @Override
+    public void onStart() {
+        try {
+            Files.createDirectories(stylesStore);
+        } catch (IOException e) {
+            LOGGER.error("Could not create styles repository: " + e.getMessage());
+        }
     }
 
     public Stream<StylesFormatExtension> getStylesFormatStream(OgcApiDataV2 apiData, Optional<String> collectionId) {

@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.resources.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
@@ -16,6 +17,7 @@ import de.ii.ldproxy.resources.app.Resources;
 
 import java.util.Optional;
 
+@AutoMultiBind
 public interface ResourcesFormatExtension extends GenericFormatExtension {
 
     @Override

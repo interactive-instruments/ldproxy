@@ -30,6 +30,10 @@ public class TileFormatWEBP extends TileFormatExtension {
             .parameter("webp")
             .build();
 
+    @Inject
+    TileFormatWEBP() {
+    }
+
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;

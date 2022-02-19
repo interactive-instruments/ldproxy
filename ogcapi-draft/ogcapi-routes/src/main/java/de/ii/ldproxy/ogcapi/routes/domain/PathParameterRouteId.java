@@ -9,6 +9,7 @@ package de.ii.ldproxy.ogcapi.routes.domain;
 
 
 import com.google.common.collect.ImmutableList;
+import dagger.internal.InjectedFieldSignature;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
@@ -30,6 +31,10 @@ public class PathParameterRouteId implements OgcApiPathParameter {
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterRouteId.class);
 
     public static final String ROUTE_ID_PATTERN = "[a-z0-9]+";
+
+    @Inject
+    PathParameterRouteId() {
+    }
 
     @Override
     public String getPattern() {

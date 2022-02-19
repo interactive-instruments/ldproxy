@@ -41,6 +41,10 @@ public class ResourceFormatAny implements ResourceFormatExtension {
     private final Schema schemaResource = new BinarySchema();
     public final static String SCHEMA_REF_RESOURCE = "#/components/schemas/Resource";
 
+    @Inject
+    ResourceFormatAny() {
+    }
+
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;

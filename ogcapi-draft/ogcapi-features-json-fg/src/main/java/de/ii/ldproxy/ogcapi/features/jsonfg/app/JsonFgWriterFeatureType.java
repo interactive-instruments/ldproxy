@@ -38,6 +38,10 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
     boolean templated;
     List<String> writeAtEnd;
 
+    @Inject
+    JsonFgWriterFeatureType() {
+    }
+
     @Override
     public JsonFgWriterFeatureType create() {
         return new JsonFgWriterFeatureType();

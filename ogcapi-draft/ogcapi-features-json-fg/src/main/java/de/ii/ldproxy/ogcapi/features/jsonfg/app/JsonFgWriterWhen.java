@@ -37,6 +37,10 @@ public class JsonFgWriterWhen implements GeoJsonWriter {
     String currentIntervalEnd;
     String currentInstant;
 
+    @Inject
+    JsonFgWriterWhen() {
+    }
+
     @Override
     public JsonFgWriterWhen create() {
         return new JsonFgWriterWhen();

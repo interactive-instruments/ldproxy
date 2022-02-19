@@ -18,6 +18,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class CapabilityFilter implements ApiBuildingBlock {
 
+    @Inject
+    CapabilityFilter() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableFilterConfiguration.Builder().enabled(false)

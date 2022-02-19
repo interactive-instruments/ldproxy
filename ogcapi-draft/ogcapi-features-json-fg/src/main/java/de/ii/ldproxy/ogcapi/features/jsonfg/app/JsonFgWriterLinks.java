@@ -19,7 +19,7 @@ import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ldproxy.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.stringtemplates.domain.StringTemplateFilters;
+import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -42,6 +42,10 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
     List<Link> links;
     List<Link> currentLinks;
     Map<String,String> currentMap = new HashMap<>();
+
+    @Inject
+    JsonFgWriterLinks() {
+    }
 
     @Override
     public JsonFgWriterLinks create() {

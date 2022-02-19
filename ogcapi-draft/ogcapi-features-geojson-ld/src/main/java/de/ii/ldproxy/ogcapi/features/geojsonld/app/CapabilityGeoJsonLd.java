@@ -19,6 +19,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class CapabilityGeoJsonLd implements ApiBuildingBlock {
 
+    @Inject
+    CapabilityGeoJsonLd() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableGeoJsonLdConfiguration.Builder().enabled(false)

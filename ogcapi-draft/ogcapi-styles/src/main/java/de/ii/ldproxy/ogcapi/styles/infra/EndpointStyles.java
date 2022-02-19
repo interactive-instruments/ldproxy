@@ -22,6 +22,7 @@ import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.styles.domain.ImmutableQueryInputStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ldproxy.ogcapi.styles.domain.StylesFormatExtension;

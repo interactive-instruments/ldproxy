@@ -19,3 +19,9 @@ repositories {
         url "https://maven.ecc.no/releases"
     }
 }
+
+moduleInfo {
+    requires = [
+            'java.sql'
+    ]
+}

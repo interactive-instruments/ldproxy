@@ -26,6 +26,10 @@ public class HeaderPreferStylesManager extends ApiExtensionCache implements ApiH
 
     private final Schema schema = new StringSchema()._enum(ImmutableList.of("handling=strict", "handling=lenient"));
 
+    @Inject
+    HeaderPreferStylesManager() {
+    }
+
     @Override
     public String getId() {
         return "Prefer";

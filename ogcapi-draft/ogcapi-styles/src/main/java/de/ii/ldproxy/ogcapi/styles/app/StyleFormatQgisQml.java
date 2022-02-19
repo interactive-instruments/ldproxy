@@ -35,6 +35,10 @@ public class StyleFormatQgisQml implements StyleFormatExtension {
             .parameter("qml")
             .build();
 
+    @Inject
+    StyleFormatQgisQml() {
+    }
+
     @Override
     public boolean isEnabledByDefault() {
         return false;

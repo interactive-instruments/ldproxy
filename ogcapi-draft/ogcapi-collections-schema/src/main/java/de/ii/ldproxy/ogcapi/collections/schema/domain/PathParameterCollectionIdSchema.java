@@ -20,6 +20,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class PathParameterCollectionIdSchema extends AbstractPathParameterCollectionId {
 
+    @Inject
+    PathParameterCollectionIdSchema() {
+    }
+
     @Override
     public String getId() {
         return "collectionIdSchema";

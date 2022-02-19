@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.routes.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 import static de.ii.ldproxy.ogcapi.routes.domain.PathParameterRouteId.ROUTE_ID_PATTERN;
 
+@AutoMultiBind
 public interface RouteFormatExtension extends FormatExtension {
 
     @Override

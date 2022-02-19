@@ -35,6 +35,10 @@ public class SchemaFormatJsonSchema implements SchemaFormatExtension {
             .parameter("json")
             .build();
 
+    @Inject
+    SchemaFormatJsonSchema() {
+    }
+
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;

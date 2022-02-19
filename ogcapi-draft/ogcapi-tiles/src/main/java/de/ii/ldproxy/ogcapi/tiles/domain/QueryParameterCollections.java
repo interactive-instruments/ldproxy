@@ -34,6 +34,10 @@ import java.util.stream.Collectors;
 @AutoBind
 public class QueryParameterCollections extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
 
+    @Inject
+    QueryParameterCollections() {
+    }
+
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/collection-selection");

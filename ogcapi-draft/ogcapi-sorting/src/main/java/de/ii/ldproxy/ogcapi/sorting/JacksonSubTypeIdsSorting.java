@@ -19,6 +19,11 @@ import java.util.Map;
 @Singleton
 @AutoBind
 public class JacksonSubTypeIdsSorting implements JacksonSubTypeIds {
+
+    @Inject
+    JacksonSubTypeIdsSorting() {
+    }
+
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()

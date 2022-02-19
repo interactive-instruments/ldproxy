@@ -19,6 +19,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class CapabilitySchema implements ApiBuildingBlock {
 
+    @Inject
+    CapabilitySchema() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableSchemaConfiguration.Builder().enabled(false)

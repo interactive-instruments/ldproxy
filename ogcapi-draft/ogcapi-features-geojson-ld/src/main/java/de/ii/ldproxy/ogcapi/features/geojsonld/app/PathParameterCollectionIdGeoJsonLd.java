@@ -17,6 +17,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class PathParameterCollectionIdGeoJsonLd extends AbstractPathParameterCollectionId {
 
+    @Inject
+    PathParameterCollectionIdGeoJsonLd() {
+    }
+
     @Override
     public String getId() {
         return "collectionIdJsonLdContext";

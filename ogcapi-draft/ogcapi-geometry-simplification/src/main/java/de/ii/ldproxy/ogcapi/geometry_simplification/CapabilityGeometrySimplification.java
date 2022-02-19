@@ -20,6 +20,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class CapabilityGeometrySimplification implements ApiBuildingBlock {
 
+    @Inject
+    CapabilityGeometrySimplification() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableGeometrySimplificationConfiguration.Builder().enabled(false)

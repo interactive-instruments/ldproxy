@@ -32,6 +32,10 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
             .fileExtension("sld")
             .build();
 
+    @Inject
+    StyleFormatSld11() {
+    }
+
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         return ImmutableList.of("http://www.opengis.net/spec/ogcapi-styles-1/0.0/conf/sld-11");

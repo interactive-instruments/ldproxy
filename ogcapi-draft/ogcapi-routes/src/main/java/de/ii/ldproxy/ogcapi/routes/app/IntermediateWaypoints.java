@@ -23,6 +23,10 @@ import java.util.Optional;
 @AutoBind
 public class IntermediateWaypoints implements ConformanceClass {
 
+  @Inject
+  IntermediateWaypoints() {
+  }
+
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(CapabilityRouting.INTERMEDIATE_WAYPOINTS);

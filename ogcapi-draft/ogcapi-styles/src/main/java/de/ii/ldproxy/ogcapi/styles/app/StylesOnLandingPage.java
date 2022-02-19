@@ -43,7 +43,7 @@ public class StylesOnLandingPage implements LandingPageExtension {
 
     @Inject
     public StylesOnLandingPage(I18n i18n,
-                               StyleRepository styleRepo) throws IOException {
+                               StyleRepository styleRepo) {
         this.i18n = i18n;
         this.styleRepo = styleRepo;
     }

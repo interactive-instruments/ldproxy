@@ -20,6 +20,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class CapabilityProjections implements ApiBuildingBlock {
 
+    @Inject
+    CapabilityProjections() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableProjectionsConfiguration.Builder().enabled(false)

@@ -45,6 +45,10 @@ public class GeometryHelperWKTImpl implements GeometryHelperWKT {
     static final Pattern lineStringPattern = Pattern.compile(LINE_STRING_REGEX);
     static final Pattern polygonPattern = Pattern.compile(POLYGON_REGEX);
 
+    @Inject
+    GeometryHelperWKTImpl() {
+    }
+
     @Override
     public String getRegex() {
         return getMultiPolygonRegex()

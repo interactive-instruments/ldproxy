@@ -31,6 +31,10 @@ public class MapTileFormatWEBP extends MapTileFormatExtension {
             .parameter("webp")
             .build();
 
+    @Inject
+    MapTileFormatWEBP() {
+    }
+
     @Override
     public ApiMediaType getMediaType() {
         return MEDIA_TYPE;

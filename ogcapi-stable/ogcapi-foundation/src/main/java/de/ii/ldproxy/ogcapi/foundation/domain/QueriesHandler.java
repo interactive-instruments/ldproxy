@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.ogcapi.foundation.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.Hashing;
@@ -41,6 +42,7 @@ import java.util.Optional;
 import java.util.SimpleTimeZone;
 import java.util.stream.Collectors;
 
+@AutoMultiBind
 public interface QueriesHandler<T extends QueryIdentifier> {
 
     Logger LOGGER = LoggerFactory.getLogger(QueriesHandler.class);

@@ -26,6 +26,10 @@ public class HeaderLocationStylesManager extends ApiExtensionCache implements Ap
 
     private final Schema schema = new StringSchema().format("uri");
 
+    @Inject
+    HeaderLocationStylesManager() {
+    }
+
     @Override
     public String getId() {
         return "Location";

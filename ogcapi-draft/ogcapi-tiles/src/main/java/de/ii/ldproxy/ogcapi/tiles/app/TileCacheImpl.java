@@ -95,7 +95,7 @@ public class TileCacheImpl implements TileCache {
                          ExtensionRegistry extensionRegistry,
                          EntityRegistry entityRegistry,
                          TileMatrixSetRepository tileMatrixSetRepository,
-                         CrsTransformerFactory crsTransformerFactory) throws IOException {
+                         CrsTransformerFactory crsTransformerFactory) {
         // the ldproxy data directory, in development environment this would be ./build/data
         this.cacheStore = appContext.getDataDir()
             .resolve(CACHE_DIR)
@@ -107,12 +107,7 @@ public class TileCacheImpl implements TileCache {
         this.entityRegistry = entityRegistry;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
         this.crsTransformerFactory = crsTransformerFactory;
-        Files.createDirectories(cacheStore);
-
-        mbtiles = new HashMap<>();
-
-        // TODO move to background task
-        cleanup();
+        this.mbtiles = new HashMap<>();
     }
 
     /**
@@ -122,6 +117,15 @@ public class TileCacheImpl implements TileCache {
     public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                                                                              .mode(apiValidation);
+
+        try {
+            Files.createDirectories(cacheStore);
+        } catch (IOException e) {
+            builder.addErrors(e.getMessage());
+        }
+
+        // TODO move to background task
+        cleanup();
 
         Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);

@@ -23,6 +23,10 @@ public class QueryParameterDryRunStylesManager extends ApiExtensionCache impleme
 
     private final Schema schema = new BooleanSchema()._default(false);
 
+    @Inject
+    QueryParameterDryRunStylesManager() {
+    }
+
     @Override
     public String getId() {
         return "dryRunStylesManager";
