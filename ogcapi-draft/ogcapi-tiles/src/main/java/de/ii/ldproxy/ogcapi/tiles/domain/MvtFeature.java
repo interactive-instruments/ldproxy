@@ -8,11 +8,10 @@
 package de.ii.ldproxy.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.Map;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.immutables.value.Value;
 import org.locationtech.jts.geom.Geometry;
-
-import java.util.Map;
 
 @Value.Immutable
 @Value.Style(builder = "new")

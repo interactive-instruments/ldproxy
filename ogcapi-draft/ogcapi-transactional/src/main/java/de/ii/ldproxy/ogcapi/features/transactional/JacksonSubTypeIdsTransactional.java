@@ -9,7 +9,7 @@ package de.ii.ldproxy.ogcapi.features.transactional;
 
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
+import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -23,6 +23,11 @@ import java.util.Map;
 @Singleton
 @AutoBind
 public class JacksonSubTypeIdsTransactional implements JacksonSubTypeIds {
+
+    @Inject
+    JacksonSubTypeIdsTransactional() {
+    }
+
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()

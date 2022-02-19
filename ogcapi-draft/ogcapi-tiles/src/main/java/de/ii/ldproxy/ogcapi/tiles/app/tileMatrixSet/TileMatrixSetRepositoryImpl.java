@@ -7,32 +7,26 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app.tileMatrixSet;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Context;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.osgi.framework.BundleContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-
-import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Access to the cache for tile files.
@@ -50,8 +44,11 @@ public class TileMatrixSetRepositoryImpl implements TileMatrixSetRepository {
     /**
      * set data directory
      */
-    public TileMatrixSetRepositoryImpl(@Context BundleContext bundleContext) {
-        this.customTileMatrixSetsStore = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR_NAME, TILE_MATRIX_SET_DIR_NAME);
+    @Inject
+    public TileMatrixSetRepositoryImpl(AppContext appContext) {
+        this.customTileMatrixSetsStore = appContext.getDataDir()
+            .resolve(API_RESOURCES_DIR_NAME)
+            .resolve(TILE_MATRIX_SET_DIR_NAME);
         this.tileMatrixSets = new HashMap<>();
     }
 

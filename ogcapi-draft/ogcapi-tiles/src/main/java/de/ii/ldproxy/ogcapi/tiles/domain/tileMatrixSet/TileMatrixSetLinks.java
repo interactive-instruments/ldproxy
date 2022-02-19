@@ -9,13 +9,10 @@ package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentationWithId;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)

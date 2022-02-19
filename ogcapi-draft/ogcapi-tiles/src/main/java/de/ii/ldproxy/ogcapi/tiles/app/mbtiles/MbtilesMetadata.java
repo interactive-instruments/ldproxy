@@ -9,10 +9,9 @@ package de.ii.ldproxy.ogcapi.tiles.app.mbtiles;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ldproxy.ogcapi.tiles.domain.VectorLayer;
-import org.immutables.value.Value;
-
 import java.util.List;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 /**
  * Mbtiles metadata

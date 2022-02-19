@@ -7,23 +7,17 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.Metadata2;
-import de.ii.ldproxy.ogcapi.foundation.domain.MetadataDates;
-import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
 import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentationWithId;
-import org.immutables.value.Value;
-
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 /**
  * This class specifies the data structure of a tile matrix set.

@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
-import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ldproxy.ogcapi.tiles.domain.ImmutableMvtFeature;
 import de.ii.ldproxy.ogcapi.tiles.domain.MvtFeature;
@@ -16,9 +15,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;

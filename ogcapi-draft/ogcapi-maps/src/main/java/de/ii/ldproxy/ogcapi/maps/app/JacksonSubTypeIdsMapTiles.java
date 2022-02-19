@@ -10,7 +10,7 @@ package de.ii.ldproxy.ogcapi.maps.app;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ldproxy.ogcapi.maps.domain.MapTilesConfiguration;
-import de.ii.xtraplatform.dropwizard.domain.JacksonSubTypeIds;
+import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;

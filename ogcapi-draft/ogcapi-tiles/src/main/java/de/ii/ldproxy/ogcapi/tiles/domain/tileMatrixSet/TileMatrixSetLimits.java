@@ -9,10 +9,8 @@ package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.tiles.domain.TilePoint;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")

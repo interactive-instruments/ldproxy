@@ -7,6 +7,9 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.app;
 
+import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
@@ -14,28 +17,22 @@ import de.ii.ldproxy.ogcapi.tiles.app.mbtiles.MbtilesTileset;
 import de.ii.ldproxy.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-import org.osgi.framework.BundleContext;
-
-import javax.ws.rs.NotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.runtime.domain.Constants.DATA_DIR_KEY;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Access tiles in Mbtiles files.
@@ -48,11 +45,12 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
     private final Path store;
     private Map<String, MbtilesTileset> mbtiles;
 
-    public StaticTileProviderStoreImpl(@org.apache.felix.ipojo.annotations.Context BundleContext bundleContext) throws IOException {
-        this.store = Paths.get(bundleContext.getProperty(DATA_DIR_KEY), API_RESOURCES_DIR)
-                                            .resolve(TILES_DIR_NAME);
-        Files.createDirectories(store);
-        mbtiles = new HashMap<>();
+    @Inject
+    public StaticTileProviderStoreImpl(AppContext appContext) {
+        this.store = appContext.getDataDir()
+            .resolve(API_RESOURCES_DIR)
+            .resolve(TILES_DIR_NAME);
+        this.mbtiles = new HashMap<>();
     }
 
     /**
@@ -65,6 +63,12 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
     public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                                                                              .mode(apiValidation);
+
+        try {
+            Files.createDirectories(store);
+        } catch (IOException e) {
+            builder.addErrors(e.getMessage());
+        }
 
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
         if (config.isPresent()

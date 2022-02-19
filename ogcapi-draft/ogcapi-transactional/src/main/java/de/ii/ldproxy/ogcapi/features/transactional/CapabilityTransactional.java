@@ -20,6 +20,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class CapabilityTransactional implements ApiBuildingBlock {
 
+    @Inject
+    CapabilityTransactional() {
+    }
+
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
         return new ImmutableTransactionalConfiguration.Builder().enabled(false)

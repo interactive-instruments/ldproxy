@@ -22,6 +22,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class HeaderLocationTransactional extends ApiExtensionCache implements ApiHeader {
 
+    @Inject
+    HeaderLocationTransactional() {
+    }
+
     private final Schema schema = new StringSchema().format("uri");
 
     @Override
