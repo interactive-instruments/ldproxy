@@ -1,0 +1,67 @@
+/**
+ * Copyright 2022 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+package de.ii.ogcapi.styles.app;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.styles.domain.Styles;
+import de.ii.ogcapi.styles.domain.StylesFormatExtension;
+import io.swagger.v3.oas.models.media.Schema;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
+
+@Singleton
+@AutoBind
+public class StylesFormatJson implements StylesFormatExtension {
+
+    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
+            .type(new MediaType("application", "json"))
+            .label("JSON")
+            .parameter("json")
+            .build();
+
+    private final Schema schemaStyles;
+    public final static String SCHEMA_REF_STYLES = "#/components/schemas/Styles";
+
+    @Inject
+    public StylesFormatJson(SchemaGenerator schemaGenerator) {
+        schemaStyles = schemaGenerator.getSchema(Styles.class);
+    }
+
+    @Override
+    public ApiMediaType getMediaType() {
+        return MEDIA_TYPE;
+    }
+
+    @Override
+    public Object getStylesEntity(Styles styles, OgcApiDataV2 apiData, Optional<String> collectionId, ApiRequestContext requestContext) {
+        return styles;
+    }
+
+    @Override
+    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+
+        // TODO add examples
+        if (path.endsWith("/styles"))
+            return new ImmutableApiMediaTypeContent.Builder()
+                    .schema(schemaStyles)
+                    .schemaRef(SCHEMA_REF_STYLES)
+                    .ogcApiMediaType(MEDIA_TYPE)
+                    .build();
+
+        throw new RuntimeException("Unexpected path: " + path);
+    }
+}

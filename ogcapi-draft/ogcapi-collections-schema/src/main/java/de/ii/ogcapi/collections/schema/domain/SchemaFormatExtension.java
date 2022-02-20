@@ -1,0 +1,24 @@
+/**
+ * Copyright 2022 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+package de.ii.ogcapi.collections.schema.domain;
+
+import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+
+import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
+public interface SchemaFormatExtension extends FormatExtension {
+
+    default String getPathPattern() {
+        return "^/?collections/"+COLLECTION_ID_PATTERN+"/schemas/"+ PathParameterTypeSchema.SCHEMA_TYPE_PATTERN+"/?$";
+    }
+
+    Object getEntity(JsonSchemaObject schema, String collectionId, OgcApi api, ApiRequestContext requestContext);
+}
