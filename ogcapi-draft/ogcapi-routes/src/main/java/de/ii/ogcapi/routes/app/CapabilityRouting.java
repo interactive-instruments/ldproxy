@@ -8,15 +8,15 @@
 package de.ii.ogcapi.routes.app;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.routes.domain.ImmutableHtmlForm;
 import de.ii.ogcapi.routes.domain.ImmutableRoutingConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.DefaultCrs.CRS84;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DefaultCrs.CRS84;
 
 @Singleton
 @AutoBind

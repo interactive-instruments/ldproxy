@@ -8,9 +8,9 @@
 package de.ii.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 
 @AutoMultiBind
 public interface TileMatrixSetsFormatExtension extends GenericFormatExtension {

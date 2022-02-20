@@ -3,5 +3,7 @@ dependencies {
     provided project(":ogcapi-html")
     provided project(":ogcapi-json")
     provided project(":ogcapi-xml")
+
+    testImplementation(testFixtures(project(":ogcapi-foundation")))
 }
 

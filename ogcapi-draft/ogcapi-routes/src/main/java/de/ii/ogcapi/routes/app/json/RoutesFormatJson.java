@@ -8,16 +8,16 @@
 package de.ii.ogcapi.routes.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ogcapi.routes.domain.Routes;
 import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;

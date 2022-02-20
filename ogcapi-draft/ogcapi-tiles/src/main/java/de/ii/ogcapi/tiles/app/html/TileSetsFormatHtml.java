@@ -7,22 +7,22 @@
  */
 package de.ii.ogcapi.tiles.app.html;
 
-import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ldproxy.ogcapi.html.domain.MapClient;
-import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSetsView;

@@ -7,20 +7,20 @@
  */
 package de.ii.ogcapi.resources.app;
 
-import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
-import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.QueryHandler;
+import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;

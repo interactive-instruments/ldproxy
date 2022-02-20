@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import java.util.Map;
 import org.immutables.value.Value;
 

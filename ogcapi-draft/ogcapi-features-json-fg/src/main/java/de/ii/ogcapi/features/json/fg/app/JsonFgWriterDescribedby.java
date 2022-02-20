@@ -9,12 +9,12 @@ package de.ii.ogcapi.features.json.fg.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.schema.domain.SchemaConfiguration;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
+import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
+import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.json.fg.domain.JsonFgConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;

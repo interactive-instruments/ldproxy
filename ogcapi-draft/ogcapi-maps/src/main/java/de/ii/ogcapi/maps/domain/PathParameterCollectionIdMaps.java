@@ -8,10 +8,10 @@
 package de.ii.ogcapi.maps.domain;
 
 
-import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import javax.inject.Inject;

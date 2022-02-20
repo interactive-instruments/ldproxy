@@ -8,11 +8,11 @@
 package de.ii.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 
 import java.util.List;
 import java.util.Locale;

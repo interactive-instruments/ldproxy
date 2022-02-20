@@ -7,14 +7,14 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
+import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.SchemaInfo;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesTileset;

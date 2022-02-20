@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.routes.app;
 
-import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,12 +15,12 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.routes.domain.ImmutableRouteDefinition;
 import de.ii.ogcapi.routes.domain.ImmutableRoutes;
 import de.ii.ogcapi.routes.domain.Route;

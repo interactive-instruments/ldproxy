@@ -8,9 +8,9 @@
 package de.ii.ogcapi.maps.domain;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;

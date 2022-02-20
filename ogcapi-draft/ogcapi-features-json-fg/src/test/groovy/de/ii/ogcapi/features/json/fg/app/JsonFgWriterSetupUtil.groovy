@@ -8,9 +8,18 @@
 package de.ii.ogcapi.features.json.fg.app
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.foundation.domain.*
-import de.ii.ldproxy.ogcapi.features.geojson.domain.*
+import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson
+import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
+import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
+import de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
+import de.ii.ogcapi.features.geojson.domain.ModifiableEncodingAwareContextGeoJson
+import de.ii.ogcapi.features.geojson.domain.ModifiableStateGeoJson
 import de.ii.ogcapi.features.json.fg.domain.ImmutableJsonFgConfiguration
+import de.ii.ogcapi.foundation.domain.ApiMediaType
+import de.ii.ogcapi.foundation.domain.ApiRequestContext
+import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2
+import de.ii.ogcapi.foundation.domain.OgcApi
+import de.ii.ogcapi.foundation.domain.URICustomizer
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.OgcCrs
 

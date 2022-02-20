@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain.tileMatrixSet;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtension;
+import de.ii.ogcapi.foundation.domain.ApiExtension;
 
 import java.util.Map;
 import java.util.Optional;

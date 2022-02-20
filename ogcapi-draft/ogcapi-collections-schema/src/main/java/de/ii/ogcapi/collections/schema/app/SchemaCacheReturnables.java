@@ -7,13 +7,13 @@
  */
 package de.ii.ogcapi.collections.schema.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaCache;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;

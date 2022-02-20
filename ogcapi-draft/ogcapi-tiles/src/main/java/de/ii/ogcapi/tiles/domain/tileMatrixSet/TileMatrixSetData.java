@@ -9,8 +9,8 @@ package de.ii.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentationWithId;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;

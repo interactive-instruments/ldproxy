@@ -9,7 +9,14 @@ package de.ii.ogcapi.styles.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.foundation.domain.*;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import io.swagger.v3.oas.models.media.ObjectSchema;

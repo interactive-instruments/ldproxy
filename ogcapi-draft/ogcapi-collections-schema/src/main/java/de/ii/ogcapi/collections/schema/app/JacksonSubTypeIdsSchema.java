@@ -9,7 +9,7 @@ package de.ii.ogcapi.collections.schema.app;
 
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.schema.domain.SchemaConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 import javax.inject.Inject;
 import javax.inject.Singleton;

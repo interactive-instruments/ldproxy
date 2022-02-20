@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.routes.app.encoder;
 
-import de.ii.ldproxy.ogcapi.features.core.domain.Geometry;
+import de.ii.ogcapi.features.core.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureBase;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;

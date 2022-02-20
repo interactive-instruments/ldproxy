@@ -8,7 +8,7 @@
 package de.ii.ogcapi.tiles.app.tileMatrixSet;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.TilesHelper;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;

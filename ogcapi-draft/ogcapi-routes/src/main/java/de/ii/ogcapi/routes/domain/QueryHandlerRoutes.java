@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.routes.domain;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.QueriesHandler;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryIdentifier;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
+import de.ii.ogcapi.foundation.domain.QueryIdentifier;
+import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;

@@ -10,7 +10,7 @@ package de.ii.ogcapi.resources.app;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.Link;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;

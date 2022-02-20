@@ -7,7 +7,12 @@
  */
 package de.ii.ogcapi.geometry.simplification;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.*;
+import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -20,7 +25,8 @@ import java.util.Map;
 
 @Singleton
 @AutoBind
-public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache implements
+    OgcApiQueryParameter {
 
     @Inject
     QueryParameterMaxAllowableOffsetFeatures() {
@@ -64,7 +70,8 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache 
     }
 
     @Override
-    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+    public ImmutableFeatureQuery.Builder transformQuery(
+        FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDataV2 datasetData) {
         if (!isExtensionEnabled(datasetData.getCollections()

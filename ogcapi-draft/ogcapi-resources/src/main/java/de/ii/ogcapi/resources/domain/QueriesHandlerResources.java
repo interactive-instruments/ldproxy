@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.resources.domain;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.QueriesHandler;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryIdentifier;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
+import de.ii.ogcapi.foundation.domain.QueryIdentifier;
+import de.ii.ogcapi.foundation.domain.QueryInput;
 import org.immutables.value.Value;
 
 public interface QueriesHandlerResources extends QueriesHandler<QueriesHandlerResources.Query> {

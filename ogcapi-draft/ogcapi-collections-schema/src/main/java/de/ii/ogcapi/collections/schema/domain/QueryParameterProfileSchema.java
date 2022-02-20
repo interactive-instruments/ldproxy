@@ -9,10 +9,10 @@ package de.ii.ogcapi.collections.schema.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.common.domain.QueryParameterProfile;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.common.domain.QueryParameterProfile;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;

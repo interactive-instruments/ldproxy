@@ -10,7 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.foundation.domain.Metadata2;
+import de.ii.ogcapi.foundation.domain.Metadata2;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;

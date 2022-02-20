@@ -7,23 +7,23 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import static de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ldproxy.ogcapi.crs.domain.CrsSupport;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.crs.domain.CrsSupport;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ogcapi.tiles.domain.Rule;

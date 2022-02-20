@@ -7,22 +7,22 @@
  */
 package de.ii.ogcapi.collections.schema.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonSchema;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaArray;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaDocument;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaDocumentV7;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaInteger;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaRef;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaRefExternal;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaRefV7;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.ImmutableJsonSchemaString;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaCache;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaRef;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaRefExternal;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.features.geojson.domain.GeoJsonSchema;
+import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaArray;
+import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaDocument;
+import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaDocumentV7;
+import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaInteger;
+import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaRef;
+import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaRefExternal;
+import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaRefV7;
+import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaString;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaCache;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaRef;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaRefExternal;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 
 import java.util.Optional;

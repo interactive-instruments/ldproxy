@@ -7,8 +7,8 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
-import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;

@@ -9,9 +9,9 @@ package de.ii.ogcapi.tiles
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ldproxy.ogcapi.foundation.app.I18nDefault
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi
+import de.ii.ogcapi.foundation.app.I18nDefault
+import de.ii.ogcapi.foundation.domain.ApiRequestContext
+import de.ii.ogcapi.foundation.domain.OgcApi
 import de.ii.ogcapi.tiles.app.TileCacheImpl
 import de.ii.ogcapi.tiles.domain.ImmutableMinMax
 import de.ii.ogcapi.tiles.domain.MinMax

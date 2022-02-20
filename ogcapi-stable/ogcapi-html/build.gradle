@@ -4,6 +4,8 @@ plugins {
 
 dependencies {
     provided project(":ogcapi-foundation")
+
+    testImplementation(testFixtures(project(":ogcapi-foundation")))
 }
 
 ext {

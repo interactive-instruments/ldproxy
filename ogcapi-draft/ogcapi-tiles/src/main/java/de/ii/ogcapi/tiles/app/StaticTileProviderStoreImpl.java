@@ -7,11 +7,11 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesTileset;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;

@@ -7,8 +7,8 @@
  */
 package de.ii.ogcapi.features.json.fg.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.features.json.fg.domain.ImmutableWhereConfiguration;
 import de.ii.ogcapi.features.json.fg.domain.ImmutableJsonFgConfiguration.Builder;
 import javax.inject.Inject;

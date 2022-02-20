@@ -7,11 +7,11 @@
  */
 package de.ii.ogcapi.styles.manager.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiExtensionCache;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiHeader;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ApiHeader;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;

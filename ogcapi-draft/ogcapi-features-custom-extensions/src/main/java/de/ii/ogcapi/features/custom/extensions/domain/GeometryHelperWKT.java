@@ -8,7 +8,7 @@
 package de.ii.ogcapi.features.custom.extensions.domain;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import de.ii.ldproxy.ogcapi.features.html.domain.Geometry;
+import de.ii.ogcapi.features.html.domain.Geometry;
 
 public interface GeometryHelperWKT {
     String getRegex();

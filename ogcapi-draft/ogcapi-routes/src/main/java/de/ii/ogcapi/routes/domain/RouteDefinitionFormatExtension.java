@@ -7,10 +7,10 @@
  */
 package de.ii.ogcapi.routes.domain;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
 import static de.ii.ogcapi.routes.domain.PathParameterRouteId.ROUTE_ID_PATTERN;
 

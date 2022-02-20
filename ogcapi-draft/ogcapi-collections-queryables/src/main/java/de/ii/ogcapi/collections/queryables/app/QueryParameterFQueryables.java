@@ -9,11 +9,11 @@ package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
-import de.ii.ldproxy.ogcapi.common.domain.QueryParameterF;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.common.domain.QueryParameterF;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

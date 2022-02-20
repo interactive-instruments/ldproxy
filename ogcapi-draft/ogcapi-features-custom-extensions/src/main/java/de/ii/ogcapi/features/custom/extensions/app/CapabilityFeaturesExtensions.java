@@ -7,8 +7,8 @@
  */
 package de.ii.ogcapi.features.custom.extensions.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration.Builder;
 import javax.inject.Inject;
 import javax.inject.Singleton;

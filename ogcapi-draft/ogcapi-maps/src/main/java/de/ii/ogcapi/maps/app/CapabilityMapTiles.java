@@ -8,13 +8,13 @@
 package de.ii.ogcapi.maps.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ogcapi.features.core.domain.SchemaInfo;
+import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;

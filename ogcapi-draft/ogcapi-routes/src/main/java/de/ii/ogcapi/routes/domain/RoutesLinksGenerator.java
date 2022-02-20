@@ -8,13 +8,12 @@
 package de.ii.ogcapi.routes.domain;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.ImmutableLink;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 
-import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;

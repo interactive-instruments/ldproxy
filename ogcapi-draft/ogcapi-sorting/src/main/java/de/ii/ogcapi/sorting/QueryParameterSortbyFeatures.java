@@ -9,7 +9,13 @@ package de.ii.ogcapi.sorting;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.*;
+import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SortKey;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -28,7 +34,8 @@ import java.util.stream.Collectors;
 
 @Singleton
 @AutoBind
-public class QueryParameterSortbyFeatures extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
+public class QueryParameterSortbyFeatures extends ApiExtensionCache implements OgcApiQueryParameter,
+    ConformanceClass {
 
     final static Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
@@ -128,7 +135,8 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
     }
 
     @Override
-    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+    public ImmutableFeatureQuery.Builder transformQuery(
+        FeatureTypeConfigurationOgcApi featureTypeConfiguration,
                                                         ImmutableFeatureQuery.Builder queryBuilder,
                                                         Map<String, String> parameters, OgcApiDataV2 datasetData) {
         if (!isExtensionEnabled(datasetData.getCollections()

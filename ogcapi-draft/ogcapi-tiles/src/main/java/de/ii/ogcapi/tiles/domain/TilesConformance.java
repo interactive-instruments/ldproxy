@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
 import java.util.List;
 

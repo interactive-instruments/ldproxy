@@ -7,10 +7,10 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;

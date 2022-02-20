@@ -7,8 +7,8 @@
  */
 package de.ii.ogcapi.filter.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.filter.domain.ImmutableFilterConfiguration.Builder;
 import javax.inject.Inject;
 import javax.inject.Singleton;

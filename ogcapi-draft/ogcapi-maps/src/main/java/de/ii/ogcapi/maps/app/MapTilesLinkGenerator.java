@@ -8,11 +8,11 @@
 package de.ii.ogcapi.maps.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.DefaultLinksGenerator;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.ImmutableLink;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.TileSet;
 
 import java.util.List;

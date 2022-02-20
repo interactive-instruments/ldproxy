@@ -8,7 +8,7 @@
 package de.ii.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 import javax.inject.Inject;

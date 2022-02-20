@@ -9,13 +9,13 @@ package de.ii.ogcapi.tiles
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ldproxy.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeBase
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeCollection
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeMap
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeMinimal
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeNested
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeSimple
+import de.ii.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
+import de.ii.ogcapi.foundation.domain.MergeBase
+import de.ii.ogcapi.foundation.domain.MergeCollection
+import de.ii.ogcapi.foundation.domain.MergeMap
+import de.ii.ogcapi.foundation.domain.MergeMinimal
+import de.ii.ogcapi.foundation.domain.MergeNested
+import de.ii.ogcapi.foundation.domain.MergeSimple
 import de.ii.ogcapi.tiles.domain.ImmutableRule
 import de.ii.ogcapi.tiles.domain.ImmutableMinMax
 import de.ii.ogcapi.tiles.domain.ImmutablePredefinedFilter

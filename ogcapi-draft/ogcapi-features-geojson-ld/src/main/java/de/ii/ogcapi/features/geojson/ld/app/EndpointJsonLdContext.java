@@ -7,24 +7,24 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
-import static de.ii.ldproxy.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
+import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.features.geojson.ld.domain.GeoJsonLdConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiOperation;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.base.domain.AppContext;
 import java.io.IOException;
 import java.nio.file.Files;

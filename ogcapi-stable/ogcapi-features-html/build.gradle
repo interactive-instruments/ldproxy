@@ -4,4 +4,6 @@ dependencies {
     provided project(":ogcapi-collections")
     provided project(":ogcapi-features-core")
     provided project(":ogcapi-html")
+
+    testImplementation(testFixtures(project(":ogcapi-foundation")))
 }

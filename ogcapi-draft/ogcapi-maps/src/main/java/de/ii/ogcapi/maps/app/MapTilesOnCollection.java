@@ -9,15 +9,15 @@ package de.ii.ogcapi.maps.app;
 
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.collections.domain.CollectionExtension;
-import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiCollection;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.collections.domain.CollectionExtension;
+import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;

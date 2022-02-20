@@ -7,9 +7,8 @@
  */
 package de.ii.ogcapi.transactional;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.json.domain.FeatureTokenDecoderGeoJson;

@@ -7,11 +7,11 @@
  */
 package de.ii.ogcapi.maps.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.maps.domain.MapTileFormatExtension;
 import javax.inject.Inject;
 import javax.inject.Singleton;

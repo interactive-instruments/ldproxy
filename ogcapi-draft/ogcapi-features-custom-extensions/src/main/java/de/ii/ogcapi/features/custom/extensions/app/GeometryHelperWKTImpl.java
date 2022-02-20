@@ -10,7 +10,7 @@ package de.ii.ogcapi.features.custom.extensions.app;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.custom.extensions.domain.GeometryHelperWKT;
-import de.ii.ldproxy.ogcapi.features.html.domain.Geometry;
+import de.ii.ogcapi.features.html.domain.Geometry;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;

@@ -8,7 +8,7 @@
 package de.ii.ogcapi.features.custom.extensions.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

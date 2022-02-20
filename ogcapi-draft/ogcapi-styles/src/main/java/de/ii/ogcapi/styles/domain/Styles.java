@@ -10,7 +10,7 @@ package de.ii.ogcapi.styles.domain;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
+import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;

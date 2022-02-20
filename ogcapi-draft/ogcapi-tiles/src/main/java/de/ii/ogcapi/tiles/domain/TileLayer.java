@@ -9,9 +9,9 @@ package de.ii.ogcapi.tiles.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchema;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
-import de.ii.ldproxy.ogcapi.foundation.domain.Metadata2;
+import de.ii.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ogcapi.foundation.domain.Metadata2;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;

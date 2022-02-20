@@ -8,15 +8,15 @@
 package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.features.geojson.domain.JsonSchemaObject;
 
 import java.util.List;
 
-import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 @AutoMultiBind
 public interface QueryablesFormatExtension extends GenericFormatExtension {

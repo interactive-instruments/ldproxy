@@ -7,8 +7,8 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiBuildingBlock;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.features.geojson.ld.domain.ImmutableGeoJsonLdConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;

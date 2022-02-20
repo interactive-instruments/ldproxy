@@ -7,10 +7,10 @@
  */
 package de.ii.ogcapi.styles.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.html.domain.ImmutableMapClient;
-import de.ii.ldproxy.ogcapi.html.domain.MapClient;
-import de.ii.ldproxy.ogcapi.html.domain.MapClient.Popup;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.ogcapi.html.domain.MapClient.Popup;
 import de.ii.xtraplatform.services.domain.GenericView;
 import java.util.Collection;
 import java.util.Map;

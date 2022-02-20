@@ -8,9 +8,9 @@
 package de.ii.ogcapi.collections.queryables.app;
 
 
-import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;

@@ -10,7 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.foundation.domain.PageRepresentation;
+import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;

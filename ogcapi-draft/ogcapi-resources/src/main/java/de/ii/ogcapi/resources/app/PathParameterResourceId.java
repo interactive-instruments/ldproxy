@@ -9,9 +9,9 @@ package de.ii.ogcapi.resources.app;
 
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;

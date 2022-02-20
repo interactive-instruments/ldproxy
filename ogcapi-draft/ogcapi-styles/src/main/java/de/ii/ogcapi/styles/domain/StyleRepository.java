@@ -8,9 +8,9 @@
 package de.ii.ogcapi.styles.domain;
 
 import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 
 import java.io.IOException;

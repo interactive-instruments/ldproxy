@@ -9,7 +9,7 @@ package de.ii.ogcapi.routes.app.encoder;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.features.core.domain.Geometry;
+import de.ii.ogcapi.features.core.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;

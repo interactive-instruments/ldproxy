@@ -8,14 +8,14 @@
 package de.ii.ogcapi.routes.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ldproxy.ogcapi.common.domain.ImmutableLandingPage;
-import de.ii.ldproxy.ogcapi.common.domain.LandingPageExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ogcapi.common.domain.LandingPageExtension;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import java.util.List;

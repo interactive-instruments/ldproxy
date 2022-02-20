@@ -8,11 +8,11 @@
 package de.ii.ogcapi.features.geojson.ld.domain
 
 import com.google.common.collect.ImmutableList
-import de.ii.ldproxy.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeBase
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeCollection
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeMinimal
-import de.ii.ldproxy.ogcapi.foundation.domain.MergeSimple
+import de.ii.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
+import de.ii.ogcapi.foundation.domain.MergeBase
+import de.ii.ogcapi.foundation.domain.MergeCollection
+import de.ii.ogcapi.foundation.domain.MergeMinimal
+import de.ii.ogcapi.foundation.domain.MergeSimple
 
 @SuppressWarnings('ClashingTraitMethods')
 class GeoJsonLdConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<GeoJsonLdConfiguration>, MergeMinimal<GeoJsonLdConfiguration>, MergeSimple<GeoJsonLdConfiguration>, MergeCollection<GeoJsonLdConfiguration> {

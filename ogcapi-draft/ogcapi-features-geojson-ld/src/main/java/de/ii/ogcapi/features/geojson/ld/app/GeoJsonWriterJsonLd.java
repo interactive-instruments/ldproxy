@@ -9,9 +9,9 @@ package de.ii.ogcapi.features.geojson.ld.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
+import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
+import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.geojson.ld.domain.GeoJsonLdConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;

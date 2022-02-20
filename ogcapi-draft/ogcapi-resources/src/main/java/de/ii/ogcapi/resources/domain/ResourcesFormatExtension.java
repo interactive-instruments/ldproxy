@@ -8,10 +8,10 @@
 package de.ii.ogcapi.resources.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ldproxy.ogcapi.common.domain.GenericFormatExtension;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.app.Resources;
 

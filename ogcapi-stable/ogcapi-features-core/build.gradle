@@ -12,6 +12,7 @@ dependencies {
         exclude module: 'unit-api'
     }
 
+    testImplementation(testFixtures(project(":ogcapi-foundation")))
     testImplementation project(":ogcapi-html")
     testImplementation project(":ogcapi-json")
     testImplementation project(":ogcapi-xml")

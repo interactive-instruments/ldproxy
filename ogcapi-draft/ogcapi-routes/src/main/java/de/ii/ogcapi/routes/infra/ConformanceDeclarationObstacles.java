@@ -8,9 +8,9 @@
 package de.ii.ogcapi.routes.infra;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ldproxy.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.routes.app.CapabilityRouting;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import javax.inject.Inject;

@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.routes.domain;
 
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 

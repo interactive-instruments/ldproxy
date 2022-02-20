@@ -7,11 +7,11 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.QueriesHandler;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryHandler;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryIdentifier;
-import de.ii.ldproxy.ogcapi.foundation.domain.QueryInput;
-import de.ii.ldproxy.ogcapi.features.core.domain.processing.FeatureProcessChain;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
+import de.ii.ogcapi.foundation.domain.QueryHandler;
+import de.ii.ogcapi.foundation.domain.QueryIdentifier;
+import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.app.TileProviderTileServer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;

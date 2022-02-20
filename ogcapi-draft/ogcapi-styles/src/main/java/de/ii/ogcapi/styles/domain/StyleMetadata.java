@@ -11,8 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnel;
-import de.ii.ldproxy.ogcapi.foundation.domain.ImmutableLink;
-import de.ii.ldproxy.ogcapi.foundation.domain.Metadata2;
+import de.ii.ogcapi.foundation.domain.ImmutableLink;
+import de.ii.ogcapi.foundation.domain.Metadata2;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;

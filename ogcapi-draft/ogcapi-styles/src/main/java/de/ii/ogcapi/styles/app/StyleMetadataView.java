@@ -8,13 +8,13 @@
 package de.ii.ogcapi.styles.app;
 
 import com.google.common.base.Charsets;
-import de.ii.ldproxy.ogcapi.foundation.domain.I18n;
-import de.ii.ldproxy.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.foundation.domain.Link;
-import de.ii.ldproxy.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ldproxy.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ldproxy.ogcapi.html.domain.NavigationDTO;
-import de.ii.ldproxy.ogcapi.html.domain.OgcApiView;
+import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.ogcapi.styles.domain.StyleMetadata;
 
 import java.util.List;

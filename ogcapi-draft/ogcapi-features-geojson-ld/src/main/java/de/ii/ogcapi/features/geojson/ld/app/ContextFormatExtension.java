@@ -7,14 +7,14 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 public interface ContextFormatExtension extends FormatExtension {
 

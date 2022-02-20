@@ -9,9 +9,9 @@ package de.ii.ogcapi.features.json.fg.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.ldproxy.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping;
+import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
+import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping;
 import de.ii.ogcapi.features.json.fg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import javax.inject.Inject;

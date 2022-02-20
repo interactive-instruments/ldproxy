@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.collections.queryables.app;
 
-import de.ii.ldproxy.ogcapi.foundation.domain.QueriesHandler;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
 
 public interface QueryablesQueriesHandler extends QueriesHandler<QueryablesQueriesHandlerImpl.Query> {
 }
