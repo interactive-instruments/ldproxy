@@ -293,8 +293,9 @@ public class CapabilityTiles implements ApiBuildingBlock {
                                     String expression = filter.getFilter().get();
                                     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
                                     final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
+                                    final Map<String, String> queryableTypes = queryParser.getQueryableTypes(apiData, collectionData);
                                     try {
-                                        queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
+                                        queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), queryableTypes, Cql.Format.TEXT);
                                     } catch (Exception e) {
                                         builder.addErrors(MessageFormat.format("A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}", expression, collectionId, tileMatrixSetId, e.getMessage()));
                                     }
