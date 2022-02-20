@@ -55,8 +55,6 @@ import java.util.stream.Collectors;
 public class CapabilityTiles implements ApiBuildingBlock {
 
     public static final int LIMIT_DEFAULT = 100000;
-    public static final double MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR = 0.1;
-    public static final double MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR = 1.0;
     public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;
     public static final String DATASET_TILES = "__all__";
 
@@ -97,8 +95,6 @@ public class CapabilityTiles implements ApiBuildingBlock {
                                                                                                    .singleCollectionEnabled(true)
                                                                                                    .multiCollectionEnabled(true)
                                                                                                    .ignoreInvalidGeometries(false)
-                                                                                                   .maxRelativeAreaChangeInPolygonRepair(MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR)
-                                                                                                   .maxAbsoluteAreaChangeInPolygonRepair(MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR)
                                                                                                    .minimumSizeInPixel(MINIMUM_SIZE_IN_PIXEL)
                                                                                                    .build())
                                                         .tileSetEncodings(extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)

@@ -4,8 +4,9 @@ dependencies {
         exclude module: 'jts-core'
         exclude module: 'jts-io-common'
     }
-    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.1')
-    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.1') {
+
+    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.2')
+    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.2') {
         exclude module: 'junit'
     }
 
@@ -18,4 +19,5 @@ repositories {
     maven {
         url "https://maven.ecc.no/releases"
     }
+    mavenCentral()
 }

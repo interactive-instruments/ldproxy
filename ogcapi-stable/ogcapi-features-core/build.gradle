@@ -3,8 +3,8 @@ dependencies {
     provided project(":ogcapi-common")
     provided project(":ogcapi-collections")
 
-    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.1')
-    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.1') {
+    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.2')
+    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.2') {
         exclude module: 'junit'
     }
     embedded (group: 'tec.units', name: 'unit-ri', version: '1.0.3') {
