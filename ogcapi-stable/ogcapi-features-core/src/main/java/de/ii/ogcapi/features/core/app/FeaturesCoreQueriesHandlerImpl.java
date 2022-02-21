@@ -26,6 +26,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -78,20 +79,15 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     private final I18n i18n;
     private final CrsTransformerFactory crsTransformerFactory;
     private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-    private final MetricRegistry metricRegistry;
     private final EntityRegistry entityRegistry;
 
     @Inject
     public FeaturesCoreQueriesHandlerImpl(I18n i18n,
                                           CrsTransformerFactory crsTransformerFactory,
-                                          Dropwizard dropwizard,
                                           EntityRegistry entityRegistry) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
         this.entityRegistry = entityRegistry;
-
-        this.metricRegistry = dropwizard.getEnvironment()
-                                        .metrics();
 
         this.queryHandlers = ImmutableMap.of(
                 Query.FEATURES, QueryHandler.with(QueryInputFeatures.class, this::getItemsResponse),
@@ -279,8 +275,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     private StreamingOutput stream(FeatureStream featureTransformStream, boolean failIfEmpty,
         final FeatureTokenEncoder<?> encoder,
         Optional<PropertyTransformations> propertyTransformations) {
-        Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class, "stream"))
-            .time();
+        //Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class, "stream")).time();
 
         return outputStream -> {
             SinkTransformed<Object, byte[]> featureSink = encoder.to(Sink.outputStream(outputStream));
@@ -289,14 +284,10 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 Result result = featureTransformStream.runWith(featureSink, propertyTransformations)
                     .toCompletableFuture()
                     .join();
-                timer.stop();
+                //timer.stop();
 
-                if (result.getError()
-                    .isPresent()) {
-                    processStreamError(result.getError().get());
-                    // the connection has been lost, typically the client has cancelled the request, log on debug level
-                    LOGGER.debug("Request cancelled due to lost connection.");
-                }
+                result.getError()
+                    .ifPresent(QueriesHandler::processStreamError);
 
                 if (result.isEmpty() && failIfEmpty) {
                     throw new NotFoundException("The requested feature does not exist.");
@@ -318,12 +309,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 ResultOld result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
                                                                      .toCompletableFuture()
                                                                      .join();
-                if (result.getError()
-                          .isPresent()) {
-                    processStreamError(result.getError().get());
-                    // the connection has been lost, typically the client has cancelled the request, log on debug level
-                    LOGGER.debug("Request cancelled due to lost connection.");
-                }
+                result.getError()
+                    .ifPresent(QueriesHandler::processStreamError);
 
                 if (result.isEmpty() && failIfEmpty) {
                     throw new NotFoundException("The requested feature does not exist.");
