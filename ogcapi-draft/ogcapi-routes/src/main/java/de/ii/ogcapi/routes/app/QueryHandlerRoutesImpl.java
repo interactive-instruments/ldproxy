@@ -17,6 +17,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.routes.app.json.RouteDefinitionFormatJson;
@@ -420,12 +421,8 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                     .toCompletableFuture()
                     .join();
 
-                if (result.getError()
-                    .isPresent()) {
-                    processStreamError(result.getError().get());
-                    // the connection has been lost, typically the client has cancelled the request, log on debug level
-                    LOGGER.debug("Request cancelled due to lost connection.");
-                }
+                result.getError()
+                    .ifPresent(QueriesHandler::processStreamError);
 
                 if (result.isEmpty()) {
                     throw new NotFoundException("The requested route could not be computed.");
