@@ -55,8 +55,6 @@ import java.util.stream.Collectors;
 public class CapabilityTiles implements ApiBuildingBlock {
 
     public static final int LIMIT_DEFAULT = 100000;
-    public static final double MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR = 0.1;
-    public static final double MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR = 1.0;
     public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;
     public static final String DATASET_TILES = "__all__";
 
@@ -97,8 +95,6 @@ public class CapabilityTiles implements ApiBuildingBlock {
                                                                                                    .singleCollectionEnabled(true)
                                                                                                    .multiCollectionEnabled(true)
                                                                                                    .ignoreInvalidGeometries(false)
-                                                                                                   .maxRelativeAreaChangeInPolygonRepair(MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR)
-                                                                                                   .maxAbsoluteAreaChangeInPolygonRepair(MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR)
                                                                                                    .minimumSizeInPixel(MINIMUM_SIZE_IN_PIXEL)
                                                                                                    .build())
                                                         .tileSetEncodings(extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)
@@ -293,8 +289,9 @@ public class CapabilityTiles implements ApiBuildingBlock {
                                     String expression = filter.getFilter().get();
                                     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
                                     final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
+                                    final Map<String, String> queryableTypes = queryParser.getQueryableTypes(apiData, collectionData);
                                     try {
-                                        queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
+                                        queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), queryableTypes, Cql.Format.TEXT);
                                     } catch (Exception e) {
                                         builder.addErrors(MessageFormat.format("A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}", expression, collectionId, tileMatrixSetId, e.getMessage()));
                                     }

@@ -105,11 +105,11 @@ public abstract class TileProviderFeatures extends TileProvider {
         return Objects.equals(getIgnoreInvalidGeometries(), true);
     }
 
-    @Nullable
-    public abstract Double getMaxRelativeAreaChangeInPolygonRepair();
+    @Deprecated
+    public abstract Optional<Double> getMaxRelativeAreaChangeInPolygonRepair();
 
-    @Nullable
-    public abstract Double getMaxAbsoluteAreaChangeInPolygonRepair();
+    @Deprecated
+    public abstract Optional<Double> getMaxAbsoluteAreaChangeInPolygonRepair();
 
     @Nullable
     public abstract Double getMinimumSizeInPixel();

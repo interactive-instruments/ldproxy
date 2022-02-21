@@ -26,7 +26,6 @@ import de.ii.ldproxy.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ldproxy.ogcapi.tiles.domain.Rule;
 import de.ii.ldproxy.ogcapi.tiles.domain.Tile;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileCache;
-import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileFromFeatureQuery;
 import de.ii.ldproxy.ogcapi.tiles.domain.TileSet;
@@ -38,12 +37,11 @@ import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
 import de.ii.xtraplatform.cql.domain.SpatialOperation;
 import de.ii.xtraplatform.cql.domain.SpatialOperator;
-import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
@@ -201,6 +199,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
         FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
         final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
+        final Map<String, String> queryableTypes = queryParser.getQueryableTypes(apiData, collectionData);
 
         Set<String> filterParameters = ImmutableSet.of();
         for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -251,10 +250,10 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                 if (filterLang.isPresent() && "cql2-json".equals(filterLang.get())) {
                     cqlFormat = Cql.Format.JSON;
                 }
-                otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), cqlFormat);
+                otherFilter = queryParser.getFilterFromQuery(filters, filterableFields, ImmutableSet.of("filter"), queryableTypes, cqlFormat);
             }
             if (predefFilter != null) {
-                configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), Cql.Format.TEXT);
+                configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), queryableTypes, Cql.Format.TEXT);
             }
             CqlFilter combinedFilter;
             if (otherFilter.isPresent() && configFilter.isPresent()) {
