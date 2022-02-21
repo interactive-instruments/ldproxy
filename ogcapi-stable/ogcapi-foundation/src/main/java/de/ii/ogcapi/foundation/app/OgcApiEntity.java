@@ -16,27 +16,15 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.services.domain.AbstractService;
-import de.ii.xtraplatform.services.domain.Service;
-import de.ii.xtraplatform.services.domain.ServiceData;
-import de.ii.xtraplatform.store.domain.entities.EntityComponent;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import de.ii.xtraplatform.store.domain.entities.handler.Entity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@EntityComponent
-@Entity(
-        type = Service.TYPE,
-        subType = OgcApiDataV2.SERVICE_TYPE,
-        dataClass = ServiceData.class,
-        dataSubClass = OgcApiDataV2.class
-)
 public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcApi {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEntity.class);
