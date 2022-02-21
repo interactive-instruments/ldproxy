@@ -7,6 +7,11 @@ subprojects {
         excludes([
                 "**/Modifiable*.java",
                 "**/Immutable*.java",
+                "**/*_Factory.java",
+                "**/Dagger*.java",
+                "**/AutoBinding*.java",
+                "**/*Assisted_Impl.java",
+                "**/module-info.java",
                 "**/node_modules/**/*",
                 "**/*.mustache",
                 "**/*.png",
