@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.html.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -14,11 +15,13 @@ import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 
 import java.util.Map;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @author zahnen
  */
-
+@Singleton
+@AutoBind
 public class JacksonSubTypeIdsHtml implements JacksonSubTypeIds {
 
     @Inject
