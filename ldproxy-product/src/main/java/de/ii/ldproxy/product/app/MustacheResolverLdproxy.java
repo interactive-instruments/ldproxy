@@ -5,20 +5,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.product;
+package de.ii.ldproxy.product.app;
 
-import de.ii.xtraplatform.dropwizard.domain.PartialMustacheResolver;
-import de.ii.xtraplatform.dropwizard.domain.PerClassMustacheResolver;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.xtraplatform.web.domain.PartialMustacheResolver;
+import de.ii.xtraplatform.web.domain.PerClassMustacheResolver;
 import java.io.Reader;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class MustacheResolverLdproxy extends PerClassMustacheResolver implements PartialMustacheResolver {
+
+    @Inject
+    MustacheResolverLdproxy() {
+    }
 
     @Override
     public int getSortPriority() {
