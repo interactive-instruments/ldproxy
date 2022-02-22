@@ -9,6 +9,7 @@ package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesFormatExtension;
 import de.ii.ogcapi.features.geojson.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;

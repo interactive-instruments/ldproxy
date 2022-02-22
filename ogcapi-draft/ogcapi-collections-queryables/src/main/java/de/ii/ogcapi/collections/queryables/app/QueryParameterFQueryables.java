@@ -9,6 +9,7 @@ package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesFormatExtension;
 import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
