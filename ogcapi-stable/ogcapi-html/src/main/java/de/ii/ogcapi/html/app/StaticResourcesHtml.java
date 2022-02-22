@@ -22,7 +22,7 @@ public class StaticResourcesHtml implements StaticResources {
 
   @Override
   public String getResourcePath() {
-    return "/assets";
+    return "/de/ii/ogcapi/html/assets";
   }
 
   @Override
