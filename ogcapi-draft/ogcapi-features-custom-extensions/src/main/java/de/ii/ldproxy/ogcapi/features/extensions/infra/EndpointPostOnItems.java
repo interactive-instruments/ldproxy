@@ -7,42 +7,44 @@
  */
 package de.ii.ldproxy.ogcapi.features.extensions.infra;
 
+import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_FEATURES;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
-import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
-import de.ii.ldproxy.ogcapi.domain.ApiOperation;
-import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
-import de.ii.ldproxy.ogcapi.domain.EndpointExtension;
-import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
-import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
-import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ldproxy.ogcapi.domain.FormatExtension;
-import de.ii.ldproxy.ogcapi.domain.HttpMethods;
-import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
-import de.ii.ldproxy.ogcapi.domain.OgcApi;
-import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
-import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
-import de.ii.ldproxy.ogcapi.domain.OgcApiResource;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
-import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
-import de.ii.ldproxy.ogcapi.features.extensions.domain.FeaturesExtensionsConfiguration;
+import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
+import de.ii.ogcapi.collections.domain.EndpointSubCollection;
+import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
+import de.ii.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
+import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.EndpointExtension;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import org.apache.felix.ipojo.annotations.Component;
-import org.apache.felix.ipojo.annotations.Instantiate;
-import org.apache.felix.ipojo.annotations.Provides;
-import org.apache.felix.ipojo.annotations.Requires;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -53,16 +55,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition.SORT_PRIORITY_FEATURES;
-
-@Component
-@Provides
-@Instantiate
+@Singleton
+@AutoBind
 public class EndpointPostOnItems extends EndpointSubCollection {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EndpointPostOnItems.class);
@@ -72,10 +69,11 @@ public class EndpointPostOnItems extends EndpointSubCollection {
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreQueriesHandler queryHandler;
 
-    public EndpointPostOnItems(@Requires ExtensionRegistry extensionRegistry,
-                               @Requires FeaturesCoreProviders providers,
-                               @Requires FeaturesQuery ogcApiFeaturesQuery,
-                               @Requires FeaturesCoreQueriesHandler queryHandler) {
+    @Inject
+    public EndpointPostOnItems(ExtensionRegistry extensionRegistry,
+                               FeaturesCoreProviders providers,
+                               FeaturesQuery ogcApiFeaturesQuery,
+                               FeaturesCoreQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.providers = providers;
         this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
@@ -117,7 +115,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
         if (Objects.isNull(endpointFeaturesDefintion))
             return null;
 
-        Builder definitionBuilder = new Builder()
+        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint(endpointFeaturesDefintion.getApiEntrypoint())
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_EXTENSIONS);
         endpointFeaturesDefintion.getResources()

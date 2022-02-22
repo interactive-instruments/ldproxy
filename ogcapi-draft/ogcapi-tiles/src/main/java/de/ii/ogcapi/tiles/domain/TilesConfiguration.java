@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import static de.ii.ogcapi.tiles.app.CapabilityTiles.MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR;
-import static de.ii.ogcapi.tiles.app.CapabilityTiles.MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR;
 import static de.ii.ogcapi.tiles.app.CapabilityTiles.MINIMUM_SIZE_IN_PIXEL;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
