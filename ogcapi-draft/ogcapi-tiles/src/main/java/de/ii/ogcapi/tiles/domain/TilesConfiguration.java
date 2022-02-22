@@ -242,34 +242,11 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     }
 
     @Deprecated
-    @Nullable
-    Double getMaxRelativeAreaChangeInPolygonRepair();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    default double getMaxRelativeAreaChangeInPolygonRepairDerived() {
-        return Objects.requireNonNullElse(getMaxRelativeAreaChangeInPolygonRepair(),
-            Objects.requireNonNullElse(getTileProvider() instanceof TileProviderFeatures
-                    ? ((TileProviderFeatures) getTileProvider()).getMaxRelativeAreaChangeInPolygonRepair()
-                    : null,
-                MAX_RELATIVE_AREA_CHANGE_IN_POLYGON_REPAIR));
-    }
+    Optional<Double> getMaxRelativeAreaChangeInPolygonRepair();
 
     @Deprecated
     @Nullable
-    Double getMaxAbsoluteAreaChangeInPolygonRepair();
-
-    @Value.Auxiliary
-    @Value.Derived
-    @JsonIgnore
-    default double getMaxAbsoluteAreaChangeInPolygonRepairDerived() {
-        return Objects.requireNonNullElse(getMaxAbsoluteAreaChangeInPolygonRepair(),
-            Objects.requireNonNullElse(getTileProvider() instanceof TileProviderFeatures
-                    ? ((TileProviderFeatures) getTileProvider()).getMaxAbsoluteAreaChangeInPolygonRepair()
-                    : null,
-                MAX_ABSOLUTE_AREA_CHANGE_IN_POLYGON_REPAIR));
-    }
+    Optional<Double> getMaxAbsoluteAreaChangeInPolygonRepair();
 
     @Deprecated
     @Nullable

@@ -11,6 +11,7 @@ import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETI
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
+import static de.ii.xtraplatform.cql.domain.In.ID_PLACEHOLDER;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
@@ -20,6 +21,7 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -78,16 +80,19 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     private final ExtensionRegistry extensionRegistry;
     private final CrsInfo crsInfo;
+    private final SchemaInfo schemaInfo;
     private final FeaturesCoreProviders providers;
     private final Cql cql;
 
     @Inject
     public FeaturesQueryImpl(ExtensionRegistry extensionRegistry,
                              CrsInfo crsInfo,
+                             SchemaInfo schemaInfo,
                              FeaturesCoreProviders providers,
                              Cql cql) {
         this.extensionRegistry = extensionRegistry;
         this.crsInfo = crsInfo;
+        this.schemaInfo = schemaInfo;
         this.providers = providers;
         this.cql = cql;
     }
@@ -131,6 +136,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters,
                                               List<OgcApiQueryParameter> allowedParameters) {
         final Map<String, String> filterableFields = getFilterableFields(apiData, collectionData);
+        final Map<String, String> queryableTypes = getQueryableTypes(apiData, collectionData);
 
         final List<String> qFields = collectionData.getExtension(FeaturesCoreConfiguration.class)
                                                    .map(FeaturesCoreConfiguration::getQProperties)
@@ -192,7 +198,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             if (parameters.containsKey("filter-crs")) {
                 crs = EpsgCrs.fromString(parameters.get("filter-crs"));
             }
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, cqlFormat, crs);
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, queryableTypes, cqlFormat, crs);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -256,14 +262,44 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     }
 
     @Override
+    public Map<String, String> getQueryableTypes(OgcApiDataV2 apiData,
+                                                 FeatureTypeConfigurationOgcApi collectionData) {
+
+        ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String>builder();
+
+        Optional<FeatureSchema> featureSchema = providers.getFeatureSchema(apiData, collectionData);
+        if (featureSchema.isPresent()) {
+            List<String> queryables = collectionData.getExtension(FeaturesCoreConfiguration.class)
+                .flatMap(FeaturesCoreConfiguration::getQueryables)
+                .map(FeaturesCollectionQueryables::getAll)
+                .orElse(ImmutableList.of());
+
+            Map<String, SchemaBase.Type> propertyMap = schemaInfo.getPropertyTypes(featureSchema.get(), false);
+
+            queryables.forEach(queryable -> Optional.ofNullable(propertyMap.get(queryable))
+                .ifPresent(type -> builder.put(queryable, type.name())));
+
+            // also add the ID property
+            featureSchema.get().getProperties().stream()
+                .filter(p->p.getRole().isPresent() && p.getRole().get()==SchemaBase.Role.ID)
+                .findFirst()
+                .map(FeatureSchema::getType)
+                .ifPresent(type -> builder.put(ID_PLACEHOLDER, type.name()));
+        }
+
+        return builder.build();
+    }
+
+    @Override
     public Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                                  Set<String> filterParameters, Cql.Format cqlFormat) {
+                                                  Set<String> filterParameters, Map<String, String> queryableTypes,
+                                                  Cql.Format cqlFormat) {
 
         Map<String, String> filtersFromQuery = getFiltersFromQuery(query, filterableFields, filterParameters);
 
         if (!filtersFromQuery.isEmpty()) {
 
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), cqlFormat, OgcCrs.CRS84);
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), queryableTypes, cqlFormat, OgcCrs.CRS84);
         }
 
         return Optional.empty();
@@ -292,7 +328,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
-                                                  List<String> qFields, Cql.Format cqlFormat, EpsgCrs crs) {
+                                                  List<String> qFields, Map<String, String> queryableTypes,
+                                                  Cql.Format cqlFormat, EpsgCrs crs) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
@@ -323,11 +360,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
                                                        List<String> invalidProperties = cql.findInvalidProperties(cqlPredicate, filterableFields.keySet());
 
-                                                       if (invalidProperties.isEmpty()) {
-                                                           return cqlPredicate;
-                                                       } else {
+                                                       if (!invalidProperties.isEmpty()) {
                                                            throw new IllegalArgumentException(String.format("The parameter '%s' is invalid. Unknown or forbidden properties used: %s.", filter.getKey(), String.join(", ", invalidProperties)));
                                                        }
+
+                                                       // will throw an error
+                                                       cql.checkTypes(cqlPredicate, queryableTypes);
+
+                                                       return cqlPredicate;
                                                    }
                                                    if (filter.getValue()
                                                              .contains("*")) {

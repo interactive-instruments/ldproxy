@@ -43,6 +43,7 @@ class FilterParameterSpecification extends Specification {
     static final String BOUNDARY_PATH = API_PATH_CSHAPES + "/collections/" + BOUNDARY + "/items"
     static final String GEO_JSON = "application/geo+json";
     static final String JSON = "application/json";
+    static final String PROBLEM_JSON = "application/problem+json";
 
     @Shared
     Cql cql = new CqlImpl()
@@ -2892,7 +2893,7 @@ class FilterParameterSpecification extends Specification {
         return restClient.request(SUT_URL+path, Method.GET,  ContentType.JSON, { req ->
             // uri.path = path
             uri.query = query
-            headers.Accept = path.contains("/items") ? GEO_JSON : JSON
+            headers.Accept = (path.contains("/items") ? GEO_JSON : JSON) + ", " + PROBLEM_JSON + "; q=0.8"
         })
     }
 }

@@ -5,46 +5,44 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.custom.extensions.infra;
+package de.ii.ldproxy.ogcapi.features.extensions.infra;
 
-import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_FEATURES;
-
-import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
-import de.ii.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
-import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
-import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ApiOperation;
-import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.EndpointExtension;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition.Builder;
-import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.OgcApiResource;
+import de.ii.ldproxy.ogcapi.collections.domain.AbstractPathParameterCollectionId;
+import de.ii.ldproxy.ogcapi.collections.domain.EndpointSubCollection;
+import de.ii.ldproxy.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition;
+import de.ii.ldproxy.ogcapi.domain.ApiOperation;
+import de.ii.ldproxy.ogcapi.domain.ApiRequestContext;
+import de.ii.ldproxy.ogcapi.domain.EndpointExtension;
+import de.ii.ldproxy.ogcapi.domain.ExtensionConfiguration;
+import de.ii.ldproxy.ogcapi.domain.ExtensionRegistry;
+import de.ii.ldproxy.ogcapi.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ldproxy.ogcapi.domain.FormatExtension;
+import de.ii.ldproxy.ogcapi.domain.HttpMethods;
+import de.ii.ldproxy.ogcapi.domain.ImmutableApiEndpointDefinition.Builder;
+import de.ii.ldproxy.ogcapi.domain.OgcApi;
+import de.ii.ldproxy.ogcapi.domain.OgcApiDataV2;
+import de.ii.ldproxy.ogcapi.domain.OgcApiQueryParameter;
+import de.ii.ldproxy.ogcapi.domain.OgcApiResource;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeatureFormatExtension;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
+import de.ii.ldproxy.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ldproxy.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
+import de.ii.ldproxy.ogcapi.features.extensions.domain.FeaturesExtensionsConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import org.apache.felix.ipojo.annotations.Component;
+import org.apache.felix.ipojo.annotations.Instantiate;
+import org.apache.felix.ipojo.annotations.Provides;
+import org.apache.felix.ipojo.annotations.Requires;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -55,25 +53,29 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
-@Singleton
-@AutoBind
-public class EndpointFeaturesExtensions extends EndpointSubCollection {
+import static de.ii.ldproxy.ogcapi.domain.ApiEndpointDefinition.SORT_PRIORITY_FEATURES;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFeaturesExtensions.class);
+@Component
+@Provides
+@Instantiate
+public class EndpointPostOnItems extends EndpointSubCollection {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointPostOnItems.class);
     private static final List<String> TAGS = ImmutableList.of("Access data");
 
     private final FeaturesCoreProviders providers;
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreQueriesHandler queryHandler;
 
-    @Inject
-    public EndpointFeaturesExtensions(ExtensionRegistry extensionRegistry,
-                                      FeaturesCoreProviders providers,
-                                      FeaturesQuery ogcApiFeaturesQuery,
-                                      FeaturesCoreQueriesHandler queryHandler) {
+    public EndpointPostOnItems(@Requires ExtensionRegistry extensionRegistry,
+                               @Requires FeaturesCoreProviders providers,
+                               @Requires FeaturesQuery ogcApiFeaturesQuery,
+                               @Requires FeaturesCoreQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.providers = providers;
         this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
@@ -91,7 +93,7 @@ public class EndpointFeaturesExtensions extends EndpointSubCollection {
             apiData.getCollections().get(collectionId).getEnabled() &&
             apiData.getExtension(FeaturesExtensionsConfiguration.class, collectionId)
                 .filter(ExtensionConfiguration::isEnabled)
-                .filter(FeaturesExtensionsConfiguration::getPostOnItems)
+                .filter(FeaturesExtensionsConfiguration::shouldSupportPostOnItems)
                 .isPresent();
     }
 

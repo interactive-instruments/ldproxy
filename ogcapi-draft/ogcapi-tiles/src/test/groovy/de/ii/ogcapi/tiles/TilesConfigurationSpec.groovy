@@ -33,8 +33,6 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
                 .multiCollectionEnabled(true)
                 .ignoreInvalidGeometries(true)
                 .limit(1)
-                .maxRelativeAreaChangeInPolygonRepair(1)
-                .maxAbsoluteAreaChangeInPolygonRepair(1)
                 .minimumSizeInPixel(1)
                 .center(ImmutableList.<Double>of(1))
                 .addTileEncodings("foo")
@@ -67,8 +65,6 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
                 .multiCollectionEnabled(false)
                 .ignoreInvalidGeometries(false)
                 .limit(10)
-                .maxRelativeAreaChangeInPolygonRepair(10)
-                .maxAbsoluteAreaChangeInPolygonRepair(10)
                 .minimumSizeInPixel(10)
                 .build()
     }

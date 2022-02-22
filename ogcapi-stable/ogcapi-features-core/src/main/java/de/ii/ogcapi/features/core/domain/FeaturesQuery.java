@@ -40,8 +40,10 @@ public interface FeaturesQuery {
   Map<String, String> getFilterableFields(OgcApiDataV2 apiData,
                                           FeatureTypeConfigurationOgcApi collectionData);
 
-  Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                           Set<String> filterParameters,
-                                           Cql.Format cqlFormat);
+  Map<String, String> getQueryableTypes(OgcApiDataV2 apiData,
+                                        FeatureTypeConfigurationOgcApi collectionData);
 
+  Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
+                                         Set<String> filterParameters, Map<String, String> queryableTypes,
+                                         Cql.Format cqlFormat);
 }
