@@ -243,7 +243,6 @@ public interface TilesConfiguration extends ExtensionConfiguration, PropertyTran
     Optional<Double> getMaxRelativeAreaChangeInPolygonRepair();
 
     @Deprecated
-    @Nullable
     Optional<Double> getMaxAbsoluteAreaChangeInPolygonRepair();
 
     @Deprecated

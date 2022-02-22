@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.ogcapi.features.extensions.infra;
+package de.ii.ogcapi.features.custom.extensions.infra.infra;
 
 import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_FEATURES;
 
