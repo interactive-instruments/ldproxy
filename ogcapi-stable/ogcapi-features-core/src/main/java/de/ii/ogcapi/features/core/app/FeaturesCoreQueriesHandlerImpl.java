@@ -7,10 +7,6 @@
  */
 package de.ii.ogcapi.features.core.app;
 
-import static com.codahale.metrics.MetricRegistry.name;
-
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -48,7 +44,6 @@ import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
-import de.ii.xtraplatform.web.domain.Dropwizard;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Date;

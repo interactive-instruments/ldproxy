@@ -47,7 +47,6 @@ import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
-import de.ii.xtraplatform.web.domain.Dropwizard;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -90,23 +89,23 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         ImmutableMap.of(
             PropertyTransformations.WILDCARD, new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
-    private final Dropwizard dropwizard;
     private final EntityRegistry entityRegistry;
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
     private final FeaturesCoreValidation featuresCoreValidator;
     private final AppContext appContext;
+    private final MustacheRenderer mustacheRenderer;
 
     @Inject
-    public FeaturesFormatHtml(Dropwizard dropwizard, EntityRegistry entityRegistry,
+    public FeaturesFormatHtml(EntityRegistry entityRegistry, MustacheRenderer mustacheRenderer,
                               I18n i18n, FeaturesCoreProviders providers,
                               FeaturesCoreValidation featuresCoreValidator, AppContext appContext) {
-        this.dropwizard = dropwizard;
         this.entityRegistry = entityRegistry;
         this.i18n = i18n;
         this.providers = providers;
         this.featuresCoreValidator = featuresCoreValidator;
         this.appContext = appContext;
+        this.mustacheRenderer = mustacheRenderer;
     }
 
     @Override
@@ -278,7 +277,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
             .codelists(entityRegistry.getEntitiesForType(Codelist.class)
                 .stream()
                 .collect(Collectors.toMap(c -> c.getId(), c -> c)))
-            .mustacheRenderer((MustacheRenderer) dropwizard.getMustacheRenderer())
+            .mustacheRenderer(mustacheRenderer)
             .i18n(i18n)
             .language(language)
             .build();
