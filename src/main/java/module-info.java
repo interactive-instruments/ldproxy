@@ -1,6 +1,5 @@
 
 open module de.ii.ldproxy {
-	requires dagger;
 	requires de.ii.xtraplatform.auth;
 	requires de.ii.xtraplatform.base;
 	requires de.ii.xtraplatform.manager;
