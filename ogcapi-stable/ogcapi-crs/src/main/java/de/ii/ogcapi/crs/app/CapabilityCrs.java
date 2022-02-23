@@ -9,6 +9,7 @@ package de.ii.ogcapi.crs.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -53,12 +54,18 @@ public class CapabilityCrs implements ApiBuildingBlock {
             return ValidationResult.of();
         }
 
+
+        EpsgCrs defaultCrs = apiData.getExtension(
+            FeaturesCoreConfiguration.class).map(FeaturesCoreConfiguration::getDefaultEpsgCrs).orElse(OgcCrs.CRS84);
         EpsgCrs providerCrs = featuresCoreProviders.getFeatureProvider(apiData)
             .flatMap(featureProvider2 -> featureProvider2.getData().getNativeCrs())
             .orElse(OgcCrs.CRS84);
 
         EpsgCrs lastCrs = null;
         try {
+            lastCrs = defaultCrs;
+            crsTransformerFactory.getTransformer(providerCrs, defaultCrs);
+
             for (EpsgCrs crs : crsConfiguration.get().getAdditionalCrs()) {
                 lastCrs = crs;
                 crsTransformerFactory.getTransformer(providerCrs, crs);
@@ -66,7 +73,21 @@ public class CapabilityCrs implements ApiBuildingBlock {
         } catch (Throwable e) {
             return ImmutableValidationResult.builder()
                 .mode(apiValidation)
-                .addErrors(String.format("Could not load CRS %s: %s", lastCrs.toSimpleString(), e.getMessage()))
+                .addErrors(String.format("Could not find transformation for %s -> %s: %s", providerCrs.toHumanReadableString(), lastCrs.toHumanReadableString(), e.getMessage()))
+                .build();
+        }
+        try {
+            lastCrs = defaultCrs;
+            crsTransformerFactory.getTransformer(defaultCrs, providerCrs);
+
+            for (EpsgCrs crs : crsConfiguration.get().getAdditionalCrs()) {
+                lastCrs = crs;
+                crsTransformerFactory.getTransformer(crs, providerCrs);
+            }
+        } catch (Throwable e) {
+            return ImmutableValidationResult.builder()
+                .mode(apiValidation)
+                .addErrors(String.format("Could not find transformation for %s -> %s: %s", lastCrs.toHumanReadableString(), providerCrs.toHumanReadableString(), e.getMessage()))
                 .build();
         }
 
