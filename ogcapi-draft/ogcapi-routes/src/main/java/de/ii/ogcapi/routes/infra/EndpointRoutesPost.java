@@ -267,7 +267,6 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
      *
      * @return a route according to the RouteExchangeModel
      */
-    @Path("/")
     @POST
     @SuppressWarnings("UnstableApiUsage")
     public Response computeRoute(@Auth Optional<User> optionalUser,

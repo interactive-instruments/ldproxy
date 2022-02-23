@@ -130,7 +130,6 @@ public class EndpointRoutesGet extends Endpoint {
      *
      * @return a route according to the RouteExchangeModel
      */
-    @Path("/")
     @GET
     public Response getRoutes(@Auth Optional<User> optionalUser,
                             @Context OgcApi api,
