@@ -28,9 +28,10 @@ import de.ii.ogcapi.styles.domain.MbStyleVectorSource;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
-import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -55,15 +56,15 @@ public class StyleFormatHtml implements StyleFormatExtension {
 
     private final Schema schemaStyle;
     private final SchemaGenerator schemaGenerator;
-    private final AppContext appContext;
+    private final URI servicesUri;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/htmlSchema";
 
     @Inject
     public StyleFormatHtml(SchemaGenerator schemaGenerator,
-                           AppContext appContext) {
+                           ServicesContext servicesContext) {
         schemaStyle = new StringSchema().example("<html>...</html>");
         this.schemaGenerator = schemaGenerator;
-        this.appContext = appContext;
+        this.servicesUri = servicesContext.getUri();
     }
 
     @Override
@@ -121,7 +122,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     // TODO centralize
     @Override
     public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, String collectionId, String styleId) {
-        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
         if (mbStyleOriginal.isEmpty() ||
@@ -155,7 +156,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     @Override
     public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
 
-        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
 
         if (collectionId.isPresent())

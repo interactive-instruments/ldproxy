@@ -30,7 +30,9 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,15 +50,15 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
             .build();
 
     private final I18n i18n;
-    private final AppContext appContext;
+    private final URI servicesUri;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
     @Inject
     public TileSetsFormatHtml(I18n i18n,
-                              AppContext appContext,
+                              ServicesContext servicesContext,
                               TileMatrixSetRepository tileMatrixSetRepository) {
         this.i18n = i18n;
-        this.appContext = appContext;
+        this.servicesUri = servicesContext.getUri();
         this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
@@ -141,7 +143,7 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                 : api.getData().getExtension(TilesConfiguration.class, collectionId.get());
         MapClient.Type mapClientType = tilesConfig.map(TilesConfiguration::getMapClientType)
                                                   .orElse(MapClient.Type.MAP_LIBRE);
-        String serviceUrl = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new)).toString();
+        String serviceUrl = new URICustomizer(servicesUri).ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new)).toString();
         String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(tilesConfig.map(TilesConfiguration::getStyle), collectionId, serviceUrl))
                                     .orElse(null);
         boolean removeZoomLevelConstraints = tilesConfig.map(TilesConfiguration::getRemoveZoomLevelConstraints)

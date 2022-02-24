@@ -32,6 +32,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.styles.domain.ImmutableStyleEntry;
+import de.ii.ogcapi.styles.domain.ImmutableStyleEntry.Builder;
 import de.ii.ogcapi.styles.domain.ImmutableStyleMetadata;
 import de.ii.ogcapi.styles.domain.ImmutableStyles;
 import de.ii.ogcapi.styles.domain.ImmutableStylesheetMetadata;
@@ -47,14 +48,15 @@ import de.ii.ogcapi.styles.domain.StylesLinkGenerator;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.styles.domain.ImmutableStyleEntry.Builder;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -90,12 +92,13 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     private final ObjectMapper patchMapperLenient;
     private final ObjectMapper patchMapperStrict;
     private final ObjectMapper metadataMapper;
-    private final AppContext appContext;
+    private final URI servicesUri;
     private final FeaturesCoreProviders providers;
     private final EntityRegistry entityRegistry;
 
     @Inject
     public StyleRepositoryFiles(AppContext appContext,
+                                ServicesContext servicesContext,
                                 ExtensionRegistry extensionRegistry,
                                 I18n i18n,
                                 FeaturesCoreProviders providers,
@@ -105,7 +108,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
             .resolve("styles");
         this.i18n = i18n;
         this.extensionRegistry = extensionRegistry;
-        this.appContext = appContext;
+        this.servicesUri = servicesContext.getUri();
         this.providers = providers;
         this.entityRegistry = entityRegistry;
         this.defaultLinkGenerator = new DefaultLinksGenerator();
@@ -400,7 +403,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
                                          .addAllLinks(links)
                                          .build();
 
-        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         return metadata.replaceParameters(serviceUrl);
     }

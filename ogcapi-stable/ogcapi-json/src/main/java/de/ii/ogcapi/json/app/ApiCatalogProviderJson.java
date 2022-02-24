@@ -14,8 +14,8 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceData;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,8 +38,8 @@ public class ApiCatalogProviderJson extends ApiCatalogProvider {
             .build();
 
     @Inject
-    public ApiCatalogProviderJson(AppContext appContext, I18n i18n, EntityDataDefaultsStore defaultsStore, ExtensionRegistry extensionRegistry) {
-        super(appContext, i18n, defaultsStore, extensionRegistry);
+    public ApiCatalogProviderJson(ServicesContext servicesContext, I18n i18n, EntityDataDefaultsStore defaultsStore, ExtensionRegistry extensionRegistry) {
+        super(servicesContext, i18n, defaultsStore, extensionRegistry);
     }
 
     // TODO: move externalUri handling to XtraplatformRequestContext in ServicesResource

@@ -18,15 +18,15 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
+import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
-import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
-import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.List;
@@ -68,16 +68,16 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
     private final ExtensionRegistry extensionRegistry;
     private final RequestInjectableContext ogcApiInjectableContext;
-    private final AppContext appContext;
+    private final URI servicesUri;
     private final ContentNegotiation contentNegotiation;
 
     @Inject
     ApiRequestDispatcher(ExtensionRegistry extensionRegistry,
                          RequestInjectableContext ogcApiInjectableContext,
-        AppContext appContext) {
+        ServicesContext servicesContext) {
         this.extensionRegistry = extensionRegistry;
         this.ogcApiInjectableContext = ogcApiInjectableContext;
-        this.appContext = appContext;
+        this.servicesUri = servicesContext.getUri();
         this.contentNegotiation = new ContentNegotiation();
     }
 
@@ -273,8 +273,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
         return extensionRegistry.getExtensionsForType(EndpointExtension.class);
     }
 
-    //TODO: from ServicesContext
     private Optional<URI> getExternalUri() {
-        return Optional.of(appContext.getUri().resolve("rest/services"));
+        return Optional.of(servicesUri);
     }
 }

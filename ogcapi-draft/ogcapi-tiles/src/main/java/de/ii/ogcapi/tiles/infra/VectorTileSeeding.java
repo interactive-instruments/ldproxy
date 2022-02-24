@@ -38,12 +38,12 @@ import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
-import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import java.io.IOException;
 import java.net.URI;
@@ -76,7 +76,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
     private final ExtensionRegistry extensionRegistry;
     private final TileMatrixSetLimitsGenerator limitsGenerator;
     private final TileCache tileCache;
-    private final AppContext appContext;
+    private final URI servicesUri;
     private final FeaturesCoreProviders providers;
     private final TilesQueriesHandler queryHandler;
     private final TileMatrixSetRepository tileMatrixSetRepository;
@@ -86,7 +86,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                              ExtensionRegistry extensionRegistry,
                              TileMatrixSetLimitsGenerator limitsGenerator,
                              TileCache tileCache,
-                             AppContext appContext,
+                             ServicesContext servicesContext,
                              FeaturesCoreProviders providers,
                              TilesQueriesHandler queryHandler,
                              TileMatrixSetRepository tileMatrixSetRepository) {
@@ -94,7 +94,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         this.extensionRegistry = extensionRegistry;
         this.limitsGenerator = limitsGenerator;
         this.tileCache = tileCache;
-        this.appContext = appContext;
+        this.servicesUri = servicesContext.getUri();
         this.providers = providers;
         this.queryHandler = queryHandler;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
@@ -250,7 +250,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             }
 
             URI uri;
-            String uriString = String.format("%s/%s/collections/%s/tiles/%s/%s/%s/%s", appContext.getUri().resolve("rest/services"), apiData.getId(), collectionId, tileMatrixSet.getId(), level, row, col);
+            String uriString = String.format("%s/%s/collections/%s/tiles/%s/%s/%s/%s", servicesUri, apiData.getId(), collectionId, tileMatrixSet.getId(), level, row, col);
             try {
                 uri = new URI(uriString);
             } catch (URISyntaxException e) {
@@ -372,7 +372,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             }
 
             URI uri;
-            String uriString = String.format("%s/%s/tiles/%s/%s/%s/%s", appContext.getUri().resolve("rest/services"), apiData.getId(), tileMatrixSet.getId(), level, row, col);
+            String uriString = String.format("%s/%s/tiles/%s/%s/%s/%s", servicesUri, apiData.getId(), tileMatrixSet.getId(), level, row, col);
             try {
                 uri = new URI(uriString);
             } catch (URISyntaxException e) {

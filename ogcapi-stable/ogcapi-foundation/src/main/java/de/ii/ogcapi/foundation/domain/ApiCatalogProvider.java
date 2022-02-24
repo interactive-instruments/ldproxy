@@ -12,6 +12,7 @@ import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.services.domain.ServiceListingProvider;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.Identifier;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
@@ -28,16 +29,16 @@ import java.util.stream.Collectors;
 
 public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiExtension {
 
-    protected final AppContext appContext;
+    protected final URI servicesUri;
     protected final I18n i18n;
     protected final EntityDataDefaultsStore defaultsStore;
     protected final ExtensionRegistry extensionRegistry;
 
-    public ApiCatalogProvider(AppContext appContext,
+    public ApiCatalogProvider(ServicesContext servicesContext,
                               I18n i18n,
                               EntityDataDefaultsStore defaultsStore,
                               ExtensionRegistry extensionRegistry) {
-        this.appContext = appContext;
+        this.servicesUri = servicesContext.getUri();
         this.i18n = i18n;
         this.defaultsStore = defaultsStore;
         this.extensionRegistry = extensionRegistry;
@@ -57,7 +58,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
     public abstract ApiMediaType getApiMediaType();
 
     private Optional<URI> getExternalUri() {
-        return Optional.of(appContext.getUri().resolve("rest/services"));
+        return Optional.of(servicesUri);
     }
 
     private void customizeUri(final URICustomizer uriCustomizer) {

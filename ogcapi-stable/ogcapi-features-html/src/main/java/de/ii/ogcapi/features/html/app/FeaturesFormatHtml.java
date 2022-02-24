@@ -34,7 +34,6 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
-import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -42,6 +41,7 @@ import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformat
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -93,18 +93,18 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
     private final I18n i18n;
     private final FeaturesCoreProviders providers;
     private final FeaturesCoreValidation featuresCoreValidator;
-    private final AppContext appContext;
+    private final URI servicesUri;
     private final MustacheRenderer mustacheRenderer;
 
     @Inject
     public FeaturesFormatHtml(EntityRegistry entityRegistry, MustacheRenderer mustacheRenderer,
                               I18n i18n, FeaturesCoreProviders providers,
-                              FeaturesCoreValidation featuresCoreValidator, AppContext appContext) {
+                              FeaturesCoreValidation featuresCoreValidator, ServicesContext servicesContext) {
         this.entityRegistry = entityRegistry;
         this.i18n = i18n;
         this.providers = providers;
         this.featuresCoreValidator = featuresCoreValidator;
-        this.appContext = appContext;
+        this.servicesUri = servicesContext.getUri();
         this.mustacheRenderer = mustacheRenderer;
     }
 
@@ -307,7 +307,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
                                              .orElse(MapClient.Type.MAP_LIBRE);
-        String serviceUrl = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
+        String serviceUrl = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
         String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(config.map(FeaturesHtmlConfiguration::getStyle), Optional.of(featureType.getId()), serviceUrl))
                                     .orElse(null);
         boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
@@ -364,7 +364,7 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
                                              .orElse(MapClient.Type.MAP_LIBRE);
-        String serviceUrl = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
+        String serviceUrl = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new)).toString();
         String styleUrl = htmlConfig.map(cfg -> cfg.getStyle(config.map(FeaturesHtmlConfiguration::getStyle), Optional.of(featureType.getId()), serviceUrl))
                                     .orElse(null);
         boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)

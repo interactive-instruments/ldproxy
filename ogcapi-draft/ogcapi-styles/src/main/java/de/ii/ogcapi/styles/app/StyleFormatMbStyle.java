@@ -31,10 +31,11 @@ import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleLayer;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
-import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -61,13 +62,13 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             .fileExtension("json")
             .build();
 
-    private final AppContext appContext;
+    private final URI servicesUri;
     private final Schema schemaStyle;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/MbStyleStylesheet";
 
     @Inject
-    public StyleFormatMbStyle(AppContext appContext, SchemaGenerator schemaGenerator) {
-        this.appContext = appContext;
+    public StyleFormatMbStyle(ServicesContext servicesContext, SchemaGenerator schemaGenerator) {
+        this.servicesUri = servicesContext.getUri();
         this.schemaStyle = schemaGenerator.getSchema(MbStyleStylesheet.class);
     }
 
@@ -130,7 +131,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     @Override
     public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
-        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         return parse(stylesheetContent, serviceUrl, true, false);
     }
@@ -142,7 +143,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     @Override
     public Optional<StylesheetContent> deriveCollectionStyle(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, String collectionId, String styleId) {
-        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         Optional<MbStyleStylesheet> mbStyleOriginal = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
         if (mbStyleOriginal.isEmpty() ||
@@ -181,7 +182,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         OgcApiDataV2 apiData,
         FeaturesCoreProviders providers,
         EntityRegistry entityRegistry) {
-        URICustomizer uriCustomizer = new URICustomizer(appContext.getUri().resolve("rest/services")).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+        URICustomizer uriCustomizer = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
         Optional<MbStyleStylesheet> mbStyle = StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
         if (mbStyle.isEmpty())

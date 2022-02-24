@@ -18,9 +18,9 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration;
-import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.Identifier;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
@@ -45,8 +45,8 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
             .build();
 
     @Inject
-    public ApiCatalogProviderHtml(AppContext appContext, I18n i18n, EntityDataDefaultsStore defaultsStore, ExtensionRegistry extensionRegistry) {
-        super(appContext, i18n, defaultsStore, extensionRegistry);
+    public ApiCatalogProviderHtml(ServicesContext servicesContext, I18n i18n, EntityDataDefaultsStore defaultsStore, ExtensionRegistry extensionRegistry) {
+        super(servicesContext, i18n, defaultsStore, extensionRegistry);
     }
 
     private HtmlConfiguration getHtmlConfig() {
