@@ -10,6 +10,7 @@ open module de.ii.ldproxy {
 	requires de.ii.xtraplatform.streams;
 	requires de.ii.xtraplatform.web;
 	requires de.ii.xtraplatform.proj;
+	requires de.ii.xtraplatform.spatialite;
 	requires de.ii.xtraplatform.codelists;
 	requires de.ii.xtraplatform.cql;
 	requires de.ii.xtraplatform.crs;
