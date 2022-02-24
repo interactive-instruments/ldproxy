@@ -56,7 +56,7 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/json");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/json");
     }
 
     @Override

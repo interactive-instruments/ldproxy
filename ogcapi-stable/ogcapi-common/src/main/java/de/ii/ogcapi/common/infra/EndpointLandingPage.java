@@ -132,6 +132,6 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/core");
+        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core");
     }
 }
