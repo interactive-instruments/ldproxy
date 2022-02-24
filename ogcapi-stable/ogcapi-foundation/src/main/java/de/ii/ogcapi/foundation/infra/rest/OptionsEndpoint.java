@@ -57,7 +57,6 @@ public class OptionsEndpoint implements EndpointExtension {
     }
 
     @OPTIONS
-    @Path("")
     public Response getOptions(@Auth Optional<User> optionalUser,
                                @Context OgcApi api,
                                @Context ContainerRequestContext requestContext) {

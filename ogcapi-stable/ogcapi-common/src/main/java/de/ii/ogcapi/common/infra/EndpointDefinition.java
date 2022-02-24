@@ -98,7 +98,6 @@ public class EndpointDefinition extends Endpoint {
     }
 
     @GET
-    @Path("/")
     public Response getApiDefinition(@Auth Optional<User> optionalUser, @Context OgcApi api,
                                      @Context ApiRequestContext ogcApiContext) {
 

@@ -192,7 +192,6 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
      *
      * @return empty response (201), with Location header
      */
-    @Path("/")
     @POST
     public Response postStyle(@Auth Optional<User> optionalUser,
                               @DefaultValue("false") @QueryParam("dry-run") boolean dryRun,

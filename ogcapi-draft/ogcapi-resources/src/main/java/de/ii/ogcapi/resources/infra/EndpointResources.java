@@ -116,7 +116,6 @@ public class EndpointResources extends Endpoint {
      *
      * @return all resources in a JSON resources object
      */
-    @Path("/")
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getResources(@Context OgcApi api, @Context ApiRequestContext requestContext) {

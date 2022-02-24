@@ -152,7 +152,6 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
      *
      * @return all tile matrix sets in a json array or an HTML view
      */
-    @Path("")
     @GET
     public Response getTileMatrixSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
 

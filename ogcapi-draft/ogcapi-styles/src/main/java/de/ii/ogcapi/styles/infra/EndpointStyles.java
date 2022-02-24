@@ -103,7 +103,6 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
      *
      * @return all styles in a JSON styles object or an HTML page
      */
-    @Path("/")
     @GET
     @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
     public Response getStyles(@Context OgcApi api, @Context ApiRequestContext requestContext) {

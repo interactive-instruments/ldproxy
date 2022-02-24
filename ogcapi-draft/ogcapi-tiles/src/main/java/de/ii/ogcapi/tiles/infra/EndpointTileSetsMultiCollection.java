@@ -73,7 +73,6 @@ public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMul
                                  TAGS);
     }
 
-    @Path("")
     @GET
     public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
 
