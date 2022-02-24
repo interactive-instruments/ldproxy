@@ -7,46 +7,47 @@
  */
 package de.ii.ogcapi.features.custom.extensions.app;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
+import de.ii.ogcapi.features.custom.extensions.domain.GeometryHelperWKT;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
-import de.ii.ogcapi.features.custom.extensions.domain.GeometryHelperWKT;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.web.domain.Http;
+import de.ii.xtraplatform.web.domain.HttpClient;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-//TODO: http
 @Singleton
 @AutoBind
 public class QueryParameterIntersects extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final FeaturesCoreProviders providers;
     private final GeometryHelperWKT geometryHelper;
-    //private final HttpClient httpClient;
+    private final HttpClient httpClient;
 
     @Inject
     public QueryParameterIntersects(FeaturesCoreProviders providers,
-                                    GeometryHelperWKT geometryHelper
-                                    /*Http http*/) {
+                                    GeometryHelperWKT geometryHelper,
+                                    Http http) {
         this.providers = providers;
         this.geometryHelper = geometryHelper;
-        //this.httpClient = http.getDefaultClient();
+        this.httpClient = http.getDefaultClient();
     }
 
     @Override
@@ -135,13 +136,13 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
     }
 
     private String getGeometry(String coordRef) {
-        String response = null;//TODO httpClient.getAsString(coordRef);
+        InputStream response = httpClient.getAsInputStream(coordRef);
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = null;
         try {
             jsonNode = mapper.readTree(response);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new IllegalStateException(String.format("Could not parse GeoJSON geometry object: %s", e.getMessage()), e);
         }
 
