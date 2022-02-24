@@ -84,7 +84,7 @@ class LandingPageSpec extends Specification {
                 queryInputConformance, requestContext).entity as ConformanceDeclaration
 
         then: 'it should return a list of conformance classes that the server conforms to'
-        conformanceDeclaration.conformsTo.any { it == 'http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/core' }
+        conformanceDeclaration.conformsTo.any { it == 'http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core' }
 
     }
 
@@ -191,7 +191,7 @@ class LandingPageSpec extends Specification {
 
                         @Override
                         List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-                            return ImmutableList.of('http://www.opengis.net/spec/ogcapi-common-1/0.0/conf/core')
+                            return ImmutableList.of('http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core')
                         }
 
                         @Override
