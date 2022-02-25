@@ -76,6 +76,8 @@ import javax.inject.Singleton;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.MediaType;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,9 +165,9 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     }
 
     @Override
-    public List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) {
+    public List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, boolean includeDerived, boolean includeHtml) {
         return getStyleFormatStream(apiData, collectionId)
-                .filter(styleFormat -> stylesheetExists(apiData, collectionId, styleId, styleFormat))
+                .filter(styleFormat -> stylesheetExists(apiData, collectionId, styleId, styleFormat, includeDerived) || (includeHtml && styleFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)))
                 .map(StyleFormatExtension::getMediaType)
                 .collect(Collectors.toList());
     }
@@ -219,7 +221,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
                                                   if (Objects.nonNull(lastModified))
                                                       builder.lastModified(lastModified);
 
-                                                  List<ApiMediaType> mediaTypes = getStylesheetMediaTypes(apiData, collectionId, styleId);
+                                                  List<ApiMediaType> mediaTypes = getStylesheetMediaTypes(apiData, collectionId, styleId, true, false);
                                                   builder.links(stylesLinkGenerator.generateStyleLinks(requestContext.getUriCustomizer(),
                                                                                                        styleId,
                                                                                                        mediaTypes,
@@ -354,7 +356,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
 
     @Override
     public StyleMetadata getStyleMetadata(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
-        if (getStylesheetMediaTypes(apiData,collectionId, styleId).isEmpty()) {
+        if (getStylesheetMediaTypes(apiData, collectionId, styleId, true, false).isEmpty()) {
             if (collectionId.isEmpty())
                 throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
             throw new NotFoundException(MessageFormat.format("The style ''{0}'' does not exist in this API for collection ''{1}''.", styleId, collectionId.get()));

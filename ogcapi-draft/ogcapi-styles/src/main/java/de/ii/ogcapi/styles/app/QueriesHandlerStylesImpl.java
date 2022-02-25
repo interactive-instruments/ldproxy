@@ -127,12 +127,19 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         List<Link> links = null;
         if (queryInput.getIncludeLinkHeader()) {
             final DefaultLinksGenerator defaultLinkGenerator = new DefaultLinksGenerator();
-            List<ApiMediaType> alternateMediaTypes = styleRepository.getStylesheetMediaTypes(apiData, collectionId, styleId);
+            List<ApiMediaType> alternateMediaTypes = styleRepository.getStylesheetMediaTypes(apiData, collectionId, styleId, true,true)
+                .stream()
+                .filter(apiMediaType -> !apiMediaType.type().equals(format.getMediaType().type()))
+                .collect(Collectors.toUnmodifiableList());
             links = defaultLinkGenerator.generateLinks(requestContext.getUriCustomizer(), format.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
         }
 
         Date lastModified = styleRepository.getStylesheetLastModified(apiData, collectionId, styleId, format, true);
-        EntityTag etag = getEtag(stylesheetContent.getContent());
+        EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
+            .map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(stylesheetContent.getContent())
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

@@ -51,9 +51,11 @@ public interface StyleRepository {
      * @param apiData information about the API
      * @param collectionId the optional collection, or empty for a style collection at root level
      * @param styleId the identifier of the style in the style collection
+     * @param includeDerived include also derived collection styles, only effective, if collectionId is present
+     * @param includeHtml include the derived HTML web map in the list
      * @return list of style encodings for this style
      */
-    List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId);
+    List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, boolean includeDerived, boolean includeHtml);
 
     /**
      * get an object representation for this styles collection, derived styles are ignored
