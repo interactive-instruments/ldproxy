@@ -290,7 +290,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                                       targetCrs,
                                       true,
                                       String.format("%s.%s",
-                                                    Objects.requireNonNullElse(inputs.getName(),"Route"),
+                                                    inputs.getName().orElse("Route"),
                                                     outputFormat.getMediaType().fileExtension()))
             .entity(result)
             .build();
