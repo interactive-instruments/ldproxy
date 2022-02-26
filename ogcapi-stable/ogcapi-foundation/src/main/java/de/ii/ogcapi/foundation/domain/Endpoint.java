@@ -252,8 +252,7 @@ public abstract class Endpoint implements EndpointExtension {
                     String key = keysToLowerCase ? entry.getKey()
                             .toLowerCase() : entry.getKey();
                     return new AbstractMap.SimpleImmutableEntry<>(key, entry.getValue()
-                            .isEmpty() ? "" : entry.getValue()
-                            .get(0));
+                        .isEmpty() ? "" : Objects.requireNonNullElse(entry.getValue().get(0),""));
                 })
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
