@@ -32,7 +32,7 @@ dependencies {
     }
 
     // bundles to include in this application
-    bundle subprojects
+    bundle subprojects.findAll {it.name != 'ldproxy-cfg'}
 }
 
 ext {
@@ -56,16 +56,19 @@ tasks.run {
 tasks.test {
     dependsOn project.gradle.includedBuild('ogcapi-stable').task(':testAll')
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':testAll')
+    dependsOn(':ldproxy-cfg:test')
 }
 
 tasks.check {
     dependsOn project.gradle.includedBuild('ogcapi-stable').task(':checkAll')
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':checkAll')
+    dependsOn(':ldproxy-cfg:check')
 }
 
 tasks.publish {
     dependsOn project.gradle.includedBuild('ogcapi-stable').task(':publish')
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':publish')
+    dependsOn(':ldproxy-cfg:publish')
 }
 
 apply from: 'license-headers.gradle'
