@@ -22,7 +22,7 @@ import java.util.Map;
 public class JacksonSubTypeIdsFeaturesExtensions implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsFeaturesExtensions() {
+    public JacksonSubTypeIdsFeaturesExtensions() {
     }
 
     @Override

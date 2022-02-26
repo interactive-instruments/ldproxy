@@ -24,7 +24,7 @@ import javax.inject.Singleton;
 public class CapabilityFeaturesCore implements ApiBuildingBlock {
 
     @Inject
-    CapabilityFeaturesCore() {
+    public CapabilityFeaturesCore() {
     }
 
     @Override

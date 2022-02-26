@@ -20,7 +20,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 public class CapabilityFeaturesExtensions implements ApiBuildingBlock {
 
     @Inject
-    CapabilityFeaturesExtensions() {
+    public CapabilityFeaturesExtensions() {
     }
 
     @Override

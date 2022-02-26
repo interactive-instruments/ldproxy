@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 public class CapabilityQueryables implements ApiBuildingBlock {
 
     @Inject
-    CapabilityQueryables() {
+    public CapabilityQueryables() {
     }
 
     @Override

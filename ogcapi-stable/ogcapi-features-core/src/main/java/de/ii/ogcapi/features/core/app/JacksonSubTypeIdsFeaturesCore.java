@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 public class JacksonSubTypeIdsFeaturesCore implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsFeaturesCore() {
+    public JacksonSubTypeIdsFeaturesCore() {
     }
 
     @Override

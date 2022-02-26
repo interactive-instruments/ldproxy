@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 public class CapabilityGeometrySimplification implements ApiBuildingBlock {
 
     @Inject
-    CapabilityGeometrySimplification() {
+    public CapabilityGeometrySimplification() {
     }
 
     @Override

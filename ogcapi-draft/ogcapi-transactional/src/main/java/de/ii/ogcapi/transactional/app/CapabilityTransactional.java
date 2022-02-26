@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 public class CapabilityTransactional implements ApiBuildingBlock {
 
     @Inject
-    CapabilityTransactional() {
+    public CapabilityTransactional() {
     }
 
     @Override

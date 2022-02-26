@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 public class JacksonSubTypeIdsXml implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsXml() {
+    public JacksonSubTypeIdsXml() {
     }
 
     @Override

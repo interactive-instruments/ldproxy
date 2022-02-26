@@ -20,7 +20,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 public class CapabilityJsonFg implements ApiBuildingBlock {
 
     @Inject
-    CapabilityJsonFg() {
+    public CapabilityJsonFg() {
     }
 
     @Override

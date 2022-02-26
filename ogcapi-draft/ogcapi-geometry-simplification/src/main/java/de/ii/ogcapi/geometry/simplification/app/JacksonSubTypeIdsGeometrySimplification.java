@@ -25,7 +25,7 @@ import java.util.Map;
 public class JacksonSubTypeIdsGeometrySimplification implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsGeometrySimplification() {
+    public JacksonSubTypeIdsGeometrySimplification() {
     }
 
     @Override

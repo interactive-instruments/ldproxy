@@ -25,7 +25,7 @@ import java.util.Map;
 public class JacksonSubTypeIdsTransactional implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsTransactional() {
+    public JacksonSubTypeIdsTransactional() {
     }
 
     @Override

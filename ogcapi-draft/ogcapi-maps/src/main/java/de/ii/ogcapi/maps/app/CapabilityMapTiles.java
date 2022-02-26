@@ -8,17 +8,12 @@
 package de.ii.ogcapi.maps.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -29,21 +24,8 @@ import javax.inject.Singleton;
 @AutoBind
 public class CapabilityMapTiles implements ApiBuildingBlock {
 
-    private final ExtensionRegistry extensionRegistry;
-    private final FeaturesCoreProviders providers;
-    private final FeaturesQuery queryParser;
-    private final SchemaInfo schemaInfo;
-    private final TileMatrixSetRepository tileMatrixSetRepository;
-
     @Inject
-    public CapabilityMapTiles(ExtensionRegistry extensionRegistry, FeaturesQuery queryParser,
-                              FeaturesCoreProviders providers, SchemaInfo schemaInfo,
-                              TileMatrixSetRepository tileMatrixSetRepository) {
-        this.extensionRegistry = extensionRegistry;
-        this.queryParser = queryParser;
-        this.providers = providers;
-        this.schemaInfo = schemaInfo;
-        this.tileMatrixSetRepository = tileMatrixSetRepository;
+    public CapabilityMapTiles() {
     }
 
     @Override

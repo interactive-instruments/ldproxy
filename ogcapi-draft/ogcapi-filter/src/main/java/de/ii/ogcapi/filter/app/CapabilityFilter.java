@@ -19,7 +19,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 public class CapabilityFilter implements ApiBuildingBlock {
 
     @Inject
-    CapabilityFilter() {
+    public CapabilityFilter() {
     }
 
     @Override

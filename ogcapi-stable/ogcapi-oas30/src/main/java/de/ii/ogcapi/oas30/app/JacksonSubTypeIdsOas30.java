@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 public class JacksonSubTypeIdsOas30 implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsOas30() {
+    public JacksonSubTypeIdsOas30() {
     }
 
     @Override

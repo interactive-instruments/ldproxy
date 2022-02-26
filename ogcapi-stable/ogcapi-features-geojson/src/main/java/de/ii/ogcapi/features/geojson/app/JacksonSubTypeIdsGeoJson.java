@@ -27,7 +27,7 @@ import javax.inject.Singleton;
 public class JacksonSubTypeIdsGeoJson implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsGeoJson() {
+    public JacksonSubTypeIdsGeoJson() {
     }
 
     @Override

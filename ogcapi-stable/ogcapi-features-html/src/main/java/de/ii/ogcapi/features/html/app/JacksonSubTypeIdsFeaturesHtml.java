@@ -27,7 +27,7 @@ import javax.inject.Singleton;
 public class JacksonSubTypeIdsFeaturesHtml implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsFeaturesHtml() {
+    public JacksonSubTypeIdsFeaturesHtml() {
     }
 
     @Override

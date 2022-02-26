@@ -22,7 +22,7 @@ import java.util.Map;
 public class JacksonSubTypeIdsJsonFg implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsJsonFg() {
+    public JacksonSubTypeIdsJsonFg() {
     }
 
     @Override

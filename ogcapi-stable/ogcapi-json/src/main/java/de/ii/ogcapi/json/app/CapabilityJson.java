@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 public class CapabilityJson implements ApiBuildingBlock {
 
     @Inject
-    CapabilityJson() {
+    public CapabilityJson() {
     }
 
     @Override

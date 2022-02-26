@@ -25,7 +25,7 @@ import java.util.Map;
 public class JacksonSubTypeIdsProjections implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsProjections() {
+    public JacksonSubTypeIdsProjections() {
     }
 
     @Override

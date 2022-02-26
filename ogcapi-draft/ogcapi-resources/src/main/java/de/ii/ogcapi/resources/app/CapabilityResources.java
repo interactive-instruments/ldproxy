@@ -19,11 +19,8 @@ import javax.inject.Singleton;
 @AutoBind
 public class CapabilityResources implements ApiBuildingBlock {
 
-    private final ExtensionRegistry extensionRegistry;
-
     @Inject
-    public CapabilityResources(ExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+    public CapabilityResources() {
     }
 
     @Override

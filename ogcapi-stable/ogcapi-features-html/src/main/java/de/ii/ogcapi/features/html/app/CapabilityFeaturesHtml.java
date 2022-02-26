@@ -23,7 +23,7 @@ import javax.inject.Singleton;
 public class CapabilityFeaturesHtml implements ApiBuildingBlock {
 
     @Inject
-    CapabilityFeaturesHtml() {
+    public CapabilityFeaturesHtml() {
     }
 
     @Override

@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 public class CapabilityGml implements ApiBuildingBlock {
 
     @Inject
-    CapabilityGml() {
+    public CapabilityGml() {
     }
 
     @Override

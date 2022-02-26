@@ -25,7 +25,7 @@ import javax.inject.Singleton;
 public class JacksonSubTypeIdsGml implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsGml() {
+    public JacksonSubTypeIdsGml() {
     }
 
     @Override

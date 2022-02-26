@@ -22,7 +22,7 @@ import java.util.Map;
 public class JacksonSubTypeIdsGeoJsonLd implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsGeoJsonLd() {
+    public JacksonSubTypeIdsGeoJsonLd() {
     }
 
     @Override

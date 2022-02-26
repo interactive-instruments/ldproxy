@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 public class CapabilityFoundation implements ApiBuildingBlock {
 
     @Inject
-    CapabilityFoundation() {
+    public CapabilityFoundation() {
     }
 
     @Override

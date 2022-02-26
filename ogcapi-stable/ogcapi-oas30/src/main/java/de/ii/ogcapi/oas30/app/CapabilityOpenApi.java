@@ -20,7 +20,7 @@ import javax.inject.Singleton;
 public class CapabilityOpenApi implements ApiBuildingBlock {
 
     @Inject
-    CapabilityOpenApi() {
+    public CapabilityOpenApi() {
     }
 
     @Override

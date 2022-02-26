@@ -21,7 +21,7 @@ import java.util.Map;
 public class JacksonSubTypeIdsQueryables implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsQueryables() {
+    public JacksonSubTypeIdsQueryables() {
     }
 
     @Override

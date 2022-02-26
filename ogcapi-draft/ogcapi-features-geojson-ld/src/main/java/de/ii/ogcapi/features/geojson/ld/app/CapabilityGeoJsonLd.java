@@ -20,7 +20,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 public class CapabilityGeoJsonLd implements ApiBuildingBlock {
 
     @Inject
-    CapabilityGeoJsonLd() {
+    public CapabilityGeoJsonLd() {
     }
 
     @Override

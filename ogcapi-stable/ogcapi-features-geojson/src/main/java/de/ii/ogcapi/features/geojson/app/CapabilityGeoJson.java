@@ -23,7 +23,7 @@ import javax.inject.Singleton;
 public class CapabilityGeoJson implements ApiBuildingBlock {
 
     @Inject
-    CapabilityGeoJson() {
+    public CapabilityGeoJson() {
     }
 
     @Override

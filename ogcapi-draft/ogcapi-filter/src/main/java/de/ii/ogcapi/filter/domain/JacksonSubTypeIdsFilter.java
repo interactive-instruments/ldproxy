@@ -21,7 +21,7 @@ import java.util.Map;
 public class JacksonSubTypeIdsFilter implements JacksonSubTypeIds {
 
     @Inject
-    JacksonSubTypeIdsFilter() {
+    public JacksonSubTypeIdsFilter() {
     }
 
     @Override
