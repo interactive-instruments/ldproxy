@@ -117,7 +117,7 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
             }
             String spatialPropertyName = getPrimarySpatialProperty(apiData, featureType.getId());
             String filter = parameters.get("filter");
-            filter = (filter==null? "" : filter+" AND ") + "(INTERSECTS("+spatialPropertyName+","+wkt+"))";
+            filter = (filter==null? "" : filter+" AND ") + "(S_INTERSECTS("+spatialPropertyName+","+wkt+"))";
 
             Map<String, String> newParameters = new HashMap<>(parameters);
             newParameters.put("filter",filter);
