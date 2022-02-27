@@ -20,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.store.domain.KeyPathAlias;
 import de.ii.xtraplatform.store.domain.KeyPathAliasUnwrap;
@@ -92,21 +93,30 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
 
   @Override
   public EntityData hydrateData(EntityData entityData) {
-    OgcApiDataV2 hydrated = (OgcApiDataV2) entityData;
+    try {
+      OgcApiDataV2 hydrated = (OgcApiDataV2) entityData;
 
-    if (hydrated.isAuto()) {
-      LOGGER.info("Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
-    }
-
-    List<OgcApiDataHydratorExtension> extensions = extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class);
-    extensions.sort(Comparator.comparing(OgcApiDataHydratorExtension::getSortPriority));
-    for (OgcApiDataHydratorExtension hydrator : extensions) {
-      if (hydrator.isEnabledForApi(hydrated)) {
-        hydrated = hydrator.getHydratedData(hydrated);
+      if (hydrated.isAuto()) {
+        LOGGER.info("Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
       }
-    }
 
-    return hydrated;
+      List<OgcApiDataHydratorExtension> extensions = extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class);
+      extensions.sort(Comparator.comparing(OgcApiDataHydratorExtension::getSortPriority));
+      for (OgcApiDataHydratorExtension hydrator : extensions) {
+        if (hydrator.isEnabledForApi(hydrated)) {
+          hydrated = hydrator.getHydratedData(hydrated);
+        }
+      }
+
+      return hydrated;
+    } catch (Throwable e) {
+      LogContext.error(
+          LOGGER,
+          e,
+          "Service with id '{}' could not be started",
+          entityData.getId());
+      throw e;
+    }
   }
 
   @Override
