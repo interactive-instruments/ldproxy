@@ -230,9 +230,9 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
             try {
                 tileStream = cache.getTile(tile);
             } catch (Exception e) {
-                LOGGER.warn("Failed to retrieve multi-collection tile {}/{}/{}/{} from the cache. Reason: {}",
+                LOGGER.warn("Failed to retrieve tile {}/{}/{}/{} for collection '{}' from the cache. Reason: {}",
                             tile.getTileMatrixSet().getId(), tile.getTileLevel(), tile.getTileRow(),
-                            tile.getTileCol(), e.getMessage());
+                            tile.getTileCol(), collectionId, e.getMessage());
             }
             if (tileStream.isPresent()) {
                 queryInput = new Builder()
