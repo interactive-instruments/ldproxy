@@ -132,7 +132,7 @@ export const geoJsonLayers = ({
   polygonMinZoom,
   polygonMaxZoom,
 }) => {
-  return ["Point", "LineString", "Polygon"].flatMap((geometryType) => {
+  return ["Polygon", "LineString", "Point"].flatMap((geometryType) => {
     switch (geometryType) {
       case "Point":
         return withFilter(
