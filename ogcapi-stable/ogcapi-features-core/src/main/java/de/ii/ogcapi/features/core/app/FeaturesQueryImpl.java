@@ -372,7 +372,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                    }
                                                    if (filter.getValue()
                                                              .contains("*")) {
-                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
+                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue().replace("*","%"))));
                                                    }
 
                                                    return CqlPredicate.of(Eq.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
