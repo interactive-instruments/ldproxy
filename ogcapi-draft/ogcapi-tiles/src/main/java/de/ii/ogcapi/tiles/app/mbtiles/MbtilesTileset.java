@@ -19,9 +19,11 @@ import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -33,6 +35,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -43,28 +46,34 @@ public class MbtilesTileset {
     private static final int EMPTY_TILE_ID = 1;
     private Connection connection = null;
     private final Path tilesetPath;
-    private Semaphore mutex = new Semaphore(1);
+    private final Semaphore mutex = new Semaphore(1);
+    private final MbtilesMetadata metadata;
 
     public MbtilesTileset(Path tilesetPath) {
         if (!Files.exists(tilesetPath)) {
             throw new RuntimeException(String.format("Mbtiles file does not exist: %s", tilesetPath));
         }
         this.tilesetPath = tilesetPath;
-
-        // test a connection
-        getConnection();
+        try {
+            this.metadata = getMetadata();
+        } catch (SQLException | IOException e) {
+           throw new RuntimeException(String.format("Could not read from Mbtiles file: %s", tilesetPath), e);
+        }
     }
 
-    public MbtilesTileset(Path tilesetPath, MbtilesMetadata metadata) {
+    public MbtilesTileset(Path tilesetPath, MbtilesMetadata metadata) throws IOException {
         if (Files.exists(tilesetPath)) {
-            throw new RuntimeException(String.format("Mbtiles file already exists: %s", tilesetPath));
+            throw new FileAlreadyExistsException(tilesetPath.toString());
         }
         this.tilesetPath = tilesetPath;
+        this.metadata = metadata;
 
+        // create and init MBTiles DB
+        releaseConnection(getConnection(true));
+    }
+
+    private void initMbtilesDb(MbtilesMetadata metadata, Connection connection) {
         try {
-            // create db
-            Connection connection = getConnection();
-
             // create tables and views
             SqlHelper.execute(connection, "BEGIN TRANSACTION IMMEDIATE");
             SqlHelper.execute(connection, "CREATE TABLE metadata (name text, value text)");
@@ -113,27 +122,57 @@ public class MbtilesTileset {
             }
 
             SqlHelper.execute(connection, "COMMIT");
-            releaseConnection(connection);
-
         } catch (Exception e) {
             throw new RuntimeException(String.format("Could not create new Mbtiles file: %s", tilesetPath), e);
         }
     }
 
-    private Connection getConnection() {
+    private Connection getConnection(boolean aquireMutexOnCreate) throws IOException {
         // we use a single connection per database to avoid multi-threading conflicts
-        if (Objects.isNull(connection))
+
+        // check, if the file exists
+        if (!Files.exists(tilesetPath)) {
+            // aquire the mutex, if necessary (for write operations we already have it)
+            boolean aquired = false;
+            try {
+                aquired = aquireMutexOnCreate && mutex.tryAcquire(5, TimeUnit.SECONDS);
+                if (aquireMutexOnCreate)
+                    LOGGER.trace("getConnection: Trying to aquite mutex: '{}'.", aquired);
+                if (aquireMutexOnCreate && !aquired)
+                    throw new RuntimeException(String.format("Could not aquire mutex to create MBTiles file: %s", tilesetPath));
+                // now that we have the mutex, check again, if the file exists, it may have been
+                // created by a parallel request
+                if (!Files.exists(tilesetPath)) {
+                    // recreate an empty MBTiles container
+                    LOGGER.trace("Creating MBTiles file '{}'.", tilesetPath);
+                    Files.createDirectories(tilesetPath.getParent());
+                    connection = SqlHelper.getConnection(tilesetPath.toFile());
+                    initMbtilesDb(metadata, connection);
+                } else if (Objects.isNull(connection)) {
+                    connection = SqlHelper.getConnection(tilesetPath.toFile());
+                }
+            } catch (InterruptedException e) {
+                LOGGER.debug("getConnection: Thread has been interrupted.");
+            } finally {
+                if (aquired) {
+                    LOGGER.trace("getConnection: Releasing mutex.");
+                    mutex.release();
+                }
+            }
+        } else if (Objects.isNull(connection)) {
             connection = SqlHelper.getConnection(tilesetPath.toFile());
+        }
+
         return connection;
     }
 
-    private void releaseConnection(Connection connection) {
+    private void releaseConnection(@Nullable Connection connection) {
         // nothing to do
     }
 
-    public MbtilesMetadata getMetadata() throws SQLException {
+    public MbtilesMetadata getMetadata() throws SQLException, IOException {
         ImmutableMbtilesMetadata.Builder builder = ImmutableMbtilesMetadata.builder();
-        Connection connection = getConnection();
+        Connection connection = getConnection(true);
         ResultSet rs = SqlHelper.executeQuery(connection, "SELECT name, value FROM metadata");
         while (rs.next()) {
             final String name = rs.getString("name");
@@ -213,7 +252,7 @@ public class MbtilesTileset {
         int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
         int col = tile.getTileCol();
         boolean gzip = tile.getOutputFormat().getGzippedInMbtiles();
-        Connection connection = getConnection();
+        Connection connection = getConnection(true);
         String sql = String.format("SELECT tile_data FROM tiles WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
         ResultSet rs = SqlHelper.executeQuery(connection, sql);
         if (rs.next()) {
@@ -223,9 +262,9 @@ public class MbtilesTileset {
         return result;
     }
 
-    public Optional<Boolean> tileIsEmpty(Tile tile) throws SQLException {
+    public Optional<Boolean> tileIsEmpty(Tile tile) throws SQLException, IOException {
         Optional<Boolean> result = Optional.empty();
-        Connection connection = getConnection();
+        Connection connection = getConnection(true);
         int level = tile.getTileLevel();
         int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
         int col = tile.getTileCol();
@@ -238,8 +277,8 @@ public class MbtilesTileset {
         return result;
     }
 
-    public boolean tileExists(Tile tile) throws SQLException {
-        Connection connection = getConnection();
+    public boolean tileExists(Tile tile) throws SQLException, IOException {
+        Connection connection = getConnection(true);
         int level = tile.getTileLevel();
         int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
         int col = tile.getTileCol();
@@ -255,9 +294,15 @@ public class MbtilesTileset {
         int col = tile.getTileCol();
         boolean gzip = tile.getOutputFormat().getGzippedInMbtiles();
         boolean supportsEmtpyTile = tile.getOutputFormat().getSupportsEmptyTile();
+        LOGGER.trace("Write tile {}/{}/{}/{} to MBTiles cache {}.", tile.getTileMatrixSet().getId(), level, tile.getTileRow(), col, tilesetPath);
+        Connection connection = null;
+        boolean aquired = false;
         try {
-            mutex.acquire();
-            Connection connection = getConnection();
+            aquired = mutex.tryAcquire(5, TimeUnit.SECONDS);
+            LOGGER.trace("writeTile: Trying to aquite mutex: '{}'.", aquired);
+            if (!aquired)
+                throw new RuntimeException(String.format("Could not aquire mutex to create MBTiles file: %s", tilesetPath));
+            connection = getConnection(false);
             // do we have an old blob?
             boolean exists = false;
             Integer old_tile_id = null;
@@ -298,21 +343,31 @@ public class MbtilesTileset {
             if (Objects.nonNull(old_tile_id) && (old_tile_id != EMPTY_TILE_ID || !supportsEmtpyTile)) {
                 SqlHelper.execute(connection, String.format("DELETE FROM tile_map WHERE tile_id = %d", old_tile_id));
             }
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException e) {
+            LOGGER.debug("writeTile: Thread has been interrupted.");
         } finally {
-            mutex.release();
             releaseConnection(connection);
+            if (aquired) {
+                LOGGER.trace("writeTile: Releasing mutex.");
+                mutex.release();
+            }
         }
     }
 
-    public void deleteTile(Tile tile) throws SQLException {
+    public void deleteTile(Tile tile) throws SQLException, IOException {
         boolean supportsEmtpyTile = tile.getOutputFormat().getSupportsEmptyTile();
         int level = tile.getTileLevel();
         int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
         int col = tile.getTileCol();
+        LOGGER.trace("Delete tile {}/{}/{}/{} from MBTiles cache {}.", tile.getTileMatrixSet().getId(), level, tile.getTileRow(), col, tilesetPath);
+        Connection connection = null;
+        boolean aquired = false;
         try {
-            mutex.acquire();
-            Connection connection = getConnection();
+            aquired = mutex.tryAcquire(5, TimeUnit.SECONDS);
+            LOGGER.trace("deleteTile: Trying to aquite mutex: '{}'.", aquired);
+            if (!aquired)
+                throw new RuntimeException(String.format("Could not aquire mutex to create MBTiles file: %s", tilesetPath));
+            connection = getConnection(false);
             String sql = String.format("SELECT tile_id FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d", level, row, col);
             ResultSet rs = SqlHelper.executeQuery(connection, sql);
             if (rs.next()) {
@@ -322,18 +377,28 @@ public class MbtilesTileset {
                     SqlHelper.execute(connection, String.format("DELETE FROM tile_blobs WHERE tile_id=%d", tile_id));
                 }
             }
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException e) {
+            LOGGER.debug("deleteTile: Thread has been interrupted.");
         } finally {
-            mutex.release();
             releaseConnection(connection);
+            if (aquired) {
+                LOGGER.trace("deleteTile: Releasing mutex.");
+                mutex.release();
+            }
         }
     }
 
-    public void deleteTiles(TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits) throws SQLException {
+    public void deleteTiles(TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits) throws SQLException, IOException {
         int level = Integer.parseInt(limits.getTileMatrix());
+        LOGGER.trace("Delete tiles {}/{}/*/* from MBTiles cache {}.", tileMatrixSet.getId(), level, tilesetPath);
+        Connection connection = null;
+        boolean aquired = false;
         try {
-            mutex.acquire();
-            Connection connection = getConnection();
+            aquired = mutex.tryAcquire(5, TimeUnit.SECONDS);
+            LOGGER.trace("deleteTiles: Trying to aquite mutex: '{}'.", aquired);
+            if (!aquired)
+                throw new RuntimeException(String.format("Could not aquire mutex to create MBTiles file: %s", tilesetPath));
+            connection = getConnection(false);
             String sqlFrom = String.format("FROM tile_map WHERE zoom_level=%d AND tile_row>=%d AND tile_column>=%d AND tile_row<=%d AND tile_column<=%d",
                                            level,
                                            tileMatrixSet.getTmsRow(level, limits.getMaxTileRow()), limits.getMinTileCol(),
@@ -346,10 +411,14 @@ public class MbtilesTileset {
                 }
             }
             SqlHelper.execute(connection, String.format("DELETE %s", sqlFrom));
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException e) {
+            LOGGER.debug("deleteTile: Thread has been interrupted.");
         } finally {
-            mutex.release();
             releaseConnection(connection);
+            if (aquired) {
+                LOGGER.trace("deleteTiles: Releasing mutex.");
+                mutex.release();
+            }
         }
 
     }

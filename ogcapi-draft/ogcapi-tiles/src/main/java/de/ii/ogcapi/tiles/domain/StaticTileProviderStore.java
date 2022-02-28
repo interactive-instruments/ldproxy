@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -49,7 +50,7 @@ public interface StaticTileProviderStore extends ApiExtension {
      * @param filename the filename of the tile set container
      * @return the minzoom value
      */
-    Optional<Integer> getMinzoom(OgcApiDataV2 apiData, String filename) throws SQLException;
+    Optional<Integer> getMinzoom(OgcApiDataV2 apiData, String filename) throws SQLException, IOException;
 
     /**
      * fetch the maxzoom value from the metadata in the tile set container
@@ -57,7 +58,7 @@ public interface StaticTileProviderStore extends ApiExtension {
      * @param filename the filename of the tile set container
      * @return the maxzoom value
      */
-    Optional<Integer> getMaxzoom(OgcApiDataV2 apiData, String filename) throws SQLException;
+    Optional<Integer> getMaxzoom(OgcApiDataV2 apiData, String filename) throws SQLException, IOException;
 
     /**
      * fetch the zoom level of the default view from the metadata in the tile set container
@@ -65,7 +66,7 @@ public interface StaticTileProviderStore extends ApiExtension {
      * @param filename the filename of the tile set container
      * @return the zoom level
      */
-    Optional<Integer> getDefaultzoom(OgcApiDataV2 apiData, String filename) throws SQLException;
+    Optional<Integer> getDefaultzoom(OgcApiDataV2 apiData, String filename) throws SQLException, IOException;
 
     /**
      * fetch the location of the default view from the metadata in the tile set container
@@ -73,7 +74,7 @@ public interface StaticTileProviderStore extends ApiExtension {
      * @param filename the filename of the tile set container
      * @return the location as longitude, latitude
      */
-    List<Double> getCenter(OgcApiDataV2 apiData, String filename) throws SQLException;
+    List<Double> getCenter(OgcApiDataV2 apiData, String filename) throws SQLException, IOException;
 
     /**
      * fetch the format of the tiles from the metadata in the tile set container
@@ -81,5 +82,5 @@ public interface StaticTileProviderStore extends ApiExtension {
      * @param filename the filename of the tile set container
      * @return the format
      */
-    String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException;
+    String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException, IOException;
 }

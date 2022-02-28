@@ -130,19 +130,19 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
     }
 
     @Override
-    public Optional<Integer> getMinzoom(OgcApiDataV2 apiData, String filename) throws SQLException {
+    public Optional<Integer> getMinzoom(OgcApiDataV2 apiData, String filename) throws SQLException, IOException {
         MbtilesTileset tileset = new MbtilesTileset(getTileProvider(apiData, filename));
         return tileset.getMetadata().getMinzoom();
     }
 
     @Override
-    public Optional<Integer> getMaxzoom(OgcApiDataV2 apiData, String filename) throws SQLException {
+    public Optional<Integer> getMaxzoom(OgcApiDataV2 apiData, String filename) throws SQLException, IOException {
         MbtilesTileset tileset = new MbtilesTileset(getTileProvider(apiData, filename));
         return tileset.getMetadata().getMaxzoom();
     }
 
     @Override
-    public Optional<Integer> getDefaultzoom(OgcApiDataV2 apiData, String filename) throws SQLException {
+    public Optional<Integer> getDefaultzoom(OgcApiDataV2 apiData, String filename) throws SQLException, IOException {
         MbtilesTileset tileset = new MbtilesTileset(getTileProvider(apiData, filename));
         List<Number> center = tileset.getMetadata().getCenter();
         if (center.size()==3)
@@ -151,7 +151,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
     }
 
     @Override
-    public List<Double> getCenter(OgcApiDataV2 apiData, String filename) throws SQLException {
+    public List<Double> getCenter(OgcApiDataV2 apiData, String filename) throws SQLException, IOException {
         MbtilesTileset tileset = new MbtilesTileset(getTileProvider(apiData, filename));
         List<Number> center = tileset.getMetadata().getCenter();
         if (center.size()>=2)
@@ -160,7 +160,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
     }
 
     @Override
-    public String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException {
+    public String getFormat(OgcApiDataV2 apiData, String filename) throws SQLException, IOException {
         MbtilesTileset tileset = new MbtilesTileset(getTileProvider(apiData, filename));
         MbtilesFormat format = tileset.getMetadata().getFormat();
         if (format== MbtilesMetadata.MbtilesFormat.pbf)

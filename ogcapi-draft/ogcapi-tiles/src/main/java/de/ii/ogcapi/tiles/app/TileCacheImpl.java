@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -430,11 +432,13 @@ public class TileCacheImpl implements TileCache {
                                                                    entityRegistry);
 
                 // convert to Mbtiles metadata
-                // TODO support attribution, type, version
+                // TODO support type, version
                 MbtilesMetadata md = ImmutableMbtilesMetadata.builder()
                                                              .name(apiData.getLabel())
                                                              .format(MbtilesMetadata.MbtilesFormat.pbf)
                                                              .description(apiData.getDescription())
+                                                             .attribution(apiData.getMetadata()
+                                                                              .flatMap(Metadata::getAttribution))
                                                              .minzoom(TilesHelper.getMinzoom(tileSetMetadata))
                                                              .maxzoom(TilesHelper.getMaxzoom(tileSetMetadata))
                                                              .bounds(TilesHelper.getBounds(tileSetMetadata))
@@ -445,7 +449,16 @@ public class TileCacheImpl implements TileCache {
                                                                                                        providers,
                                                                                                        schemaInfo))
                                                              .build();
-                mbtiles.put(key, new MbtilesTileset(path, md));
+                try {
+                    mbtiles.put(key, new MbtilesTileset(path, md));
+                } catch (FileAlreadyExistsException e) {
+                    // The file could have been created by a parallel thread
+                    LOGGER.debug("MBTiles file '{}' already exists.", path);
+                    if (!mbtiles.containsKey(key)) {
+                        // reuse the existing file
+                        mbtiles.put(key, new MbtilesTileset(path));
+                    }
+                }
             }
         }
         return mbtiles.get(key);
