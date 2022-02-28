@@ -148,7 +148,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
 
       // Geometry is invalid -> log this information and skip it, if that option is used
       if (!tileGeometry.isValid()) {
-        LOGGER.info("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Size in pixels: {}.", feature.getIdValue(), collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), featureGeometry.get().getArea());
+        LOGGER.warn("Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Size in pixels: {}.", feature.getIdValue(), collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), featureGeometry.get().getArea());
         if (encodingContext.tilesConfiguration().isIgnoreInvalidGeometriesDerived()) {
           return;
         }
@@ -189,7 +189,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
         Geometry geom = mergedFeature.getGeometry();
         // Geometry is invalid? -> log this information and skip it, if that option is used
         if (!geom.isValid()) {
-          LOGGER.info("A merged feature in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Properties: {}", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), mergedFeature.getProperties());
+          LOGGER.warn("A merged feature in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Properties: {}", collectionId, tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), mergedFeature.getProperties());
           if (tilesConfiguration.isIgnoreInvalidGeometriesDerived())
             return;
         }

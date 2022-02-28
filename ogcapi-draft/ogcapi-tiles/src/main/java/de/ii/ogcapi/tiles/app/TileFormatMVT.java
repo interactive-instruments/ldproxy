@@ -295,7 +295,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                         } catch (IOException e) {
                             // maybe the file is still generated, try to wait once before giving up
                             String msg = "Failure to access the single-layer tile {}/{}/{}/{} in dataset '{}', layer '{}', format '{}'. Trying again ...";
-                            LOGGER.info(msg, tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
+                            LOGGER.warn(msg, tileMatrixSet.getId(), singleLayerTile.getTileLevel(), singleLayerTile.getTileRow(), singleLayerTile.getTileCol(),
                                         singleLayerTile.getApiData().getId(), collectionId, getExtension());
                         } catch (IllegalArgumentException e) {
                             // another problem generating the tile, remove the problematic tile file from the cache
