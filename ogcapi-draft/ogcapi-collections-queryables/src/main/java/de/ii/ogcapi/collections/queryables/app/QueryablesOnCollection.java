@@ -9,6 +9,7 @@ package de.ii.ogcapi.collections.queryables.app;
 
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
@@ -16,6 +17,8 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.ImmutableLink;
+import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
@@ -25,7 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * add CRS information to the collection information
+ * add a link to the Queryables to the collection
  */
 @Singleton
 @AutoBind
@@ -54,8 +57,18 @@ public class QueryablesOnCollection implements CollectionExtension {
                                                      List<ApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
         if (isExtensionEnabled(featureTypeConfiguration, QueryablesConfiguration.class) && !isNested) {
-            final QueryablesLinkGenerator linkGenerator = new QueryablesLinkGenerator();
-            collection.addAllLinks(linkGenerator.generateCollectionLinks(uriCustomizer, i18n, language));
+            collection.addAllLinks(
+                ImmutableList.<Link>builder()
+                    .add(new ImmutableLink.Builder()
+                             .href(uriCustomizer.copy()
+                                       .ensureNoTrailingSlash()
+                                       .ensureLastPathSegment("queryables")
+                                       .removeParameters("f")
+                                       .toString())
+                             .rel("http://www.opengis.net/def/rel/ogc/1.0/queryables")
+                             .title(i18n.get("queryablesLink", language))
+                             .build())
+                    .build());
         }
 
         return collection;

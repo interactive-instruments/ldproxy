@@ -10,7 +10,7 @@ package de.ii.ogcapi.collections.schema.domain;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 
 import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 

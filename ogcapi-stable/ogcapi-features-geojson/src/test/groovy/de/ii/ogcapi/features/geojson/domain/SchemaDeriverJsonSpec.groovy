@@ -9,6 +9,19 @@ package de.ii.ogcapi.features.geojson.domain
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaArray
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaBoolean
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaDocument
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaDocumentV7
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaInteger
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaNumber
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString
+import de.ii.ogcapi.features.core.domain.JsonSchema
+import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument
+import de.ii.ogcapi.features.core.domain.SchemaDeriverJsonSchema
 import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableSchemaConstraints
@@ -21,25 +34,6 @@ import spock.lang.Specification
 class SchemaDeriverJsonSpec extends Specification {
 
     def schemaFlattener = new WithTransformationsApplied(ImmutableMap.of("*", new ImmutablePropertyTransformation.Builder().flatten("_").build()))
-
-    def 'Queryables schema derivation, JSON Schema draft #version'() {
-
-        given:
-        List<String> queryables = ["geometry", "datetime", "objects.date"]
-        SchemaDeriverJsonSchema schemaDeriver = new SchemaDeriverQueryables(version, Optional.empty(), "test-label", Optional.empty(), ImmutableList.of(), queryables)
-        FeatureSchema flatSchema = FEATURE_SCHEMA.accept(schemaFlattener)
-
-        when:
-        JsonSchemaDocument document = flatSchema.accept(schemaDeriver) as JsonSchemaDocument
-
-        then:
-        document == expected
-
-        where:
-        version         || expected
-        JsonSchemaDocument.VERSION.V201909 || EXPECTED_QUERYABLES
-        JsonSchemaDocument.VERSION.V7      || EXPECTED_QUERYABLES_V7
-    }
 
     def 'Returnables schema derivation, JSON Schema draft #version'() {
         given:
@@ -214,27 +208,6 @@ class SchemaDeriverJsonSpec extends Specification {
                             .build())
                     .build()
 
-    static JsonSchema EXPECTED_QUERYABLES =
-            ImmutableJsonSchemaDocument.builder()
-                    .title("test-label")
-                    .description("bar")
-                    .putProperties("geometry", GeoJsonSchema.MULTI_POLYGON)
-                    .putProperties("datetime", ImmutableJsonSchemaString.builder()
-                            .format("date-time")
-                            .title("foo")
-                            .description("bar")
-                            .build())
-                    .putProperties("objects.date", ImmutableJsonSchemaString.builder()
-                            .title("foo > date")
-                            .format("date")
-                            .build())
-                    .build();
-
-    static JsonSchema EXPECTED_QUERYABLES_V7 =
-            ImmutableJsonSchemaDocumentV7.builder()
-                    .from(EXPECTED_QUERYABLES)
-                    .build()
-
     static JsonSchema EXPECTED_RETURNABLES =
             ImmutableJsonSchemaDocument.builder()
                     .title("foo")
@@ -251,7 +224,7 @@ class SchemaDeriverJsonSpec extends Specification {
                             .title("foo")
                             .description("bar")
                             .build())
-                    .putProperties("geometry", GeoJsonSchema.nullable(GeoJsonSchema.MULTI_POLYGON))
+                    .putProperties("geometry", JsonSchemaBuildingBlocks.nullable(JsonSchemaBuildingBlocks.MULTI_POLYGON))
                     .putProperties("properties", ImmutableJsonSchemaObject.builder()
                             .addRequired("string")
                             .putProperties("string", ImmutableJsonSchemaString.builder()
@@ -298,7 +271,7 @@ class SchemaDeriverJsonSpec extends Specification {
                                             .build())
                                     .build())
                             .build())
-                    .putDefinitions("Link", GeoJsonSchema.LINK_JSON)
+                    .putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON)
                     .putDefinitions(SchemaDeriverJsonSchema.getObjectType(getProperty(FEATURE_SCHEMA, "objects").get()), ImmutableJsonSchemaObject.builder()
                             .title("foo")
                             .description("bar")
@@ -351,7 +324,7 @@ class SchemaDeriverJsonSpec extends Specification {
                             .title("foo")
                             .description("bar")
                             .build())
-                    .putProperties("geometry", GeoJsonSchema.nullable(GeoJsonSchema.MULTI_POLYGON))
+                    .putProperties("geometry", JsonSchemaBuildingBlocks.nullable(JsonSchemaBuildingBlocks.MULTI_POLYGON))
                     .putProperties("properties", ImmutableJsonSchemaObject.builder()
                             .addRequired("string")
                             .putProperties("string", ImmutableJsonSchemaString.builder()

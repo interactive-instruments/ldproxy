@@ -8,7 +8,17 @@
 package de.ii.ogcapi.features.geojson.domain;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaArray;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefV7;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
+import de.ii.ogcapi.features.core.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
+import de.ii.ogcapi.features.core.domain.SchemaDeriverJsonSchema;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase.Role;
@@ -41,7 +51,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
         .orElse(false);
 
     if (!required) {
-      return GeoJsonSchema.nullable(jsonSchema);
+      return JsonSchemaBuildingBlocks.nullable(jsonSchema);
     }
 
     return jsonSchema;
@@ -62,7 +72,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
 
     defs.forEach((name, def) -> {
       if ("Link".equals(name)) {
-        builder.putDefinitions("Link", GeoJsonSchema.LINK_JSON);
+        builder.putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON);
       } else {
         builder.putDefinitions(name, def);
       }
@@ -89,7 +99,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
         .or(() -> findByRole(properties, SECONDARY_GEOMETRY))
         .ifPresentOrElse(
             jsonSchema -> builder.putProperties("geometry", jsonSchema),
-            () -> builder.putProperties("geometry", GeoJsonSchema.NULL));
+            () -> builder.putProperties("geometry", JsonSchemaBuildingBlocks.NULL));
 
     Map<String, JsonSchema> propertiesWithoutRoles = withoutRoles(properties);
 

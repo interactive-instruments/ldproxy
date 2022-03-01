@@ -29,7 +29,7 @@ public interface StyleFormatExtension extends FormatExtension {
     @Override
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(StylesConfiguration.class)
-                      .filter(StylesConfiguration::getEnabled)
+                      .filter(StylesConfiguration::isEnabled)
                       .filter(config -> config.getStyleEncodings().contains(this.getMediaType().label()))
                       .isPresent();
     }
@@ -39,7 +39,7 @@ public interface StyleFormatExtension extends FormatExtension {
         return apiData.getCollections()
                       .get(collectionId)
                       .getExtension(StylesConfiguration.class)
-                      .filter(StylesConfiguration::getEnabled)
+                      .filter(StylesConfiguration::isEnabled)
                       .filter(config -> config.getStyleEncodings().contains(this.getMediaType().label()))
                       .isPresent();
     }

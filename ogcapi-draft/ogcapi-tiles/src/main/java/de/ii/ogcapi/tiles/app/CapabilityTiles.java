@@ -136,7 +136,7 @@ public class CapabilityTiles implements ApiBuildingBlock {
         // since building block / capability components are currently always enabled,
         // we need to test, if the TILES module is enabled for the API and stop, if not
         if (!apiData.getExtension(TilesConfiguration.class)
-                    .map(ExtensionConfiguration::getEnabled)
+                    .map(ExtensionConfiguration::isEnabled)
                     .orElse(false)) {
             return ValidationResult.of();
         }

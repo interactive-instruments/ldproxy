@@ -9,6 +9,7 @@ package de.ii.ogcapi.sorting.app;
 
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 import javax.inject.Inject;
 import javax.inject.Singleton;

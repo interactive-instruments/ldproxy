@@ -131,7 +131,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 if (explode && !apiData.getCollections()
                                        .get(collectionId)
                                        .getExtension(GeoJsonLdConfiguration.class)
-                                       .map(cfg -> cfg.getEnabled())
+                                       .map(ExtensionConfiguration::isEnabled)
                                        .orElse(false))
                     // skip, if disabled for the collection
                     continue;

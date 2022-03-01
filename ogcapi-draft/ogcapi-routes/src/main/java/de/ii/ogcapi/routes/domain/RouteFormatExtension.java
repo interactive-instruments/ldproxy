@@ -24,7 +24,7 @@ public interface RouteFormatExtension extends FormatExtension {
     @Override
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(RoutingConfiguration.class)
-                      .filter(RoutingConfiguration::getEnabled)
+                      .filter(RoutingConfiguration::isEnabled)
                       .isPresent();
     }
 

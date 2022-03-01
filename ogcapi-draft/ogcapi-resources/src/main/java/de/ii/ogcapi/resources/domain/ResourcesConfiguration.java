@@ -7,12 +7,14 @@
  */
 package de.ii.ogcapi.resources.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -24,6 +26,11 @@ public interface ResourcesConfiguration extends ExtensionConfiguration, CachingC
 
     @Nullable
     Boolean getManagerEnabled();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isManagerEnabled() { return Objects.equals(getManagerEnabled(), true); }
 
     @Override
     default Builder getBuilder() {

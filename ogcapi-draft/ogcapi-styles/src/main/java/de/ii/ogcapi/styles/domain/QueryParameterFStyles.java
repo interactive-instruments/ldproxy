@@ -31,7 +31,7 @@ public class QueryParameterFStyles extends QueryParameterF {
     }
 
     @Override
-    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    protected boolean matchesPath(String definitionPath) {
         return definitionPath.endsWith("/styles") || definitionPath.endsWith("/styles/{styleId}/metadata");
     }
 

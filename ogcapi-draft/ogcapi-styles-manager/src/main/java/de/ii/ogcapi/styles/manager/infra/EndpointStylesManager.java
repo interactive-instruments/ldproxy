@@ -84,7 +84,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
 
         return extension
                 .filter(StylesConfiguration::isEnabled)
-                .filter(StylesConfiguration::getManagerEnabled)
+                .filter(StylesConfiguration::isManagerEnabled)
                 .isPresent();
     }
 
@@ -122,7 +122,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, HttpMethods.POST);
         String operationSummary = "add a new style";
         String description = "Adds a style to the style repository";
-        if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
+        if (stylesExtension.map(StylesConfiguration::isValidationEnabled).orElse(false)) {
             description += " or just validates a style.\n" +
                     "If the header `Prefer` is set to `handling=strict`, the style will be validated before adding " +
                     "the style to the server. If the parameter `dry-run` is set to `true`, the server will " +
@@ -130,7 +130,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         }
         description += ".\n" +
                 "If a new style is created, the following rules apply:\n";
-        if (stylesExtension.isPresent() && stylesExtension.get().getUseIdFromStylesheet()) {
+        if (stylesExtension.map(StylesConfiguration::shouldUseIdFromStylesheet).orElse(false)) {
             description += "* If the style submitted in the request body includes an identifier (this depends on " +
                     "the style encoding), that identifier will be used. If a style with that identifier " +
                     "already exists, an error is returned.\n" +
@@ -157,7 +157,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         headers = getHeaders(extensionRegistry, apiData, path, HttpMethods.PUT);
         operationSummary = "replace a style";
         description = "Replace an existing style with the id `styleId` ";
-        if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
+        if (stylesExtension.map(StylesConfiguration::isValidationEnabled).orElse(false)) {
             description += " or just validate a style.\n" +
                     "If the header `Prefer` is set to `handling=strict`, the style will be validated before adding " +
                     "the style to the server. If the parameter `dry-run` is set to `true`, the server will " +

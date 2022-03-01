@@ -17,6 +17,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
@@ -70,16 +71,8 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
-        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-
-        if ((resourcesExtension.isPresent() && resourcesExtension.get()
-                                                                 .isEnabled()) ||
-                (stylesExtension.isPresent() && stylesExtension.get()
-                                                               .getResourcesEnabled())) {
-            return true;
-        }
-        return false;
+        return LandingPageExtension.super.isEnabledForApi(apiData) ||
+            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourcesEnabled).orElse(false);
     }
 
     @Override

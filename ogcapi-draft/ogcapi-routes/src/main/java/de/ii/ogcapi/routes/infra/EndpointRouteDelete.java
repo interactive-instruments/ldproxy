@@ -66,8 +66,8 @@ public class EndpointRouteDelete extends Endpoint {
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(RoutingConfiguration.class)
-            .filter(RoutingConfiguration::getEnabled)
-            .filter(RoutingConfiguration::getManageRoutes)
+            .filter(RoutingConfiguration::isEnabled)
+            .filter(RoutingConfiguration::isManageRoutesEnabled)
             .isPresent();
     }
     @Override

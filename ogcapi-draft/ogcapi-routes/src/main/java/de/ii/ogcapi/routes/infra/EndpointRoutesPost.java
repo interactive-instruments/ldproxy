@@ -210,7 +210,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
         List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, method);
         String operationSummary = "compute a route";
         String description = String.format("This creates a new route. The payload of the request specifies the definition of the new route.\n\n" +
-            (config.map(RoutingConfiguration::getIntermediateWaypoints).orElse(false)
+            (config.map(RoutingConfiguration::supportsIntermediateWaypoints).orElse(false)
                 ? "A route is defined by two or more `waypoints`, which will be visited in the order in which they are provided. "
                 : "A route is defined by two `waypoints`, the start and end location of the route. ") +
             "If the coordinates are in a coordinate reference system that is not WGS 84 longitude/latitude, " +
@@ -243,9 +243,9 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
                 .collect(Collectors.toUnmodifiableList())) +
             "\n" +
             "An optional `name` for the route may be provided.\n\n" +
-            (config.map(RoutingConfiguration::getHeightRestrictions).orElse(false) ? "An optional vehicle height in meter may be provided (`height_m`).\n\n" : "") +
-            (config.map(RoutingConfiguration::getWeightRestrictions).orElse(false) ? "An optional vehicle weight in metric tons may be provided (`weight_t`).\n\n" : "") +
-            (config.map(RoutingConfiguration::getObstacles).orElse(false) ? "An optional multi-polygon geometry of areas that should be avoided may be provided (`obstacles`).\n\n" : ""),
+            (config.map(RoutingConfiguration::supportsHeightRestrictions).orElse(false) ? "An optional vehicle height in meter may be provided (`height_m`).\n\n" : "") +
+            (config.map(RoutingConfiguration::supportsWeightRestrictions).orElse(false) ? "An optional vehicle weight in metric tons may be provided (`weight_t`).\n\n" : "") +
+            (config.map(RoutingConfiguration::supportsObstacles).orElse(false) ? "An optional multi-polygon geometry of areas that should be avoided may be provided (`obstacles`).\n\n" : ""),
                                            config.map(RoutingConfiguration::getDefaultPreference).orElseThrow(),
                                            config.map(RoutingConfiguration::getDefaultMode).orElseThrow());
         Optional<String> operationDescription = Optional.of(description);
@@ -318,7 +318,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             .toString();
 
         if (apiData.getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getManageRoutes)
+            .map(RoutingConfiguration::isManageRoutesEnabled)
             .orElse(false)) {
             if (routeRepository.routeExists(apiData, routeId)) {
                 // If the same route is already stored, just return the stored route

@@ -42,6 +42,7 @@ public abstract class ApiEndpointDefinition {
     public static final int SORT_PRIORITY_FEATURES_TRANSACTION = 1000;
     public static final int SORT_PRIORITY_FEATURES_JSONLD_CONTEXT = 1100;
     public static final int SORT_PRIORITY_QUERYABLES = 1200;
+    public static final int SORT_PRIORITY_SORTABLES = 1250;
     public static final int SORT_PRIORITY_SCHEMA = 1300;
     public static final int SORT_PRIORITY_FEATURES_EXTENSIONS = 1400;
     public static final int SORT_PRIORITY_TILE_SETS = 1500;
@@ -78,7 +79,7 @@ public abstract class ApiEndpointDefinition {
 
     public static final int SORT_PRIORITY_DUMMY = Integer.MAX_VALUE;
 
-    /**
+  /**
      *
      * @return the entrypoint resource for this definition, all sub-paths are relative to this base path
      */

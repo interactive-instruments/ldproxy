@@ -41,10 +41,10 @@ public class CapabilityMapTiles implements ApiBuildingBlock {
         // since building block / capability components are currently always enabled,
         // we need to test, if the TILES and MAP_TILES modules are enabled for the API and stop, if not
         if (!apiData.getExtension(MapTilesConfiguration.class)
-                    .map(ExtensionConfiguration::getEnabled)
+                    .map(ExtensionConfiguration::isEnabled)
                     .orElse(false) ||
             !apiData.getExtension(TilesConfiguration.class)
-                .map(ExtensionConfiguration::getEnabled)
+                .map(ExtensionConfiguration::isEnabled)
                 .orElse(false)) {
             return ValidationResult.of();
         }

@@ -58,7 +58,7 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
                         .build())
                 .build()
         when:
-        Optional<Schema<?>> schema = schemaGenerator.getQueryable(featureSchema, collectionData, "date")
+        Optional<Schema<?>> schema = schemaGenerator.getProperty(featureSchema, collectionData, "date")
         then:
         schema.isPresent()
         schema.get().getType() == "string"

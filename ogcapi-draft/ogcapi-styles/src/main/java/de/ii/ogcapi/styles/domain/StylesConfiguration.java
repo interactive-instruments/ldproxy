@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.styles.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
@@ -15,6 +16,7 @@ import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Objects;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -29,19 +31,46 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     @Nullable
     Boolean getManagerEnabled();
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isManagerEnabled() { return Objects.equals(getManagerEnabled(), true); }
+
     @Nullable
     Boolean getValidationEnabled();
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isValidationEnabled() { return Objects.equals(getValidationEnabled(), true); }
+
     @Nullable
     Boolean getUseIdFromStylesheet();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean shouldUseIdFromStylesheet() { return Objects.equals(getUseIdFromStylesheet(), true); }
 
     @Deprecated
     @Nullable
     Boolean getResourcesEnabled();
 
     @Deprecated
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isResourcesEnabled() { return Objects.equals(getResourcesEnabled(), true); }
+
+    @Deprecated
     @Nullable
     Boolean getResourceManagerEnabled();
+
+    @Deprecated
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isResourceManagerEnabled() { return Objects.equals(getResourceManagerEnabled(), true); }
 
     @Deprecated(since = "3.1.0")
     @Nullable

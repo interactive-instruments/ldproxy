@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.resources.domain;
 
+import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -48,15 +49,7 @@ public interface ResourceFormatExtension extends FormatExtension {
 
     @Override
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
-        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-
-        if ((resourcesExtension.isPresent() && resourcesExtension.get()
-                                                                 .isEnabled()) ||
-                (stylesExtension.isPresent() && stylesExtension.get()
-                                                               .getResourcesEnabled())) {
-            return true;
-        }
-        return false;
+        return FormatExtension.super.isEnabledForApi(apiData) ||
+            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourcesEnabled).orElse(false);
     }
 }

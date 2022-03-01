@@ -16,7 +16,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -35,7 +34,7 @@ public class QueryParameterFResources extends QueryParameterF {
     }
 
     @Override
-    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    protected boolean matchesPath(String definitionPath) {
         return definitionPath.equals("/resources");
     }
 
@@ -46,16 +45,8 @@ public class QueryParameterFResources extends QueryParameterF {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
-        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-
-        if ((resourcesExtension.isPresent() && resourcesExtension.get()
-                                                                 .isEnabled()) ||
-                (stylesExtension.isPresent() && stylesExtension.get()
-                                                               .getResourcesEnabled())) {
-            return true;
-        }
-        return false;
+        return super.isEnabledForApi(apiData) ||
+            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourcesEnabled).orElse(false);
     }
 
     @Override

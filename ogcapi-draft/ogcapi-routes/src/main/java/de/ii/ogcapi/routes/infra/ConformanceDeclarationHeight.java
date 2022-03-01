@@ -36,7 +36,7 @@ public class ConformanceDeclarationHeight implements ConformanceClass {
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(RoutingConfiguration.class)
             .filter(ExtensionConfiguration::isEnabled)
-            .filter(RoutingConfiguration::getHeightRestrictions)
+            .filter(RoutingConfiguration::supportsHeightRestrictions)
             .isPresent();
     }
 

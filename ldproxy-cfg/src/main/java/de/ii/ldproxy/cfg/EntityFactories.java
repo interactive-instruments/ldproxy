@@ -9,7 +9,7 @@ package de.ii.ldproxy.cfg;
 
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.collections.app.JacksonSubTypeIdsOgcApiCollections;
-import de.ii.ogcapi.collections.queryables.domain.JacksonSubTypeIdsQueryables;
+import de.ii.ogcapi.collections.queryables.app.JacksonSubTypeIdsQueryables;
 import de.ii.ogcapi.collections.schema.app.JacksonSubTypeIdsSchema;
 import de.ii.ogcapi.common.domain.JacksonSubTypeIdsOgcApiCommon;
 import de.ii.ogcapi.crs.app.JacksonSubTypeIdsCrs;

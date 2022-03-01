@@ -7,9 +7,11 @@
  */
 package de.ii.ogcapi.routes.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
+import java.util.Objects;
 import java.util.Optional;
 
 @Value.Immutable
@@ -18,6 +20,13 @@ import java.util.Optional;
 public interface HtmlForm {
 
     Boolean getEnabled();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isEnabled() {
+        return Objects.equals(getEnabled(), true);
+    }
 
     Optional<HtmlFormDefaults> getDefaults();
 }

@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.app.Resources;
@@ -36,15 +37,7 @@ public interface ResourcesFormatExtension extends GenericFormatExtension {
 
     @Override
     default boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
-        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-
-        if ((resourcesExtension.isPresent() && resourcesExtension.get()
-                                                                 .isEnabled()) ||
-                (stylesExtension.isPresent() && stylesExtension.get()
-                                                               .getResourcesEnabled())) {
-            return true;
-        }
-        return false;
+        return GenericFormatExtension.super.isEnabledForApi(apiData) ||
+            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourcesEnabled).orElse(false);
     }
 }

@@ -9,20 +9,20 @@ package de.ii.ogcapi.collections.schema.app;
 
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.features.geojson.domain.GeoJsonSchema;
-import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaArray;
-import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaDocument;
-import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaDocumentV7;
-import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaInteger;
-import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaRef;
-import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaRefExternal;
-import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaRefV7;
-import de.ii.ogcapi.features.geojson.domain.ImmutableJsonSchemaString;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaRef;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaRefExternal;
+import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaArray;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaDocumentV7;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaInteger;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefExternal;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefV7;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
+import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
+import de.ii.ogcapi.features.core.domain.JsonSchemaRefExternal;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 
 import java.util.Optional;
@@ -53,7 +53,7 @@ public class SchemaCacheReturnablesCollection extends JsonSchemaCache {
                                                                      .build();
 
     builder.id(schemaUri)
-           .putDefinitions("Link", GeoJsonSchema.LINK_JSON)
+           .putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON)
            .putProperties("type", ImmutableJsonSchemaString.builder()
                                                            .addEnums("FeatureCollection")
                                                            .build())

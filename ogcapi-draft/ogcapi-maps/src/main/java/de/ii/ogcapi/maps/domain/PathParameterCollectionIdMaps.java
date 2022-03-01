@@ -12,6 +12,7 @@ import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import javax.inject.Inject;
@@ -20,6 +21,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -53,27 +55,21 @@ public class PathParameterCollectionIdMaps extends AbstractPathParameterCollecti
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) &&
-               definitionPath.startsWith("/collections/{collectionId}/map/tiles");
+    public boolean matchesPath(String definitionPath) {
+        return definitionPath.startsWith("/collections/{collectionId}/map/tiles");
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId) {
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return MapTilesConfiguration.class;
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final TilesConfiguration tilesConfiguration = collectionData.getExtension(TilesConfiguration.class)
-                .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access tiles configuration for API ''{0}'' and collection ''{1}''.", apiData.getId(), collectionId)));
-        final MapTilesConfiguration mapTilesConfiguration = collectionData.getExtension(MapTilesConfiguration.class)
-            .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access map tiles configuration for API ''{0}'' and collection ''{1}''.", apiData.getId(), collectionId)));
-
-        return tilesConfiguration.isEnabled() &&
-            tilesConfiguration.isSingleCollectionEnabled() &&
-            mapTilesConfiguration.isEnabled() &&
-            definitionPath.startsWith("/collections/{collectionId}/map/tiles");
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, TilesConfiguration.class) && isExtensionEnabled(apiData, MapTilesConfiguration.class);
+        return super.isEnabledForApi(apiData, collectionId) &&
+            Objects.nonNull(collectionData) &&
+            isExtensionEnabled(collectionData, TilesConfiguration.class) &&
+            collectionData.getEnabled();
     }
 }

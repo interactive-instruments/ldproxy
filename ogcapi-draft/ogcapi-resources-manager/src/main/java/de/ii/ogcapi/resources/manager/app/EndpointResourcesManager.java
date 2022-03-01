@@ -96,16 +96,8 @@ public class EndpointResourcesManager extends Endpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
-        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-
-        if ((resourcesExtension.isPresent() && resourcesExtension.get()
-                                                                 .getManagerEnabled()) ||
-                (stylesExtension.isPresent() && stylesExtension.get()
-                                                               .getResourceManagerEnabled())) {
-            return true;
-        }
-        return false;
+        return apiData.getExtension(ResourcesConfiguration.class).map(ResourcesConfiguration::isManagerEnabled).orElse(false) ||
+            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourceManagerEnabled).orElse(false);
     }
 
     @Override

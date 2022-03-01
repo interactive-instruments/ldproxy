@@ -56,13 +56,20 @@ public abstract class EndpointSubCollection extends Endpoint {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) &&
-                apiData.getCollections()
-                        .values()
-                        .stream()
-                        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
-                        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
-}
+        return apiData.getCollections()
+            .values()
+            .stream()
+            .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+            .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        FeatureTypeConfigurationOgcApi configuration = apiData.getCollections().get(collectionId);
+        return super.isEnabledForApi(apiData, collectionId) &&
+            Objects.nonNull(configuration) &&
+            configuration.getEnabled();
+    }
 
     protected ImmutableApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method,
                                                  List<OgcApiQueryParameter> queryParameters, String collectionId, String subSubPath,

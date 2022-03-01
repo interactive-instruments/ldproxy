@@ -65,12 +65,12 @@ public class TilesOnCollection implements CollectionExtension {
 
         if (!isNested && isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class) &&
             isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class, TilesConfiguration::isSingleCollectionEnabled)) {
-            Optional<DataType> dataType = extensionRegistry.getExtensionsForType(
-                    TileFormatExtension.class)
-                                                                   .stream()
-                                                                   .filter(format -> format.isEnabledForApi(apiData, featureTypeConfiguration.getId()))
-                                                                   .map(format -> format.getDataType())
-                                                                   .findAny();
+            Optional<DataType> dataType = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                .stream()
+                .filter(format -> format.isApplicable(apiData, featureTypeConfiguration.getId(), "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                .filter(format -> format.isEnabledForApi(apiData, featureTypeConfiguration.getId()))
+                .map(TileFormatExtension::getDataType)
+                .findAny();
             if (dataType.isEmpty())
                 // no tile format is enabled
                 return collection;

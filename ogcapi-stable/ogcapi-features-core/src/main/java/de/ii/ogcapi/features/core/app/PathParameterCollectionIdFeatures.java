@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import javax.inject.Inject;
@@ -24,20 +25,19 @@ public class PathParameterCollectionIdFeatures extends AbstractPathParameterColl
     }
 
     @Override
+    public boolean matchesPath(String definitionPath) {
+        return definitionPath.equals("/collections/{collectionId}/items") ||
+            definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
+            definitionPath.equals("/collections/{collectionId}/context");
+    }
+
+    @Override
     public String getId() {
         return "collectionIdFeatures";
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) &&
-                (definitionPath.equals("/collections/{collectionId}/items") ||
-                        definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
-                        definitionPath.equals("/collections/{collectionId}/context"));
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, FeaturesCoreConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return FeaturesCoreConfiguration.class;
     }
 }
