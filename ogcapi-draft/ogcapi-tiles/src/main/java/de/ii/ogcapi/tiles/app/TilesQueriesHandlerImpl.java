@@ -504,7 +504,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             }
         }
 
-        Date lastModified = Date.from(Instant.now());
+        Date lastModified = null;
         EntityTag etag = getEtag(result.byteArray);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -541,7 +541,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      requestContext.getLanguage());
 
         Date lastModified = queryInput.getLastModified()
-                                      .orElse(Date.from(Instant.now()));
+                                      .orElse(null);
         EntityTag etag = getEtag(content);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -669,7 +669,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             throw new RuntimeException(String.format("Unexpected tile format without query support. Found: %s", tile.getOutputFormat().getClass().getSimpleName()));
         TileFormatWithQuerySupportExtension outputFormat = (TileFormatWithQuerySupportExtension) tile.getOutputFormat();
 
-        Date lastModified = Date.from(Instant.now());
+        Date lastModified = null;
         EntityTag etag = getEtag(tile.getOutputFormat().getEmptyTile(tile));
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))

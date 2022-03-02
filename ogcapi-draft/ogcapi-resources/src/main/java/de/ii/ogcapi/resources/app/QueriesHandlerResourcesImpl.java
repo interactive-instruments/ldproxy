@@ -122,7 +122,7 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                                   .max(Comparator.naturalOrder())
                                   .map(Instant::ofEpochMilli)
                                   .map(Date::from)
-                                  .orElse(Date.from(Instant.now()));
+                                  .orElse(null);
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || apiData.getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
             ? getEtag(resources, Resources.FUNNEL, format)
