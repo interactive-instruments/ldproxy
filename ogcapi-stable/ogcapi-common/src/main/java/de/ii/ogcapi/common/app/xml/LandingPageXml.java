@@ -7,15 +7,14 @@
  */
 package de.ii.ogcapi.common.app.xml;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.domain.xml.OgcApiXml;
 import de.ii.ogcapi.foundation.domain.Link;
-
-import javax.xml.bind.annotation.XmlAttribute;
+import java.util.List;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
 
 @XmlRootElement(name = "LandingPage", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
 @XmlType(propOrder = {"title", "description", "links"})
@@ -45,35 +44,9 @@ public class LandingPageXml implements OgcApiXml {
         return description;
     }
 
-    @XmlElement(name = "link", namespace = "http://www.w3.org/2005/Atom")
+    @XmlElement(name = "atom:link", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
+    @JacksonXmlElementWrapper(useWrapping = false)
     public List<Link> getLinks() {
         return links;
-    }
-
-    @XmlAttribute(name="service")
-    public String getService() {
-        return "OGCAPI-Features";
-    }
-
-    @XmlAttribute(name="version")
-    public String getVersion() {
-        return "1.0.0";
-    }
-
-    @XmlAttribute(name = "schemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance")
-    public String getSchemaLocation() {
-        return "http://www.opengis.net/ogcapi-features-1/1.0 http://schemas.opengis.net/ogcapi/features/part1/1.0/xml/core.xsd";
-    }
-
-    public void setLinks(List<Link> links) {
-        this.links = links;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 }

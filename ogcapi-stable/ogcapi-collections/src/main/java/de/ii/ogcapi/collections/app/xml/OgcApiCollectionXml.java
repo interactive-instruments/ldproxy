@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.collections.app.xml;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ogcapi.foundation.domain.Link;
 
@@ -15,14 +16,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
-@XmlRootElement(name = "Collection")
+@XmlRootElement(name = "Collection", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
 @XmlType(propOrder = {"id", "title", "description", "links", "extent"})
 public class OgcApiCollectionXml {
     private final OgcApiCollection ogcApiCollection;
 
-    public OgcApiCollectionXml() {
-        this.ogcApiCollection = null;
-    }
     public OgcApiCollectionXml(OgcApiCollection ogcApiCollection) {
         this.ogcApiCollection = ogcApiCollection;
     }
@@ -47,7 +45,8 @@ public class OgcApiCollectionXml {
         return new OgcApiExtentXml(ogcApiCollection.getExtent().orElse(null));
     }
 
-    @XmlElement(name = "link", namespace = "http://www.w3.org/2005/Atom")
+    @XmlElement(name = "atom:link", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
+    @JacksonXmlElementWrapper(useWrapping = false)
     public List<Link> getLinks() {
         return ogcApiCollection.getLinks();
     }

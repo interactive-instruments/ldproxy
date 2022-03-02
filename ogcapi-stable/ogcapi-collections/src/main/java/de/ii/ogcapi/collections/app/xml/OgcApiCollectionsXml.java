@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.collections.app.xml;
 
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import de.ii.ogcapi.collections.domain.Collections;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.common.domain.xml.OgcApiXml;
@@ -24,39 +25,22 @@ public class OgcApiCollectionsXml implements OgcApiXml {
 
     private final Collections collections;
 
-    public OgcApiCollectionsXml() {
-        this.collections = null;
-    }
-
     public OgcApiCollectionsXml(Collections collections) {
         this.collections = collections;
     }
 
-    @XmlElement(name = "link", namespace = "http://www.w3.org/2005/Atom")
+    @XmlElement(name = "atom:link", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
+    @JacksonXmlElementWrapper(useWrapping = false)
     public List<Link> getLinks() {
         return collections.getLinks();
     }
 
     @XmlElement(name = "Collection", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
+    @JacksonXmlElementWrapper(useWrapping = false)
     public List<OgcApiCollectionXml> getCollections() {
         return collections.getCollections()
                           .stream()
                           .map(OgcApiCollectionXml::new)
                           .collect(Collectors.toList());
-    }
-
-    @XmlAttribute(name="service")
-    public String getService() {
-        return "OGCAPI-Features";
-    }
-
-    @XmlAttribute(name="version")
-    public String getVersion() {
-        return "1.0.0";
-    }
-
-    @XmlAttribute(name = "schemaLocation", namespace = "http://www.w3.org/2001/XMLSchema-instance")
-    public String getSchemaLocation() {
-        return "http://www.opengis.net/ogcapi-features-1/1.0 http://schemas.opengis.net/ogcapi/features/part1/1.0/xml/core.xsd";
     }
 }

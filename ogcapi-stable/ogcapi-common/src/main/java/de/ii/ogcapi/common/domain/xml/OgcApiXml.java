@@ -7,6 +7,32 @@
  */
 package de.ii.ogcapi.common.domain.xml;
 
+import javax.xml.bind.annotation.XmlAttribute;
+
 public interface OgcApiXml {
 
+  @XmlAttribute(name="service")
+  default String getService() {
+    return "OGCAPI-Features";
+  }
+
+  @XmlAttribute(name="version")
+  default String getVersion() {
+    return "1.0.0";
+  }
+
+  @XmlAttribute(name = "xmlns:atom")
+  default String getNsAtom() {
+    return "http://www.w3.org/2005/Atom";
+  }
+
+  @XmlAttribute(name = "xmlns:xsi")
+  default String getNsXsi() {
+    return "http://www.w3.org/2001/XMLSchema-instance";
+  }
+
+  @XmlAttribute(name = "xsi:schemaLocation")
+  default String getSchemaLocation() {
+    return "http://www.opengis.net/ogcapi-features-1/1.0 http://schemas.opengis.net/ogcapi/features/part1/1.0/xml/core.xsd";
+  }
 }
