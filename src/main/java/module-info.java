@@ -16,6 +16,7 @@ open module de.ii.ldproxy {
 	requires de.ii.xtraplatform.crs;
 	requires de.ii.xtraplatform.feature.transformer.api;
 	requires de.ii.xtraplatform.features;
+	requires de.ii.xtraplatform.features.gml;
 	requires de.ii.xtraplatform.features.json;
 	requires de.ii.xtraplatform.features.sql;
 	requires de.ii.xtraplatform.geometries;

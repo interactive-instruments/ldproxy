@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.services.domain.ImmutableServiceDataCommon;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.store.domain.KeyPathAlias;
 import de.ii.xtraplatform.store.domain.KeyPathAliasUnwrap;
@@ -84,6 +85,13 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
                 .temporalComputed(true)
                 .build())
         .extensions(getBuildingBlocks());
+  }
+
+  @Override
+  public EntityDataBuilder<? extends EntityData> superDataBuilder() {
+    return new ImmutableServiceDataCommon.Builder()
+        .enabled(true)
+        .secured(true);
   }
 
   @Override

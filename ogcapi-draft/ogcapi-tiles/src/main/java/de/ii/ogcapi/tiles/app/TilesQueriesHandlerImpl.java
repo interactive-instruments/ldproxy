@@ -29,6 +29,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets;
+import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.Tile;
@@ -36,6 +37,7 @@ import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
+import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
@@ -43,8 +45,6 @@ import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
-import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
-import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -60,7 +60,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
-import de.ii.xtraplatform.streams.domain.Reactive.SinkReducedTransformed;
+import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -704,7 +704,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                                ImmutableMap.of("serviceUrl", transformationContext.getServiceUrl()),
                                                                                outputFormat.getBuildingBlockConfigurationType()));
 
-        SinkReducedTransformed<Object, byte[], byte[]> featureSink = encoder.to(Sink.reduceByteArray());
+        SinkReduced<Object, byte[]> featureSink = encoder.to(Sink.reduceByteArray());
 
         try {
             ResultReduced<byte[]> result = featureStream.runWith(featureSink, propertyTransformations)
