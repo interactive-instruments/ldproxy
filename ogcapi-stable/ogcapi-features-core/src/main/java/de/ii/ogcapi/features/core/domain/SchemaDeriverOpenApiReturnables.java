@@ -41,12 +41,18 @@ public class SchemaDeriverOpenApiReturnables extends SchemaDeriverOpenApi{
         .addProperties("links", new ArraySchema().items(new Schema().$ref("#/components/schemas/Link")));
 
     findByRole(properties, Role.ID)
-        .ifPresent(property -> rootSchema.addProperties("id", property));
+        .ifPresent(property -> {
+          requiredProperties.remove(property.getName());
+          rootSchema.addProperties("id", property);
+        });
 
     findByRole(properties, Role.PRIMARY_GEOMETRY)
         .or(() -> findByRole(properties, SECONDARY_GEOMETRY))
         .ifPresentOrElse(
-            property -> rootSchema.addProperties("geometry", property),
+            property -> {
+              requiredProperties.remove(property.getName());
+              rootSchema.addProperties("geometry", property);
+            },
             () -> rootSchema.addProperties("geometry", new Schema<>().nullable(true)));
 
     Map<String, Schema<?>> propertiesWithoutRoles = withoutRoles(properties);

@@ -98,7 +98,12 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
     findByRole(properties, Role.PRIMARY_GEOMETRY)
         .or(() -> findByRole(properties, SECONDARY_GEOMETRY))
         .ifPresentOrElse(
-            jsonSchema -> builder.putProperties("geometry", jsonSchema),
+            jsonSchema -> {
+              if (jsonSchema.isRequired()) {
+                jsonSchema.getName().ifPresent(required::remove);
+              }
+              builder.putProperties("geometry", jsonSchema);
+            },
             () -> builder.putProperties("geometry", JsonSchemaBuildingBlocks.NULL));
 
     Map<String, JsonSchema> propertiesWithoutRoles = withoutRoles(properties);
