@@ -31,7 +31,7 @@ public class QueryParameterFTileSet extends QueryParameterF {
     }
 
     @Override
-    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    protected boolean matchesPath(String definitionPath) {
         return (definitionPath.equals("/tiles/{tileMatrixSetId}") ||
             definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}"));
     }

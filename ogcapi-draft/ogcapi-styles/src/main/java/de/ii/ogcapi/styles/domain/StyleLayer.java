@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.features.geojson.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchema;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;

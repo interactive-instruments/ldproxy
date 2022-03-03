@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.collections.domain.QueryParameterFSubCollection;
 import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -20,7 +21,7 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class QueryParameterFFeatures extends QueryParameterF {
+public class QueryParameterFFeatures extends QueryParameterFSubCollection {
 
     @Inject
     public QueryParameterFFeatures(ExtensionRegistry extensionRegistry) {
@@ -33,8 +34,8 @@ public class QueryParameterFFeatures extends QueryParameterF {
     }
 
     @Override
-    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return definitionPath.matches("/collections/\\{collectionId\\}/items(?:/\\{featureId\\})?");
+    protected boolean matchesPath(String definitionPath) {
+        return definitionPath.startsWith("/collections/{collectionId}/items");
     }
 
     @Override

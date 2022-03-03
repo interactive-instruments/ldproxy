@@ -9,6 +9,7 @@ package de.ii.ogcapi.collections.domain;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import io.swagger.v3.oas.models.media.Schema;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public abstract class AbstractPathParameterCollectionId implements OgcApiPathParameter {
@@ -35,6 +37,8 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
         this.apiCollectionMap = new HashMap<>();
         this.apiExplodeMap = new HashMap<>();
     }
+
+    abstract public boolean matchesPath(String definitionPath);
 
     @Override
     public String getPattern() {
@@ -82,5 +86,32 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
         return CollectionsConfiguration.class;
+    }
+
+    @Override
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return matchesPath(definitionPath) && isEnabledForApi(apiData);
+    }
+
+    @Override
+    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId) {
+        return matchesPath(definitionPath) && isEnabledForApi(apiData, collectionId);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        return apiData.getCollections()
+            .values()
+            .stream()
+            .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+            .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+        return OgcApiPathParameter.super.isEnabledForApi(apiData, collectionId) &&
+            Objects.nonNull(collectionData) &&
+            collectionData.getEnabled();
     }
 }

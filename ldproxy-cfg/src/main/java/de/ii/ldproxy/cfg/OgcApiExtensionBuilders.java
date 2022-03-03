@@ -28,7 +28,7 @@ import de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
 import de.ii.ogcapi.oas30.domain.ImmutableOas30Configuration;
 import de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration;
 import de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration;
-import de.ii.ogcapi.sorting.app.ImmutableSortingConfiguration;
+import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
 import de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
 import de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration;

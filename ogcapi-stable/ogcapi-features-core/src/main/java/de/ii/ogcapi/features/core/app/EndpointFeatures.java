@@ -47,7 +47,6 @@ import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.models.media.Schema;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -62,15 +61,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
@@ -342,8 +337,8 @@ public class EndpointFeatures extends EndpointSubCollection {
             generalList,
             filterableFields.stream()
                 .map(field -> {
-                    Optional<Schema<?>> schema2 = featureSchema.flatMap(fs -> schemaGeneratorFeature.getQueryable(fs,
-                        collectionData.get(), field));
+                    Optional<Schema<?>> schema2 = featureSchema.flatMap(fs -> schemaGeneratorFeature.getProperty(fs,
+                                                                                                                 collectionData.get(), field));
                     if (schema2.isEmpty()) {
                         LOGGER.warn(
                             "Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",

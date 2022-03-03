@@ -31,7 +31,7 @@ public class QueryParameterFRoute extends QueryParameterF {
     }
 
     @Override
-    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    protected boolean matchesPath(String definitionPath) {
         return definitionPath.equals("/routes/{routeId}");
     }
 

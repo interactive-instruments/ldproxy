@@ -68,16 +68,8 @@ public class PathParameterResourceId implements OgcApiPathParameter {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<ResourcesConfiguration> resourcesExtension = apiData.getExtension(ResourcesConfiguration.class);
-        Optional<StylesConfiguration> stylesExtension = apiData.getExtension(StylesConfiguration.class);
-
-        if ((resourcesExtension.isPresent() && resourcesExtension.get()
-                                                                 .isEnabled()) ||
-                (stylesExtension.isPresent() && stylesExtension.get()
-                                                               .getResourcesEnabled())) {
-            return true;
-        }
-        return false;
+        return OgcApiPathParameter.super.isEnabledForApi(apiData) ||
+            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourcesEnabled).orElse(false);
     }
 
     @Override

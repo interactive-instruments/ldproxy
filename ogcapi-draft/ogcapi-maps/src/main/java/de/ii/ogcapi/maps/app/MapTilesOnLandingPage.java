@@ -48,11 +48,11 @@ public class MapTilesOnLandingPage implements LandingPageExtension {
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(MapTilesConfiguration.class)
-            .filter(MapTilesConfiguration::getEnabled)
+            .filter(MapTilesConfiguration::isEnabled)
             .filter(MapTilesConfiguration::isMultiCollectionEnabled)
             .isPresent() &&
             apiData.getExtension(TilesConfiguration.class)
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::isMultiCollectionEnabled)
                 .isPresent();
     }
@@ -70,10 +70,11 @@ public class MapTilesOnLandingPage implements LandingPageExtension {
 
         if (isEnabledForApi(apiData)) {
             Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class)
-                                                                   .stream()
-                                                                   .filter(format -> format.isEnabledForApi(apiData))
-                                                                   .map(TileFormatExtension::getDataType)
-                                                                   .findAny();
+                .stream()
+                .filter(format -> format.isApplicable(apiData, "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                .filter(format -> format.isEnabledForApi(apiData))
+                .map(TileFormatExtension::getDataType)
+                .findAny();
             if (dataType.isEmpty())
                 // no tile format is enabled
                 return landingPageBuilder;

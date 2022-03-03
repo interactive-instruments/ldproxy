@@ -55,7 +55,7 @@ public class HeaderLocationStylesManager extends ApiExtensionCache implements Ap
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class, StylesConfiguration::getManagerEnabled);
+        return isExtensionEnabled(apiData, StylesConfiguration.class, StylesConfiguration::isManagerEnabled);
     }
 
     @Override

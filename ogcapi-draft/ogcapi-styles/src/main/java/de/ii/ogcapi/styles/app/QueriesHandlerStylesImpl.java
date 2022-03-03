@@ -85,7 +85,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
                                                                                    String.join(", ", styleRepository.getStylesFormatStream(apiData, collectionId).map(f -> f.getMediaType().type().toString()).collect(Collectors.toUnmodifiableList())))));
 
         Date lastModified = styles.getLastModified()
-                                  .orElse(Date.from(Instant.now()));
+                                  .orElse(null);
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)

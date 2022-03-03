@@ -13,10 +13,10 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.geojson.domain.JsonSchemaDocument.VERSION;
-import de.ii.ogcapi.features.geojson.domain.SchemaDeriverQueryables;
+import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.SchemaDeriverCollectionProperties;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -51,13 +51,13 @@ class SchemaCacheQueryables extends JsonSchemaCache {
           .map(queryable -> queryable.replaceAll(Pattern.quote(DEFAULT_FLATTENING_SEPARATOR), flatteningSeparator))
           .collect(Collectors.toList());
 
-    SchemaDeriverQueryables schemaDeriverQueryables = new SchemaDeriverQueryables(
+    SchemaDeriverCollectionProperties schemaDeriverCollectionProperties = new SchemaDeriverCollectionProperties(
         version, schemaUri, collectionData.getLabel(),
         Optional.empty(), ImmutableList
         .of(), queryablesWithSeparator);
 
     return (JsonSchemaDocument) schema
         .accept(schemaFlattener)
-        .accept(schemaDeriverQueryables);
+        .accept(schemaDeriverCollectionProperties);
   }
 }

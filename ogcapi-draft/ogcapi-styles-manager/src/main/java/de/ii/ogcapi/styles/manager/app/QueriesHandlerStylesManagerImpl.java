@@ -89,10 +89,9 @@ public class QueriesHandlerStylesManagerImpl implements QueriesHandlerStylesMana
         // Validate stylesheet and, if supported, derive the id of the style
         Optional<String> optionalId = format.analyze(new StylesheetContent(requestBody, "[request body]", false), strict);
 
-        boolean useIdFromStylesheet= optionalId.isPresent() && apiData.getExtension(
-                StylesConfiguration.class)
-                                                                      .map(cfg -> cfg.getUseIdFromStylesheet())
-                                                                      .orElse(false);
+        boolean useIdFromStylesheet= optionalId.isPresent() && apiData.getExtension(StylesConfiguration.class)
+            .map(StylesConfiguration::shouldUseIdFromStylesheet)
+            .orElse(false);
 
         String styleId;
         if (useIdFromStylesheet) {

@@ -77,7 +77,7 @@ public class EndpointStyleMetadataManager extends Endpoint {
 
         return extension
                 .filter(StylesConfiguration::isEnabled)
-                .filter(StylesConfiguration::getManagerEnabled)
+                .filter(StylesConfiguration::isManagerEnabled)
                 .isPresent();
     }
 

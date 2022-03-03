@@ -8,9 +8,10 @@
 package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.collections.domain.QueryParameterFSubCollection;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
-import de.ii.ogcapi.collections.queryables.domain.QueryablesFormatExtension;
 import de.ii.ogcapi.common.domain.QueryParameterF;
+import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -20,7 +21,7 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class QueryParameterFQueryables extends QueryParameterF {
+public class QueryParameterFQueryables extends QueryParameterFSubCollection {
 
     @Inject
     public QueryParameterFQueryables(ExtensionRegistry extensionRegistry) {
@@ -33,13 +34,13 @@ public class QueryParameterFQueryables extends QueryParameterF {
     }
 
     @Override
-    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    protected boolean matchesPath(String definitionPath) {
         return definitionPath.equals("/collections/{collectionId}/queryables");
     }
 
     @Override
     protected Class<? extends FormatExtension> getFormatClass() {
-        return QueryablesFormatExtension.class;
+        return CollectionPropertiesFormat.class;
     }
 
     @Override

@@ -23,12 +23,12 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(MapTilesConfiguration.class)
-                .filter(MapTilesConfiguration::getEnabled)
+                .filter(MapTilesConfiguration::isEnabled)
                 .filter(MapTilesConfiguration::isMultiCollectionEnabled)
                 .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
                 .isPresent() &&
             apiData.getExtension(TilesConfiguration.class)
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::isMultiCollectionEnabled)
                 .isPresent();
     }

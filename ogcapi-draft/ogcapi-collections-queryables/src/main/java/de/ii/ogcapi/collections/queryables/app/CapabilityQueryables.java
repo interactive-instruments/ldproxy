@@ -15,7 +15,6 @@ import de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfigurati
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-
 @Singleton
 @AutoBind
 public class CapabilityQueryables implements ApiBuildingBlock {

@@ -9,6 +9,7 @@ package de.ii.ogcapi.styles.manager.app;
 
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
@@ -18,6 +19,8 @@ import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
+
+import java.util.Objects;
 
 @Singleton
 @AutoBind
@@ -63,8 +66,16 @@ public class QueryParameterDryRunStylesManager extends ApiExtensionCache impleme
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class, StylesConfiguration::getManagerEnabled) &&
-               isExtensionEnabled(apiData, StylesConfiguration.class, StylesConfiguration::getValidationEnabled);
+        return isExtensionEnabled(apiData, StylesConfiguration.class, StylesConfiguration::isManagerEnabled) &&
+               isExtensionEnabled(apiData, StylesConfiguration.class, StylesConfiguration::isValidationEnabled);
+    }
+
+    @Override
+    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+        return Objects.nonNull(collectionData) &&
+            isExtensionEnabled(collectionData, StylesConfiguration.class, StylesConfiguration::isManagerEnabled) &&
+            isExtensionEnabled(collectionData, StylesConfiguration.class, StylesConfiguration::isValidationEnabled);
     }
 
     @Override

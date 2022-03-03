@@ -53,23 +53,12 @@ public class PathParameterCollectionIdStyles extends AbstractPathParameterCollec
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) &&
-               definitionPath.startsWith("/collections/{collectionId}/styles");
+    public boolean matchesPath(String definitionPath) {
+        return definitionPath.startsWith("/collections/{collectionId}/styles");
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId) {
-        final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        final StylesConfiguration configuration = collectionData.getExtension(StylesConfiguration.class)
-                .orElseThrow(() -> new RuntimeException(MessageFormat.format("Could not access styles configuration for API ''{0}'' and collection ''{1}''.", apiData.getId(), collectionId)));
-
-        return configuration.isEnabled() &&
-               definitionPath.startsWith("/collections/{collectionId}/styles");
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return isExtensionEnabled(apiData, StylesConfiguration.class);
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return StylesConfiguration.class;
     }
 }

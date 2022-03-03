@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SortKey;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -101,10 +102,10 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
                          .put("*", new ArraySchema().items(new StringSchema()));
             else
                 schemaMap.get(apiHashCode)
-                         .put("*", new ArraySchema().items(new StringSchema()._enum(sortables.stream()
-                                                                                                      .map(p -> ImmutableList.of(p, "+"+p, "-"+p))
-                                                                                                      .flatMap(Collection::stream)
-                                                                                                      .collect(Collectors.toUnmodifiableList()))));
+                    .put("*", new ArraySchema().items(new StringSchema()._enum(sortables.stream()
+                                                                                   .map(p -> ImmutableList.of(p, "+"+p, "-"+p))
+                                                                                   .flatMap(Collection::stream)
+                                                                                   .collect(Collectors.toUnmodifiableList()))));
         }
         return schemaMap.get(apiHashCode).get("*");
     }

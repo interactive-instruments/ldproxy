@@ -65,9 +65,9 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(RoutingConfiguration.class)
-            .filter(RoutingConfiguration::getEnabled)
+            .filter(RoutingConfiguration::isEnabled)
             .map(RoutingConfiguration::getHtml)
-            .filter(HtmlForm::getEnabled)
+            .filter(HtmlForm::isEnabled)
             .isPresent();
     }
 

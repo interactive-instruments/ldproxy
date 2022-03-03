@@ -36,7 +36,7 @@ public class ConformanceDeclarationObstacles implements ConformanceClass {
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         return apiData.getExtension(RoutingConfiguration.class)
             .filter(ExtensionConfiguration::isEnabled)
-            .filter(RoutingConfiguration::getObstacles)
+            .filter(RoutingConfiguration::supportsObstacles)
             .isPresent();
     }
 

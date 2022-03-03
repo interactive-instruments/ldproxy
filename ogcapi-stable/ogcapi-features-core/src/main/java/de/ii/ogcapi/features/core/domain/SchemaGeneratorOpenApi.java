@@ -20,5 +20,5 @@ public interface SchemaGeneratorOpenApi {
 
     Schema<?> getSchema(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData);
 
-    Optional<Schema<?>> getQueryable(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData, String propertyName);
+    Optional<Schema<?>> getProperty(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData, String propertyName);
 }

@@ -8,6 +8,8 @@
 package de.ii.ogcapi.features.geojson.ld.app;
 
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
+import de.ii.ogcapi.features.geojson.ld.domain.GeoJsonLdConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,7 +29,12 @@ public class PathParameterCollectionIdGeoJsonLd extends AbstractPathParameterCol
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) && definitionPath.equals("/collections/{collectionId}/context");
+    public boolean matchesPath(String definitionPath) {
+        return definitionPath.equals("/collections/{collectionId}/context");
+    }
+
+    @Override
+    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+        return GeoJsonLdConfiguration.class;
     }
 }

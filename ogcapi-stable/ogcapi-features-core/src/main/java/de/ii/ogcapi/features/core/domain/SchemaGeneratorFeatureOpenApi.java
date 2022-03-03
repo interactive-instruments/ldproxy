@@ -88,31 +88,31 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
     @Override
     public Schema<?> getSchema(FeatureSchema featureSchema,
         FeatureTypeConfigurationOgcApi collectionData) {
-        SchemaDeriverOpenApi schemaDeriverQueryables = new SchemaDeriverOpenApiReturnables(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class));
+        SchemaDeriverOpenApi schemaDeriver = new SchemaDeriverOpenApiReturnables(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class));
 
-        Schema<?> schema = featureSchema.accept(new WithTransformationsApplied()).accept(schemaDeriverQueryables);
+        Schema<?> schema = featureSchema.accept(new WithTransformationsApplied()).accept(schemaDeriver);
 
         return schema;
     }
 
     @Override
-    public Optional<Schema<?>> getQueryable(FeatureSchema featureSchema,
-        FeatureTypeConfigurationOgcApi collectionData, String propertyName) {
+    public Optional<Schema<?>> getProperty(FeatureSchema featureSchema,
+                                           FeatureTypeConfigurationOgcApi collectionData, String propertyName) {
         WithTransformationsApplied schemaFlattener = new WithTransformationsApplied(
             ImmutableMap.of(PropertyTransformations.WILDCARD, new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
         String flatteningSeparator = schemaFlattener.getFlatteningSeparator(featureSchema).orElse(DEFAULT_FLATTENING_SEPARATOR);
 
-        String queryableWithSeparator = Objects.equals(flatteningSeparator, DEFAULT_FLATTENING_SEPARATOR)
+        String propertyWithSeparator = Objects.equals(flatteningSeparator, DEFAULT_FLATTENING_SEPARATOR)
             ? propertyName
             : propertyName.replaceAll(Pattern.quote(DEFAULT_FLATTENING_SEPARATOR), flatteningSeparator);
 
-        SchemaDeriverOpenApi schemaDeriverQueryables = new SchemaDeriverOpenApiQueryables(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class), ImmutableList.of(queryableWithSeparator));
+        SchemaDeriverOpenApi schemaDeriver = new SchemaDeriverOpenApiCollectionProperties(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class), ImmutableList.of(propertyWithSeparator));
 
-        Schema<?> schema = featureSchema.accept(schemaFlattener).accept(schemaDeriverQueryables);
+        Schema<?> schema = featureSchema.accept(schemaFlattener).accept(schemaDeriver);
 
-        if (schema.getProperties().containsKey(queryableWithSeparator)) {
-            return Optional.ofNullable((Schema<?>) schema.getProperties().get(queryableWithSeparator));
+        if (schema.getProperties().containsKey(propertyWithSeparator)) {
+            return Optional.ofNullable((Schema<?>) schema.getProperties().get(propertyWithSeparator));
         }
 
         return Optional.empty();

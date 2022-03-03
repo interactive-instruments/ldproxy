@@ -27,6 +27,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -102,13 +103,13 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
                                                          .stream()
                                                          .filter(entry ->  entry.getValue()
                                                                                 .getExtension(getBuildingBlockConfigurationType())
-                                                                                .map(ExtensionConfiguration::getEnabled)
+                                                                                .map(ExtensionConfiguration::isEnabled)
                                                                                 .orElse(false) &&
                                                                  !entry.getValue()
                                                                        .getExtension(QueryablesConfiguration.class)
-                                                                       .map(ExtensionConfiguration::getEnabled)
+                                                                       .map(ExtensionConfiguration::isEnabled)
                                                                        .orElse(false))
-                                                         .map(entry -> entry.getKey())
+                                                         .map(Map.Entry::getKey)
                                                          .collect(Collectors.toUnmodifiableList())) {
             builder.addStrictErrors(MessageFormat.format("The FILTER module is enabled for collection ''{0}'', but the QUERYABLES module is not enabled.", collectionWithoutQueryables));
         }

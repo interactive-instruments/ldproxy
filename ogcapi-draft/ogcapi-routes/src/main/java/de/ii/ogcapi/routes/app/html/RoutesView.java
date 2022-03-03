@@ -68,7 +68,7 @@ public class RoutesView extends OgcApiView {
               routes.getLinks(),
               i18n.get("routesTitle", language),
               apiData.getExtension(RoutingConfiguration.class)
-                  .map(RoutingConfiguration::getObstacles)
+                  .map(RoutingConfiguration::supportsObstacles)
                   .orElse(false)
                   ? String.format("%s %s", i18n.get("routesDescription", language), i18n.get("routesDescriptionObstacles", language))
                   : i18n.get("routesDescription", language));
@@ -119,13 +119,13 @@ public class RoutesView extends OgcApiView {
             .build();
 
         this.supportsMaxWeight = apiData.getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getWeightRestrictions)
+            .map(RoutingConfiguration::supportsWeightRestrictions)
             .orElse(false);
         this.supportsMaxHeight = apiData.getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getHeightRestrictions)
+            .map(RoutingConfiguration::supportsHeightRestrictions)
             .orElse(false);
         this.supportsObstacles = apiData.getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getObstacles)
+            .map(RoutingConfiguration::supportsObstacles)
             .orElse(false);
     }
 

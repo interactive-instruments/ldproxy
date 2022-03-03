@@ -149,18 +149,18 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         }
         routeQueryBuilder.flags(flagBuilder.build());
 
-        if (!inputs.getWeight().isEmpty() && !Objects.requireNonNullElse(config.getWeightRestrictions(), false)) {
+        if (!inputs.getWeight().isEmpty() && !config.supportsWeightRestrictions()) {
             throw new IllegalArgumentException("This API does not support weight restrictions as part of the definition of a route.");
         }
         routeQueryBuilder.weight(inputs.getWeight());
 
-        if (!inputs.getHeight().isEmpty() && !Objects.requireNonNullElse(config.getHeightRestrictions(), false)) {
+        if (!inputs.getHeight().isEmpty() && !config.supportsHeightRestrictions()) {
             throw new IllegalArgumentException("This API does not support weight restrictions as part of the definition of a route.");
         }
         routeQueryBuilder.height(inputs.getHeight());
 
         Optional<Geometry.MultiPolygon> obstacles = routeDefinition.getObstacles();
-        if (!obstacles.isEmpty() && !Objects.requireNonNullElse(config.getObstacles(), false)) {
+        if (!obstacles.isEmpty() && !config.supportsObstacles()) {
             throw new IllegalArgumentException("This API does not support obstacles as part of the definition of a route.");
         }
         routeQueryBuilder.obstacles(obstacles);
@@ -170,7 +170,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             throw new IllegalArgumentException(String.format("The parameter 'coordRefSys' in the route definition is invalid: the crs '%s' is not supported", waypointCrs.toUriString()));
         }
 
-        if (!routeDefinition.getWaypoints().isEmpty() && !Objects.requireNonNullElse(config.getIntermediateWaypoints(), false)) {
+        if (!routeDefinition.getWaypoints().isEmpty() && !config.supportsIntermediateWaypoints()) {
             throw new IllegalArgumentException(String.format("This API does not support waypoints in addition to the start and end location. The following waypoints were provided: %s",
                                                              routeDefinition.getWaypoints()
                                                                  .stream()
@@ -202,7 +202,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
         List<Link> links = ImmutableList.of();
-        if (Boolean.TRUE.equals(config.getManageRoutes())) {
+        if (config.isManageRoutesEnabled()) {
             links = new RoutesLinksGenerator().generateRouteLinks(routeId,
                                                                   inputs.getName(),
                                                                   requestContext.getUriCustomizer(),
@@ -267,7 +267,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             return response.build();
 
         // write routeDefinition and route if managing routes is enabled
-        if (Boolean.TRUE.equals(config.getManageRoutes())) {
+        if (config.isManageRoutesEnabled()) {
             try {
                 List<Link> definitionLinks = new RoutesLinksGenerator().generateRouteDefinitionLinks(routeId,
                                                                                                      inputs.getName(),

@@ -57,11 +57,11 @@ public class MapTilesOnCollection implements CollectionExtension {
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
         return apiData.getExtension(MapTilesConfiguration.class)
-            .filter(MapTilesConfiguration::getEnabled)
+            .filter(MapTilesConfiguration::isEnabled)
             .filter(MapTilesConfiguration::isSingleCollectionEnabled)
             .isPresent() &&
             apiData.getExtension(TilesConfiguration.class)
-                .filter(TilesConfiguration::getEnabled)
+                .filter(TilesConfiguration::isEnabled)
                 .filter(TilesConfiguration::isSingleCollectionEnabled)
                 .isPresent();
     }
@@ -79,10 +79,11 @@ public class MapTilesOnCollection implements CollectionExtension {
 
         if (!isNested && isEnabledForApi(apiData, featureTypeConfiguration.getId())) {
             Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class)
-                                                                   .stream()
-                                                                   .filter(format -> format.isEnabledForApi(apiData, featureTypeConfiguration.getId()))
-                                                                   .map(TileFormatExtension::getDataType)
-                                                                   .findAny();
+                .stream()
+                .filter(format -> format.isApplicable(apiData, featureTypeConfiguration.getId(), "/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                .filter(format -> format.isEnabledForApi(apiData, featureTypeConfiguration.getId()))
+                .map(TileFormatExtension::getDataType)
+                .findAny();
             if (dataType.isEmpty())
                 // no tile format is enabled
                 return collection;

@@ -75,8 +75,6 @@ class OgcApiCoreSpecCollections extends Specification {
         given: 'A request to the server at /collections'
 
         when: 'The response is created'
-        def xxx = CollectionExtensionFeatures.createNestedCollection(api.data.collections.values().getAt(0), api.data, requestContext.mediaType, requestContext.alternateMediaTypes, requestContext.language, requestContext.uriCustomizer, registry.getExtensionsForType(CollectionExtension.class))
-        System.out.println("!!! " + xxx.toString())
         def collections = collectionsEndpoint.getCollections(Optional.empty(), api, requestContext).entity as Collections
 
         then: 'each feature shall be provided in the property collections'

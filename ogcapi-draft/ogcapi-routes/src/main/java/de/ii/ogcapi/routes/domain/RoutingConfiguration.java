@@ -19,6 +19,7 @@ import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Objects;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -34,17 +35,52 @@ public interface RoutingConfiguration extends ExtensionConfiguration, CachingCon
     @Nullable
     Boolean getManageRoutes();
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean isManageRoutesEnabled() {
+        return Objects.equals(getManageRoutes(), true);
+    }
+
     @Nullable
     Boolean getIntermediateWaypoints();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean supportsIntermediateWaypoints() {
+        return Objects.equals(getIntermediateWaypoints(), true);
+    }
 
     @Nullable
     Boolean getWeightRestrictions();
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean supportsWeightRestrictions() {
+        return Objects.equals(getWeightRestrictions(), true);
+    }
+
     @Nullable
     Boolean getHeightRestrictions();
 
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean supportsHeightRestrictions() {
+        return Objects.equals(getHeightRestrictions(), true);
+    }
+
     @Nullable
     Boolean getObstacles();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    default boolean supportsObstacles() {
+        return Objects.equals(getObstacles(), true);
+    }
 
     @Nullable
     String getSpeedLimitUnit();

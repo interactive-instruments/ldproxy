@@ -22,13 +22,12 @@ public class PathParameterCollectionIdCollections extends AbstractPathParameterC
     }
 
     @Override
-    public String getId() {
-        return "collectionIdCollections";
+    public boolean matchesPath(String definitionPath) {
+        return definitionPath.equals("/collections/{collectionId}");
     }
 
     @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) &&
-                definitionPath.equals("/collections/{collectionId}");
+    public String getId() {
+        return "collectionIdCollections";
     }
 }

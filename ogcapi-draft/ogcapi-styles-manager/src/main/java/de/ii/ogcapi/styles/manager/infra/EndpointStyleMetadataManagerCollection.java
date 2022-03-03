@@ -77,7 +77,7 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
 
         return extension
                 .filter(StylesConfiguration::isEnabled)
-                .filter(StylesConfiguration::getManagerEnabled)
+                .filter(StylesConfiguration::isManagerEnabled)
                 .isPresent();
     }
 
@@ -128,7 +128,7 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                 List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, collectionId, method);
                 String operationSummary = "update the metadata document of a style in the feature collection '" + collectionId + "'";
                 String description = "Update the style metadata for the style with the id `styleId`";
-                if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
+                if (stylesExtension.map(StylesConfiguration::isValidationEnabled).orElse(false)) {
                     description += " or just validate the style metadata.\n" +
                             "If the header `Prefer` is set to `handling=strict`, the style will be validated before adding " +
                             "the style to the server. If the parameter `dry-run` is set to `true`, the server will " +
@@ -151,7 +151,7 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                 headers = getHeaders(extensionRegistry, apiData, path, collectionId, method);
                 operationSummary = "update parts of the style metadata document of a style in the feature collection '" + collectionId + "'";
                 description = "Update selected elements of the style metadata for the style with the id `styleId`";
-                if (stylesExtension.isPresent() && stylesExtension.get().getValidationEnabled()) {
+                if (stylesExtension.map(StylesConfiguration::isValidationEnabled).orElse(false)) {
                     description += " or just validate the style metadata.\n" +
                             "If the header `Prefer` is set to `handling=strict`, the style will be validated before adding " +
                             "the style to the server. If the parameter `dry-run` is set to `true`, the server will " +

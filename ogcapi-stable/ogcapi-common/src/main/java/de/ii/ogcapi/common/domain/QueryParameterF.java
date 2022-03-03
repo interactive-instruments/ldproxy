@@ -42,10 +42,14 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
     @Override
     public final boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
         return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) && method == HttpMethods.GET && isApplicable(apiData, definitionPath));
+            isEnabledForApi(apiData) && (method == HttpMethods.GET || method == HttpMethods.HEAD) && isApplicable(apiData, definitionPath));
     }
 
-    protected abstract boolean isApplicable(OgcApiDataV2 apiData, String definitionPath);
+    protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+        return matchesPath(definitionPath) && isEnabledForApi(apiData);
+    }
+
+    protected abstract boolean matchesPath(String definitionPath);
 
     protected abstract Class<? extends FormatExtension> getFormatClass();
     protected ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap = new ConcurrentHashMap<>();

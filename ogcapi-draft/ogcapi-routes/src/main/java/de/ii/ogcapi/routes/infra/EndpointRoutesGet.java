@@ -80,8 +80,8 @@ public class EndpointRoutesGet extends Endpoint {
         Optional<RoutingConfiguration> extension = apiData.getExtension(RoutingConfiguration.class);
 
         return extension.filter(RoutingConfiguration::isEnabled).isPresent() &&
-                (extension.map(RoutingConfiguration::getHtml).map(HtmlForm::getEnabled).orElse(false) ||
-                 extension.map(RoutingConfiguration::getManageRoutes).orElse(false));
+                (extension.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false) ||
+                 extension.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false));
     }
 
     @Override
@@ -106,12 +106,12 @@ public class EndpointRoutesGet extends Endpoint {
         HttpMethods method = HttpMethods.GET;
         List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
         List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, method);
-        String operationSummary = config.map(RoutingConfiguration::getManageRoutes).orElse(false)
+        String operationSummary = config.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false)
             ? "fetch the list of routes"
-            : (config.map(RoutingConfiguration::getHtml).map(HtmlForm::getEnabled).orElse(false) ? "provide a HTML form to compute a route" : "");
+            : (config.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false) ? "provide a HTML form to compute a route" : "");
         Optional<String> operationDescription = Optional.of(
-            (config.map(RoutingConfiguration::getManageRoutes).orElse(false) ? "This operation returns a list of routes that are currently available on the server. " : "") +
-            (config.map(RoutingConfiguration::getHtml).map(HtmlForm::getEnabled).orElse(false) ? "The HTML representation also includes a HTML form to compute a route." : "")
+            (config.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false) ? "This operation returns a list of routes that are currently available on the server. " : "") +
+            (config.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false) ? "The HTML representation also includes a HTML form to compute a route." : "")
         );
         ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
             .path(path);

@@ -16,7 +16,8 @@ import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.sorting.app.ImmutableSortingConfiguration.Builder;
+import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
+import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -37,10 +38,7 @@ import org.slf4j.LoggerFactory;
 public class CapabilitySorting implements ApiBuildingBlock {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CapabilitySorting.class);
-    final static List<String> VALID_TYPES = ImmutableList.of("STRING", "DATETIME", "INTEGER", "FLOAT");
-
-    // TODO add sortables endpoint once we have agreed where to add it, for now the sortables are published
-    //      in the API definition
+    final static List<String> VALID_TYPES = ImmutableList.of("STRING", "DATE", "DATETIME", "INTEGER", "FLOAT");
 
     private final SchemaInfo schemaInfo;
     private final FeaturesCoreProviders providers;
@@ -53,7 +51,7 @@ public class CapabilitySorting implements ApiBuildingBlock {
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
-        return new Builder().enabled(false)
+        return new ImmutableSortingConfiguration.Builder().enabled(false)
                                                           .build();
     }
 

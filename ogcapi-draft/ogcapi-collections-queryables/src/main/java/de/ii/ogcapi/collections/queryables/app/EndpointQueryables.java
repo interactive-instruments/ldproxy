@@ -12,7 +12,11 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
-import de.ii.ogcapi.collections.queryables.domain.QueryablesFormatExtension;
+import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
+import de.ii.ogcapi.features.core.domain.CollectionPropertiesQueriesHandler;
+import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
+import de.ii.ogcapi.features.core.domain.ImmutableQueryInputCollectionProperties;
+import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -48,13 +52,15 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
 
     private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    private final QueryablesQueriesHandler queryHandler;
+    private final CollectionPropertiesQueriesHandler queryHandler;
+    private final JsonSchemaCache schemaCache;
 
     @Inject
     public EndpointQueryables(ExtensionRegistry extensionRegistry,
-                              QueryablesQueriesHandler queryHandler) {
+                              CollectionPropertiesQueriesHandler queryHandler) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
+        this.schemaCache = new SchemaCacheQueryables();
     }
 
     /* TODO wait for updates on Features Part n: Schemas
@@ -72,7 +78,7 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
     @Override
     public List<? extends FormatExtension> getFormats() {
         if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(QueryablesFormatExtension.class);
+            formats = extensionRegistry.getExtensionsForType(CollectionPropertiesFormat.class);
         return formats;
     }
 
@@ -125,11 +131,13 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
                              @Context UriInfo uriInfo,
                              @PathParam("collectionId") String collectionId) {
 
-        QueryablesQueriesHandlerImpl.QueryInputQueryables queryInput = new ImmutableQueryInputQueryables.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .collectionId(collectionId)
-                .build();
+        CollectionPropertiesQueriesHandler.QueryInputCollectionProperties queryInput = new ImmutableQueryInputCollectionProperties.Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .collectionId(collectionId)
+            .type(CollectionPropertiesType.QUERYABLES)
+            .schemaCache(schemaCache)
+            .build();
 
-        return queryHandler.handle(QueryablesQueriesHandlerImpl.Query.QUERYABLES, queryInput, requestContext);
+        return queryHandler.handle(CollectionPropertiesQueriesHandler.Query.COLLECTION_PROPERTIES, queryInput, requestContext);
     }
 }

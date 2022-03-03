@@ -65,12 +65,12 @@ public class TilesOnLandingPage implements LandingPageExtension {
                                                 Optional<Locale> language) {
 
         if (isEnabledForApi(apiData)) {
-            Optional<DataType> dataType = extensionRegistry.getExtensionsForType(
-                    TileFormatExtension.class)
-                                                                   .stream()
-                                                                   .filter(format -> format.isEnabledForApi(apiData))
-                                                                   .map(format -> format.getDataType())
-                                                                   .findAny();
+            Optional<DataType> dataType = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
+                .stream()
+                .filter(format -> format.isApplicable(apiData, "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                .filter(format -> format.isEnabledForApi(apiData))
+                .map(TileFormatExtension::getDataType)
+                .findAny();
             if (dataType.isEmpty())
                 // no tile format is enabled
                 return landingPageBuilder;
