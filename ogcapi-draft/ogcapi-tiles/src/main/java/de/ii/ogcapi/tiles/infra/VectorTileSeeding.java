@@ -291,7 +291,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             } catch (Throwable e) {
                 LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
                 if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
-                    LOGGER.debug("Stracktrace:", e);
+                    LOGGER.debug("Stacktrace:", e);
             }
 
             currentTile[0] += 1;
@@ -439,7 +439,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             } catch (Throwable e) {
                 LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
                 if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
-                    LOGGER.debug("Stracktrace:", e);
+                    LOGGER.debug("Stacktrace:", e);
             }
 
             currentTile[0] += 1;
