@@ -137,9 +137,10 @@ public class FeatureEncoderGmlUpgrade extends
 
     @Override
     public void onFeatureStart(EncodingAwareContextGml context) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("{}", context.path());
+        }
         try {
-            LOGGER.debug("{}", context.path());
-
             if (inCurrentStart) {
                 writer.append(">");
 
@@ -198,10 +199,11 @@ public class FeatureEncoderGmlUpgrade extends
 
     @Override
     public void onObjectStart(EncodingAwareContextGml context) {
-        try {
-            LOGGER.debug("START {} {} {} {}", context.path(), getLocalName(context.path()), context.inGeometry(), context.schema().map(
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("START {} {} {} {}", context.path(), getLocalName(context.path()), context.inGeometry(), context.schema().map(
                 SchemaBase::isSpatial).isPresent());
-
+        }
+        try {
             if (inCurrentFeatureStart) {
                 writer.append(">");
                 inCurrentFeatureStart = false;
@@ -228,8 +230,11 @@ public class FeatureEncoderGmlUpgrade extends
 
     @Override
     public void onObjectEnd(EncodingAwareContextGml context) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("END {} {}", context.path(), getLocalName(context.path()));
+        }
         try {
-            LOGGER.debug("END {} {}", context.path(), getLocalName(context.path()));
+
 
             if (inCurrentPropertyStart) {
                 writer.append("/>");
@@ -255,58 +260,12 @@ public class FeatureEncoderGmlUpgrade extends
 
     @Override
     public void onArrayStart(EncodingAwareContextGml context) {
-        try {
-            LOGGER.debug("START {} {}", context.path(), getLocalName(context.path()));
-
-            if (inCurrentFeatureStart) {
-                writer.append(">");
-                inCurrentFeatureStart = false;
-            }
-            if (inCurrentPropertyStart) {
-                writer.append(">");
-            }
-
-            writer.append("\n<");
-            writer.append(getNamespaceUri(context.path()));
-            writer.append(":");
-            writer.append(getLocalName(context.path()));
-
-            inCurrentPropertyStart = true;
-            if (GEOMETRY_COORDINATES.contains(getLocalName(context.path()))) {
-                inCoordinates = true;
-            }
-
-            context.additionalInfo().forEach(biConsumerMayThrow(this::onGmlAttribute));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        onObjectStart(context);
     }
 
     @Override
     public void onArrayEnd(EncodingAwareContextGml context) {
-        try {
-            LOGGER.debug("END {} {}", context.path(), getLocalName(context.path()));
-
-            if (inCurrentPropertyStart) {
-                writer.append("/>");
-                inCurrentPropertyStart = false;
-            } else {
-                if (!inCurrentPropertyText) {
-                    writer.append("\n");
-                } else {
-                    inCurrentPropertyText = false;
-                }
-
-                writer.append("</");
-                writer.append(getNamespaceUri(context.path()));
-                writer.append(":");
-                writer.append(getLocalName(context.path()));
-                writer.append(">");
-            }
-            inCoordinates = false;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        onObjectEnd(context);
     }
 
     private void onGmlAttribute(String name, String value) throws Exception {
@@ -315,7 +274,9 @@ public class FeatureEncoderGmlUpgrade extends
 
     //@Override
     public void onGmlAttribute(String namespace, String localName, List<String> path, String value, List<Integer> multiplicities) throws Exception {
-        LOGGER.debug("ATTR {} {} {}", path, localName, value);
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("ATTR {} {} {}", path, localName, value);
+        }
 
         String newValue = value;
 
