@@ -49,7 +49,7 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
+import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -337,13 +337,15 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                .map(filter -> {
                                                    if (filter.getKey()
                                                              .equals(PARAMETER_BBOX)) {
-                                                       if (filterableFields.get(filter.getKey()).equals(FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE))
+                                                       if (filterableFields.get(filter.getKey()).equals(
+                                                           FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE))
                                                            return null;
                                                        return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue());
                                                    }
                                                    if (filter.getKey()
                                                              .equals(PARAMETER_DATETIME)) {
-                                                       if (filterableFields.get(filter.getKey()).equals(FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE))
+                                                       if (filterableFields.get(filter.getKey()).equals(
+                                                           FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE))
                                                            return null;
                                                        return timeToCql(filterableFields.get(filter.getKey()), filter.getValue()).orElse(null);
                                                    }

@@ -18,7 +18,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureQueryTransformer;
+import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Collection;
@@ -109,7 +109,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
                 parameters.put(PARAMETER_BBOX, queryables.getSpatial()
                                                       .get(0));
             } else {
-                parameters.put(PARAMETER_BBOX, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
+                parameters.put(PARAMETER_BBOX, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
             }
 
             if (queryables.getTemporal()
@@ -122,7 +122,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
                 parameters.put(PARAMETER_DATETIME, queryables.getTemporal()
                                                           .get(0));
             } else {
-                parameters.put(PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE);
+                parameters.put(PARAMETER_DATETIME, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
             }
 
             queryables.getSpatial()
@@ -138,8 +138,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
         }
 
         return ImmutableMap.of(
-                PARAMETER_BBOX, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE,
-                PARAMETER_DATETIME, FeatureQueryTransformer.PROPERTY_NOT_AVAILABLE
+                PARAMETER_BBOX, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE,
+                PARAMETER_DATETIME, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE
         );
     }
 

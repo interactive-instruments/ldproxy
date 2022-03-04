@@ -36,11 +36,9 @@ public interface FeatureFormatExtension extends FormatExtension {
         return false;
     }
 
-    default Optional<FeatureConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
-        return Optional.empty();
-    }
-
-    default Optional<FeatureTransformer2> getFeatureTransformer(FeatureTransformationContext transformationContext, Optional<Locale> language) {
+    default Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
+      FeatureTransformationContext transformationContext,
+      Optional<Locale> language) {
         return Optional.empty();
     }
 

@@ -219,12 +219,15 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         if (outputFormat.canPassThroughFeatures() && featureProvider.supportsPassThrough() && outputFormat.getMediaType()
                                                                                                           .matches(featureProvider.passThrough()
                                                                                                                                   .getMediaType())) {
-            FeatureSourceStream<?> featureStream = featureProvider.passThrough()
-                                                                  .getFeatureSourceStream(query);
+            FeatureStream featureStream = featureProvider.passThrough()
+                                                                  .getFeatureStreamPassThrough(query);
+            ImmutableFeatureTransformationContextGeneric transformationContextGeneric = transformationContext
+                .outputStream(new OutputStreamToByteConsumer())
+                .build();
+            FeatureTokenEncoder<?> encoder = outputFormat
+                .getFeatureEncoderPassThrough(transformationContextGeneric, requestContext.getLanguage()).get();
 
-            streamingOutput = stream2(featureStream, Objects.nonNull(featureId), outputStream -> outputFormat.getFeatureConsumer(transformationContext.outputStream(outputStream)
-                                                                                                                                         .build())
-                                                                                                .get());
+            streamingOutput = stream(featureStream, Objects.nonNull(featureId), encoder, Optional.empty());
         } else if (outputFormat.canEncodeFeatures()) {
             FeatureStream featureStream = featureProvider.queries()
                                                           .getFeatureStream(query);
@@ -281,29 +284,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     .join();
                 //timer.stop();
 
-                result.getError()
-                    .ifPresent(QueriesHandler::processStreamError);
-
-                if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException("The requested feature does not exist.");
-                }
-
-            } catch (CompletionException e) {
-                if (e.getCause() instanceof WebApplicationException) {
-                    throw (WebApplicationException) e.getCause();
-                }
-                throw new IllegalStateException("Feature stream error.", e.getCause());
-            }
-        };
-    }
-
-    private StreamingOutput stream2(FeatureSourceStream<?> featureTransformStream, boolean failIfEmpty,
-                                    final Function<OutputStream, FeatureConsumer> featureTransformer) {
-        return outputStream -> {
-            try {
-                ResultOld result = featureTransformStream.runWith(featureTransformer.apply(outputStream))
-                                                                     .toCompletableFuture()
-                                                                     .join();
                 result.getError()
                     .ifPresent(QueriesHandler::processStreamError);
 

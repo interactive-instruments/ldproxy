@@ -20,11 +20,12 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.features.domain.FeatureConsumer;
+import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.WithConnectionInfo;
-import de.ii.xtraplatform.features.sql.domain.ConnectionInfoWfsHttp;
+import de.ii.xtraplatform.features.gml.domain.ConnectionInfoWfsHttp;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -90,12 +91,13 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
     }
 
     @Override
-    public Optional<FeatureConsumer> getFeatureConsumer(FeatureTransformationContext transformationContext) {
-        return Optional.of(new FeatureTransformerGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
-                                                                                                    .from(transformationContext)
-                                                                                                    .namespaces(((ConnectionInfoWfsHttp) ((WithConnectionInfo<?>)providers.getFeatureProviderOrThrow(transformationContext.getApiData())
-                                                                                                                                                                          .getData()).getConnectionInfo()).getNamespaces())
-                                                                                                    .build()));
+    public Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
+        FeatureTransformationContext transformationContext, Optional<Locale> language) {
+        return Optional.of(new FeatureEncoderGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
+            .from(transformationContext)
+            .namespaces(((ConnectionInfoWfsHttp) ((WithConnectionInfo<?>)providers.getFeatureProviderOrThrow(transformationContext.getApiData())
+                .getData()).getConnectionInfo()).getNamespaces())
+            .build()));
     }
 
 }
