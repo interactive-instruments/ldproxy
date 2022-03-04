@@ -38,6 +38,7 @@ import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -60,6 +61,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
 
 /**
  * This class is responsible for a automatic generation of the Tiles.
@@ -288,6 +290,8 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                 queryHandler.handle(TilesQueriesHandler.Query.SINGLE_LAYER_TILE, queryInput, requestContext);
             } catch (Throwable e) {
                 LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
+                if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
+                    LOGGER.debug("Stacktrace:", e);
             }
 
             currentTile[0] += 1;
@@ -434,6 +438,8 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                 queryHandler.handle(TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
             } catch (Throwable e) {
                 LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
+                if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
+                    LOGGER.debug("Stacktrace:", e);
             }
 
             currentTile[0] += 1;

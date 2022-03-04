@@ -417,10 +417,16 @@ public class TileCacheImpl implements TileCache {
                         ? apiData.getExtension(TilesConfiguration.class).get()
                         : apiData.getExtension(TilesConfiguration.class, collectionId.get()).get();
 
+                // test, if tiles will be created for this tileset, otherwise log this information
+                MinMax range = config.getZoomLevelsDerived().get(tileMatrixSetId);
+                if (Objects.isNull(range)) {
+                    LOGGER.debug("The configuration does not include tiles for tile matrix set '{}'{}, but other parts of the configuration require that the MBTiles file cache '{}' is created. Review the configuration for TILES on the API level and for each collection.", tileMatrixSetId, collectionId.map(s -> " for collection '" + s + "'").orElse(""), key);
+                }
+
                 // get the tile set metadata
                 TileSet tileSetMetadata = TilesHelper.buildTileSet(apiData,
                                                                    tileMatrixSet,
-                                                                   config.getZoomLevelsDerived().get(tileMatrixSetId),
+                                                                   range,
                                                                    config.getCenterDerived(),
                                                                    collectionId,
                                                                    TileSet.DataType.vector,

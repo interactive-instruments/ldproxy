@@ -96,7 +96,7 @@ public class TilesHelper {
                                        EntityRegistry entityRegistry) {
 
         Builder builder = ImmutableTileSet.builder()
-                                                           .dataType(dataType);
+            .dataType(dataType);
 
         builder.tileMatrixSetId(tileMatrixSet.getId());
 
@@ -109,9 +109,13 @@ public class TilesHelper {
                                                                                                 .clearParameters()
                                                                                                 .ensureLastPathSegments("tileMatrixSets", tileMatrixSet.getId())
                                                                                                 .toString()));
-        builder.tileMatrixSetLimits(collectionId.isPresent()
-                                            ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
-                                            : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
+
+        if (Objects.isNull(zoomLevels))
+            builder.tileMatrixSetLimits(ImmutableList.of());
+        else
+            builder.tileMatrixSetLimits(collectionId.isPresent()
+                                                ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
+                                                : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
 
         try {
             BoundingBox boundingBox = (collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent())
@@ -127,9 +131,10 @@ public class TilesHelper {
             // ignore, just skip the boundingBox
         }
 
-        if (zoomLevels.getDefault().isPresent() || !center.isEmpty()) {
+        if ((Objects.nonNull(zoomLevels) && zoomLevels.getDefault().isPresent()) || !center.isEmpty()) {
             ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();
-            zoomLevels.getDefault().ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
+            if (Objects.nonNull(zoomLevels))
+                zoomLevels.getDefault().ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
             if (!center.isEmpty())
                 builder2.coordinates(center);
             builder.centerPoint(builder2.build());

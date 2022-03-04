@@ -77,7 +77,7 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
 
     @Override
     public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
+        return ResourcesConfiguration.class;
     }
 
     @Override
