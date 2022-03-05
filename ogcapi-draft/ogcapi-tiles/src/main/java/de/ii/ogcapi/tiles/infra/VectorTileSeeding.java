@@ -104,6 +104,9 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+        if (!apiData.getEnabled()) {
+            return false;
+        }
         // no vector tiles support for WFS backends
         if (!providers.getFeatureProvider(apiData)
                       .map(FeatureProvider2::supportsHighLoad)
@@ -153,6 +156,9 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     @Override
     public Optional<String> runPeriodic(OgcApi api) {
+        if (isEnabledForApi(api.getData())) {
+            return Optional.empty();
+        }
         return api.getData().getExtension(TilesConfiguration.class)
             .flatMap(TilesConfiguration::getSeedingOptions)
             .flatMap(SeedingOptions::getCronExpression);
@@ -291,7 +297,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             } catch (Throwable e) {
                 LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), collectionId, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
                 if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
-                    LOGGER.debug("Stacktrace:", e);
+                    LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
             }
 
             currentTile[0] += 1;
@@ -439,7 +445,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             } catch (Throwable e) {
                 LOGGER.warn("{}: processing failed -> {}, {}/{}/{}/{}, {} | {}", getLabel(), layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension(), e.getMessage());
                 if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
-                    LOGGER.debug("Stacktrace:", e);
+                    LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
             }
 
             currentTile[0] += 1;
