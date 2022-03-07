@@ -123,6 +123,12 @@ public abstract class EndpointSubCollection extends Endpoint {
         if (method== HttpMethods.POST && postUrlencoded) {
             Schema formSchema = new ObjectSchema();
             queryParameters
+                .stream()
+                // drop support for "f" in URL-encoded POST requests, content negotiation must be used
+                // TODO: the main reason is that the f parameter is evaluated in ApiRequestDispatcher,
+                //       that is before the f parameter in the payload of the POST request is (easily)
+                //       available.
+                .filter(param -> !param.getName().equals("f"))
                 .forEach(param -> {
                     Schema paramSchema = param.getSchema(apiData, collectionId)
                         .description(param.getDescription());
