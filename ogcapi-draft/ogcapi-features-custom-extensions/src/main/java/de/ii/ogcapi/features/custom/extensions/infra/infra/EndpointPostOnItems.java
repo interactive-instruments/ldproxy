@@ -11,6 +11,7 @@ import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
@@ -22,6 +23,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
@@ -35,16 +37,23 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
+import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -55,6 +64,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,12 +116,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
 
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ApiEndpointDefinition endpointFeaturesDefintion = extensionRegistry.getExtensionsForType(EndpointExtension.class)
-            .stream()
-            .filter(endpoint -> endpoint.isEnabledForApi(apiData) && endpoint.getBuildingBlockConfigurationType().equals(FeaturesCoreConfiguration.class))
-            .map(endpoint -> endpoint.getDefinition(apiData))
-            .filter(definition -> definition.getApiEntrypoint().equals("collections") && definition.getSortPriority()==SORT_PRIORITY_FEATURES)
-            .findAny()
+        ApiEndpointDefinition endpointFeaturesDefintion = getDefinitionGetMethod(apiData)
             .orElse(null);
 
         if (Objects.isNull(endpointFeaturesDefintion))
@@ -167,8 +174,38 @@ public class EndpointPostOnItems extends EndpointSubCollection {
         int maxPageSize = coreConfiguration.getMaximumPageSize();
         boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
-        List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), allowedParameters);
+        // TODO: generalize and centralize this logic, if we add more URL-encoded POST requests
+        List<OgcApiQueryParameter> knownParameters = getDefinitionGetMethod(api.getData())
+            .flatMap(endpointDefinition -> endpointDefinition.getOperation(String.format("/collections/%s/items", collectionId), "GET"))
+            .map(ApiOperation::getQueryParameters)
+            .orElse(ImmutableList.of())
+            .stream()
+            // drop support for "f" in URL-encoded POST requests, content negotiation must be used
+            // TODO: the main reason is that the f parameter has already been evaluated in ApiRequestDispatcher,
+            //       that is before we arrive here
+            .filter(param -> !param.getName().equals("f"))
+            .collect(Collectors.toUnmodifiableList());
+
+        Set<String> unknownParameters = parameters
+            .keySet()
+            .stream()
+            .filter(parameter -> knownParameters.stream().noneMatch(param -> param.getName().equalsIgnoreCase(parameter)))
+            .collect(Collectors.toSet());
+        if (!unknownParameters.isEmpty()) {
+            throw new BadRequestException("The following query parameters are rejected: " +
+                                              String.join(", ", unknownParameters) +
+                                              ". Valid parameters for this request are: " +
+                                              knownParameters.stream().map(ParameterExtension::getName).collect(Collectors.joining(", ")));
+        }
+        parameters.forEach((name, values) -> knownParameters.stream()
+            .filter(param -> param.getName().equalsIgnoreCase(name))
+            .forEach(param -> {
+                Optional<String> result = param.validate(api.getData(), Optional.of(collectionId), values);
+                if (result.isPresent())
+                    throw new BadRequestException(result.get());
+            }));
+
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), knownParameters);
 
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))
@@ -181,5 +218,14 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                 .build();
 
         return queryHandler.handle(FeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContext);
+    }
+
+    private Optional<ApiEndpointDefinition> getDefinitionGetMethod(OgcApiDataV2 apiData) {
+        return extensionRegistry.getExtensionsForType(EndpointExtension.class)
+            .stream()
+            .filter(endpoint -> endpoint.isEnabledForApi(apiData) && endpoint.getBuildingBlockConfigurationType().equals(FeaturesCoreConfiguration.class))
+            .map(endpoint -> endpoint.getDefinition(apiData))
+            .filter(definition -> definition.getApiEntrypoint().equals("collections") && definition.getSortPriority()==SORT_PRIORITY_FEATURES)
+            .findAny();
     }
 }
