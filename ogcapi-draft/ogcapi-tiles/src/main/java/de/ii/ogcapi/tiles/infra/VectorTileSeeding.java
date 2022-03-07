@@ -156,7 +156,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
 
     @Override
     public Optional<String> runPeriodic(OgcApi api) {
-        if (isEnabledForApi(api.getData())) {
+        if (!isEnabledForApi(api.getData())) {
             return Optional.empty();
         }
         return api.getData().getExtension(TilesConfiguration.class)
