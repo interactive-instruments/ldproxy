@@ -235,6 +235,11 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
           .from(jsonSchema)
           .name(propertyName)
           .build();
+    } else if (jsonSchema instanceof JsonSchemaRefExternal) {
+      return ImmutableJsonSchemaRefExternal.builder()
+          .from(jsonSchema)
+          .name(propertyName)
+          .build();
     }
     return jsonSchema;
   }

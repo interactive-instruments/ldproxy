@@ -27,7 +27,8 @@ import org.immutables.value.Value;
         @JsonSubTypes.Type(value = JsonSchemaObject.class, name = "object"),
         @JsonSubTypes.Type(value = JsonSchemaArray.class, name = "array"),
         @JsonSubTypes.Type(value = JsonSchemaNull.class, name = "null"),
-        @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$ref"),
+        @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$refDefs"),
+        @JsonSubTypes.Type(value = JsonSchemaRefExternal.class, name = "$ref"),
         @JsonSubTypes.Type(value = JsonSchemaOneOf.class, name = "oneOf")
 })
 public abstract class JsonSchema extends PageRepresentation {
