@@ -9,6 +9,8 @@ package de.ii.ogcapi.sorting.app;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -36,7 +38,7 @@ import java.util.stream.Collectors;
 @Singleton
 @AutoBind
 public class QueryParameterSortbyFeatures extends ApiExtensionCache implements OgcApiQueryParameter,
-    ConformanceClass {
+    ItemTypeSpecificConformanceClass {
 
     final static Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
 
@@ -46,7 +48,14 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/sorting");
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
+
+        // TODO add feature-specific conformance class once we have a draft spec
+
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+            builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/sorting");
+
+        return builder.build();
     }
 
     @Override

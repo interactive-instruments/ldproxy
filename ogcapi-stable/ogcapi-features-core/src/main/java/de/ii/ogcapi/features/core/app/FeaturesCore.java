@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class FeaturesCore implements ConformanceClass {
+public class FeaturesCore implements ItemTypeSpecificConformanceClass {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesCore.class);
 
@@ -31,11 +32,15 @@ public class FeaturesCore implements ConformanceClass {
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core", "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/core");
-    }
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.feature))
+            builder.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core");
+
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+            builder.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+                        "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/records-api");
+
+        return builder.build();
     }
 }

@@ -17,6 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
+import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -71,7 +72,7 @@ import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
-public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtension {
+public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, FeatureFormatExtension {
 
     static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
             .type(MediaType.TEXT_HTML_TYPE)
@@ -110,7 +111,15 @@ public class FeaturesFormatHtml implements ConformanceClass, FeatureFormatExtens
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html", "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/html");
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
+
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.feature))
+            builder.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html");
+
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+            builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/html");
+
+        return builder.build();
     }
 
     @Override

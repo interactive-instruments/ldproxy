@@ -188,6 +188,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                               .map(conformanceClass -> conformanceClass.getConformanceClassUris(requestContext.getApi().getData()))
                                               .flatMap(List::stream)
                                               .distinct()
+                                              .sorted()
                                               .collect(Collectors.toUnmodifiableList()));
 
         for (ConformanceDeclarationExtension ogcApiConformanceDeclarationExtension : getConformanceExtenders()) {

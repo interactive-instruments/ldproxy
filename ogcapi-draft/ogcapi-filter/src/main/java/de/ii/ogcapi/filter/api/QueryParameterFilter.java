@@ -11,7 +11,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -35,7 +37,7 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
+public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass {
 
     private final FeaturesCoreProviders providers;
 
@@ -143,11 +145,9 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
         ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>()
             .add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter",
-                 "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
                  "http://www.opengis.net/spec/cql2/0.0/conf/basic-cql2",
                  "http://www.opengis.net/spec/cql2/0.0/conf/advanced-comparison-operators",
-                 // TODO disabled for now because this currently includes ACCENTI()
-                 // "http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison",
+                 "http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison",
                  "http://www.opengis.net/spec/cql2/0.0/conf/basic-spatial-operators",
                  "http://www.opengis.net/spec/cql2/0.0/conf/spatial-operators",
                  "http://www.opengis.net/spec/cql2/0.0/conf/temporal-operators",
@@ -157,8 +157,15 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
 
         providers.getFeatureProvider(apiData).ifPresent(provider -> {
             if (provider.supportsQueries() && provider.queries().supportsAccenti())
-                builder.add("http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison");
+                builder.add("http://www.opengis.net/spec/cql2/0.0/conf/accent-insensitive-comparison");
         });
+
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.feature))
+            builder.add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter");
+
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+            builder.add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
+                        "http://www.opengis.net/spec/ogcapi-records-1/0.0/req/cql-filter");
 
         return builder.build();
     }

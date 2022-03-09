@@ -14,8 +14,10 @@ import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
+import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
@@ -62,7 +64,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExtension {
+public class FeaturesFormatGeoJson implements ItemTypeSpecificConformanceClass, FeatureFormatExtension {
 
     private static final String CONFORMANCE_CLASS_FEATURES = "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson";
     private static final String CONFORMANCE_CLASS_RECORDS = "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/json";
@@ -101,7 +103,15 @@ public class FeaturesFormatGeoJson implements ConformanceClass, FeatureFormatExt
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of(CONFORMANCE_CLASS_FEATURES, CONFORMANCE_CLASS_RECORDS);
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
+
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.feature))
+            builder.add(CONFORMANCE_CLASS_FEATURES);
+
+        if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+            builder.add(CONFORMANCE_CLASS_RECORDS);
+
+        return builder.build();
     }
 
     @Override
