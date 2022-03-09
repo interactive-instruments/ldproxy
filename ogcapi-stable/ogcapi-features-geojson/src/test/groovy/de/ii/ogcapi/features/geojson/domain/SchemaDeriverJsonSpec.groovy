@@ -392,6 +392,7 @@ class SchemaDeriverJsonSpec extends Specification {
                                     .title("foo > object2 > strings")
                                     .build())
                             .build())
+                    .putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON)
                     .addRequired("type", "geometry", "properties")
                     .build();
 
