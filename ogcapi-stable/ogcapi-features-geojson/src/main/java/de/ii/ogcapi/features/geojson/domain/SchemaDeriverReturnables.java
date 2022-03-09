@@ -26,6 +26,7 @@ import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
@@ -70,10 +71,10 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
             .objectType("Link")
             .build();
 
+    builder.putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON);
+
     defs.forEach((name, def) -> {
-      if ("Link".equals(name)) {
-        builder.putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON);
-      } else {
+      if (!Objects.equals("Link", name)) {
         builder.putDefinitions(name, def);
       }
     });
