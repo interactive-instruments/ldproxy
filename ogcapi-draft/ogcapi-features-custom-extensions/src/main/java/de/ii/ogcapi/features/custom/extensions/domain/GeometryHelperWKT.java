@@ -11,7 +11,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import de.ii.ogcapi.features.html.domain.Geometry;
 
 public interface GeometryHelperWKT {
-    String getRegex();
+
+    // TODO: centralize WKT handling
+
     String getPointRegex();
     String getMultiPointRegex();
     String getLineStringRegex();

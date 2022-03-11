@@ -49,16 +49,6 @@ public class GeometryHelperWKTImpl implements GeometryHelperWKT {
     }
 
     @Override
-    public String getRegex() {
-        return getMultiPolygonRegex()
-            + "|" + getPolygonRegex()
-            + "|" + getMultiLineStringRegex()
-            + "|" + getLineStringRegex()
-            + "|" + getMultiPointRegex()
-            + "|" + getPointRegex();
-    }
-
-    @Override
     public String getPointRegex() {
         return "^\\s*POINT\\s*" + POINT_REGEX + "\\s*$";
     }

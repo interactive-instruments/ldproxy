@@ -26,10 +26,16 @@ import de.ii.xtraplatform.web.domain.Http;
 import de.ii.xtraplatform.web.domain.HttpClient;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -76,7 +82,19 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
 
     @Override
     public Schema getSchema(OgcApiDataV2 apiData) {
-        return new StringSchema().pattern(geometryHelper.getRegex() + "|" + "^http(?:s)?://.*$");
+        return new StringSchema().pattern("^(POINT|MULTIPOINT|LINESTRING|MULTILINESTRING|POLYGON|MULTIPOLYGON|GEOMETRYCOLLECTION|http(?:s)?://).*$");
+    }
+
+    @Override
+    public Optional<String> validateOther(OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
+        try {
+            // TODO: centralize WKT handling
+            // use JTS to validate the WKT text
+            new WKTReader().read(values.get(0));
+        } catch (ParseException e) {
+            return Optional.of(e.getMessage());
+        }
+        return Optional.empty();
     }
 
     @Override

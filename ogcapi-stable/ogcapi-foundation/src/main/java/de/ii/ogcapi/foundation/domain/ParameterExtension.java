@@ -45,7 +45,16 @@ public interface ParameterExtension extends ApiExtension {
     default boolean getExplode() { return false; }
 
     default Optional<String> validate(OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
-        return validateSchema(apiData, collectionId, values);
+        // first validate against the schema
+        Optional<String> result = validateSchema(apiData, collectionId, values);
+        if (result.isPresent())
+            return result;
+        // if the values are schema-valid, validate against any additional parameter-specific checks
+        return validateOther(apiData, collectionId, values);
+    }
+
+    default Optional<String> validateOther(OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
+        return Optional.empty();
     }
 
     default Optional<String> validateSchema(OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
