@@ -330,6 +330,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
         }
 
         QueryHandlerRoutes.QueryInputComputeRoute queryInput = new ImmutableQueryInputComputeRoute.Builder()
+            .from(getGenericQueryInput(api.getData()))
             .definition(definition)
             .routeId(routeId)
             .featureProvider(featureProvider)

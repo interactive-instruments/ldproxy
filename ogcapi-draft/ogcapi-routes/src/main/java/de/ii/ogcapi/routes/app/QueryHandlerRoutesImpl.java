@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -20,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.routes.app.json.RouteDefinitionFormatJson;
 import de.ii.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ogcapi.routes.domain.ImmutableFeatureTransformationContextRoutes;
@@ -71,6 +73,7 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -300,8 +303,6 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         OgcApi api = requestContext.getApi();
         OgcApiDataV2 apiData = api.getData();
 
-        List<Link> links = ImmutableList.of();
-
         RoutesFormatExtension outputFormatExtension = api.getOutputFormat(RoutesFormatExtension.class,
                                                                           requestContext.getMediaType(),
                                                                           "/routes",
@@ -318,13 +319,16 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                                                               requestContext);
 
         Date lastModified = getLastModified(queryInput, api);
-        EntityTag etag = getEtag(routes, Routes.FUNNEL, outputFormatExtension);
+        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || apiData.getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+            ? getEtag(routes, Routes.FUNNEL, outputFormatExtension)
+            : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
         return prepareSuccessResponse(requestContext,
-                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      queryInput.getIncludeLinkHeader() ? routes.getLinks() : null,
                                       lastModified,
                                       etag,
                                       queryInput.getCacheControl().orElse(null),

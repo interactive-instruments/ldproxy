@@ -168,6 +168,7 @@ public class EndpointRoutesGet extends Endpoint {
             .orElse(ImmutableMap.of());
 
         QueryHandlerRoutes.QueryInputRoutes queryInput = new ImmutableQueryInputRoutes.Builder()
+            .from(getGenericQueryInput(api.getData()))
             .templateInfo(new ImmutableRouteDefinitionInfo.Builder()
                               .preferences(preferences)
                               .defaultPreference(apiData.getExtension(RoutingConfiguration.class)
