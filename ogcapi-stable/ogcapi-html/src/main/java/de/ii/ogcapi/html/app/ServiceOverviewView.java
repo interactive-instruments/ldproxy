@@ -50,6 +50,7 @@ public class ServiceOverviewView extends OgcApiView {
     public String getDatasetsAsString() {
         return data
                 .stream()
+                .filter(ApiCatalogEntry::isDataset)
                 .map(api -> "{ \"@type\": \"Dataset\", " +
                         "\"name\": \"" + api.getTitle().orElse(api.getId()).replace("\"", "\\\"") + "\", " +
                         "\"description\": \"" + api.getDescription().orElse("").replace("\"", "\\\"") + "\", " +

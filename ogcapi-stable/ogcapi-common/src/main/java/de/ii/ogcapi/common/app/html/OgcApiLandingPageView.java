@@ -71,7 +71,7 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
         this.apiLandingPage = apiLandingPage;
 
         this.spatialSearch = false;
-        this.isDataset = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
+        this.isDataset = apiData.isDataset() && Objects.nonNull(htmlConfig) && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
 
         this.keywords = apiData.getMetadata()
                                .map(Metadata::getKeywords)

@@ -168,6 +168,16 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
                                                                              .getEnabled();
     }
 
+    @JsonIgnore
+    @Value.Derived
+    public boolean isDataset() {
+        // return false if there no collection or no collection that is enabled
+        return getCollections()
+            .values()
+            .stream()
+            .anyMatch(FeatureTypeConfigurationOgcApi::getEnabled);
+    }
+
     /**
      * Determine spatial extent of all collections in the dataset.
      *

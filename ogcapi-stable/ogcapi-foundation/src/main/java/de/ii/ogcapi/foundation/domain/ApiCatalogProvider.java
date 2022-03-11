@@ -168,6 +168,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
                                                   .description(api.getDescription())
                                                   .landingPageUri(getApiUrl(finalUri, ((OgcApiDataV2)api).getSubPath()))
                                                   .tags(((OgcApiDataV2)api).getTags())
+                                                  .isDataset(((OgcApiDataV2) api).isDataset())
                                                   .build();
                                       return new ImmutableApiCatalogEntry.Builder()
                                               .id(api.getId())

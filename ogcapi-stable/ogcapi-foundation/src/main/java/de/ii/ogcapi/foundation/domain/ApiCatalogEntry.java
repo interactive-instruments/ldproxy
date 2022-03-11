@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.immutables.value.Value;
 
@@ -24,6 +25,8 @@ public abstract class ApiCatalogEntry extends PageRepresentation {
     public abstract URI getLandingPageUri();
 
     public abstract List<String> getTags();
+
+    public abstract boolean isDataset();
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
