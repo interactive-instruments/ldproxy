@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.custom.extensions.app;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
@@ -87,10 +88,19 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
 
     @Override
     public Optional<String> validateOther(OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
+        if (values.size()!=1)
+            return Optional.of("One value for parameter 'intersects' expected. Found "+values.size()+" values.");
+        if (values.get(0).startsWith("http"))
+            return Optional.empty();
+
+        return validateWkt(values.get(0));
+    }
+
+    private Optional<String> validateWkt(String wkt) {
         try {
             // TODO: centralize WKT handling
             // use JTS to validate the WKT text
-            new WKTReader().read(values.get(0));
+            new WKTReader().read(wkt);
         } catch (ParseException e) {
             return Optional.of(e.getMessage());
         }
@@ -125,11 +135,9 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
                 } catch (Exception e) {
                     throw new IllegalArgumentException(String.format("HTTP URL '%s' in parameter 'intersects' must be a GeoJSON feature with a geometry. Failure to convert to a geometry: %s", intersects, e.getMessage()), e);
                 }
-                /* TODO validate WKT conversion? The regex can lead to a Stack overflow, so it has been disabled.
-                if (!wkt.matches(geometryHelper.getRegex())) {
-                    throw new IllegalStateException(String.format("Response to HTTP URL '%s' in parameter 'intersects' cannot be converted to a WKT geometry: '%s'", intersects, wkt));
-                }
-                */
+                validateWkt(wkt).ifPresent(error -> {
+                    throw new IllegalStateException(String.format("Response to HTTP URL '%s' in parameter 'intersects' cannot be converted to a WKT geometry: %s", intersects, error));
+                });
             } else {
                 wkt = intersects;
             }
