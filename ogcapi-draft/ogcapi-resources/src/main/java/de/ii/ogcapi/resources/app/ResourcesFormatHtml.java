@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
@@ -68,13 +69,14 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String resourcesTitle = i18n.get("resourcesTitle", requestContext.getLanguage());
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
-                        requestContext.getUriCustomizer().copy()
+                        resourceUri.copy()
                                 .removeLastPathSegments(apiData.getSubPath().size() + 1)
                                 .toString()))
                 .add(new NavigationDTO(apiData.getLabel(),
-                        requestContext.getUriCustomizer()
+                        resourceUri
                                 .copy()
                                 .removeLastPathSegments(1)
                                 .toString()))

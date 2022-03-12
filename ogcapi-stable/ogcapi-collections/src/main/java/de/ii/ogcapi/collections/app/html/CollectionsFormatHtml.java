@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.Schema;
@@ -86,13 +87,14 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(rootTitle, resourceUri.copy()
                         .removeLastPathSegments(api.getData()
                                                    .getSubPath()
                                                    .size() + 1)
                         .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(api.getData().getLabel(), resourceUri.copy()
                         .removeLastPathSegments(1)
                         .toString()))
                 .add(new NavigationDTO(collectionsTitle))
@@ -125,16 +127,17 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(rootTitle, resourceUri.copy()
                         .removeLastPathSegments(api.getData()
                                                    .getSubPath()
                                                    .size() + 2)
                         .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(api.getData().getLabel(), resourceUri.copy()
                         .removeLastPathSegments(2)
                         .toString()))
-                .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(collectionsTitle, resourceUri.copy()
                         .removeLastPathSegments(1)
                         .toString()))
                 .add(new NavigationDTO(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId())))

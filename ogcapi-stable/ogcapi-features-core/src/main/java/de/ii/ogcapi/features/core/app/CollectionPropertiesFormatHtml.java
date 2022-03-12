@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -100,22 +101,23 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
         String collectionPropertiesTitle = i18n.get(type.toString()+"Title", requestContext.getLanguage());
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
-                        requestContext.getUriCustomizer().copy()
+                        resourceUri.copy()
                                 .removeLastPathSegments(api.getData()
                                                            .getSubPath()
                                                            .size() + 3)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
-                        requestContext.getUriCustomizer()
+                        resourceUri
                                 .copy()
                                 .removeLastPathSegments(3)
                                 .toString()))
-                .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(collectionsTitle, resourceUri.copy()
                         .removeLastPathSegments(2)
                         .toString()))
-                .add(new NavigationDTO(api.getData().getCollections().get(collectionId).getLabel(), requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(api.getData().getCollections().get(collectionId).getLabel(), resourceUri.copy()
                                                                                                                   .removeLastPathSegments(1)
                                                                                                                   .toString()))
                 .add(new NavigationDTO(collectionPropertiesTitle))

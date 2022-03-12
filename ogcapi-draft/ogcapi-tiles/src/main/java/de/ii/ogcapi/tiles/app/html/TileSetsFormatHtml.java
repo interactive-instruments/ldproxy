@@ -99,33 +99,34 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
         String tilesTitle = i18n.get("tilesTitle", requestContext.getLanguage());
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = collectionId.isPresent() ?
                 new ImmutableList.Builder<NavigationDTO>()
-                        .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
+                        .add(new NavigationDTO(rootTitle, resourceUri.copy()
                                 .removeLastPathSegments(api.getData()
                                                            .getSubPath()
                                                            .size() + 3)
                                 .toString()))
-                        .add(new NavigationDTO(api.getData().getLabel(), requestContext.getUriCustomizer().copy()
+                        .add(new NavigationDTO(api.getData().getLabel(), resourceUri.copy()
                                 .removeLastPathSegments(3)
                                 .toString()))
-                        .add(new NavigationDTO(collectionsTitle, requestContext.getUriCustomizer().copy()
+                        .add(new NavigationDTO(collectionsTitle, resourceUri.copy()
                                 .removeLastPathSegments(2)
                                 .toString()))
-                        .add(new NavigationDTO(api.getData().getCollections().get(collectionId.get()).getLabel(), requestContext.getUriCustomizer().copy()
+                        .add(new NavigationDTO(api.getData().getCollections().get(collectionId.get()).getLabel(), resourceUri.copy()
                                                                                                                                 .removeLastPathSegments(1)
                                                                                                                                 .toString()))
                         .add(new NavigationDTO(tilesTitle))
                         .build() :
                 new ImmutableList.Builder<NavigationDTO>()
                         .add(new NavigationDTO(rootTitle,
-                                requestContext.getUriCustomizer().copy()
+                                resourceUri.copy()
                                         .removeLastPathSegments(api.getData()
                                                                    .getSubPath()
                                                                    .size() + 1)
                                         .toString()))
                         .add(new NavigationDTO(api.getData().getLabel(),
-                                requestContext.getUriCustomizer()
+                                resourceUri
                                         .copy()
                                         .removeLastPathSegments(1)
                                         .toString()))

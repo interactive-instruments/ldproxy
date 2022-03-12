@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.styles.domain.StyleMetadata;
@@ -106,14 +107,15 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
                                                              .removeLastPathSegments(3)
                                                              .toString()));
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = breadCrumbBuilder
                 .add(new NavigationDTO(stylesTitle,
-                                       requestContext.getUriCustomizer()
+                                       resourceUri
                                                      .copy()
                                                      .removeLastPathSegments(2)
                                                      .toString()))
                 .add(new NavigationDTO(styleTitle,
-                                       requestContext.getUriCustomizer()
+                                       resourceUri
                                                      .copy()
                                                      .removeLastPathSegments(1)
                                                      .toString()))

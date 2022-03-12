@@ -17,6 +17,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
@@ -71,15 +72,16 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
-                        requestContext.getUriCustomizer().copy()
+                        resourceUri.copy()
                                 .removeLastPathSegments(api.getData()
                                                            .getSubPath()
                                                            .size() + 1)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
-                        requestContext.getUriCustomizer()
+                        resourceUri
                                 .copy()
                                 .removeLastPathSegments(1)
                                 .toString()))
@@ -101,20 +103,21 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
         String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
         String title = tileMatrixSet.getTitle().orElse(tileMatrixSet.getId());
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
-                        requestContext.getUriCustomizer().copy()
+                        resourceUri.copy()
                                 .removeLastPathSegments(api.getData()
                                                            .getSubPath()
                                                            .size() + 2)
                                 .toString()))
                 .add(new NavigationDTO(api.getData().getLabel(),
-                        requestContext.getUriCustomizer()
+                        resourceUri
                                 .copy()
                                 .removeLastPathSegments(2)
                                 .toString()))
                 .add(new NavigationDTO(tileMatrixSetsTitle,
-                        requestContext.getUriCustomizer()
+                        resourceUri
                                 .copy()
                                 .removeLastPathSegments(1)
                                 .toString()))

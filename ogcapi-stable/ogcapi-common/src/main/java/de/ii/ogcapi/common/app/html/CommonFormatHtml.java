@@ -82,8 +82,9 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
 
         String rootTitle = i18n.get("root", requestContext.getLanguage());
 
+        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, requestContext.getUriCustomizer().copy()
+                .add(new NavigationDTO(rootTitle, resourceUri.copy()
                         .removeLastPathSegments(api.getData()
                                                    .getSubPath()
                                                    .size())
@@ -107,7 +108,7 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
         String rootTitle = i18n.get("root", requestContext.getLanguage());
         String conformanceDeclarationTitle = i18n.get("conformanceDeclarationTitle", requestContext.getLanguage());
 
-        final URICustomizer uriCustomizer = requestContext.getUriCustomizer();
+        final URICustomizer uriCustomizer = requestContext.getUriCustomizer().clearParameters();
         final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
                 .add(new NavigationDTO(rootTitle,
                                        uriCustomizer.copy()
