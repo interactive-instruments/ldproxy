@@ -23,6 +23,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.HashMap;
@@ -52,7 +53,12 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).map(FeatureProvider2::supportsQueries).orElse(false);
+        return super.isEnabledForApi(apiData) && providers
+            .getFeatureProvider(apiData)
+            .filter(FeatureProvider2::supportsQueries)
+            .map(FeatureProvider2::queries)
+            .map(FeatureQueries::supportsCql2)
+            .orElse(false);
     }
 
     @Override

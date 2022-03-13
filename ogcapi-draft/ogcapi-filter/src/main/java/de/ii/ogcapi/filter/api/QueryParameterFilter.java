@@ -22,6 +22,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -48,7 +49,12 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
 
     @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) && providers.getFeatureProvider(apiData).map(FeatureProvider2::supportsQueries).orElse(false);
+        return super.isEnabledForApi(apiData) && providers
+            .getFeatureProvider(apiData)
+            .filter(FeatureProvider2::supportsQueries)
+            .map(FeatureProvider2::queries)
+            .map(FeatureQueries::supportsCql2)
+            .orElse(false);
     }
 
     @Override
@@ -143,21 +149,23 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
 
     @Override
     public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>()
-            .add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/basic-cql2",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/advanced-comparison-operators",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/basic-spatial-operators",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/spatial-operators",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/temporal-operators",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/array-operators",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/property-property",
-                 "http://www.opengis.net/spec/cql2/0.0/conf/cql2-text");
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
         providers.getFeatureProvider(apiData).ifPresent(provider -> {
-            if (provider.supportsQueries() && provider.queries().supportsAccenti())
-                builder.add("http://www.opengis.net/spec/cql2/0.0/conf/accent-insensitive-comparison");
+            if (provider.supportsQueries() && provider.queries().supportsCql2()) {
+                builder.add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/basic-cql2",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/advanced-comparison-operators",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/basic-spatial-operators",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/spatial-operators",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/temporal-operators",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/array-operators",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/property-property",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/cql2-text");
+                if (provider.queries().supportsAccenti())
+                    builder.add("http://www.opengis.net/spec/cql2/0.0/conf/accent-insensitive-comparison");
+            }
         });
 
         if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.feature))
