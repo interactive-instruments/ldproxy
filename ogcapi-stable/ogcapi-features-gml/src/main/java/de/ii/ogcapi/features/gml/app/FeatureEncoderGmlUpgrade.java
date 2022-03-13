@@ -49,6 +49,8 @@ public class FeatureEncoderGmlUpgrade extends
             .add("posList")
             .add("pos")
             .add("coordinates")
+            .add("lowerCorner")
+            .add("upperCorner")
             .build();;
 
     private final FeatureTransformationContextGml transformationContext;
@@ -336,6 +338,9 @@ public class FeatureEncoderGmlUpgrade extends
                 if (currentDimension != null) {
                     coordinatesTransformerBuilder.sourceDimension(currentDimension);
                     coordinatesTransformerBuilder.targetDimension(currentDimension);
+                } else {
+                    coordinatesTransformerBuilder.sourceDimension(2);
+                    coordinatesTransformerBuilder.targetDimension(2);
                 }
 
                 if (maxAllowableOffset > 0) {
