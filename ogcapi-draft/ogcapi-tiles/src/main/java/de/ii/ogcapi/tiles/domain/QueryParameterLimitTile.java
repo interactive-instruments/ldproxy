@@ -118,6 +118,14 @@ public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApi
     }
 
     @Override
+    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureType,
+                                                        ImmutableFeatureQuery.Builder queryBuilder,
+                                                        Map<String, String> parameters,
+                                                        OgcApiDataV2 apiData) {
+        return transformQuery(queryBuilder, parameters, apiData);
+    }
+
+    @Override
     public boolean isEnabledForApi(OgcApiDataV2 apiData) {
         Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
         return config.isPresent() && config.get().getTileProvider().requiresQuerySupport();
