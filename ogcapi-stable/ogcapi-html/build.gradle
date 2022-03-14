@@ -1,19 +1,22 @@
 plugins {
-    id "com.moowork.node" version "1.3.1"
+    id "com.github.node-gradle.node" version "3.2.0"
 }
 
 dependencies {
-    api project(":ogcapi-foundation")
+    provided project(":ogcapi-foundation")
+
+    testImplementation(testFixtures(project(":ogcapi-foundation")))
 }
 
 ext {
     generatedResourcesDir = new File(project.buildDir, 'generated/src/main/resources/')
 }
 
-compileJava {
+/*compileJava {
     project.sourceSets.main.resources { srcDir generatedResourcesDir }
     outputs.dir(generatedResourcesDir)
-}
+}*/
+project.sourceSets.main.output.dir(generatedResourcesDir)
 
 jar {
     manifest {

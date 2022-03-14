@@ -54,7 +54,7 @@ fs.readdirSync(path.join(__dirname, "src/styles")).forEach(
 module.exports = {
   options: {
     root: __dirname,
-    output: "../../../build/generated/src/main/resources/",
+    output: "../../../build/generated/src/main/resources/de/ii/ogcapi/html",
     mains: mains,
   },
   use: [

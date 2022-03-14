@@ -5,13 +5,7 @@ dependencies {
         exclude module: 'jts-io-common'
     }
 
-    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.2')
-    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.2') {
-        exclude module: 'junit'
-    }
-
-    embedded (group: 'org.xerial', name: 'sqlite-jdbc', version: '3.36.0')
-
+    testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }
 
@@ -19,5 +13,10 @@ repositories {
     maven {
         url "https://maven.ecc.no/releases"
     }
-    mavenCentral()
+}
+
+moduleInfo {
+    requires = [
+            'java.sql'
+    ]
 }

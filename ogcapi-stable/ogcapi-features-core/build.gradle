@@ -1,15 +1,28 @@
 
 dependencies {
+    provided project(":ogcapi-foundation")
     provided project(":ogcapi-common")
     provided project(":ogcapi-collections")
+    provided project(":ogcapi-html")
+    provided project(":ogcapi-json")
 
-    embedded (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.2')
-    embedded (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.2') {
+    embeddedExport (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.2')
+    embeddedExport (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.2') {
         exclude module: 'junit'
     }
     embedded (group: 'tec.units', name: 'unit-ri', version: '1.0.3') {
         exclude module: 'unit-api'
     }
 
+    testImplementation(testFixtures(project(":ogcapi-foundation")))
+    testImplementation project(":ogcapi-html")
+    testImplementation project(":ogcapi-json")
+    testImplementation project(":ogcapi-xml")
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
+}
+
+moduleInfo {
+    requires = [
+        'java.xml'
+    ]
 }

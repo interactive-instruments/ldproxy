@@ -3,6 +3,7 @@ apply plugin: 'com.bmuschko.docker-java-application'
 docker {
     javaApplication {
         baseImage = 'openjdk:11-jre-slim'
+        maintainer = 'interactive instruments GmbH'
         port = 7080
         tag = 'iide/ldproxy:local-dev'
     }
@@ -10,6 +11,7 @@ docker {
 
 dockerDistTar {
     workingDir "/ldproxy"
+    environmentVariable 'XTRAPLATFORM_ENV', 'CONTAINER'
 }
 
 dockerBuildImage {

@@ -7,6 +7,10 @@
  */
 package de.ii.ldproxy.ogcapi.tiles.domain.tileMatrixSet;
 
+import de.ii.ogcapi.tiles.domain.tileMatrixSet.ImmutableTileMatrixSetData;
+import de.ii.ogcapi.tiles.domain.tileMatrixSet.ImmutableTilesBoundingBox;
+import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.util.Objects;

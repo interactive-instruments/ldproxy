@@ -1,6 +1,6 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '3.5.2'
-    id 'com.github.hierynomus.license-report' version '0.15.0' apply false
+    id 'de.interactive_instruments.xtraplatform-application' version '4.0.0'
+    id 'com.github.hierynomus.license-report' version '0.16.1' apply false
     id 'com.bmuschko.docker-java-application' version '3.1.0' apply false
 }
 
@@ -14,8 +14,6 @@ apply from: 'xtraplatform.gradle'
 
 dependencies {
     // features to include in this application
-    featureDevOnly group: 'de.interactive_instruments', name: 'xtraplatform-dev', version: '4.0.0-SNAPSHOT'
-
     feature group: 'de.interactive_instruments', name: 'ogcapi-stable'
     feature group: 'de.interactive_instruments', name: 'ogcapi-draft'
 
@@ -24,7 +22,7 @@ dependencies {
     }
 
     // bundles to include in this application
-    bundle subprojects
+    bundle subprojects.findAll {it.name != 'ldproxy-cfg'}
 }
 
 ext {
@@ -48,25 +46,26 @@ tasks.run {
 tasks.test {
     dependsOn project.gradle.includedBuild('ogcapi-stable').task(':testAll')
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':testAll')
+    dependsOn(':ldproxy-cfg:test')
 }
 
 tasks.check {
     dependsOn project.gradle.includedBuild('ogcapi-stable').task(':checkAll')
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':checkAll')
+    dependsOn(':ldproxy-cfg:check')
 }
 
 tasks.publish {
     dependsOn project.gradle.includedBuild('ogcapi-stable').task(':publish')
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':publish')
+    dependsOn(':ldproxy-cfg:publish')
 }
-
-apply from: 'immutables.gradle'
 
 apply from: 'license-headers.gradle'
 
 apply from: 'docker.gradle'
 
-apply from: 'license-report.gradle'
+//apply from: 'license-report.gradle'
 
 //apply plugin: 'xtraplatform-docs'
 

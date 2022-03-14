@@ -1,0 +1,93 @@
+plugins {
+  id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+dependencies {
+  api(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35')
+}
+
+moduleInfo {
+  enabled = false
+}
+
+ext {
+  includePathsParent = [
+          'de',
+          'com',
+          'com/codahale',
+          'com/github',
+          'com/google',
+          'io',
+          'javax',
+          'javax/ws',
+          'org',
+          'org/apache',
+          'org/eclipse',
+          'org/yaml',
+
+  ]
+  includePaths = [
+          'de/ii',
+          'com/codahale/metrics',
+          'com/github/benmanes',
+          'com/fasterxml',
+          'com/google/common',
+          'dagger',
+          'io/dropwizard',
+          'javax/servlet',
+          'javax/ws/rs',
+          'org/apache/commons',
+          'org/apache/http',
+          'org/eclipse/jetty',
+          'org/yaml/snakeyaml',
+
+  ]
+}
+
+tasks.jar {
+  onlyIf {false}
+}
+
+tasks.shadowJar {
+  archiveClassifier.set("")
+  configurations = [project.configurations.provided]
+  include '**/*.jar'
+  include {
+    it.isDirectory() && (includePathsParent.contains(it.path) || includePaths.any {path -> it.path.startsWith(path)})
+  }
+  include {
+    it.name.endsWith('.class') && includePaths.any {path -> it.path.startsWith(path)}
+  }
+  minimize()
+  relocate('com', 'shadow.com')
+  relocate('dagger', 'shadow.dagger')
+  relocate('io', 'shadow.io')
+  relocate('javax', 'shadow.javax') {
+    exclude 'javax.management.*'
+  }
+  relocate('org', 'shadow.org') {
+    exclude 'org.slf4j.*'
+    exclude 'org.w3c.dom.*'
+  }
+}
+
+artifacts {
+  archives tasks.shadowJar
+}
+
+publishing {
+  publications.named('default').configure {
+    setArtifacts([tasks.shadowJar])
+    pom.withXml {
+      asNode().dependencies.'*'.findAll() {
+        it.optional.text() == 'true'
+      }.each {
+        it.parent().remove(it)
+      }
+    }
+  }
+}
+
+tasks.withType(GenerateModuleMetadata) {
+  enabled = false
+}

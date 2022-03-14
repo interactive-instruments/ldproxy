@@ -5,27 +5,3 @@ dependencies {
         exclude module: 'slf4j-api'
     }
 }
-
-
-jar {
-    manifest {
-        instructionFirst 'Import-Package', "!org.joni.*"
-        instructionFirst 'Import-Package', "!org.jcodings.*"
-    }
-}
-
-//TODO: replace with gradle 6 test fixtures
-apply plugin: 'groovy'
-sourceSets.main.groovy.srcDirs += file('src/testFixtures/groovy')
-dependencies {
-    compileOnly "org.codehaus.groovy:groovy:3.+"
-    compileOnly "org.spockframework:spock-core:2.+"
-}
-jar {
-    manifest {
-        instructionFirst 'Import-Package', "!groovy.*"
-        instructionFirst 'Import-Package', "!spock.lang*"
-        instructionFirst 'Import-Package', "!org.codehaus.groovy*"
-        instructionFirst 'Import-Package', "!org.spockframework.*"
-    }
-}
