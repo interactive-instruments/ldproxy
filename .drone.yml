@@ -80,27 +80,27 @@ pipeline:
     when:
       event: push
 
-  docker-master:
-    image: plugins/docker
-    repo: iide/ldproxy
-    tags: ${DRONE_COMMIT_BRANCH}
-    force_tag: true
-    dockerfile: build/docker/Dockerfile
-    context: build/docker
-    secrets: [ docker_username, docker_password]
-    when:
-      event: push
-      branch: master
+#  docker-master:
+#    image: plugins/docker
+#    repo: iide/ldproxy
+#    tags: ${DRONE_COMMIT_BRANCH}
+#    force_tag: true
+#    dockerfile: build/docker/Dockerfile
+#    context: build/docker
+#    secrets: [ docker_username, docker_password]
+#    when:
+#      event: push
+#      branch: master
 
-  docker-release:
-    image: plugins/docker
-    repo: iide/ldproxy
-    auto_tag: true
-    dockerfile: build/docker/Dockerfile
-    context: build/docker
-    secrets: [ docker_username, docker_password]
-    when:
-      event: tag
+#  docker-release:
+#    image: plugins/docker
+#    repo: iide/ldproxy
+#    auto_tag: true
+#    dockerfile: build/docker/Dockerfile
+#    context: build/docker
+#    secrets: [ docker_username, docker_password]
+#    when:
+#      event: tag
 
   github-release:
     image: node:12-alpine
@@ -122,26 +122,26 @@ pipeline:
     when:
       event: [tag]
 
-  build-community:
-    image: openjdk:11-slim
-    commands:
-      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew assemble dockerDistTar -Psnapshot=true -Pcommunity
-    when:
-      event: [push]
-      branch: master
+#  build-community:
+#    image: openjdk:11-slim
+#    commands:
+#      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+#      - ./gradlew assemble dockerDistTar -Psnapshot=true -Pcommunity
+#    when:
+#      event: [push]
+#      branch: master
 
-  docker-community:
-    image: plugins/docker
-    registry: docker.ci.interactive-instruments.de
-    repo: docker.ci.interactive-instruments.de/iide/ldproxy
-    tags: _community
-    force_tag: true
-    dockerfile: build/docker/Dockerfile
-    context: build/docker
-    when:
-      event: push
-      branch: master
+#  docker-community:
+#    image: plugins/docker
+#    registry: docker.ci.interactive-instruments.de
+#    repo: docker.ci.interactive-instruments.de/iide/ldproxy
+#    tags: _community
+#    force_tag: true
+#    dockerfile: build/docker/Dockerfile
+#    context: build/docker
+#    when:
+#      event: push
+#      branch: master
 
   save-cache:
     image: drillster/drone-volume-cache
