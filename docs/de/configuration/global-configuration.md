@@ -11,6 +11,7 @@ Die Konfigurationsdatei `cfg.yml` befindet sich im Daten-Verzeichnis.
 |`auth` |object | |Konfiguration der [Autorisierung](#auth)
 |`manager` |object | |Konfiguration des [Manager](#manager)
 |`backgroundTasks` |object | |Konfiguration von [Hintergrundprozessen](#background-tasks)
+|`proj` |object | |Konfiguration von [PROJ Koordinatentransformationen](#proj)
 
 <a name="store"></a>
 
@@ -317,3 +318,11 @@ logging:
 |Eigenschaft |Datentyp |Default |Beschreibung
 | --- | --- | --- | ---
 |`maxThreads` |integer |`1` |Die maximale Anzahl an Threads, die für Hintergrundprozesse zur Verfügung stehen. Falls zu jeder Zeit Requests performant beantwortet können werden sollen, sollte der Wert die Hälfte der CPU-Kerne nicht überschreiten.
+
+<a name="proj"></a>
+
+## PROJ Koordinatentransformationen
+
+|Eigenschaft |Datentyp |Default |Beschreibung
+| --- | --- | --- | ---
+|`location` |string |`proj` |Der Pfad zum PROJ-Verzeichnis, entweder absolut oder relativ zum Daten-Verzeichnis.
