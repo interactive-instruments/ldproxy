@@ -1,5 +1,38 @@
 # Changelog
 
+## v3.2.0 (15/03/2022)
+
+#### Implemented enhancements
+
+-  support OGC API Routes [#501](https://github.com/interactive-instruments/ldproxy/issues/501)
+-  use PROJ for CRS transformations instead of Geotools [#439](https://github.com/interactive-instruments/ldproxy/issues/439)
+-  update the CQL implementation [#432](https://github.com/interactive-instruments/ldproxy/issues/432)
+-  add Sortables endpoint [#388](https://github.com/interactive-instruments/ldproxy/issues/388)
+
+#### Improvements
+
+-  improve bbox in tile queries [#594](https://github.com/interactive-instruments/ldproxy/issues/594)
+-  replace OSGi/iPOJO with JPMS/Dagger [#577](https://github.com/interactive-instruments/ldproxy/issues/577)
+-  improve exception handling/routing [#569](https://github.com/interactive-instruments/ldproxy/issues/569)
+-  different coordinate precision for each axis [#402](https://github.com/interactive-instruments/ldproxy/issues/402)
+-  support NTv2 coordinate conversions [#398](https://github.com/interactive-instruments/ldproxy/issues/398)
+-  add optional strict config parsing [#261](https://github.com/interactive-instruments/ldproxy/issues/261)
+
+#### Fixed bugs
+
+-  basemap duplicated in the maplibre clients in html format [#588](https://github.com/interactive-instruments/ldproxy/issues/588)
+-  API without feature provider starts successfully [#585](https://github.com/interactive-instruments/ldproxy/issues/585)
+-  500 response for tile set resources of a collection [#575](https://github.com/interactive-instruments/ldproxy/issues/575)
+-  500 response to a filter "string > 0" [#538](https://github.com/interactive-instruments/ldproxy/issues/538)
+
+#### Dependency updates
+
+-  update sqlite driver to 3.36.0.3 [#618](https://github.com/interactive-instruments/ldproxy/issues/618)
+-  update postgresql driver to 42.3.3 [#617](https://github.com/interactive-instruments/ldproxy/issues/617)
+-  update dropwizard to 2.0.38 [#616](https://github.com/interactive-instruments/ldproxy/issues/616)
+
+---
+
 ## v3.1.0 (10/12/2021)
 
 #### Implemented enhancements
