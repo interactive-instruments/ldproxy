@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.2.1 (16/03/2022)
+*No changelog for this release.*
+
+---
+
 ## v3.2.0 (15/03/2022)
 
 #### Implemented enhancements
