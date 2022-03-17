@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.collections.app.CapabilityCollections;
 import de.ii.ogcapi.collections.queryables.app.CapabilityQueryables;
 import de.ii.ogcapi.collections.schema.app.CapabilitySchema;
-import de.ii.ogcapi.common.domain.CapabilityCommon;
+import de.ii.ogcapi.common.domain.CommonBuildingBlock;
 import de.ii.ogcapi.crs.app.CapabilityCrs;
 import de.ii.ogcapi.features.core.app.CapabilityFeaturesCore;
 import de.ii.ogcapi.features.custom.extensions.app.CapabilityFeaturesExtensions;
@@ -66,7 +66,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
         // TileSetFormatExtension
         .add(new CapabilityTransactional())
         .add(new CapabilityCollections())
-        .add(new CapabilityCommon())
+        .add(new CommonBuildingBlock())
         .add(new CapabilityCrs(null, null))
         .add(new CapabilityFeaturesCore())
         .add(new CapabilityGeoJson())
