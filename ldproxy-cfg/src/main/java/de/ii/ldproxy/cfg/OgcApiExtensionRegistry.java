@@ -16,6 +16,7 @@ import de.ii.ogcapi.common.domain.CapabilityCommon;
 import de.ii.ogcapi.crs.app.CapabilityCrs;
 import de.ii.ogcapi.features.core.app.CapabilityFeaturesCore;
 import de.ii.ogcapi.features.custom.extensions.app.CapabilityFeaturesExtensions;
+import de.ii.ogcapi.features.flatgeobuf.app.CapabilityFlatgeobuf;
 import de.ii.ogcapi.features.geojson.app.CapabilityGeoJson;
 import de.ii.ogcapi.features.geojson.ld.app.CapabilityGeoJsonLd;
 import de.ii.ogcapi.features.gml.app.CapabilityGml;
@@ -50,6 +51,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
         .add(new CapabilityQueryables())
         .add(new CapabilitySchema())
         .add(new CapabilityFeaturesExtensions())
+        .add(new CapabilityFlatgeobuf())
         .add(new CapabilityGeoJsonLd())
         .add(new CapabilityJsonFg())
         .add(new CapabilityFilter())
