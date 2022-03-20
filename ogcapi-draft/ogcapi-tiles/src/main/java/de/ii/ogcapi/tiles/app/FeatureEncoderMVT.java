@@ -7,6 +7,10 @@
  */
 package de.ii.ogcapi.tiles.app;
 
+import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
+import de.ii.ogcapi.features.core.domain.ModifiableFeatureSfFlat;
+import de.ii.ogcapi.features.core.domain.ModifiablePropertySfFlat;
+import de.ii.ogcapi.features.core.domain.PropertySfFlat;
 import de.ii.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ogcapi.tiles.domain.ImmutableMvtFeature;
 import de.ii.ogcapi.tiles.domain.MvtFeature;
@@ -32,7 +36,7 @@ import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, FeatureMVT> {
+public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, FeatureSfFlat> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderMVT.class);
 
@@ -99,13 +103,13 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
   }
 
   @Override
-  public FeatureMVT createFeature() {
-    return ModifiableFeatureMVT.create();
+  public FeatureSfFlat createFeature() {
+    return ModifiableFeatureSfFlat.create();
   }
 
   @Override
-  public PropertyMVT createProperty() {
-    return ModifiablePropertyMVT.create();
+  public PropertySfFlat createProperty() {
+    return ModifiablePropertySfFlat.create();
   }
 
   @Override
@@ -118,7 +122,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertyMVT, Feature
   }
 
   @Override
-  public void onFeature(FeatureMVT feature) {
+  public void onFeature(FeatureSfFlat feature) {
     if (Objects.isNull(featureStart))
       featureStart = System.nanoTime();
     featureCount++;
