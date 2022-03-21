@@ -1,9 +1,9 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.crs.domain;
 
@@ -14,6 +14,22 @@ import org.immutables.value.Value;
 
 import java.util.Set;
 
+/**
+ * @example <code>
+ * ```yaml
+ * - buildingBlock: CRS
+ *   additionalCrs:
+ *   - code: 25832
+ *     forceAxisOrder: NONE
+ *   - code: 4258
+ *     forceAxisOrder: NONE
+ *   - code: 4326
+ *     forceAxisOrder: NONE
+ *   - code: 3857
+ *     forceAxisOrder: NONE
+ * ```
+ * </code>
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableCrsConfiguration.Builder.class)
@@ -22,6 +38,17 @@ public interface CrsConfiguration extends ExtensionConfiguration {
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    /**
+     * @en Add additonal coordinate reference systems to an API or a collection.
+     * @de Steuert, welche weitere Koordinatenreferenzsysteme in einer API oder für eine
+     * Feature Collection unterstützt werden sollen. Das native Koordinatenreferenzsystem
+     * der Daten und das Default-Koordinatenreferenzsystem der API sind automatisch aktiviert.
+     * Koordinatenreferenzsysteme werden über ihren EPSG-Code identifiziert (code).
+     * Zusätzlich ist in forceAxisOrder die Reihenfolge der Koordinatenachsen anzugeben
+     * (NONE: wie im Koordinatenreferenzsystem, LON_LAT oder LAT_LON: die Reihenfolge im
+     * Koordinatenreferenzsystem wird ignoriert und die angegebene Reihenfolge wird verwendet).
+     * @default {}
+     */
     Set<EpsgCrs> getAdditionalCrs();
 
     @Override

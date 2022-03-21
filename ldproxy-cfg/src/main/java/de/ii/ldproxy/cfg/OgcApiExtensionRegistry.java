@@ -9,17 +9,17 @@ package de.ii.ldproxy.cfg;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ogcapi.collections.app.CapabilityCollections;
+import de.ii.ogcapi.collections.app.CollectionsBuildingBlock;
 import de.ii.ogcapi.collections.queryables.app.CapabilityQueryables;
 import de.ii.ogcapi.collections.schema.app.CapabilitySchema;
 import de.ii.ogcapi.common.domain.CommonBuildingBlock;
-import de.ii.ogcapi.crs.app.CapabilityCrs;
-import de.ii.ogcapi.features.core.app.CapabilityFeaturesCore;
+import de.ii.ogcapi.crs.app.CrsBuildingBlock;
+import de.ii.ogcapi.features.core.app.FeaturesCoreBuildingBlock;
 import de.ii.ogcapi.features.custom.extensions.app.CapabilityFeaturesExtensions;
 import de.ii.ogcapi.features.geojson.app.CapabilityGeoJson;
 import de.ii.ogcapi.features.geojson.ld.app.CapabilityGeoJsonLd;
 import de.ii.ogcapi.features.gml.app.CapabilityGml;
-import de.ii.ogcapi.features.html.app.CapabilityFeaturesHtml;
+import de.ii.ogcapi.features.html.app.FeaturesHtmlBuildingBlock;
 import de.ii.ogcapi.features.json.fg.app.CapabilityJsonFg;
 import de.ii.ogcapi.filter.app.CapabilityFilter;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
@@ -65,13 +65,13 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
                 null)) // TODO: TileFormatWithQuerySupportExtension,
         // TileSetFormatExtension
         .add(new CapabilityTransactional())
-        .add(new CapabilityCollections())
+        .add(new CollectionsBuildingBlock())
         .add(new CommonBuildingBlock())
-        .add(new CapabilityCrs(null, null))
-        .add(new CapabilityFeaturesCore())
+        .add(new CrsBuildingBlock(null, null))
+        .add(new FeaturesCoreBuildingBlock())
         .add(new CapabilityGeoJson())
         .add(new CapabilityGml())
-        .add(new CapabilityFeaturesHtml())
+        .add(new FeaturesHtmlBuildingBlock())
         .add(new CapabilityFoundation())
         .add(new CapabilityHtml())
         .add(new CapabilityJson())

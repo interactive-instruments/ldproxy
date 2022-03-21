@@ -1,9 +1,9 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.features.html.domain;
 
@@ -24,6 +24,33 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
+/**
+ * @example <code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   itemLabelFormat: '{{ZI005_FNA}}'
+ *   transformations:
+ *     F_CODE:
+ *       codelist: f_code
+ *     ZI001_SDV:
+ *       dateFormat: MM/dd/yyyy[', 'HH:mm:ss[' 'z]]
+ *     RTY:
+ *       codelist: rty
+ *     FCSUBTYPE:
+ *       codelist: fcsubtype
+ *     TRS:
+ *       codelist: trs
+ *     RIN_ROI:
+ *       codelist: roi
+ *     ZI016_WTC:
+ *       codelist: wtc
+ *     RLE:
+ *       codelist: rle
+ *     LOC:
+ *       codelist: loc
+ * ```
+ * </code>
+ */
 @Value.Immutable
 @Value.Style(builder = "new", attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableFeaturesHtmlConfiguration.Builder.class)
@@ -40,28 +67,104 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @Nullable
   LAYOUT getLayout();
 
+  /**
+   * @en Can be TOP, RIGHT or AUTO. AUTO is the default, it chooses TOP when any nested objects
+   * are found and RIGHT otherwise.
+   * @de Mögliche Werte sind TOP, RIGHT und AUTO. AUTO ist der Default, es wählt automatisch
+   * TOP wenn verschachtelte Objekte gefunden werden und sonst RIGHT.
+   * @default AUTO
+   */
   @Nullable
   POSITION getMapPosition();
 
+  /**
+   * @en Define how the feature label for HTML is formed. Default is the feature id. Property names in
+   * double curly braces will be replaced with the corresponding value.
+   * @de Steuert, wie der Titel eines Features in der HTML-Ausgabe gebildet wird. Standardmäßig ist
+   * der Titel der Identifikator. In der Angabe können über die Angabe des Attributnamens in
+   * doppelt-geschweiften Klammern Ersetzungspunkte für die Attribute des Features verwendet werden.
+   * Es können nur Attribute verwendet werden, die nur einmal pro Feature vorkommen können.
+   * Neben einer direkten Ersetzung mit dem Attributwert können auch Filter angewendet werden.
+   * Ist ein Attribut null, dann wird der Ersetzungspunkt durch einen leeren String ersetzt.
+   * @default {{id}}
+   */
   @JsonAlias("itemLabelFormat")
   Optional<String> getFeatureTitleTemplate();
 
+  /**
+   * @en Optional transformations for feature properties for HTML, see transformations.
+   * @de Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der HTML-Ausgabe
+   * transformiert werden.
+   * @default {}
+   */
   @JsonSerialize(converter = IgnoreLinksWildcardSerializer.class)
   @Override
   Map<String, List<PropertyTransformation>> getTransformations();
 
+  /**
+   * @en The map client library to use to display features in the HTML representation.
+   * The default is MapLibre GL (MAP_LIBRE). WIP: Cesium (CESIUM) can be used for displaying 3D
+   * features on a globe.
+   * @de Auswahl des in den Ressourcen "Features" und "Feature" zu verwendenden Map-Clients.
+   * Der Standard ist MapLibre GL JS. Alternativ wird als auch CESIUM unterstützt (CesiumJS).
+   * Die Unterstützung von CesiumJS zielt vor allem auf die Darstellung von 3D-Daten ab und besitzt
+   * in der aktuellen Version experimentellen Charakter, es werden keine Styles unterstützt.
+   * @default MAP_LIBRE
+   */
   @Nullable
   MapClient.Type getMapClientType();
 
+  /**
+   * @en An optional Mapbox style in the style repository to use for the map in the HTML representation
+   * of a feature or feature collection. If set to DEFAULT, the defaultStyle configured in the HTML
+   * configuration is used. If set to NONE, a simple wireframe style will be used with OpenStreetMap
+   * as a basemap. The value is ignored, if the map client is not MapLibre.
+   * @de Ein Style im Style-Repository, der standardmäßig in Karten mit den Features verwendet werden
+   * soll. Bei DEFAULT wird der defaultStyle aus Modul HTML verwendet. Bei NONE wird ein einfacher
+   * Style mit OpenStreetMap als Basiskarte verwendet. Der Style sollte alle Daten abdecken und muss
+   * im Format Mapbox Style verfügbar sein. Es wird zuerst nach einem Style mit dem Namen für
+   * die Feature Collection gesucht; falls keiner gefunden wird, wird nach einem Style mit dem
+   * Namen auf der API-Ebene gesucht. Wird kein Style gefunden, wird NONE verwendet.
+   * @default DEFAULT
+   */
   @Nullable
   String getStyle();
 
+  /**
+   * @en If true, any minzoom or maxzoom members are removed from the GeoJSON layers.
+   * The value is ignored, if the map client is not MapLibre or style is NONE.
+   * @de Bei true werden aus dem in style angegebenen Style die minzoom- und maxzoom-Angaben bei den
+   * Layer-Objekten entfernt, damit die Features in allen Zoomstufen angezeigt werden. Diese Option
+   * sollte nicht gewählt werden, wenn der Style unterschiedliche Präsentationen je nach Zoomstufe
+   * vorsieht, da ansonsten alle Layer auf allen Zoomstufen gleichzeitig angezeigt werden.
+   * @default false
+   */
   @Nullable
   Boolean getRemoveZoomLevelConstraints();
 
+  /**
+   * @en This option works only for CesiumJS as map client. By default, the geometry identified in the
+   * provider as PRIMARY_GEOMETRY is used for representation on the map. This option allows you to
+   * specify multiple geometry properties in a list.The first geometry property set for a feature
+   * will be used.
+   * @de Diese Option wirkt nur für CesiumJS als Map-Client. Als Standard wird die im Provider als
+   * PRIMARY_GEOMETRY identifizierte Geometrie für die Darstellung in der Karte verwendet.
+   * Diese Option ermöglicht es, mehrere Geometrieeigenschaften in einer Liste anzugeben.
+   * Die erste Geometrieeigenschaft, die für ein Feature gesetzt ist, wird dabei verwendet.
+   * @default []
+   */
   @Nullable
   List<String> getGeometryProperties();
 
+  /**
+   * @en This option can be used for the HTML output to set a custom maximum value for the limit
+   * parameter. If no value is specified, the value from the Features Core module applies by default.
+   * When using CesiumJS as a map client, a value of 100 is recommended.
+   * @de Mit dieser Option kann für die HTML-Ausgabe ein eigener Maximalwert für den Parameter
+   * limit gesetzt werden. Sofern kein Wert angegeben ist, so gilt der Wert aus dem Modul
+   * "Features Core".Bei der Verwendung von CesiumJS als Map-Client wird ein Wert von 100 empfohlen.
+   * @default null
+   */
   @Nullable
   Integer getMaximumPageSize();
 
