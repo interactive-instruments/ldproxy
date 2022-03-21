@@ -32,7 +32,6 @@ import javax.inject.Singleton;
  * - Features - Part 1: Core 1.0 für die zwei genannten Ressourcen.
  * @see FeaturesCoreConfiguration
  * @see EndpointFeatures
- * @see
  */
 @Singleton
 @AutoBind
