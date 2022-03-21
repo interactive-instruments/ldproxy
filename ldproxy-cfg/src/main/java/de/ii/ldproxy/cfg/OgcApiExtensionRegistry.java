@@ -21,7 +21,7 @@ import de.ii.ogcapi.features.geojson.ld.app.CapabilityGeoJsonLd;
 import de.ii.ogcapi.features.gml.app.CapabilityGml;
 import de.ii.ogcapi.features.html.app.FeaturesHtmlBuildingBlock;
 import de.ii.ogcapi.features.json.fg.app.CapabilityJsonFg;
-import de.ii.ogcapi.filter.app.CapabilityFilter;
+import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.CapabilityFoundation;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -52,7 +52,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
         .add(new CapabilityFeaturesExtensions())
         .add(new CapabilityGeoJsonLd())
         .add(new CapabilityJsonFg())
-        .add(new CapabilityFilter())
+        .add(new FilterBuildingBlock())
         .add(new CapabilityGeometrySimplification())
         .add(new CapabilityMapTiles())
         .add(new CapabilityProjections())
