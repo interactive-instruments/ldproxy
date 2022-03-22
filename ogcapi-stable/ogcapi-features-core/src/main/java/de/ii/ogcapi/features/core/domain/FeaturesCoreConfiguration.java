@@ -80,6 +80,12 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     @Nullable
     Boolean getShowsFeatureSelfLink();
 
+    /**
+     * Validate the coordinates of the bbox or filter parameters against the domain of validity of the coordinate reference system
+     */
+    @Nullable
+    Boolean getValidateCoordinatesInQueries();
+
     Optional<ItemType> getItemType();
 
     Optional<FeaturesCollectionQueryables> getQueryables();
