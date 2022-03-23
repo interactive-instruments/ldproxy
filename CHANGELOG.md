@@ -1,7 +1,10 @@
 # Changelog
 
 ## v3.2.1 (16/03/2022)
-*No changelog for this release.*
+
+#### Fixed bugs
+
+-  unexpected postgresql error "Connection reset" [#622](https://github.com/interactive-instruments/ldproxy/issues/622)
 
 ---
 
