@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.sorting.app;
 
@@ -33,18 +32,37 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title
+ * @en The module *Sorting* may be enabled for every API with a feature provider that
+ * supports sorting. It adds the following query parameter:
+ *
+ * * `sortby` (resource *Features*): If the parameter is specified,
+ * the features are returned sorted according to the attributes specified in
+ * a comma-separated list. The attribute name can be preceded by `+`
+ * (ascending, the default behavior) or `-` (descending). Example: `sortby=type,-name`.
+ * @de Das Modul "Sorting" kann für jede über ldproxy bereitgestellte API mit einem
+ * Feature-Provider, der Sortierung unterstützt, aktiviert werden. Es ergänzt die
+ * folgenden Query-Parameter:
+ *
+ * * `sortby` (Ressource "Features"): Ist der Parameter angegeben, werden die Features
+ * sortiert zurückgegeben. Sortiert wird nach den in einer kommaseparierten Liste
+ * angegebenen Attributen. Dem Attributnamen kann ein `+` (aufsteigend, das Standardverhalten)
+ * oder ein `-` (absteigend) vorangestellt werden. Beispiel: `sortby=type,-name`.
+ * @see SortingConfiguration
+ */
 @Singleton
 @AutoBind
-public class CapabilitySorting implements ApiBuildingBlock {
+public class SortingBuildingBlock implements ApiBuildingBlock {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CapabilitySorting.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SortingBuildingBlock.class);
     final static List<String> VALID_TYPES = ImmutableList.of("STRING", "DATE", "DATETIME", "INTEGER", "FLOAT");
 
     private final SchemaInfo schemaInfo;
     private final FeaturesCoreProviders providers;
 
     @Inject
-    public CapabilitySorting(FeaturesCoreProviders providers, SchemaInfo schemaInfo) {
+    public SortingBuildingBlock(FeaturesCoreProviders providers, SchemaInfo schemaInfo) {
         this.providers = providers;
         this.schemaInfo = schemaInfo;
     }

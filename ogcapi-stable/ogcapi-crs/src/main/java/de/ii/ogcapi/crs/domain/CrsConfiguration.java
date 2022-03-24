@@ -40,14 +40,14 @@ public interface CrsConfiguration extends ExtensionConfiguration {
 
     /**
      * @en Add additonal coordinate reference systems to an API or a collection.
-     * @de Steuert, welche weitere Koordinatenreferenzsysteme in einer API oder für eine
-     * Feature Collection unterstützt werden sollen. Das native Koordinatenreferenzsystem
-     * der Daten und das Default-Koordinatenreferenzsystem der API sind automatisch aktiviert.
-     * Koordinatenreferenzsysteme werden über ihren EPSG-Code identifiziert (code).
-     * Zusätzlich ist in forceAxisOrder die Reihenfolge der Koordinatenachsen anzugeben
-     * (NONE: wie im Koordinatenreferenzsystem, LON_LAT oder LAT_LON: die Reihenfolge im
-     * Koordinatenreferenzsystem wird ignoriert und die angegebene Reihenfolge wird verwendet).
-     * @default {}
+     * @de Steuert, welche weitere Koordinatenreferenzsysteme in einer API oder für eine Feature Collection
+     * unterstützt werden sollen. Das native Koordinatenreferenzsystem der Daten und das
+     * Default-Koordinatenreferenzsystem der API sind automatisch aktiviert. Koordinatenreferenzsysteme
+     * werden über ihren EPSG-Code identifiziert (`code`). Zusätzlich ist in `forceAxisOrder`
+     * die Reihenfolge der Koordinatenachsen anzugeben (`NONE`: wie im Koordinatenreferenzsystem,
+     * `LON_LAT` oder `LAT_LON`: die Reihenfolge im Koordinatenreferenzsystem wird ignoriert und die
+     * angegebene Reihenfolge wird verwendet).
+     * @default `{}`
      */
     Set<EpsgCrs> getAdditionalCrs();
 

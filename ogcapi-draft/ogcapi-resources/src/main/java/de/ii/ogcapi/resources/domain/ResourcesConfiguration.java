@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.resources.domain;
 
@@ -24,6 +23,13 @@ public interface ResourcesConfiguration extends ExtensionConfiguration, CachingC
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    /**
+     * @en Controls whether the resources should be able to be created and deleted
+     * via PUT and DELETE through the API.
+     * @de Steuert, ob die Ressourcen über PUT und DELETE über die API erzeugt und
+     * gelöscht werden können sollen.
+     * @default `false`
+     */
     @Nullable
     Boolean getManagerEnabled();
 

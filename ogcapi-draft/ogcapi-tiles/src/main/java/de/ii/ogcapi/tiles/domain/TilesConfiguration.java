@@ -1,13 +1,12 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.tiles.domain;
 
-import static de.ii.ogcapi.tiles.app.CapabilityTiles.MINIMUM_SIZE_IN_PIXEL;
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.MINIMUM_SIZE_IN_PIXEL;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

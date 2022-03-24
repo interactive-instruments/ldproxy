@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.features.geojson.domain;
 
@@ -19,6 +18,92 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
+/**
+ * @en An example of flattening. The non-flattened feature
+ * @de Ein Beispiel zur Abflachung. Das nicht abgeflachte Feature
+ * @example <code>
+ * ```json
+ * {
+ *   "type" : "Feature",
+ *   "id" : "1",
+ *   "geometry" : {
+ *     "type" : "Point",
+ *     "coordinates" : [ 7.0, 50.0 ]
+ *   },
+ *   "properties" : {
+ *     "name" : "Beispiel",
+ *     "inspireId" : "https://example.org/id/soziales/kindergarten/1",
+ *     "serviceType" : {
+ *       "title" : "Kinderbetreuung",
+ *       "href" : "http://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService"
+ *     },
+ *     "pointOfContact" : {
+ *       "address" : {
+ *         "thoroughfare" : "Beispielstr.",
+ *         "locatorDesignator" : "123",
+ *         "postCode" : "99999",
+ *         "adminUnit" : "Irgendwo"
+ *       },
+ *       "telephoneVoice" : "0211 16021740"
+ *     },
+ *     "occupancy" : [ {
+ *       "typeOfOccupant" : "vorschule",
+ *       "numberOfOccupants" : 20
+ *     }, {
+ *       "typeOfOccupant" : "schulkinder",
+ *       "numberOfOccupants" : 25
+ *     } ]
+ *   }
+ * }
+ * ```
+ * </code>
+ */
+
+/**
+ * @en looks like this flattened with the default separator:
+ * @de sieht abgeflacht mit dem Standardtrennzeichen wie folgt aus:
+ * @example <code>
+ * ```json
+ * {
+ *   "type" : "Feature",
+ *   "id" : "1",
+ *   "geometry" : {
+ *     "type" : "Point",
+ *     "coordinates" : [ 7.0, 50.0 ]
+ *   },
+ *   "properties" : {
+ *     "name" : "Beispiel",
+ *     "inspireId" : "https://example.org/id/soziales/kindergarten/1",
+ *     "serviceType.title" : "Kinderbetreuung",
+ *     "serviceType.href" : "http://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService",
+ *     "pointOfContact.address.thoroughfare" : "Otto-Pankok-Str.",
+ *     "pointOfContact.address.locatorDesignator" : "29",
+ *     "pointOfContact.address.postCode" : "40231",
+ *     "pointOfContact.address.adminUnit" : "Düsseldorf",
+ *     "pointOfContact.telephoneVoice" : "0211 16021740",
+ *     "occupancy.1.typeOfOccupant" : "vorschule",
+ *     "occupancy.1.numberOfOccupants" : 20,
+ *     "occupancy.2.typeOfOccupant" : "schulkinder",
+ *     "occupancy.2.numberOfOccupants" : 25
+ *   }
+ * }
+ * ```
+ * </code>
+ */
+
+/**
+ * @en  Example of the specifications in the configuration file:
+ * @de Beispiel für die Angaben in der Konfigurationsdatei:
+ * @example <code>
+ * ```yaml
+ * - buildingBlock: GEO_JSON
+ *   transformations:
+ *     '*':
+ *       flatten: '.'
+ * ```
+ * </code>
+ */
+
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
@@ -31,10 +116,24 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
   abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    /**
+     * @en *Deprecated* Use the
+     * [`flatten` transformation](../../providers/transformations.md) instead.
+     * @de *Deprecated* Wird abgelöst durch die
+     * [`flatten`-Transformation](../../providers/transformations.md).
+     * @default `FLATTEN
+     */
     @Deprecated(since = "3.1.0")
     @Nullable
     NESTED_OBJECTS getNestedObjectStrategy();
 
+    /**
+     * @en *Deprecated* Use the
+     * [`flatten` transformation](../../providers/transformations.md) instead.
+     * @de *Deprecated* Wird abgelöst durch die
+     * [`flatten`-Transformation](../../providers/transformations.md).
+     * @default `SUFFIX`
+     */
     @Deprecated(since = "3.1.0")
     @Nullable
     MULTIPLICITY getMultiplicityStrategy();
@@ -43,6 +142,13 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     @Nullable
     Boolean getUseFormattedJsonOutput();
 
+    /**
+     * @en *Deprecated* Use the
+     * [`flatten` transformation](../../providers/transformations.md) instead.
+     * @de *Deprecated* Wird abgelöst durch die
+     * [`flatten`-Transformation](../../providers/transformations.md).
+     * @default "."
+     */
     @Deprecated(since = "3.1.0")
     @Nullable
     String getSeparator();

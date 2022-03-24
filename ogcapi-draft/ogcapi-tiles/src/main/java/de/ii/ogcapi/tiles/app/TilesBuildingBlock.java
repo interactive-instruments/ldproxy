@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.tiles.app;
 
@@ -31,6 +30,7 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
+import de.ii.ogcapi.tiles.infra.*;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -47,9 +47,81 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.sqlite.SQLiteJDBCLoader;
 
+/**
+ * @title Vector Tiles (TILES)
+ * @en Adds support for vector tiles for the whole dataset and/or single collections.
+ *
+ *
+ * ## Scope
+ *
+ * ### Conformance classes
+ *
+ * This module implements requirements of the conformance classes from the draft specification
+ * [OGC API - Tiles - Part 1: Core](https://github.com/opengeospatial/OGC-API-Tiles) and from
+ * the standard [OGC Two Dimensional Tile Matrix Set](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html).
+ * The implementation is subject to change in the course of the development and approval process
+ * of the draft.
+ *
+ * ### Tile matrix sets
+ *
+ * Supported tile matrix sets include [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62),
+ * [WorldCRS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#63) and
+ * [WorldMercatorWGS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#64).
+ *
+ * ### Cache
+ *
+ * The tile cache resides under the relative path `tiles/{apiId}/{collectionId}/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}.pbf`
+ * in the data directory, where `__all__` is used as value for `collectionId` for tiles based on the whole dataset.
+ *
+ * If the data or configuration for an API changes, the cache directory for this API has to be deleted to refresh the tiles.
+ * @de Das Modul "Tiles" kann für jede über ldproxy bereitgestellte API mit einem
+ * SQL-Feature-Provider oder mit einem MBTiles-Tile-Provider aktiviert werden.
+ * Es aktiviert die Ressourcen "Tilesets", "Tileset", "Tile", "Tile Matrix Sets" und
+ * "Tile Matrix Set".
+ *
+ * Das Modul basiert auf dem Entwurf von [OGC API - Tiles - Part 1: Core](https://github.com/opengeospatial/OGC-API-Tiles)
+ * und dem Entwurf von [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata](https://docs.ogc.org/DRAFTS/17-083r3.html).
+ * Die Implementierung wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
+ *
+ * Die unterstützten Kachelformate sind:
+ *
+ * - MVT (Mapbox Vector Tile)
+ * - PNG
+ * - WebP
+ * - JPEG
+ * - TIFF
+ *
+ * Als vorkonfigurierte Kachelschemas stehen zur Verfügung:
+ *
+ * - [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62)
+ * - [WorldCRS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#63)
+ * - [WorldMercatorWGS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#64)
+ * - AdV_25832 (Kachelschema der AdV für Deutschland)
+ * - EU_25832 (Kachelschema des BKG, basierend auf AdV_25832, erweitert auf Europa)
+ * - gdi_de_25832 (von der GDI-DE empfohlenes Kachelschema)
+ *
+ * Weitere Kachelschemas können als JSON-Datei gemäß dem aktuellen Entwurf für den OGC-Standard
+ * [Two Dimensional Tile Matrix Set and Tile Set Metadata 2.0](https://docs.ogc.org/DRAFTS/17-083r3.html)
+ * im Datenverzeichnis unter `api-resources/tile-matrix-sets/{tileMatrixSetId}.json` konfiguriert werden.
+ *
+ * Der Tile-Cache liegt im ldproxy-Datenverzeichnis unter dem relativen Pfad `cache/tiles/{apiId}`.
+ * Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann sollte das
+ * Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den aktualisierten
+ * Daten oder Regeln neu aufgebaut wird.
+ * @see EndpointTileMatrixSets
+ * @see EndpointTileMultiCollection
+ * @see EndpointTileSetMultiCollection
+ * @see EndpointTileSetSingleCollection
+ * @see EndpointTileSetsMultiCollection
+ * @see EndpointTileSetsSingleCollection
+ * @see EndpointTileSingleCollection
+ * @see VectorTileSeeding
+ * @see
+ *
+ */
 @Singleton
 @AutoBind
-public class CapabilityTiles implements ApiBuildingBlock {
+public class TilesBuildingBlock implements ApiBuildingBlock {
 
     public static final int LIMIT_DEFAULT = 100000;
     public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;
@@ -62,7 +134,7 @@ public class CapabilityTiles implements ApiBuildingBlock {
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
     @Inject
-    public CapabilityTiles(ExtensionRegistry extensionRegistry, FeaturesQuery queryParser,
+    public TilesBuildingBlock(ExtensionRegistry extensionRegistry, FeaturesQuery queryParser,
                            FeaturesCoreProviders providers, SchemaInfo schemaInfo,
                            TileMatrixSetRepository tileMatrixSetRepository) {
         this.extensionRegistry = extensionRegistry;

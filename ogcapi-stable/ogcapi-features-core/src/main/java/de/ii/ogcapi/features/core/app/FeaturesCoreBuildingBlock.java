@@ -19,17 +19,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Modul "Features Core"
- * @en The module Features Core has to be enabled for every API with a feature provider.
- * It provides the resources Features and Feature.
+ * @title Modul Features Core
+ * @en The module *Features Core* has to be enabled for every API with a feature provider.
+ * It provides the resources *Features* and *Feature*.
  *
- * Features Core implements all requirements of conformance class Core of OGC API -
- * Features - Part 1: Core 1.0 for the two mentioned resources.
- * @de Das Modul "Features Core" ist für jede über ldproxy bereitgestellte API mit einem Feature-Provider
- * zu aktivieren. Es stellt die Ressourcen "Features" und "Feature" bereit.
+ * *Features Core* implements all requirements of conformance class *Core* of
+ * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
+ * for the two mentioned resources.
+ * @de Das Modul "Features Core" ist für jede über ldproxy bereitgestellte API mit einem Feature-Provider zu aktivieren. Es stellt die Ressourcen "Features" und "Feature" bereit.
  *
- * "Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von OGC API
- * - Features - Part 1: Core 1.0 für die zwei genannten Ressourcen.
+ * "Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von
+ * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
+ * für die zwei genannten Ressourcen.
  * @see FeaturesCoreConfiguration
  * @see EndpointFeatures
  */

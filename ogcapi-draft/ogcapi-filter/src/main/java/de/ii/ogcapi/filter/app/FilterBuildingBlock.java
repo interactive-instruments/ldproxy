@@ -6,6 +6,9 @@
  */
 package de.ii.ogcapi.filter.app;
 
+import de.ii.ogcapi.filter.api.QueryParameterFilter;
+import de.ii.ogcapi.filter.api.QueryParameterFilterCrs;
+import de.ii.ogcapi.filter.api.QueryParameterFilterLang;
 import de.ii.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
@@ -15,22 +18,28 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * @title Modul "Filter / CQL" (FILTER)
- * @en Adds support for CQL filter expressions in queries to select Features or Vector Tiles.
- * @de Das Modul "Filter / CQL" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider
- * aktiviert werden. Es aktiviert die Angabe der Query-Parameter filter und filter-lang für die Ressourcen
- * "Features" und "Vector Tile". Unterstützt werden die Filtersprachen cql-text und cql-json.
+ * @title Filter - CQL (FILTER)
+ * @en Adds support for CQL filter expressions in queries to select [Features](features-core.md) or [Vector Tiles](tiles.md).
+ * @de Das Modul "Filter / CQL" kann für jede über ldproxy bereitgestellte API mit einem
+ * Feature-Provider aktiviert werden. Es aktiviert die Angabe der Query-Parameter `filter`
+ * und `filter-lang` für die Ressourcen "Features" und "Vector Tile". Unterstützt werden die
+ * Filtersprachen `cql-text` und `cql-json`.
  *
  * Das Modul basiert auf den Vorgaben der Konformitätsklassen "Filter", "Features Filter",
- * "Simple CQL", "CQL Text" und "CQL JSON" aus dem Entwurf von OGC API - Features - Part 3: Common Query
- * Language. Die Implementierung wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
+ * "Simple CQL", "CQL Text" und "CQL JSON" aus dem [Entwurf von OGC API - Features - Part 3: Common
+ * Query Language](http://docs.opengeospatial.org/DRAFTS/19-079.html#filter-queryables).
+ * Die Implementierung wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
  *
- * Die Veröffentlichung der Queryables wird über des Modul "Collections Queryables" gesteuert.
- * Ist "Filter / CQL" aktiviert, dann muss "Collection Queryables" aktiviert sein, damit Clients
- * die abfragbaren Objekteigenschaften bestimmen können.
+ * Die Veröffentlichung der Queryables wird über des
+ * [Modul "Collections Queryables"](queryables.md) gesteuert. Ist "Filter / CQL" aktiviert,
+ * dann muss "Collection Queryables" aktiviert sein, damit Clients die abfragbaren
+ * Objekteigenschaften bestimmen können.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
  * @see FilterConfiguration
+ * @see QueryParameterFilter
+ * @see QueryParameterFilterCrs
+ * @see QueryParameterFilterLang
  */
 @Singleton
 @AutoBind
