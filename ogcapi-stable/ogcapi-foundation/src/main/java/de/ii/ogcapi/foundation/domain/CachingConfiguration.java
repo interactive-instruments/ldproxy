@@ -11,6 +11,11 @@ import javax.annotation.Nullable;
 
 public interface CachingConfiguration {
 
+    /**
+     * @en Sets fixed values for [HTTP-Caching-Header](general-rules.md#caching) for the resources.
+     * @de Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
+     * @default `{}`
+     */
     @Nullable
     Caching getCaching();
 

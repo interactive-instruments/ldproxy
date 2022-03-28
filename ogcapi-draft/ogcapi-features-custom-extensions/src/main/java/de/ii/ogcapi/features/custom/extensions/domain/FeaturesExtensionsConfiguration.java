@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.features.custom.extensions.domain;
 
@@ -23,6 +22,11 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    /**
+     * @en Enables support for the POST HTTP method on the "Features" resource.
+     * @de Aktiviert die Unterstützung für die HTTP-Methode POST auf der Ressource "Features"
+     * @default `false`
+     */
     @Nullable
     Boolean getPostOnItems();
 
@@ -34,6 +38,11 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
     }
 
 
+    /**
+     * @en Enables support for the `intersects` query parameter on the "Features" resource
+     * @de Aktiviert die Unterstützung für den Query-Parameter `intersects` auf der Ressource "Features"
+     * @default `false`
+     */
     @Nullable
     Boolean getIntersectsParameter();
 

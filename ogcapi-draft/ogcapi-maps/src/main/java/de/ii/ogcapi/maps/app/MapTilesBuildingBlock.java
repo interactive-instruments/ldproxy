@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.maps.app;
 
@@ -13,6 +12,8 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
+import de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection;
+import de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -20,12 +21,42 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title Modul "Map Tiles" (MAP_TILES)
+ * @en The " Map Tiles" module activates the "Map Tilesets", "Map Tileset" and "Map Tile" resources.
+ *
+ * The module is based on the drafts of [OGC API - Maps](https://github.com/opengeospatial/OGC-API-Maps).
+ * The implementation will change as the drafts are further standardized.
+ *
+ * The supported tile formats are:
+ *
+ * - PNG
+ * - WebP
+ * - JPEG
+ *
+ * Only the [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) tiling scheme is available.
+ * @de Das Modul "Map Tiles" aktiviert die Ressourcen "Map Tilesets", "Map Tileset" und "Map Tile".
+ *
+ * Das Modul basiert auf den Entwürfen von [OGC API - Maps](https://github.com/opengeospatial/OGC-API-Maps).
+ * Die Implementierung wird sich im Zuge der weiteren Standardisierung der Entwürfe noch ändern.
+ *
+ * Die unterstützten Kachelformate sind:
+ *
+ * - PNG
+ * - WebP
+ * - JPEG
+ *
+ * Es steht nur das Kachelschema [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) zur Verfügung.
+ * @see MapTilesConfiguration
+ * @see EndpointMapTileMultiCollection
+ * @see EndpointMapTileSingleCollection
+ */
 @Singleton
 @AutoBind
-public class CapabilityMapTiles implements ApiBuildingBlock {
+public class MapTilesBuildingBlock implements ApiBuildingBlock {
 
     @Inject
-    public CapabilityMapTiles() {
+    public MapTilesBuildingBlock() {
     }
 
     @Override

@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title
+ * @title Sorting (SORTING)
  * @en The module *Sorting* may be enabled for every API with a feature provider that
  * supports sorting. It adds the following query parameter:
  *

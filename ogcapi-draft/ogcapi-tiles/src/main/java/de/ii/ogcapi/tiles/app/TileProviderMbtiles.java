@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.tiles.app;
 
@@ -24,13 +23,34 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
+/**
+ * @title Tile-Provider MBTILES
+ * @en With this tile provider, the tiles are provided via an
+ * [MBTiles file](https://github.com/mapbox/mbtiles-spec). The tile format and all
+ * other properties of the tileset resource are derived from the contents of the
+ * MBTiles file. Only the "WebMercatorQuad" tiling scheme is supported.
+ * @de Bei diesem Tile-Provider werden die Kacheln über eine
+ * [MBTiles-Datei](https://github.com/mapbox/mbtiles-spec) bereitgestellt.
+ * Das Kachelformat und alle anderen Eigenschaften der Tileset-Ressource ergeben sich
+ * aus dem Inhalt der MBTiles-Datei. Unterstützt wird nur das Kachelschema "WebMercatorQuad".
+ */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileProviderMbtiles.Builder.class)
 public abstract class TileProviderMbtiles extends TileProvider {
 
+    /**
+     * @en Fixed value, identifies the tile provider type.
+     * @de Fester Wert, identifiziert die Tile-Provider-Art.
+     * @default `MBTILES`
+     */
     public final String getType() { return "MBTILES"; }
 
+    /**
+     * @en Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.
+     * @de Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
+     * @default `null`
+     */
     @Nullable
     public abstract String getFilename();
 

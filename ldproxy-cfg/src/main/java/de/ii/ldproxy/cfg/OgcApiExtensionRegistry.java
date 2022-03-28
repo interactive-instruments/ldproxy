@@ -15,12 +15,12 @@ import de.ii.ogcapi.collections.schema.app.SchemaBuildingBlock;
 import de.ii.ogcapi.common.domain.CommonBuildingBlock;
 import de.ii.ogcapi.crs.app.CrsBuildingBlock;
 import de.ii.ogcapi.features.core.app.FeaturesCoreBuildingBlock;
-import de.ii.ogcapi.features.custom.extensions.app.CapabilityFeaturesExtensions;
+import de.ii.ogcapi.features.custom.extensions.app.FeaturesExtensionsBuildingBlock;
 import de.ii.ogcapi.features.geojson.app.GeoJsonBuildingBlock;
 import de.ii.ogcapi.features.geojson.ld.app.GeoJsonLdBuildingBlock;
 import de.ii.ogcapi.features.gml.app.GmlBuildingBlock;
 import de.ii.ogcapi.features.html.app.FeaturesHtmlBuildingBlock;
-import de.ii.ogcapi.features.json.fg.app.CapabilityJsonFg;
+import de.ii.ogcapi.features.json.fg.app.JsonFgBuildingBlock;
 import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.FoundationBuildingBlock;
@@ -28,7 +28,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationBuildingBlock;
 import de.ii.ogcapi.html.app.HtmlBuildingBlock;
 import de.ii.ogcapi.json.app.JsonBuildingBlock;
-import de.ii.ogcapi.maps.app.CapabilityMapTiles;
+import de.ii.ogcapi.maps.app.MapTilesBuildingBlock;
 import de.ii.ogcapi.oas30.app.OpenApiBuildingBlock;
 import de.ii.ogcapi.projections.app.ProjectionsBuildingBlock;
 import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
@@ -49,12 +49,12 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
     this.apiExtensions = ImmutableSet.<ApiExtension>builder()
         .add(new QueryablesBuildingBlock())
         .add(new SchemaBuildingBlock())
-        .add(new CapabilityFeaturesExtensions())
+        .add(new FeaturesExtensionsBuildingBlock())
         .add(new GeoJsonLdBuildingBlock())
-        .add(new CapabilityJsonFg())
+        .add(new JsonFgBuildingBlock())
         .add(new FilterBuildingBlock())
         .add(new GeometrySimplificationBuildingBlock())
-        .add(new CapabilityMapTiles())
+        .add(new MapTilesBuildingBlock())
         .add(new ProjectionsBuildingBlock())
         .add(new ResourcesBuildingBlock())
         .add(new SortingBuildingBlock(null, null))
