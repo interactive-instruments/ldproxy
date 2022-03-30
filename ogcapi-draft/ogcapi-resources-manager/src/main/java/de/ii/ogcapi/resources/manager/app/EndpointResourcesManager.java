@@ -81,7 +81,7 @@ public class EndpointResourcesManager extends Endpoint {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
             .mode(apiValidation);
 

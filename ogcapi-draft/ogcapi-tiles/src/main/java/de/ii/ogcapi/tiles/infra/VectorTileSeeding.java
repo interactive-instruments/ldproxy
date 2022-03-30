@@ -190,7 +190,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
         if (shouldPurge(api) && taskContext.isFirstPartial()) {
             try {
                 taskContext.setStatusMessage("purging cache");
-                tileCache.deleteTiles(api.getData(), Optional.empty(), Optional.empty(), Optional.empty());
+                tileCache.deleteTiles(api, Optional.empty(), Optional.empty(), Optional.empty());
                 taskContext.setStatusMessage("purged cache successfully");
             } catch (IOException | SQLException e) {
                 LOGGER.debug("{}: purging failed | {}", getLabel(), e.getMessage());
@@ -239,6 +239,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
+                    .api(api)
                     .apiData(apiData)
                     .temporary(false)
                     .isDatasetTile(false)
@@ -363,6 +364,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
                     .tileLevel(level)
                     .tileRow(row)
                     .tileCol(col)
+                    .api(api)
                     .apiData(apiData)
                     .temporary(false)
                     .isDatasetTile(true)
@@ -528,7 +530,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
             for (Map.Entry<String, MinMax> entry : seeding.entrySet()) {
                 TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
                 MinMax zoomLevels = entry.getValue();
-                List<TileMatrixSetLimits> allLimits = limitsGenerator.getTileMatrixSetLimits(api.getData(), tileMatrixSet, zoomLevels);
+                List<TileMatrixSetLimits> allLimits = limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels);
 
                 for (TileMatrixSetLimits limits : allLimits) {
                     int level = Integer.parseInt(limits.getTileMatrix());

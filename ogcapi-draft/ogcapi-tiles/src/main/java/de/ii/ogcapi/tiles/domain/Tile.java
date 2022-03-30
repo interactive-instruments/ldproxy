@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -63,6 +64,12 @@ public abstract class Tile {
      * @return the ids of the collections included as layers in the tile, empty list means all collections
      */
     public abstract List<String> getCollectionIds();
+
+    /**
+     *
+     * @return the API that produces the tile
+     */
+    public abstract OgcApi getApi();
 
     /**
      *

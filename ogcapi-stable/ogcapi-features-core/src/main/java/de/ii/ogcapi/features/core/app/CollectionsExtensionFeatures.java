@@ -11,13 +11,14 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ogcapi.collections.domain.CollectionsExtension;
 import de.ii.ogcapi.collections.domain.ImmutableCollections;
+import de.ii.ogcapi.collections.domain.ImmutableCollections.Builder;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import java.util.Comparator;
 import java.util.List;
@@ -44,24 +45,25 @@ public class CollectionsExtensionFeatures implements CollectionsExtension {
     }
 
     @Override
-    public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder, OgcApiDataV2 apiData,
+    public ImmutableCollections.Builder process(Builder collectionsBuilder, OgcApi api,
                                                 URICustomizer uriCustomizer,
                                                 ApiMediaType mediaType,
                                                 List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
 
-        if (!isEnabledForApi(apiData)) {
+        if (!isEnabledForApi(api.getData())) {
             return collectionsBuilder;
         }
 
         List<CollectionExtension> collectionExtenders = extensionRegistry.getExtensionsForType(CollectionExtension.class);
 
-        List<OgcApiCollection> collections = apiData.getCollections()
+        List<OgcApiCollection> collections = api.getData().getCollections()
                                                       .values()
                                                       .stream()
-                                                      .filter(featureType -> apiData.isCollectionEnabled(featureType.getId()))
+                                                      .filter(featureType -> api.getData().isCollectionEnabled(featureType.getId()))
                                                       .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                                                      .map(featureType -> CollectionExtensionFeatures.createNestedCollection(featureType, apiData, mediaType, alternateMediaTypes, language, uriCustomizer, collectionExtenders))
+                                                      .map(featureType -> CollectionExtensionFeatures.createNestedCollection(featureType,
+                                                          api, mediaType, alternateMediaTypes, language, uriCustomizer, collectionExtenders))
                                                       .collect(Collectors.toList());
 
         collectionsBuilder.addAllCollections(collections);

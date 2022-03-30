@@ -68,7 +68,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
         .add(new CapabilityCollections())
         .add(new CapabilityCommon())
         .add(new CapabilityCrs(null, null))
-        .add(new CapabilityFeaturesCore())
+        .add(new CapabilityFeaturesCore(null, null))
         .add(new CapabilityGeoJson())
         .add(new CapabilityGml())
         .add(new CapabilityFeaturesHtml())

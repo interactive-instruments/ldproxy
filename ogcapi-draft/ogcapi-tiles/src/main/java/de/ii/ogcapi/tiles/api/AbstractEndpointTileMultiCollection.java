@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
@@ -137,11 +138,11 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
         return definitionBuilder.build();
     }
 
-    protected Response getTile(OgcApiDataV2 apiData, ApiRequestContext requestContext, UriInfo uriInfo,
+    protected Response getTile(OgcApi api, ApiRequestContext requestContext, UriInfo uriInfo,
                                String definitionPath, String tileMatrixSetId, String tileMatrix, String tileRow, String tileCol,
                                TileProvider tileProvider)
             throws CrsTransformationException, IOException, NotFoundException {
-
+        OgcApiDataV2 apiData = api.getData();
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
         TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).orElseThrow();
 
@@ -149,7 +150,8 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
         checkPathParameter(extensionRegistry, apiData, definitionPath, "tileMatrix", tileMatrix);
         checkPathParameter(extensionRegistry, apiData, definitionPath, "tileRow", tileRow);
         checkPathParameter(extensionRegistry, apiData, definitionPath, "tileCol", tileCol);
-        final List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, apiData, definitionPath);
+        final List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry,
+            apiData, definitionPath);
 
         int row;
         int col;
@@ -169,7 +171,7 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
         TileMatrixSet tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
                 .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
-        TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels)
+        TileMatrixSetLimits tileLimits = limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels)
                 .stream()
                 .filter(limits -> limits.getTileMatrix().equals(tileMatrix))
                 .findAny()
@@ -224,6 +226,7 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
             .tileLevel(level)
             .tileRow(row)
             .tileCol(col)
+            .api(api)
             .apiData(apiData)
             .outputFormat(outputFormat)
             .featureProvider(featureProvider)

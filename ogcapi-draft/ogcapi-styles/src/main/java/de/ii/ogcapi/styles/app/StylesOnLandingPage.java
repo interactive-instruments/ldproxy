@@ -9,11 +9,13 @@ package de.ii.ogcapi.styles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -53,13 +55,13 @@ public class StylesOnLandingPage implements LandingPageExtension {
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                                OgcApiDataV2 apiData,
+    public ImmutableLandingPage.Builder process(Builder landingPageBuilder,
+                                                OgcApi api,
                                                 URICustomizer uriCustomizer,
                                                 ApiMediaType mediaType,
                                                 List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
-
+        OgcApiDataV2 apiData = api.getData();
         if (!isEnabledForApi(apiData)) {
             return landingPageBuilder;
         }

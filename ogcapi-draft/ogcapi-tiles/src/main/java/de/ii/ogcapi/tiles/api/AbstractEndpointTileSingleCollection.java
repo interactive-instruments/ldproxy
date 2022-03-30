@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
@@ -140,11 +141,11 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
         return definitionBuilder.build();
     }
 
-    protected Response getTile(OgcApiDataV2 apiData, ApiRequestContext requestContext, UriInfo uriInfo, String definitionPath,
+    protected Response getTile(OgcApi api, ApiRequestContext requestContext, UriInfo uriInfo, String definitionPath,
                                String collectionId, String tileMatrixSetId, String tileMatrix, String tileRow, String tileCol,
                                TileProvider tileProvider)
             throws CrsTransformationException, IOException, NotFoundException {
-
+        OgcApiDataV2 apiData = api.getData();
         Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
         TilesConfiguration tilesConfiguration = featureType.getExtension(TilesConfiguration.class).orElseThrow();
@@ -174,7 +175,7 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
         TileMatrixSet tileMatrixSet = tileMatrixSetRepository.get(tileMatrixSetId)
                 .orElseThrow(() -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
-        TileMatrixSetLimits tileLimits = limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId, tileMatrixSet, zoomLevels)
+        TileMatrixSetLimits tileLimits = limitsGenerator.getCollectionTileMatrixSetLimits(api, collectionId, tileMatrixSet, zoomLevels)
                 .stream()
                 .filter(limits -> limits.getTileMatrix().equals(tileMatrix))
                 .findAny()
@@ -213,6 +214,7 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
             .tileLevel(level)
             .tileRow(row)
             .tileCol(col)
+            .api(api)
             .apiData(apiData)
             .outputFormat(outputFormat)
             .featureProvider(featureProvider)

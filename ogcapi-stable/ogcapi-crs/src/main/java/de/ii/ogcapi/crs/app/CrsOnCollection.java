@@ -12,6 +12,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection.Builder;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
@@ -20,7 +21,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import java.util.List;
@@ -52,9 +53,9 @@ public class CrsOnCollection implements CollectionExtension {
     }
 
     @Override
-    public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
+    public ImmutableOgcApiCollection.Builder process(Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApiDataV2 apiData,
+                                                     OgcApi api,
                                                      URICustomizer uriCustomizer,
                                                      boolean isNested,
                                                      ApiMediaType mediaType,
@@ -72,14 +73,14 @@ public class CrsOnCollection implements CollectionExtension {
                 crsList = ImmutableList.of("#/crs");
             } else {
                 // this is just the collection resource, so no default to reference; include all CRSs
-                crsList = crsSupport.getSupportedCrsList(apiData, featureTypeConfiguration)
+                crsList = crsSupport.getSupportedCrsList(api.getData(), featureTypeConfiguration)
                                     .stream()
                                     .map(EpsgCrs::toUriString)
                                     .collect(ImmutableList.toImmutableList());
             }
             collection.crs(crsList);
 
-            String storageCrsUri = crsSupport.getStorageCrs(apiData, Optional.of(featureTypeConfiguration))
+            String storageCrsUri = crsSupport.getStorageCrs(api.getData(), Optional.of(featureTypeConfiguration))
                                              .toUriString();
 
             // add native CRS as storageCRS

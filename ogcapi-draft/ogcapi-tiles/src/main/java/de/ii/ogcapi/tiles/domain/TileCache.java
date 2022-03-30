@@ -8,7 +8,7 @@
 package de.ii.ogcapi.tiles.domain;
 
 import de.ii.ogcapi.foundation.domain.ApiExtension;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 
 import java.io.IOException;
@@ -67,14 +67,14 @@ public interface TileCache extends ApiExtension {
 
     /**
      * delete tiles from the cache by collection or bbox
-     * @param apiData the API
-     * @param tileMatrixSetId the tiling scheme for which tiles are to be deleted, empty = all tiling schemes
+     * @param api the API
      * @param collectionId the collection for which tiles are to be deleted, empty = all collections
+     * @param tileMatrixSetId the tiling scheme for which tiles are to be deleted, empty = all tiling schemes
      * @param boundingBox the bounding box in which tiles are to be deleted, empty = no spatial restriction
      * @throws IOException an error occurred while accessing files
      * @throws SQLException an error occurred while accessing an Mbtiles file
      */
-    void deleteTiles(OgcApiDataV2 apiData, Optional<String> collectionId, Optional<String> tileMatrixSetId, Optional<BoundingBox> boundingBox) throws IOException, SQLException;
+    void deleteTiles(OgcApi api, Optional<String> collectionId, Optional<String> tileMatrixSetId, Optional<BoundingBox> boundingBox) throws IOException, SQLException;
 
     /**
      * clean-up temporary files that cannot be cached due to the use of parameters

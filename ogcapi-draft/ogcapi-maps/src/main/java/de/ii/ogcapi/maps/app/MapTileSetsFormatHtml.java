@@ -132,6 +132,6 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
 
         Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
 
-        return new TileSetsView(api.getData(), tiles, collectionId, tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), MapClient.Type.MAP_LIBRE, null, false, htmlConfig.orElseThrow(), isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        return new TileSetsView(api.getData(), tiles, collectionId, api.getSpatialExtent(collectionId), api.getTemporalExtent(collectionId), tileMatrixSets, breadCrumbs, requestContext.getStaticUrlPrefix(), MapClient.Type.MAP_LIBRE, null, false, htmlConfig.orElseThrow(), isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
     }
 }
