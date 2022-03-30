@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.services.domain.ImmutableServiceDataCommon;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.store.domain.KeyPathAlias;
@@ -53,7 +54,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
 
   @Inject
   public OgcApiFactory(
-      ExtensionRegistry extensionRegistry, OgcApiFactoryAssisted ogcApiFactoryAssisted) {
+      CrsTransformerFactory crsTransformerFactory, ExtensionRegistry extensionRegistry, OgcApiFactoryAssisted ogcApiFactoryAssisted) {
     super(ogcApiFactoryAssisted);
     this.extensionRegistry = extensionRegistry;
   }

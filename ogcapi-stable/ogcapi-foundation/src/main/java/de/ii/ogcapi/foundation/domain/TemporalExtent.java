@@ -15,10 +15,24 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
+import org.threeten.extra.Interval;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableTemporalExtent.Builder.class)
 public interface TemporalExtent {
+
+    static TemporalExtent of(Long start, Long end) {
+        return new ImmutableTemporalExtent.Builder().start(start)
+            .end(end)
+            .build();
+    }
+
+    static TemporalExtent of(Interval interval) {
+        return new ImmutableTemporalExtent.Builder()
+            .start(interval.getStart().toEpochMilli())
+            .end(interval.isUnboundedEnd() ? null : interval.getEnd().toEpochMilli())
+            .build();
+    }
 
     @Value.Default
     @Nullable
