@@ -20,16 +20,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Collections Schema (SCHEMA)
- * @en The module *Collections Schema* may be enabled for every API with a feature provider.
- * It provides a sub-resource *Schema* for the resource *Feature Collection* that publishes
- * the JSON Schema (Draft 07) of the features. The schema is automatically derived from the
- * type definitions in the feature provider.
- * @de Das Modul "Collections Schema" kann für jede über ldproxy bereitgestellte API mit einem
- * Feature-Provider aktiviert werden. Es ergänzt Ressourcen als Sub-Ressource zu
- * jeder Feature Collection, die das Schema der GeoJSON Features veröffentlicht.
- * Das Schema wird aus den Schemainformationen im Feature-Provider abgeleitet.
- * Aktuell wird JSON Schema 2019-09 für die GeoJSON-Ausgabe unterstützt.
+ * @title Modul "Resources" (RESOURCES)
+ * @en The Resources module can be enabled for any API provided through ldproxy. It adds resources
+ * for providing and managing file resources, especially for styles (icons, sprites).
+ * @de Das Modul "Resources" kann für jede über ldproxy bereitgestellte API aktiviert werden.
+ * Es ergänzt Ressourcen für die Bereitstellung und Verwaltung von Datei-Ressourcen, vor allem
+ * für Styles (Symbole, Sprites).
  * @see ResourcesConfiguration
  * @see EndpointResource
  * @see EndpointResources
