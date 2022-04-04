@@ -17,7 +17,6 @@ def xtraplatform = siblingDirectories.find({ it.name.toLowerCase().equals('xtrap
 def xtraplatformSpatial = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-spatial') })
 def xtraplatformBuild = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-build') })
 def xtraplatformNative = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-native') })
-def ldproxyCommunity = siblingDirectories.find({ it.name.toLowerCase().equals('ldproxy-community') })
 
 if (xtraplatformBuild) {
     includeBuild "../../${xtraplatformBuild.name}"
@@ -34,9 +33,5 @@ if (xtraplatformSpatial) {
 
 includeBuild '../ogcapi-stable'
 includeBuild '../ogcapi-draft'
-
-if (hasProperty('community') && ldproxyCommunity) {
-    includeBuild "../../${ldproxyCommunity.name}"
-}
 
 includeBuild '../'

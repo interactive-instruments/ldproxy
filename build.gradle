@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '4.0.0'
+    id 'de.interactive_instruments.xtraplatform-application' version '4.1.0-SNAPSHOT'
     id 'com.github.hierynomus.license-report' version '0.16.1' apply false
     id 'com.bmuschko.docker-java-application' version '3.1.0' apply false
 }
@@ -13,16 +13,13 @@ apply from: 'version.gradle'
 apply from: 'xtraplatform.gradle'
 
 dependencies {
-    // features to include in this application
-    feature group: 'de.interactive_instruments', name: 'ogcapi-stable'
-    feature group: 'de.interactive_instruments', name: 'ogcapi-draft'
+    // layers to include in this application
+    layers group: 'de.interactive_instruments', name: 'ogcapi-stable'
+    layers group: 'de.interactive_instruments', name: 'ogcapi-draft'
 
-    if (project.hasProperty('community')) {
-        feature group: 'de.interactive_instruments', name: 'ldproxy-community', version: '1.0.0-SNAPSHOT'
-    }
 
-    // bundles to include in this application
-    bundle subprojects.findAll {it.name != 'ldproxy-cfg'}
+    // modules to include in this application
+    modules subprojects.findAll {it.name != 'ldproxy-cfg'}
 }
 
 ext {
