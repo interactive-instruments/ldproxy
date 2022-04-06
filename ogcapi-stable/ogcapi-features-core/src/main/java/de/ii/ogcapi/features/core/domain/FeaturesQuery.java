@@ -14,6 +14,8 @@ import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import org.immutables.value.Value;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,4 +48,18 @@ public interface FeaturesQuery {
   Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
                                          Set<String> filterParameters, Map<String, String> queryableTypes,
                                          Cql.Format cqlFormat);
+
+  @Value.Immutable
+  interface QueryValidationInputCoordinates {
+    boolean getEnabled();
+    Optional<EpsgCrs> getBboxCrs();
+    Optional<EpsgCrs> getFilterCrs();
+    Optional<EpsgCrs> getNativeCrs();
+
+    static QueryValidationInputCoordinates none() {
+      return new ImmutableQueryValidationInputCoordinates.Builder()
+          .enabled(false)
+          .build();
+    }
+  }
 }

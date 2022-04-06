@@ -16,6 +16,7 @@ import de.ii.ogcapi.routes.domain.FeatureTransformationContextRoutes;
 import de.ii.ogcapi.routes.domain.ImmutableRoute;
 import de.ii.ogcapi.routes.domain.ImmutableRouteComponent;
 import de.ii.ogcapi.routes.domain.RouteComponent;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -23,9 +24,11 @@ import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaMapping;
 import de.ii.xtraplatform.geometries.domain.DouglasPeuckerLineSimplifier;
+import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.measure.Unit;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -284,8 +287,20 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
   }
 
   private void computeSimplifiedElevationProfile(double tolerance) {
-    // TODO determine from CRS, if we have a geographic CRS
-    boolean isLonLat = transformationContext.getCrs().getCode()==4979 && transformationContext.getCrs().getForceAxisOrder()== EpsgCrs.Force.LON_LAT;
+    CrsInfo crsInfo = transformationContext.getCrsInfo();
+    EpsgCrs crs = transformationContext.getCrs();
+    List<Unit<?>> units = crsInfo.getAxisUnits(crs);
+    boolean degree = units.size()>=2 && units.get(0).equals(Units.DEGREE) && units.get(1).equals(Units.DEGREE);
+    boolean latAxisY = false;
+    if (degree) {
+      List<String> axesAbbrev = crsInfo.getAxisAbbreviations(crs);
+      if (axesAbbrev.get(0).equalsIgnoreCase("lat"))
+        latAxisY = false;
+      else if (axesAbbrev.get(1).equalsIgnoreCase("lat"))
+        latAxisY = true;
+      else
+        degree = false;
+    }
     double[] profile = new double[2 * overviewGeometry.size()];
     double d = 0.0;
     Geometry.Coordinate previous = overviewGeometry.get(0);
@@ -296,8 +311,8 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
       double dx = current.x-previous.x;
       double dy = current.y-previous.y;
       double dz = current.z-previous.z;
-      d += isLonLat
-          ? computeDistanceInMeter(dx, dy, dz, previous.y, current.y)
+      d += degree
+          ? computeDistanceInMeter(dx, dy, dz, latAxisY ? previous.y : previous.x, latAxisY ? current.y : current.x)
           : sqrt(dx*dx + dy*dy + dz*dz);
       profile[i*2] = d;
       profile[i*2+1] = current.z;
