@@ -1,8 +1,8 @@
 
 dependencies {
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-core', version: '5.0.0'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-core', version: '5.0.0-SNAPSHOT'
     feature group: 'de.interactive_instruments', name: 'xtraplatform-native', version: '2.0.0'
-    feature group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '6.0.1-crsinfo-SNAPSHOT'
+    feature group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '6.0.1-SNAPSHOT'
 }
 
 allprojects {

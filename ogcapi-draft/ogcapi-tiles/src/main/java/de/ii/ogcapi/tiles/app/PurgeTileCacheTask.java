@@ -121,7 +121,7 @@ public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
 
     try (MDC.MDCCloseable closeable =
         LogContext.putCloseable(LogContext.CONTEXT.SERVICE, apiId.get())) {
-      tileCache.deleteTiles(ogcApi.get().getData(), collectionId, tileMatrixSetId, boundingBox);
+      tileCache.deleteTiles(ogcApi.get(), collectionId, tileMatrixSetId, boundingBox);
     }
   }
 

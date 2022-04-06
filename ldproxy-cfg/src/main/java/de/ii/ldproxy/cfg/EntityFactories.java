@@ -106,7 +106,7 @@ public interface EntityFactories {
 
           }
         })
-        .add(new OgcApiFactory(extensionRegistry, null) {
+        .add(new OgcApiFactory(null, extensionRegistry, null) {
           @Override
           public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
             return CompletableFuture.completedFuture(null);

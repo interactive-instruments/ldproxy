@@ -112,7 +112,7 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
             .getExtension(MapTilesConfiguration.class)
             .map(MapTilesConfiguration::getMapProvider)
             .orElseThrow();
-        return super.getTile(api.getData(), requestContext, uriInfo,
+        return super.getTile(api, requestContext, uriInfo,
                              "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
                              tileMatrixSetId, tileMatrix, tileRow, tileCol,
                              tileProvider);

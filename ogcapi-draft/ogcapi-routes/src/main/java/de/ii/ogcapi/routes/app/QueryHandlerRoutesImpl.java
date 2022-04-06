@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -127,7 +126,8 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
         RoutingConfiguration config = apiData.getExtension(RoutingConfiguration.class)
             .orElseThrow(() -> new IllegalStateException("No routing configuration found for the API."));
-        RoutesConfiguration providerConfig = featureProvider.getData().getExtension(RoutesConfiguration.class)
+        RoutesConfiguration providerConfig = featureProvider.getData().getExtension(
+                RoutesConfiguration.class)
             .orElseThrow(() -> new IllegalStateException("No routing configuration found for the feature provider of this API."));
 
         RouteFormatExtension outputFormat = api.getOutputFormat(
@@ -219,6 +219,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         }
 
         FeatureTransformationContextRoutes transformationContext = ImmutableFeatureTransformationContextRoutes.builder()
+            .api(api)
             .apiData(api.getData())
             .featureSchema(featureProvider.getData().getTypes().get(queryInput.getFeatureTypeId()))
             .collectionId("not_applicable")

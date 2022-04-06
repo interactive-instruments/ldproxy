@@ -115,8 +115,8 @@ public class EndpointFeatures extends EndpointSubCollection {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
-        ValidationResult result = super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        ValidationResult result = super.onStartup(api, apiValidation);
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
         if (apiValidation== MODE.NONE)
@@ -126,15 +126,15 @@ public class EndpointFeatures extends EndpointSubCollection {
                 .from(result)
                 .mode(apiValidation);
 
-        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
 
-        List<String> invalidCollections = featuresCoreValidator.getCollectionsWithoutType(apiData, featureSchemas);
+        List<String> invalidCollections = featuresCoreValidator.getCollectionsWithoutType(api.getData(), featureSchemas);
         for (String invalidCollection : invalidCollections) {
             builder.addStrictErrors(MessageFormat.format("The Collection ''{0}'' is invalid, because its feature type was not found in the provider schema.", invalidCollection));
         }
 
         // get Features Core configurations to process
-        Map<String, FeaturesCoreConfiguration> coreConfigs = apiData.getCollections()
+        Map<String, FeaturesCoreConfiguration> coreConfigs = api.getData().getCollections()
                                                                  .entrySet()
                                                                  .stream()
                                                                  .map(entry -> {

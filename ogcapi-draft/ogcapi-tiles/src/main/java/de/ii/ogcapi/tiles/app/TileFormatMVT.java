@@ -215,26 +215,23 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
         }
 
         BoundingBox bbox = tile.getBoundingBox();
-        try {
-            // reduce bbox to the area in which there is data (to avoid coordinate transformation issues
-            // with large scale and data that is stored in a regional, projected CRS)
-            final EpsgCrs crs = bbox.getEpsgCrs();
-            final Optional<BoundingBox> dataBbox = apiData.getSpatialExtent(collectionId, crsTransformerFactory, crs);
-            if (dataBbox.isPresent()) {
-                bbox = ImmutableList.of(bbox, dataBbox.get())
-                    .stream()
-                    .map(BoundingBox::toArray)
-                    .reduce((doubles, doubles2) -> new double[]{
-                        Math.max(doubles[0], doubles2[0]),
-                        Math.max(doubles[1], doubles2[1]),
-                        Math.min(doubles[2], doubles2[2]),
-                        Math.min(doubles[3], doubles2[3])})
-                    .map(doubles -> BoundingBox.of(doubles[0], doubles[1], doubles[2], doubles[3], crs))
-                    .orElse(bbox);
-            }
-        } catch (CrsTransformationException e) {
-            // ignore
+        // reduce bbox to the area in which there is data (to avoid coordinate transformation issues
+        // with large scale and data that is stored in a regional, projected CRS)
+        final EpsgCrs crs = bbox.getEpsgCrs();
+        final Optional<BoundingBox> dataBbox = tile.getApi().getSpatialExtent(collectionId, crs);
+        if (dataBbox.isPresent()) {
+            bbox = ImmutableList.of(bbox, dataBbox.get())
+                .stream()
+                .map(BoundingBox::toArray)
+                .reduce((doubles, doubles2) -> new double[]{
+                    Math.max(doubles[0], doubles2[0]),
+                    Math.max(doubles[1], doubles2[1]),
+                    Math.min(doubles[2], doubles2[2]),
+                    Math.min(doubles[3], doubles2[3])})
+                .map(doubles -> BoundingBox.of(doubles[0], doubles[1], doubles[2], doubles[3], crs))
+                .orElse(bbox);
         }
+
         CqlPredicate spatialPredicate = CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, filterableFields.get(PARAMETER_BBOX), bbox));
         if (predefFilter != null || !filters.isEmpty()) {
             Optional<CqlFilter> otherFilter = Optional.empty();

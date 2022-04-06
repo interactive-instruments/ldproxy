@@ -82,8 +82,8 @@ public class EndpointCollection extends EndpointSubCollection {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
-        ValidationResult result = super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        ValidationResult result = super.onStartup(api, apiValidation);
 
         if (apiValidation== MODE.NONE)
             return result;
@@ -92,7 +92,7 @@ public class EndpointCollection extends EndpointSubCollection {
                 .from(result)
                 .mode(apiValidation);
 
-        for (FeatureTypeConfigurationOgcApi collectionData : apiData.getCollections().values()) {
+        for (FeatureTypeConfigurationOgcApi collectionData : api.getData().getCollections().values()) {
             builder = FoundationValidator.validateLinks(builder, collectionData.getAdditionalLinks(), "/collections/"+collectionData.getId());
 
             Optional<String> persistentUriTemplate = collectionData.getPersistentUriTemplate();
@@ -104,7 +104,7 @@ public class EndpointCollection extends EndpointSubCollection {
                 }
             }
 
-            Optional<CollectionExtent> extent = apiData.getExtent(collectionData.getId());
+            Optional<CollectionExtent> extent = api.getData().getExtent(collectionData.getId());
             if (extent.isPresent()) {
                 Optional<BoundingBox> spatial = extent.get().getSpatial();
                 if (spatial.isPresent() && Objects.nonNull(spatial.get())) {

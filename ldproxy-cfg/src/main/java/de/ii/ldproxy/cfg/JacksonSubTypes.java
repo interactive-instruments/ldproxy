@@ -15,6 +15,7 @@ import de.ii.ogcapi.common.domain.JacksonSubTypeIdsOgcApiCommon;
 import de.ii.ogcapi.crs.app.JacksonSubTypeIdsCrs;
 import de.ii.ogcapi.features.core.app.JacksonSubTypeIdsFeaturesCore;
 import de.ii.ogcapi.features.custom.extensions.app.JacksonSubTypeIdsFeaturesExtensions;
+import de.ii.ogcapi.features.flatgeobuf.app.JacksonSubTypeIdsFlatgeobuf;
 import de.ii.ogcapi.features.geojson.app.JacksonSubTypeIdsGeoJson;
 import de.ii.ogcapi.features.geojson.ld.app.JacksonSubTypeIdsGeoJsonLd;
 import de.ii.ogcapi.features.gml.app.JacksonSubTypeIdsGml;
@@ -45,6 +46,7 @@ public interface JacksonSubTypes {
         .add(new JacksonSubTypeIdsQueryables())
         .add(new JacksonSubTypeIdsSchema())
         .add(new JacksonSubTypeIdsFeaturesExtensions())
+        .add(new JacksonSubTypeIdsFlatgeobuf())
         .add(new JacksonSubTypeIdsGeoJsonLd())
         .add(new JacksonSubTypeIdsJsonFg())
         .add(new JacksonSubTypeIdsFilter())
