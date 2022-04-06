@@ -119,12 +119,11 @@ public class CapabilityFeaturesCore implements ApiBuildingBlock {
                         .getExtension(FeaturesCoreConfiguration.class)
                         .map(cfg -> cfg.getFeatureType().orElse(collectionId))
                         .orElse(collectionId);
-                final FeatureQuery query =
-                    ImmutableFeatureQuery.builder().type(featureTypeId).build();
-                // TODO getFeatureCount() currently always returns 0, so for now we should not use
-                // this metadata element
-                final long count = ((FeatureQueries) provider.get()).getFeatureCount(query);
+                final long count = ((FeatureQueries) provider.get()).getFeatureCount(featureTypeId);
                 api.updateItemCount(collectionId, count);
+                if (LOGGER.isDebugEnabled()) {
+                  LOGGER.debug("Number of items in collection '{}': {}", collectionId, count);
+                }
               }
             });
 
