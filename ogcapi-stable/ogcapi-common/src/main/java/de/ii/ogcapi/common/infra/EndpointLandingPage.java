@@ -68,8 +68,8 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
-        ValidationResult result = super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        ValidationResult result = super.onStartup(api, apiValidation);
 
         if (apiValidation== MODE.NONE)
             return result;
@@ -78,7 +78,7 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
                 .from(result)
                 .mode(apiValidation);
 
-        Optional<CommonConfiguration> config = apiData.getExtension(CommonConfiguration.class);
+        Optional<CommonConfiguration> config = api.getData().getExtension(CommonConfiguration.class);
         if (config.isPresent()) {
             builder = FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/");
         }

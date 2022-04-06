@@ -11,6 +11,7 @@ import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURC
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesTileset;
@@ -21,6 +22,7 @@ import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata.MbtilesFormat;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -56,12 +58,12 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
 
     /**
      * check that all tile set container exist and register them all in a map
-     * @param apiData the API
+     * @param api the API
      * @param apiValidation the validation level
      * @return the validation result
      */
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                                                                              .mode(apiValidation);
 
@@ -71,14 +73,14 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
             builder.addErrors(e.getMessage());
         }
 
-        Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
+        Optional<TilesConfiguration> config = api.getData().getExtension(TilesConfiguration.class);
         if (config.isPresent()
                 && config.get().isEnabled()
                 && config.get().isMultiCollectionEnabled()
                 && config.get().getTileProvider() instanceof TileProviderMbtiles) {
             TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
-            Path path = getTileProvider(apiData, provider.getFilename());
-            String key = String.join("/", apiData.getId(), CapabilityTiles.DATASET_TILES);
+            Path path = getTileProvider(api.getData(), provider.getFilename());
+            String key = String.join("/", api.getId(), CapabilityTiles.DATASET_TILES);
             try {
                 mbtiles.put(key, new MbtilesTileset(path));
             } catch (Exception e) {
@@ -86,15 +88,15 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
             }
         }
 
-        for (String collectionId : apiData.getCollections().keySet()) {
-            config = apiData.getExtension(TilesConfiguration.class, collectionId);
+        for (String collectionId : api.getData().getCollections().keySet()) {
+            config = api.getData().getExtension(TilesConfiguration.class, collectionId);
             if (config.isPresent()
                     && config.get().isEnabled()
                     && config.get().isSingleCollectionEnabled()
                     && config.get().getTileProvider() instanceof TileProviderMbtiles) {
                 TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
-                Path path = getTileProvider(apiData, provider.getFilename());
-                String key = String.join("/", apiData.getId(), collectionId);
+                Path path = getTileProvider(api.getData(), provider.getFilename());
+                String key = String.join("/", api.getId(), collectionId);
                 try {
                     mbtiles.put(key, new MbtilesTileset(path));
                 } catch (Exception e) {

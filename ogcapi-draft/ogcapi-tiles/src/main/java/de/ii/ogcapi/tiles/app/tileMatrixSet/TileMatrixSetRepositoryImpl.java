@@ -10,12 +10,13 @@ package de.ii.ogcapi.tiles.app.tileMatrixSet;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -53,7 +54,7 @@ public class TileMatrixSetRepositoryImpl implements TileMatrixSetRepository {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                                                                              .mode(apiValidation);
 

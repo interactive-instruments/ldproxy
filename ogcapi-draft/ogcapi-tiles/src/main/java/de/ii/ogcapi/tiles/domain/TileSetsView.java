@@ -12,10 +12,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import de.ii.ogcapi.foundation.domain.CollectionExtent;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
+import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
@@ -71,6 +73,8 @@ public class TileSetsView extends OgcApiView {
     public TileSetsView(OgcApiDataV2 apiData,
                         TileSets tiles,
                         Optional<String> collectionId,
+                        Optional<BoundingBox> spatialExtent,
+                        Optional<TemporalExtent> temporalExtent,
                         Map<String, TileMatrixSet> tileMatrixSets,
                         List<NavigationDTO> breadCrumbs,
                         String urlPrefix,
@@ -89,22 +93,19 @@ public class TileSetsView extends OgcApiView {
                 tiles.getDescription()
                      .orElse(""));
 
-        Optional<BoundingBox> spatialExtent = apiData.getSpatialExtent();
-        if (spatialExtent.isEmpty())
-            spatialExtent = apiData.getDefaultExtent().flatMap(extent -> extent.getSpatial());
-        Optional<BoundingBox> finalSpatialExtent = spatialExtent;
-        this.bbox = spatialExtent.map(boundingBox -> ImmutableMap.of(
+        Optional<BoundingBox> finalSpatialExtent = spatialExtent.or(() -> apiData.getDefaultExtent().flatMap(CollectionExtent::getSpatial));
+        this.bbox = finalSpatialExtent.map(boundingBox -> ImmutableMap.of(
                 "minLng", Double.toString(boundingBox.getXmin()),
                 "minLat", Double.toString(boundingBox.getYmin()),
                 "maxLng", Double.toString(boundingBox.getXmax()),
                 "maxLat", Double.toString(boundingBox.getYmax())))
                                   .orElse(null);
-        this.tileMatrixSetIds = spatialExtent.isPresent() ? tiles.getTilesets()
+        this.tileMatrixSetIds = finalSpatialExtent.isPresent() ? tiles.getTilesets()
             .stream()
             .map(TileSet::getTileMatrixSetId)
             .filter(tileMatrixSetId -> mapClientType.equals(MapClient.Type.OPEN_LAYERS) || tileMatrixSetId.equals("WebMercatorQuad"))
             .collect(Collectors.toList()) : ImmutableList.of();
-        this.tileCollections = spatialExtent.isPresent() ? tiles.getTilesets()
+        this.tileCollections = finalSpatialExtent.isPresent() ? tiles.getTilesets()
                 .stream()
                 .filter(tms -> mapClientType.equals(MapClient.Type.OPEN_LAYERS) || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
                 .map(tms -> {
@@ -195,26 +196,15 @@ public class TileSetsView extends OgcApiView {
         this.withOlMap = true;
         this.spatialSearch = false;
 
-        Long[] interval = apiData.getCollections()
-                .values()
-                .stream()
-                .filter(featureTypeConfiguration -> collectionId.isEmpty() || Objects.equals(featureTypeConfiguration.getId(), collectionId.get()))
-                .map(featureType -> apiData.getTemporalExtent(featureType.getId()))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(temporalExtent -> new Long[]{temporalExtent.getStart(), temporalExtent.getEnd()})
-                .reduce((longs, longs2) -> new Long[]{
-                        longs[0]==null || longs2[0]==null ? null : Math.min(longs[0], longs2[0]),
-                        longs[1]==null || longs2[1]==null ? null : Math.max(longs[1], longs2[1])})
-                .orElse(null);
+        Long[] interval = temporalExtent.map(te -> new Long[]{te.getStart(), te.getEnd()}).orElse(null);
         if (interval==null)
             this.temporalExtent = null;
-        else if (interval[0]==null && interval[1]==null)
+        else if (interval[0]==Long.MIN_VALUE && interval[1]==Long.MAX_VALUE)
             this.temporalExtent = ImmutableMap.of();
-        else if (interval[0]==null)
+        else if (interval[0]==Long.MIN_VALUE)
             this.temporalExtent = ImmutableMap.of(
                     "end", interval[1].toString());
-        else if (interval[1]==null)
+        else if (interval[1]==Long.MAX_VALUE)
             this.temporalExtent = ImmutableMap.of(
                     "start", interval[0].toString());
         else

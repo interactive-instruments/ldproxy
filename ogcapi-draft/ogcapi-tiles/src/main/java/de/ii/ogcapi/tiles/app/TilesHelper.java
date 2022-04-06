@@ -20,6 +20,7 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.ImmutableFields;
@@ -70,7 +71,7 @@ public class TilesHelper {
     //TODO: move to TileSet as static of()
     /**
      * generate the tile set metadata according to the OGC Tile Matrix Set standard (version 2.0.0, draft from June 2021)
-     * @param apiData the API
+     * @param api the API
      * @param tileMatrixSet the tile matrix set
      * @param zoomLevels the range of zoom levels
      * @param center the center point
@@ -82,7 +83,7 @@ public class TilesHelper {
      * @param providers helper to access feature providers
      * @return the tile set metadata
      */
-    public static TileSet buildTileSet(OgcApiDataV2 apiData,
+    public static TileSet buildTileSet(OgcApi api,
                                        TileMatrixSet tileMatrixSet,
                                        MinMax zoomLevels,
                                        List<Double> center,
@@ -94,7 +95,7 @@ public class TilesHelper {
                                        TileMatrixSetLimitsGenerator limitsGenerator,
                                        FeaturesCoreProviders providers,
                                        EntityRegistry entityRegistry) {
-
+        OgcApiDataV2 apiData = api.getData();
         Builder builder = ImmutableTileSet.builder()
             .dataType(dataType);
 
@@ -114,11 +115,11 @@ public class TilesHelper {
             builder.tileMatrixSetLimits(ImmutableList.of());
         else
             builder.tileMatrixSetLimits(collectionId.isPresent()
-                                                ? limitsGenerator.getCollectionTileMatrixSetLimits(apiData, collectionId.get(), tileMatrixSet, zoomLevels)
-                                                : limitsGenerator.getTileMatrixSetLimits(apiData, tileMatrixSet, zoomLevels));
+                                                ? limitsGenerator.getCollectionTileMatrixSetLimits(api, collectionId.get(), tileMatrixSet, zoomLevels)
+                                                : limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels));
 
         try {
-            BoundingBox boundingBox = (collectionId.isPresent() ? apiData.getSpatialExtent(collectionId.get()) : apiData.getSpatialExtent())
+            BoundingBox boundingBox = api.getSpatialExtent(collectionId)
                     .orElse(tileMatrixSet.getBoundingBoxCrs84(crsTransformerFactory));
             builder.boundingBox(ImmutableTilesBoundingBox.builder()
                                                          .lowerLeft(BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),

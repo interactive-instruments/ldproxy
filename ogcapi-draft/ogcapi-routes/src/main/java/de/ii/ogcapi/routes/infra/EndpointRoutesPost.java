@@ -39,6 +39,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.routes.app.CapabilityRouting;
 import de.ii.ogcapi.routes.domain.HtmlForm;
 import de.ii.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
@@ -53,7 +54,6 @@ import de.ii.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ogcapi.routes.domain.RouteRepository;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.WaypointsValue;
-import de.ii.ogcapi.routes.app.CapabilityRouting;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -62,6 +62,7 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -74,7 +75,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.POST;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -151,8 +151,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
-        ValidationResult result = super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        ValidationResult result = super.onStartup(api, apiValidation);
 
         if (apiValidation== ValidationResult.MODE.NONE)
             return result;
@@ -161,7 +161,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             .from(result)
             .mode(apiValidation);
 
-        builder = routeRepository.validate(builder, apiData);
+        builder = routeRepository.validate(builder, api.getData());
 
         return builder.build();
     }
@@ -200,7 +200,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     @Override
     protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
         Optional<RoutingConfiguration> config = apiData.getExtension(RoutingConfiguration.class);
-        Optional<RoutesConfiguration> routesConfig = providers.getFeatureProviderOrThrow(apiData).getData().getExtension(RoutesConfiguration.class);
+        Optional<RoutesConfiguration> routesConfig = providers.getFeatureProviderOrThrow(apiData).getData().getExtension(
+            RoutesConfiguration.class);
         ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
                 .apiEntrypoint("routes")
                 .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTES_POST);

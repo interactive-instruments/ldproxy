@@ -8,7 +8,8 @@
 package de.ii.ogcapi.common.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ContentExtension;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -20,8 +21,8 @@ import java.util.Optional;
 @AutoMultiBind
 public interface LandingPageExtension extends ContentExtension {
 
-    ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                         OgcApiDataV2 apiData,
+    ImmutableLandingPage.Builder process(Builder landingPageBuilder,
+                                         OgcApi api,
                                          URICustomizer uriCustomizer,
                                          ApiMediaType mediaType,
                                          List<ApiMediaType> alternateMediaTypes,

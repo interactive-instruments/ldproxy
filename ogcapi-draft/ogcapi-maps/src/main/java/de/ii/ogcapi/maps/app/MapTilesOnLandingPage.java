@@ -9,12 +9,14 @@ package de.ii.ogcapi.maps.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.maps.domain.MapTileFormatExtension;
@@ -63,16 +65,16 @@ public class MapTilesOnLandingPage implements LandingPageExtension {
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDataV2 apiData,
+    public ImmutableLandingPage.Builder process(Builder landingPageBuilder, OgcApi api,
                                                 URICustomizer uriCustomizer, ApiMediaType mediaType,
                                                 List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
 
-        if (isEnabledForApi(apiData)) {
+        if (isEnabledForApi(api.getData())) {
             Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class)
                 .stream()
-                .filter(format -> format.isApplicable(apiData, "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-                .filter(format -> format.isEnabledForApi(apiData))
+                .filter(format -> format.isApplicable(api.getData(), "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                .filter(format -> format.isEnabledForApi(api.getData()))
                 .map(TileFormatExtension::getDataType)
                 .findAny();
             if (dataType.isEmpty())

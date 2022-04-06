@@ -104,7 +104,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
                                           .getExtension(HtmlConfiguration.class)
                                           .orElse(null);
 
-        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, breadCrumbs,
+        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, api.getSpatialExtent(), breadCrumbs,
                                                                           requestContext.getStaticUrlPrefix(), htmlConfig,
                                                                           isNoIndexEnabledForApi(api.getData()),
                                                                           showCollectionDescriptionsInOverview(api.getData()),
@@ -149,7 +149,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
                                                  .getExtension(HtmlConfiguration.class)
                                                  .orElse(null);
 
-        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, api.getSpatialExtent(ogcApiCollection.getId()), breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
 
         return collectionView;
     }

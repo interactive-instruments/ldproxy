@@ -11,10 +11,11 @@ package de.ii.ogcapi.crs.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.ImmutableCollections;
+import de.ii.ogcapi.collections.domain.ImmutableCollections.Builder;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.collections.domain.CollectionsExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -46,16 +47,16 @@ public class CrsOnCollections implements CollectionsExtension {
     }
 
     @Override
-    public ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder,
-                                                OgcApiDataV2 apiData,
+    public ImmutableCollections.Builder process(Builder collectionsBuilder,
+                                                OgcApi api,
                                                 URICustomizer uriCustomizer,
                                                 ApiMediaType mediaType,
                                                 List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
-        if (isExtensionEnabled(apiData, CrsConfiguration.class)) {
+        if (isExtensionEnabled(api.getData(), CrsConfiguration.class)) {
 
             // list all CRSs as the list of default CRSs
-            ImmutableList<String> crsList = crsSupport.getSupportedCrsList(apiData)
+            ImmutableList<String> crsList = crsSupport.getSupportedCrsList(api.getData())
                                                       .stream()
                                                       .map(EpsgCrs::toUriString)
                                                       .collect(ImmutableList.toImmutableList());

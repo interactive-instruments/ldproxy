@@ -16,13 +16,15 @@ import de.ii.ogcapi.common.domain.ImmutableConformanceDeclaration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,8 +52,8 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
-        ValidationResult result = ConformanceDeclarationExtension.super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        ValidationResult result = ConformanceDeclarationExtension.super.onStartup(api, apiValidation);
 
         if (apiValidation== ValidationResult.MODE.NONE)
             return result;
@@ -61,15 +63,16 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
             .mode(apiValidation);
 
         // check that there is at least one preference/mode and that the default preference/mode is one of them
-        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
+        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
 
-        List<String> preferences = List.copyOf(featureProvider.getData().getExtension(RoutesConfiguration.class)
+        List<String> preferences = List.copyOf(featureProvider.getData().getExtension(
+                RoutesConfiguration.class)
                                                    .map(RoutesConfiguration::getPreferences)
                                                    .map(Map::keySet)
                                                    .orElse(ImmutableSet.of()));
         if (preferences.isEmpty())
             builder.addErrors("Routing: There must be at least one value for the routing preference.");
-        apiData.getExtension(RoutingConfiguration.class)
+        api.getData().getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getDefaultPreference)
             .ifPresentOrElse(defaultPreference -> {
                 if (!preferences.contains(defaultPreference)) {
@@ -77,13 +80,14 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
                 }
             }, () -> builder.addErrors("Routing: No default preference has been configured."));
 
-        List<String> modes = List.copyOf(featureProvider.getData().getExtension(RoutesConfiguration.class)
+        List<String> modes = List.copyOf(featureProvider.getData().getExtension(
+                RoutesConfiguration.class)
                                              .map(RoutesConfiguration::getModes)
                                              .map(Map::keySet)
                                              .orElse(ImmutableSet.of()));
         if (modes.isEmpty())
             builder.addErrors("Routing: There must be at least one value for the routing mode.");
-        apiData.getExtension(RoutingConfiguration.class)
+        api.getData().getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getDefaultMode)
             .ifPresentOrElse(defaultMode -> {
                 if (!modes.contains(defaultMode)) {
@@ -120,11 +124,13 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
 
         FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
 
-        List<String> preferences = List.copyOf(featureProvider.getData().getExtension(RoutesConfiguration.class)
+        List<String> preferences = List.copyOf(featureProvider.getData().getExtension(
+                RoutesConfiguration.class)
             .map(RoutesConfiguration::getPreferences)
             .map(Map::keySet)
             .orElse(ImmutableSet.of()));
-        List<String> modes = List.copyOf(featureProvider.getData().getExtension(RoutesConfiguration.class)
+        List<String> modes = List.copyOf(featureProvider.getData().getExtension(
+                RoutesConfiguration.class)
             .map(RoutesConfiguration::getModes)
             .map(Map::keySet)
             .orElse(ImmutableSet.of()));

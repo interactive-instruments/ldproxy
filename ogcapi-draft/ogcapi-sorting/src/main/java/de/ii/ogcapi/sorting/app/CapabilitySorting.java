@@ -15,13 +15,14 @@ import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.List;
@@ -56,9 +57,9 @@ public class CapabilitySorting implements ApiBuildingBlock {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         // get the sorting configurations to process
-        Map<String, SortingConfiguration> configs = apiData.getCollections()
+        Map<String, SortingConfiguration> configs = api.getData().getCollections()
                                                            .entrySet()
                                                            .stream()
                                                            .map(entry -> {
@@ -80,7 +81,7 @@ public class CapabilitySorting implements ApiBuildingBlock {
                                                                              .mode(apiValidation);
 
         // check that the feature provider supports sorting
-        FeatureProvider2 provider = providers.getFeatureProviderOrThrow(apiData);
+        FeatureProvider2 provider = providers.getFeatureProviderOrThrow(api.getData());
         if (!provider.supportsSorting())
             builder.addErrors(MessageFormat.format("Sorting is enabled, but the feature provider of the API '{0}' does not support sorting.", provider.getData().getId()));
 
@@ -95,8 +96,8 @@ public class CapabilitySorting implements ApiBuildingBlock {
             if (sortables.isEmpty())
                 builder.addStrictErrors(MessageFormat.format("Sorting is enabled for collection ''{0}'', but no sortable property has been configured.", entry.getKey()));
 
-            List<String> properties = schemaInfo.getPropertyNames(apiData, entry.getKey());
-            Optional<FeatureSchema> schema = providers.getFeatureSchema(apiData, apiData.getCollections().get(entry.getKey()));
+            List<String> properties = schemaInfo.getPropertyNames(api.getData(), entry.getKey());
+            Optional<FeatureSchema> schema = providers.getFeatureSchema(api.getData(), api.getData().getCollections().get(entry.getKey()));
             if (schema.isEmpty())
                 builder.addErrors(MessageFormat.format("Sorting is enabled for collection ''{0}'', but no provider has been configured.", entry.getKey()));
             else {

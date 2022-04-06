@@ -23,6 +23,7 @@ import de.ii.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -68,7 +69,7 @@ public class FeatureCollectionView extends DatasetView {
     public final CesiumData cesiumData;
 
     public FeatureCollectionView(OgcApiDataV2 apiData,
-        FeatureTypeConfigurationOgcApi collectionData, String template,
+        FeatureTypeConfigurationOgcApi collectionData, Optional<BoundingBox> spatialExtent, String template,
         URI uri, String name, String title, String description, String attribution,
         String urlPrefix, HtmlConfiguration htmlConfig, String persistentUri, boolean noIndex,
         I18n i18n, Locale language, POSITION mapPosition,
@@ -84,7 +85,7 @@ public class FeatureCollectionView extends DatasetView {
         this.uriBuilder = new URICustomizer(uri);
         this.cesiumData = new CesiumData(features, geometryProperties);
 
-        this.bbox = apiData.getSpatialExtent(collectionData.getId())
+        this.bbox = spatialExtent
             .map(boundingBox -> ImmutableMap.of(
             "minLng", Double.toString(boundingBox.getXmin()),
             "minLat", Double.toString(boundingBox.getYmin()),

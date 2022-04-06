@@ -105,7 +105,7 @@ public class EndpointTileSingleCollection extends AbstractEndpointTileSingleColl
             .getExtension(TilesConfiguration.class)
             .map(TilesConfiguration::getTileProvider)
             .orElseThrow();
-        return super.getTile(api.getData(), requestContext, uriInfo,
+        return super.getTile(api, requestContext, uriInfo,
                              "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
                              collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol,
                              tileProvider);

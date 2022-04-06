@@ -16,9 +16,9 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
-import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -99,14 +99,14 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         if (apiValidation== MODE.NONE)
             return ValidationResult.of();
 
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
-        for (String collectionWithoutQueryables : apiData.getCollections()
+        for (String collectionWithoutQueryables : api.getData().getCollections()
                                                          .entrySet()
                                                          .stream()
                                                          .filter(entry ->  entry.getValue()
