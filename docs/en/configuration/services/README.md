@@ -12,7 +12,7 @@ Details regarding the API modules can be found [here](building-blocks/README.md)
 |`apiVersion` |integer |`null` |Optional version used in the API URI. If not set, the landing page URI is `/{id}`. If set, the landing page URI is `/{id}/v{apiVersion}`, e.g. `/{id}/v1` for `1`.
 |`createdAt` |integer | |Unix time stamp, only for internal usage.
 |`lastModified` |integer | |Unix time stamp, only for internal usage.
-|`entityStorageVersion` |integer | |V*REQUIRED* ersion of the configuration schema. This documentation describes version 2 and all files using this schema need to have the value 2. Configurations with version 1 are automatically migrated to version 2.
+|`entityStorageVersion` |integer | |*REQUIRED* ersion of the configuration schema. This documentation describes version 2 and all files using this schema need to have the value 2. Configurations with version 1 are automatically migrated to version 2.
 |`label` |string |der Wert von `id` |Human readable label.
 |`description` |string |`null` |Human readable description.
 |`serviceType` |enum | |*REQUIRED* Always `OGC_API`.
