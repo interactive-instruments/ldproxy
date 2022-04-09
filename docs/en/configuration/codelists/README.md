@@ -10,7 +10,7 @@ Codelists allow to map property values to a different value. This is useful espe
 |`label` |string | |Human readable label.
 |`sourceType` |enum | |Always `TEMPLATES`.
 |`entries` |object |`{}` |Map with the original value as key and the new value as value. Values might use [`stringFormat` transformations](../providers/transformations.md).
-|`fallback` |string |der Wert |Optional default value. Might use [`stringFormat` transformations](../providers/transformations.md).
+|`fallback` |string |the value |Optional default value. Might use [`stringFormat` transformations](../providers/transformations.md).
 
 ### Example
 
