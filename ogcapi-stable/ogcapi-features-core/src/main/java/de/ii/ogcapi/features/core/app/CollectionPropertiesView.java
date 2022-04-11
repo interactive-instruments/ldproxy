@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
 import de.ii.ogcapi.features.core.domain.CollectionProperty;
 import de.ii.ogcapi.features.core.domain.ImmutableCollectionProperty;
+import de.ii.ogcapi.features.core.domain.JsonSchemaRefExternal;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -92,8 +93,12 @@ public class CollectionPropertiesView extends OgcApiView {
                 builder2.type("boolean");
             } else if (value instanceof JsonSchemaRef) {
                 builder2.type(((JsonSchemaRef) value).getRef()
-                                                     .replace("https://geojson.org/schema/", "")
-                                                     .replace(".json", ""));
+                                  .replace("https://geojson.org/schema/", "")
+                                  .replace(".json", ""));
+            } else if (value instanceof JsonSchemaRefExternal) {
+                builder2.type(((JsonSchemaRefExternal) value).getRef()
+                                  .replace("https://geojson.org/schema/", "")
+                                  .replace(".json", ""));
             } else {
                 builder2.type("string");
             }
