@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
-@JsonTypeInfo(
+/*@JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "type")
@@ -34,7 +34,7 @@ import org.immutables.value.Value;
         @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$refDefs"),
         @JsonSubTypes.Type(value = JsonSchemaRefExternal.class, name = "$ref"),
         @JsonSubTypes.Type(value = JsonSchemaOneOf.class, name = "oneOf")
-})
+})*/
 public abstract class JsonSchema {
 
     public abstract Optional<String> getTitle();
