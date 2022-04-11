@@ -8,18 +8,16 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import org.immutables.value.Value;
+
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.immutables.value.Value;
-
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonDeserialize(as = ImmutableJsonSchemaObject.class)
 public abstract class JsonSchemaObject extends JsonSchema {
 
     public final String getType() { return "object"; }

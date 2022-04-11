@@ -8,33 +8,12 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.foundation.domain.PageRepresentation;
+import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import org.immutables.value.Value;
 
-/*@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = JsonSchemaString.class, name = "string"),
-        @JsonSubTypes.Type(value = JsonSchemaNumber.class, name = "number"),
-        @JsonSubTypes.Type(value = JsonSchemaInteger.class, name = "integer"),
-        @JsonSubTypes.Type(value = JsonSchemaBoolean.class, name = "boolean"),
-        @JsonSubTypes.Type(value = JsonSchemaObject.class, name = "object"),
-        @JsonSubTypes.Type(value = JsonSchemaArray.class, name = "array"),
-        @JsonSubTypes.Type(value = JsonSchemaNull.class, name = "null"),
-        @JsonSubTypes.Type(value = JsonSchemaTrue.class, name = "true"),
-        @JsonSubTypes.Type(value = JsonSchemaFalse.class, name = "false"),
-        @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$refDefs"),
-        @JsonSubTypes.Type(value = JsonSchemaRefExternal.class, name = "$ref"),
-        @JsonSubTypes.Type(value = JsonSchemaOneOf.class, name = "oneOf")
-})*/
 public abstract class JsonSchema {
 
     public abstract Optional<String> getTitle();
