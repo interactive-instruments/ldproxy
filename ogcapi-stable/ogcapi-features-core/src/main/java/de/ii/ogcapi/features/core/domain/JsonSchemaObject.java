@@ -13,6 +13,8 @@ import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -26,6 +28,7 @@ public abstract class JsonSchemaObject extends JsonSchema {
     public abstract List<String> getRequired();
     public abstract Map<String, JsonSchema> getProperties();
     public abstract Map<String, JsonSchema> getPatternProperties();
+    public abstract Optional<JsonSchema> getAdditionalProperties();
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<JsonSchemaObject> FUNNEL = (from, into) -> {
