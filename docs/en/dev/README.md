@@ -23,6 +23,7 @@ collection of modules, gradle multi-module project
 - **Production**
   - functionality: must implement whole spec or all currently required use cases
   - design: [rules](#design-rules) have to be followed
+  - code-quality: rules have to be followed
   - tests: 100% coverage
   - documentation: must be complete, all languages
   - backwards compatibility: might be broken in the next major release (cfg, java api, rest api ???)
@@ -31,6 +32,7 @@ collection of modules, gradle multi-module project
 - **Candidate**
   - functionality: should implement whole spec or reasonable set of use cases
   - design: [rules](#design-rules) should be followed, if not provide good reason
+  - code-quality: rules should be followed, if not provide good reason
   - tests: at least 50% coverage
   - documentation: should be complete, maybe only certain languages
   - backwards compatibility: might be broken in the next major release (cfg, java api, rest api ???)
@@ -39,6 +41,7 @@ collection of modules, gradle multi-module project
 - **Experimental**
   - functionality: might implement only part of a spec or very specific use case
   - design: [rules](#design-rules) might be violated
+  - code-quality: rules might be violated
   - tests: not required
   - documentation: minimum required to use it
   - backwards compatibility: might be broken in the next minor release (cfg, java api, rest api ???)
