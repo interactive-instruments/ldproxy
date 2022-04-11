@@ -24,7 +24,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.List;

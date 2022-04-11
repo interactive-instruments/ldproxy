@@ -36,7 +36,7 @@ import de.ii.ogcapi.tiles.app.JacksonSubTypeIdsTiles;
 import de.ii.ogcapi.transactional.app.JacksonSubTypeIdsTransactional;
 import de.ii.ogcapi.xml.app.JacksonSubTypeIdsXml;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import de.ii.xtraplatform.feature.provider.pgis.FeatureProviderRegisterPgis;
+import de.ii.xtraplatform.features.sql.app.FeatureProviderRegisterSql;
 import java.util.Set;
 
 public interface JacksonSubTypes {
@@ -70,7 +70,7 @@ public interface JacksonSubTypes {
         .add(new JacksonSubTypeIdsJson())
         .add(new JacksonSubTypeIdsOas30())
         .add(new JacksonSubTypeIdsXml())
-        .add(new FeatureProviderRegisterPgis())
+        .add(new FeatureProviderRegisterSql())
         // .add(new FeatureProviderRegisterWfs())
         .build();
   }

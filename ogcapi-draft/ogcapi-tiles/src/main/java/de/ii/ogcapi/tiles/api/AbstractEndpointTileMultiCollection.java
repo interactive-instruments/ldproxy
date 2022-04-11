@@ -41,7 +41,7 @@ import de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileStream.Builder;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.io.IOException;
 import java.io.InputStream;
