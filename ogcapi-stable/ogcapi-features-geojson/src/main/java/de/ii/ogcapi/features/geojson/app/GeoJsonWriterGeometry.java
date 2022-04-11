@@ -10,12 +10,12 @@ package de.ii.ogcapi.features.geojson.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.json.domain.GeoJsonGeometryType;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -107,7 +107,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
                 context.encoding().getJson()
                        .writeStartObject();
                 context.encoding().getJson()
-                       .writeStringField("type", GEO_JSON_GEOMETRY_TYPE.forGmlType(context.geometryType().get()).toString());
+                       .writeStringField("type", GeoJsonGeometryType.forSimpleFeatureType(context.geometryType().get()).toString());
                 context.encoding().getJson()
                        .writeFieldName("coordinates");
 

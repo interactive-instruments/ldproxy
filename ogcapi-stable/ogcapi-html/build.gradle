@@ -2,6 +2,8 @@ plugins {
     id "com.github.node-gradle.node" version "3.2.0"
 }
 
+maturity = 'EXPERIMENTAL'
+
 dependencies {
     provided project(":ogcapi-foundation")
 

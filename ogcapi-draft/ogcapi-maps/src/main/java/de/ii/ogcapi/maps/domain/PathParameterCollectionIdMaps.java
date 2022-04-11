@@ -12,14 +12,12 @@ import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;

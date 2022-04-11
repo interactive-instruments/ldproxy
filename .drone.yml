@@ -23,7 +23,8 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew check -Psnapshot=true
+      - ./gradlew check -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [push]
 
@@ -31,7 +32,8 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew check
+      - ./gradlew check -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [tag]
 
@@ -39,7 +41,8 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew assemble dockerDistTar -Psnapshot=true
+      - ./gradlew assemble dockerDistTar -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [push]
 
@@ -47,7 +50,8 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew assemble dockerDistTar
+      - ./gradlew assemble dockerDistTar -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [tag]
 
@@ -55,7 +59,7 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew publish -Psnapshot=true -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew publish -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: push
@@ -64,7 +68,7 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew publish -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew publish -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: tag
