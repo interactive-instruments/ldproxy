@@ -8,7 +8,8 @@
 package de.ii.ogcapi.collections.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.collections.domain.ImmutableCollections.Builder;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ContentExtension;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -20,8 +21,8 @@ import java.util.Optional;
 @AutoMultiBind
 public interface CollectionsExtension extends ContentExtension {
 
-    ImmutableCollections.Builder process(ImmutableCollections.Builder collectionsBuilder,
-                                         OgcApiDataV2 apiData,
+    ImmutableCollections.Builder process(Builder collectionsBuilder,
+                                         OgcApi api,
                                          URICustomizer uriCustomizer,
                                          ApiMediaType mediaType,
                                          List<ApiMediaType> alternateMediaTypes,

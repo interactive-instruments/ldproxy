@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -134,11 +135,11 @@ public interface StyleFormatExtension extends FormatExtension {
     /**
      *
      * @param stylesheetContent the stylesheet content
-     * @param apiData
+     * @param api
      * @param requestContext
      * @return the response
      */
-    default Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData,
+    default Object getStyleEntity(StylesheetContent stylesheetContent, OgcApi api,
                                   Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
         return stylesheetContent.getContent();
     }

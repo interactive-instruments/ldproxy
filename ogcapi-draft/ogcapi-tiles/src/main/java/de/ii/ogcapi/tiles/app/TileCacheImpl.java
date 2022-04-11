@@ -15,6 +15,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.Metadata;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
@@ -36,6 +37,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -116,7 +118,8 @@ public class TileCacheImpl implements TileCache {
      * generate empty cache files and directories
      */
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, ValidationResult.MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        OgcApiDataV2 apiData = api.getData();
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                                                                              .mode(apiValidation);
 
@@ -139,7 +142,7 @@ public class TileCacheImpl implements TileCache {
             Set<String> tileMatrixSetIds = config.get().getZoomLevelsDerived().keySet();
             for (String tileMatrixSetId : tileMatrixSetIds) {
                 TileMatrixSet tileMatrixSet = tileMatrixSets.get(tileMatrixSetId);
-                builder = process(builder, apiData, Optional.empty(), tileMatrixSet, cacheType);
+                builder = process(builder, api, Optional.empty(), tileMatrixSet, cacheType);
             }
         }
 
@@ -152,7 +155,7 @@ public class TileCacheImpl implements TileCache {
                 Set<String> tileMatrixSetIds = config.get().getZoomLevelsDerived().keySet();
                 for (String tileMatrixSetId : tileMatrixSetIds) {
                     TileMatrixSet tileMatrixSet = tileMatrixSets.get(tileMatrixSetId);
-                    builder = process(builder, apiData, Optional.of(collectionId), tileMatrixSet, cacheType);
+                    builder = process(builder, api, Optional.of(collectionId), tileMatrixSet, cacheType);
                 }
            }
         }
@@ -161,14 +164,14 @@ public class TileCacheImpl implements TileCache {
     }
 
     private ImmutableValidationResult.Builder process(ImmutableValidationResult.Builder builder,
-               OgcApiDataV2 apiData,
+               OgcApi api,
                Optional<String> collectionId,
                TileMatrixSet tileMatrixSet,
                TilesConfiguration.TileCacheType cacheType) {
         switch (cacheType) {
             case MBTILES:
                 try {
-                    getOrInitTileset(apiData, collectionId, tileMatrixSet);
+                    getOrInitTileset(api, collectionId, tileMatrixSet);
                 } catch (IOException e) {
                     builder.addErrors(MessageFormat.format("The Mbtiles container for the tile cache for collection ''{0}'' could not be initialized.", collectionId.orElse("__all__")));
                 }
@@ -177,7 +180,7 @@ public class TileCacheImpl implements TileCache {
             default:
             case FILES:
                 try {
-                    Files.createDirectories(cacheStore.resolve(apiData.getId()).resolve(collectionId.orElse("__all__")).resolve(tileMatrixSet.getId()));
+                    Files.createDirectories(cacheStore.resolve(api.getId()).resolve(collectionId.orElse("__all__")).resolve(tileMatrixSet.getId()));
                 } catch (IOException e) {
                     builder.addErrors(MessageFormat.format("The folders for the tile cache for collection ''{0}'' could not be initialized.", collectionId.orElse("__all__")));
                 }
@@ -279,7 +282,7 @@ public class TileCacheImpl implements TileCache {
     }
 
     @Override
-    public void deleteTiles(OgcApiDataV2 apiData, Optional<String> collectionId,
+    public void deleteTiles(OgcApi api, Optional<String> collectionId,
                             Optional<String> tileMatrixSetId, Optional<BoundingBox> boundingBox) throws IOException, SQLException {
         LOGGER.info(
             "Purging tile cache for collection '{}', tiling scheme '{}', bounding box '{}'",
@@ -288,6 +291,7 @@ public class TileCacheImpl implements TileCache {
                 boundingBox.get().getXmin(), boundingBox.get().getYmin(),
                 boundingBox.get().getXmax(), boundingBox.get().getYmax()));
 
+        OgcApiDataV2 apiData = api.getData();
         Optional<TilesConfiguration> config = collectionId.isEmpty()
                 ? apiData.getExtension(TilesConfiguration.class)
                 : apiData.getExtension(TilesConfiguration.class, collectionId.get());
@@ -306,14 +310,14 @@ public class TileCacheImpl implements TileCache {
             .stream()
             .map(tmsId -> {
                 TileMatrixSet tileMatrixSet = getTileMatrixSetById(tmsId);
-                BoundingBox bbox = boundingBox.orElseGet(tileMatrixSet::getBoundingBox);
+                BoundingBox bbox = boundingBox.orElseGet(() -> api.getSpatialExtent(collectionId).orElse(tileMatrixSet.getBoundingBox()));
                 return new SimpleImmutableEntry<>(tmsId, bbox);
             })
             .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue));
 
         switch (getType(apiData, collectionId)) {
             case MBTILES:
-                deleteTilesMbtiles(apiData, collectionId, relevantZoomLevels, relevantBoundingBoxes);
+                deleteTilesMbtiles(api, collectionId, relevantZoomLevels, relevantBoundingBoxes);
                 break;
             case FILES:
                 deleteTilesFiles(apiData, collectionId, relevantZoomLevels, relevantBoundingBoxes);
@@ -390,20 +394,21 @@ public class TileCacheImpl implements TileCache {
     private MbtilesTileset getTileset(Tile tile) throws IOException {
         if (getType(tile)!= TilesConfiguration.TileCacheType.MBTILES)
             throw new IllegalStateException(String.format("Cannot get an Mbtiles cache. Found cache type: %s", getType(tile).toString()));
-        OgcApiDataV2 apiData = tile.getApiData();
+        OgcApi api = tile.getApi();
         Optional<String> collectionId = tile.isDatasetTile() ? Optional.empty() : Optional.of(tile.getCollectionId());
         TileMatrixSet tileMatrixSet = tile.getTileMatrixSet();
-        return getOrInitTileset(apiData, collectionId, tileMatrixSet);
+        return getOrInitTileset(api, collectionId, tileMatrixSet);
     }
 
     /**
      * MBTILES: create a new, empty Mbtiles cache file
-     * @param apiData the API
+     * @param api the API
      * @param collectionId the collection; an empty value represents the dataset
      * @param tileMatrixSet the tile matrix set
      * @return the Tileset
      */
-    private MbtilesTileset getOrInitTileset(OgcApiDataV2 apiData, Optional<String> collectionId, TileMatrixSet tileMatrixSet) throws IOException {
+    private MbtilesTileset getOrInitTileset(OgcApi api, Optional<String> collectionId, TileMatrixSet tileMatrixSet) throws IOException {
+        OgcApiDataV2 apiData = api.getData();
         String apiId = apiData.getId();
         String tileMatrixSetId = tileMatrixSet.getId();
         String key = String.join("/", apiId, collectionId.orElse("__all__"), tileMatrixSetId);
@@ -424,7 +429,7 @@ public class TileCacheImpl implements TileCache {
                 }
 
                 // get the tile set metadata
-                TileSet tileSetMetadata = TilesHelper.buildTileSet(apiData,
+                TileSet tileSetMetadata = TilesHelper.buildTileSet(api,
                                                                    tileMatrixSet,
                                                                    range,
                                                                    config.getCenterDerived(),
@@ -515,7 +520,7 @@ public class TileCacheImpl implements TileCache {
 
     }
 
-    private void deleteTilesMbtiles(OgcApiDataV2 apiData, Optional<String> collectionId, Map<String, MinMax> zoomLevels, Map<String, BoundingBox> boundingBoxes)
+    private void deleteTilesMbtiles(OgcApi api, Optional<String> collectionId, Map<String, MinMax> zoomLevels, Map<String, BoundingBox> boundingBoxes)
         throws SQLException, IOException {
         for (Map.Entry<String, MinMax> tileSet : zoomLevels.entrySet()) {
             TileMatrixSet tileMatrixSet = getTileMatrixSetById(tileSet.getKey());
@@ -523,24 +528,25 @@ public class TileCacheImpl implements TileCache {
             BoundingBox bbox = boundingBoxes.get(tileSet.getKey());
 
             // first the dataset tiles
-            deleteTilesMbtiles(apiData, Optional.empty(), tileMatrixSet, levels, bbox);
+            deleteTilesMbtiles(api, Optional.empty(), tileMatrixSet, levels, bbox);
 
             if (collectionId.isPresent()) {
                 // also the single collection tiles for the collection
-                deleteTilesMbtiles(apiData, collectionId, tileMatrixSet, levels, bbox);
+                deleteTilesMbtiles(api, collectionId, tileMatrixSet, levels, bbox);
             } else {
                 // all single collection tiles
-                for (String colId : apiData.getCollections()
+                for (String colId : api.getData().getCollections()
                     .keySet()) {
-                    deleteTilesMbtiles(apiData, Optional.of(colId), tileMatrixSet, levels, bbox);
+                    deleteTilesMbtiles(api, Optional.of(colId), tileMatrixSet, levels, bbox);
                 }
             }
         }
     }
 
-    private void deleteTilesMbtiles(OgcApiDataV2 apiData, Optional<String> collectionId,
+    private void deleteTilesMbtiles(OgcApi api, Optional<String> collectionId,
                                     TileMatrixSet tileMatrixSet, MinMax levels, BoundingBox bbox) throws SQLException, IOException {
-        MbtilesTileset tileset = getOrInitTileset(apiData, collectionId, tileMatrixSet);
+        OgcApiDataV2 apiData = api.getData();
+        MbtilesTileset tileset = getOrInitTileset(api, collectionId, tileMatrixSet);
         List<TileMatrixSetLimits> limitsList = getLimits(apiData, tileMatrixSet, levels, collectionId, bbox);
         for (TileMatrixSetLimits limits : limitsList) {
             if (LOGGER.isTraceEnabled()) {

@@ -13,6 +13,7 @@ import de.ii.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -21,6 +22,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
@@ -50,12 +52,12 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDataV2 apiData,
+    public ImmutableLandingPage.Builder process(Builder landingPageBuilder, OgcApi api,
                                                 URICustomizer uriCustomizer,
                                                 ApiMediaType mediaType,
                                                 List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
-
+        OgcApiDataV2 apiData = api.getData();
         if (!isEnabledForApi(apiData)) {
             return landingPageBuilder;
         }
@@ -112,7 +114,7 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
             for (CollectionExtension ogcApiCollectionExtension : extensionRegistry.getExtensionsForType(CollectionExtension.class)) {
                 ogcApiCollection = ogcApiCollectionExtension.process(ogcApiCollection,
                                                                      featureTypeConfiguration,
-                                                                     apiData,
+                                                                     api,
                                                                      uriCustomizer.copy()
                                                                                   .clearParameters()
                                                                                   .ensureLastPathSegments("collections", collectionId)

@@ -14,6 +14,7 @@ import de.ii.ogcapi.common.domain.ImmutableCommonConfiguration;
 import de.ii.ogcapi.crs.domain.ImmutableCrsConfiguration;
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration;
+import de.ii.ogcapi.features.flatgeobuf.domain.ImmutableFlatgeobufConfiguration;
 import de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import de.ii.ogcapi.features.geojson.ld.domain.ImmutableGeoJsonLdConfiguration;
 import de.ii.ogcapi.features.gml.app.ImmutableGmlConfiguration;
@@ -46,6 +47,10 @@ public interface OgcApiExtensionBuilders {
 
   default ImmutableFeaturesExtensionsConfiguration.Builder featuresExtensions() {
     return new ImmutableFeaturesExtensionsConfiguration.Builder();
+  }
+
+  default ImmutableFlatgeobufConfiguration.Builder flatgeobuf() {
+    return new ImmutableFlatgeobufConfiguration.Builder();
   }
 
   default ImmutableGeoJsonLdConfiguration.Builder geoJsonLd() {

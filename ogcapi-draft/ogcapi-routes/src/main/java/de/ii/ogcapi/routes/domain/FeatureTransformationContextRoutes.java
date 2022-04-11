@@ -8,6 +8,7 @@
 package de.ii.ogcapi.routes.domain;
 
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import org.immutables.value.Value;
 
@@ -20,6 +21,7 @@ public abstract class FeatureTransformationContextRoutes implements FeatureTrans
     public abstract RouteFormatExtension getFormat();
     public abstract Optional<String> getName();
     public abstract EpsgCrs getCrs();
+    public abstract CrsInfo getCrsInfo();
     public abstract long getStartTimeNano();
     public abstract String getSpeedLimitUnit();
     public abstract Optional<Double> getElevationProfileSimplificationTolerance();

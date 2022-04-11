@@ -8,7 +8,8 @@
 package de.ii.ogcapi.tiles.app.tileMatrixSet;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.CollectionExtent;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.tiles.app.TilesHelper;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -40,18 +41,16 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
 
     /**
      * Return a list of tileMatrixSetLimits for a single collection.
-     * @param data service dataset
+     * @param api service dataset
      * @param collectionId name of the collection
      * @param tileMatrixSet the tile matrix set
      * @return list of TileMatrixSetLimits
      */
     @Override
-    public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApiDataV2 data, String collectionId,
+    public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApi api, String collectionId,
                                                                       TileMatrixSet tileMatrixSet, MinMax tileMatrixRange) {
 
-        Optional<BoundingBox> bbox = data.getSpatialExtent(collectionId);
-        if (bbox.isPresent())
-            bbox = TilesHelper.getBoundingBoxInTargetCrs(bbox.get(), tileMatrixSet.getCrs(), crsTransformerFactory);
+        Optional<BoundingBox> bbox = api.getSpatialExtent(collectionId, tileMatrixSet.getCrs());
 
         if (bbox.isEmpty()) {
             // fallback to bbox of the tile matrix set
@@ -64,20 +63,15 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
 
     /**
      * Return a list of tileMatrixSetLimits for all collections in the dataset.
-     * @param data service dataset
+     * @param api service dataset
      * @param tileMatrixSet the tile matrix set
      * @return list of TileMatrixSetLimits
      */
     @Override
-    public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApiDataV2 data, TileMatrixSet tileMatrixSet,
+    public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApi api, TileMatrixSet tileMatrixSet,
                                                             MinMax tileMatrixRange) {
 
-        Optional<BoundingBox> bbox = data.getSpatialExtent();
-        if (bbox.isEmpty())
-            bbox = data.getDefaultExtent().flatMap(extent -> extent.getSpatial());
-
-        if (bbox.isPresent())
-            bbox = TilesHelper.getBoundingBoxInTargetCrs(bbox.get(), tileMatrixSet.getCrs(), crsTransformerFactory);
+        Optional<BoundingBox> bbox = api.getSpatialExtent(tileMatrixSet.getCrs());
 
         if (bbox.isEmpty()) {
             // fallback to bbox of the tile matrix set

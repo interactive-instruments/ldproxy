@@ -80,7 +80,7 @@ public interface EntityFactories {
 
           }
         })
-        .add(new FeatureProviderSqlFactory(null, null, null, null, null, null, null) {
+        .add(new FeatureProviderSqlFactory(null, null, null, null, null, null, null, null) {
           @Override
           public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
             return CompletableFuture.completedFuture(null);
@@ -106,7 +106,7 @@ public interface EntityFactories {
 
           }
         })
-        .add(new OgcApiFactory(extensionRegistry, null) {
+        .add(new OgcApiFactory(null, extensionRegistry, null) {
           @Override
           public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
             return CompletableFuture.completedFuture(null);

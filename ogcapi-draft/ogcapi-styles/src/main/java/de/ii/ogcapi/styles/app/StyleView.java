@@ -7,10 +7,12 @@
  */
 package de.ii.ogcapi.styles.app;
 
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.MapClient.Popup;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.services.domain.GenericView;
 import java.util.Collection;
 import java.util.Map;
@@ -21,10 +23,11 @@ public class StyleView extends GenericView {
     public final String title;
     public final String styleUrl;
     public final String layerIds;
+    public final Map<String, String> bbox;
     public final MapClient mapClient;
     public final String urlPrefix;
 
-    public StyleView(String styleUrl, OgcApiDataV2 apiData, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap, String urlPrefix) {
+    public StyleView(String styleUrl, OgcApiDataV2 apiData, Optional<BoundingBox> spatialExtent, String styleId, boolean popup, boolean layerControl, Map<String, Collection<String>> layerMap, String urlPrefix) {
         super("/templates/style", null);
         this.title = "Style " + styleId;
         this.styleUrl = styleUrl;
@@ -35,6 +38,14 @@ public class StyleView extends GenericView {
                         .map(entry -> "\""+entry.getKey()+"\": [ \"" + String.join("\", \"", entry.getValue()) + "\" ]")
                         .collect(Collectors.joining(", ")) +
                 "}";
+
+        this.bbox = spatialExtent
+            .map(bbox -> ImmutableMap.of(
+            "minLng", Double.toString(bbox.getXmin()),
+            "minLat", Double.toString(bbox.getYmin()),
+            "maxLng", Double.toString(bbox.getXmax()),
+            "maxLat", Double.toString(bbox.getYmax())))
+            .orElse(null);
 
         this.mapClient = new ImmutableMapClient.Builder()
             .styleUrl(styleUrl)

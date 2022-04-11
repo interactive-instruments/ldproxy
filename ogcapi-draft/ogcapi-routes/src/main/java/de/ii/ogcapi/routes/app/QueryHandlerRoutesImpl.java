@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -40,6 +39,7 @@ import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingFlag;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.Geometry;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -86,16 +86,19 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
     private final CrsTransformerFactory crsTransformerFactory;
     private final EntityRegistry entityRegistry;
     private final CrsSupport crsSupport;
+    private final CrsInfo crsInfo;
     private final RouteRepository routeRepository;
 
     @Inject
     public QueryHandlerRoutesImpl(I18n i18n,
                                   CrsTransformerFactory crsTransformerFactory,
+                                  CrsInfo crsInfo,
                                   EntityRegistry entityRegistry,
                                   CrsSupport crsSupport,
                                   RouteRepository routeRepository) {
         this.i18n = i18n;
         this.crsTransformerFactory = crsTransformerFactory;
+        this.crsInfo = crsInfo;
         this.entityRegistry = entityRegistry;
         this.crsSupport = crsSupport;
         this.routeRepository = routeRepository;
@@ -123,7 +126,8 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
         RoutingConfiguration config = apiData.getExtension(RoutingConfiguration.class)
             .orElseThrow(() -> new IllegalStateException("No routing configuration found for the API."));
-        RoutesConfiguration providerConfig = featureProvider.getData().getExtension(RoutesConfiguration.class)
+        RoutesConfiguration providerConfig = featureProvider.getData().getExtension(
+                RoutesConfiguration.class)
             .orElseThrow(() -> new IllegalStateException("No routing configuration found for the feature provider of this API."));
 
         RouteFormatExtension outputFormat = api.getOutputFormat(
@@ -215,6 +219,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         }
 
         FeatureTransformationContextRoutes transformationContext = ImmutableFeatureTransformationContextRoutes.builder()
+            .api(api)
             .apiData(api.getData())
             .featureSchema(featureProvider.getData().getTypes().get(queryInput.getFeatureTypeId()))
             .collectionId("not_applicable")
@@ -243,6 +248,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .startTimeNano(System.nanoTime())
             .speedLimitUnit(queryInput.getSpeedLimitUnit())
             .elevationProfileSimplificationTolerance(queryInput.getElevationProfileSimplificationTolerance())
+            .crsInfo(crsInfo)
             .build();
 
         Optional<FeatureTokenEncoder<?>> encoder = outputFormat.getFeatureEncoder(transformationContext, Optional.empty());

@@ -110,7 +110,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
 
         for (CollectionsExtension ogcApiCollectionsExtension : getCollectionsExtenders()) {
             collections = ogcApiCollectionsExtension.process(collections,
-                    apiData,
+                    api,
                     requestContext.getUriCustomizer()
                                   .copy(),
                     requestContext.getMediaType(),
@@ -179,7 +179,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         for (CollectionExtension ogcApiCollectionExtension : getCollectionExtenders()) {
             ogcApiCollection = ogcApiCollectionExtension.process(ogcApiCollection,
                     featureTypeConfiguration,
-                    apiData,
+                    api,
                     requestContext.getUriCustomizer()
                                   .copy(),
                     false,

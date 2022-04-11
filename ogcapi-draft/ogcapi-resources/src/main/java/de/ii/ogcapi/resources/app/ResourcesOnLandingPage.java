@@ -11,13 +11,14 @@ import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURC
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
@@ -56,7 +57,7 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
             .mode(apiValidation);
 
@@ -81,14 +82,14 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                                OgcApiDataV2 apiData,
+    public ImmutableLandingPage.Builder process(Builder landingPageBuilder,
+                                                OgcApi api,
                                                 URICustomizer uriCustomizer,
                                                 ApiMediaType mediaType,
                                                 List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
 
-        if (!isEnabledForApi(apiData)) {
+        if (!isEnabledForApi(api.getData())) {
             return landingPageBuilder;
         }
 
@@ -97,7 +98,7 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
         List<Link> links = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
         landingPageBuilder.addAllLinks(links);
 
-        final String datasetId = apiData.getId();
+        final String datasetId = api.getId();
         File apiDir = new File(resourcesStore + File.separator + datasetId);
         if (!apiDir.exists()) {
             apiDir.mkdirs();
