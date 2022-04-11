@@ -1,6 +1,0 @@
-
-maturity = 'EXPERIMENTAL'
-
-dependencies {
-    provided project(":ogcapi-features-geojson-ld")
-}

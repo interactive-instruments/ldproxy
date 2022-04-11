@@ -9,12 +9,9 @@ package de.ii.ogcapi.features.geojson.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping;
-import de.ii.ogcapi.features.geojson.domain.legacy.GeoJsonPropertyMapping;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,8 +30,6 @@ public class JacksonSubTypeIdsGeoJson implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(GeoJsonPropertyMapping.class, "GEO_JSON_PROPERTY")
-                .put(GeoJsonGeometryMapping.class, "GEO_JSON_GEOMETRY")
                 .put(GeoJsonConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(GeoJsonConfiguration.class))
                 .build();
     }

@@ -9,18 +9,17 @@ package de.ii.ogcapi.features.json.fg.app;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping;
 import de.ii.ogcapi.features.json.fg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
+import de.ii.xtraplatform.features.json.domain.GeoJsonGeometryType;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
@@ -88,7 +87,7 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
 
             json.writeFieldName(JSON_KEY);
             json.writeStartObject();
-            json.writeStringField("type", GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE.forGmlType(context.geometryType().get()).toString());
+            json.writeStringField("type", GeoJsonGeometryType.forSimpleFeatureType(context.geometryType().get()).toString());
             json.writeFieldName("coordinates");
 
             geometryOpen = true;

@@ -9,12 +9,9 @@ package de.ii.ogcapi.features.html.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
-import de.ii.ogcapi.features.html.domain.legacy.MicrodataGeometryMapping;
-import de.ii.ogcapi.features.html.domain.legacy.MicrodataPropertyMapping;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,8 +30,6 @@ public class JacksonSubTypeIdsFeaturesHtml implements JacksonSubTypeIds {
     @Override
     public Map<Class<?>, String> getMapping() {
         return new ImmutableMap.Builder<Class<?>, String>()
-                .put(MicrodataPropertyMapping.class, "MICRODATA_PROPERTY")
-                .put(MicrodataGeometryMapping.class, "MICRODATA_GEOMETRY")
                 .put(FeaturesHtmlConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(FeaturesHtmlConfiguration.class))
                 .build();
     }
