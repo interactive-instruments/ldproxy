@@ -25,6 +25,22 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
+ * @en Example of the specifications in the configuration file for the entire API
+ * (from the API for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
+ * @de Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API
+ * (aus der API für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
+ * @example <code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   enabled: true
+ *   style: 'topographic-with-basemap'
+ * ```
+ * </code>
+ */
+
+/**
+ * @en Example of the specifications in the configuration file for a feature collection:
+ * @de Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
  * @example <code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
@@ -48,6 +64,23 @@ import org.immutables.value.Value;
  *       codelist: rle
  *     LOC:
  *       codelist: loc
+ * ```
+ * </code>
+ */
+
+/**
+ * @en Example of using CesiumJS for building data that is partially composed
+ * of building components. The floor slab is used as a fallback:
+ * @de Beispiel für die Verwendung von CesiumJS für Gebäudedaten,
+ * die teilweise aus Bauteilen zusammengesetzt sind. Als Fallback wird die Bodenplatte verwendet:
+ * @example <code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   mapClientType: CESIUM
+ *   geometryProperties:
+ *   - consistsOfBuildingPart.lod1Solid
+ *   - lod1Solid
+ *   - lod1GroundSurface
  * ```
  * </code>
  */

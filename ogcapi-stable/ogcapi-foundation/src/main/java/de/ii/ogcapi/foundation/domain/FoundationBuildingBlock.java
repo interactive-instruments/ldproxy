@@ -19,8 +19,6 @@ import javax.inject.Singleton;
  *
  * Zusätzlich wird auch die ldproxy-spezifische Ressource "API Catalog" als Liste der
  * aktiven APIs in dem Deployment bereitgestellt.
- *
- * Das Schema der API-Catalog-Ressource ist:
  * @see FoundationConfiguration
  * @see ApiCatalog
  */

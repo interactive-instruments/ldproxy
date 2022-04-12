@@ -98,7 +98,7 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
 
     /**
      * @en Description for resource *API Catalog*. May contain HTML elements.
-     * @de "Die folgenden OGC APIs sind verfügbar." |Beschreibung für die API-Catalog-Ressource
+     * @de Beschreibung für die API-Catalog-Ressource
      * in diesem Deployment. HTML-Markup wird bei der HTML-Ausgabe aufbereitet.
      * @default "The following OGC APIs are available."
      */

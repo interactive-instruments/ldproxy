@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
+ * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.foundation.domain;
 
@@ -16,6 +15,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
+
+/**
+ * @title Resource paths
+ * @en ll resource paths in this documentation are relative to the base URI of the deployment. For example given the
+ * base URI `https://example.com/pfad/zu/apis` and the resource path `/{apiId}/collections`, the full path would be
+ * `https://example.com/pfad/zu/apis/{apiId}/collections`.
+ * @de Alle Pfadangaben in dieser Dokumentation sind relativ zur Basis-URI des Deployments.
+ * Ist dies zum Beispiel `https://example.com/pfad/zu/apis` und lautet der Pfad einer Ressource
+ * `/{apiId}/collections` dann ist die URI der Ressource `https://example.com/pfad/zu/apis/{apiId}/collections`.
+ */
 
 /**
  * A resource is any path/URI supported by the API. Through path parameters any instance may represent

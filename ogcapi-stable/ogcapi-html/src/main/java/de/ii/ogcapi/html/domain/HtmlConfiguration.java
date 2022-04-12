@@ -80,7 +80,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
      * @en Enable [schema.org](https://schema.org) annotations for all sites,
      * which are used e.g. by search engines. The annotations are embedded as JSON-LD.
      * @de Steuert, ob in die HTML-Ausgabe schema.org-Annotationen, z.B. für Suchmaschinen,
-     * eingebettet sein sollen, sofern . Die Annotationen werden im Format JSON-LD eingebettet.
+     * eingebettet sein sollen, sofern. Die Annotationen werden im Format JSON-LD eingebettet.
      * @default `true`
      */
     @JsonAlias(value = "microdataEnabled")
