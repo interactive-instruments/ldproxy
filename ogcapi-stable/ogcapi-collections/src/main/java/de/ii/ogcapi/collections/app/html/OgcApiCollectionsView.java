@@ -135,7 +135,8 @@ public class OgcApiCollectionsView extends OgcApiView {
                                 .filter(link -> link.getRel().equalsIgnoreCase("self"))
                                 .findFirst()
                                 .map(link -> link.getHref() + "/items")
-                                .orElse("")))
+                                .orElse(""),
+                        "itemCount", collection.getItemCount().map(Object::toString).orElse("")))
                 .collect(Collectors.toList());
     }
 }
