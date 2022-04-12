@@ -11,13 +11,26 @@ import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ChangingItemCount;
+import de.ii.ogcapi.foundation.domain.ChangingLastModified;
+import de.ii.ogcapi.foundation.domain.ChangingSpatialExtent;
+import de.ii.ogcapi.foundation.domain.ChangingTemporalExtent;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.TemporalExtent;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.AbstractService;
+import de.ii.xtraplatform.store.domain.entities.ChangingValue;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -29,11 +42,13 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEntity.class);
 
+    private final CrsTransformerFactory crsTransformerFactory;
     private final ExtensionRegistry extensionRegistry;
 
     @AssistedInject
-    public OgcApiEntity(ExtensionRegistry extensionRegistry, @Assisted OgcApiDataV2 data) {
+    public OgcApiEntity(CrsTransformerFactory crsTransformerFactory, ExtensionRegistry extensionRegistry, @Assisted OgcApiDataV2 data) {
         super(data);
+        this.crsTransformerFactory = crsTransformerFactory;
         this.extensionRegistry = extensionRegistry;
     }
 
@@ -58,7 +73,7 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
         for (ApiExtension extension : extensionRegistry.getExtensions()) {
             if (extension.isEnabledForApi(apiData)) {
-                ValidationResult result = extension.onStartup(getData(), apiValidation);
+                ValidationResult result = extension.onStartup(this, apiValidation);
                 isSuccess = isSuccess && result.isSuccess();
                 result.getErrors().forEach(LOGGER::error);
                 result.getStrictErrors().forEach(result.getMode() == MODE.STRICT ? LOGGER::error : LOGGER::warn);
@@ -99,6 +114,114 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
                                                                                                              .type()))
                                 .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(getData()))
                                 .collect(Collectors.toList());
+    }
+
+    //TODO: cleanup methods in OgcApiDataV2
+    @Override
+    public Optional<BoundingBox> getSpatialExtent() {
+        return getChangingData().get(ChangingSpatialExtent.class)
+            .map(ChangingValue::getValue);
+    }
+
+    @Override
+    public Optional<BoundingBox> getSpatialExtent(EpsgCrs targetCrs) {
+        Optional<BoundingBox> spatialExtent = getSpatialExtent();
+
+        if (spatialExtent.isPresent()) {
+            return transformSpatialExtent(spatialExtent.get(), targetCrs);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<BoundingBox> getSpatialExtent(String collectionId) {
+        return getChangingData().get(ChangingSpatialExtent.class, collectionId)
+            .map(ChangingValue::getValue);
+    }
+
+    @Override
+    public Optional<BoundingBox> getSpatialExtent(String collectionId, EpsgCrs targetCrs) {
+        Optional<BoundingBox> spatialExtent = getSpatialExtent(collectionId);
+
+        if (spatialExtent.isPresent()) {
+            return transformSpatialExtent(spatialExtent.get(), targetCrs);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean updateSpatialExtent(String collectionId, BoundingBox bbox) {
+        return getChangingData().update(ChangingSpatialExtent.class, collectionId, ChangingSpatialExtent.of(bbox));
+    }
+
+    @Override
+    public Optional<TemporalExtent> getTemporalExtent() {
+        return getChangingData().get(ChangingTemporalExtent.class)
+            .map(ChangingValue::getValue);
+    }
+
+    @Override
+    public Optional<TemporalExtent> getTemporalExtent(String collectionId) {
+        return getChangingData().get(ChangingTemporalExtent.class, collectionId)
+            .map(ChangingValue::getValue);
+    }
+
+    @Override
+    public boolean updateTemporalExtent(String collectionId, TemporalExtent temporalExtent) {
+        return getChangingData().update(ChangingTemporalExtent.class, collectionId, ChangingTemporalExtent.of(temporalExtent));
+    }
+
+    @Override
+    public Optional<Instant> getLastModified() {
+        return getChangingData().get(ChangingLastModified.class)
+            .map(ChangingValue::getValue);
+    }
+
+    @Override
+    public Optional<Instant> getLastModified(String collectionId) {
+        return getChangingData().get(ChangingLastModified.class, collectionId)
+            .map(ChangingValue::getValue);
+    }
+
+    @Override
+    public boolean updateLastModified(String collectionId, Instant lastModified) {
+        return getChangingData().update(ChangingLastModified.class, collectionId, ChangingLastModified.of(lastModified));
+    }
+
+    @Override
+    public Optional<Long> getItemCount() {
+        return getChangingData().get(ChangingItemCount.class)
+            .map(ChangingValue::getValue);
+    }
+
+    @Override
+    public Optional<Long> getItemCount(String collectionId) {
+        return getChangingData().get(ChangingItemCount.class, collectionId)
+            .map(ChangingValue::getValue);
+    }
+
+    @Override
+    public boolean updateItemCount(String collectionId, Long itemCount) {
+        return getChangingData().update(ChangingItemCount.class, collectionId, ChangingItemCount.of(itemCount));
+    }
+
+    private Optional<BoundingBox> transformSpatialExtent(BoundingBox spatialExtent, EpsgCrs targetCrs) {
+        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(
+            OgcCrs.CRS84, targetCrs);
+
+        if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
+            try {
+                return Optional.ofNullable(crsTransformer.get()
+                    .transformBoundingBox(spatialExtent));
+            } catch (CrsTransformationException e) {
+                LOGGER.error(String.format("Error converting bounding box to CRS %s.", targetCrs));
+                return Optional.empty();
+            }
+        }
+
+        return Optional.ofNullable(spatialExtent);
     }
 
 }

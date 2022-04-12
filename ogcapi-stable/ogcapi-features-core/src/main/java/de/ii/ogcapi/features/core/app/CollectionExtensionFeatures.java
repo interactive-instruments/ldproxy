@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection.Builder;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
@@ -21,7 +22,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -51,9 +52,9 @@ public class CollectionExtensionFeatures implements CollectionExtension {
     }
 
     @Override
-    public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
+    public ImmutableOgcApiCollection.Builder process(Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureType,
-                                                     OgcApiDataV2 apiData, URICustomizer uriCustomizer,
+                                                     OgcApi api, URICustomizer uriCustomizer,
                                                      boolean isNested, ApiMediaType mediaType,
                                                      List<ApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
@@ -87,7 +88,8 @@ public class CollectionExtensionFeatures implements CollectionExtension {
 
         List<ApiMediaType> featureMediaTypes = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class)
                                                                 .stream()
-                                                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+                                                                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(
+                                                                    api.getData()))
                                                                 .map(outputFormatExtension -> outputFormatExtension.getMediaType())
                                                                 .collect(Collectors.toList());
 
@@ -123,8 +125,8 @@ public class CollectionExtensionFeatures implements CollectionExtension {
         boolean hasTemporalQueryable = queryables.map(FeaturesCollectionQueryables::getTemporal)
                                                  .filter(temporal -> !temporal.isEmpty())
                                                  .isPresent();
-        Optional<BoundingBox> spatial = apiData.getSpatialExtent(featureType.getId());
-        Optional<TemporalExtent> temporal = apiData.getTemporalExtent(featureType.getId());
+        Optional<BoundingBox> spatial = api.getSpatialExtent(featureType.getId());
+        Optional<TemporalExtent> temporal = api.getTemporalExtent(featureType.getId());
         if (hasSpatialQueryable && hasTemporalQueryable && spatial.isPresent() && temporal.isPresent()) {
             collection.extent(new OgcApiExtent(
                     temporal.get()
@@ -161,7 +163,7 @@ public class CollectionExtensionFeatures implements CollectionExtension {
     }
 
     public static OgcApiCollection createNestedCollection(FeatureTypeConfigurationOgcApi featureType,
-                                                          OgcApiDataV2 apiData,
+                                                          OgcApi api,
                                                           ApiMediaType mediaType,
                                                           List<ApiMediaType> alternateMediaTypes,
                                                           Optional<Locale> language,
@@ -174,7 +176,7 @@ public class CollectionExtensionFeatures implements CollectionExtension {
             ogcApiCollection = ogcApiCollectionExtension.process(
                     ogcApiCollection,
                     featureType,
-                    apiData,
+                    api,
                     uriCustomizer.copy(),
                     true,
                     mediaType,

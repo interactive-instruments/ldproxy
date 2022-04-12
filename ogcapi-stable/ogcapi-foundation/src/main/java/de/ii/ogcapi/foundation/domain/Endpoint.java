@@ -64,13 +64,13 @@ public abstract class Endpoint implements EndpointExtension {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
         try {
             // compile and cache the API definition
-            ApiEndpointDefinition definition = getDefinition(apiData);
+            ApiEndpointDefinition definition = getDefinition(api.getData());
 
             if (getFormats().isEmpty() &&
                 definition

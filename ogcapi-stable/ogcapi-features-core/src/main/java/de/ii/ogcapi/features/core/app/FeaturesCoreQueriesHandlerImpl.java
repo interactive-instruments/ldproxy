@@ -197,6 +197,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                                   .orElse(collectionId);
 
         ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
+                .api(api)
                 .apiData(api.getData())
                 .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                 .collectionId(collectionId)

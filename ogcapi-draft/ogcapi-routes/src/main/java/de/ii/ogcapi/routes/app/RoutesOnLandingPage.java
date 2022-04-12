@@ -9,12 +9,13 @@ package de.ii.ogcapi.routes.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
@@ -45,14 +46,14 @@ public class RoutesOnLandingPage implements LandingPageExtension {
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder,
-                                                OgcApiDataV2 apiData,
+    public ImmutableLandingPage.Builder process(Builder landingPageBuilder,
+                                                OgcApi api,
                                                 URICustomizer uriCustomizer,
                                                 ApiMediaType mediaType,
                                                 List<ApiMediaType> alternateMediaTypes,
                                                 Optional<Locale> language) {
 
-        if (!isEnabledForApi(apiData)) {
+        if (!isEnabledForApi(api.getData())) {
             return landingPageBuilder;
         }
 

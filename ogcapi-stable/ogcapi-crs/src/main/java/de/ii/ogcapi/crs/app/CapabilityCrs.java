@@ -12,7 +12,7 @@ import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.crs.domain.ImmutableCrsConfiguration.Builder;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -46,8 +46,8 @@ public class CapabilityCrs implements ApiBuildingBlock {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
-        Optional<CrsConfiguration> crsConfiguration = apiData.getExtension(CrsConfiguration.class)
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        Optional<CrsConfiguration> crsConfiguration = api.getData().getExtension(CrsConfiguration.class)
             .filter(ExtensionConfiguration::isEnabled);
 
         if (crsConfiguration.isEmpty()) {
@@ -55,9 +55,9 @@ public class CapabilityCrs implements ApiBuildingBlock {
         }
 
 
-        EpsgCrs defaultCrs = apiData.getExtension(
+        EpsgCrs defaultCrs = api.getData().getExtension(
             FeaturesCoreConfiguration.class).map(FeaturesCoreConfiguration::getDefaultEpsgCrs).orElse(OgcCrs.CRS84);
-        EpsgCrs providerCrs = featuresCoreProviders.getFeatureProvider(apiData)
+        EpsgCrs providerCrs = featuresCoreProviders.getFeatureProvider(api.getData())
             .flatMap(featureProvider2 -> featureProvider2.getData().getNativeCrs())
             .orElse(OgcCrs.CRS84);
 

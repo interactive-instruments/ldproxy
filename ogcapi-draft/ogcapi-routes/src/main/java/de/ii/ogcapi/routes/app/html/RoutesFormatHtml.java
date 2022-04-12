@@ -102,7 +102,7 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
             .orElse(ImmutableHtmlFormDefaults.builder().build());
 
         RoutesView view =
-            new RoutesView(api.getData(), routes, htmlDefaults, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
+            new RoutesView(api.getData(), routes, htmlDefaults, api.getSpatialExtent(), breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
         return view;
     }
 

@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -154,9 +155,10 @@ public class StyleFormatHtml implements StyleFormatExtension {
     }
 
     @Override
-    public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
-
-        URICustomizer uriCustomizer = new URICustomizer(servicesUri).ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
+    public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApi api, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
+        OgcApiDataV2 apiData = api.getData();
+        URICustomizer uriCustomizer = new URICustomizer(servicesUri).ensureLastPathSegments(
+            apiData.getSubPath().toArray(String[]::new));
         String serviceUrl = uriCustomizer.toString();
 
         if (collectionId.isPresent())
@@ -204,6 +206,6 @@ public class StyleFormatHtml implements StyleFormatExtension {
             }
         }
 
-        return new StyleView(styleUrl, apiData, styleId, popup, layerControl, layerMap.asMap(), requestContext.getStaticUrlPrefix());
+        return new StyleView(styleUrl, apiData, api.getSpatialExtent(), styleId, popup, layerControl, layerMap.asMap(), requestContext.getStaticUrlPrefix());
     }
 }

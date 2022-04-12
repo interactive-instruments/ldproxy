@@ -22,6 +22,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ogcapi.features.core.domain.ImmutableQueryValidationInputCoordinates;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -45,14 +46,21 @@ import de.ii.xtraplatform.cql.domain.SpatialOperator;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.cql.domain.TemporalOperation;
 import de.ii.xtraplatform.cql.domain.TemporalOperator;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,12 +68,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.measure.Unit;
+
+import org.immutables.value.Value;
 import org.kortforsyningen.proj.Units;
+import org.opengis.referencing.cs.RangeMeaning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +93,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesQueryImpl.class);
 
     private final ExtensionRegistry extensionRegistry;
+    private final CrsTransformerFactory crsTransformerFactory;
     private final CrsInfo crsInfo;
     private final SchemaInfo schemaInfo;
     private final FeaturesCoreProviders providers;
@@ -87,11 +101,13 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     @Inject
     public FeaturesQueryImpl(ExtensionRegistry extensionRegistry,
+                             CrsTransformerFactory crsTransformerFactory,
                              CrsInfo crsInfo,
                              SchemaInfo schemaInfo,
                              FeaturesCoreProviders providers,
                              Cql cql) {
         this.extensionRegistry = extensionRegistry;
+        this.crsTransformerFactory = crsTransformerFactory;
         this.crsInfo = crsInfo;
         this.schemaInfo = schemaInfo;
         this.providers = providers;
@@ -199,7 +215,20 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             if (parameters.containsKey("filter-crs")) {
                 crs = EpsgCrs.fromString(parameters.get("filter-crs"));
             }
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, queryableTypes, cqlFormat, crs);
+            QueryValidationInputCoordinates queryValidationInput;
+            if (apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
+                .map(FeaturesCoreConfiguration::getValidateCoordinatesInQueries)
+                .orElse(false)) {
+                queryValidationInput = new ImmutableQueryValidationInputCoordinates.Builder()
+                    .enabled(true)
+                    .bboxCrs(parameters.containsKey("bbox-crs") ? EpsgCrs.fromString(parameters.get("bbox-crs")) : OgcCrs.CRS84)
+                    .filterCrs(crs)
+                    .nativeCrs(providers.getFeatureProvider(apiData).map(FeatureProvider2::getData).flatMap(FeatureProviderDataV2::getNativeCrs))
+                    .build();
+            } else {
+                queryValidationInput = QueryValidationInputCoordinates.none();
+            }
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, queryableTypes, cqlFormat, crs, queryValidationInput);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -300,7 +329,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         if (!filtersFromQuery.isEmpty()) {
 
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), queryableTypes, cqlFormat, OgcCrs.CRS84);
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), queryableTypes, cqlFormat, OgcCrs.CRS84, QueryValidationInputCoordinates.none());
         }
 
         return Optional.empty();
@@ -330,7 +359,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
                                                   List<String> qFields, Map<String, String> queryableTypes,
-                                                  Cql.Format cqlFormat, EpsgCrs crs) {
+                                                  Cql.Format cqlFormat, EpsgCrs crs,
+                                                  QueryValidationInputCoordinates queryValidationInput) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
@@ -340,7 +370,15 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                        if (filterableFields.get(filter.getKey()).equals(
                                                            FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE))
                                                            return null;
-                                                       return bboxToCql(filterableFields.get(filter.getKey()), filter.getValue());
+
+                                                       CqlPredicate cqlPredicate = bboxToCql(filterableFields.get(filter.getKey()), filter.getValue());
+
+                                                       if (queryValidationInput.getEnabled()) {
+                                                           queryValidationInput.getBboxCrs()
+                                                               .ifPresent(bboxCrs -> cql.checkCoordinates(cqlPredicate, crsTransformerFactory, crsInfo, bboxCrs, queryValidationInput.getNativeCrs().orElse(null)));
+                                                       }
+
+                                                       return cqlPredicate;
                                                    }
                                                    if (filter.getKey()
                                                              .equals(PARAMETER_DATETIME)) {
@@ -369,6 +407,11 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
                                                        // will throw an error
                                                        cql.checkTypes(cqlPredicate, queryableTypes);
+
+                                                       if (queryValidationInput.getEnabled()) {
+                                                           queryValidationInput.getFilterCrs()
+                                                               .ifPresent(filterCrs -> cql.checkCoordinates(cqlPredicate, crsTransformerFactory, crsInfo, filterCrs, queryValidationInput.getNativeCrs().orElse(null)));
+                                                       }
 
                                                        return cqlPredicate;
                                                    }
@@ -411,33 +454,13 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s'", getBboxAsString(values)));
         }
 
-        checkCoordinateRange(coordinates, sourceCrs);
-
         Envelope envelope = Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), sourceCrs);
 
         return CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, geometryField, SpatialLiteral.of(envelope)));
     }
 
-    private void checkCoordinateRange(List<Double> coordinates, EpsgCrs crs) {
-        if (Objects.equals(crs, OgcCrs.CRS84)) {
-            double val1 = coordinates.get(0);
-            double val2 = coordinates.get(1);
-            double val3 = coordinates.get(2);
-            double val4 = coordinates.get(3);
-            // check coordinate range of default CRS
-            if (val1 < -180 || val1 > 180 || val3 < -180 || val3 > 180 || val2 < -90 || val2 > 90 || val4 < -90 || val4 > 90 || val2 > val4) {
-                // note that val1<val3 does not apply due to bboxes crossing the dateline
-                throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: the coordinates of the bounding box '%s' do not form a valid WGS 84 bounding box.", getCoordinatesAsString(coordinates)));
-            }
-        }
-    }
-
     private String getBboxAsString(List<String> bboxArray) {
         return String.format("%s,%s,%s,%s", bboxArray.get(0), bboxArray.get(1), bboxArray.get(2), bboxArray.get(3));
-    }
-
-    private String getCoordinatesAsString(List<Double> bboxArray) {
-        return String.format(Locale.US, "%f,%f,%f,%f", bboxArray.get(0), bboxArray.get(1), bboxArray.get(2), bboxArray.get(3));
     }
 
     private Optional<CqlPredicate> timeToCql(String timeField, String timeValue) {

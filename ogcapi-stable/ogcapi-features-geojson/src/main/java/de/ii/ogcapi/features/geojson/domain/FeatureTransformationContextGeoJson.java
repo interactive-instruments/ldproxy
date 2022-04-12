@@ -16,9 +16,9 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.geojson.app.FeaturesFormatGeoJson;
 import de.ii.ogcapi.features.geojson.app.JsonGeneratorDebug;
-import de.ii.ogcapi.features.geojson.domain.legacy.GeoJsonGeometryMapping.GEO_JSON_GEOMETRY_TYPE;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.xtraplatform.features.json.domain.GeoJsonGeometryType;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import java.io.IOException;
 import java.util.List;
@@ -128,7 +128,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     @Value.Modifiable
     public static abstract class StateGeoJson extends State {
 
-        public abstract Optional<GEO_JSON_GEOMETRY_TYPE> getCurrentGeometryType();
+        public abstract Optional<GeoJsonGeometryType> getCurrentGeometryType();
 
         public abstract Optional<ImmutableCoordinatesTransformer.Builder> getCoordinatesWriterBuilder();
 

@@ -27,12 +27,12 @@ import de.ii.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -130,7 +130,7 @@ public class FeaturesFormatGeoJson implements ItemTypeSpecificConformanceClass, 
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
         if (apiValidation== MODE.NONE)
@@ -139,10 +139,10 @@ public class FeaturesFormatGeoJson implements ItemTypeSpecificConformanceClass, 
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
-        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
 
         // get GeoJSON configurations to process
-        Map<String, GeoJsonConfiguration> geoJsonConfigurationMap = apiData.getCollections()
+        Map<String, GeoJsonConfiguration> geoJsonConfigurationMap = api.getData().getCollections()
                                                                     .entrySet()
                                                                     .stream()
                                                                     .map(entry -> {

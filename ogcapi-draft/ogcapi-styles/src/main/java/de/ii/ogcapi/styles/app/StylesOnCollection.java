@@ -10,10 +10,12 @@ package de.ii.ogcapi.styles.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection.Builder;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -53,15 +55,16 @@ public class StylesOnCollection implements CollectionExtension {
     }
 
     @Override
-    public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
+    public ImmutableOgcApiCollection.Builder process(Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApiDataV2 apiData, URICustomizer uriCustomizer, boolean isNested,
+                                                     OgcApi api, URICustomizer uriCustomizer, boolean isNested,
                                                      ApiMediaType mediaType, List<ApiMediaType> alternateMediaTypes,
                                                      Optional<Locale> language) {
         // skip link on /collections
         if (isNested)
             return collection;
 
+        OgcApiDataV2 apiData = api.getData();
         // nothing to add if disabled
         String collectionId = featureTypeConfiguration.getId();
         if (!isEnabledForApi(apiData, collectionId)) {

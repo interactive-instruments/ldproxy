@@ -14,6 +14,7 @@ import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContex
 import de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
 import de.ii.ogcapi.features.geojson.domain.ModifiableEncodingAwareContextGeoJson
 import de.ii.ogcapi.features.geojson.domain.ModifiableStateGeoJson
+import de.ii.ogcapi.foundation.app.OgcApiEntity
 import de.ii.ogcapi.foundation.domain.ApiMediaType
 import de.ii.ogcapi.foundation.domain.ApiRequestContext
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2
@@ -37,6 +38,7 @@ class GeoJsonWriterSetupUtil {
                 .crsTransformer(Optional.ofNullable(crsTransformer))
                 .defaultCrs(OgcCrs.CRS84)
                 .mediaType(FeaturesFormatGeoJson.MEDIA_TYPE)
+                .api(new OgcApiEntity(null, null, null))
                 .apiData(new ImmutableOgcApiDataV2.Builder()
                         .id("s")
                         .serviceType("OGC_API")

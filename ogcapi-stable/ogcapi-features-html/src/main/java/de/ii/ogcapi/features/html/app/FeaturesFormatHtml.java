@@ -22,7 +22,6 @@ import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -30,6 +29,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.Metadata;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -133,7 +133,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
 
         // no additional operational checks for now, only validation; we can stop, if no validation is requested
         if (apiValidation== MODE.NONE)
@@ -142,10 +142,10 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
         ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
                 .mode(apiValidation);
 
-        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
+        Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
 
         // get HTML configurations to process
-        Map<String, FeaturesHtmlConfiguration> htmlConfigurationMap = apiData.getCollections()
+        Map<String, FeaturesHtmlConfiguration> htmlConfigurationMap = api.getData().getCollections()
                                                                   .entrySet()
                                                                   .stream()
                                                                   .map(entry -> {
@@ -228,7 +228,8 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
     @Override
     public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
         FeatureTransformationContext transformationContext, Optional<Locale> language) {
-        OgcApiDataV2 serviceData = transformationContext.getApiData();
+        OgcApi api = transformationContext.getApi();
+        OgcApiDataV2 apiData = transformationContext.getApiData();
         String collectionName = transformationContext.getCollectionId();
         String staticUrlPrefix = transformationContext.getOgcApiRequest()
             .getStaticUrlPrefix();
@@ -245,7 +246,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
                 .equals("true"));
 
         if (transformationContext.isFeatureCollection()) {
-            FeatureTypeConfigurationOgcApi collectionData = serviceData.getCollections()
+            FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
                 .get(collectionName);
 
             Integer htmlMaxLimit = collectionData.getExtension(FeaturesHtmlConfiguration.class)
@@ -269,15 +270,15 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
                     .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)))
                 .orElse(ImmutableMap.of());
 
-            featureTypeDataset = createFeatureCollectionView(serviceData, serviceData.getCollections()
-                .get(collectionName), uriCustomizer.copy(), filterableFields, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(serviceData), getMapPosition(serviceData, collectionName), getGeometryProperties(serviceData, collectionName));
+            featureTypeDataset = createFeatureCollectionView(api, apiData.getCollections()
+                .get(collectionName), uriCustomizer.copy(), filterableFields, staticUrlPrefix, bare, language, isNoIndexEnabledForApi(apiData), getMapPosition(apiData, collectionName), getGeometryProperties(apiData, collectionName));
 
-            addDatasetNavigation(featureTypeDataset, serviceData.getLabel(), serviceData.getCollections()
+            addDatasetNavigation(featureTypeDataset, apiData.getLabel(), apiData.getCollections()
                 .get(collectionName)
-                .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, serviceData.getSubPath());
+                .getLabel(), transformationContext.getLinks(), uriCustomizer.copy(), language, apiData.getSubPath());
         } else {
-            featureTypeDataset = createFeatureDetailsView(serviceData, serviceData.getCollections()
-                .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), serviceData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(serviceData), serviceData.getSubPath(), getMapPosition(serviceData, collectionName), getGeometryProperties(serviceData, collectionName));
+            featureTypeDataset = createFeatureDetailsView(api, apiData.getCollections()
+                .get(collectionName), uriCustomizer.copy(), transformationContext.getLinks(), apiData.getLabel(), uriCustomizer.getLastPathSegment(), staticUrlPrefix, language, isNoIndexEnabledForApi(apiData), apiData.getSubPath(), getMapPosition(apiData, collectionName), getGeometryProperties(apiData, collectionName));
         }
 
         ImmutableFeatureTransformationContextHtml transformationContextHtml = ImmutableFeatureTransformationContextHtml.builder()
@@ -294,7 +295,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
         return Optional.of(new FeatureEncoderHtml(transformationContextHtml));
     }
 
-    private FeatureCollectionView createFeatureCollectionView(OgcApiDataV2 apiData,
+    private FeatureCollectionView createFeatureCollectionView(OgcApi api,
         FeatureTypeConfigurationOgcApi featureType,
         URICustomizer uriCustomizer,
         Map<String, String> filterableFields,
@@ -303,6 +304,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
         boolean noIndex,
         POSITION mapPosition,
         List<String> geometryProperties) {
+        OgcApiDataV2 apiData = api.getData();
         URI requestUri = null;
         try {
             requestUri = uriCustomizer.build();
@@ -322,10 +324,10 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
         boolean removeZoomLevelConstraints = config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints)
                                                    .orElse(false);
 
-        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, filterableFields, geometryProperties);
+        FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData, featureType, api.getSpatialExtent(featureType.getId()), bare ? "featureCollectionBare" : "featureCollection", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), null, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints, filterableFields, geometryProperties);
 
-        featureTypeDataset.temporalExtent = apiData.getTemporalExtent(featureType.getId()).orElse(null);
-        apiData.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
+        featureTypeDataset.temporalExtent = api.getTemporalExtent(featureType.getId()).orElse(null);
+        api.getSpatialExtent(featureType.getId()).ifPresent(bbox -> featureTypeDataset.bbox = ImmutableMap.of("minLng", Double.toString(bbox.getXmin()), "minLat", Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat", Double.toString(bbox.getYmax())));
 
 
         featureTypeDataset.uriBuilder = uriCustomizer.copy()
@@ -337,7 +339,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
         return featureTypeDataset;
     }
 
-    private FeatureCollectionView createFeatureDetailsView(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType,
+    private FeatureCollectionView createFeatureDetailsView(OgcApi api, FeatureTypeConfigurationOgcApi featureType,
                                                            URICustomizer uriCustomizer, List<Link> links,
                                                            String apiLabel, String featureId,
                                                            String staticUrlPrefix, Optional<Locale> language,
@@ -345,7 +347,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
                                                            List<String> subPathToLandingPage,
                                                            FeaturesHtmlConfiguration.POSITION mapPosition,
                                                            List<String> geometryProperties) {
-
+        OgcApiDataV2 apiData = api.getData();
         String rootTitle = i18n.get("root", language);
         String collectionsTitle = i18n.get("collectionsTitle", language);
         String itemsTitle = i18n.get("itemsTitle", language);
@@ -380,7 +382,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
                                                    .orElse(false);
 
         FeatureCollectionView featureTypeDataset = new FeatureCollectionView(apiData,
-            featureType, "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints,
+            featureType, api.getSpatialExtent(featureType.getId()), "featureDetails", requestUri, featureType.getId(), featureType.getLabel(), featureType.getDescription().orElse(null), attribution, staticUrlPrefix, htmlConfig.orElse(null), persistentUri, noIndex, i18n, language.orElse(Locale.ENGLISH), mapPosition, mapClientType, styleUrl, removeZoomLevelConstraints,
             null, geometryProperties);
         featureTypeDataset.description = featureType.getDescription()
                                                     .orElse(featureType.getLabel());

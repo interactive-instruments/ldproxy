@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
@@ -97,7 +98,7 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
     }
 
     @Override
-    public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApiDataV2 apiData, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
+    public Object getStyleEntity(StylesheetContent stylesheetContent, OgcApi api, Optional<String> collectionId, String styleId, ApiRequestContext requestContext) {
         return stylesheetContent.getContent();
     }
 }

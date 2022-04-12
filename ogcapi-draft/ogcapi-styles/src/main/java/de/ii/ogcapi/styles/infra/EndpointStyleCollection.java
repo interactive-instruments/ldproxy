@@ -83,8 +83,8 @@ public class EndpointStyleCollection extends EndpointSubCollection {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
-        ValidationResult result = super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        ValidationResult result = super.onStartup(api, apiValidation);
 
         if (apiValidation== MODE.NONE)
             return result;
@@ -93,8 +93,8 @@ public class EndpointStyleCollection extends EndpointSubCollection {
                 .from(result)
                 .mode(apiValidation);
 
-        for (String collectionId : apiData.getCollections().keySet()) {
-            builder = styleRepository.validate(builder, apiData, Optional.of(collectionId));
+        for (String collectionId : api.getData().getCollections().keySet()) {
+            builder = styleRepository.validate(builder, api.getData(), Optional.of(collectionId));
         }
 
         return builder.build();

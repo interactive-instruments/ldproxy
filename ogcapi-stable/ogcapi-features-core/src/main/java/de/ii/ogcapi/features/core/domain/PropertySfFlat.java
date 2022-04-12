@@ -5,15 +5,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.app;
+package de.ii.ogcapi.features.core.domain;
 
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.IntFunction;
 import org.immutables.value.Value;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -25,9 +20,15 @@ import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+
 @Value.Modifiable
 @Value.Style(set = "*")
-public interface PropertyMVT extends PropertyBase<PropertyMVT, FeatureSchema> {
+public interface PropertySfFlat extends PropertyBase<PropertySfFlat, FeatureSchema> {
 
   @Value.Lazy
   default boolean hasCoordinates() {
@@ -106,14 +107,14 @@ public interface PropertyMVT extends PropertyBase<PropertyMVT, FeatureSchema> {
         : Optional.of(geometryFactory.createMultiPolygon(polygons));
   }
 
-  default <T extends Geometry> T[] getJtsGeometryArray(Function<PropertyMVT, Optional<T>> geometryCreator, IntFunction<T[]> arrayCreator) {
+  default <T extends Geometry> T[] getJtsGeometryArray(Function<PropertySfFlat, Optional<T>> geometryCreator, IntFunction<T[]> arrayCreator) {
     return getNestedProperties().isEmpty()
         ? arrayCreator.apply(0)
         : getNestedProperties().get(0)
             .getJtsNestedGeometryArray(geometryCreator, arrayCreator);
   }
 
-  default <T extends Geometry> T[] getJtsNestedGeometryArray(Function<PropertyMVT, Optional<T>> geometryCreator, IntFunction<T[]> arrayCreator) {
+  default <T extends Geometry> T[] getJtsNestedGeometryArray(Function<PropertySfFlat, Optional<T>> geometryCreator, IntFunction<T[]> arrayCreator) {
     return getNestedProperties().stream()
               .map(geometryCreator)
               .filter(Optional::isPresent)
@@ -139,7 +140,7 @@ public interface PropertyMVT extends PropertyBase<PropertyMVT, FeatureSchema> {
   @Value.Lazy
   default Coordinate[] getJtsNestedCoordinateArray() {
     return getNestedProperties().stream()
-              .map(PropertyMVT::getJtsCoordinate)
+              .map(PropertySfFlat::getJtsCoordinate)
               .filter(Optional::isPresent)
               .map(Optional::get)
               .toArray(Coordinate[]::new);
@@ -150,7 +151,7 @@ public interface PropertyMVT extends PropertyBase<PropertyMVT, FeatureSchema> {
     Coordinate coordinate = new Coordinate();
     int i = 0;
 
-    for (PropertyMVT value : getNestedProperties()) {
+    for (PropertySfFlat value : getNestedProperties()) {
       if (value.isValue() && Objects.nonNull(value.getValue())) {
         double doubleValue;
         try {

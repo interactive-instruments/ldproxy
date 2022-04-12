@@ -6,6 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 @AutoModule(single = true, encapsulate = true)
-package de.ii.ogcapi.migrations.domain;
+package de.ii.ogcapi.features.flatgeobuf.domain;
 
 import com.github.azahnen.dagger.annotations.AutoModule;

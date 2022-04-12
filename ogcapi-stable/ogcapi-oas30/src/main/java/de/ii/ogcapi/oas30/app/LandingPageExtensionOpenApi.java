@@ -10,13 +10,14 @@ package de.ii.ogcapi.oas30.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.oas30.domain.Oas30Configuration;
 import java.util.Comparator;
@@ -45,17 +46,17 @@ public class LandingPageExtensionOpenApi implements LandingPageExtension {
     }
 
     @Override
-    public ImmutableLandingPage.Builder process(ImmutableLandingPage.Builder landingPageBuilder, OgcApiDataV2 apiData,
+    public ImmutableLandingPage.Builder process(Builder landingPageBuilder, OgcApi api,
                                                 URICustomizer uriCustomizer, ApiMediaType mediaType,
                                                 List<ApiMediaType> alternateMediaTypes, Optional<Locale> language) {
 
-        if (!isEnabledForApi(apiData)) {
+        if (!isEnabledForApi(api.getData())) {
             return landingPageBuilder;
         }
 
         extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class)
                          .stream()
-                         .filter(f -> f.isEnabledForApi(apiData))
+                         .filter(f -> f.isEnabledForApi(api.getData()))
                          .filter(f -> f.getRel().isPresent())
                          .sorted(Comparator.comparing(f -> f.getMediaType().parameter()))
                          .forEach(f -> landingPageBuilder.addLinks(new ImmutableLink.Builder()

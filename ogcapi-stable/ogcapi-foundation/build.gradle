@@ -1,3 +1,6 @@
+
+maturity = 'EXPERIMENTAL'
+
 dependencies {
     embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.52') {
         exclude module: 'jackson-databind'

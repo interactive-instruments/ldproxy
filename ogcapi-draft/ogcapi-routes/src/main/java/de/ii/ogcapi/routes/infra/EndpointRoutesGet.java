@@ -34,8 +34,8 @@ import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingFlag;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import io.dropwizard.auth.Auth;
 import java.util.AbstractMap;
 import java.util.List;
@@ -45,7 +45,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -143,7 +142,8 @@ public class EndpointRoutesGet extends Endpoint {
         FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
         ensureFeatureProviderSupportsRouting(featureProvider);
 
-        Map<String, String> preferences = featureProvider.getData().getExtension(RoutesConfiguration.class)
+        Map<String, String> preferences = featureProvider.getData().getExtension(
+                RoutesConfiguration.class)
             .map(RoutesConfiguration::getPreferences)
             .map(map -> map.entrySet()
                 .stream()
@@ -151,7 +151,8 @@ public class EndpointRoutesGet extends Endpoint {
                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .orElse(ImmutableMap.of());
 
-        Map<String, String> modes = featureProvider.getData().getExtension(RoutesConfiguration.class)
+        Map<String, String> modes = featureProvider.getData().getExtension(
+                RoutesConfiguration.class)
             .map(RoutesConfiguration::getModes)
             .map(map -> map.entrySet()
                 .stream()
