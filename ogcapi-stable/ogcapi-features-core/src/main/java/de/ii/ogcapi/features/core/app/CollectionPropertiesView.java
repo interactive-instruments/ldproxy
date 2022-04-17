@@ -79,16 +79,23 @@ public class CollectionPropertiesView extends OgcApiView {
 
             if (value instanceof JsonSchemaString) {
                 Optional<String> format = ((JsonSchemaString) value).getFormat();
-                if (format.isPresent() && format.get().equals("date-time,date"))
-                    builder2.type("date-time/date");
-                else
+                if (format.isPresent()) {
+                    if (format.get().equals("date-time")) {
+                        builder2.type("date-time");
+                    } else if (format.get().equals("date")) {
+                        builder2.type("date");
+                    } else {
+                        builder2.type("string");
+                    }
+                } else {
                     builder2.type("string");
+                }
                 builder2.values(((JsonSchemaString) value).getEnums());
             } else if (value instanceof JsonSchemaNumber) {
                 builder2.type("number");
             } else if (value instanceof JsonSchemaInteger) {
                 builder2.type("integer");
-                builder2.values(((JsonSchemaInteger) value).getEnums().stream().map(val -> String.valueOf(val)).collect(Collectors.toList()));
+                builder2.values(((JsonSchemaInteger) value).getEnums().stream().map(String::valueOf).collect(Collectors.toList()));
             } else if (value instanceof JsonSchemaBoolean) {
                 builder2.type("boolean");
             } else if (value instanceof JsonSchemaRef) {
@@ -105,7 +112,7 @@ public class CollectionPropertiesView extends OgcApiView {
             builder.add(builder2.build());
         });
         this.collectionProperties = builder.build();
-        Integer maxIdLength = this.collectionProperties
+        int maxIdLength = this.collectionProperties
                 .stream()
                 .map(CollectionProperty::getId)
                 .filter(Objects::nonNull)
