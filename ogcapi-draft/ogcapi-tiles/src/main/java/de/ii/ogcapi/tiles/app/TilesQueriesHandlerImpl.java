@@ -197,7 +197,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .collect(Collectors.toUnmodifiableList());
 
         dataType.ifPresent(type -> builder.tilesets(tileMatrixSets.stream()
-                                                        .map(tileMatrixSet -> TilesHelper.buildTileSet(apiData,
+                                                        .map(tileMatrixSet -> TilesHelper.buildTileSet(api,
                                                                                                        tileMatrixSet,
                                                                                                        tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
                                                                                                        center,
@@ -272,7 +272,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         MinMax zoomLevels = queryInput.getZoomLevels();
         List<Double> center = queryInput.getCenter();
-        TileSet tileset = TilesHelper.buildTileSet(apiData, getTileMatrixSetById(tileMatrixSetId),
+        TileSet tileset = TilesHelper.buildTileSet(api, getTileMatrixSetById(tileMatrixSetId),
                                                    zoomLevels, center, collectionId, dataType, links,
                                                    Optional.of(requestContext.getUriCustomizer().copy()),
                                                    crsTransformerFactory, limitsGenerator, providers, entityRegistry);
@@ -338,6 +338,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         FeatureTransformationContextTiles transformationContext;
         try {
             transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
+                    .api(api)
                     .apiData(apiData)
                     .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                     .tile(tile)
@@ -444,6 +445,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             ImmutableFeatureTransformationContextTiles transformationContext;
             try {
                 transformationContext = new ImmutableFeatureTransformationContextTiles.Builder()
+                        .api(api)
                         .apiData(apiData)
                         .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
                         .tile(tile)

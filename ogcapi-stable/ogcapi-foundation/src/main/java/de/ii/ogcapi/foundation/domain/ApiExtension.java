@@ -41,7 +41,7 @@ public interface ApiExtension {
         .filter(ExtensionConfiguration::isEnabled).filter(predicate).isPresent();
   }
 
-  default ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+  default ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     // optional start actions
     return ValidationResult.of();
   }

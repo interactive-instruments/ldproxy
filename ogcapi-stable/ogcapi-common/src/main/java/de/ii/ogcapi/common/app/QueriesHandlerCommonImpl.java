@@ -104,15 +104,13 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                         i18n,
                                                         requestContext.getLanguage());
 
-        Optional<BoundingBox> bbox = apiData.getSpatialExtent();
-        Optional<TemporalExtent> interval = apiData.getTemporalExtent();
+        Optional<BoundingBox> bbox = api.getSpatialExtent();
+        Optional<TemporalExtent> interval = api.getTemporalExtent();
         OgcApiExtent spatialExtent = bbox.isPresent() && interval.isPresent() ?
                 new OgcApiExtent(interval.get().getStart(), interval.get().getEnd(), bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax()) :
-                bbox.isPresent() ?
-                        new OgcApiExtent(bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax()) :
-                        interval.isPresent() ?
-                                new OgcApiExtent(interval.get().getStart(), interval.get().getEnd()) :
-                                null;
+            bbox.map(boundingBox -> new OgcApiExtent(boundingBox.getXmin(), boundingBox.getYmin(), boundingBox.getXmax(), boundingBox.getYmax()))
+                .orElseGet(() -> interval.map(temporalExtent -> new OgcApiExtent(temporalExtent.getStart(), temporalExtent.getEnd()))
+                    .orElse(null));;
 
         Builder builder = new Builder()
             .title(apiData.getLabel())
@@ -125,7 +123,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
         for (LandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
             builder = ogcApiLandingPageExtension.process(builder,
-                    apiData,
+                    api,
                     requestContext.getUriCustomizer()
                                   .copy(),
                     requestContext.getMediaType(),

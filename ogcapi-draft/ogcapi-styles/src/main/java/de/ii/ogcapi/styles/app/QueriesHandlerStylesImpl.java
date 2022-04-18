@@ -151,7 +151,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
                                       null,
                                       true,
                                       String.format("%s.%s", styleId, format.getFileExtension()))
-                .entity(format.getStyleEntity(stylesheetContent, apiData, collectionId, styleId, requestContext))
+                .entity(format.getStyleEntity(stylesheetContent, api, collectionId, styleId, requestContext))
                 .build();
     }
 

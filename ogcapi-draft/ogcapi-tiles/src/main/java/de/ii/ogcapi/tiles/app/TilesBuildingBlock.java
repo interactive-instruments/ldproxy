@@ -18,6 +18,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.*;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
@@ -196,9 +197,10 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         // since building block / capability components are currently always enabled,
         // we need to test, if the TILES module is enabled for the API and stop, if not
+        OgcApiDataV2 apiData = api.getData();
         if (!apiData.getExtension(TilesConfiguration.class)
                     .map(ExtensionConfiguration::isEnabled)
                     .orElse(false)) {
@@ -238,7 +240,8 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
 
             List<String> formatLabels = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                                                          .stream()
-                                                         .filter(formatExtension -> formatExtension.isEnabledForApi(apiData))
+                                                         .filter(formatExtension -> formatExtension.isEnabledForApi(
+                                                             apiData))
                                                          .map(format -> format.getMediaType().label())
                                                          .collect(Collectors.toUnmodifiableList());
             List<String> tileEncodings = config.getTileEncodingsDerived();
@@ -254,7 +257,8 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
 
             formatLabels = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class)
                                             .stream()
-                                            .filter(formatExtension -> formatExtension.isEnabledForApi(apiData))
+                                            .filter(formatExtension -> formatExtension.isEnabledForApi(
+                                                apiData))
                                             .map(format -> format.getMediaType().label())
                                             .collect(Collectors.toUnmodifiableList());
             for (String encoding : config.getTileSetEncodings()) {
@@ -352,8 +356,10 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                                     // try to convert the filter to CQL2-text
                                     String expression = filter.getFilter().get();
                                     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-                                    final Map<String, String> filterableFields = queryParser.getFilterableFields(apiData, collectionData);
-                                    final Map<String, String> queryableTypes = queryParser.getQueryableTypes(apiData, collectionData);
+                                    final Map<String, String> filterableFields = queryParser.getFilterableFields(
+                                        apiData, collectionData);
+                                    final Map<String, String> queryableTypes = queryParser.getQueryableTypes(
+                                        apiData, collectionData);
                                     try {
                                         queryParser.getFilterFromQuery(ImmutableMap.of("filter", expression), filterableFields, ImmutableSet.of("filter"), queryableTypes, Cql.Format.TEXT);
                                     } catch (Exception e) {

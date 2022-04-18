@@ -1,4 +1,6 @@
 
+maturity = 'EXPERIMENTAL'
+
 dependencies {
     provided project(":ogcapi-resources")
     provided project(":ogcapi-styles")

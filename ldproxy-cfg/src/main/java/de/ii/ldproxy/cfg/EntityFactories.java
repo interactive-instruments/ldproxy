@@ -8,40 +8,9 @@
 package de.ii.ldproxy.cfg;
 
 import com.google.common.collect.ImmutableSet;
-import de.ii.ogcapi.collections.app.JacksonSubTypeIdsOgcApiCollections;
-import de.ii.ogcapi.collections.queryables.app.JacksonSubTypeIdsQueryables;
-import de.ii.ogcapi.collections.schema.app.JacksonSubTypeIdsSchema;
-import de.ii.ogcapi.common.domain.JacksonSubTypeIdsOgcApiCommon;
-import de.ii.ogcapi.crs.app.JacksonSubTypeIdsCrs;
-import de.ii.ogcapi.features.core.app.JacksonSubTypeIdsFeaturesCore;
-import de.ii.ogcapi.features.custom.extensions.app.JacksonSubTypeIdsFeaturesExtensions;
-import de.ii.ogcapi.features.geojson.app.JacksonSubTypeIdsGeoJson;
-import de.ii.ogcapi.features.geojson.ld.app.JacksonSubTypeIdsGeoJsonLd;
-import de.ii.ogcapi.features.gml.app.JacksonSubTypeIdsGml;
-import de.ii.ogcapi.features.html.app.JacksonSubTypeIdsFeaturesHtml;
-import de.ii.ogcapi.features.json.fg.app.JacksonSubTypeIdsJsonFg;
-import de.ii.ogcapi.filter.domain.JacksonSubTypeIdsFilter;
 import de.ii.ogcapi.foundation.app.OgcApiFactory;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.JacksonSubTypeIdsFoundation;
-import de.ii.ogcapi.geometry.simplification.app.JacksonSubTypeIdsGeometrySimplification;
-import de.ii.ogcapi.html.app.JacksonSubTypeIdsHtml;
-import de.ii.ogcapi.json.app.JacksonSubTypeIdsJson;
-import de.ii.ogcapi.maps.app.JacksonSubTypeIdsMapTiles;
-import de.ii.ogcapi.oas30.app.JacksonSubTypeIdsOas30;
-import de.ii.ogcapi.projections.app.JacksonSubTypeIdsProjections;
-import de.ii.ogcapi.resources.app.JacksonSubTypeIdsResources;
-import de.ii.ogcapi.sorting.app.JacksonSubTypeIdsSorting;
-import de.ii.ogcapi.styles.app.JacksonSubTypeIdsStyles;
-import de.ii.ogcapi.tiles.app.JacksonSubTypeIdsTiles;
-import de.ii.ogcapi.transactional.app.JacksonSubTypeIdsTransactional;
-import de.ii.ogcapi.xml.app.JacksonSubTypeIdsXml;
-import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import de.ii.xtraplatform.codelists.app.CodelistEntity;
 import de.ii.xtraplatform.codelists.app.CodelistFactory;
-import de.ii.xtraplatform.codelists.app.CodelistFactory.CodelistFactoryAssisted;
-import de.ii.xtraplatform.codelists.domain.CodelistData;
-import de.ii.xtraplatform.feature.provider.pgis.FeatureProviderRegisterPgis;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSqlFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
@@ -80,7 +49,7 @@ public interface EntityFactories {
 
           }
         })
-        .add(new FeatureProviderSqlFactory(null, null, null, null, null, null, null) {
+        .add(new FeatureProviderSqlFactory(null, null, null, null, null, null, null, null) {
           @Override
           public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
             return CompletableFuture.completedFuture(null);
@@ -106,7 +75,7 @@ public interface EntityFactories {
 
           }
         })
-        .add(new OgcApiFactory(extensionRegistry, null) {
+        .add(new OgcApiFactory(null, extensionRegistry, null) {
           @Override
           public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
             return CompletableFuture.completedFuture(null);

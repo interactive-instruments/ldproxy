@@ -21,6 +21,7 @@ import de.ii.ogcapi.html.domain.ImmutableStyle;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,7 +61,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
 
     public String none;
 
-    public OgcApiCollectionView(OgcApiDataV2 apiData, OgcApiCollection collection,
+    public OgcApiCollectionView(OgcApiDataV2 apiData, OgcApiCollection collection, Optional<BoundingBox> spatialExtent,
                                 final List<NavigationDTO> breadCrumbs, String urlPrefix, HtmlConfiguration htmlConfig,
                                 boolean noIndex, URICustomizer uriCustomizer, I18n i18n, Optional<Locale> language) {
         super("collection.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix,
@@ -86,7 +87,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
         this.storageCrs = collection
                 .getStorageCrs()
                 .orElse(null);
-        this.hasGeometry = apiData.getSpatialExtent().isPresent();
+        this.hasGeometry = spatialExtent.isPresent();
         Optional<String> defaultStyleOrNull = (Optional<String>) collection.getExtensions()
                                                                            .get("defaultStyle");
         this.defaultStyle = defaultStyleOrNull==null ? null : defaultStyleOrNull.get();

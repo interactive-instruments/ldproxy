@@ -35,6 +35,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableTemporalExtent
 import de.ii.ogcapi.foundation.domain.OgcApi
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension
+import de.ii.ogcapi.foundation.domain.TemporalExtent
 import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration
 import de.ii.ogcapi.json.domain.ImmutableJsonConfiguration
 import de.ii.ogcapi.features.core.app.CollectionExtensionFeatures
@@ -294,7 +295,10 @@ class OgcApiCoreSpecCollections extends Specification {
 
 
     static def createOgcApiApiEntity() {
-        def entity = new OgcApiEntity(registry, datasetData)
+        def entity = new OgcApiEntity(null, registry, datasetData)
+        entity.updateSpatialExtent("featureType1", BoundingBox.of(-180,-90,180,90,OgcCrs.CRS84))
+        entity.updateTemporalExtent("featureType1", TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+        entity.updateItemCount("featureType1", 0)
         return entity
     }
 

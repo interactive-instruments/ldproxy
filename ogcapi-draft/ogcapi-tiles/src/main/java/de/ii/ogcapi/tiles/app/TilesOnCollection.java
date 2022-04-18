@@ -11,12 +11,13 @@ package de.ii.ogcapi.tiles.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
+import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection.Builder;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
@@ -53,9 +54,9 @@ public class TilesOnCollection implements CollectionExtension {
     }
 
     @Override
-    public ImmutableOgcApiCollection.Builder process(ImmutableOgcApiCollection.Builder collection,
+    public ImmutableOgcApiCollection.Builder process(Builder collection,
                                                      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApiDataV2 apiData,
+                                                     OgcApi api,
                                                      URICustomizer uriCustomizer, boolean isNested,
                                                      ApiMediaType mediaType,
                                                      List<ApiMediaType> alternateMediaTypes,
@@ -67,8 +68,8 @@ public class TilesOnCollection implements CollectionExtension {
             isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class, TilesConfiguration::isSingleCollectionEnabled)) {
             Optional<DataType> dataType = extensionRegistry.getExtensionsForType(TileFormatExtension.class)
                 .stream()
-                .filter(format -> format.isApplicable(apiData, featureTypeConfiguration.getId(), "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-                .filter(format -> format.isEnabledForApi(apiData, featureTypeConfiguration.getId()))
+                .filter(format -> format.isApplicable(api.getData(), featureTypeConfiguration.getId(), "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+                .filter(format -> format.isEnabledForApi(api.getData(), featureTypeConfiguration.getId()))
                 .map(TileFormatExtension::getDataType)
                 .findAny();
             if (dataType.isEmpty())

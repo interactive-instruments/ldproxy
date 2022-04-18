@@ -9,7 +9,7 @@ package de.ii.ogcapi.maps.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection;
@@ -68,13 +68,13 @@ public class MapTilesBuildingBlock implements ApiBuildingBlock {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
         // since building block / capability components are currently always enabled,
         // we need to test, if the TILES and MAP_TILES modules are enabled for the API and stop, if not
-        if (!apiData.getExtension(MapTilesConfiguration.class)
+        if (!api.getData().getExtension(MapTilesConfiguration.class)
                     .map(ExtensionConfiguration::isEnabled)
                     .orElse(false) ||
-            !apiData.getExtension(TilesConfiguration.class)
+            !api.getData().getExtension(TilesConfiguration.class)
                 .map(ExtensionConfiguration::isEnabled)
                 .orElse(false)) {
             return ValidationResult.of();

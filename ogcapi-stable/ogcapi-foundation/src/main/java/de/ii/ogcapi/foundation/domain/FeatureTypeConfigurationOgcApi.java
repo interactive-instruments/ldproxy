@@ -15,7 +15,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
-import de.ii.xtraplatform.feature.transformer.api.FeatureTypeConfiguration;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import org.immutables.value.Value;
 
 import java.util.List;

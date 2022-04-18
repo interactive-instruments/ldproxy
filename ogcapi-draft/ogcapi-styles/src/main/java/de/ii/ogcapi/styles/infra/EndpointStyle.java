@@ -99,8 +99,8 @@ public class EndpointStyle extends Endpoint {
     }
 
     @Override
-    public ValidationResult onStartup(OgcApiDataV2 apiData, MODE apiValidation) {
-        ValidationResult result = super.onStartup(apiData, apiValidation);
+    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+        ValidationResult result = super.onStartup(api, apiValidation);
 
         if (apiValidation== MODE.NONE)
             return result;
@@ -109,7 +109,7 @@ public class EndpointStyle extends Endpoint {
                 .from(result)
                 .mode(apiValidation);
 
-        builder = styleRepository.validate(builder, apiData, Optional.empty());
+        builder = styleRepository.validate(builder, api.getData(), Optional.empty());
 
         return builder.build();
     }
