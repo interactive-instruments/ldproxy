@@ -6,7 +6,6 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
-import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.features.geojson.ld.domain.ImmutableGeoJsonLdConfiguration;
@@ -41,7 +40,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * Wertes aus "id" und dem in der Konfiguration angegeben URI-Template ergänzt. Dabei wird
  * `{{serviceUrl}}` durch die Landing-Page-URI der API, `{{collectionId}}` durch die
  * Collection-ID und `{{featureId}}` durch den Wert von "id" ersetzt.
- * @see GeoJsonConfiguration
+ * @see de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration
  * @see EndpointJsonLdContext
  */
 @Singleton

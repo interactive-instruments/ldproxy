@@ -6,10 +6,6 @@
  */
 package de.ii.ogcapi.filter.app;
 
-import de.ii.ogcapi.filter.api.QueryParameterFilter;
-import de.ii.ogcapi.filter.api.QueryParameterFilterCrs;
-import de.ii.ogcapi.filter.api.QueryParameterFilterLang;
-import de.ii.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.filter.domain.ImmutableFilterConfiguration.Builder;
@@ -36,10 +32,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * Objekteigenschaften bestimmen können.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @see FilterConfiguration
- * @see QueryParameterFilter
- * @see QueryParameterFilterCrs
- * @see QueryParameterFilterLang
+ * @see de.ii.ogcapi.filter.domain.FilterConfiguration
+ * @see de.ii.ogcapi.filter.api.QueryParameterFilter
+ * @see de.ii.ogcapi.filter.api.QueryParameterFilterCrs
+ * @see de.ii.ogcapi.filter.api.QueryParameterFilterLang
  */
 @Singleton
 @AutoBind

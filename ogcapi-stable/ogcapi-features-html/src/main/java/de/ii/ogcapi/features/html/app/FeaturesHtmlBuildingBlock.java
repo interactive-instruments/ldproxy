@@ -7,7 +7,6 @@
 package de.ii.ogcapi.features.html.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
@@ -32,7 +31,7 @@ import javax.inject.Singleton;
  *
  * Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der Konformitätsklasse
  * "HTML" von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_html).
- * @see FeaturesHtmlConfiguration
+ * @see de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration
  */
 @Singleton
 @AutoBind

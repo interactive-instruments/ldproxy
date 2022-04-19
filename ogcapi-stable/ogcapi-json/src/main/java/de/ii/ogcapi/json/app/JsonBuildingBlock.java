@@ -10,7 +10,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.json.domain.ImmutableJsonConfiguration.Builder;
-import de.ii.ogcapi.json.domain.JsonConfiguration;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -27,7 +26,7 @@ import javax.inject.Singleton;
  * JSON unterstützt, können Clients das Ausgabeformat anfordern.
  *
  * Es gibt keine konfigurierbaren Optionen.
- * @see JsonConfiguration
+ * @see de.ii.ogcapi.json.domain.JsonConfiguration
  */
 @Singleton
 @AutoBind

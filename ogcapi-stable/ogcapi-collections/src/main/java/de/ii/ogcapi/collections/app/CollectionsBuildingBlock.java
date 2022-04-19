@@ -8,7 +8,6 @@
 package de.ii.ogcapi.collections.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
@@ -31,7 +30,7 @@ import javax.inject.Singleton;
  * "Feature Collections" implementiert alle Vorgaben der Konformitätsklasse "Core" von
  * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
  * für die zwei genannten Ressourcen.
- * @see CollectionsConfiguration
+ * @see de.ii.ogcapi.collections.domain.CollectionsConfiguration
  * @see de.ii.ogcapi.collections.infra.EndpointCollection
  * @see de.ii.ogcapi.collections.infra.EndpointCollections
  */

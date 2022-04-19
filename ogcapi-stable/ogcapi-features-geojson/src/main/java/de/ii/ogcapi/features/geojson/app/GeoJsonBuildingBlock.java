@@ -32,7 +32,7 @@ import javax.inject.Singleton;
  *
  * Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der
  * Konformitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson).
- * @see GeoJsonConfiguration
+ * @see de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration
  * @see FeaturesFormatGeoJson
  */
 @Singleton

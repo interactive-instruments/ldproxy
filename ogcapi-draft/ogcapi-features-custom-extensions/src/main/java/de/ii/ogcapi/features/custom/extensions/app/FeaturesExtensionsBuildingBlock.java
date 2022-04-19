@@ -6,8 +6,6 @@
  */
 package de.ii.ogcapi.features.custom.extensions.app;
 
-import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
-import de.ii.ogcapi.features.custom.extensions.infra.infra.EndpointPostOnItems;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration.Builder;
@@ -53,8 +51,8 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * zurückgeliefert, deren primäre Geometrie sich mit der angegebenen Geometrie schneidet.
  * Als Geometrie kann entweder eine WKT-Geometrie angegeben werden oder eine URL für ein
  * GeoJSON-Objekt mit einer Geometrie. Im Fall einer FeatureCollection wird die erste Geometrie verwendet.
- * @see FeaturesExtensionsConfiguration
- * @see EndpointPostOnItems
+ * @see de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration
+ * @see de.ii.ogcapi.features.custom.extensions.infra.infra.EndpointPostOnItems
  */
 @Singleton
 @AutoBind

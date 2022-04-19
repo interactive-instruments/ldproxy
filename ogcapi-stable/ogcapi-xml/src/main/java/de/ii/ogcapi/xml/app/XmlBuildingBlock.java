@@ -10,7 +10,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration;
-import de.ii.ogcapi.xml.domain.XmlConfiguration;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,7 +33,7 @@ import javax.inject.Singleton;
  * Feature Collection.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @see XmlConfiguration
+ * @see de.ii.ogcapi.xml.domain.XmlConfiguration
  */
 @Singleton
 @AutoBind

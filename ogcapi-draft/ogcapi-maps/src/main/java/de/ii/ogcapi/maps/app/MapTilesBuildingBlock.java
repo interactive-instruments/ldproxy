@@ -12,8 +12,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
-import de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection;
-import de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -47,9 +45,9 @@ import javax.inject.Singleton;
  * - JPEG
  *
  * Es steht nur das Kachelschema [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) zur Verfügung.
- * @see MapTilesConfiguration
- * @see EndpointMapTileMultiCollection
- * @see EndpointMapTileSingleCollection
+ * @see de.ii.ogcapi.maps.domain.MapTilesConfiguration
+ * @see de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection
+ * @see de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection
  */
 @Singleton
 @AutoBind

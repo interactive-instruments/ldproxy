@@ -8,9 +8,7 @@ package de.ii.ogcapi.collections.queryables.app;
 
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
-import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration.Builder;
 import javax.inject.Inject;
@@ -32,9 +30,9 @@ import javax.inject.Singleton;
  * Das Modul basiert auf den Vorgaben der Konformitätsklasse "Filter" aus dem
  * [Entwurf von OGC API - Features - Part 3: Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
  *
- * @see QueryablesConfiguration
+ * @see de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration
  * @see EndpointQueryables
- * @see CachingConfiguration
+ * @see de.ii.ogcapi.foundation.domain.CachingConfiguration
  */
 @Singleton
 @AutoBind

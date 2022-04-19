@@ -8,14 +8,8 @@ package de.ii.ogcapi.resources.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
-import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration.Builder;
-import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
-import de.ii.ogcapi.resources.infra.EndpointResource;
-import de.ii.ogcapi.resources.infra.EndpointResources;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -26,10 +20,10 @@ import javax.inject.Singleton;
  * @de Das Modul "Resources" kann für jede über ldproxy bereitgestellte API aktiviert werden.
  * Es ergänzt Ressourcen für die Bereitstellung und Verwaltung von Datei-Ressourcen, vor allem
  * für Styles (Symbole, Sprites).
- * @see ResourcesConfiguration
- * @see EndpointResource
- * @see EndpointResources
- * @see CachingConfiguration
+ * @see de.ii.ogcapi.resources.domain.ResourcesConfiguration
+ * @see de.ii.ogcapi.resources.infra.EndpointResource
+ * @see de.ii.ogcapi.resources.infra.EndpointResources
+ * @see de.ii.ogcapi.foundation.domain.CachingConfiguration
  */
 @Singleton
 @AutoBind

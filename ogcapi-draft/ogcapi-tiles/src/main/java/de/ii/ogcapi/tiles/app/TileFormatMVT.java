@@ -173,7 +173,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
         ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder()
                                                                           .type(featureTypeId)
                                                                           .limit(Objects.requireNonNullElse(tilesConfiguration.getLimitDerived(),
-                                                                              CapabilityTiles.LIMIT_DEFAULT))
+                                                                              TilesBuildingBlock.LIMIT_DEFAULT))
                                                                           .offset(0)
                                                                           .crs(tile.getTileMatrixSet().getCrs())
                                                                           .maxAllowableOffset(getMaxAllowableOffset(tile));

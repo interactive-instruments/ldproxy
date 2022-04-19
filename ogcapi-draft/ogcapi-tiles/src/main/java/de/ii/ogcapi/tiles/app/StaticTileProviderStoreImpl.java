@@ -80,7 +80,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
                 && config.get().getTileProvider() instanceof TileProviderMbtiles) {
             TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
             Path path = getTileProvider(api.getData(), provider.getFilename());
-            String key = String.join("/", api.getId(), CapabilityTiles.DATASET_TILES);
+            String key = String.join("/", api.getId(), TilesBuildingBlock.DATASET_TILES);
             try {
                 mbtiles.put(key, new MbtilesTileset(path));
             } catch (Exception e) {
@@ -120,7 +120,7 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
 
     @Override
     public InputStream getTile(Path tileProvider, Tile tile) {
-        String key = String.join("/", tile.getApiData().getId(), tile.isDatasetTile() ? CapabilityTiles.DATASET_TILES : tile.getCollectionId());
+        String key = String.join("/", tile.getApiData().getId(), tile.isDatasetTile() ? TilesBuildingBlock.DATASET_TILES : tile.getCollectionId());
         MbtilesTileset tileset = mbtiles.get(key);
         try {
             return tileset.getTile(tile).orElseThrow(NotFoundException::new);

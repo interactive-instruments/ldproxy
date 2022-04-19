@@ -6,9 +6,6 @@
  */
 package de.ii.ogcapi.collections.schema.app;
 
-import de.ii.ogcapi.collections.schema.domain.SchemaConfiguration;
-import de.ii.ogcapi.collections.schema.infra.EndpointSchema;
-import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration.Builder;
@@ -31,10 +28,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * GeoJSON-Ausgabe unterstützt.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @see SchemaConfiguration
- * @see EndpointSchema
- * @see SchemaConfiguration
- * @see CachingConfiguration
+ * @see de.ii.ogcapi.collections.schema.domain.SchemaConfiguration
+ * @see de.ii.ogcapi.collections.schema.infra.EndpointSchema
+ * @see de.ii.ogcapi.foundation.domain.CachingConfiguration
  */
 @Singleton
 @AutoBind

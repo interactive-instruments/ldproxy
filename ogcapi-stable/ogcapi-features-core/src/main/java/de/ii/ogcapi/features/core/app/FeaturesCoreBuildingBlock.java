@@ -32,8 +32,6 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.Collection;
@@ -59,14 +57,14 @@ import org.threeten.extra.Interval;
  * "Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von
  * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
  * für die zwei genannten Ressourcen.
- * @see FeaturesCoreConfiguration
+ * @see de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration
  * @see EndpointFeatures
  */
 @Singleton
 @AutoBind
 public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(CapabilityFeaturesCore.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesCoreBuildingBlock.class);
 
   private final FeaturesCoreProviders providers;
   private final CrsTransformerFactory crsTransformerFactory;
