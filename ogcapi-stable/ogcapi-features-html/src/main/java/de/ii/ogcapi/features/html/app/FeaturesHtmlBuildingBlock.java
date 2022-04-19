@@ -19,14 +19,14 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title Features HTML (FEATURES_HTML)
- * @en The module *Features HTML* may be enabled for every API with a feature provider. It provides the
+ * # Features HTML (FEATURES_HTML)
+ * @lang_en The module *Features HTML* may be enabled for every API with a feature provider. It provides the
  * resources *Features* and *Feature* encoded as HTML.
  *
  * *Features HTML* implements all requirements of conformance class *HTML* of [OGC API - Features -
  * Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_html) for the two mentioned
  * resources.
- * @de Das Modul "Features HTML" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider
+ * @lang_de Das Modul "Features HTML" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider
  * aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen Features und Feature in HTML.
  *
  * Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der Konformitätsklasse

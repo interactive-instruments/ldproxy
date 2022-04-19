@@ -23,8 +23,8 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
     }
 
     /**
-     * @en Enables support for the POST HTTP method on the "Features" resource.
-     * @de Aktiviert die Unterstützung für die HTTP-Methode POST auf der Ressource "Features"
+     * @lang_en Enables support for the POST HTTP method on the "Features" resource.
+     * @lang_de Aktiviert die Unterstützung für die HTTP-Methode POST auf der Ressource "Features"
      * @default `false`
      */
     @Nullable
@@ -39,8 +39,8 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
 
 
     /**
-     * @en Enables support for the `intersects` query parameter on the "Features" resource
-     * @de Aktiviert die Unterstützung für den Query-Parameter `intersects` auf der Ressource "Features"
+     * @lang_en Enables support for the `intersects` query parameter on the "Features" resource
+     * @lang_de Aktiviert die Unterstützung für den Query-Parameter `intersects` auf der Ressource "Features"
      * @default `false`
      */
     @Nullable

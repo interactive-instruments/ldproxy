@@ -34,15 +34,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Sorting (SORTING)
- * @en The module *Sorting* may be enabled for every API with a feature provider that
+ * # Sorting (SORTING)
+ * @lang_en The module *Sorting* may be enabled for every API with a feature provider that
  * supports sorting. It adds the following query parameter:
  *
  * * `sortby` (resource *Features*): If the parameter is specified,
  * the features are returned sorted according to the attributes specified in
  * a comma-separated list. The attribute name can be preceded by `+`
  * (ascending, the default behavior) or `-` (descending). Example: `sortby=type,-name`.
- * @de Das Modul "Sorting" kann für jede über ldproxy bereitgestellte API mit einem
+ * @lang_de Das Modul "Sorting" kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider, der Sortierung unterstützt, aktiviert werden. Es ergänzt die
  * folgenden Query-Parameter:
  *

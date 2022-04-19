@@ -23,8 +23,8 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @title Tile-Provider TILESERVER
- * @en With this tile provider, the tiles are obtained from
+ * # Tile-Provider TILESERVER
+ * @lang_en With this tile provider, the tiles are obtained from
  * [TileServer-GL instance](https://github.com/maptiler/tileserver-gl).
  * Only the "WebMercatorQuad" tile scheme is supported.
  *
@@ -32,7 +32,7 @@ import org.immutables.value.Value;
  * Only bitmap tile formats are supported. Seeding or caching are not supported.
  *
  * This tile provider is experimental and its configuration options may change in future versions.
- * @de Bei diesem Tile-Provider werden die Kacheln über eine
+ * @lang_de Bei diesem Tile-Provider werden die Kacheln über eine
  * [TileServer-GL-Instanz](https://github.com/maptiler/tileserver-gl) bezogen. Unterstützt wird nur
  * das Kachelschema "WebMercatorQuad".
  *
@@ -48,8 +48,8 @@ import org.immutables.value.Value;
 public abstract class TileProviderTileServer extends TileProvider {
 
     /**
-     * @en Fixed value, identifies the tile provider type.
-     * @de Fester Wert, identifiziert die Tile-Provider-Art.
+     * @lang_en Fixed value, identifies the tile provider type.
+     * @lang_de Fester Wert, identifiziert die Tile-Provider-Art.
      * @default `TILESERVER`
      */
     public final String getType() { return "TILESERVER"; }
@@ -57,9 +57,9 @@ public abstract class TileProviderTileServer extends TileProvider {
     // TODO add optional support for multiple styles once the specification is stable
 
     /**
-     * @en URL template for accessing tiles. Parameters to use are
+     * @lang_en URL template for accessing tiles. Parameters to use are
      * `{tileMatrix}`, `{tileRow}`, `{tileCol}` and `{fileExtension}`.
-     * @de URL-Template für den Zugriff auf Kacheln. Zu verwenden sind
+     * @lang_de URL-Template für den Zugriff auf Kacheln. Zu verwenden sind
      * die Parameter `{tileMatrix}`, `{tileRow}`, `{tileCol}` und `{fileExtension}`.
      * @default `null`
      */
@@ -67,16 +67,16 @@ public abstract class TileProviderTileServer extends TileProvider {
     public abstract String getUrlTemplate();
 
     /**
-     * @en URL template for accessing tiles for a collection.
-     * @de URL-Template für den Zugriff auf Kacheln für eine Collection.
+     * @lang_en URL template for accessing tiles for a collection.
+     * @lang_de URL-Template für den Zugriff auf Kacheln für eine Collection.
      * @default `null`
      */
     @Nullable
     public abstract String getUrlTemplateSingleCollection();
 
     /**
-     * @en List of tile formats to be supported, allowed are `PNG`, `WebP` and `JPEG`.
-     * @de Liste der zu unterstützenden Kachelformate, erlaubt sind `PNG`, `WebP` und `JPEG`.
+     * @lang_en List of tile formats to be supported, allowed are `PNG`, `WebP` and `JPEG`.
+     * @lang_de Liste der zu unterstützenden Kachelformate, erlaubt sind `PNG`, `WebP` und `JPEG`.
      * @default `[]`
      */
     @Override

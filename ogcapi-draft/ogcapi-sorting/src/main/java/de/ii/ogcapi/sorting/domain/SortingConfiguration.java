@@ -17,12 +17,12 @@ import org.immutables.value.Value;
 public interface SortingConfiguration extends ExtensionConfiguration {
 
     /**
-     * @en Controls which of the attributes in queries can be used for sorting data.
+     * @lang_en Controls which of the attributes in queries can be used for sorting data.
      * Only direct attributes of the data types `STRING`, `DATETIME`, `INTEGER` and `FLOAT`
      * are allowed (no attributes from arrays or embedded objects). A current limitation is
      * that all attributes must have unique values, see
      * [Issue 488](https://github.com/interactive-instruments/ldproxy/issues/488).
-     * @de Steuert, welche der Attribute in Queries für die Sortierung
+     * @lang_de Steuert, welche der Attribute in Queries für die Sortierung
      * von Daten verwendet werden können. Erlaubt sind nur direkte Attribute
      * (keine Attribute aus Arrays oder eingebetteten Objekten) der Datentypen `STRING`,
      * `DATETIME`, `INTEGER` und `FLOAT`.

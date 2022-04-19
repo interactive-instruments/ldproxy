@@ -20,8 +20,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Modul "Map Tiles" (MAP_TILES)
- * @en The " Map Tiles" module activates the "Map Tilesets", "Map Tileset" and "Map Tile" resources.
+ * # Modul "Map Tiles" (MAP_TILES)
+ * @lang_en The " Map Tiles" module activates the "Map Tilesets", "Map Tileset" and "Map Tile" resources.
  *
  * The module is based on the drafts of [OGC API - Maps](https://github.com/opengeospatial/OGC-API-Maps).
  * The implementation will change as the drafts are further standardized.
@@ -33,7 +33,7 @@ import javax.inject.Singleton;
  * - JPEG
  *
  * Only the [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) tiling scheme is available.
- * @de Das Modul "Map Tiles" aktiviert die Ressourcen "Map Tilesets", "Map Tileset" und "Map Tile".
+ * @lang_de Das Modul "Map Tiles" aktiviert die Ressourcen "Map Tilesets", "Map Tileset" und "Map Tile".
  *
  * Das Modul basiert auf den Entwürfen von [OGC API - Maps](https://github.com/opengeospatial/OGC-API-Maps).
  * Die Implementierung wird sich im Zuge der weiteren Standardisierung der Entwürfe noch ändern.

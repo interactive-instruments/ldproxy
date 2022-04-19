@@ -16,9 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
- * @title `externalDocs`
- * @en |External document with additional information about this API, required keys are `url` and `description`.
- * @de Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der API verlinkt wird.
+ * # `externalDocs`
+ * @lang_en |External document with additional information about this API, required keys are `url` and `description`.
+ * @lang_de Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der API verlinkt wird.
  * Anzugeben sind die Eigenschaften `url` und `description`.
  * @default `{}`
  */

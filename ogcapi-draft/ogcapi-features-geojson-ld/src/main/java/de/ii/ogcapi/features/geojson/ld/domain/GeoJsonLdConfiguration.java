@@ -36,20 +36,20 @@ public interface GeoJsonLdConfiguration extends ExtensionConfiguration {
     }
 
     /**
-     * @en File name of the JSON-LD context document in the folder `json-ld-contexts/{apiId}`.
-     * @de Dateiname des JSON-LD-Context-Dokuments im Verzeichnis `json-ld-contexts/{apiId}`.
+     * @lang_en File name of the JSON-LD context document in the folder `json-ld-contexts/{apiId}`.
+     * @lang_de Dateiname des JSON-LD-Context-Dokuments im Verzeichnis `json-ld-contexts/{apiId}`.
      * @default `null
      */
     @Nullable
     String getContextFileName();
 
     /**
-     * @en URI of the JSON-LD context document. The value should either be an external URI or
+     * @lang_en URI of the JSON-LD context document. The value should either be an external URI or
      * `{{serviceUrl}}/collections/{{collectionId}}/context` for contexts provided by the API
      * (see below for details). The template may contain `{{serviceUrl}}`
      * (substituted with the API landing page URI) and `{{collectionId}}`
      * (substituted with the collection id).
-     * @de Die URI des JSON-LD-Context-Dokuments. Dabei wird `{{serviceUrl}}` durch die
+     * @lang_de Die URI des JSON-LD-Context-Dokuments. Dabei wird `{{serviceUrl}}` durch die
      * Landing-Page-URI der API und `{{collectionId}}` durch die Collection-ID ersetzt.
      * Sofern der Context nicht extern liegt, sollte der Wert
      * "{{serviceUrl}}/collections/{{collectionId}}/context" sein.
@@ -59,19 +59,19 @@ public interface GeoJsonLdConfiguration extends ExtensionConfiguration {
     String getContext();
 
     /**
-     * @en Value of `@type` that is added to every feature.
-     * @de Der Wert von "@type" bei den Features der Collection. Dabei wird `{{type}}`
+     * @lang_en Value of `@type` that is added to every feature.
+     * @lang_de Der Wert von "@type" bei den Features der Collection. Dabei wird `{{type}}`
      * durch den Wert der Property mit `role: TYPE` ersetzt.
      * @default `[ "geojson:Feature" ]`
      */
     List<String> getTypes();
 
     /**
-     * @en Value of `@id` that is added to every feature. The template may contain
+     * @lang_en Value of `@id` that is added to every feature. The template may contain
      * `{{serviceUrl}}` (substituted with the API landing page URI), `{{collectionId}}`
      * (substituted with the collection id) and `{{featureId}}`
      * (substituted with the feature id).
-     * @de Der Wert von "@id" bei den Features der Collection. Dabei wird `{{serviceUrl}}`
+     * @lang_de Der Wert von "@id" bei den Features der Collection. Dabei wird `{{serviceUrl}}`
      * durch die Landing-Page-URI der API, `{{collectionId}}` durch die Collection-ID und
      * `{{featureId}}` durch den Wert von "id" ersetzt.
      * @default `null`

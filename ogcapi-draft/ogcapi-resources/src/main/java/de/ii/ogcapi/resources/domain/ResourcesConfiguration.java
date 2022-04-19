@@ -24,9 +24,9 @@ public interface ResourcesConfiguration extends ExtensionConfiguration, CachingC
     }
 
     /**
-     * @en Controls whether the resources should be able to be created and deleted
+     * @lang_en Controls whether the resources should be able to be created and deleted
      * via PUT and DELETE through the API.
-     * @de Steuert, ob die Ressourcen über PUT und DELETE über die API erzeugt und
+     * @lang_de Steuert, ob die Ressourcen über PUT und DELETE über die API erzeugt und
      * gelöscht werden können sollen.
      * @default `false`
      */

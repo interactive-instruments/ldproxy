@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @en Example of the information in the configuration file for the entire API
+ * @lang_en Example of the information in the configuration file for the entire API
  * (from the API for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
- * @de Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API
+ * @lang_de Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API
  * (aus der API für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
  * @example <code>
  * ```yaml
@@ -31,9 +31,9 @@ import java.util.Objects;
  */
 
 /**
- * @en Additional information per feature collection with an attribute `F_CODE`
+ * @lang_en Additional information per feature collection with an attribute `F_CODE`
  * (for which `role: TYPE` was set in the provider configuration) to set the object type:
- * @de Ergänzende Angaben pro Feature Collection mit einem Attribut `F_CODE`
+ * @lang_de Ergänzende Angaben pro Feature Collection mit einem Attribut `F_CODE`
  * (für das in der Provider-Konfiguration `role: TYPE` gesetzt wurde), um die Objektart zu setzen:
  * @example <code>
  * ```yaml
@@ -45,8 +45,8 @@ import java.util.Objects;
  */
 
 /**
- * @en This outputs the object type as follows for a value of "GB075" in the 'F_CODE' attrubut:
- * @de Hierdurch wird bei einem Wert von "GB075" im Attrubut `F_CODE` die Objektart wie folgt ausgegeben:
+ * @lang_en This outputs the object type as follows for a value of "GB075" in the 'F_CODE' attrubut:
+ * @lang_de Hierdurch wird bei einem Wert von "GB075" im Attrubut `F_CODE` die Objektart wie folgt ausgegeben:
  * @example <code>
  * ```json
  * {
@@ -69,17 +69,17 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     enum OPTION { describedby, featureType, when, where, coordRefSys, links }
 
     /**
-     * @en Enables the output of "when" for features with a primary temporal property.
-     * @de Aktiviert die Ausgabe von "when" bei Features mit einer primären zeitlichen Eigenschaft.
+     * @lang_en Enables the output of "when" for features with a primary temporal property.
+     * @lang_de Aktiviert die Ausgabe von "when" bei Features mit einer primären zeitlichen Eigenschaft.
      * @default `true`
      */
     @Nullable
     Boolean getWhen();
 
     /**
-     * @en Enables the output of "where" for features with geometries in a coordinate reference
+     * @lang_en Enables the output of "where" for features with geometries in a coordinate reference
      * system other than `CRS84` or `CRS84h`.
-     * @de Aktiviert die Ausgabe von "where" bei Features mit Geometrien in einem anderen
+     * @lang_de Aktiviert die Ausgabe von "where" bei Features mit Geometrien in einem anderen
      * Koordinatenreferenzsystem als `CRS84` oder `CRS84h`
      * @default `{ "enabled": true, "alwaysIncludeGeoJsonGeometry": false }`
      */
@@ -87,25 +87,25 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     WhereConfiguration getWhere();
 
     /**
-     * @en Enables the output of links to JSON Schema documents to the JSON instant, e.g. for validation purposes.
-     * @de Aktiviert die Ausgabe von Links auf JSON-Schema-Dokumente zu der JSON-Instant, z.B. zur Validierung
+     * @lang_en Enables the output of links to JSON Schema documents to the JSON instant, e.g. for validation purposes.
+     * @lang_de Aktiviert die Ausgabe von Links auf JSON-Schema-Dokumente zu der JSON-Instant, z.B. zur Validierung
      * @default `true`
      */
     @Nullable
     Boolean getDescribedby();
 
     /**
-     * @en Activates the output of "coordRefSys" for features
-     * @de Aktiviert die Ausgabe von "coordRefSys" bei Features
+     * @lang_en Activates the output of "coordRefSys" for features
+     * @lang_de Aktiviert die Ausgabe von "coordRefSys" bei Features
      * @default `true`
      */
     @Nullable
     Boolean getCoordRefSys();
 
     /**
-     * @en Activates the output of "featureType" with the specified values for features.
+     * @lang_en Activates the output of "featureType" with the specified values for features.
      * If an object type is specified, then a string is output, otherwise an array of strings.
-     * @de Aktiviert die Ausgabe von "featureType" mit den angegebenen Werten bei Features.
+     * @lang_de Aktiviert die Ausgabe von "featureType" mit den angegebenen Werten bei Features.
      * Ist eine Objektart angegeben, dann wird ein String ausgegeben, ansonsten ein Array von Strings.
      * @default `[]`
      */
@@ -113,9 +113,9 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     List<String> getFeatureType();
 
     /**
-     * @en Adds the specified links to the `links` array of features.
+     * @lang_en Adds the specified links to the `links` array of features.
      * All values of the array must be a valid link object with `href` and `rel`.
-     * @de Ergänzt den "links"-Array von Features um die angegebenen Links.
+     * @lang_de Ergänzt den "links"-Array von Features um die angegebenen Links.
      * Alle Werte des Arrays müssen ein gültiges Link-Objekt mit `href` und `rel` sein.
      * @default `[]`
      */
@@ -123,9 +123,9 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
     List<Link> getLinks();
 
     /**
-     * @en The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as well. Allowed
+     * @lang_en The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as well. Allowed
      * values are: `describedby`, `featureType`, `when`, `where`, `coordRefSys`, `left`.
-     * @de Die Option ermöglicht, dass ausgewählte JSON-FG-Erweiterungen auch im GeoJSON-Encoding berücksichtigt
+     * @lang_de Die Option ermöglicht, dass ausgewählte JSON-FG-Erweiterungen auch im GeoJSON-Encoding berücksichtigt
      * werden. Erlaubte Werte sind: `describedby`, `featureType`, `when`, `where`, `coordRefSys`, `links``
      * @default `[]`
      */

@@ -12,8 +12,8 @@ import org.immutables.value.Value;
 import javax.annotation.Nullable;
 
 /**
- * @en The schema of the API Catalog resource:
- * @de Das Schema der API-Catalog-Ressource ist:
+ * @lang_en The schema of the API Catalog resource:
+ * @lang_de Das Schema der API-Catalog-Ressource ist:
  * @example <code>
  * ```yaml
  * type: object
@@ -44,8 +44,8 @@ import javax.annotation.Nullable;
  */
 
 /**
- * @en Example of the specifications in the configuration file:
- * @de Beispiel für die Angaben in der Konfigurationsdatei:
+ * @lang_en Example of the specifications in the configuration file:
+ * @lang_de Beispiel für die Angaben in der Konfigurationsdatei:
  * @example <code>
  * ```yaml
  * - buildingBlock: FOUNDATION
@@ -69,8 +69,8 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
     }
 
     /**
-     * @en Support query parameter `lang` to set the desired response language.
-     * @de Steuert, ob die Sprache der Antwort bei allen GET-Operationen nur über den
+     * @lang_en Support query parameter `lang` to set the desired response language.
+     * @lang_de Steuert, ob die Sprache der Antwort bei allen GET-Operationen nur über den
      * `Accept-Lang`-Header oder auch über einen Parameter `lang` ausgewählt werden kann.
      * @default `false`
      */
@@ -78,9 +78,9 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
     Boolean getUseLangParameter();
 
     /**
-     * @en Return links contained in API responses also as
+     * @lang_en Return links contained in API responses also as
      * [HTTP header](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_link_headers).
-     * @de Steuert, ob die in Antworten der API enthaltenen Links auch als
+     * @lang_de Steuert, ob die in Antworten der API enthaltenen Links auch als
      * [HTTP-Header](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_link_headers)
      * zurückgegeben werden.
      * @default `true`
@@ -89,16 +89,16 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
     Boolean getIncludeLinkHeader();
 
     /**
-     * @en Title for resource *API Catalog*.
-     * @de Titel für die API-Catalog-Ressource in diesem Deployment.
+     * @lang_en Title for resource *API Catalog*.
+     * @lang_de Titel für die API-Catalog-Ressource in diesem Deployment.
      * @default "API Overview"
      */
     @Nullable
     String getApiCatalogLabel();
 
     /**
-     * @en Description for resource *API Catalog*. May contain HTML elements.
-     * @de Beschreibung für die API-Catalog-Ressource
+     * @lang_en Description for resource *API Catalog*. May contain HTML elements.
+     * @lang_de Beschreibung für die API-Catalog-Ressource
      * in diesem Deployment. HTML-Markup wird bei der HTML-Ausgabe aufbereitet.
      * @default "The following OGC APIs are available."
      */
@@ -106,9 +106,9 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
     String getApiCatalogDescription();
 
     /**
-     * @en If set, the value is embedded in the HTML page of the API catalog resource in
+     * @lang_en If set, the value is embedded in the HTML page of the API catalog resource in
      * a "googleSiteVerification" meta tag (`<meta name="`google-site-verification`" content="{value}">).
-     * @de Sofern gesetzt, wird der Wert in die HTML-Seite des API-Catalog-Ressource in einem
+     * @lang_de Sofern gesetzt, wird der Wert in die HTML-Seite des API-Catalog-Ressource in einem
      * "googleSiteVerification"-Meta-Tag eingebettet (`<meta name="`google-site-verification`"
      * content="{value}">).
      * @default `null`

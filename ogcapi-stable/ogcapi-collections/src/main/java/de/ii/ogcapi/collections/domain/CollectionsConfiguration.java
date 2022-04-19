@@ -57,9 +57,9 @@ public interface CollectionsConfiguration extends ExtensionConfiguration, Cachin
 
     }
   /**
-   * @en Add additional links to the *Collections* resource. The value is an array of link objects.
+   * @lang_en Add additional links to the *Collections* resource. The value is an array of link objects.
    * Required properties of a link are a URI (`href`), a label (`label`) and a relation (`rel`).
-   * @de Erlaubt es, zusätzliche Links in der Ressource Feature Collections zu ergänzen. Der Wert ist
+   * @lang_de Erlaubt es, zusätzliche Links in der Ressource Feature Collections zu ergänzen. Der Wert ist
    * ein Array von Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende Text
    * (`label`) und die Link-Relation (`rel`).
    * @default `[]`
@@ -68,12 +68,12 @@ public interface CollectionsConfiguration extends ExtensionConfiguration, Cachin
     List<Link> getAdditionalLinks();
 
   /**
-   * @en Controls whether each feature collection and subresource is listed as a single resource in the
+   * @lang_en Controls whether each feature collection and subresource is listed as a single resource in the
    * API definition (`false`), or whether a path parameter `collectionId` is used and each resource is
    * specified only once in the definition (`true`). With `true` the API definition becomes simpler and
    * shorter, but the schema is no longer collection-specific and collection-specific query parameters
    * can no longer be specified in the API definition.
-   * @de Steuert, ob in der API-Definition jede Feature Collection und untergeordnete Ressourcen jeweils
+   * @lang_de Steuert, ob in der API-Definition jede Feature Collection und untergeordnete Ressourcen jeweils
    * als einzelne Ressource aufgeführt wird (`false`), oder ob ein Pfad-Parameter `collectionId` verwendet
    * wird und jede Ressource nur einmal in der Definition spezifiziert wird (`true`). Bei `true` wird die
    * API-Definition einfacher und kürzer, aber das Schema ist nicht mehr Collection-spezifisch und
@@ -83,10 +83,10 @@ public interface CollectionsConfiguration extends ExtensionConfiguration, Cachin
     Optional<Boolean> getCollectionIdAsParameter();
 
   /**
-   * @en If in the case of `collectionIdAsParameter: true` all collections have a structurally identical
+   * @lang_en If in the case of `collectionIdAsParameter: true` all collections have a structurally identical
    * schema and the same queryables, the value `true` can be used to control that in the API definition
    * schema and queryables are determined from any collection.
-   * @de Sofern im Fall von `collectionIdAsParameter: true` alle Collections ein strukturell identisches
+   * @lang_de Sofern im Fall von `collectionIdAsParameter: true` alle Collections ein strukturell identisches
    * Schema besitzen und dieselben Queryables haben, kann mit dem Wert `true` gesteuert werden,
    * dass in der API-Definition Schema und Queryables aus einer beliebigen Collection bestimmt werden.
    * @default `false`

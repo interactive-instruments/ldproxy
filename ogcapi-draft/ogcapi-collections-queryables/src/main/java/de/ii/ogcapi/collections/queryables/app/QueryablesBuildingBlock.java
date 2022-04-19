@@ -15,8 +15,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title
- * @en The module *Collections Queryables* may be enabled for every API with a feature provider.
+ *  # Collections Queryables (QUERYABLES)
+ *
+ * @lang_en The module *Collections Queryables* may be enabled for every API with a feature provider.
  * It provides the sub-resource *Queryables* for the resource *Feature Collection* that
  * publishes the feature properties that may be used in queries.
  *
@@ -25,7 +26,7 @@ import javax.inject.Singleton;
  * The resource will change in the future due to the harmonization with the requirements
  * for *Queryables* from the draft of
  * [OGC API - Features - Part 3: Common Query Language](http://docs.opengeospatial.org/DRAFTS/19-079.html#filter-queryables).
- * @de Das Modul "Collections Queryables" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider aktiviert werden. Es ergänzt eine Ressource als Sub-Ressource zu jeder Feature Collection, die die Objekteigenschaften, die zur Selektion in Queries verwendet werden können, in der API veröffentlicht.
+ * @lang_de Das Modul "Collections Queryables" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider aktiviert werden. Es ergänzt eine Ressource als Sub-Ressource zu jeder Feature Collection, die die Objekteigenschaften, die zur Selektion in Queries verwendet werden können, in der API veröffentlicht.
  *
  * Das Modul basiert auf den Vorgaben der Konformitätsklasse "Filter" aus dem
  * [Entwurf von OGC API - Features - Part 3: Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).

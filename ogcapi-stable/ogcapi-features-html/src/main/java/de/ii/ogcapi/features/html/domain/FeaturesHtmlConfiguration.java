@@ -25,9 +25,9 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @en Example of the specifications in the configuration file for the entire API
+ * @lang_en Example of the specifications in the configuration file for the entire API
  * (from the API for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
- * @de Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API
+ * @lang_de Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API
  * (aus der API für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
  * @example <code>
  * ```yaml
@@ -39,8 +39,8 @@ import org.immutables.value.Value;
  */
 
 /**
- * @en Example of the specifications in the configuration file for a feature collection:
- * @de Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
+ * @lang_en Example of the specifications in the configuration file for a feature collection:
+ * @lang_de Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
  * @example <code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
@@ -69,9 +69,9 @@ import org.immutables.value.Value;
  */
 
 /**
- * @en Example of using CesiumJS for building data that is partially composed
+ * @lang_en Example of using CesiumJS for building data that is partially composed
  * of building components. The floor slab is used as a fallback:
- * @de Beispiel für die Verwendung von CesiumJS für Gebäudedaten,
+ * @lang_de Beispiel für die Verwendung von CesiumJS für Gebäudedaten,
  * die teilweise aus Bauteilen zusammengesetzt sind. Als Fallback wird die Bodenplatte verwendet:
  * @example <code>
  * ```yaml
@@ -97,8 +97,8 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   enum POSITION {AUTO, TOP, RIGHT}
 
   /**
-   * @en *Deprecated* Superseded by `mapPosition` and the [`flattern` transformation](../providers/transformations.md).
-   * @de *Deprecated* Wird abgelöst von `mapPosition` und der [`flatten`-Transformation](../providers/transformations.md).
+   * @lang_en *Deprecated* Superseded by `mapPosition` and the [`flattern` transformation](../providers/transformations.md).
+   * @lang_de *Deprecated* Wird abgelöst von `mapPosition` und der [`flatten`-Transformation](../providers/transformations.md).
    * @default `CLASSIC`
    */
   @Deprecated(since = "3.1.0")
@@ -106,9 +106,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   LAYOUT getLayout();
 
   /**
-   * @en Can be `TOP`, `RIGHT` or `AUTO`. `AUTO` is the default, it chooses `TOP` when any nested
+   * @lang_en Can be `TOP`, `RIGHT` or `AUTO`. `AUTO` is the default, it chooses `TOP` when any nested
    * objects are found and `RIGHT` otherwise.
-   * @de Mögliche Werte sind `TOP`, `RIGHT` und `AUTO`. `AUTO` ist der Default, es wählt automatisch
+   * @lang_de Mögliche Werte sind `TOP`, `RIGHT` und `AUTO`. `AUTO` ist der Default, es wählt automatisch
    * `TOP` wenn verschachtelte Objekte gefunden werden und sonst `RIGHT`.
    * @default `AUTO`
    */
@@ -116,9 +116,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   POSITION getMapPosition();
 
   /**
-   * @en Define how the feature label for HTML is formed. Default is the feature id. Property names in double
+   * @lang_en Define how the feature label for HTML is formed. Default is the feature id. Property names in double
    * curly braces will be replaced with the corresponding value.
-   * @de Steuert, wie der Titel eines Features in der HTML-Ausgabe gebildet wird. Standardmäßig ist der
+   * @lang_de Steuert, wie der Titel eines Features in der HTML-Ausgabe gebildet wird. Standardmäßig ist der
    * Titel der Identifikator. In der Angabe können über die Angabe des Attributnamens in
    * doppelt-geschweiften Klammern Ersetzungspunkte für die Attribute des Features verwendet werden.
    * Es können nur Attribute verwendet werden, die nur einmal pro Feature vorkommen können.
@@ -131,8 +131,8 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   Optional<String> getFeatureTitleTemplate();
 
   /**
-   * @en Optional transformations for feature properties for HTML, see [transformations](general-rules.md#transformations).
-   * @de Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der HTML-Ausgabe
+   * @lang_en Optional transformations for feature properties for HTML, see [transformations](general-rules.md#transformations).
+   * @lang_de Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der HTML-Ausgabe
    * [transformiert](general-rules.md#transformations) werden.
    * @default `{}`
    */
@@ -141,9 +141,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   Map<String, List<PropertyTransformation>> getTransformations();
 
   /**
-   * @en The map client library to use to display features in the HTML representation. The default is MapLibre
+   * @lang_en The map client library to use to display features in the HTML representation. The default is MapLibre
    * GL (`MAP_LIBRE`). WIP: Cesium (`CESIUM`) can be used for displaying 3D features on a globe.
-   * @de Auswahl des in den Ressourcen "Features" und "Feature" zu verwendenden Map-Clients.
+   * @lang_de Auswahl des in den Ressourcen "Features" und "Feature" zu verwendenden Map-Clients.
    * Der Standard ist MapLibre GL JS. Alternativ wird als auch `CESIUM` unterstützt (CesiumJS).
    * Die Unterstützung von CesiumJS zielt vor allem auf die Darstellung von 3D-Daten ab und besitzt
    * in der aktuellen Version experimentellen Charakter, es werden keine Styles unterstützt.
@@ -153,11 +153,11 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   MapClient.Type getMapClientType();
 
   /**
-   * @en An optional Mapbox style in the style repository to use for the map in the HTML representation
+   * @lang_en An optional Mapbox style in the style repository to use for the map in the HTML representation
    * of a feature or feature collection. If set to `DEFAULT`, the `defaultStyle` configured in the
    * [HTML configuration](html.md) is used. If set to `NONE`, a simple wireframe style will be used
    * with OpenStreetMap as a basemap. The value is ignored, if the map client is not MapLibre.
-   * @de Ein Style im Style-Repository, der standardmäßig in Karten mit den Features verwendet werden soll.
+   * @lang_de Ein Style im Style-Repository, der standardmäßig in Karten mit den Features verwendet werden soll.
    * Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei `NONE` wird ein einfacher
    * Style mit OpenStreetMap als Basiskarte verwendet. Der Style sollte alle Daten abdecken und muss im
    * Format Mapbox Style verfügbar sein. Es wird zuerst nach einem Style mit dem Namen für
@@ -169,9 +169,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   String getStyle();
 
   /**
-   * @en If `true`, any `minzoom` or `maxzoom` members are removed from the GeoJSON layers.
+   * @lang_en If `true`, any `minzoom` or `maxzoom` members are removed from the GeoJSON layers.
    * The value is ignored, if the map client is not MapLibre or `style` is `NONE`.
-   * @de Bei `true` werden aus dem in `style` angegebenen Style die `minzoom`- und `maxzoom`-Angaben bei
+   * @lang_de Bei `true` werden aus dem in `style` angegebenen Style die `minzoom`- und `maxzoom`-Angaben bei
    * den Layer-Objekten entfernt, damit die Features in allen Zoomstufen angezeigt werden. Diese Option
    * sollte nicht gewählt werden, wenn der Style unterschiedliche Präsentationen je nach Zoomstufe
    * vorsieht, da ansonsten alle Layer auf allen Zoomstufen gleichzeitig angezeigt werden.
@@ -181,11 +181,11 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   Boolean getRemoveZoomLevelConstraints();
 
   /**
-   * @en TThis option works only for CesiumJS as map client. By default, the geometry identified in
+   * @lang_en TThis option works only for CesiumJS as map client. By default, the geometry identified in
    * the provider as PRIMARY_GEOMETRY is used for representation on the map.
    * This option allows multiple geometry properties to be specified in a list.
    * The first geometry property set for a feature will be used.
-   * @de Diese Option wirkt nur für CesiumJS als Map-Client. Als Standard wird die im Provider als
+   * @lang_de Diese Option wirkt nur für CesiumJS als Map-Client. Als Standard wird die im Provider als
    * PRIMARY_GEOMETRY identifizierte Geometrie für die Darstellung in der Karte verwendet.
    * Diese Option ermöglicht es, mehrere Geometrieeigenschaften anzugeben in einer Liste anzugeben.
    * Die erste Geometrieeigenschaft, die für ein Feature gesetzt ist, wird dabei verwendet.
@@ -195,10 +195,10 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   List<String> getGeometryProperties();
 
   /**
-   * @en This option can be used to set a custom maximum value for the `limit` parameter for the HTML
+   * @lang_en This option can be used to set a custom maximum value for the `limit` parameter for the HTML
    * output. If no value is specified, the value from the Features Core module applies. When using
    * CesiumJS as a map client, a value of 100 is recommended.
-   * @de Mit dieser Option kann für die HTML-Ausgabe ein eigener Maximalwert für den Parameter `limit`
+   * @lang_de Mit dieser Option kann für die HTML-Ausgabe ein eigener Maximalwert für den Parameter `limit`
    * gesetzt werden. Sofern kein Wert angegeben ist, so gilt der Wert aus dem Modul "Features Core".
    * Bei der Verwendung von CesiumJS als Map-Client wird ein Wert von 100 empfohlen.
    * @default `null`

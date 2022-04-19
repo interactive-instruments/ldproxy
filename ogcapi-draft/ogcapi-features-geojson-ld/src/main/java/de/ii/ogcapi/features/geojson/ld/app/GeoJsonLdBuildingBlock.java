@@ -14,9 +14,9 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * @title Features GeoJSON-LD (GEO_JSON_LD)
- * @en Adds support for JSON-LD by extending the [GeoJSON](geojson.md) encoding.
- * @de Das Modul "Features GeoJSON-LD" kann für jede über ldproxy bereitgestellte API mit
+ * # Features GeoJSON-LD (GEO_JSON_LD)
+ * @lang_en Adds support for JSON-LD by extending the [GeoJSON](geojson.md) encoding.
+ * @lang_de Das Modul "Features GeoJSON-LD" kann für jede über ldproxy bereitgestellte API mit
  * einem Feature-Provider aktiviert werden, sofern die GeoJSON-Ausgabe aktiviert ist.
  *
  * Es ergänzt die GeoJSON-Ausgabe um die folgenden Angaben:

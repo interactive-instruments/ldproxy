@@ -19,8 +19,8 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @en An example of flattening. The non-flattened feature
- * @de Ein Beispiel zur Abflachung. Das nicht abgeflachte Feature
+ * @lang_en An example of flattening. The non-flattened feature
+ * @lang_de Ein Beispiel zur Abflachung. Das nicht abgeflachte Feature
  * @example <code>
  * ```json
  * {
@@ -60,8 +60,8 @@ import org.immutables.value.Value;
  */
 
 /**
- * @en looks like this flattened with the default separator:
- * @de sieht abgeflacht mit dem Standardtrennzeichen wie folgt aus:
+ * @lang_en looks like this flattened with the default separator:
+ * @lang_de sieht abgeflacht mit dem Standardtrennzeichen wie folgt aus:
  * @example <code>
  * ```json
  * {
@@ -92,8 +92,8 @@ import org.immutables.value.Value;
  */
 
 /**
- * @en  Example of the specifications in the configuration file:
- * @de Beispiel für die Angaben in der Konfigurationsdatei:
+ * @lang_en  Example of the specifications in the configuration file:
+ * @lang_de Beispiel für die Angaben in der Konfigurationsdatei:
  * @example <code>
  * ```yaml
  * - buildingBlock: GEO_JSON
@@ -117,9 +117,9 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     }
 
     /**
-     * @en *Deprecated* Use the
+     * @lang_en *Deprecated* Use the
      * [`flatten` transformation](../../providers/transformations.md) instead.
-     * @de *Deprecated* Wird abgelöst durch die
+     * @lang_de *Deprecated* Wird abgelöst durch die
      * [`flatten`-Transformation](../../providers/transformations.md).
      * @default `FLATTEN
      */
@@ -128,9 +128,9 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     NESTED_OBJECTS getNestedObjectStrategy();
 
     /**
-     * @en *Deprecated* Use the
+     * @lang_en *Deprecated* Use the
      * [`flatten` transformation](../../providers/transformations.md) instead.
-     * @de *Deprecated* Wird abgelöst durch die
+     * @lang_de *Deprecated* Wird abgelöst durch die
      * [`flatten`-Transformation](../../providers/transformations.md).
      * @default `SUFFIX`
      */
@@ -143,9 +143,9 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     Boolean getUseFormattedJsonOutput();
 
     /**
-     * @en *Deprecated* Use the
+     * @lang_en *Deprecated* Use the
      * [`flatten` transformation](../../providers/transformations.md) instead.
-     * @de *Deprecated* Wird abgelöst durch die
+     * @lang_de *Deprecated* Wird abgelöst durch die
      * [`flatten`-Transformation](../../providers/transformations.md).
      * @default "."
      */

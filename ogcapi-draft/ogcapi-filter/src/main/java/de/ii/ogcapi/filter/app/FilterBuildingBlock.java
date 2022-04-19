@@ -14,9 +14,9 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * @title Filter - CQL (FILTER)
- * @en Adds support for CQL filter expressions in queries to select [Features](features-core.md) or [Vector Tiles](tiles.md).
- * @de Das Modul "Filter / CQL" kann für jede über ldproxy bereitgestellte API mit einem
+ * # Filter - CQL (FILTER)
+ * @lang_en Adds support for CQL filter expressions in queries to select [Features](features-core.md) or [Vector Tiles](tiles.md).
+ * @lang_de Das Modul "Filter / CQL" kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider aktiviert werden. Es aktiviert die Angabe der Query-Parameter `filter`
  * und `filter-lang` für die Ressourcen "Features" und "Vector Tile". Unterstützt werden die
  * Filtersprachen `cql-text` und `cql-json`.

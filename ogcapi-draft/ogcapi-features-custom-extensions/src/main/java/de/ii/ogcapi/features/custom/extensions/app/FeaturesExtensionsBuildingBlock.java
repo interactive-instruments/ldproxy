@@ -14,8 +14,8 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * @title Modul "Collections Queryables" (QUERYABLES)
- * @en The "Features Custom Extensions" module can be enabled for any API provided over ldproxy with a feature provider.
+ * # Modul "Collections Queryables" (QUERYABLES)
+ * @lang_en The "Features Custom Extensions" module can be enabled for any API provided over ldproxy with a feature provider.
  *
  * It adds support for the HTTP method POST on the features resource. The difference to calling with
  * GET is that the query parameters are passed as content in the request. This may be desired for two reasons:
@@ -31,7 +31,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * selected by the geometry specified as value and only features whose primary geometry intersects with
  * the specified geometry are returned. The geometry can be either a WKT geometry or a URL for a GeoJSON
  * object with a geometry. In case of a FeatureCollection the first geometry is used.
- * @de Das Modul "Features Custom Extensions" kann für jede über ldproxy bereitgestellte API mit einem
+ * @lang_de Das Modul "Features Custom Extensions" kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider aktiviert werden.
  *
  * Es ergänzt die Unterstützung der HTTP-Methode POST auf der Features-Ressource.

@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * @title `metadata`
- * @en General metadata for the API (version, contact details, license information).
+ * # `metadata`
+ * @lang_en General metadata for the API (version, contact details, license information).
  * Supported keys (with affected resources in braces): `version` (*API Definition*),
  * `contactName` (*API Definition*, *HTML Landing Page*), `contactUrl` (*API Definition*,
  * *HTML Landing Page*), `contactEmail` (*API Definition*, *HTML Landing Page*), `contactPhone`
@@ -24,7 +24,7 @@ import java.util.Optional;
  * *HTML Landing Page*, *Feature Collections*, *Feature Collection*) und `keywords`
  * (*HTML Landing Page*). All values are strings, with the exception of keywords,
  * which are an array of strings.
- * @de Über dieses Objekt können grundlegende Metadaten zur API (Version, Kontaktdaten,
+ * @lang_de Über dieses Objekt können grundlegende Metadaten zur API (Version, Kontaktdaten,
  * Lizenzinformationen) festgelegt werden. Erlaubt sind die folgenden Elemente (in Klammern
  * werden die Ressourcen genannt, in denen die Angabe verwendet wird): `version` (API-Definition),
  * `contactName` (API-Definition, HTML-Landing-Page), `contactUrl` (API-Definition,

@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @en Example of the specifications in the configuration file:
- * @de Beispiel für die Angaben in der Konfigurationsdatei:
+ * @lang_en Example of the specifications in the configuration file:
+ * @lang_de Beispiel für die Angaben in der Konfigurationsdatei:
  * @example <code>
  * ```yaml
  * - buildingBlock: STYLES
@@ -35,8 +35,8 @@ import java.util.Objects;
  */
 
 /**
- * @en Example Mapbox stylesheet
- * @de Beispiel für ein Mapbox-Stylesheet:
+ * @lang_en Example Mapbox stylesheet
+ * @lang_de Beispiel für ein Mapbox-Stylesheet:
  * @example <code>
  * ```json
  * {
@@ -87,8 +87,8 @@ import java.util.Objects;
  */
 
 /**
- * @en Example style information file
- * @de Beispiel für eine Style-Metadaten-Datei:
+ * @lang_en Example style information file
+ * @lang_de Beispiel für eine Style-Metadaten-Datei:
  * @example <code>
  * ```json
  * {
@@ -147,11 +147,11 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     }
 
     /**
-     * @en List of enabled stylesheet encodings. Supported are Mapbox Style (`Mapbox`),
+     * @lang_en List of enabled stylesheet encodings. Supported are Mapbox Style (`Mapbox`),
      * OGC SLD 1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`) and HTML (`HTML`). HTML is an output only
      * encoding for web maps that requires a *Mapbox Style* stylesheet. For details see conformance
      * classes *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.
-     * @de Steuert, welche Formate für Stylesheets unterstützt werden sollen. Zur Verfügung stehen
+     * @lang_de Steuert, welche Formate für Stylesheets unterstützt werden sollen. Zur Verfügung stehen
      * Mapbox Style ("Mapbox"), OGC SLD 1.0 ("SLD10"), OGC SLD 1.1 ("SLD11"), QGIS QML ("QML"),
      * ArcGIS Layer ("lyr" und "lyrx") und HTML ("HTML"). HTML ist ein reines Ausgabeformat im
      * Sinne einer Webmap und wird nur für Styles unterstützt, für die ein Stylesheet im Format
@@ -162,9 +162,9 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     List<String> getStyleEncodings();
 
     /**
-     * @en Option to manage styles using POST, PUT and DELETE. If `styleInfosOnCollection` is enabled, style
+     * @lang_en Option to manage styles using POST, PUT and DELETE. If `styleInfosOnCollection` is enabled, style
      * information may be created and updated using PATCH. Siehe die Konformitätsklasse "Manage styles".
-     * @de Steuert, ob die Styles über POST, PUT und DELETE verwaltet werden können.
+     * @lang_de Steuert, ob die Styles über POST, PUT und DELETE verwaltet werden können.
      * Siehe die Konformitätsklasse "Manage styles".
      * @default `false`
      */
@@ -177,9 +177,9 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     default boolean isManagerEnabled() { return Objects.equals(getManagerEnabled(), true); }
 
     /**
-     * @en Option to validate styles when using POST and PUT by setting the query parameter `validate`.
+     * @lang_en Option to validate styles when using POST and PUT by setting the query parameter `validate`.
      * For details see conformance class *Validation of styles*.
-     * @de Steuert, ob bei POST und PUT von Styles die Validierung der Styles über den Query-Parameter
+     * @lang_de Steuert, ob bei POST und PUT von Styles die Validierung der Styles über den Query-Parameter
      * `validate` unterstützt werden soll. Siehe die Konformitätsklasse "Validation of styles".
      * @default `false`
      */
@@ -200,8 +200,8 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     default boolean shouldUseIdFromStylesheet() { return Objects.equals(getUseIdFromStylesheet(), true); }
 
     /**
-     * @en *Deprecated* See `enabled` in [Modul Resources](resources.md).
-     * @de *Deprecated* Siehe `enabled` in [Modul Resources](resources.md).
+     * @lang_en *Deprecated* See `enabled` in [Modul Resources](resources.md).
+     * @lang_de *Deprecated* Siehe `enabled` in [Modul Resources](resources.md).
      * @default `false`
      */
     @Deprecated
@@ -215,8 +215,8 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     default boolean isResourcesEnabled() { return Objects.equals(getResourcesEnabled(), true); }
 
     /**
-     * @en *Deprecated* See `managerEnabled` in [Modul Resources](resources.md).
-     * @de *Deprecated* Siehe `managerEnabled` in [Modul Resources](resources.md).
+     * @lang_en *Deprecated* See `managerEnabled` in [Modul Resources](resources.md).
+     * @lang_de *Deprecated* Siehe `managerEnabled` in [Modul Resources](resources.md).
      * @default `false`
      */
     @Deprecated
@@ -230,8 +230,8 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     default boolean isResourceManagerEnabled() { return Objects.equals(getResourceManagerEnabled(), true); }
 
     /**
-     * @en *Deprecated* See `defaultStyle` in [Modul HTML](html.md).
-     * @de *Deprecated* Siehe `defaultStyle` in [Modul HTML](html.md).
+     * @lang_en *Deprecated* See `defaultStyle` in [Modul HTML](html.md).
+     * @lang_de *Deprecated* Siehe `defaultStyle` in [Modul HTML](html.md).
      * @default `null`
      */
     @Deprecated(since = "3.1.0")
@@ -239,13 +239,13 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     String getDefaultStyle();
 
     /**
-     * @en Only applies to styles in Mapbox Style format. Controls whether the styles at the
+     * @lang_en Only applies to styles in Mapbox Style format. Controls whether the styles at the
      * collection level should be derived from the styles in the parent style collection.
      * The prerequisite is that the name of the `source` in the stylesheet corresponds to
      * `{apiId}` and the name of the `source-layer` corresponds to `{collectionId}`.
      * If a style is to be used for displaying features in the FEATURES_HTML module,
      * the option should be enabled.
-     * @de Nur wirksam bei Styles im Format Mapbox Style. Steuert, ob die Styles auf der Ebene
+     * @lang_de Nur wirksam bei Styles im Format Mapbox Style. Steuert, ob die Styles auf der Ebene
      * der Collections aus den Styles aus der übergeordneten Style-Collection abgeleitet werden
      * sollen. Voraussetzung ist, dass der Name der `source` im Stylesheet der `{apiId}`
      * entspricht und der Name der `source-layer` der `{collectionId}`. Sofern ein Style für die
@@ -257,9 +257,9 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     Boolean getDeriveCollectionStyles();
 
     /**
-     * @en Option to support popups in web maps for *Mapbox Style* styles that show attributes for
+     * @lang_en Option to support popups in web maps for *Mapbox Style* styles that show attributes for
      * the top-most object.
-     * @de Steuert, ob bei Webkarten zu Styles im Format Mapbox Style ein Popup mit den Attributen zum
+     * @lang_de Steuert, ob bei Webkarten zu Styles im Format Mapbox Style ein Popup mit den Attributen zum
      * obersten Objekt angezeigt werden soll.
      * @default `true`
      */
@@ -267,9 +267,9 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     Boolean getWebmapWithPopup();
 
     /**
-     * @en Option to support layer controls in web maps for *Mapbox Style* styles. Allows to collectively
+     * @lang_en Option to support layer controls in web maps for *Mapbox Style* styles. Allows to collectively
      * enable and disable all layers for a certain feature collection.
-     * @de Steuert, ob bei Webkarten zu Styles im Format Mapbox Style die Layer ein- und ausgeschaltet werden können.
+     * @lang_de Steuert, ob bei Webkarten zu Styles im Format Mapbox Style die Layer ein- und ausgeschaltet werden können.
      * Ein- und ausgeschaltet werden können jeweils gebündelt alle Layer zu einer Feature Collection.
      * @default `false`
      */
@@ -277,9 +277,9 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     Boolean getWebmapWithLayerControl();
 
     /**
-     * @en Option to support layer controls for additional layers like background maps.
+     * @lang_en Option to support layer controls for additional layers like background maps.
      * Requires `webmapWithLayerControl: true`.
-     * @de Nur wirksam bei `webmapWithLayerControl: true`. Steuert, ob auch Kartenlayer, die nicht aus den
+     * @lang_de Nur wirksam bei `webmapWithLayerControl: true`. Steuert, ob auch Kartenlayer, die nicht aus den
      * Vector Tiles dieser API, z.B. eine Hintergrundkarte, ein- und ausgeschaltet werden können.
      * @default `false`
      */

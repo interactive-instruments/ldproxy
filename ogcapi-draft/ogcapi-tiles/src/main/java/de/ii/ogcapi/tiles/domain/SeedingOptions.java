@@ -19,8 +19,8 @@ import org.immutables.value.Value;
 public interface SeedingOptions {
 
   /**
-   * @en If disabled the seeding will not be run when the API starts.
-   * @de Steuert, ob das Seeding beim Start einer API ausgeführt wird.
+   * @lang_en If disabled the seeding will not be run when the API starts.
+   * @lang_de Steuert, ob das Seeding beim Start einer API ausgeführt wird.
    * @default `true`
    */
   @Nullable
@@ -33,9 +33,9 @@ public interface SeedingOptions {
   }
 
   /**
-   * @en A crontab pattern to run the seeding periodically. There will only ever be one seeding in progress,
+   * @lang_en A crontab pattern to run the seeding periodically. There will only ever be one seeding in progress,
    * so if the next run is scheduled before the last one finished, it will be skipped.
-   * @de Ein Crontab-Pattern für die regelmäßige Ausführung des Seedings. Das Seeding wird stets nur einmal
+   * @lang_de Ein Crontab-Pattern für die regelmäßige Ausführung des Seedings. Das Seeding wird stets nur einmal
    * pro API zur gleichen Zeit ausgeführt, d.h. falls eine weitere Ausführung ansteht, während die vorherige
    * noch läuft, wird diese übersprungen.
    * @default `null`
@@ -56,8 +56,8 @@ public interface SeedingOptions {
   }
 
   /**
-   * @en If enabled the tile cache will be purged before the seeding starts.
-   * @de Steuert, ob der Cache vor dem Seeding bereinigt wird.
+   * @lang_en If enabled the tile cache will be purged before the seeding starts.
+   * @lang_de Steuert, ob der Cache vor dem Seeding bereinigt wird.
    * @default `false`
    */
   @Nullable
@@ -70,11 +70,11 @@ public interface SeedingOptions {
   }
 
   /**
-   * @en The maximum number of threads the seeding is allowed to use. The actual number of threads used
+   * @lang_en The maximum number of threads the seeding is allowed to use. The actual number of threads used
    * depends on the number of available background task threads when the seeding is about to start.
    * If you want to allow more than thread, first check if sufficient background task threads are configured.
    * Take into account that the seeding for multiple APIs will compete for the available background task threads.
-   * @de Die maximale Anzahl an Threads, die für das Seeding verwendet werden darf. Die tatsächlich
+   * @lang_de Die maximale Anzahl an Threads, die für das Seeding verwendet werden darf. Die tatsächlich
    * verwendete Zahl der Threads hängt davon ab, wie viele Threads für
    * [Hintergrundprozesse](../../global-configuration.md#background-tasks) zur Verfügung stehen,
    * wenn das Seeding startet. Wenn mehr als ein Thread erlaubt sein soll, ist zunächst zu prüfen,

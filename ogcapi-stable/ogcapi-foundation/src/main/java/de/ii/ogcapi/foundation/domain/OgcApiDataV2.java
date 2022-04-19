@@ -24,9 +24,9 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 /**
- * @title  API
- * @en Each API represents a deployment of a single OGC Web API.
- * @de Jede API stellt eine OGC Web API bereit.
+ * #  API
+ * @lang_en Each API represents a deployment of a single OGC Web API.
+ * @lang_de Jede API stellt eine OGC Web API bereit.
  *
  * Die Konfiguration einer API wird in einer Konfigurationsdatei in einem Objekt mit den folgenden
  * Eigenschaften beschrieben.
@@ -43,8 +43,8 @@ import org.immutables.value.Value;
  */
 
 /**
- * @title API modules
- * @en Modules might be configured for the API or for single collections. The final configuration is
+ * # API modules
+ * @lang_en Modules might be configured for the API or for single collections. The final configuration is
  * formed by merging the following sources in this order:
  *
  * * The module defaults, see [API modules](building-blocks/README.md).
@@ -52,7 +52,7 @@ import org.immutables.value.Value;
  * * API level configuration.
  * * Collection level configuration.
  * * Optional deployment overrides in the `overrides` directory.
- * @de Ein Array dieser Modul-Konfigurationen steht auf der Ebene der gesamten API und für
+ * @lang_de Ein Array dieser Modul-Konfigurationen steht auf der Ebene der gesamten API und für
  * jede Collection zur Verfügung. Die jeweils gültige Konfiguration ergibt sich aus der Priorisierung:
  *
  * * Ist nichts angegeben, dann gelten die im ldproxy-Code vordefinierten Standardwerte. Diese sind bei den jeweiligen [API-Modulen](building-blocks/README.md) spezifiziert.
@@ -63,19 +63,19 @@ import org.immutables.value.Value;
  */
 
 /**
- * @title Example
- * @en See the
+ * # Example
+ * @lang_en See the
  * [API configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  * of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).
- * @de Als Beispiel siehe die
+ * @lang_de Als Beispiel siehe die
  * [API-Konfiguration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  * der API [Weinlagen in Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
  */
 
 /**
- * @title Storage
- * @en API configurations reside under the relative path `store/entities/services/{apiId}.yml` in the data directory.
- * @de API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml` im Datenverzeichnis.
+ * # Storage
+ * @lang_en API configurations reside under the relative path `store/entities/services/{apiId}.yml` in the data directory.
+ * @lang_de API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml` im Datenverzeichnis.
  */
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiDataV2.Builder.class)
@@ -133,10 +133,10 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     /**
-     * @en Tags for this API. Every tag is a string without white space. Tags are shown in
+     * @lang_en Tags for this API. Every tag is a string without white space. Tags are shown in
      * the *API Catalog* and can be used to filter the catalog response with the query parameter
      * `tags`, e.g. `tags=INSPIRE`.<br>_since version 2.1_
-     * @de Ordnet der API die aufgelisteten Tags zu. Die Tags müssen jeweils Strings ohne
+     * @lang_de Ordnet der API die aufgelisteten Tags zu. Die Tags müssen jeweils Strings ohne
      * Leerzeichen sein. Die Tags werden im API-Katalog angezeigt und können über den
      * Query-Parameter `tags` zur Filterung der in der API-Katalog-Antwort zurückgelieferten
      * APIs verwendet werden, z.B. `tags=INSPIRE`.<br>_seit Version 2.1_
@@ -163,9 +163,9 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     public abstract List<ExtensionConfiguration> getExtensions();
 
     /**
-     * @en Collection configurations, the key is the collection id, for the value see
+     * @lang_en Collection configurations, the key is the collection id, for the value see
      * [Collection](#collection) below.
-     * @de Ein Objekt mit der spezifischen Konfiguration zu jeder Objektart, der Name der Objektart
+     * @lang_de Ein Objekt mit der spezifischen Konfiguration zu jeder Objektart, der Name der Objektart
      * ist der Schlüssel, der Wert ein [Collection-Objekt](#collection).
      * @default `{}`
      */

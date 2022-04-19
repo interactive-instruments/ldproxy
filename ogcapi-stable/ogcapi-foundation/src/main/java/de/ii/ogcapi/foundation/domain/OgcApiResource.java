@@ -17,11 +17,11 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * @title Resource paths
- * @en ll resource paths in this documentation are relative to the base URI of the deployment. For example given the
+ * # Resource paths
+ * @lang_en ll resource paths in this documentation are relative to the base URI of the deployment. For example given the
  * base URI `https://example.com/pfad/zu/apis` and the resource path `/{apiId}/collections`, the full path would be
  * `https://example.com/pfad/zu/apis/{apiId}/collections`.
- * @de Alle Pfadangaben in dieser Dokumentation sind relativ zur Basis-URI des Deployments.
+ * @lang_de Alle Pfadangaben in dieser Dokumentation sind relativ zur Basis-URI des Deployments.
  * Ist dies zum Beispiel `https://example.com/pfad/zu/apis` und lautet der Pfad einer Ressource
  * `/{apiId}/collections` dann ist die URI der Ressource `https://example.com/pfad/zu/apis/{apiId}/collections`.
  */

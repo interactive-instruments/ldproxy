@@ -14,8 +14,8 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 /**
- * @title `defaultExtent`
- * @en Default value for spatial (`spatial`) and/or temporal (`temporal`) extent for
+ * # `defaultExtent`
+ * @lang_en Default value for spatial (`spatial`) and/or temporal (`temporal`) extent for
  * each collection, if not set in the collection configuration. Required keys for
  * spatial extents (all values in `CRS84`): `xmin`, `ymin`, `xmax`, `ymax`. Required keys
  * for temporal extents (all values in milliseconds since 1 January 1970): `start`, `end`.
@@ -23,7 +23,7 @@ import java.util.Optional;
  * to `true`. If the temporal extent should be derived from the data source on startup, set
  * `temporalComputed` to `true`. For big datasets this will slow down the startup. Note:
  * This is not the extent for the whole dataset, that will always be derived from the collection extents.
- * @de Es kann ein Standardwert für die räumliche (`spatial`) und/oder zeitliche (`temporal`)
+ * @lang_de Es kann ein Standardwert für die räumliche (`spatial`) und/oder zeitliche (`temporal`)
  * Ausdehnung der Daten angeben werden, die bei den Objektarten verwendet wird, wenn dort keine
  * anderslautende Ausdehnung spezifiziert wird. Für die räumliche Ausdehnung sind die folgenden
  * Eigenschaften anzugeben (alle Angaben in `CRS84`): `xmin`, `ymin`, `xmax`, `ymax`. Für die

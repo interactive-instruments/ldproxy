@@ -17,8 +17,8 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title Features GML (GML)
- * @en The module *Features GML* may be enabled for every API with a WFS feature provider.
+ * # Features GML (GML)
+ * @lang_en The module *Features GML* may be enabled for every API with a WFS feature provider.
  * It provides the resources *Features* and *Feature* encoded as GML.
  *
  * *Features GML* implements all requirements of conformance class *Geography Markup Language
@@ -27,7 +27,7 @@ import javax.inject.Singleton;
  * for the two mentioned resources.
  *
  * This module has no configuration options.
- * @de Das Modul "Features GML" kann für jede über ldproxy bereitgestellte API mit einem
+ * @lang_de Das Modul "Features GML" kann für jede über ldproxy bereitgestellte API mit einem
  * WFS-Feature-Provider aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen
  * Features und Feature in GML.
  *

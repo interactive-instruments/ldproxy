@@ -7,10 +7,12 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.xtraplatform.docs.DocFile;
+import de.ii.xtraplatform.docs.DocFileTemplate;
 
 /**
- * @title API modules
- * @en The OGC API functionality is split up into modules based on the OGC API standards.
+ * # API modules
+ * @lang_en The OGC API functionality is split up into modules based on the OGC API standards.
  * The modules are classified according to the state of the implemented specification:
  *
  * - For approved standards or drafts in the final voting stage, related modules are classified as `stable`.
@@ -20,7 +22,7 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
  * the scope of this documentation.
  *
  * There are some [general rules](general-rules.md) that apply to all modules.
- * @de
+ * @lang_de
  * Die API-Funktionalität ist in Module, die sich an den OGC API Standards orientieren, aufgeteilt.
  * Jedes Modul ist ein [OSGi](https://de.wikipedia.org/wiki/OSGi)-Bundle.
  * Module können damit grundsätzlich zur Laufzeit hinzugefügt und wieder entfernt werden.
@@ -37,16 +39,16 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
  * Die Community-Module sind kein Bestandteil der ldproxy Docker-Container.
  *
  * Grundsätzliche Regeln, die für alle API-Module gelten, finden Sie [hier](general-rules.md).
- */
-
-/**
- * @title Option `enabled`
- * @en Every module can be enabled or disabled in the configuration using `enabled`. The default
+ *
+ * @lang_all ## Option `enabled`
+ * @lang_en Every module can be enabled or disabled in the configuration using `enabled`. The default
  * value differs between modules, see the [overview](#api-module-overview)).
- * @de Jedes API-Modul hat eine Konfigurationsoption `enabled`, die steuert, ob das Modul in der
+ * @lang_de Jedes API-Modul hat eine Konfigurationsoption `enabled`, die steuert, ob das Modul in der
  * jeweiligen API aktiviert ist. Einige Module sind standardmäßig aktiviert, andere deaktiviert
  * (siehe die nachfolgende [Übersicht](#api-module-overview)).
  */
+@DocFile(path = "configuration/services/building-blocks/README.md")
+@DocFileTemplate(path = "configuration/services/building-blocks", stripSuffix = "BuildingBlock")
 @AutoMultiBind
 public interface ApiBuildingBlock extends ApiExtension {
 

@@ -18,8 +18,8 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title Projections (PROJECTIONS)
- * @en The module *Projections* may be enabled for every API with a feature provider.
+ * # Projections (PROJECTIONS)
+ * @lang_en The module *Projections* may be enabled for every API with a feature provider.
  * It adds the following query parameters:
  *
  * * `properties` (for resources *Features*, *Feature* and *Vector Tile*): if set only the
@@ -29,7 +29,7 @@ import javax.inject.Singleton;
  * will be skipped in the output.<br>_since version 2.2
  *
  * This module has no configuration options.
- * @de Das Modul "Projections" kann für jede über ldproxy bereitgestellte API mit einem
+ * @lang_de Das Modul "Projections" kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider aktiviert werden. Es ergänzt die folgenden Query-Parameter:
  *
  * * `properties` (Ressourcen "Features", "Feature" und "Vector Tile"): Ist der Parameter

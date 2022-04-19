@@ -26,8 +26,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Coordinate Reference Systems (CRS)
- * @en The module *Coordinate Reference Systems* may be enabled for every API with a feature provider.
+ * # Coordinate Reference Systems (CRS)
+ * @lang_en The module *Coordinate Reference Systems* may be enabled for every API with a feature provider.
  * It provides support for additional coordinate reference systems apart from the default
  * [CRS84](http://www.opengis.net/def/crs/OGC/1.3/CRS84) (WGS 84).
  *
@@ -38,7 +38,7 @@ import javax.inject.Singleton;
  * *Coordinate Reference Systems* implements all requirements of conformance class *Coordinate Reference
  * System by Reference* of [OGC API - Features - Part 2: Coordinate Reference System by Reference
  * 1.0.0-draft.1](http://docs.opengeospatial.org/DRAFTS/18-058.html).
- * @de Das Modul "CRS" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider
+ * @lang_de Das Modul "CRS" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider
  * aktiviert werden. Es ergänzt die Unterstützung für weitere Koordinatenreferenzsysteme neben dem
  * Standard-Koordinatenreferenzsystem [CRS84](http://www.opengis.net/def/crs/OGC/1.3/CRS84) (WGS 84).
  *

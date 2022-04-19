@@ -19,14 +19,14 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title Features GeoJSON (GEO_JSON)
- * @en The module *Features GeoJSON* may be enabled for every API with a feature provider.
+ * # Features GeoJSON (GEO_JSON)
+ * @lang_en The module *Features GeoJSON* may be enabled for every API with a feature provider.
  * It provides the resources *Features* and *Feature* encoded as GeoJSON.
  *
  * *Features GeoJSON* implements all requirements of conformance class *GeoJSON* from
  * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson)
  * for the two mentioned resources.
- * @de Das Modul "Features GeoJSON" kann für jede über ldproxy bereitgestellte API mit einem
+ * @lang_de Das Modul "Features GeoJSON" kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen Features
  * und Feature in GeoJSON.
  *

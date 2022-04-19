@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * @en See the [TileServer tile provider in the Tiles module](tiles.md#tile-provider-tileserver) for a sample configuration.
- * @de Siehe den [TileServer-Tile-Provider im Modul "Tiles"](tiles.md#tile-provider-tileserver) für eine Beispielkonfiguration.
+ * @lang_en See the [TileServer tile provider in the Tiles module](tiles.md#tile-provider-tileserver) for a sample configuration.
+ * @lang_de Siehe den [TileServer-Tile-Provider im Modul "Tiles"](tiles.md#tile-provider-tileserver) für eine Beispielkonfiguration.
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -31,9 +31,9 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
     }
 
     /**
-     * @en Specifies the data source for the tiles, currently only
+     * @lang_en Specifies the data source for the tiles, currently only
      * [TileServer-Tile-Provider](tiles.md#tile-provider-tileserver) is supported.
-     * @de Spezifiziert die Datenquelle für die Kacheln, unterstützt werden derzeit nur
+     * @lang_de Spezifiziert die Datenquelle für die Kacheln, unterstützt werden derzeit nur
      * [TileServer-Tile-Provider](tiles.md#tile-provider-tileserver).
      * @default `null`
      */
