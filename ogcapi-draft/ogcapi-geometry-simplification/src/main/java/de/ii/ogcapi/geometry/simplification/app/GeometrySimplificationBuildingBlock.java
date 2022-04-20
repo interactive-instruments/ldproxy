@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 
 /**
  * # Geometry Simplification (GEOMETRY_SIMPLIFICATION)
- * @lang_en The module *Geometry Simplification* may be enabled for every API with a feature provider.
+ * @langEn The module *Geometry Simplification* may be enabled for every API with a feature provider.
  * It adds the following query parameters:
  *
  * * `maxAllowableOffset` (for resources *Features* and *Feature*): if set all geometries are
@@ -31,7 +31,7 @@ import javax.inject.Singleton;
  * (`CRS84` or the value of parameter `crs`).
  *
  * This module has no configuration options.
- * @lang_de Das Modul "Geometry Simplification" kann für jede über ldproxy bereitgestellte API mit
+ * @langDe Das Modul "Geometry Simplification" kann für jede über ldproxy bereitgestellte API mit
  * einem Feature-Provider aktiviert werden. Es ergänzt den Query-Parameter `maxAllowableOffset`
  * für die Ressourcen "Features" und "Feature". Ist der Parameter angegeben, werden alle
  * Geometrien mit dem

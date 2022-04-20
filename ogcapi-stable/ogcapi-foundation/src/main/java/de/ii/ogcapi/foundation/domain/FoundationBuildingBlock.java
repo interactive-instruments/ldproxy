@@ -12,9 +12,9 @@ import javax.inject.Singleton;
 
 /**
  * # Foundation (FOUNDATION)
- * @lang_en Adds an API catalog with all published APIs. Provides base functionality for all
+ * @langEn Adds an API catalog with all published APIs. Provides base functionality for all
  * other modules and therefore cannot be disabled.
- * @lang_de Das Modul "ldproxy Foundation" ist für jede über ldproxy bereitgestellte API aktiv.
+ * @langDe Das Modul "ldproxy Foundation" ist für jede über ldproxy bereitgestellte API aktiv.
  * Es stellt im Wesentliche interne Funktionalitäten für die übrigen API-Module bereit.
  *
  * Zusätzlich wird auch die ldproxy-spezifische Ressource "API Catalog" als Liste der

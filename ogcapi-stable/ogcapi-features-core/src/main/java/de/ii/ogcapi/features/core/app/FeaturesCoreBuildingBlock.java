@@ -46,13 +46,13 @@ import org.threeten.extra.Interval;
 
 /**
  * # Modul Features Core
- * @lang_en The module *Features Core* has to be enabled for every API with a feature provider.
+ * @langEn The module *Features Core* has to be enabled for every API with a feature provider.
  * It provides the resources *Features* and *Feature*.
  *
  * *Features Core* implements all requirements of conformance class *Core* of
  * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
  * for the two mentioned resources.
- * @lang_de Das Modul "Features Core" ist für jede über ldproxy bereitgestellte API mit einem Feature-Provider zu aktivieren. Es stellt die Ressourcen "Features" und "Feature" bereit.
+ * @langDe Das Modul "Features Core" ist für jede über ldproxy bereitgestellte API mit einem Feature-Provider zu aktivieren. Es stellt die Ressourcen "Features" und "Feature" bereit.
  *
  * "Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von
  * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)

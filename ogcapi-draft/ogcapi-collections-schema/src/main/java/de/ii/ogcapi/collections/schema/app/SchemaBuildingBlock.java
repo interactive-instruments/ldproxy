@@ -15,13 +15,13 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
  * # Collections Schema (SCHEMA)
- * @lang_en The module *Collections Schema* may be enabled for every API with a feature provider.
+ * @langEn The module *Collections Schema* may be enabled for every API with a feature provider.
  * It provides a sub-resource *Schema* for the resource *Feature Collection* that publishes
  * the JSON Schema (Draft 07) of the features. The schema is automatically derived from the
  * type definitions in the feature provider.
  *
  * This module has no configuration options.
- * @lang_de Das Modul "Collections Schema" kann für jede über ldproxy bereitgestellte API mit einem
+ * @langDe Das Modul "Collections Schema" kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider aktiviert werden. Es ergänzt Ressourcen als Sub-Ressource zu jeder Feature
  * Collection, die das Schema der GeoJSON Features veröffentlicht. Das Schema wird aus den
  * Schemainformationen im Feature-Provider abgeleitet. Aktuell wird JSON Schema 2019-09 für die

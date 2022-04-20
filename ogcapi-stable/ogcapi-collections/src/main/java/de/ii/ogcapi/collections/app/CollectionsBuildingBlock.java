@@ -16,14 +16,14 @@ import javax.inject.Singleton;
 
 /**
  * # Feature Collections (COLLECTIONS)
- * @lang_en The module *Feature Collections* has to be enabled for every API with a feature provider.
+ * @langEn The module *Feature Collections* has to be enabled for every API with a feature provider.
  * It provides the resources *Feature Collections* and *Feature Collection*. Currently feature collections
  * are the only supported type of collection.
  *
  * *Feature Collections* implements all requirements of conformance class *Core* of [OGC API
  * - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for the two
  * mentioned resources.
- * @lang_de Das Modul "Feature Collections" ist für jede über ldproxy bereitgestellte API mit einem
+ * @langDe Das Modul "Feature Collections" ist für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider zu aktivieren. Es stellt die Ressourcen "Collections" und "Collection" bereit.
  * Derzeit sind Feature Collections die einzige unterstütze Art von Collections.
  *

@@ -23,9 +23,9 @@ import java.util.Optional;
 
 /**
  * # Collection
- * @lang_en Every collection corresponds to a feature type defined in the feature provider
+ * @langEn Every collection corresponds to a feature type defined in the feature provider
  * (only *Feature Collections* are currently supported).
- * @lang_de Jedes Collection-Objekt beschreibt eine Objektart aus einem Feature Provider
+ * @langDe Jedes Collection-Objekt beschreibt eine Objektart aus einem Feature Provider
  * (derzeit werden nur Feature Collections von ldproxy unterstützt). Es setzt sich aus den
  * folgenden Eigenschaften zusammen:
  */
@@ -56,12 +56,12 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
 
 
     /**
-     * @lang_en The *Feature* resource defines a unique URI for every feature, but this URI is
+     * @langEn The *Feature* resource defines a unique URI for every feature, but this URI is
      * only stable as long as the API URI stays the same. For use cases where external
      * persistent feature URIs, which redirect to the current API URI, are used, this option
      * allows to use such URIs as canonical URI of every feature. To enable this option,
      * provide an URI template where `{{value}}` is replaced with the feature id.
-     * @lang_de Über die Feature-Ressource hat jedes Feature zwar eine feste URI, die für Links
+     * @langDe Über die Feature-Ressource hat jedes Feature zwar eine feste URI, die für Links
      * verwendet werden kann, allerdings ist die URI nur so lange stabil, wie die API stabil bleibt.
      * Um von Veränderungen in der URI unabhängig zu sein, kann es sinnvoll oder gewünscht sein,
      * API-unabhängige URIs für die Features zu definieren und von diesen URIs auf die jeweils
@@ -76,8 +76,8 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
     Optional<CollectionExtent> getExtent();
 
     /**
-     * @lang_en Array of additional link objects, required keys are `href` (the URI), `label` and `rel` (the relation).
-     * @lang_de Erlaubt es, zusätzliche Links bei jeder Objektart zu ergänzen. Der Wert ist ein Array von
+     * @langEn Array of additional link objects, required keys are `href` (the URI), `label` and `rel` (the relation).
+     * @langDe Erlaubt es, zusätzliche Links bei jeder Objektart zu ergänzen. Der Wert ist ein Array von
      * Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende Text
      * (`label`) und die Link-Relation (`rel`).
      * @default `[]

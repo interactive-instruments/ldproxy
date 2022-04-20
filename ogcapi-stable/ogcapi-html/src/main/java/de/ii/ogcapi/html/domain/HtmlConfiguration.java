@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * @lang_en Example of the specifications in the configuration file
+ * @langEn Example of the specifications in the configuration file
  * (from the API for [Topographic data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
- * @lang_de Beispiel für die Angaben in der Konfigurationsdatei
+ * @langDe Beispiel für die Angaben in der Konfigurationsdatei
  * (aus der API für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
  * @example <code>
  * ```yaml
@@ -36,9 +36,9 @@ import java.util.Optional;
  */
 
 /**
- * @lang_en Example of the specifications in the configuration file
+ * @langEn Example of the specifications in the configuration file
  * (from the API for Vineyards in Rhineland-Palatinate](https://demo.ldproxy.net/vineyards)):
- * @lang_de Beispiel für die Angaben in der Konfigurationsdatei (aus der API für
+ * @langDe Beispiel für die Angaben in der Konfigurationsdatei (aus der API für
  * [Weinlagen in Rheinland-Pfalz](https://demo.ldproxy.net/vineyards)):
  * @example <code>
  * ```yaml
@@ -68,8 +68,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     }
 
     /**
-     * @lang_en Set `noIndex` for all sites to prevent search engines from indexing.
-     * @lang_de Steuert, ob in allen Seiten "noIndex" gesetzt wird und Suchmaschinen angezeigt
+     * @langEn Set `noIndex` for all sites to prevent search engines from indexing.
+     * @langDe Steuert, ob in allen Seiten "noIndex" gesetzt wird und Suchmaschinen angezeigt
      * wird, dass sie die Seiten nicht indizieren sollen.
      * @default `true`
      */
@@ -77,9 +77,9 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     Boolean getNoIndexEnabled();
 
     /**
-     * @lang_en Enable [schema.org](https://schema.org) annotations for all sites,
+     * @langEn Enable [schema.org](https://schema.org) annotations for all sites,
      * which are used e.g. by search engines. The annotations are embedded as JSON-LD.
-     * @lang_de Steuert, ob in die HTML-Ausgabe schema.org-Annotationen, z.B. für Suchmaschinen,
+     * @langDe Steuert, ob in die HTML-Ausgabe schema.org-Annotationen, z.B. für Suchmaschinen,
      * eingebettet sein sollen, sofern. Die Annotationen werden im Format JSON-LD eingebettet.
      * @default `true`
      */
@@ -88,8 +88,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     Boolean getSchemaOrgEnabled();
 
     /**
-     * @lang_en Show collection descriptions in *Feature Collections* resource for HTML.
-     * @lang_de Steuert, ob in der HTML-Ausgabe der Feature-Collections-Ressource für jede Collection
+     * @langEn Show collection descriptions in *Feature Collections* resource for HTML.
+     * @langDe Steuert, ob in der HTML-Ausgabe der Feature-Collections-Ressource für jede Collection
      * die Beschreibung ausgegeben werden soll.
      * @default `false`
      */
@@ -100,8 +100,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     Boolean getSendEtags();
 
     /**
-     * @lang_en Label for optional legal notice link on every site.
-     * @lang_de Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einem Impressum
+     * @langEn Label for optional legal notice link on every site.
+     * @langDe Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einem Impressum
      * angezeigt werden. Diese Eigenschaft spezfiziert den anzuzeigenden Text.
      * @default "Legal notice"
      */
@@ -109,8 +109,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getLegalName();
 
     /**
-     * @lang_en URL for optional legal notice link on every site.
-     * @lang_de Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einem Impressum
+     * @langEn URL for optional legal notice link on every site.
+     * @langDe Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einem Impressum
      * angezeigt werden. Diese Eigenschaft spezfiziert die URL des Links.
      * @default ""
      */
@@ -118,8 +118,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getLegalUrl();
 
     /**
-     * @lang_en Label for optional privacy notice link on every site.
-     * @lang_de Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einer Datenschutzerklärung
+     * @langEn Label for optional privacy notice link on every site.
+     * @langDe Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einer Datenschutzerklärung
      * angezeigt werden. Diese Eigenschaft spezfiziert den anzuzeigenden Text.
      * @default "Privacy notice"
      */
@@ -127,8 +127,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getPrivacyName();
 
     /**
-     * @lang_en URL for optional privacy notice link on every site.
-     * @lang_de Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einer Datenschutzerklärung
+     * @langEn URL for optional privacy notice link on every site.
+     * @langDe Auf jeder HTML-Seite kann ein ggf. rechtlich erforderlicher Link zu einer Datenschutzerklärung
      * angezeigt werden. Diese Eigenschaft spezfiziert die URL des Links.
      * @default ""
      */
@@ -136,12 +136,12 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getPrivacyUrl();
 
     /**
-     * @lang_en A default style in the style repository that is used in maps in the HTML
+     * @langEn A default style in the style repository that is used in maps in the HTML
      * representation of the features and tiles resources. If `NONE`, a simple wireframe
      * style will be used with OpenStreetMap as a basemap. If the value is not `NONE`,
      * the API landing page (or the collection page) will also contain a link to a web map
      * with the style for the dataset (or the collection).
-     * @lang_de Ein Style im Style-Repository, der standardmäßig in Karten mit Feature- und
+     * @langDe Ein Style im Style-Repository, der standardmäßig in Karten mit Feature- und
      * Tile-Ressourcen verwendet werden soll. Bei `NONE` wird ein einfacher Style mit
      * OpenStreetMap als Basiskarte verwendet. Wenn der Wert nicht `NONE` ist, enthält
      * die "Landing Page" bzw. die "Feature Collection" auch einen Link zu einer Webkarte
@@ -153,24 +153,24 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getDefaultStyle();
 
     /**
-     * @lang_en URL template for background map tiles.
-     * @lang_de Das URL-Template für die Kacheln einer Hintergrundkarte.
+     * @langEn URL template for background map tiles.
+     * @langDe Das URL-Template für die Kacheln einer Hintergrundkarte.
      * @default "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
      */
     @Nullable
     String getBasemapUrl();
 
     /**
-     * @lang_en Source attribution for background map.
-     * @lang_de Die Quellenangabe für die Hintergrundkarte.
+     * @langEn Source attribution for background map.
+     * @langDe Die Quellenangabe für die Hintergrundkarte.
      * @default "&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors"
      */
     @Nullable
     String getBasemapAttribution();
 
     /**
-     * @lang_en *Deprecated* See `mapBackgroundUrl`.
-     * @lang_de *Deprecated* Siehe `basemapUrl`.
+     * @langEn *Deprecated* See `mapBackgroundUrl`.
+     * @langDe *Deprecated* Siehe `basemapUrl`.
      * @default "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
      */
     @Deprecated(since = "3.1.0")
@@ -178,8 +178,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getLeafletUrl();
 
     /**
-     * @lang_en *Deprecated* See `mapAttribution`.
-     * @lang_de *Deprecated* Siehe `basemapAttribution`.
+     * @langEn *Deprecated* See `mapAttribution`.
+     * @langDe *Deprecated* Siehe `basemapAttribution`.
      * @default "&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors"
      */
     @Deprecated(since = "3.1.0")
@@ -187,8 +187,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getLeafletAttribution();
 
     /**
-     * @lang_en *Deprecated* See `mapBackgroundUrl`.
-     * @lang_de *Deprecated* Siehe `basemapUrl`.
+     * @langEn *Deprecated* See `mapBackgroundUrl`.
+     * @langDe *Deprecated* Siehe `basemapUrl`.
      * @default "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png"
      */
     @Deprecated(since = "3.1.0")
@@ -196,8 +196,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getOpenLayersUrl();
 
     /**
-     * @lang_en *Deprecated* See `mapAttribution`
-     * @lang_de *Deprecated* Siehe `basemapAttribution`.
+     * @langEn *Deprecated* See `mapAttribution`
+     * @langDe *Deprecated* Siehe `basemapAttribution`.
      * @default "&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors"
      */
     @Deprecated(since = "3.1.0")
@@ -205,8 +205,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     String getOpenLayersAttribution();
 
     /**
-     * @lang_en Additional text shown in footer of every site.
-     * @lang_de Zusätzlicher Text, der auf jeder HTML-Seite im Footer angezeigt wird.
+     * @langEn Additional text shown in footer of every site.
+     * @langDe Zusätzlicher Text, der auf jeder HTML-Seite im Footer angezeigt wird.
      * @default ""
      */
     @Nullable

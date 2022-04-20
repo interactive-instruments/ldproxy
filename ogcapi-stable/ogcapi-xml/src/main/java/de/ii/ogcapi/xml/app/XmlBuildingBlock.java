@@ -20,12 +20,12 @@ import javax.inject.Singleton;
 
 /**
  * # XML (XML)
- * @lang_en The module *XML* may be enabled for every API with a feature provider.
+ * @langEn The module *XML* may be enabled for every API with a feature provider.
  * It is disabled by default. It provides the resources *Landing Page*, *Conformance Declaration*,
  * *Feature Collections* and *Feature Collection* as XML.
  *
  * This module has no configuration options.
- * @lang_de Das Modul "XML" kann für jede über ldproxy bereitgestellte API aktiviert werden. Es ist
+ * @langDe Das Modul "XML" kann für jede über ldproxy bereitgestellte API aktiviert werden. Es ist
  * standardmäßig deaktiviert. Soweit für eine Ressource keine speziellen Regelungen für die
  * Ausgabeformate bestehen (wie zum Beispiel für [Features](gml.md)) und die Ressource XML
  * unterstützt, können Clients das Ausgabeformat anfordern. Allerdings unterstützen nur die

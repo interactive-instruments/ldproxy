@@ -32,8 +32,8 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @lang_en Example of specifications in the configuration file for the entire API (or in defaults):
- * @lang_de Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (oder in den Defaults):
+ * @langEn Example of specifications in the configuration file for the entire API (or in defaults):
+ * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (oder in den Defaults):
  * @example <code>
  *
  * ```yaml
@@ -46,8 +46,8 @@ import org.immutables.value.Value;
  */
 
 /**
- * @lang_en Example of the specifications in the configuration file for a feature collection:
- * @lang_de Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
+ * @langEn Example of the specifications in the configuration file for a feature collection:
+ * @langDe Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
  * @example <code>
  * ```yaml
  * - buildingBlock: FEATURES_CORE
@@ -95,18 +95,18 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     String DATETIME_INTERVAL_SEPARATOR = "/";
 
     /**
-     * @lang_en Id of the feature provider to use.
+     * @langEn Id of the feature provider to use.
      * Normally the feature provider and API ids are the same.
-     * @lang_de Identifiziert den verwendeten Feature-Provider.
+     * @langDe Identifiziert den verwendeten Feature-Provider.
      * Standardmäßig besitzt der Feature-Provider dieselbe ID wie die API.
      * @default API-ID
      */
     Optional<String> getFeatureProvider();
 
     /**
-     * @lang_en Id of the feature type to use as defined in the given feature provider.
+     * @langEn Id of the feature type to use as defined in the given feature provider.
      * Normally the feature type and collection ids are the same.
-     * @lang_de Identifiziert die verwendete Objektart im Feature-Provider.
+     * @langDe Identifiziert die verwendete Objektart im Feature-Provider.
      * Standardmäßig besitzt die Objektart dieselbe ID wie die Collection
      * Diese Option ist nur im Kontext einer Feature Collection relevant.
      * @default Collection id
@@ -120,9 +120,9 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     }
 
     /**
-     * @lang_en Default coordinate reference system, either `CRS84` for datasets with 2D geometries or
+     * @langEn Default coordinate reference system, either `CRS84` for datasets with 2D geometries or
      * `CRS84h` for datasets with 3D geometries.
-     * @lang_de Setzt das Standard-Koordinatenreferenzsystem, entweder 'CRS84' für einen
+     * @langDe Setzt das Standard-Koordinatenreferenzsystem, entweder 'CRS84' für einen
      * Datensatz mit 2D-Geometrien oder 'CRS84h' für einen Datensatz mit 3D-Geometrien.
      * @default `CRS84h`
      */
@@ -130,35 +130,35 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     DefaultCrs getDefaultCrs();
 
     /**
-     * @lang_en Minimum value for parameter `limit`.
-     * @lang_de Setzt den Minimalwert für den Parameter `limit`.
+     * @langEn Minimum value for parameter `limit`.
+     * @langDe Setzt den Minimalwert für den Parameter `limit`.
      * @default 1
      */
     @Nullable
     Integer getMinimumPageSize();
 
     /**
-     * @lang_en Default value for parameter `limit`.
-     * @lang_de Setzt den Defaultwert für den Parameter `limit`.
+     * @langEn Default value for parameter `limit`.
+     * @langDe Setzt den Defaultwert für den Parameter `limit`.
      * @default 10
      */
     @Nullable
     Integer getDefaultPageSize();
 
     /**
-     * @lang_en Maximum value for parameter `limit`.
-     * @lang_de Setzt den Maximalwert für den Parameter `limit`.
+     * @langEn Maximum value for parameter `limit`.
+     * @langDe Setzt den Maximalwert für den Parameter `limit`.
      * @default 10000
      */
     @Nullable
     Integer getMaximumPageSize();
 
     /**
-     * @lang_en Controls which links should be specified for each feature in the Features resource,
+     * @langEn Controls which links should be specified for each feature in the Features resource,
      * if these exist. The values are the link relation types to be included. By default,
      * links such as `self` or `alternate` are omitted from features in a FeatureCollection,
      * this option can be used to add them if needed.
-     * @lang_de Steuert, welche Links bei jedem Feature in der Ressource "Features" angegeben werden sollen,
+     * @langDe Steuert, welche Links bei jedem Feature in der Ressource "Features" angegeben werden sollen,
      * sofern vorhanden. Die Werte sind die Link-Relation-Types, die berücksichtigt werden sollen.
      * Standardmäßig werden Links wie `self` oder `alternate` bei den Features in einer FeatureCollection
      * weggelassen, mit dieser Option können Sie bei Bedarf ergänzt werden.
@@ -167,8 +167,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     Set<String> getEmbeddedFeatureLinkRels();
 
     /**
-     * @lang_en Always add `self` link to features, even in the *Features* resource.
-     * @lang_de Steuert, ob in Features immer, auch in der Features-Ressourcen, ein `self`-Link enthalten ist.
+     * @langEn Always add `self` link to features, even in the *Features* resource.
+     * @langDe Steuert, ob in Features immer, auch in der Features-Ressourcen, ein `self`-Link enthalten ist.
      * @default `false`
      */
     @Deprecated
@@ -184,7 +184,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     Optional<ItemType> getItemType();
 
     /**
-     * @lang_en Feature properties that can be used in queries to select the returned features, split into `spatial`, `temporal`
+     * @langEn Feature properties that can be used in queries to select the returned features, split into `spatial`, `temporal`
      * and `other`. Properties in `spatial` have to be of type `GEOMETRY` in the provider, properties in `temporal` of type `DATETIME`.
      * Properties are listed in an array by name. Queryables can be used in filter expressions ([Filter - CQL](filter.md))
      * or as filter parameters according to [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0).
@@ -193,7 +193,7 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
      * temporal properties, which are interpreted as start and end of an interval. If only one temporal property is given,
      * it is interpreted as instant. Other properties are added as [additional parameters](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties)
      * for the collection ("*" can be used as wildcard). Using the described parameters allows selection of features without additional modules.
-     * @lang_de Steuert, welche der Attribute in Queries für die Filterung von Daten verwendet werden können. Unterschieden werden
+     * @langDe Steuert, welche der Attribute in Queries für die Filterung von Daten verwendet werden können. Unterschieden werden
      * räumliche (`spatial`), zeitliche (`temporal`) und "normale" (`q`, `other`) Attribute. Die Attribute unter `spatial`
      * müssen im Provider-Schema vom Typ `GEOMETRY`, die Attribute unter `temporal` vom Typ `DATETIME` oder `DATE` sein.
      * Die suchbaren Attribute werden jeweils über ihren Namen in einem Array aufgelistet. Die Queryables können in Filter-Ausdrücken
@@ -211,10 +211,10 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     Optional<FeaturesCollectionQueryables> getQueryables();
 
     /**
-     * @lang_en Controls whether coordinates are limited to a certain number of places depending on the coordinate reference
+     * @langEn Controls whether coordinates are limited to a certain number of places depending on the coordinate reference
      * system used. The unit of measurement and the corresponding number of decimal places must be specified. Example:
      * `{ "metre" : 2, "degree" : 7 }`. Valid units of measurement are "metre" and "degree".
-     * @lang_de Steuert, ob Koordinaten in Abhängig des verwendeten Koordinatenreferenzsystems auf eine bestimmte Anzahl von
+     * @langDe Steuert, ob Koordinaten in Abhängig des verwendeten Koordinatenreferenzsystems auf eine bestimmte Anzahl von
      * Stellen begrenzt werden. Anzugeben ist die Maßeinheit und die zugehörige Anzahl der Nachkommastellen. Beispiel:
      * `{ "metre" : 2, "degree" : 7 }`. Gültige Maßeinheiten sind "metre" (bzw. "meter") und "degree".
      * @default `{}`
@@ -222,8 +222,8 @@ public interface FeaturesCoreConfiguration extends ExtensionConfiguration, Prope
     Map<String, Integer> getCoordinatePrecision();
 
     /**
-     * @lang_en Optional transformations for feature properties for all media types, see [transformations](general-rules.md#transformations).
-     * @lang_de Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in allen Datenformaten
+     * @langEn Optional transformations for feature properties for all media types, see [transformations](general-rules.md#transformations).
+     * @langDe Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in allen Datenformaten
      * [transformiert](general-rules.md#transformations) werden.
      * @default `{}`
      */

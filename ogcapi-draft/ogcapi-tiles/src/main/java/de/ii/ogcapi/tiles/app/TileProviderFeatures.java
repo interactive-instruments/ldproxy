@@ -46,9 +46,9 @@ import org.immutables.value.Value;
 
 /**
  * # Tile-Provider FEATURES
- * @lang_en In this tile provider, the tiles in Mapbox Vector Tiles format are derived from the features
+ * @langEn In this tile provider, the tiles in Mapbox Vector Tiles format are derived from the features
  * provided by the API in the area of the tile.
- * @lang_de Bei diesem Tile-Provider werden die Kacheln im Format Mapbox Vector Tiles aus den von der API
+ * @langDe Bei diesem Tile-Provider werden die Kacheln im Format Mapbox Vector Tiles aus den von der API
  * bereitgestellten Features im Gebiet der Kachel abgeleitet.
  */
 @Value.Immutable
@@ -57,16 +57,16 @@ import org.immutables.value.Value;
 public abstract class TileProviderFeatures extends TileProvider {
 
     /**
-     * @lang_en Fixed value, identifies the tile provider type.
-     * @lang_de Fester Wert, identifiziert die Tile-Provider-Art.
+     * @langEn Fixed value, identifies the tile provider type.
+     * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
      * @default `FEATURES`
      */
     public final String getType() { return "FEATURES"; }
 
     /**
-     * @lang_en Controls which formats should be supported for the tiles.
+     * @langEn Controls which formats should be supported for the tiles.
      * Currently only Mapbox Vector Tiles ("MVT") is available.
-     * @lang_de Steuert, welche Formate für die Kacheln unterstützt werden
+     * @langDe Steuert, welche Formate für die Kacheln unterstützt werden
      * sollen. Zur Verfügung steht derzeit nur Mapbox Vector Tiles ("MVT").
      * @default `[ "MVT" ]`
      */
@@ -74,51 +74,51 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract List<String> getTileEncodings();
 
     /**
-     * @lang_en Controls the zoom levels available for each active tiling scheme
+     * @langEn Controls the zoom levels available for each active tiling scheme
      * as well as which zoom level to use as default.
-     * @lang_de Steuert die Zoomstufen, die für jedes aktive Kachelschema verfügbar
+     * @langDe Steuert die Zoomstufen, die für jedes aktive Kachelschema verfügbar
      * sind sowie welche Zoomstufe als Default bei verwendet werden soll.
      * @default `{ "WebMercatorQuad" : { "min": 0, "max": 23 } }`
      */
     public abstract Map<String, MinMax> getZoomLevels();
 
     /**
-     * @lang_en Zoom levels for which tiles are cached.
-     * @lang_de Steuert die Zoomstufen, in denen erzeugte Kacheln gecacht werden.
+     * @langEn Zoom levels for which tiles are cached.
+     * @langDe Steuert die Zoomstufen, in denen erzeugte Kacheln gecacht werden.
      * @default `{}`
      */
     public abstract Map<String, MinMax> getZoomLevelsCache();
 
     /**
-     * @lang_en Controls how and when tiles are precomputed, see [Seeding options](#seeding-options).
-     * @lang_de Steuert wie und wann Kacheln vorberechnet werden, siehe [Optionen für das Seeding](#seeding-options).
+     * @langEn Controls how and when tiles are precomputed, see [Seeding options](#seeding-options).
+     * @langDe Steuert wie und wann Kacheln vorberechnet werden, siehe [Optionen für das Seeding](#seeding-options).
      * @default
      */
     public abstract Optional<SeedingOptions> getSeedingOptions();
 
     /**
-     * @lang_en Zoom levels per enabled tile encoding for which the tile cache should be seeded on startup.
-     * @lang_de Steuert die Zoomstufen, die für jedes aktive Kachelschema beim Start vorberechnet werden.
+     * @langEn Zoom levels per enabled tile encoding for which the tile cache should be seeded on startup.
+     * @langDe Steuert die Zoomstufen, die für jedes aktive Kachelschema beim Start vorberechnet werden.
      * @default `{}`
      */
     public abstract Map<String, MinMax> getSeeding();
 
     /**
-     * @lang_en Filters to select a subset of feature for certain zoom levels using a CQL filter expression,
+     * @langEn Filters to select a subset of feature for certain zoom levels using a CQL filter expression,
      * see example below.
-     * @lang_de Über Filter kann gesteuert werden, welche Features auf welchen Zoomstufen selektiert werden sollen.
+     * @langDe Über Filter kann gesteuert werden, welche Features auf welchen Zoomstufen selektiert werden sollen.
      * Dazu dient ein CQL-Filterausdruck, der in `filter` angegeben wird. Siehe das Beispiel unten.
      * @default `{}`
      */
     public abstract Map<String, List<PredefinedFilter>> getFilters();
 
     /**
-     * @lang_en Rules to postprocess the selected features for a certain zoom level. Supported operations
+     * @langEn Rules to postprocess the selected features for a certain zoom level. Supported operations
      * are: selecting a subset of feature properties (`properties`), spatial merging of features that
      * intersect (`merge`), with the option to restrict the operations to features with matching
      * attributes (`groupBy`). See the example below. For `merge`, the resulting object will only
      * obtain properties that are identical for all merged features.
-     * @lang_de Über Regeln können die selektierten Features in Abhängigkeit der Zoomstufe nachbearbeitet
+     * @langDe Über Regeln können die selektierten Features in Abhängigkeit der Zoomstufe nachbearbeitet
      * werden. Unterstützt wird eine Reduzierung der Attribute (`properties`), das geometrische
      * Verschmelzen von Features, die sich geometrisch schneiden (`merge`), ggf. eingeschränkt auf
      * Features mit bestimmten identischen Attributen (`groupBy`). Siehe das Beispiel unten. Beim
@@ -129,24 +129,24 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract Map<String, List<Rule>> getRules();
 
     /**
-     * @lang_en Longitude and latitude that a map with the tiles should be centered on by default.
-     * @lang_de Legt Länge und Breite fest, auf die standardmäßig eine Karte mit den Kacheln zentriert werden sollte.
+     * @langEn Longitude and latitude that a map with the tiles should be centered on by default.
+     * @langDe Legt Länge und Breite fest, auf die standardmäßig eine Karte mit den Kacheln zentriert werden sollte.
      * @default `[ 0, 0 ]`
      */
     public abstract List<Double> getCenter();
 
     /**
-     * @lang_en Maximum number of features contained in a single tile per query.
-     * @lang_de Steuert die maximale Anzahl der Features, die pro Query für eine Kachel berücksichtigt werden.
+     * @langEn Maximum number of features contained in a single tile per query.
+     * @langDe Steuert die maximale Anzahl der Features, die pro Query für eine Kachel berücksichtigt werden.
      * @default 100000
      */
     @Nullable
     public abstract Integer getLimit();
 
     /**
-     * @lang_en Enable vector tiles for each *Feature Collection*.
+     * @langEn Enable vector tiles for each *Feature Collection*.
      * Every tile contains a layer with the feature from the collection.
-     * @lang_de Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden sollen.
+     * @langDe Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden sollen.
      * Jede Kachel hat einen Layer mit den Features aus der Collection.
      * @default `true`
      */
@@ -162,9 +162,9 @@ public abstract class TileProviderFeatures extends TileProvider {
     }
 
     /**
-     * @lang_en Enable vector tiles for the whole dataset. Every tile contains one layer per
+     * @langEn Enable vector tiles for the whole dataset. Every tile contains one layer per
      * collection with the features of that collection.
-     * @lang_de Steuert, ob Vector Tiles für den Datensatz aktiviert werden sollen. Jede Kachel hat
+     * @langDe Steuert, ob Vector Tiles für den Datensatz aktiviert werden sollen. Jede Kachel hat
      * einen Layer pro Collection mit den Features aus der Collection.
      * @default `true`
      */
@@ -180,10 +180,10 @@ public abstract class TileProviderFeatures extends TileProvider {
     }
 
     /**
-     * @lang_en Ignore features with invalid geometries. Before ignoring a feature, an attempt is made to
+     * @langEn Ignore features with invalid geometries. Before ignoring a feature, an attempt is made to
      * transform the geometry to a valid geometry. The topology of geometries might be invalid in
      * the data source or in some cases the quantization of coordinates to integers might render it invalid.
-     * @lang_de Steuert, ob Objekte mit ungültigen Objektgeometrien ignoriert werden.
+     * @langDe Steuert, ob Objekte mit ungültigen Objektgeometrien ignoriert werden.
      * Bevor Objekte ignoriert werden, wird zuerst versucht, die Geometrie in eine gültige
      * Geometrie zu transformieren. Nur wenn dies nicht gelingt, wird die Geometrie ignoriert.
      * Die Topologie von Geometrien können entweder schon im Provider ungültig sein oder die
@@ -202,10 +202,10 @@ public abstract class TileProviderFeatures extends TileProvider {
     }
 
     /**
-     * @lang_en *Deprecated, no longer used* Maximum allowed relative change of surface sizes when attempting
+     * @langEn *Deprecated, no longer used* Maximum allowed relative change of surface sizes when attempting
      * to fix an invalid surface geometry. The fixed geometry is only used when the condition is met.
      * The value `0.1` means 10%.
-     * @lang_de *Deprecated, wird nicht mehr benutzt* Steuert die maximal erlaubte relative Änderung der
+     * @langDe *Deprecated, wird nicht mehr benutzt* Steuert die maximal erlaubte relative Änderung der
      * Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im Koordinatensystem
      * der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte Polygongeometrie
      * verwendet. Der Wert 0.1 entspricht 10%.
@@ -215,10 +215,10 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract Optional<Double> getMaxRelativeAreaChangeInPolygonRepair();
 
     /**
-     * @lang_en *Deprecated, no longer used* Maximum allowed absolute change of surface sizes when attempting
+     * @langEn *Deprecated, no longer used* Maximum allowed absolute change of surface sizes when attempting
      * to fix an invalid surface geometry. The fixed geometry is only used when the condition is met.
      * The value `1.0` corresponds to one "pixel" in the used coordinate reference system.
-     * @lang_de *Deprecated, wird nicht mehr benutzt* Steuert die maximal erlaubte absolute Änderung der
+     * @langDe *Deprecated, wird nicht mehr benutzt* Steuert die maximal erlaubte absolute Änderung der
      * Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im Koordinatensystem der
      * Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte Polygongeometrie verwendet.
      * Der Wert 1.0 entspricht einem "Pixel" im Kachelkoordinatensystem.
@@ -228,10 +228,10 @@ public abstract class TileProviderFeatures extends TileProvider {
     public abstract Optional<Double> getMaxAbsoluteAreaChangeInPolygonRepair();
 
     /**
-     * @lang_en Features with line geometries shorter that the given value are excluded from tiles. Features with surface
+     * @langEn Features with line geometries shorter that the given value are excluded from tiles. Features with surface
      * geometries smaller than the square of the given value are excluded from the tiles.
      * The value `0.5` corresponds to half a "pixel" in the used coordinate reference system.
-     * @lang_de Objekte mit Liniengeometrien, die kürzer als der Wert sind, werden nicht in die Kachel aufgenommen.
+     * @langDe Objekte mit Liniengeometrien, die kürzer als der Wert sind, werden nicht in die Kachel aufgenommen.
      * Objekte mit Flächengeometrien, die kleiner als das Quadrat des Werts sind, werden nicht in die Kachel
      * aufgenommen. Der Wert 0.5 entspricht einem halben "Pixel" im Kachelkoordinatensystem.
      * @default 0.5

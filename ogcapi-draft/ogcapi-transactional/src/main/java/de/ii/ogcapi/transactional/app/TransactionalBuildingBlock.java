@@ -19,11 +19,11 @@ import javax.inject.Singleton;
 
 /**
  * # "Create, Replace, Update, Delete" (TRANSACTIONAL)
- * @lang_en The module is based on the specifications of the conformance classes "Create/Replace/Delete"
+ * @langEn The module is based on the specifications of the conformance classes "Create/Replace/Delete"
  * and "Features" from the
  * [Draft OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html).
  * The implementation will change as the draft is further standardized.
- * @lang_de Das Modul basiert auf den Vorgaben der Konformitätsklassen "Create/Replace/Delete" und
+ * @langDe Das Modul basiert auf den Vorgaben der Konformitätsklassen "Create/Replace/Delete" und
  * "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
  * Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
  * weiteren Standardisierung des Entwurfs noch ändern.

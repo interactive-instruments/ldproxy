@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 
 /**
  * # HTTP header for caching
- * @lang_en ldproxy sets the following HTTP headers for HTTP caching in responses - as far as they can
+ * @langEn ldproxy sets the following HTTP headers for HTTP caching in responses - as far as they can
  * be determined for the respective resource:
  *
  * * `Last-Modified`: The timestamp of the last modification is determined - if possible - from the representation
@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
  * In any module that provides resources and does not just implement query parameters or output formats,
  * there is a `caching` configuration option whose value is an object with the following optional entries:
  * Translated with www.DeepL.com/Translator (free version)
- * @lang_de ldproxy setzt in Antworten die folgenden HTTP-Header für HTTP-Caching - soweit diese für die jeweilige
+ * @langDe ldproxy setzt in Antworten die folgenden HTTP-Header für HTTP-Caching - soweit diese für die jeweilige
  * Ressource bestimmt werden können:
  *
  * * `Last-Modified`: Der Zeitstempel der letzten Änderung wird - sofern möglich - aus der zurückzugebenden
@@ -39,8 +39,8 @@ import javax.annotation.Nullable;
 public interface CachingConfiguration {
 
     /**
-     * @lang_en Sets fixed values for [HTTP-Caching-Header](general-rules.md#caching) for the resources.
-     * @lang_de Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
+     * @langEn Sets fixed values for [HTTP-Caching-Header](general-rules.md#caching) for the resources.
+     * @langDe Setzt feste Werte für [HTTP-Caching-Header](general-rules.md#caching) für die Ressourcen.
      * @default `{}`
      */
     @Nullable

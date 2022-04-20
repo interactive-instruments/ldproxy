@@ -23,7 +23,7 @@ import javax.inject.Singleton;
 /**
  * # Styles (STYLES)
  *
- * @lang_en Adds support for publishing and managing styles (*Mapbox Style* or *SLD*) and related
+ * @langEn Adds support for publishing and managing styles (*Mapbox Style* or *SLD*) and related
  * resources (symbols and sprites).
  *
  * ## Scope
@@ -49,7 +49,7 @@ import javax.inject.Singleton;
  * Links might be templates (by setting `templated` to `true`) containing `{serviceUrl}`.
  * * Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`.
  * Links might be templates (by setting `templated` to `true`) containing `{serviceUrl}` and `{collectionId}`.
- * @lang_de Das Modul "Styles" kann für jede über ldproxy bereitgestellte API aktiviert werden.
+ * @langDe Das Modul "Styles" kann für jede über ldproxy bereitgestellte API aktiviert werden.
  * Es ergänzt verschiedene Ressourcen für die Bereitstellung und Verwaltung von Styles.
  * (Mapbox Style, SLD).
  *

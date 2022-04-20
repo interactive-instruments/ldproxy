@@ -25,11 +25,11 @@ import org.immutables.value.Value;
 
 /**
  * # Tile-Provider MBTILES
- * @lang_en With this tile provider, the tiles are provided via an
+ * @langEn With this tile provider, the tiles are provided via an
  * [MBTiles file](https://github.com/mapbox/mbtiles-spec). The tile format and all
  * other properties of the tileset resource are derived from the contents of the
  * MBTiles file. Only the "WebMercatorQuad" tiling scheme is supported.
- * @lang_de Bei diesem Tile-Provider werden die Kacheln über eine
+ * @langDe Bei diesem Tile-Provider werden die Kacheln über eine
  * [MBTiles-Datei](https://github.com/mapbox/mbtiles-spec) bereitgestellt.
  * Das Kachelformat und alle anderen Eigenschaften der Tileset-Ressource ergeben sich
  * aus dem Inhalt der MBTiles-Datei. Unterstützt wird nur das Kachelschema "WebMercatorQuad".
@@ -40,15 +40,15 @@ import org.immutables.value.Value;
 public abstract class TileProviderMbtiles extends TileProvider {
 
     /**
-     * @lang_en Fixed value, identifies the tile provider type.
-     * @lang_de Fester Wert, identifiziert die Tile-Provider-Art.
+     * @langEn Fixed value, identifies the tile provider type.
+     * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
      * @default `MBTILES`
      */
     public final String getType() { return "MBTILES"; }
 
     /**
-     * @lang_en Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.
-     * @lang_de Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
+     * @langEn Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.
+     * @langDe Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
      * @default `null`
      */
     @Nullable

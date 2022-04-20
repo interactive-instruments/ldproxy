@@ -15,13 +15,13 @@ import java.util.Optional;
 
 /**
  * # Response encoding
- * @lang_en For operations that return a response, the encoding is chosen using standard HTTP content negotiation
+ * @langEn For operations that return a response, the encoding is chosen using standard HTTP content negotiation
  * with `Accept` headers.
  *
  * GET operations additionally support the query parameter `f`, which allows to explicitely choose the
  * encoding and override the result of the content negotiation. The supported encodings depend on the affected
  * resource and the configuration.
- * @lang_de Bei Operationen, die eine Antwort zurückliefern, wird das Format nach den Standard-HTTP-Regeln standardmäßig
+ * @langDe Bei Operationen, die eine Antwort zurückliefern, wird das Format nach den Standard-HTTP-Regeln standardmäßig
  * über Content-Negotiation und den `Accept`-Header ermittelt.
  *
  * Alle GET-Operationen unterstützen zusätzlich den Query-Parameter `f`. Über diesen Parameter kann das Ausgabeformat
@@ -32,7 +32,7 @@ import java.util.Optional;
 
 /**
  * # Response language
- * @lang_en For operations that return a response, the language for linguistic texts is chosen using
+ * @langEn For operations that return a response, the language for linguistic texts is chosen using
  * standard HTTP content negiotiation with `Accept-Language` headers.
  *
  * If enabled in [Common Core](common.md), GET operations additionally support the quer parameter
@@ -45,7 +45,7 @@ import java.util.Optional;
  * * Texts contained in the data: Currently not supported.
  * * Texts set in the configuration: Currently not supported.
  * * Error messages: These are always in english, the messages are currently hard-coded.
- * @lang_de Bei Operationen, die eine Antwort zurückliefern, wird die verwendete Sprache bei linguistischen
+ * @langDe Bei Operationen, die eine Antwort zurückliefern, wird die verwendete Sprache bei linguistischen
  * Texten nach den Standard-HTTP-Regeln standardmäßig über Content-Negotiation und den `Accept-Language`-Header ermittelt.
  *
  * Sofern die entsprechende Option im Modul "Common Core" aktiviert ist, unterstützen alle GET-Operationen

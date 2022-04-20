@@ -37,9 +37,9 @@ public interface CommonConfiguration extends ExtensionConfiguration, CachingConf
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
-   * @lang_en Add additional links to the *Landing Page* resource. The value is an array of link objects.
+   * @langEn Add additional links to the *Landing Page* resource. The value is an array of link objects.
    * Required properties of a link are a URI (`href`), a label (`label`) and a relation (`rel`).
-   * @lang_de Erlaubt es, zusätzliche Links in der Landing Page zu ergänzen. Der Wert ist ein Array von
+   * @langDe Erlaubt es, zusätzliche Links in der Landing Page zu ergänzen. Der Wert ist ein Array von
    * Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende Text
    * (`label`) und die Link-Relation (`rel`).
    * @default []

@@ -14,7 +14,7 @@ import de.ii.xtraplatform.docs.DocTemplate;
 
 /**
  * # API modules
- * @lang_en The OGC API functionality is split up into modules based on the OGC API standards.
+ * @langEn The OGC API functionality is split up into modules based on the OGC API standards.
  * The modules are classified according to the state of the implemented specification:
  *
  * - For approved standards or drafts in the final voting stage, related modules are classified as `stable`.
@@ -24,7 +24,7 @@ import de.ii.xtraplatform.docs.DocTemplate;
  * the scope of this documentation.
  *
  * There are some [general rules](general-rules.md) that apply to all modules.
- * @lang_de
+ * @langDe
  * Die API-Funktionalität ist in Module, die sich an den OGC API Standards orientieren, aufgeteilt.
  * Jedes Modul ist ein [OSGi](https://de.wikipedia.org/wiki/OSGi)-Bundle.
  * Module können damit grundsätzlich zur Laufzeit hinzugefügt und wieder entfernt werden.
@@ -42,10 +42,10 @@ import de.ii.xtraplatform.docs.DocTemplate;
  *
  * Grundsätzliche Regeln, die für alle API-Module gelten, finden Sie [hier](general-rules.md).
  *
- * @lang_all ## Option `enabled`
- * @lang_en Every module can be enabled or disabled in the configuration using `enabled`. The default
+ * @langAll ## Option `enabled`
+ * @langEn Every module can be enabled or disabled in the configuration using `enabled`. The default
  * value differs between modules, see the [overview](#api-module-overview)).
- * @lang_de Jedes API-Modul hat eine Konfigurationsoption `enabled`, die steuert, ob das Modul in der
+ * @langDe Jedes API-Modul hat eine Konfigurationsoption `enabled`, die steuert, ob das Modul in der
  * jeweiligen API aktiviert ist. Einige Module sind standardmäßig aktiviert, andere deaktiviert
  * (siehe die nachfolgende [Übersicht](#api-module-overview)).
  */
