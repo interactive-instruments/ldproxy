@@ -1,14 +1,16 @@
 /**
  * Copyright 2022 interactive instruments GmbH
  *
- * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy
- * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a
+ * copy of the MPL was not distributed with this file, You can obtain one at
+ * http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.xtraplatform.docs.DocFile;
 import de.ii.xtraplatform.docs.DocFileTemplate;
+import de.ii.xtraplatform.docs.DocTemplate;
 
 /**
  * # API modules
@@ -48,14 +50,21 @@ import de.ii.xtraplatform.docs.DocFileTemplate;
  * (siehe die nachfolgende [Übersicht](#api-module-overview)).
  */
 @DocFile(path = "configuration/services/building-blocks/README.md")
-@DocFileTemplate(path = "configuration/services/building-blocks", stripSuffix = "BuildingBlock")
+@DocFileTemplate(
+    path = "configuration/services/building-blocks",
+    stripSuffix = "BuildingBlock",
+    template = {
+        @DocTemplate(language = "en", template = "{@body}\n\n## Configuration\n\n{@propertyTable}\n\n### Example\n\n{@example}\n"),
+        @DocTemplate(language = "de", template = "{@body}\n\n## Konfiguration\n\n{@propertyTable}\n\n### Beispiel\n\n{@example}\n")
+    }
+)
 @AutoMultiBind
 public interface ApiBuildingBlock extends ApiExtension {
 
-    @Override
-    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return true;
-    }
+  @Override
+  default boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return true;
+  }
 
-    ExtensionConfiguration getDefaultConfiguration();
+  ExtensionConfiguration getDefaultConfiguration();
 }
