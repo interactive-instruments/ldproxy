@@ -27,6 +27,8 @@ public class OgcApiCollectionsView extends OgcApiView {
     private final List<OgcApiCollection> collections;
     private final boolean showCollectionDescriptions;
     public final boolean hasGeometry;
+    private final I18n i18n;
+    private final Optional<Locale> language;
     public String dataSourceUrl;
     public String keywords;
     public List<String> crs;
@@ -52,6 +54,8 @@ public class OgcApiCollectionsView extends OgcApiView {
                 collections
                         .getDescription()
                         .orElse("") );
+        this.i18n = i18n;
+        this.language = language;
         this.collections = collections.getCollections();
         this.showCollectionDescriptions = showCollectionDescriptions;
         this.crs = collections
@@ -136,6 +140,7 @@ public class OgcApiCollectionsView extends OgcApiView {
                                 .findFirst()
                                 .map(link -> link.getHref() + "/items")
                                 .orElse(""),
+                        "itemType", i18n.get(collection.getItemType().orElse("feature"), language),
                         "itemCount", collection.getItemCount().map(Object::toString).orElse("")))
                 .collect(Collectors.toList());
     }
