@@ -64,8 +64,12 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                   .itemType(featureType.getExtension(FeaturesCoreConfiguration.class)
                                        .filter(ExtensionConfiguration::isEnabled)
                                        .flatMap(FeaturesCoreConfiguration::getItemType)
-                                       .map(itemType -> itemType.toString())
+                                       .map(Enum::toString)
                                        .orElse(FeaturesCoreConfiguration.ItemType.unknown.toString()));
+
+        api.getItemCount(featureType.getId())
+            .filter(count -> count >= 0)
+            .ifPresent(count -> collection.putExtensions("itemCount", count));
 
         URICustomizer uriBuilder = uriCustomizer
                 .copy()
