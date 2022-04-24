@@ -1572,8 +1572,8 @@ class FilterParameterSpecification extends Specification {
         and: "Returns all features"
         assertSameResult(propertyAndLiteral4, allCulturePntFeatures)
 
-        when: "5. Data is selected using a filter t_IntErSectS(ZI001_SDV,DATE('2011-12-27'))"
-        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_IntErSectS(ZI001_SDV, DATE('2011-12-27'))"))
+        when: "5. Data is selected using a filter t_IntErSectS(ZI001_SDV,InterVaL('2011-12-27T00:00:00Z','2011-12-27T23:59:59Z'))"
+        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_IntErSectS(ZI001_SDV,InterVaL('2011-12-27T00:00:00Z','2011-12-27T23:59:59Z'))"))
         def propertyAndLiteral5Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV > '2011-12-27' && f.properties.ZI001_SDV < '2011-12-28' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1647,8 +1647,8 @@ class FilterParameterSpecification extends Specification {
         and: "Returns the same features"
         assertSameResult(propertyAndLiteral11, propertyAndLiteral4)
 
-        when: "12. Data is selected using a filter t_IntErSectS(DATE('2011-12-27'), ZI001_SDV)"
-        def propertyAndLiteral12 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_IntErSectS(DATE('2011-12-27'), ZI001_SDV)"))
+        when: "12. Data is selected using a filter t_IntErSectS(InterVaL('2011-12-27T00:00:00Z','2011-12-27T23:59:59Z'), ZI001_SDV)"
+        def propertyAndLiteral12 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_IntErSectS(InterVaL('2011-12-27T00:00:00Z','2011-12-27T23:59:59Z'), ZI001_SDV)"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral12)
@@ -1765,8 +1765,8 @@ class FilterParameterSpecification extends Specification {
         and: "Returns no features"
         propertyAndLiteral4.responseData.numberReturned == 0
 
-        when: "5. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, DATE('2011-12-27'))"
-        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, DATE('2011-12-27'))"))
+        when: "5. Data is selected using a filter t_DiSjOiNt(ZI001_SDV, InterVaL('2011-12-27T00:00:00Z','2011-12-27T23:59:59Z'))"
+        def propertyAndLiteral5 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(ZI001_SDV, InterVaL('2011-12-27T00:00:00Z','2011-12-27T23:59:59Z'))"))
         def propertyAndLiteral5Check = allCulturePntFeatures.responseData.features.stream().filter( f -> f.properties.ZI001_SDV < '2011-12-27' || f.properties.ZI001_SDV >= '2011-12-28' ).toList()
 
         then: "Success and returns GeoJSON"
@@ -1840,8 +1840,8 @@ class FilterParameterSpecification extends Specification {
         and: "Returns the same features"
         assertSameResult(propertyAndLiteral11, propertyAndLiteral4)
 
-        when: "12. Data is selected using a filter t_DiSjOiNt(DATE('2011-12-27'), ZI001_SDV)"
-        def propertyAndLiteral12 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(DATE('2011-12-27'), ZI001_SDV)"))
+        when: "12. Data is selected using a filter t_DiSjOiNt(InterVaL('2011-12-27T00:00:00Z','2011-12-27T23:59:59Z'), ZI001_SDV)"
+        def propertyAndLiteral12 = getRequest(restClient, CULTURE_PNT_PATH, getQuery("t_DiSjOiNt(InterVaL('2011-12-27T00:00:00Z','2011-12-27T23:59:59Z'), ZI001_SDV)"))
 
         then: "Success and returns GeoJSON"
         assertSuccess(propertyAndLiteral12)
