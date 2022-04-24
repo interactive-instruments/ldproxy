@@ -33,6 +33,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
 
     private final OgcApiCollection collection;
     public String itemType;
+    public final Optional<Long> itemCount;
     public boolean spatialSearch;
     public Map<String, String> temporalExtent;
     public List<String> crs;
@@ -40,8 +41,9 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     public String storageCrs;
     public Metadata metadata;
     public Link items;
-    public String defaultStyle;
+    public final Optional<String> defaultStyle;
     public final String itemTypeTitle;
+    public final String itemCountTitle;
     public final String dataTitle;
     public final String metadataTitle;
     public final String licenseTitle;
@@ -88,12 +90,12 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
                 .getStorageCrs()
                 .orElse(null);
         this.hasGeometry = spatialExtent.isPresent();
-        Optional<String> defaultStyleOrNull = (Optional<String>) collection.getExtensions()
-                                                                           .get("defaultStyle");
-        this.defaultStyle = defaultStyleOrNull==null ? null : defaultStyleOrNull.get();
+        this.defaultStyle = collection.getDefaultStyle();
+        this.itemCount = collection.getItemCount();
         this.spatialSearch = false;
         this.itemType = i18n.get(collection.getItemType().orElse("feature"), language);
         this.itemTypeTitle = i18n.get("itemTypeTitle", language);
+        this.itemCountTitle = i18n.get("itemCountTitle", language);
         this.dataTitle = i18n.get("dataTitle", language);
         this.licenseTitle = i18n.get("licenseTitle", language);
         this.metadataTitle = i18n.get("metadataTitle", language);

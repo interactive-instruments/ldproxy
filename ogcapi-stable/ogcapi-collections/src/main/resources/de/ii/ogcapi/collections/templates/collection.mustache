@@ -38,6 +38,19 @@
 
     <h2>{{collectionInformationTitle}}</h2>
 
+    {{#itemCount}}
+        <div class="row my-3">
+            <div class="col-md-2 font-weight-bold">{{itemCountTitle}}</div>
+            <div class="col-md-10">
+                <ul class="list-unstyled">
+                    <li>
+                        <span id="itemCount">{{.}}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    {{/itemCount}}
+
     {{#bbox}}
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{spatialExtentTitle}}</div>

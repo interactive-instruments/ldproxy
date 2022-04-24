@@ -131,7 +131,7 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
                                       queryInput.getExpires().orElse(null),
                                       null,
                                       true,
-                                      String.format("%s.%s.%s", collectionId, type.name(), outputFormat.getMediaType().fileExtension()))
+                                      String.format("%s.%s.%s", collectionId, type.toString(), outputFormat.getMediaType().fileExtension()))
             .entity(outputFormat.getEntity(schema, type, links, collectionId, api, requestContext))
             .build();
     }
