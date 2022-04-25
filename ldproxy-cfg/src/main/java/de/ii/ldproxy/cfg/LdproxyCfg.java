@@ -56,7 +56,7 @@ public class LdproxyCfg implements Cfg {
     };
     StoreConfiguration storeConfiguration = new StoreConfiguration();
     Jackson jackson = new JacksonProvider(JacksonSubTypes::ids);
-    this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, true).getMapper(FORMAT.YML);
+    this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, false).getMapper(FORMAT.YML);
     EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory, storeConfiguration);
     EventStore eventStore = new EventStoreDefault(storeConfiguration, storeDriver,
         new EventSubscriptionsMock());
