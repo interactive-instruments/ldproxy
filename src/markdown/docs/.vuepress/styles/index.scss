@@ -1,0 +1,18 @@
+
+:root {
+  --c-brand: #007bff;
+  --c-brand-light: #3f9cff;
+}
+
+html.dark {
+  --c-brand: #007bff;
+  --c-brand-light: #3f9cff;
+}
+
+.sidebar-item.collapsible {
+  cursor: pointer;
+}
+
+.toggle-dark-button {
+  display: none !important;
+}
