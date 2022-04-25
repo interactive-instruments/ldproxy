@@ -67,6 +67,7 @@ tasks.shadowJar {
   }
   relocate('org', 'shadow.org') {
     exclude 'org.slf4j.*'
+    exclude 'org.slf4j.event.*'
     exclude 'org.w3c.dom.*'
   }
 }
