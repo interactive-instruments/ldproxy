@@ -1,7 +1,18 @@
 # Changelog
 
+## v3.2.2 (25/04/2022)
+
+#### Fixed bugs
+
+-  ldproxy-cfg uses wrong slf4j import [#648](https://github.com/interactive-instruments/ldproxy/issues/648)
+
+---
+
 ## v3.2.1 (16/03/2022)
-*No changelog for this release.*
+
+#### Fixed bugs
+
+-  unexpected postgresql error "Connection reset" [#622](https://github.com/interactive-instruments/ldproxy/issues/622)
 
 ---
 
