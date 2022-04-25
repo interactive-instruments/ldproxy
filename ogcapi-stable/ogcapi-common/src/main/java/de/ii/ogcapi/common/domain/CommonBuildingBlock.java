@@ -38,10 +38,9 @@ import javax.inject.Singleton;
  * <p>
  * @propertyTable {@link de.ii.ogcapi.common.domain.ImmutableCommonConfiguration}
  * @example {@link de.ii.ogcapi.common.domain.CommonConfiguration}
- * @see CommonConfiguration
- * @see de.ii.ogcapi.common.infra.EndpointLandingPage
- * @see de.ii.ogcapi.common.infra.EndpointConformance
- * @see de.ii.ogcapi.common.infra.EndpointDefinition
+ * @endpointTable {@link de.ii.ogcapi.common.infra.EndpointLandingPage},
+ * {@link de.ii.ogcapi.common.infra.EndpointConformance},
+ * {@link de.ii.ogcapi.common.infra.EndpointDefinition}
  */
 @Singleton
 @AutoBind

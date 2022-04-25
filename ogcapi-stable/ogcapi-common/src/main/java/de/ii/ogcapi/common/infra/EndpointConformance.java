@@ -40,6 +40,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * Conformance Declaration
+ * @path /{apiId}/conformance
+ * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointConformance extends Endpoint {

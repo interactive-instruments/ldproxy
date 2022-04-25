@@ -31,6 +31,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @format HTML
+ */
 @Singleton
 @AutoBind
 public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass {

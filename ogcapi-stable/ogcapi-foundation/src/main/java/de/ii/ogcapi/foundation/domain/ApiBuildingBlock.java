@@ -54,8 +54,8 @@ import de.ii.xtraplatform.docs.DocTemplate;
     path = "configuration/services/building-blocks",
     stripSuffix = "BuildingBlock",
     template = {
-        @DocTemplate(language = "en", template = "{@body}\n\n## Configuration\n\n{@propertyTable}\n\n### Example\n\n{@example}\n"),
-        @DocTemplate(language = "de", template = "{@body}\n\n## Konfiguration\n\n{@propertyTable}\n\n### Beispiel\n\n{@example}\n")
+        @DocTemplate(language = "en", template = "{@body}\n\n## Scope\n\n###  Resources\n\n{@endpointTable}\n\n###  Query Parameters\n\n{@queryParameterTable}\n\n## Configuration\n\n{@propertyTable}\n\n### Example\n\n{@example}\n"),
+        @DocTemplate(language = "de", template = "{@body}\n\n## Umfang\n\n###  Ressourcen\n\n{@endpointTable}\n\n###  Query Parameter\n\n{@queryParameterTable}\n\n## Konfiguration\n\n{@propertyTable}\n\n### Beispiel\n\n{@example}\n")
     }
 )
 @AutoMultiBind

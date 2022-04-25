@@ -45,7 +45,11 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * Landing Page
+ * @path /{apiId}/
+ * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointLandingPage extends Endpoint implements ConformanceClass {
