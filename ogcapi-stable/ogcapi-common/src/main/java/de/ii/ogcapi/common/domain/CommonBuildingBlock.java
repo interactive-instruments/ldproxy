@@ -22,8 +22,10 @@ import javax.inject.Singleton;
  * 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for the three mentioned
  * resources.
  * <p>
- * > **Note**: The conformance class *Core* was split up into multiple modules in anticipation of
+ * ::: tip Info
+ * The conformance class *Core* was split up into multiple modules in anticipation of
  * the upcoming standard *OGC API Common*.
+ * :::
  * <p>
  * @langDe Das Modul *Common Core* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt
  * die Ressourcen *Landing Page*, *Conformance Declaration* und *API Definition* bereit. *Common

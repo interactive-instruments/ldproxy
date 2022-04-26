@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import de.ii.xtraplatform.docs.DocFile;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
@@ -36,14 +38,12 @@ import org.immutables.value.Value;
  * @see Metadata
  * @see ExternalDocumentation
  * @see CollectionExtent
- * @see MODE
- * @see ServiceData
+ * @see de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE
+ * @see de.ii.xtraplatform.services.domain.ServiceData
  * @see FeatureTypeConfigurationOgcApi
- * @see FeatureTypeConfiguration
- */
-
-/**
- * # API modules
+ * @see de.ii.xtraplatform.features.domain.FeatureTypeConfiguration
+ *
+ * ## API modules
  * @langEn Modules might be configured for the API or for single collections. The final configuration is
  * formed by merging the following sources in this order:
  *
@@ -60,23 +60,20 @@ import org.immutables.value.Value;
  * * Diese deploymentweiten Standardwerte können von den Angaben in der API-Definition auf Ebene der API überschrieben werden.
  * * Diese API-weiten Standardwerte können bei den Collection-Ressourcen und untergeordneten Ressourcen von den Angaben in der API-Definition auf Ebene der Collection überschrieben werden.
  * * Diese Werte können durch Angaben im Verzeichnis "overrides" überschrieben werden.
- */
-
-/**
- * # Example
+ *
+ * ## Example
  * @langEn See the
  * [API configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  * of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).
  * @langDe Als Beispiel siehe die
  * [API-Konfiguration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  * der API [Weinlagen in Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
- */
-
-/**
- * # Storage
+ *
+ * ## Storage
  * @langEn API configurations reside under the relative path `store/entities/services/{apiId}.yml` in the data directory.
  * @langDe API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml` im Datenverzeichnis.
  */
+@DocFile(path = "configuration/services/README.md")
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiDataV2.Builder.class)
 public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfiguration {

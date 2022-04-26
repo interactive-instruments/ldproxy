@@ -13,7 +13,7 @@ import de.ii.xtraplatform.docs.DocFileTemplate;
 import de.ii.xtraplatform.docs.DocTemplate;
 
 /**
- * # API modules
+ * # Overview
  * @langEn The OGC API functionality is split up into modules based on the OGC API standards.
  * The modules are classified according to the state of the implemented specification:
  *
