@@ -34,6 +34,12 @@ import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Specify which of the supported CRSs to use to encode geometric values in a filter expression (parameter 'filter'). Default is WGS84 longitude/latitude.
+ * @langDe TODO
+ * @name filter-crs
+ * @endpoints Features, Vector Tile
+ */
 @Singleton
 @AutoBind
 public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApiQueryParameter {

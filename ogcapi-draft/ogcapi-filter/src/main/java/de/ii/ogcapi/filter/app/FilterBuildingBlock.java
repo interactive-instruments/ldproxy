@@ -31,11 +31,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * dann muss "Collection Queryables" aktiviert sein, damit Clients die abfragbaren
  * Objekteigenschaften bestimmen können.
  *
- * In der Konfiguration können keine Optionen gewählt werden.
- * @see de.ii.ogcapi.filter.domain.FilterConfiguration
- * @see de.ii.ogcapi.filter.api.QueryParameterFilter
- * @see de.ii.ogcapi.filter.api.QueryParameterFilterCrs
- * @see de.ii.ogcapi.filter.api.QueryParameterFilterLang
+ * @queryParameterTable {@link de.ii.ogcapi.filter.api.QueryParameterFilter},
+ * {@link de.ii.ogcapi.filter.api.QueryParameterFilterCrs},
+ * {@link de.ii.ogcapi.filter.api.QueryParameterFilterLang}
  */
 @Singleton
 @AutoBind

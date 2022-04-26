@@ -1,9 +1,8 @@
 /**
  * Copyright 2022 interactive instruments GmbH
- *
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * <p>
+ * This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of
+ * the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.filter.api;
 
@@ -23,37 +22,46 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Language of the query expression in the 'filter' parameter. Supported is currently only
+ * 'cql2-text', specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text'
+ * is an SQL-like text encoding for filter expressions that also supports spatial, temporal and
+ * array predicates.
+ * @langDe TODO
+ * @name filter-lang
+ * @endpoints Features, Vector Tile
+ */
 @Singleton
 @AutoBind
 public class QueryParameterFilterLang extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private static final String FILTER_LANG_CQL2_TEXT = "cql2-text";
-    private static final String FILTER_LANG_CQL2_JSON = "cql2-json";
+  private static final String FILTER_LANG_CQL2_TEXT = "cql2-text";
+  private static final String FILTER_LANG_CQL2_JSON = "cql2-json";
 
-    private final FeaturesCoreProviders providers;
+  private final FeaturesCoreProviders providers;
 
-    @Inject
-    public QueryParameterFilterLang(FeaturesCoreProviders providers) {
-        this.providers = providers;
-    }
+  @Inject
+  public QueryParameterFilterLang(FeaturesCoreProviders providers) {
+    this.providers = providers;
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) && providers
-            .getFeatureProvider(apiData)
-            .filter(FeatureProvider2::supportsQueries)
-            .map(FeatureProvider2::queries)
-            .map(FeatureQueries::supportsCql2)
-            .orElse(false);
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData) && providers
+        .getFeatureProvider(apiData)
+        .filter(FeatureProvider2::supportsQueries)
+        .map(FeatureProvider2::queries)
+        .map(FeatureQueries::supportsCql2)
+        .orElse(false);
+  }
 
-    @Override
-    public String getName() {
-        return "filter-lang";
-    }
+  @Override
+  public String getName() {
+    return "filter-lang";
+  }
 
-    @Override
-    public String getDescription() {
+  @Override
+  public String getDescription() {
         /* TODO support CQL2 JSON
         return "Language of the query expression in the 'filter' parameter. Supported are 'cql2-text' (default) and 'cql2-json', " +
             "specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text' is an SQL-like text encoding for " +
@@ -61,38 +69,47 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
             "that grammar, suitable for use as part of a JSON object that represents a query. The use of 'cql2-text' is recommended " +
             "for filter expressions in the 'filter' parameter.";
          */
-        return "Language of the query expression in the 'filter' parameter. Supported is currently only 'cql2-text', " +
-            "specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text' is an SQL-like text encoding for " +
+    return
+        "Language of the query expression in the 'filter' parameter. Supported is currently only 'cql2-text', "
+            +
+            "specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text' is an SQL-like text encoding for "
+            +
             "filter expressions that also supports spatial, temporal and array predicates.";
-    }
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
             isEnabledForApi(apiData) &&
-                method== HttpMethods.GET &&
+                method == HttpMethods.GET &&
                 (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
-                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
-    }
+                    definitionPath.equals(
+                        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+                    ||
+                    definitionPath.equals(
+                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+  }
 
-    /* TODO support CQL2 JSON
-    private final Schema<String> schema = new StringSchema()._enum(ImmutableList.of(FILTER_LANG_CQL2_TEXT, FILTER_LANG_CQL2_JSON))._default(FILTER_LANG_CQL2_TEXT);
-     */
-    private final Schema<String> schema = new StringSchema()._enum(ImmutableList.of(FILTER_LANG_CQL2_TEXT))._default(FILTER_LANG_CQL2_TEXT);
+  /* TODO support CQL2 JSON
+  private final Schema<String> schema = new StringSchema()._enum(ImmutableList.of(FILTER_LANG_CQL2_TEXT, FILTER_LANG_CQL2_JSON))._default(FILTER_LANG_CQL2_TEXT);
+   */
+  private final Schema<String> schema = new StringSchema()._enum(
+      ImmutableList.of(FILTER_LANG_CQL2_TEXT))._default(FILTER_LANG_CQL2_TEXT);
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return schema;
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return schema;
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-        return schema;
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+    return schema;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FilterConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FilterConfiguration.class;
+  }
 }
