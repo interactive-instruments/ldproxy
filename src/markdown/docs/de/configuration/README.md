@@ -1,4 +1,4 @@
-# Konfiguration
+# Übersicht
 
 <a name="manager"></a>
 

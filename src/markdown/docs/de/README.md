@@ -1,6 +1,4 @@
-# ldproxy Dokumentation
-
-## Übersicht
+# Einführung
 
 ldproxy macht Geodaten auf einfache Weise über moderne Web APIs zugänglich.
 
