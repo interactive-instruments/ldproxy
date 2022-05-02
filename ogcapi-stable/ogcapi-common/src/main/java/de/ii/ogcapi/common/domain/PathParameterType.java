@@ -11,6 +11,7 @@ import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 
@@ -21,9 +22,11 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class PathParameterType extends ApiExtensionCache implements OgcApiPathParameter {
 
     protected final ExtensionRegistry extensionRegistry;
+    protected final SchemaValidator schemaValidator;
 
-    protected PathParameterType(ExtensionRegistry extensionRegistry) {
+    protected PathParameterType(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
         this.extensionRegistry = extensionRegistry;
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -47,10 +50,10 @@ public abstract class PathParameterType extends ApiExtensionCache implements Ogc
     protected List<String> getValues(OgcApiDataV2 apiData, String collectionId) {
         return getValues(apiData);
     };
-    protected ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap = new ConcurrentHashMap<>();
+    protected ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -61,7 +64,7 @@ public abstract class PathParameterType extends ApiExtensionCache implements Ogc
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -69,5 +72,10 @@ public abstract class PathParameterType extends ApiExtensionCache implements Ogc
             schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(getValues(apiData, collectionId)));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 }

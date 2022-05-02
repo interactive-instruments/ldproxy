@@ -31,6 +31,7 @@ public class RequestContextBinder extends AbstractBinder implements Binder, Requ
 
     @Inject
     public RequestContextBinder() {
+        super();
     }
 
     @Override

@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -23,10 +24,12 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class HeaderLocationStylesManager extends ApiExtensionCache implements ApiHeader {
 
-    private final Schema schema = new StringSchema().format("uri");
+    private final Schema<?> schema = new StringSchema().format("uri");
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    HeaderLocationStylesManager() {
+    HeaderLocationStylesManager(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -49,8 +52,13 @@ public class HeaderLocationStylesManager extends ApiExtensionCache implements Ap
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

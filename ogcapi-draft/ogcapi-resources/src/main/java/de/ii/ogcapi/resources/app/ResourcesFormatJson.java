@@ -8,18 +8,21 @@
 package de.ii.ogcapi.resources.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
+import java.util.AbstractMap;
+import java.util.Map;
 
 @Singleton
 @AutoBind
@@ -31,12 +34,13 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
             .parameter("json")
             .build();
 
-    private final Schema schemaResources;
-    public final static String SCHEMA_REF_RESOURCES = "#/components/schemas/Resources";
+    private final Schema<?> schemaResources;
+    private final Map<String, Schema<?>> referencedSchemas;
 
     @Inject
-    public ResourcesFormatJson(SchemaGenerator schemaGenerator) {
-        schemaResources = schemaGenerator.getSchema(Resources.class);
+    public ResourcesFormatJson(ClassSchemaCache classSchemaCache) {
+        schemaResources = classSchemaCache.getSchema(Resources.class);
+        referencedSchemas = classSchemaCache.getReferencedSchemas(Resources.class);
     }
 
     @Override
@@ -50,10 +54,11 @@ public class ResourcesFormatJson implements ResourcesFormatExtension {
         // TODO add examples
         if (path.equals("/resources"))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaResources)
-                    .schemaRef(SCHEMA_REF_RESOURCES)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaResources)
+                .schemaRef(Resources.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
 
         throw new RuntimeException("Unexpected path: " + path);
     }

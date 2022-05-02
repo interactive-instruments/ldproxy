@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.Metadata;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
@@ -241,10 +241,10 @@ public class RoutesView extends OgcApiView {
 
     @Override
     public String getAttribution() {
-        Optional<String> datasetAttribution = apiData.getMetadata().flatMap(Metadata::getAttribution);
+        Optional<String> datasetAttribution = apiData.getMetadata().flatMap(ApiMetadata::getAttribution);
         if (datasetAttribution.isEmpty())
             return super.getAttribution();
 
-        return apiData.getMetadata().flatMap(Metadata::getAttribution).get() + " | " + super.getAttribution();
+        return apiData.getMetadata().flatMap(ApiMetadata::getAttribution).get() + " | " + super.getAttribution();
     }
 }

@@ -10,6 +10,7 @@ package de.ii.ogcapi.html.domain;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.base.domain.LogContext;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,8 +117,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
                 http.disconnect();
             } catch (Exception e) {
                 LOGGER.error("Could not access style '{}', falling back to style 'NONE'. Reason: {}", styleUrl, e.getMessage());
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Stacktrace: ", e);
+                if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                    LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
                 }
                 return null;
             }

@@ -32,7 +32,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -95,9 +94,10 @@ public class EndpointResources extends Endpoint {
         ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
                 .path(path)
                 .subResourceType("File Resource");
-        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-        if (operation!=null)
-            resourceBuilderSet.putOperations("GET", operation);
+        ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                 getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
+            )
+            .ifPresent(operation -> resourceBuilderSet.putOperations("GET", operation));
         definitionBuilder.putResources(path, resourceBuilderSet.build());
 
         return definitionBuilder.build();

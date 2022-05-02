@@ -21,6 +21,8 @@ import java.util.Map;
 @JsonDeserialize(builder = ImmutableConformanceDeclaration.Builder.class)
 public abstract class ConformanceDeclaration extends PageRepresentation {
 
+    public final static String SCHEMA_REF = "#/components/schemas/ConformanceDeclaration";
+
     public abstract List<String> getConformsTo();
 
     @JsonAnyGetter

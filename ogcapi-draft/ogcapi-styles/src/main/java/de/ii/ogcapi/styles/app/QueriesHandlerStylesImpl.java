@@ -13,6 +13,8 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -97,12 +99,9 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
 
         return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? styles.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("styles.%s", format.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("styles.%s", format.getMediaType().fileExtension())))
                 .entity(format.getStylesEntity(styles, apiData, collectionId, requestContext))
                 .build();
     }
@@ -145,12 +144,9 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
             return response.build();
 
         return prepareSuccessResponse(requestContext, links,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.%s", styleId, format.getFileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.%s", styleId, format.getFileExtension())))
                 .entity(format.getStyleEntity(stylesheetContent, api, collectionId, styleId, requestContext))
                 .build();
     }
@@ -180,12 +176,9 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? metadata.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().fileExtension())))
                 .entity(format.getStyleMetadataEntity(metadata, apiData, collectionId, requestContext))
                 .build();
     }

@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.api;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -86,9 +87,10 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
         ImmutableOgcApiResourceAuxiliary.Builder resourceBuilderSet = new ImmutableOgcApiResourceAuxiliary.Builder()
             .path(path)
             .pathParameters(pathParameters);
-        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, tags);
-        if (operation!=null)
-            resourceBuilderSet.putOperations(method.name(), operation);
+        ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                 getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), tags
+            )
+            .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
         definitionBuilder.putResources(path, resourceBuilderSet.build());
 
         return definitionBuilder.build();

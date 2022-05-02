@@ -7,6 +7,11 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.media.Content;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.parameters.RequestBody;
 import org.immutables.value.Value;
 
 import javax.ws.rs.core.MediaType;
@@ -15,9 +20,53 @@ import java.util.Optional;
 
 @Value.Immutable
 public interface ApiRequestBody {
-    default String getStatusCode() { return "200"; } ;
-    Optional<String> getId(); // TODO set for reusable responses
+    default String getStatusCode() { return "200"; }
+    Optional<String> getId();
     String getDescription();
     Map<MediaType, ApiMediaTypeContent> getContent();
-    default boolean getRequired() { return false; }
+    default boolean isRequired() { return false; }
+
+    default void updateOpenApiDefinition(OpenAPI openAPI, Operation op) {
+      RequestBody body = new RequestBody();
+      body.description(getDescription());
+      body.required(isRequired());
+      Content content = new Content();
+      getContent()
+          .forEach((key, value) -> {
+            io.swagger.v3.oas.models.media.MediaType mediaType = new io.swagger.v3.oas.models.media.MediaType();
+            String schemaRef = value.getSchemaRef();
+            mediaType.schema(new Schema<>().$ref(schemaRef));
+            if (schemaRef.startsWith("#/components/schemas/")) {
+              String schemaId = schemaRef.substring(21);
+              if (!openAPI.getComponents().getSchemas().containsKey(schemaId)) {
+                openAPI.getComponents().getSchemas().put(schemaId, value.getSchema());
+              }
+            }
+            value.referencedSchemas().forEach((refSchemaId, refSchema) -> {
+              if (!openAPI.getComponents().getSchemas().containsKey(refSchemaId)) {
+                openAPI.getComponents().getSchemas().put(refSchemaId, refSchema);
+              }
+            });
+
+            // Just set the first "example" as Swagger UI does not show "examples"
+            value.getExamples()
+                .stream()
+                .map(Example::getValue)
+                .flatMap(Optional::stream)
+                .findFirst()
+                .ifPresent(mediaType::setExample);
+
+            content.addMediaType(key.toString(), mediaType);
+          });
+      body.content(content);
+
+      getId().ifPresentOrElse(id -> {
+        if (!openAPI.getComponents().getRequestBodies().containsKey(id)) {
+          openAPI.getComponents().getRequestBodies().put(id, body);
+        }
+        op.requestBody(new RequestBody().$ref("#/components/requestBodies/"+id));
+      }, () -> {
+        op.requestBody(body);
+      });
+    }
 }

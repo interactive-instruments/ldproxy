@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -28,8 +29,11 @@ import java.util.Map;
 public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache implements
     OgcApiQueryParameter {
 
+    private final SchemaValidator schemaValidator;
+
     @Inject
-    QueryParameterMaxAllowableOffsetFeatures() {
+    QueryParameterMaxAllowableOffsetFeatures(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -52,16 +56,21 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache 
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
     }
 
-    private final Schema schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);
+    private final Schema<?> schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

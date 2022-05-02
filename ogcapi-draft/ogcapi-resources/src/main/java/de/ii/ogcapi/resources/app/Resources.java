@@ -22,6 +22,8 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableResources.class)
 public abstract class Resources extends PageRepresentation {
 
+    public final static String SCHEMA_REF = "#/components/schemas/Resources";
+
     public abstract List<Resource> getResources();
 
     @SuppressWarnings("UnstableApiUsage")

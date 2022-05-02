@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
-import de.ii.ogcapi.foundation.domain.Metadata2;
+import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
 import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;
@@ -24,7 +24,9 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableStyleMetadata.class)
-public abstract class StyleMetadata extends Metadata2 {
+public abstract class StyleMetadata extends OgcResourceMetadata {
+
+    public final static String SCHEMA_REF = "#/components/schemas/StyleMetadata";
 
     public abstract Optional<String> getId();
 
@@ -37,7 +39,7 @@ public abstract class StyleMetadata extends Metadata2 {
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<StyleMetadata> FUNNEL = (from, into) -> {
-        Metadata2.FUNNEL.funnel(from, into);
+        OgcResourceMetadata.FUNNEL.funnel(from, into);
         from.getId().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getStylesheets()
             .stream()

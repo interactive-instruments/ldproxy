@@ -15,6 +15,8 @@ import com.google.common.io.ByteSource;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -132,12 +134,9 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("resources.%s", format.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("resources.%s", format.getMediaType().fileExtension())))
                 .entity(format.getResourcesEntity(resources, apiData, requestContext))
                 .build();
     }
@@ -187,12 +186,9 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
             return response.build();
 
         return prepareSuccessResponse(requestContext, null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      resourceId)
+                                      HeaderContentDisposition.of(resourceId))
                 .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
                 .type(contentType)
                 .build();

@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -25,11 +26,13 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private final Schema baseSchema;
+    private final Schema<?> baseSchema;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public QueryParameterQ() {
-        baseSchema = new ArraySchema().items(new StringSchema());
+    public QueryParameterQ(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
+        this.baseSchema = new ArraySchema().items(new StringSchema());
     }
 
     @Override
@@ -69,13 +72,18 @@ public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryPar
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return baseSchema;
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return baseSchema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

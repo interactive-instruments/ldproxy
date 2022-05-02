@@ -24,6 +24,7 @@ import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -37,6 +38,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -66,6 +68,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
@@ -84,7 +87,7 @@ public class EndpointFeatures extends EndpointSubCollection {
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreQueriesHandler queryHandler;
     private final FeaturesCoreValidation featuresCoreValidator;
-
+    private final SchemaValidator schemaValidator;
     @Inject
     public EndpointFeatures(ExtensionRegistry extensionRegistry,
                             EntityRegistry entityRegistry,
@@ -92,7 +95,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                             FeaturesQuery ogcApiFeaturesQuery,
                             FeaturesCoreQueriesHandler queryHandler,
                             FeaturesCoreValidation featuresCoreValidator,
-                            SchemaGeneratorOpenApi schemaGeneratorFeature) {
+                            SchemaGeneratorOpenApi schemaGeneratorFeature, SchemaValidator schemaValidator) {
         super(extensionRegistry);
         this.entityRegistry = entityRegistry;
         this.providers = providers;
@@ -100,6 +103,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         this.queryHandler = queryHandler;
         this.featuresCoreValidator = featuresCoreValidator;
         this.schemaGeneratorFeature = schemaGeneratorFeature;
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -255,7 +259,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         }
 
         final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-        final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+        final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
 
         if (explode) {
             for (String collectionId : collectionIdParam.getValues(apiData)) {
@@ -306,11 +310,13 @@ public class EndpointFeatures extends EndpointSubCollection {
             .path(resourcePath)
             .pathParameters(pathParameters);
 
-        ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters1,
-            collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-
-        if (operation != null)
-            resourceBuilder.putOperations("GET", operation);
+        Map<MediaType, ApiMediaTypeContent> responseContent = collectionId.startsWith("{") ?
+            getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET) :
+            getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        ApiOperation.getResource(apiData, resourcePath, false,
+                                 queryParameters1, ImmutableList.of(), responseContent,
+                                 operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
 
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
     }
@@ -359,6 +365,7 @@ public class EndpointFeatures extends EndpointSubCollection {
                         .name(field)
                         .description(description)
                         .schema(schema2.get())
+                        .schemaValidator(schemaValidator)
                         .build();
                 })
                 .filter(Objects::nonNull))

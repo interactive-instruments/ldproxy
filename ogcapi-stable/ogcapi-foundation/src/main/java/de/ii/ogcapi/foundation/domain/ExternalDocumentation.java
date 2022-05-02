@@ -24,6 +24,7 @@ public abstract class ExternalDocumentation {
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<ExternalDocumentation> FUNNEL = (from, into) -> {
+        assert from != null;
         from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         into.putString(from.getUrl(), StandardCharsets.UTF_8);
     };

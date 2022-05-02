@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -30,8 +31,11 @@ import java.util.concurrent.ConcurrentMap;
 @AutoBind
 public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApiQueryParameter {
 
+    private final SchemaValidator schemaValidator;
+
     @Inject
-    QueryParameterLimitTile() {
+    QueryParameterLimitTile(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -66,15 +70,15 @@ public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApi
                 definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
     }
 
-    private final ConcurrentMap<Integer, Map<String,Schema>> schemaMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, Map<String,Schema<?>>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey("*")) {
-            Schema schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
+            Schema<?> schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
 
             Optional<Integer> limit = apiData.getExtension(TilesConfiguration.class)
                     .map(TilesConfiguration::getLimitDerived);
@@ -87,12 +91,12 @@ public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApi
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
         if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            Schema schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
+            Schema<?> schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
 
             FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
             Optional<Integer> limit = featureType.getExtension(TilesConfiguration.class)
@@ -104,6 +108,11 @@ public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApi
         }
         return schemaMap.get(apiHashCode)
                         .get(collectionId);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

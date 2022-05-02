@@ -22,6 +22,8 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTileMatrixSets.Builder.class)
 public abstract class TileMatrixSets extends PageRepresentation {
 
+    public final static String SCHEMA_REF = "#/components/schemas/TileMatrixSets";
+
     public abstract List<TileMatrixSetLinks> getTileMatrixSets();
 
     @JsonAnyGetter

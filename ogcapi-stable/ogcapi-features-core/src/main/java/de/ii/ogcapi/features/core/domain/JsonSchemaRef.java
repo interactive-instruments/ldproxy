@@ -21,7 +21,7 @@ import org.immutables.value.Value;
 public abstract class JsonSchemaRef extends JsonSchema {
 
     @JsonIgnore
-    public final String getType() { return "$refDefs"; }
+    public final String getType() { return "$ref"; }
 
     @JsonProperty("$ref")
     @Value.Derived

@@ -14,6 +14,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -27,10 +28,12 @@ import java.util.Objects;
 @AutoBind
 public class HeaderPreferStylesManager extends ApiExtensionCache implements ApiHeader {
 
-    private final Schema schema = new StringSchema()._enum(ImmutableList.of("handling=strict", "handling=lenient"));
+    private final Schema<?> schema = new StringSchema()._enum(ImmutableList.of("handling=strict", "handling=lenient"));
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    HeaderPreferStylesManager() {
+    HeaderPreferStylesManager(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -57,8 +60,13 @@ public class HeaderPreferStylesManager extends ApiExtensionCache implements ApiH
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

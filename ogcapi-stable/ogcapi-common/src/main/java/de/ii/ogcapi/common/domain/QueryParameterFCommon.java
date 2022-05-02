@@ -9,8 +9,9 @@ package de.ii.ogcapi.common.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -19,8 +20,8 @@ import javax.inject.Singleton;
 public class QueryParameterFCommon extends QueryParameterF {
 
     @Inject
-    public QueryParameterFCommon(ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+    public QueryParameterFCommon(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+        super(extensionRegistry, schemaValidator);
     }
 
     @Override

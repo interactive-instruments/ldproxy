@@ -8,9 +8,11 @@
 package de.ii.ogcapi.common.domain;
 
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.ApiInfo;
 
 import java.util.Optional;
 
+@ApiInfo(schemaId = "Extent")
 public class OgcApiExtent {
     private Optional<OgcApiExtentSpatial> spatial;
     private Optional<OgcApiExtentTemporal> temporal;

@@ -7,60 +7,40 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class Endpoint implements EndpointExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Endpoint.class);
 
-    protected enum OPERATION_TYPE {RESOURCE, PROCESS}
-
-    protected static final Map<HttpMethods, String> SUCCESS_STATUS_RESOURCE = ImmutableMap.of(
-            HttpMethods.GET, "200",
-            HttpMethods.POST, "201",
-            HttpMethods.PUT, "204",
-            HttpMethods.PATCH, "204",
-            HttpMethods.DELETE, "204"
-    );
-
-    protected static final Map<HttpMethods, String> SUCCESS_STATUS_PROCESSING = ImmutableMap.of(
-        HttpMethods.GET, "200",
-        HttpMethods.POST, "200"
-    );
-
     protected final ExtensionRegistry extensionRegistry;
     private final Map<Integer, ApiEndpointDefinition> apiDefinitions;
     protected List<? extends FormatExtension> formats;
 
-    /**
-     *
-     * @param extensionRegistry
-     */
     public Endpoint(ExtensionRegistry extensionRegistry) {
         this.extensionRegistry = extensionRegistry;
         this.apiDefinitions =  new ConcurrentHashMap<>();
-        this.formats = null;
     }
 
     @Override
@@ -79,7 +59,7 @@ public abstract class Endpoint implements EndpointExtension {
                 .stream()
                 .map(r -> r.getOperations().keySet())
                 .flatMap(Collection::stream)
-                .anyMatch(m -> m.equalsIgnoreCase("get"))) {
+                .anyMatch("get"::equalsIgnoreCase)) {
 
                 builder.addStrictErrors(MessageFormat.format("The Endpoint class ''{0}'' does not support any output format.", this.getClass().getSimpleName()));
             }
@@ -87,8 +67,9 @@ public abstract class Endpoint implements EndpointExtension {
 
         } catch (Exception exception) {
             String message = exception.getMessage();
-            if (Objects.isNull(message))
+            if (Objects.isNull(message)) {
                 message = exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
+            }
             builder.addErrors(message);
         }
 
@@ -124,133 +105,17 @@ public abstract class Endpoint implements EndpointExtension {
      */
     public abstract List<? extends FormatExtension> getFormats();
 
-    protected ApiOperation addOperation(OgcApiDataV2 apiData, List<OgcApiQueryParameter> queryParameters, String path,
-                                        String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, queryParameters, path, operationSummary, operationDescription, Optional.empty(), tags);
-    }
-
-    protected ApiOperation addOperation(OgcApiDataV2 apiData, List<OgcApiQueryParameter> queryParameters, String path,
-                                        String operationSummary, Optional<String> operationDescription,
-                                        Optional<ExternalDocumentation> externalDocs, List<String> tags) {
-        Map<MediaType, ApiMediaTypeContent> responseContent = getContent(apiData, path);
-        if (responseContent.isEmpty()) {
-            LOGGER.error("No media type supported for resource at path '" + path + "'. The GET method will not be available.");
-            return null;
-        }
-
-        ApiResponse response = new ImmutableApiResponse.Builder()
-                .description("The operation was executed successfully.")
-                .content(responseContent)
-                .build();
-        return new ImmutableApiOperation.Builder()
-                .summary(operationSummary)
-                .description(operationDescription)
-                .externalDocs(externalDocs)
-                .tags(tags)
-                .queryParameters(queryParameters)
-                .success(response)
-                .build();
-    }
-
-    protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, Map<MediaType, ApiMediaTypeContent> content,
-                                        List<OgcApiQueryParameter> queryParameters, String path,
-                                        String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, method, content, queryParameters, ImmutableList.of(), path, operationSummary, operationDescription, Optional.empty(), tags);
-    }
-
-    protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, Map<MediaType, ApiMediaTypeContent> content,
-                                        List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers, String path,
-                                        String operationSummary, Optional<String> operationDescription, List<String> tags) {
-        return addOperation(apiData, method, content, queryParameters, headers, path, operationSummary, operationDescription, Optional.empty(), tags);
-    }
-
-    protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, Map<MediaType, ApiMediaTypeContent> content,
-                                        List<OgcApiQueryParameter> queryParameters, String path,
-                                        String operationSummary, Optional<String> operationDescription,
-                                        Optional<ExternalDocumentation> externalDocs, List<String> tags) {
-        return addOperation(apiData, method, content, queryParameters, ImmutableList.of(), path, operationSummary, operationDescription, externalDocs, tags);
-    }
-
-    protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, Map<MediaType, ApiMediaTypeContent> content,
-                                        List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers, String path,
-                                        String operationSummary, Optional<String> operationDescription,
-                                        Optional<ExternalDocumentation> externalDocs, List<String> tags) {
-        ImmutableApiResponse.Builder responseBuilder = new ImmutableApiResponse.Builder()
-                .statusCode(SUCCESS_STATUS_RESOURCE.get(method))
-                .description("The operation was executed successfully.")
-                .headers(headers.stream().filter(header -> header.isResponseHeader()).collect(Collectors.toUnmodifiableList()));
-        if (method== HttpMethods.GET && !content.isEmpty())
-            responseBuilder.content(content);
-        ImmutableApiOperation.Builder operationBuilder = new ImmutableApiOperation.Builder()
-                .summary(operationSummary)
-                .description(operationDescription)
-                .externalDocs(externalDocs)
-                .tags(tags)
-                .queryParameters(queryParameters)
-                .headers(headers.stream().filter(header -> header.isRequestHeader()).collect(Collectors.toUnmodifiableList()))
-                .success(responseBuilder.build());
-        if ((method== HttpMethods.POST || method== HttpMethods.PUT || method== HttpMethods.PATCH) && content!=null)
-            operationBuilder.requestBody(new ImmutableApiRequestBody.Builder()
-                    .content(content)
-                    .description(method== HttpMethods.POST ? "The new resource to be added." : "The new resource to be updated.")
-                    .build());
-        return operationBuilder.build();
-    }
-
-    // TODO consolidate with the other addOperation methods
-    protected ApiOperation addOperation(OgcApiDataV2 apiData, HttpMethods method, OPERATION_TYPE opType,
-                                        Map<MediaType, ApiMediaTypeContent> requestContent,
-                                        Map<MediaType, ApiMediaTypeContent> responseContent,
-                                        List<OgcApiQueryParameter> queryParameters, List<ApiHeader> headers, String path,
-                                        String operationSummary, Optional<String> operationDescription,
-                                        Optional<ExternalDocumentation> externalDocs, List<String> tags) {
-        ImmutableApiResponse.Builder responseBuilder = new ImmutableApiResponse.Builder()
-            .statusCode(opType==OPERATION_TYPE.RESOURCE ? SUCCESS_STATUS_RESOURCE.get(method) : SUCCESS_STATUS_PROCESSING.get(method))
-            .description("The operation was executed successfully.")
-            .headers(headers.stream().filter(ApiHeader::isResponseHeader).collect(Collectors.toUnmodifiableList()));
-        if (!requestContent.isEmpty())
-            responseBuilder.content(responseContent)
-                .description(opType==OPERATION_TYPE.RESOURCE
-                                 ? (method== HttpMethods.POST ? "The new resource to be added." : "The new resource to be updated.")
-                                 : "The process result.");
-        ImmutableApiOperation.Builder operationBuilder = new ImmutableApiOperation.Builder()
-            .summary(operationSummary)
-            .description(operationDescription)
-            .externalDocs(externalDocs)
-            .tags(tags)
-            .queryParameters(queryParameters)
-            .headers(headers.stream().filter(ApiHeader::isRequestHeader).collect(Collectors.toUnmodifiableList()))
-            .success(responseBuilder.build());
-        if (responseContent!=null)
-            operationBuilder.requestBody(new ImmutableApiRequestBody.Builder()
-                                             .content(requestContent)
-                                             .description(opType==OPERATION_TYPE.RESOURCE ? "The resource." : "The information to process.")
-                                             .build());
-        return operationBuilder.build();
-    }
-
-    /**
-     *
-     * @param queryParameters
-     * @return
-     */
     protected Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
         return toFlatMap(queryParameters, false);
     }
 
-    /**
-     *
-     * @param queryParameters
-     * @param keysToLowerCase
-     * @return
-     */
     protected Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters,
                                   boolean keysToLowerCase) {
         return queryParameters.entrySet()
                 .stream()
                 .map(entry -> {
                     String key = keysToLowerCase ? entry.getKey()
-                            .toLowerCase() : entry.getKey();
+                            .toLowerCase(Locale.ROOT) : entry.getKey();
                     return new AbstractMap.SimpleImmutableEntry<>(key, entry.getValue()
                         .isEmpty() ? "" : Objects.requireNonNullElse(entry.getValue().get(0),""));
                 })
@@ -259,10 +124,10 @@ public abstract class Endpoint implements EndpointExtension {
 
     protected Map<MediaType, ApiMediaTypeContent> getContent(OgcApiDataV2 apiData, String path) {
         return getFormats().stream()
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                .map(f -> f.getContent(apiData, path))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
+            .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+            .map(f -> f.getContent(apiData, path))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
     }
 
     protected Map<MediaType, ApiMediaTypeContent> getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
@@ -279,42 +144,39 @@ public abstract class Endpoint implements EndpointExtension {
                                           .map(FoundationConfiguration::getIncludeLinkHeader)
                                           .orElse(false));
 
-        Optional<? extends ExtensionConfiguration> optionalModuleConfig = apiData.getExtension(getBuildingBlockConfigurationType());
-        if (optionalModuleConfig.isPresent()) {
-            ExtensionConfiguration moduleConfig = optionalModuleConfig.get();
-            if (moduleConfig instanceof CachingConfiguration) {
-                Caching caching = ((CachingConfiguration) moduleConfig).getCaching();
-                Caching defaultCaching = apiData.getDefaultCaching().orElse(null);
-                if (Objects.nonNull(caching) && Objects.nonNull(caching.getLastModified()))
-                    queryInputBuilder.lastModified(Optional.ofNullable(caching.getLastModified()));
-                else if (Objects.nonNull(defaultCaching) && Objects.nonNull(defaultCaching.getLastModified()))
-                    queryInputBuilder.lastModified(Optional.ofNullable(defaultCaching.getLastModified()));
-                if (Objects.nonNull(caching) && Objects.nonNull(caching.getExpires()))
-                    queryInputBuilder.expires(Optional.ofNullable(caching.getExpires()));
-                else if (Objects.nonNull(defaultCaching) && Objects.nonNull(defaultCaching.getExpires()))
-                    queryInputBuilder.expires(Optional.ofNullable(defaultCaching.getExpires()));
-                if (Objects.nonNull(caching) && Objects.nonNull(caching.getCacheControl()))
-                    queryInputBuilder.cacheControl(Optional.ofNullable(caching.getCacheControl()));
-                else if (Objects.nonNull(defaultCaching) && Objects.nonNull(defaultCaching.getCacheControl()))
-                    queryInputBuilder.cacheControl(Optional.ofNullable(defaultCaching.getCacheControl()));
-            }
-        }
+        apiData.getExtension(getBuildingBlockConfigurationType())
+            .filter(moduleConfig -> moduleConfig instanceof CachingConfiguration)
+            .map(moduleConfig -> (CachingConfiguration) moduleConfig)
+            .ifPresent(moduleConfig -> {
+                Optional<Caching> caching = Optional.ofNullable(moduleConfig.getCaching());
+                Optional<Caching> defaultCaching = apiData.getDefaultCaching();
+                caching.map(Caching::getLastModified)
+                    .or(() ->  defaultCaching.map(Caching::getLastModified))
+                    .ifPresent(queryInputBuilder::lastModified);
+                caching.map(Caching::getExpires)
+                    .or(() ->  defaultCaching.map(Caching::getExpires))
+                    .ifPresent(queryInputBuilder::expires);
+                caching.map(Caching::getCacheControl)
+                    .or(() ->  defaultCaching.map(Caching::getCacheControl))
+                    .ifPresent(queryInputBuilder::cacheControl);
+            });
 
         return queryInputBuilder.build();
     }
 
     protected boolean strictHandling(Enumeration<String> prefer) {
-        boolean strict = false;
-        boolean lenient = false;
-        for (Iterator<String> s = prefer.asIterator(); s.hasNext(); ) {
-            String header = s.next();
-            strict = strict || header.contains("handling=strict");
-            lenient = lenient || header.contains("handling=lenient");
-        }
-        if (strict && lenient) {
+        var hints = new Object() {
+            boolean strict;
+            boolean lenient;
+        };
+        Collections.list(prefer).forEach(header -> {
+            hints.strict = hints.strict || header.contains("handling=strict");
+            hints.lenient = hints.lenient || header.contains("handling=lenient");
+        });
+        if (hints.strict && hints.lenient) {
             throw new IllegalArgumentException("The request contains preferences for both strict and lenient processing. Both preferences are incompatible with each other.");
         }
-        return strict;
+        return hints.strict;
     }
 
     /**

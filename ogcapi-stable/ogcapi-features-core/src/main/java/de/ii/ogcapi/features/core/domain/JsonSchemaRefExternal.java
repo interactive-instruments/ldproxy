@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 public abstract class JsonSchemaRefExternal extends JsonSchema {
 
     @JsonIgnore
-    public final String getType() { return "$ref"; }
+    public final String getType() { return "$refExternal"; }
 
     @JsonProperty("$ref")
     public abstract String getRef();

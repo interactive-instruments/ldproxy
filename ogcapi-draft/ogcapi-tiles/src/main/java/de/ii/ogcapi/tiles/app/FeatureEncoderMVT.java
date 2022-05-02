@@ -18,6 +18,7 @@ import de.ii.ogcapi.tiles.domain.Rule;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import java.util.HashSet;
 import java.util.List;
@@ -178,8 +179,8 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
 
     } catch (Exception e) {
       LOGGER.error("Error while processing feature {} in tile {}/{}/{}/{} in collection {}. The feature is skipped.", feature.getIdValue(), tileMatrixSet.getId(), tile.getTileLevel(), tile.getTileRow(), tile.getTileCol(), collectionId);
-      if(LOGGER.isDebugEnabled()) {
-        LOGGER.debug("Stacktrace:", e);
+      if(LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
       }
     }
   }

@@ -11,6 +11,7 @@ import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 
@@ -29,9 +30,11 @@ public abstract class AbstractQueryParameterDatetime extends ApiExtensionCache i
     private static final String DATETIME_OPEN_REGEX = "^" + LOCAL_DATE_REGEX + "$|^" + NOW_REGEX + "$|^" + LOCAL_DATE_OPEN_INTERVAL_REGEX + "$|^" + OFFSET_DATE_TIME_REGEX + "$|^" + OFFSET_DATE_TIME_OPEN_INTERVAL_REGEX + "$";
     private static final String DATETIME_CLOSED_REGEX = "^" + LOCAL_DATE_REGEX + "$|^" + NOW_REGEX + "$|^" + LOCAL_DATE_CLOSED_INTERVAL_REGEX + "$|^" + OFFSET_DATE_TIME_REGEX + "$|^" + OFFSET_DATE_TIME_CLOSED_INTERVAL_REGEX + "$";
 
-    private final Schema baseSchema;
+    private final Schema<?> baseSchema;
+    protected final SchemaValidator schemaValidator;
 
-    public AbstractQueryParameterDatetime() {
+    public AbstractQueryParameterDatetime(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
         this.baseSchema = new StringSchema().pattern(DATETIME_OPEN_REGEX);
     }
 
@@ -52,13 +55,18 @@ public abstract class AbstractQueryParameterDatetime extends ApiExtensionCache i
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return baseSchema;
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return baseSchema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

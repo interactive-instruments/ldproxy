@@ -10,6 +10,7 @@ package de.ii.ogcapi.foundation.domain;
 import org.immutables.value.Value;
 
 import javax.ws.rs.core.MediaType;
+import java.util.Locale;
 
 
 @Value.Immutable
@@ -19,7 +20,7 @@ public interface ApiMediaType {
 
     @Value.Default
     default String label() {
-        return type().getSubtype().toUpperCase();
+        return type().getSubtype().toUpperCase(Locale.ROOT);
     }
 
     @Value.Default

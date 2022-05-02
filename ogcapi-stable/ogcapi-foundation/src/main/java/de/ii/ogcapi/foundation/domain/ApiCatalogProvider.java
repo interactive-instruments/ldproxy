@@ -8,7 +8,6 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.base.Splitter;
-import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.services.domain.ServiceListingProvider;
@@ -16,6 +15,7 @@ import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.Identifier;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
+import org.apache.http.NameValuePair;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -49,7 +49,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
         try {
             return getServiceListing(apis, uri, Optional.of(Locale.ENGLISH));
         } catch (URISyntaxException e) {
-            throw new RuntimeException("Could not generate service overview.", e);
+            throw new IllegalStateException("Could not generate service overview.", e);
         }
     }
 
@@ -87,7 +87,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
 
     private FoundationConfiguration getConfig() {
         //TODO: encapsulate in entities/defaults layer
-        EntityDataBuilder<?> builder = defaultsStore.getBuilder(Identifier.from(EntityDataDefaultsStore.EVENT_TYPE, Service.TYPE, OgcApiDataV2.SERVICE_TYPE.toLowerCase()));
+        EntityDataBuilder<?> builder = defaultsStore.getBuilder(Identifier.from(EntityDataDefaultsStore.EVENT_TYPE, Service.TYPE, OgcApiDataV2.SERVICE_TYPE.toLowerCase(Locale.ROOT)));
         if (builder instanceof ImmutableOgcApiDataV2.Builder) {
             ImmutableOgcApiDataV2 defaults = ((ImmutableOgcApiDataV2.Builder) builder).id("NOT_SET")
                                                                                       .build();
@@ -119,20 +119,22 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
                                     .trimResults()
                                     .splitToList(uriCustomizer.getQueryParams()
                                                               .stream()
-                                                              .filter(param -> param.getName().equals("tags"))
-                                                              .map(param -> param.getValue())
+                                                              .filter(param -> "tags".equals(param.getName()))
+                                                              .map(NameValuePair::getValue)
                                                               .findAny()
                                                               .orElse(""));
         Optional<String> name = uriCustomizer.getQueryParams()
                                    .stream()
-                                   .filter(param -> param.getName().equals("name"))
-                                   .map(param -> param.getValue())
+                                   .filter(param -> "name".equals(param.getName()))
+                                   .map(NameValuePair::getValue)
                                    .findAny();
         customizeUri(uriCustomizer);
+        URI catalogUri;
         try {
-            uri = uriCustomizer.build();
+            catalogUri = uriCustomizer.build();
         } catch (URISyntaxException e) {
-            // ignore
+            // ignore, use fallback
+            catalogUri = uri;
         }
 
         ApiMediaType mediaType = getApiMediaType();
@@ -144,46 +146,48 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
 
         FoundationConfiguration config = getConfig();
 
-        URI finalUri = uri;
+        URI finalUri = catalogUri;
         ImmutableApiCatalog.Builder builder = new ImmutableApiCatalog.Builder()
-                .title(Objects.requireNonNullElse(config.getApiCatalogLabel(), i18n.get("rootTitle", language)))
-                .description(Objects.requireNonNullElse(config.getApiCatalogDescription(), i18n.get("rootDescription", language)))
-                .catalogUri(new URICustomizer(finalUri).clearParameters().ensureNoTrailingSlash().build())
-                .urlPrefix(urlPrefix)
-                .links(linksGenerator.generateLinks(uriCustomizer, mediaType, alternateMediaTypes, i18n, language))
-                .apis(services.stream()
-                              .sorted(Comparator.comparing(ServiceData::getLabel))
-                              .filter(api -> !name.isPresent() || api.getLabel()
-                                                                     .toLowerCase(language.orElse(Locale.ENGLISH))
-                                                                     .contains(name.get().toLowerCase(language.orElse(Locale.ENGLISH))))
-                              .filter(api -> tags.isEmpty() || (api instanceof OgcApiDataV2 && ((OgcApiDataV2) api).getTags()
-                                                                                                                   .stream()
-                                                                                                                   .anyMatch(tag -> tags.contains(tag))))
-                              .map(api -> {
-                                  try {
-                                      if (api instanceof OgcApiDataV2)
-                                          return new ImmutableApiCatalogEntry.Builder()
-                                                  .id(api.getId())
-                                                  .title(api.getLabel())
-                                                  .description(api.getDescription())
-                                                  .landingPageUri(getApiUrl(finalUri, ((OgcApiDataV2)api).getSubPath()))
-                                                  .tags(((OgcApiDataV2)api).getTags())
-                                                  .isDataset(((OgcApiDataV2) api).isDataset())
-                                                  .build();
-                                      return new ImmutableApiCatalogEntry.Builder()
-                                              .id(api.getId())
-                                              .title(api.getLabel())
-                                              .description(api.getDescription())
-                                              .landingPageUri(getApiUrl(finalUri, api.getId(), api.getApiVersion()))
-                                              .build();
-                                  } catch (URISyntaxException e) {
-                                      throw new RuntimeException(String.format("Could not create landing page URI for API '%s'.", api.getId()), e);
-                                  }
-                              })
-                              .collect(Collectors.toList()));
+            .title(Objects.requireNonNullElse(config.getApiCatalogLabel(), i18n.get("rootTitle", language)))
+            .description(Objects.requireNonNullElse(config.getApiCatalogDescription(), i18n.get("rootDescription", language)))
+            .catalogUri(new URICustomizer(finalUri).clearParameters().ensureNoTrailingSlash().build())
+            .urlPrefix(urlPrefix)
+            .links(linksGenerator.generateLinks(uriCustomizer, mediaType, alternateMediaTypes, i18n, language))
+            .apis(services.stream()
+                      .sorted(Comparator.comparing(ServiceData::getLabel))
+                      .filter(api -> name.isEmpty() || api.getLabel()
+                          .toLowerCase(language.orElse(Locale.ENGLISH))
+                          .contains(name.get().toLowerCase(language.orElse(Locale.ENGLISH))))
+                      .filter(api -> tags.isEmpty() || api instanceof OgcApiDataV2 && ((OgcApiDataV2) api).getTags()
+                          .stream()
+                          .anyMatch(tags::contains))
+                      .map(api -> {
+                          try {
+                              if (api instanceof OgcApiDataV2) {
+                                  return new ImmutableApiCatalogEntry.Builder()
+                                      .id(api.getId())
+                                      .title(api.getLabel())
+                                      .description(api.getDescription())
+                                      .landingPageUri(getApiUrl(finalUri, ((OgcApiDataV2) api).getSubPath()))
+                                      .tags(((OgcApiDataV2) api).getTags())
+                                      .isDataset(((OgcApiDataV2) api).isDataset())
+                                      .build();
+                              }
+                              return new ImmutableApiCatalogEntry.Builder()
+                                  .id(api.getId())
+                                  .title(api.getLabel())
+                                  .description(api.getDescription())
+                                  .landingPageUri(getApiUrl(finalUri, api.getId(), api.getApiVersion()))
+                                  .build();
+                          } catch (URISyntaxException e) {
+                              throw new IllegalStateException(String.format("Could not create landing page URI for API '%s'.", api.getId()), e);
+                          }
+                      })
+                      .collect(Collectors.toList()));
 
-        if (Objects.nonNull(config.getGoogleSiteVerification()))
+        if (Objects.nonNull(config.getGoogleSiteVerification())) {
             builder.googleSiteVerification(config.getGoogleSiteVerification());
+        }
 
         for (ApiCatalogExtension extension : extensionRegistry.getExtensionsForType(ApiCatalogExtension.class)) {
             builder = extension.process(builder,

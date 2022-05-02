@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -28,9 +29,11 @@ import java.util.Objects;
 public class QueryParameterSkipGeometry extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private static final Schema<?> SCHEMA = new BooleanSchema()._default(false);
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    QueryParameterSkipGeometry() {
+    QueryParameterSkipGeometry(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -58,13 +61,18 @@ public class QueryParameterSkipGeometry extends ApiExtensionCache implements Ogc
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return SCHEMA;
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return SCHEMA;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

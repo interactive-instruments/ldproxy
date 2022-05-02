@@ -9,6 +9,7 @@ package de.ii.ogcapi.common.domain;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.ApiInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 
+@ApiInfo(schemaId = "SpatialExtent")
 public class OgcApiExtentSpatial {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiExtentSpatial.class);

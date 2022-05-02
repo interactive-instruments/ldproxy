@@ -8,21 +8,18 @@
 package de.ii.ogcapi.foundation.infra.rest;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType.Builder;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType.Builder;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotFoundException;
@@ -33,15 +30,21 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Singleton
 @AutoBind
 public class OptionsEndpoint implements EndpointExtension {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OptionsEndpoint.class);
-
+    public static final String OPTIONS = "OPTIONS";
+    public static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
+    public static final String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
+    public static final String ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods";
+    public static final String ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers";
     private final ExtensionRegistry extensionRegistry;
 
     @Inject
@@ -84,33 +87,38 @@ public class OptionsEndpoint implements EndpointExtension {
     }
 
     private Response getOptions(OgcApiDataV2 apiData, String entrypoint, String subPath) {
-        // special treatment for OPTIONS requests. We loop over the endpoints and determine
+        // Special treatment for OPTIONS requests. We loop over the endpoints and determine
         // which methods are supported.
         Set<String> supportedMethods = Arrays.stream(HttpMethods.values())
                 .filter(method -> !method.equals(HttpMethods.OPTIONS))
-                .filter(otherMethod -> findEndpoint(
+                .map(Enum::toString)
+                .filter(method -> findEndpoint(
                         apiData,
                         entrypoint,
                         subPath,
-                        otherMethod.toString())
+                        method)
                         .isPresent())
-                .map(method -> method.toString())
                 .collect(Collectors.toSet());
 
-        if (supportedMethods.isEmpty())
+        if (supportedMethods.isEmpty()) {
             throw new NotFoundException("The requested path is not a resource in this API.");
+        }
 
         // add OPTIONS since this is supported for all paths
-        supportedMethods.add("OPTIONS");
+        supportedMethods.add(OPTIONS);
 
+        String methods = String.join(", ", supportedMethods);
+        String headers = String.join(", ", ImmutableList.of("Accept", "Accept-Language", "Origin",
+                                                            "Content-Type", "Content-Language", "Content-Crs",
+                                                            "Authorization", "Prefer"));
         return Response
-                .ok(String.join(", ", supportedMethods))
+                .ok(methods)
                 .allow(supportedMethods)
-                // TODO add variants
-                .header("Access-Control-Allow-Origin","*") // TODO * not allowed with credentials
-                .header("Access-Control-Allow-Credentials","true")
-                .header("Access-Control-Allow-Methods", String.join(", ", supportedMethods))
-                .header("Access-Control-Allow-Headers", "Accept, Accept-Language, Origin, Content-Type, Content-Language, Content-Crs, Authorization")
+                // add variants
+                .header(ACCESS_CONTROL_ALLOW_ORIGIN, "*") // NOTE: * not allowed with credentials
+                .header(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true")
+                .header(ACCESS_CONTROL_ALLOW_METHODS, methods)
+                .header(ACCESS_CONTROL_ALLOW_HEADERS, headers)
                 .build();
     }
 

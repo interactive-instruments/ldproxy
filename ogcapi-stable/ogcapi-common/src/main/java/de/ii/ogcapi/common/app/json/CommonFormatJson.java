@@ -9,6 +9,7 @@ package de.ii.ogcapi.common.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
@@ -21,8 +22,10 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import io.swagger.v3.oas.models.media.Schema;
+
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,15 +46,17 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
             .parameter("json")
             .build();
 
-    private final Schema schemaLandingPage;
-    public final static String SCHEMA_REF_LANDING_PAGE = "#/components/schemas/LandingPage";
-    private final Schema schemaConformance;
-    public final static String SCHEMA_REF_CONFORMANCE = "#/components/schemas/ConformanceDeclaration";
+    private final Schema<?> schemaLandingPage;
+    private final Map<String, Schema<?>> referencedSchemasLandingPage;
+    private final Schema<?> schemaConformance;
+    private final Map<String, Schema<?>> referencedSchemasConformance;
 
     @Inject
-    public CommonFormatJson(SchemaGenerator schemaGenerator) {
-        schemaLandingPage = schemaGenerator.getSchema(LandingPage.class);
-        schemaConformance = schemaGenerator.getSchema(ConformanceDeclaration.class);
+    public CommonFormatJson(ClassSchemaCache classSchemaCache) {
+        schemaLandingPage = classSchemaCache.getSchema(LandingPage.class);
+        referencedSchemasLandingPage = classSchemaCache.getReferencedSchemas(LandingPage.class);
+        schemaConformance = classSchemaCache.getSchema(ConformanceDeclaration.class);
+        referencedSchemasConformance = classSchemaCache.getReferencedSchemas(ConformanceDeclaration.class);
     }
 
     @Override
@@ -63,18 +68,21 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
         // TODO add examples
-        if (path.equals("/"))
+        if (path.equals("/")) {
             return new ImmutableApiMediaTypeContent.Builder()
-                        .schema(schemaLandingPage)
-                        .schemaRef(SCHEMA_REF_LANDING_PAGE)
-                        .ogcApiMediaType(MEDIA_TYPE)
-                        .build();
-        else if (path.equals("/conformance"))
+                .schema(schemaLandingPage)
+                .schemaRef(LandingPage.SCHEMA_REF)
+                .referencedSchemas(referencedSchemasLandingPage)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+        } else if (path.equals("/conformance")) {
             return new ImmutableApiMediaTypeContent.Builder()
-                        .schema(schemaConformance)
-                        .schemaRef(SCHEMA_REF_CONFORMANCE)
-                        .ogcApiMediaType(MEDIA_TYPE)
-                        .build();
+                .schema(schemaConformance)
+                .schemaRef(ConformanceDeclaration.SCHEMA_REF)
+                .referencedSchemas(referencedSchemasConformance)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+        }
 
         throw new RuntimeException("Unexpected path: " + path);
     }

@@ -140,10 +140,13 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                     String collectionId = entry.getKey()
                         .replace("/collections/", "")
                         .replace("/items", "");
-                    ApiOperation post = addOperation(apiData, HttpMethods.POST, true, get.getQueryParameters(),
-                                                     collectionId, "/items", get.getSummary(), get.getDescription(), TAGS);
-                    if (post != null)
-                        builder.putOperations("POST", post);
+                    Map<MediaType, ApiMediaTypeContent> responseContent = collectionId.startsWith("{") ?
+                        getContent(apiData, Optional.empty(), "/items", HttpMethods.GET) :
+                        getContent(apiData, Optional.of(collectionId), "/items", HttpMethods.GET);
+                    ApiOperation.getResource(apiData, entry.getKey(), true,
+                                             get.getQueryParameters(), get.getHeaders(), responseContent,
+                                             get.getSummary(), get.getDescription(), Optional.empty(), TAGS)
+                        .ifPresent(operation -> builder.putOperations("POST", operation));
                     definitionBuilder.putResources(entry.getKey(), builder.build());
                 }
             });

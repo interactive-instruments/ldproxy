@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -33,6 +34,7 @@ import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -40,6 +42,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,14 +110,13 @@ public class EndpointStyleCollection extends EndpointSubCollection {
                 .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLESHEET_COLLECTION);
         final String subSubPath = "/styles/{styleId}";
         final String path = "/collections/{collectionId}" + subSubPath;
-        final HttpMethods method = HttpMethods.GET;
         final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
         final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-        if (!optCollectionIdParam.isPresent()) {
+        if (optCollectionIdParam.isEmpty()) {
             LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
         } else {
             final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
             final List<String> collectionIds = (explode) ?
                     collectionIdParam.getValues(apiData) :
                     ImmutableList.of("{collectionId}");
@@ -128,9 +130,13 @@ public class EndpointStyleCollection extends EndpointSubCollection {
                 ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                         .path(resourcePath)
                         .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                if (operation != null)
-                    resourceBuilder.putOperations(method.name(), operation);
+                Map<MediaType, ApiMediaTypeContent> responseContent = collectionId.startsWith("{") ?
+                    getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET) :
+                    getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+                ApiOperation.getResource(apiData, resourcePath, false,
+                                         queryParameters, ImmutableList.of(), responseContent,
+                                         operationSummary, operationDescription, Optional.empty(), TAGS)
+                    .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
                 definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
         }

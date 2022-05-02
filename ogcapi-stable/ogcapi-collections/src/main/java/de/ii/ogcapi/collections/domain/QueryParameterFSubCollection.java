@@ -7,21 +7,19 @@
  */
 package de.ii.ogcapi.collections.domain;
 
-import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.common.domain.QueryParameterF;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
 import java.util.Objects;
 
 public abstract class QueryParameterFSubCollection extends QueryParameterF {
 
-    public QueryParameterFSubCollection(ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+    public QueryParameterFSubCollection(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+        super(extensionRegistry, schemaValidator);
     }
 
     @Override

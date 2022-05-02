@@ -12,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -27,15 +29,20 @@ import org.immutables.value.Value;
         @JsonSubTypes.Type(value = JsonSchemaObject.class, name = "object"),
         @JsonSubTypes.Type(value = JsonSchemaArray.class, name = "array"),
         @JsonSubTypes.Type(value = JsonSchemaNull.class, name = "null"),
-        @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$refDefs"),
-        @JsonSubTypes.Type(value = JsonSchemaRefExternal.class, name = "$ref"),
+        @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$ref"),
+        @JsonSubTypes.Type(value = JsonSchemaRefExternal.class, name = "$refExternal"),
         @JsonSubTypes.Type(value = JsonSchemaOneOf.class, name = "oneOf")
 })
-public abstract class JsonSchema extends PageRepresentation {
+public abstract class JsonSchema {
+
+    public abstract Optional<String> getTitle();
+
+    public abstract Optional<String> getDescription();
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<JsonSchema> FUNNEL = (from, into) -> {
-        PageRepresentation.FUNNEL.funnel(from, into);
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         if (from instanceof JsonSchemaString)
             JsonSchemaString.FUNNEL.funnel((JsonSchemaString) from, into);
         else if (from instanceof JsonSchemaNumber)

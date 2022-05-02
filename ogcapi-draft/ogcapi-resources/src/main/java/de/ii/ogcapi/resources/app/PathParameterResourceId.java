@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
@@ -23,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Singleton
@@ -32,8 +32,11 @@ public class PathParameterResourceId implements OgcApiPathParameter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterResourceId.class);
 
+    protected final SchemaValidator schemaValidator;
+
     @Inject
-    PathParameterResourceId() {
+    PathParameterResourceId(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -47,8 +50,13 @@ public class PathParameterResourceId implements OgcApiPathParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return new StringSchema().pattern(getPattern());
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

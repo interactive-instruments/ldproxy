@@ -23,6 +23,8 @@ import java.util.Map;
 @JsonDeserialize(builder = Builder.class)
 public abstract class Collections extends PageRepresentation {
 
+    public final static String SCHEMA_REF = "#/components/schemas/Collections";
+
     // restrict to information in ogcapi-stable, everything else goes into the extensions map
 
     public abstract List<String> getCrs();

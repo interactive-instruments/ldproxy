@@ -18,6 +18,8 @@ import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -271,7 +273,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 ? getEtag(result)
                 : null;
         } else {
-            lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
+            lastModified = getLastModified(queryInput);
         }
 
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
@@ -284,12 +286,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         return prepareSuccessResponse(requestContext, includeLinkHeader ? links.stream()
                                                                                .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
                                                                                .collect(ImmutableList.toImmutableList()) : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       targetCrs,
-                                      true,
-                                      String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().fileExtension())))
                 .entity(Objects.nonNull(result) ? result : streamingOutput)
                 .build();
     }

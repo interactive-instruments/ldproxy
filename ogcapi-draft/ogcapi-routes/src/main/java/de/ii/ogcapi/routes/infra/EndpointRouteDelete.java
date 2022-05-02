@@ -94,10 +94,8 @@ public class EndpointRouteDelete extends Endpoint {
 
             String operationSummary = "delete a route";
             Optional<String> operationDescription = Optional.of("Delete the route with identifier `routeId`. The set of available routes can be retrieved at `/routes`.");
-            ApiOperation operation = addOperation(apiData, method, ImmutableMap.of(), queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("DELETE", operation);
-
+            ApiOperation.of(path, method, ImmutableMap.of(), queryParameters, ImmutableList.of(), operationSummary, operationDescription, Optional.empty(), TAGS)
+                .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
             definitionBuilder.putResources(path, resourceBuilder.build());
         }
 

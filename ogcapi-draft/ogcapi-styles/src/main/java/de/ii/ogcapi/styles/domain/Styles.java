@@ -23,6 +23,8 @@ import java.util.Map;
 @JsonDeserialize(builder = ImmutableStyles.Builder.class)
 public abstract class Styles extends PageRepresentation {
 
+    public final static String SCHEMA_REF = "#/components/schemas/Styles";
+
     public abstract List<StyleEntry> getStyles();
 
     @JsonAnyGetter

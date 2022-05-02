@@ -9,6 +9,7 @@ package de.ii.ogcapi.styles.manager.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -127,7 +128,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
             LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
         } else {
             final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
             final List<String> collectionIds = (explode) ?
                     collectionIdParam.getValues(apiData) :
                     ImmutableList.of("{collectionId}");
@@ -162,9 +163,11 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
                 ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                         .path(resourcePath)
                         .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, HttpMethods.POST, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations("POST", operation);
+                Map<MediaType, ApiMediaTypeContent> requestContent = collectionId.startsWith("{") ?
+                    getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.POST) :
+                    getRequestContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.POST);
+                ApiOperation.of(resourcePath, HttpMethods.POST, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+                    .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
                 definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
         }
@@ -176,7 +179,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
             LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
         } else {
             final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
             final List<String> collectionIds = explode ?
                     collectionIdParam.getValues(apiData) :
                     ImmutableList.of("{collectionId}");
@@ -198,17 +201,19 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection imple
                 ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                         .path(resourcePath)
                         .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, HttpMethods.PUT, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations("PUT", operation);
+                Map<MediaType, ApiMediaTypeContent> requestContent = collectionId.startsWith("{") ?
+                    getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PUT) :
+                    getRequestContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.PUT);
+                ApiOperation.of(resourcePath, HttpMethods.PUT, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+                    .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
+
                 queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE);
                 headers = getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE);
                 operationSummary = "delete a style in the feature collection '" + collectionId + "'";
                 operationDescription = Optional.of("Delete the style with the id `styleId`. " +
                                                            "Deleting a style also deletes the subordinate resources, i.e., the style metadata.");
-                operation = addOperation(apiData, HttpMethods.DELETE, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations("DELETE", operation);
+                ApiOperation.of(resourcePath, HttpMethods.DELETE, ImmutableMap.of(), queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+                    .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
                 definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
 

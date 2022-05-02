@@ -114,18 +114,17 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
         String path = "/collections/{collectionId}" + subSubPath;
         List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
         Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-        if (!optCollectionIdParam.isPresent()) {
+        if (optCollectionIdParam.isEmpty()) {
             LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
         } else {
             final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
             final List<String> collectionIds = (explode) ?
                     collectionIdParam.getValues(apiData) :
                     ImmutableList.of("{collectionId}");
             for (String collectionId : collectionIds) {
-                HttpMethods method = HttpMethods.PUT;
-                List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, method);
-                List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, collectionId, method);
+                List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT);
+                List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.PUT);
                 String operationSummary = "update the metadata document of a style in the feature collection '" + collectionId + "'";
                 String description = "Update the style metadata for the style with the id `styleId`";
                 if (stylesExtension.map(StylesConfiguration::isValidationEnabled).orElse(false)) {
@@ -135,20 +134,21 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                             "not be changed and only any validation errors will be reported";
                 }
                 description += ".\n" +
-                        "This operation updates the complete metadata document.\n";
+                        "This operation replaces the complete metadata document.\n";
                 // TODO document rules, e.g.wrt links
                 Optional<String> operationDescription = Optional.of(description);
                 String resourcePath = "/collections/" + collectionId + subSubPath;
                 ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                         .path(resourcePath)
                         .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, method, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations(method.name(), operation);
+                Map<MediaType, ApiMediaTypeContent> requestContent = collectionId.startsWith("{") ?
+                    getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PUT) :
+                    getRequestContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.PUT);
+                ApiOperation.of(resourcePath, HttpMethods.PUT, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+                    .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
-                method = HttpMethods.PATCH;
-                queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, method);
-                headers = getHeaders(extensionRegistry, apiData, path, collectionId, method);
+                queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH);
+                headers = getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH);
                 operationSummary = "update parts of the style metadata document of a style in the feature collection '" + collectionId + "'";
                 description = "Update selected elements of the style metadata for the style with the id `styleId`";
                 if (stylesExtension.map(StylesConfiguration::isValidationEnabled).orElse(false)) {
@@ -231,9 +231,11 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                         "these members, you have to send the complete new array value.";
                 // TODO document rules, e.g.wrt links
                 operationDescription = Optional.of(description);
-                operation = addOperation(apiData, method, queryParameters, headers, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations(method.name(), operation);
+                requestContent = collectionId.startsWith("{") ?
+                    getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PATCH) :
+                    getRequestContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.PATCH);
+                ApiOperation.of(resourcePath, HttpMethods.PATCH, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+                    .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
 
                 definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }

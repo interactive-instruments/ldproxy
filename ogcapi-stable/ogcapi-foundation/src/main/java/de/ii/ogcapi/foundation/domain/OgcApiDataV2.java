@@ -12,12 +12,6 @@ import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
@@ -28,7 +22,6 @@ import org.immutables.value.Value;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
 
@@ -74,7 +67,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         return SERVICE_TYPE;
     }
 
-    public abstract Optional<Metadata> getMetadata();
+    public abstract Optional<ApiMetadata> getMetadata();
 
     public abstract Optional<ExternalDocumentation> getExternalDocs();
 
@@ -95,14 +88,15 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     @Value.Derived
     @Value.Auxiliary
     public List<String> getSubPath() {
-        ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
+        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
         builder.add(getId());
-        if (getApiVersion().isPresent())
-            builder.add("v"+getApiVersion().get());
+        if (getApiVersion().isPresent()) {
+            builder.add("v" + getApiVersion().get());
+        }
         return builder.build();
     }
 
-    @JsonProperty(value = "api")
+    @JsonProperty("api")
     @JsonMerge
     @Override
     public abstract List<ExtensionConfiguration> getExtensions();
@@ -197,10 +191,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     private Optional<CollectionExtent> mergeExtents(Optional<CollectionExtent> defaultExtent, Optional<CollectionExtent> collectionExtent) {
-        if (defaultExtent.isEmpty())
+        if (defaultExtent.isEmpty()) {
             return collectionExtent;
-        else if (collectionExtent.isEmpty())
+        } else if (collectionExtent.isEmpty()) {
             return defaultExtent;
+        }
 
         return Optional.of(new ImmutableCollectionExtent.Builder()
             .from(defaultExtent.get())

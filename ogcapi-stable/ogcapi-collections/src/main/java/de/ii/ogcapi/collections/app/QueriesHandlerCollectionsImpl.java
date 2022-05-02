@@ -18,12 +18,14 @@ import de.ii.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ogcapi.collections.domain.QueriesHandlerCollections;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
@@ -89,8 +91,8 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         OgcApi api = requestContext.getApi();
         OgcApiDataV2 apiData = api.getData();
 
-        Optional<String> licenseUrl = apiData.getMetadata().flatMap(Metadata::getLicenseUrl);
-        Optional<String> licenseName = apiData.getMetadata().flatMap(Metadata::getLicenseName);
+        Optional<String> licenseUrl = apiData.getMetadata().flatMap(ApiMetadata::getLicenseUrl);
+        Optional<String> licenseName = apiData.getMetadata().flatMap(ApiMetadata::getLicenseName);
         List<Link> links = new CollectionsLinksGenerator()
                 .generateLinks(requestContext.getUriCustomizer()
                                              .copy(),
@@ -126,7 +128,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
 
         Collections responseObject = collections.build();
 
-        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
             ? getEtag(responseObject, Collections.FUNNEL, outputFormatExtension)
@@ -136,12 +138,9 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("collections.%s", outputFormatExtension.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("collections.%s", outputFormatExtension.getMediaType().fileExtension())))
                 .entity(outputFormatExtension.getCollectionsEntity(responseObject, requestContext.getApi(), requestContext))
                 .build();
 
@@ -154,8 +153,8 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         OgcApiDataV2 apiData = api.getData();
         String collectionId = queryInput.getCollectionId();
 
-        Optional<String> licenseUrl = apiData.getMetadata().flatMap(Metadata::getLicenseUrl);
-        Optional<String> licenseName = apiData.getMetadata().flatMap(Metadata::getLicenseName);
+        Optional<String> licenseUrl = apiData.getMetadata().flatMap(ApiMetadata::getLicenseUrl);
+        Optional<String> licenseName = apiData.getMetadata().flatMap(ApiMetadata::getLicenseName);
         List<Link> links = new CollectionLinksGenerator().generateLinks(
                 requestContext.getUriCustomizer()
                     .copy(),
@@ -190,7 +189,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
 
         OgcApiCollection responseObject = ogcApiCollection.build();
 
-        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
             ? getEtag(responseObject, OgcApiCollection.FUNNEL, outputFormatExtension)
@@ -200,12 +199,9 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.%s", collectionId, outputFormatExtension.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.%s", collectionId, outputFormatExtension.getMediaType().fileExtension())))
                 .entity(outputFormatExtension.getCollectionEntity(responseObject, api, requestContext))
                 .build();
     }

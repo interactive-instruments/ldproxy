@@ -11,11 +11,11 @@ package de.ii.ogcapi.collections.queryables.app;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
 
 @Singleton
@@ -23,7 +23,8 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 public class PathParameterCollectionIdQueryables extends AbstractPathParameterCollectionId {
 
     @Inject
-    PathParameterCollectionIdQueryables() {
+    PathParameterCollectionIdQueryables(SchemaValidator schemaValidator) {
+      super(schemaValidator);
     }
 
     @Override

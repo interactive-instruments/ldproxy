@@ -28,10 +28,14 @@ public interface TemporalExtent {
     }
 
     static TemporalExtent of(Interval interval) {
-        return new ImmutableTemporalExtent.Builder()
-            .start(interval.getStart().toEpochMilli())
-            .end(interval.isUnboundedEnd() ? null : interval.getEnd().toEpochMilli())
-            .build();
+        ImmutableTemporalExtent.Builder builder = new ImmutableTemporalExtent.Builder();
+        if (!interval.isUnboundedStart()) {
+            builder.start(interval.getStart().toEpochMilli());
+        }
+        if (!interval.isUnboundedEnd()) {
+            builder.end(interval.getEnd().toEpochMilli());
+        }
+        return builder.build();
     }
 
     @Value.Default

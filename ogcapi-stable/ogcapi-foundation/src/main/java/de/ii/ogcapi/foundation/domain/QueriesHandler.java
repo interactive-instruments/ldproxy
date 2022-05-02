@@ -15,11 +15,10 @@ import com.google.common.hash.HashingInputStream;
 import com.google.common.io.Files;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import javax.ws.rs.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.CacheControl;
@@ -40,7 +39,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.SimpleTimeZone;
 import java.util.stream.Collectors;
 
@@ -62,51 +60,15 @@ public interface QueriesHandler<T extends QueryIdentifier> {
 
         QueryHandler<? extends QueryInput> queryHandler = getQueryHandlers().get(queryIdentifier);
 
-       if (Objects.isNull(queryHandler)) {
-           throw new IllegalStateException("No query handler found for " + queryIdentifier +".");
-       }
+        if (Objects.isNull(queryHandler)) {
+            throw new IllegalStateException("No query handler found for " + queryIdentifier +".");
+        }
 
         if (!queryHandler.isValidInput(queryInput)) {
-            throw new RuntimeException(MessageFormat.format("Invalid query handler {0} for query input of class {1}.", queryHandler.getClass().getSimpleName(), queryInput.getClass().getSimpleName()));
+            throw new IllegalStateException(MessageFormat.format("Invalid query handler {0} for query input of class {1}.", queryHandler.getClass().getSimpleName(), queryInput.getClass().getSimpleName()));
         }
 
         return queryHandler.handle(queryInput, requestContext);
-    }
-
-    default Response.ResponseBuilder prepareSuccessResponse(OgcApi api,
-                                                            ApiRequestContext requestContext) {
-        return prepareSuccessResponse(api, requestContext, null);
-    }
-
-    default Response.ResponseBuilder prepareSuccessResponse(OgcApi api,
-                                                            ApiRequestContext requestContext,
-                                                            List<Link> links) {
-        return prepareSuccessResponse(api, requestContext, links, null);
-    }
-
-    default Response.ResponseBuilder prepareSuccessResponse(OgcApi api,
-                                                            ApiRequestContext requestContext,
-                                                            List<Link> links,
-                                                            EpsgCrs crs) {
-        Response.ResponseBuilder response = Response.ok()
-                                                    .type(requestContext
-                                                        .getMediaType()
-                                                        .type());
-
-        Optional<Locale> language = requestContext.getLanguage();
-        if (language.isPresent())
-            response.language(language.get());
-
-        if (links != null)
-            // skip URI templates in the header as these are not RFC 8288 links
-            links.stream()
-                    .filter(link -> link.getTemplated()==null || !link.getTemplated())
-                    .forEach(link -> response.links(link.getLink()));
-
-        if (crs != null)
-            response.header("Content-Crs", "<" + crs.toUriString() + ">");
-
-        return response;
     }
 
     default Response.ResponseBuilder evaluatePreconditions(ApiRequestContext requestContext,
@@ -115,48 +77,48 @@ public interface QueriesHandler<T extends QueryIdentifier> {
         if (requestContext.getRequest().isPresent()) {
             Request request = requestContext.getRequest().get();
             try {
-                if (Objects.nonNull(lastModified) && Objects.nonNull(etag))
+                if (Objects.nonNull(lastModified) && Objects.nonNull(etag)) {
                     return request.evaluatePreconditions(lastModified, etag);
-                else if (Objects.nonNull(etag))
+                } else if (Objects.nonNull(etag)) {
                     return request.evaluatePreconditions(etag);
-                else if (Objects.nonNull(lastModified))
+                } else if (Objects.nonNull(lastModified)) {
                     return request.evaluatePreconditions(lastModified);
-                else
+                } else {
                     return request.evaluatePreconditions();
+                }
             } catch (Exception e) {
                 // could not parse headers, so silently ignore them and return the regular response
-                LOGGER.debug("Ignoring invalid condition request headers: {}", e.getMessage());
+                LOGGER.debug("Ignoring invalid conditional request headers: {}", e.getMessage());
             }
         }
 
         return null;
     }
 
+    default Response.ResponseBuilder prepareSuccessResponse(ApiRequestContext requestContext) {
+        Response.ResponseBuilder response = Response.ok()
+            .type(requestContext.getMediaType()
+                      .type());
+
+        requestContext.getLanguage().ifPresent(response::language);
+
+        return response;
+    }
+
     default Response.ResponseBuilder prepareSuccessResponse(ApiRequestContext requestContext,
                                                             List<Link> links,
-                                                            Date lastModified,
-                                                            EntityTag etag,
-                                                            String cacheControl,
-                                                            Date expires,
+                                                            HeaderCaching cacheInfo,
                                                             EpsgCrs crs,
-                                                            boolean inline,
-                                                            String filename) {
+                                                            HeaderContentDisposition dispositionInfo) {
         Response.ResponseBuilder response = Response.ok()
-                                                    .type(requestContext
-                                                                  .getMediaType()
-                                                                  .type());
+            .type(requestContext
+                      .getMediaType()
+                      .type());
 
-        if (Objects.nonNull(lastModified))
-            response.lastModified(lastModified);
-
-        if (Objects.nonNull(etag))
-            response.tag(etag);
-
-        if (Objects.nonNull(cacheControl))
-            response.cacheControl(CacheControl.valueOf(cacheControl));
-
-        if (Objects.nonNull(expires))
-            response.expires(expires);
+        cacheInfo.getLastModified().ifPresent(response::lastModified);
+        cacheInfo.getEtag().ifPresent(response::tag);
+        cacheInfo.cacheControl().ifPresent(cacheControl -> response.cacheControl(CacheControl.valueOf(cacheControl)));
+        cacheInfo.expires().ifPresent(response::expires);
 
         response.variants(Variant.mediaTypes(new ImmutableList.Builder<ApiMediaType>().add(requestContext.getMediaType())
                                                                                       .addAll(requestContext.getAlternateMediaTypes())
@@ -172,49 +134,34 @@ public interface QueriesHandler<T extends QueryIdentifier> {
         requestContext.getLanguage()
                       .ifPresent(response::language);
 
-        if (links != null)
+        if (Objects.nonNull(links)) {
+
             // skip URI templates in the header as these are not RFC 8288 links
             links.stream()
-                 .filter(link -> link.getTemplated()==null || !link.getTemplated())
-                 .forEach(link -> response.links(link.getLink()));
+                .filter(link -> link.getTemplated() == null || !link.getTemplated())
+                .sorted(Link.COMPARATOR_LINKS)
+                .forEachOrdered(link -> response.links(link.getLink()));
+        }
 
-        if (crs != null)
+        if (Objects.nonNull(crs)) {
             response.header("Content-Crs", "<" + crs.toUriString() + ">");
+        }
 
-        if (!inline || Objects.nonNull(filename)) {
-            response.header("Content-Disposition", (inline ? "inline" : "attachment") + (Objects.nonNull(filename) ? "; filename=\""+filename+"\"" : ""));
-
+        if (Objects.nonNull(dispositionInfo)) {
+            response.header("Content-Disposition",
+                            (dispositionInfo.getAttachment() ? "attachment" : "inline") +
+                                dispositionInfo.getFilename().map(filename -> "; filename=\""+filename+"\"").orElse(""));
         }
 
         return response;
     }
 
     default Date getLastModified(QueryInput queryInput, PageRepresentation resource) {
-        return queryInput.getLastModified()
-                         .orElse(resource.getLastModified()
-                                         .orElse(null));
+        return queryInput.getLastModified().or(resource::getLastModified).orElse(null);
     }
 
-    default Date getLastModified(QueryInput queryInput, OgcApi api) {
-        return queryInput.getLastModified()
-                         .orElse(null);
-                         /* TODO since the information in the service configuration is not updated,
-                             if the file is updated outside of the manager, this is currently not a reliable mechanism
-                         .orElse(Date.from(Instant.ofEpochMilli(api.getData()
-                                                                   .getLastModified())));
-                          */
-    }
-
-    default Date getLastModified(QueryInput queryInput, OgcApi api, FeatureProvider2 provider) {
-        return queryInput.getLastModified()
-                         .orElse(null);
-                         /* TODO since the information in the provider or service configuration is not updated,
-                             if the file is updated outside of the manager, this is currently not a reliable mechanism
-                         .orElse(Date.from(Instant.ofEpochMilli(Math.max(api.getData()
-                                                                            .getLastModified(),
-                                                                         provider.getData()
-                                                                                 .getLastModified()))));
-                          */
+    default Date getLastModified(QueryInput queryInput) {
+        return queryInput.getLastModified().orElse(null);
     }
 
     default Date getLastModified(File file) {
@@ -223,8 +170,9 @@ public interface QueriesHandler<T extends QueryIdentifier> {
 
     @SuppressWarnings("UnstableApiUsage")
     default EntityTag getEtag(Date date) {
-        if (Objects.isNull(date))
+        if (Objects.isNull(date)) {
             return null;
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat();
         sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
@@ -278,34 +226,37 @@ public interface QueriesHandler<T extends QueryIdentifier> {
      */
     static void processStreamError(Throwable error) {
         String errorMessage = error.getMessage();
-        if (Objects.isNull(errorMessage))
+        if (Objects.isNull(errorMessage)) {
             errorMessage = error.getClass().getSimpleName() + " at " + error.getStackTrace()[0].toString();
-        while (Objects.nonNull(error) && !Objects.equals(error,error.getCause())) {
-            if (error instanceof org.eclipse.jetty.io.EofException) {
+        }
+        Throwable rootError = error;
+        while (Objects.nonNull(rootError) && !Objects.equals(rootError,rootError.getCause())) {
+            if (rootError instanceof org.eclipse.jetty.io.EofException) {
                 // the connection has been lost, typically the client has cancelled the request, log on debug level
                 LOGGER.debug("Request cancelled due to lost connection.");
                 return;
-            } else if (error instanceof UnprocessableEntity) {
+            } else if (rootError instanceof UnprocessableEntity) {
                 // Cannot handle request
-                throw new WebApplicationException(error.getMessage(), 422);
-            } else if (error instanceof IllegalArgumentException) {
+                throw new WebApplicationException(rootError.getMessage(), 422);
+            } else if (rootError instanceof IllegalArgumentException) {
                 // Bad request
-                LogContext.errorAsDebug(LOGGER, error, "Invalid request");
-                throw new BadRequestException(error.getMessage());
-            } else if (error instanceof RuntimeException) {
+                LogContext.errorAsDebug(LOGGER, rootError, "Invalid request");
+                throw new BadRequestException(rootError.getMessage());
+            } else if (rootError instanceof RuntimeException) {
                 // Runtime exception is generated by XtraPlatform, look at the cause, if there is one
-                if (Objects.nonNull(error.getCause()))
-                    error = error.getCause();
-                else
+                if (Objects.nonNull(rootError.getCause())) {
+                    rootError = rootError.getCause();
+                } else {
                     // otherwise log the error
                     break;
+                }
             } else {
                 // some other exception occurred, log as an error
                 break;
             }
         }
 
-        LogContext.error(LOGGER, error, "");
+        LogContext.error(LOGGER, rootError, "");
 
         throw new InternalServerErrorException(errorMessage, error);
     }

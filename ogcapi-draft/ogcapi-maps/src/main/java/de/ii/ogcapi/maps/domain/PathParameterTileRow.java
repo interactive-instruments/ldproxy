@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
@@ -24,8 +25,11 @@ import java.util.List;
 @AutoBind
 public class PathParameterTileRow implements OgcApiPathParameter {
 
+    private final SchemaValidator schemaValidator;
+
     @Inject
-    PathParameterTileRow() {
+    PathParameterTileRow(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -38,11 +42,16 @@ public class PathParameterTileRow implements OgcApiPathParameter {
         return ImmutableList.of();
     }
 
-    private final Schema schema = new IntegerSchema().minimum(BigDecimal.ZERO);
+    private final Schema<?> schema = new IntegerSchema().minimum(BigDecimal.ZERO);
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

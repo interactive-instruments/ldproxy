@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
@@ -31,8 +32,11 @@ public class PathParameterRouteId implements OgcApiPathParameter {
 
     public static final String ROUTE_ID_PATTERN = "[a-z0-9]+";
 
+    protected final SchemaValidator schemaValidator;
+
     @Inject
-    PathParameterRouteId() {
+    PathParameterRouteId(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -46,8 +50,13 @@ public class PathParameterRouteId implements OgcApiPathParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return new StringSchema().pattern(getPattern());
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -34,8 +35,11 @@ import java.util.stream.Collectors;
 @AutoBind
 public class QueryParameterCollections extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {
 
+    private final SchemaValidator schemaValidator;
+
     @Inject
-    QueryParameterCollections() {
+    QueryParameterCollections(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -61,7 +65,7 @@ public class QueryParameterCollections extends ApiExtensionCache implements OgcA
                definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
     }
 
-    private final Map<Integer,Schema> schemaMap = new ConcurrentHashMap<>();
+    private final Map<Integer,Schema<?>> schemaMap = new ConcurrentHashMap<>();
     private final Map<Integer,List<String>> collectionsMap = new ConcurrentHashMap<>();
 
     private List<String> getCollectionIds(OgcApiDataV2 apiData) {
@@ -79,12 +83,17 @@ public class QueryParameterCollections extends ApiExtensionCache implements OgcA
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode)) {
             schemaMap.put(apiHashCode, new ArraySchema().items(new StringSchema()._enum(getCollectionIds(apiData))));
         }
         return schemaMap.get(apiHashCode);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

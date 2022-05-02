@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import de.ii.xtraplatform.base.domain.LogContext;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
@@ -74,8 +76,8 @@ class FeatureMerger {
                          polygonFeatures.addAll(mergePolygons(mergeFeatures, values));
                      } catch (Exception e) {
                          LOGGER.error("{}: Error while merging polygon geometries grouped by {}. The features are skipped.", context, values);
-                         if (LOGGER.isDebugEnabled()) {
-                             LOGGER.debug("Stacktrace:", e);
+                         if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                             LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
                          }
                      }
                  });
@@ -91,8 +93,8 @@ class FeatureMerger {
                          lineStringFeatures.addAll(mergeLineStrings(mergeFeatures, values));
                      } catch (Exception e) {
                          LOGGER.error("{}: Error while merging line string geometries grouped by {}. The features are skipped.", context, values);
-                         if (LOGGER.isDebugEnabled()) {
-                             LOGGER.debug("Stacktrace:", e);
+                         if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                             LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
                          }
                      }
                  });

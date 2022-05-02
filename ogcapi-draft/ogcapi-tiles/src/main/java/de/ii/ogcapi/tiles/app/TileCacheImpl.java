@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.Metadata;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.mbtiles.ImmutableMbtilesMetadata;
@@ -449,7 +449,7 @@ public class TileCacheImpl implements TileCache {
                                                              .format(MbtilesMetadata.MbtilesFormat.pbf)
                                                              .description(apiData.getDescription())
                                                              .attribution(apiData.getMetadata()
-                                                                              .flatMap(Metadata::getAttribution))
+                                                                              .flatMap(ApiMetadata::getAttribution))
                                                              .minzoom(TilesHelper.getMinzoom(tileSetMetadata))
                                                              .maxzoom(TilesHelper.getMaxzoom(tileSetMetadata))
                                                              .bounds(TilesHelper.getBounds(tileSetMetadata))

@@ -10,10 +10,18 @@ package de.ii.ogcapi.foundation.domain;
 import com.google.common.hash.Funnel;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-public abstract class Metadata2 extends PageRepresentation {
+public abstract class OgcResourceMetadata {
+
+    public abstract Optional<String> getTitle();
+
+    public abstract Optional<String> getDescription();
+
+    public abstract List<Link> getLinks();
 
     public abstract List<String> getKeywords();
 
@@ -32,8 +40,14 @@ public abstract class Metadata2 extends PageRepresentation {
     public abstract Optional<String> getVersion();
 
     @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<Metadata2> FUNNEL = (from, into) -> {
-        PageRepresentation.FUNNEL.funnel(from, into);
+    public static final Funnel<OgcResourceMetadata> FUNNEL = (from, into) -> {
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getLinks()
+            .stream()
+            .sorted(Comparator.comparing(Link::getHref))
+            .forEachOrdered(link -> into.putString(link.getHref(), StandardCharsets.UTF_8)
+                .putString(Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
         from.getKeywords()
             .stream()
             .sorted()

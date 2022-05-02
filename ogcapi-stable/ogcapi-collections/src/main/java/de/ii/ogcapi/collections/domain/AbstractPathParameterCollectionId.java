@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import org.slf4j.Logger;
@@ -30,10 +31,11 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
     public static final String COLLECTION_ID_PATTERN = "[\\w\\-]+";
 
     protected final Map<Integer, Boolean> apiExplodeMap;
-
     protected final Map<Integer,List<String>> apiCollectionMap;
+    protected final SchemaValidator schemaValidator;
 
-    public AbstractPathParameterCollectionId() {
+    public AbstractPathParameterCollectionId(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
         this.apiCollectionMap = new HashMap<>();
         this.apiExplodeMap = new HashMap<>();
     }
@@ -46,7 +48,7 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
     }
 
     @Override
-    public boolean getExplodeInOpenApi(OgcApiDataV2 apiData) {
+    public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) {
         if (!apiExplodeMap.containsKey(apiData.hashCode())) {
             apiExplodeMap.put(apiData.hashCode(), !apiData.getExtension(CollectionsConfiguration.class)
                                                           .get()
@@ -69,8 +71,13 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

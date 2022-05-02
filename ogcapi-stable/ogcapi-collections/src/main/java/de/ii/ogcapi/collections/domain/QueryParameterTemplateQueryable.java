@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import org.immutables.value.Value;
 
@@ -22,7 +23,8 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache 
 
     public abstract String getApiId();
     public abstract String getCollectionId();
-    public abstract Schema getSchema();
+    public abstract Schema<?> getSchema();
+    public abstract SchemaValidator getSchemaValidator();
 
     @Override
     @Value.Default
@@ -54,7 +56,7 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache 
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return getSchema();
     }
 

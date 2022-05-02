@@ -15,13 +15,13 @@ import com.google.common.collect.ArrayListMultimap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
@@ -56,15 +56,15 @@ public class StyleFormatHtml implements StyleFormatExtension {
             .build();
 
     private final Schema schemaStyle;
-    private final SchemaGenerator schemaGenerator;
+    private final ClassSchemaCache classSchemaCache;
     private final URI servicesUri;
     public final static String SCHEMA_REF_STYLE = "#/components/schemas/htmlSchema";
 
     @Inject
-    public StyleFormatHtml(SchemaGenerator schemaGenerator,
+    public StyleFormatHtml(ClassSchemaCache classSchemaCache,
                            ServicesContext servicesContext) {
         schemaStyle = new StringSchema().example("<html>...</html>");
-        this.schemaGenerator = schemaGenerator;
+        this.classSchemaCache = classSchemaCache;
         this.servicesUri = servicesContext.getUri();
     }
 

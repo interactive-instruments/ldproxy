@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
@@ -24,8 +25,8 @@ import javax.inject.Singleton;
 public class QueryParameterFResources extends QueryParameterF {
 
     @Inject
-    public QueryParameterFResources(ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+    public QueryParameterFResources(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+        super(extensionRegistry, schemaValidator);
     }
 
     @Override

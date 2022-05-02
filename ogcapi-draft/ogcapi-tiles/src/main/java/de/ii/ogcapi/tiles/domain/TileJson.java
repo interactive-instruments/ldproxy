@@ -38,8 +38,9 @@ import org.immutables.value.Value;
     "template",
     "version"
 })
-public abstract class TileJson
-{
+public abstract class TileJson {
+
+    public final static String SCHEMA_REF = "#/components/schemas/TileJson";
 
     @JsonProperty("tilejson")
     @Value.Default

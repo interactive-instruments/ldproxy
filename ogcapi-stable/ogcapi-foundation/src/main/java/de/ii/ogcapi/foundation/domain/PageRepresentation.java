@@ -22,11 +22,21 @@ import java.util.stream.Collectors;
 
 public abstract class PageRepresentation {
 
+    public static final String SORT_PRIORITY = "sortPriority";
+
     public abstract Optional<String> getTitle();
 
     public abstract Optional<String> getDescription();
 
     public abstract List<Link> getLinks();
+
+    @JsonIgnore
+    @Value.Derived
+    public List<Link> getOrderedLinks() {
+        return getLinks().stream()
+            .sorted(Link.COMPARATOR_LINKS)
+            .collect(Collectors.toUnmodifiableList());
+    }
 
     @JsonIgnore
     public abstract Optional<Date> getLastModified();
@@ -37,13 +47,10 @@ public abstract class PageRepresentation {
     @JsonIgnore
     @Value.Derived
     public List<Map<String, Object>> getOrderedSections() {
-        return getSections().stream().sorted(new Comparator<Map<String, Object>>() {
-            @Override
-            public int compare(Map<String, Object> stringObjectMap, Map<String, Object> t1) {
-                if (!stringObjectMap.containsKey("sortPriority")) return 1;
-                if (!t1.containsKey("sortPriority")) return -1;
-                return ((Integer)stringObjectMap.get("sortPriority")) - (((Integer)t1.get("sortPriority")));
-            }
+        return getSections().stream().sorted((stringObjectMap, t1) -> {
+            if (!stringObjectMap.containsKey(SORT_PRIORITY)) { return 1; }
+            if (!t1.containsKey(SORT_PRIORITY)) { return -1; }
+            return ((Integer)stringObjectMap.get(SORT_PRIORITY)) - (((Integer)t1.get(SORT_PRIORITY)));
         }).collect(Collectors.toList());
     }
 

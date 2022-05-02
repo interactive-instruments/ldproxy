@@ -12,6 +12,7 @@ import static de.ii.xtraplatform.base.domain.util.LambdaWithException.consumerMa
 import com.google.common.collect.ImmutableCollection;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext.Event;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoderDefault;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
@@ -76,7 +77,9 @@ public class FeatureEncoderGeoJson extends FeatureTokenEncoderDefault<EncodingAw
       transformationContext.getJson()
           .close();
     } catch (IOException e) {
-      e.printStackTrace();
+      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+      }
     }
   }
 

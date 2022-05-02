@@ -9,22 +9,31 @@ package de.ii.ogcapi.foundation.infra.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.*;
+import com.github.azahnen.dagger.annotations.AutoBind;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaException;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SchemaValidatorsConfig;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.SpecVersionDetector;
+import com.networknt.schema.ValidationMessage;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.Set;
 
-// TODO convert to a component
+@Singleton
+@AutoBind
 public class SchemaValidatorImpl implements SchemaValidator {
-    public Optional<String> validate(String schemaContent, String jsonContent, SpecVersion.VersionFlag version) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode schemaNode = mapper.readTree(schemaContent);
-        JsonNode jsonNode = mapper.readTree(jsonContent);
-        return validate(schemaNode, jsonNode, version);
+
+    @Inject
+    public SchemaValidatorImpl() {
     }
 
+    @Override
     public Optional<String> validate(String schemaContent, String jsonContent) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode schemaNode = mapper.readTree(schemaContent);
@@ -39,52 +48,23 @@ public class SchemaValidatorImpl implements SchemaValidator {
         return validate(schemaNode, jsonNode, version);
     }
 
-    private Optional<String> validate(JsonNode schemaNode, JsonNode jsonNode, SpecVersion.VersionFlag version) throws IOException {
+    private Optional<String> validate(JsonNode schemaNode, JsonNode jsonNode, SpecVersion.VersionFlag version) {
         JsonSchemaFactory validatorFactory = JsonSchemaFactory.getInstance(version);
         SchemaValidatorsConfig config = new SchemaValidatorsConfig();
         config.setTypeLoose(true);
         config.setFailFast(true);
         config.setHandleNullableField(true);
-        JsonSchema schema = validatorFactory.getSchema(schemaNode,config);
+        JsonSchema schema = validatorFactory.getSchema(schemaNode, config);
         Set<ValidationMessage> result;
         try {
             result = schema.validate(jsonNode);
         } catch (JsonSchemaException e) {
             result = e.getValidationMessages();
         }
-        if (result.size() > 0) {
-            return Optional.of(result.toString());
+        if (result.isEmpty()) {
+            return Optional.empty();
         }
 
-        return Optional.empty();
+        return Optional.of(result.toString());
     }
-
-    /*
-
-    public Optional<String> validate(String schemaContent, String jsonContent) throws IOException {
-        return Optional.empty();
-    }
-
-    public Optional<String> validate(String schemaContent, String jsonContent) throws IOException {
-        JsonValidationService service = JsonValidationService.newInstance();
-
-        JsonSchema schema = service.readSchema(new CharSequenceReader(schemaContent));
-
-        ProblemHandler handler = service.createProblemPrinter(System.out::println);
-
-        try (JsonReader reader = service.createReader(new CharSequenceReader(jsonContent), schema, handler)) {
-            JsonValue value = reader.readValue();
-            String dbg = value.toString();
-            // Do something useful here
-        }
-
-        return Optional.empty();
-    }
-     */
-
-    /*
-    In general, this library would be a better solution since it uses Jackson,
-    but it has a dependency to a different version - 2.10 instead of 2.9.
-
-     */
 }

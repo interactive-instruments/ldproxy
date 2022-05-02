@@ -9,6 +9,7 @@ package de.ii.ogcapi.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.ApiInfo;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -16,6 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Objects;
 
+@ApiInfo(schemaId = "TemporalExtent")
 public class OgcApiExtentTemporal {
 
     private String[][] interval;

@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -27,10 +28,12 @@ import java.util.Objects;
 public class QueryParameterDryRunStylesManager extends ApiExtensionCache implements
     OgcApiQueryParameter {
 
-    private final Schema schema = new BooleanSchema()._default(false);
+    private final Schema<?> schema = new BooleanSchema()._default(false);
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    QueryParameterDryRunStylesManager() {
+    QueryParameterDryRunStylesManager(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -60,8 +63,13 @@ public class QueryParameterDryRunStylesManager extends ApiExtensionCache impleme
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

@@ -11,6 +11,8 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -106,7 +108,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                .links(links)
                                                                .build();
 
-        Date lastModified = getLastModified(queryInput, api);
+        Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
             ? getEtag(tileMatrixSets, TileMatrixSets.FUNNEL, outputFormat)
@@ -116,12 +118,9 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("tileMatrixSets.%s", outputFormat.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("tileMatrixSets.%s", outputFormat.getMediaType().fileExtension())))
                 .entity(outputFormat.getTileMatrixSetsEntity(tileMatrixSets, api, requestContext))
                 .build();
     }
@@ -150,7 +149,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                                                                         .links(links)
                                                                         .build();
 
-        Date lastModified = getLastModified(queryInput, api);
+        Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
             ? getEtag(tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat)
@@ -160,12 +159,9 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.%s", tileMatrixSetId, outputFormat.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.%s", tileMatrixSetId, outputFormat.getMediaType().fileExtension())))
                 .entity(outputFormat.getTileMatrixSetEntity(tileMatrixSetData, api, requestContext))
                 .build();
     }
