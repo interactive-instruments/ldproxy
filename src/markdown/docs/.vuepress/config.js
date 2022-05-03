@@ -18,7 +18,22 @@ module.exports = {
   plugins: [
     ['vuepress-plugin-theme-extensions', {      
     }],
+    ['vuepress-plugin-locale-redirect', {
+    }],
+    ['vuepress-plugin-md-enhance', {
+      //container: true,
+      mermaid: true,
+    }],
+    /*['@vuepress/plugin-shiki', {
+      //theme: 'material-lighter',
+      theme: 'hc-light',
+    }],*/
   ],
+  markdown: {
+    code: {
+      lineNumbers: false,
+    }
+  },
   theme: '@vuepress/theme-default',
   //theme: path.resolve(__dirname, './theme'),
   themeConfig: {
@@ -30,9 +45,13 @@ module.exports = {
       navbar: true,
       onThisPage: true,
     },*/
+    themePlugins: {
+      //prismjs: false,
+    },
     locales: {
       '/': {
         selectLanguageText: 'EN',
+        selectLanguageName: 'English',
         navbar: [
           {
             text: 'Documentation',
