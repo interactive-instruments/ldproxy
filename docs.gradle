@@ -1,0 +1,63 @@
+apply plugin: 'com.github.node-gradle.node'
+
+node {
+    version = '14.17.6'
+    yarnVersion = '1.22.5'
+    download = project.findProperty('downloadNode') != 'false' ?: false
+}
+
+ext {
+    workingDir = new File(project.buildDir, 'markdown').absolutePath
+}
+
+
+tasks.register('docsAssemble', Sync) {
+    finalizedBy tasks.named('markdownAssemble')
+    from(file('src/markdown/docs')) {
+        exclude 'en'
+    }
+    from file('src/markdown/docs/en')
+    from tasks.named('docsExtract')
+    into new File(project.buildDir, 'markdown/docs')
+    //duplicatesStrategy = 'INCLUDE'
+}
+
+tasks.register('markdownAssemble', Copy) {
+    from file('src/markdown')
+    into new File(project.buildDir, 'markdown')
+    include "*.*"
+}
+
+yarn_install {
+    inputs.file("${project.workingDir}/package.json")
+    inputs.file("${project.workingDir}/yarn.lock")
+    outputs.dir("${project.workingDir}/node_modules")
+    outputs.dir("${project.workingDir}/.yarn/cache")
+    execOverrides {
+        it.workingDir = project.workingDir
+    }
+}
+
+task docsVuepress(type: YarnTask) {
+    dependsOn yarn_install, tasks.named("docsAssemble")
+    inputs.file("${project.workingDir}/package.json")
+    inputs.file("${project.workingDir}/yarn.lock")
+    inputs.dir("${project.workingDir}/docs")
+    outputs.dir("${project.workingDir}/docs/.vuepress/dist")
+    execOverrides {
+        it.workingDir = project.workingDir
+    }
+    args = ['run', 'docs:build']
+}
+
+task docsVuepressDev(type: YarnTask) {
+    dependsOn yarn_install, tasks.named("docsAssemble")
+    inputs.file("${project.workingDir}/package.json")
+    inputs.file("${project.workingDir}/yarn.lock")
+    inputs.dir("${project.workingDir}/docs")
+    outputs.upToDateWhen { false }
+    execOverrides {
+        it.workingDir = project.workingDir
+    }
+    args = ['run', 'docs:dev']
+}
