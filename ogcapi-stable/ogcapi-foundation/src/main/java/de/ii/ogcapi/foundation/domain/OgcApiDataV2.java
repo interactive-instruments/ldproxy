@@ -26,7 +26,7 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 /**
- * #  API
+ * # Overview
  * @langEn Each API represents a deployment of a single OGC Web API.
  * @langDe Jede API stellt eine OGC Web API bereit.
  *
@@ -73,7 +73,7 @@ import org.immutables.value.Value;
  * @langEn API configurations reside under the relative path `store/entities/services/{apiId}.yml` in the data directory.
  * @langDe API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml` im Datenverzeichnis.
  */
-@DocFile(path = "configuration/services/README.md")
+@DocFile(path = "configuration/services", name="README.md")
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiDataV2.Builder.class)
 public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfiguration {
