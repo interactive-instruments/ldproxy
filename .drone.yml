@@ -109,10 +109,9 @@ pipeline:
   docs-preview:
     image: woodpeckerci/plugin-surge-preview
     settings:
-      path: build/markdown/docs/.vuepress/dist/ # path to directory to publish files from
-      surge_token: $SURGE_TOKEN
-      forge_type: github 
-      forge_url: https://github.com 
+      path: build/markdown/docs/.vuepress/dist/
+      forge_type: github
+      forge_url: https://github.com
       forge_repo_token: $GITHUB_TOKEN
     secrets: [ github_token, surge_token ]
     when:
