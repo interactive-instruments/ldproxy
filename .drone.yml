@@ -116,6 +116,7 @@ pipeline:
   docs-preview:
     image: woodpeckerci/plugin-surge-preview:next
     path: build/markdown/docs/.vuepress/dist/
+    surge_token: $SURGE_TOKEN
     forge_type: github
     forge_url: https://github.com
     forge_repo_token: $GITHUB_TOKEN
