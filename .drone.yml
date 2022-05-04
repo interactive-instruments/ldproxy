@@ -41,7 +41,7 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew assemble dockerDistTar -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew assemble dockerDistTar docsVuepress -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [push]
@@ -50,7 +50,7 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew assemble dockerDistTar -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew assemble dockerDistTar docsVuepress -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [tag]
@@ -105,6 +105,18 @@ pipeline:
 #    secrets: [ docker_username, docker_password]
 #    when:
 #      event: tag
+
+  docs-preview:
+    image: woodpeckerci/plugin-surge-preview
+    settings:
+      path: build/markdown/docs/.vuepress/dist/ # path to directory to publish files from
+      surge_token: $SURGE_TOKEN
+      forge_type: github 
+      forge_url: https://github.com 
+      forge_repo_token: $GITHUB_TOKEN
+    secrets: [ github_token, surge_token ]
+    when:
+      event: pull_request
 
   github-release:
     image: node:12-alpine
