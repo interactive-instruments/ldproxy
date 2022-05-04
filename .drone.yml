@@ -22,8 +22,8 @@ pipeline:
 #  check-snapshot:
 #    image: openjdk:11-slim
 #    commands:
-#      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-#      - ./gradlew check -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+#      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
+#      - ./gradlew check -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
 #    secrets: [ snapshot_user, snapshot_pass]
 #    when:
 #      event: [push]
@@ -31,7 +31,7 @@ pipeline:
 #  check-release:
 #    image: openjdk:11-slim
 #    commands:
-#      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+#      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
 #      - ./gradlew check -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
 #    secrets: [ snapshot_user, snapshot_pass]
 #    when:
@@ -47,8 +47,8 @@ pipeline:
   build-snapshot:
     image: openjdk:11-slim
     commands:
-      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew build dockerDistTar docsVuepress -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
+      - ./gradlew build dockerDistTar docsVuepress -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [push]
@@ -56,7 +56,7 @@ pipeline:
   build-release:
     image: openjdk:11-slim
     commands:
-      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
       - ./gradlew build dockerDistTar docsVuepress -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
@@ -65,8 +65,8 @@ pipeline:
   libs-snapshot:
     image: openjdk:11-slim
     commands:
-      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew publish -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
+      - ./gradlew publish -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: push
@@ -74,7 +74,7 @@ pipeline:
   libs-release:
     image: openjdk:11-slim
     commands:
-      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
       - ./gradlew publish -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
@@ -84,7 +84,7 @@ pipeline:
     image: plugins/docker
     registry: docker.ci.interactive-instruments.de
     repo: docker.ci.interactive-instruments.de/iide/ldproxy
-    tags: ${DRONE_COMMIT_BRANCH}
+    tags: ${CI_COMMIT_BRANCH}
     force_tag: true
     dockerfile: build/docker/Dockerfile
     context: build/docker
@@ -94,7 +94,7 @@ pipeline:
 #  docker-master:
 #    image: plugins/docker
 #    repo: iide/ldproxy
-#    tags: ${DRONE_COMMIT_BRANCH}
+#    tags: ${CI_COMMIT_BRANCH}
 #    force_tag: true
 #    dockerfile: build/docker/Dockerfile
 #    context: build/docker
@@ -128,19 +128,19 @@ pipeline:
   github-release:
     image: node:12-alpine
     commands:
-      - export HOME=$${DRONE_WORKSPACE}
+      - export HOME=$${CI_WORKSPACE}
       - apk --no-cache add git libc6-compat
       - wget -O - https://github.com/cli/cli/releases/download/v1.2.0/gh_1.2.0_linux_amd64.tar.gz | tar xzvf -
       - chmod +x gh_1.2.0_linux_amd64/bin/gh
       - npx github-release-notes@0.17.1 release --override --token=$GITHUB_TOKEN
       - npx github-release-notes@0.17.1 changelog --override --token=$GITHUB_TOKEN
-      - git config user.name $DRONE_COMMIT_AUTHOR
-      - git config user.email $DRONE_COMMIT_AUTHOR_EMAIL
-      - git checkout -B changelog-$DRONE_TAG
+      - git config user.name $CI_COMMIT_AUTHOR
+      - git config user.email $CI_COMMIT_AUTHOR_EMAIL
+      - git checkout -B changelog-$CI_COMMIT_TAG
       - git add CHANGELOG.md
-      - git commit -m "add changelog for $DRONE_TAG"
-      - git push -u https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$DRONE_REPO_OWNER/$DRONE_REPO_NAME.git changelog-$DRONE_TAG > /dev/null 2>&1
-      - GITHUB_TOKEN=$GITHUB_TOKEN ./gh_1.2.0_linux_amd64/bin/gh pr create --base master --head changelog-$DRONE_TAG --reviewer $DRONE_COMMIT_AUTHOR --title " add changelog for $DRONE_TAG" --body ""
+      - git commit -m "add changelog for $CI_COMMIT_TAG"
+      - git push -u https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$CI_REPO_NAME.git changelog-$CI_COMMIT_TAG > /dev/null 2>&1
+      - GITHUB_TOKEN=$GITHUB_TOKEN ./gh_1.2.0_linux_amd64/bin/gh pr create --base master --head changelog-$CI_COMMIT_TAG --reviewer $CI_COMMIT_AUTHOR --title " add changelog for $CI_COMMIT_TAG" --body ""
     secrets: [ github_token, github_user ]
     when:
       event: [tag]
@@ -148,7 +148,7 @@ pipeline:
 #  build-community:
 #    image: openjdk:11-slim
 #    commands:
-#      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+#      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
 #      - ./gradlew assemble dockerDistTar -Psnapshot=true -Pcommunity
 #    when:
 #      event: [push]
