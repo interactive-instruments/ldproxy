@@ -29,6 +29,7 @@ tasks.register('markdownAssemble', Copy) {
 }
 
 yarn_install {
+    dependsOn tasks.named("docsAssemble")
     inputs.file("${project.workingDir}/package.json")
     inputs.file("${project.workingDir}/yarn.lock")
     outputs.dir("${project.workingDir}/node_modules")
@@ -39,7 +40,7 @@ yarn_install {
 }
 
 task docsVuepress(type: YarnTask) {
-    dependsOn yarn_install, tasks.named("docsAssemble")
+    dependsOn yarn_install
     inputs.file("${project.workingDir}/package.json")
     inputs.file("${project.workingDir}/yarn.lock")
     inputs.dir("${project.workingDir}/docs")
@@ -51,7 +52,7 @@ task docsVuepress(type: YarnTask) {
 }
 
 task docsVuepressDev(type: YarnTask) {
-    dependsOn yarn_install, tasks.named("docsAssemble")
+    dependsOn yarn_install
     inputs.file("${project.workingDir}/package.json")
     inputs.file("${project.workingDir}/yarn.lock")
     inputs.dir("${project.workingDir}/docs")
