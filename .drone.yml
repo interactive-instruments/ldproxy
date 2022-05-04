@@ -19,29 +19,36 @@ pipeline:
       - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/install-state.gz
       - ogcapi-stable/ogcapi-html/src/main/javascript/.yarn/unplugged
 
-  check-snapshot:
-    image: openjdk:11-slim
-    commands:
-      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew check -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
-    secrets: [ snapshot_user, snapshot_pass]
-    when:
-      event: [push]
+#  check-snapshot:
+#    image: openjdk:11-slim
+#    commands:
+#      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+#      - ./gradlew check -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+#    secrets: [ snapshot_user, snapshot_pass]
+#    when:
+#      event: [push]
 
-  check-release:
+#  check-release:
+#    image: openjdk:11-slim
+#    commands:
+#      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
+#      - ./gradlew check -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+#    secrets: [ snapshot_user, snapshot_pass]
+#    when:
+#      event: [tag]
+
+  docs-debug:
     image: openjdk:11-slim
     commands:
-      - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew check -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
-    secrets: [ snapshot_user, snapshot_pass]
+      - export
     when:
-      event: [tag]
+      event: [push, pull_request]
 
   build-snapshot:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew assemble dockerDistTar docsVuepress -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew build dockerDistTar docsVuepress -Pbranch=$DRONE_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [push]
@@ -50,7 +57,7 @@ pipeline:
     image: openjdk:11-slim
     commands:
       - export GRADLE_USER_HOME=$${DRONE_WORKSPACE}/.gradle
-      - ./gradlew assemble dockerDistTar docsVuepress -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew build dockerDistTar docsVuepress -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: [tag]
@@ -105,13 +112,6 @@ pipeline:
 #    secrets: [ docker_username, docker_password]
 #    when:
 #      event: tag
-
-  docs-debug:
-    image: openjdk:11-slim
-    commands:
-      - export
-    when:
-      event: [push, pull_request]
 
   docs-preview:
     image: woodpeckerci/plugin-surge-preview:next
