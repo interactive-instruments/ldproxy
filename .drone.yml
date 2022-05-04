@@ -123,6 +123,7 @@ pipeline:
     when:
       event: pull_request
 
+
   github-release:
     image: node:12-alpine
     commands:
