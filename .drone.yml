@@ -106,8 +106,15 @@ pipeline:
 #    when:
 #      event: tag
 
+  docs-debug:
+    image: openjdk:11-slim
+    commands:
+      - export
+    when:
+      event: [push, pull_request]
+
   docs-preview:
-    image: woodpeckerci/plugin-surge-preview
+    image: woodpeckerci/plugin-surge-preview:next
     settings:
       path: build/markdown/docs/.vuepress/dist/
       forge_type: github
