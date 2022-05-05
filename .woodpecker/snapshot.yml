@@ -1,0 +1,36 @@
+
+
+pipeline:
+
+  libs:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
+      - ./gradlew publish dockerDistTar -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
+    when:
+      event: push
+
+  docker:
+    image: plugins/docker
+    settings:
+      registry: docker.ci.interactive-instruments.de
+      repo: docker.ci.interactive-instruments.de/iide/ldproxy
+      tags: ${CI_COMMIT_BRANCH}
+      force_tag: true
+      dockerfile: build/docker/Dockerfile
+      context: build/docker
+    when:
+      event: push
+
+#  docker-hub:
+#    image: plugins/docker
+#    repo: iide/ldproxy
+#    tags: next
+#    force_tag: true
+#    dockerfile: build/docker/Dockerfile
+#    context: build/docker
+#    secrets: [ docker_username, docker_password]
+#    when:
+#      event: push
+#      branch: master

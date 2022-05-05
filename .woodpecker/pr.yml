@@ -1,0 +1,34 @@
+
+
+pipeline:
+
+
+  docs-debug:
+    image: openjdk:11-slim
+    commands:
+      - export
+    when:
+      event: pull_request
+
+  check:
+    image: openjdk:11-slim
+    commands:
+      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
+      - ./gradlew check docsVuepress -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
+    when:
+      event: pull_request
+
+  docs:
+    image: woodpeckerci/plugin-surge-preview:next
+    path: build/markdown/docs/.vuepress/dist/
+    settings:
+      surge_token: 
+        from_secret: surge_token
+      forge_type: github
+      forge_url: https://github.com
+      forge_repo_token: 
+        from_secret: github_token
+    secrets: [ github_token, surge_token ]
+    when:
+      event: pull_request
