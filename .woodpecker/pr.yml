@@ -1,8 +1,11 @@
 
-skip_clone: ${CI_BUILD_EVENT/pull_request/true}
+clone: 
+  git:
+    when:
+      event: pull_request
 
 pipeline:
-  
+
   docs-debug:
     image: openjdk:11-slim
     commands:
