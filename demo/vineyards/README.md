@@ -249,7 +249,7 @@ While the auto-generated API can be used as it is, the API configuration should 
 
 Updated configuration files are available here:
 
-* [`store/defaults/ogc_api.yml`](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/defaults/ogc_api.yml)
+* [`store/defaults/ogc_api.yml`](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/defaults/services/ogc_api.yml)
 * [`store/entities/providers/vineyards.yml`](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/providers/vineyards.yml)
 * [`store/entities/services/vineyards.yml`](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
 * [`api-resources/styles/vineyards/default.mbs`](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/api-resources/styles/vineyards/default.mbs)

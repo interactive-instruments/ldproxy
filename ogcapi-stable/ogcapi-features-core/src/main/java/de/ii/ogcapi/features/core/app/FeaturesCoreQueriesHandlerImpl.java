@@ -25,6 +25,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -44,6 +45,9 @@ import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -60,6 +64,7 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import org.slf4j.Logger;
@@ -248,13 +253,31 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
         }
 
-        Date lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
-        EntityTag etag = Objects.isNull(featureId) ? null : getEtag(lastModified);
+        Date lastModified = null;
+        EntityTag etag = null;
+        byte[] result = null;
+        if (Objects.nonNull(featureId)) {
+            // support etag from the content for a single feature
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                streamingOutput.write(baos);
+            } catch (IOException e) {
+                throw new IllegalStateException("Feature stream error.", e);
+            }
+            result = baos.toByteArray();
+
+            etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || api.getData().getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
+                ? getEtag(result)
+                : null;
+        } else {
+            lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
+        }
+
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        // TODO support lastModified and etag from the content, in particular for a single feature
         // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
         // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
 
@@ -267,7 +290,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                                       targetCrs,
                                       true,
                                       String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().fileExtension()))
-                .entity(streamingOutput)
+                .entity(Objects.nonNull(result) ? result : streamingOutput)
                 .build();
     }
 

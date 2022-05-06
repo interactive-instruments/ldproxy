@@ -8,6 +8,7 @@
 package de.ii.ogcapi.collections.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.common.domain.OgcApiExtent;
@@ -15,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 
+import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,24 @@ public abstract class OgcApiCollection extends PageRepresentationWithId {
 
     @JsonAnyGetter
     public abstract Map<String, Object> getExtensions();
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public Optional<String> getDefaultStyle() {
+        return getExtensions().containsKey("defaultStyle")
+            ? Optional.of((String) getExtensions().get("defaultStyle"))
+            : Optional.empty();
+    }
+
+    @JsonIgnore
+    @Value.Derived
+    @Value.Auxiliary
+    public Optional<Long> getItemCount() {
+        return getExtensions().containsKey("itemCount")
+            ? Optional.of((Long) getExtensions().get("itemCount"))
+            : Optional.empty();
+    }
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<OgcApiCollection> FUNNEL = (from, into) -> {

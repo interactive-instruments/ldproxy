@@ -13,7 +13,7 @@
             <ul class="list-unstyled">
                 {{#collections}}
                     <li>
-                        <a href="{{hrefitems}}">{{title}}</a> <small>— <a href="{{hrefcollection}}">{{moreInformation}}</a></small>
+                        <a href="{{hrefitems}}">{{title}}</a> <small>— <a href="{{hrefcollection}}">{{moreInformation}}</a>{{#itemCount}} — <span class="text-secondary">{{.}} {{itemType}}</span>{{/itemCount}}</small>
                         {{#description}}<ul class="list-unstyled">
                             <li class="list-group-item pt-0 pb-2 small text-secondary" style="border: none">{{{.}}}</li>
                         </ul>{{/description}}
