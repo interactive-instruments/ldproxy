@@ -1,11 +1,15 @@
 
+clone: 
+  git:
+    image: woodpeckerci/plugin-git
+    when:
+      event: push
 
 pipeline:
 
   libs:
     image: openjdk:11-slim
     commands:
-      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
       - ./gradlew publish dockerDistTar -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:

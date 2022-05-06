@@ -17,7 +17,6 @@ pipeline:
   check:
     image: openjdk:11-slim
     commands:
-      - export GRADLE_USER_HOME=$${CI_WORKSPACE}/.gradle
       - ./gradlew check docsVuepress -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
