@@ -1,6 +1,7 @@
 
 clone: 
   git:
+    image: woodpeckerci/plugin-git
     when:
       event: pull_request
 
