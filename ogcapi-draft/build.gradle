@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-layer' version '4.3.3'
+    id 'de.interactive_instruments.xtraplatform-layer' version '4.3.4'
     id 'com.github.hierynomus.license-report' version '0.16.1' apply false
 }
 
