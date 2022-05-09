@@ -28,6 +28,7 @@ pipeline:
     when:
       event: push
 
+# TODO: is this triggered on PR merge?
   docker-hub:
     image: plugins/docker
     settings:
@@ -44,4 +45,4 @@ pipeline:
     secrets: [ docker_username, docker_password]
     when:
       event: push
-#      branch: master
+      branch: master
