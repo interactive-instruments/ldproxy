@@ -24,17 +24,24 @@ pipeline:
       force_tag: true
       dockerfile: build/docker/Dockerfile
       context: build/docker
+      pull_image: true
     when:
       event: push
 
-#  docker-hub:
-#    image: plugins/docker
-#    repo: iide/ldproxy
-#    tags: next
-#    force_tag: true
-#    dockerfile: build/docker/Dockerfile
-#    context: build/docker
-#    secrets: [ docker_username, docker_password]
-#    when:
-#      event: push
+  docker-hub:
+    image: plugins/docker
+    settings:
+      repo: iide/ldproxy
+      tags: next
+      force_tag: true
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      dockerfile: build/docker/Dockerfile
+      context: build/docker
+      pull_image: true
+    secrets: [ docker_username, docker_password]
+    when:
+      event: push
 #      branch: master
