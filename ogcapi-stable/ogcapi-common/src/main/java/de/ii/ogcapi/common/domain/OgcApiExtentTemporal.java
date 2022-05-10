@@ -8,7 +8,10 @@
 package de.ii.ogcapi.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.TemporalExtent;
+import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -16,45 +19,31 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class OgcApiExtentTemporal {
+@Value.Immutable
+@Value.Style(deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableOgcApiExtentTemporal.Builder.class)
+public interface OgcApiExtentTemporal {
 
-    private String[][] interval;
-    private String trs;
+    String[][] getInterval();
+    String getTrs();
 
-    public OgcApiExtentTemporal(Long begin, Long end) {
-        this.interval = new String[][]{{
-                (begin!=null) ? Instant.ofEpochMilli(begin).truncatedTo(ChronoUnit.SECONDS).toString() : null,
-                (end!=null) ? Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString() : null
-        }};
-        this.trs = "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian";
-    }
-
-    public OgcApiExtentTemporal(String begin, String end) {
-        this.interval = new String[][]{{begin, end}};
-        this.trs = "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian";
-    }
-
-    public String[][] getInterval() {
-        return interval;
+    static OgcApiExtentTemporal of(TemporalExtent interval) {
+        return ImmutableOgcApiExtentTemporal.builder()
+            .interval(new String[][]{{
+                (interval.getStart()!=null) ? Instant.ofEpochMilli(interval.getStart()).truncatedTo(ChronoUnit.SECONDS).toString() : null,
+                (interval.getEnd()!=null) ? Instant.ofEpochMilli(interval.getEnd()).truncatedTo(ChronoUnit.SECONDS).toString() : null
+            }})
+            .trs("http://www.opengis.net/def/uom/ISO-8601/0/Gregorian")
+            .build();
     }
 
     @JsonIgnore
-    public String getFirstIntervalIso8601() {
+    @Value.Derived
+    @Value.Auxiliary
+    default String getFirstIntervalIso8601() {
         return String.format("%s/%s",
-                             Objects.requireNonNullElse(interval[0][0], ".."),
-                             Objects.requireNonNullElse(interval[0][1], ".."));
-    }
-
-    public void setInterval(String[][] interval) {
-        this.interval = interval;
-    }
-
-    public String getTrs() {
-        return trs;
-    }
-
-    public void setTrs(String trs) {
-        this.trs = trs;
+                             Objects.requireNonNullElse(getInterval()[0][0], ".."),
+                             Objects.requireNonNullElse(getInterval()[0][1], ".."));
     }
 
     @SuppressWarnings("UnstableApiUsage")
