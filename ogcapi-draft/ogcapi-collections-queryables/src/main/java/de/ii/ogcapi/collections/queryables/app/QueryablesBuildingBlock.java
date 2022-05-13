@@ -16,8 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- *  # Collections Queryables (QUERYABLES)
- *
+ * @title Collections Queryables
  * @langEn The module *Collections Queryables* may be enabled for every API with a feature provider.
  * It provides the sub-resource *Queryables* for the resource *Feature Collection* that
  * publishes the feature properties that may be used in queries.
@@ -33,19 +32,7 @@ import javax.inject.Singleton;
  * [Entwurf von OGC API - Features - Part 3: Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
  *
  * @propertyTable {@link de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
  * @endpointTable {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
- * @see de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration
- * @endpointTable {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
- * @see de.ii.ogcapi.foundation.domain.CachingConfiguration
->>>>>>> Stashed changes
  */
 @Singleton
 @AutoBind
