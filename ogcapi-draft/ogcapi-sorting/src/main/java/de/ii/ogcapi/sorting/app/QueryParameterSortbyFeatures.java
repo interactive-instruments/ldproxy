@@ -44,23 +44,8 @@ import java.util.stream.Collectors;
  * Features sortiert zurückgegeben. Sortiert wird nach den in einer kommaseparierten
  * Liste angegebenen Attributen. Dem Attributnamen kann ein `+` (aufsteigend, das Standardverhalten)
  * oder ein `-` (absteigend) vorangestellt werden. Beispiel: `sortby=type,-name`.
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
  * @name sortby
  * @endpoints Features, sortby
-=======
- * @name filter-crs
- * @endpoints Features, Vector Tile
->>>>>>> Stashed changes
-=======
- * @name filter-crs
- * @endpoints Features, Vector Tile
->>>>>>> Stashed changes
-=======
- * @name filter-crs
- * @endpoints Features, Vector Tile
->>>>>>> Stashed changes
  */
 @Singleton
 @AutoBind
