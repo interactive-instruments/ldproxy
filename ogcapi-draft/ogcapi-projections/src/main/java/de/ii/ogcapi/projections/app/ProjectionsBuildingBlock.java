@@ -41,7 +41,7 @@ import javax.inject.Singleton;
  * Ausgabe unterdrückt.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @endpointTable {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
  * @queryParameterTable {@link de.ii.ogcapi.projections.app.QueryParameterProperties},
  * {@link de.ii.ogcapi.projections.app.QueryParameterSkipGeometry}
  */

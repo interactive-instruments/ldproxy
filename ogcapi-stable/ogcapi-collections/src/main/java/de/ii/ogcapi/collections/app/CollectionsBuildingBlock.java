@@ -39,11 +39,8 @@ import javax.inject.Singleton;
  * @propertyTable {@link de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration}
  * @endpointTable {@link de.ii.ogcapi.collections.infra.EndpointCollection},
  * {@link de.ii.ogcapi.collections.infra.EndpointCollections}
- * @queryParameterTable {@link de.ii.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable},
- * {@link de.ii.ogcapi.collections.domain.QueryParameterFCollection},
- * {@link de.ii.ogcapi.collections.domain.QueryParameterFCollections},
- * {@link de.ii.ogcapi.collections.domain.QueryParameterFSubCollection},
- * {@link de.ii.ogcapi.collections.domain.QueryParameterTemplateQueryable}
+ * @queryParameterTable {@link de.ii.ogcapi.collections.domain.QueryParameterFCollection},
+ * {@link de.ii.ogcapi.collections.domain.QueryParameterFCollections}
  */
 
 @Singleton
