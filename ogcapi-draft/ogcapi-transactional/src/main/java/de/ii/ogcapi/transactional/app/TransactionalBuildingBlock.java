@@ -19,7 +19,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * # "Create, Replace, Update, Delete" (TRANSACTIONAL)
+ * @title "Create, Replace, Update, Delete" (TRANSACTIONAL)
  * @langEn The module is based on the specifications of the conformance classes "Create/Replace/Delete"
  * and "Features" from the
  * [Draft OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html).
@@ -30,8 +30,8 @@ import javax.inject.Singleton;
  * weiteren Standardisierung des Entwurfs noch ändern.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @see TransactionalConfiguration
- * @see EndpointTransactional
+ * @propertyTable {@link de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration}
+ * @endpointTable {@link de.ii.ogcapi.transactional.app.EndpointTransactional}
  */
 @Singleton
 @AutoBind

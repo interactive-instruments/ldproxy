@@ -70,6 +70,13 @@ import io.swagger.v3.oas.models.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @langEn TODO
+ * @langDe TODO
+ * @name Features
+ * @path /{apiId}/collections/{collectionId}/items
+ * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointPostOnItems extends EndpointSubCollection {

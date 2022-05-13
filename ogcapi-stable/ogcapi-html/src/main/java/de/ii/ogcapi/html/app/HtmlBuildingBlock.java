@@ -20,7 +20,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * # HTML (HTML)
+ * @title HTML
  * @langEn The module *HTML* may be enabled for every API. It is enabled by default. Provides
  * HTML encoding for every supported resource that does not have more specific rules
  * (like [Features](features-html.md)).
@@ -45,7 +45,8 @@ import javax.inject.Singleton;
  * `{templateName}` der Name des ldproxy-Templates ist. Die Standardtemplates liegen jeweils
  * in den Resource-Verzeichnissen der Module, die sie verwenden
  * ([Link zur Suche in GitHub](https://github.com/search?q=repo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache&type=Code)).
- * @see HtmlConfiguration
+ * @example {@link de.ii.ogcapi.html.domain.HtmlConfiguration}
+ * @properyTable {@link de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration}
  */
 @Singleton
 @AutoBind

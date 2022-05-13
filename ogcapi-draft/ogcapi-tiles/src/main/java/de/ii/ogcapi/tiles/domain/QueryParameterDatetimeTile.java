@@ -17,6 +17,13 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 
 import java.util.Optional;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name Datetime Tile
+ * @endpoints Todo
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime {

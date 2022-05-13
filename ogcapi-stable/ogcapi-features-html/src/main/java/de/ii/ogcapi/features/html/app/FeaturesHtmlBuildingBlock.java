@@ -20,20 +20,22 @@ import javax.inject.Singleton;
  */
 
 /**
- * # Features HTML (FEATURES_HTML)
+ * @title Features HTML (FEATURES_HTML)
  * @langEn The module *Features HTML* may be enabled for every API with a feature provider. It provides the
  * resources *Features* and *Feature* encoded as HTML.
  *
- * *Features HTML* implements all requirements of conformance class *HTML* of [OGC API - Features -
+ * @conformanceEn *Features HTML* implements all requirements of conformance class *HTML* of [OGC API - Features -
  * Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_html) for the two mentioned
  * resources.
  * @langDe Das Modul "Features HTML" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider
  * aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen Features und Feature in HTML.
  *
- * Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der Konformitätsklasse
+ * @conformanceDe Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der Konformitätsklasse
  * "HTML" von [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_html).
- * @see de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration
- */
+ * @example {@link de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration}
+ * @queryParameterTable {@link de.ii.ogcapi.features.html.app.QueryParameterBareHtml}
+ * */
 @Singleton
 @AutoBind
 public class FeaturesHtmlBuildingBlock implements ApiBuildingBlock {

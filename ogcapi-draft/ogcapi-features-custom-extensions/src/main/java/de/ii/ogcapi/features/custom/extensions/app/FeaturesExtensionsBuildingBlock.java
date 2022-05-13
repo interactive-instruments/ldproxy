@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * # Modul "Collections Queryables" (QUERYABLES)
+ * @title Modul "Collections Queryables"
  * @langEn The "Features Custom Extensions" module can be enabled for any API provided over ldproxy with a feature provider.
  *
  * It adds support for the HTTP method POST on the features resource. The difference to calling with
@@ -52,8 +52,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * zurückgeliefert, deren primäre Geometrie sich mit der angegebenen Geometrie schneidet.
  * Als Geometrie kann entweder eine WKT-Geometrie angegeben werden oder eine URL für ein
  * GeoJSON-Objekt mit einer Geometrie. Im Fall einer FeatureCollection wird die erste Geometrie verwendet.
- * @see de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration
- * @see de.ii.ogcapi.features.custom.extensions.infra.infra.EndpointPostOnItems
+ * @propertyTable {@link de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration}
+ * @endpointTable {@link de.ii.ogcapi.features.custom.extensions.infra.infra.EndpointPostOnItems}
+ * @queryParameterTable {@link de.ii.ogcapi.features.custom.extensions.app.QueryParameterIntersects}
  */
 @Singleton
 @AutoBind

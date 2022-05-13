@@ -20,7 +20,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * # XML (XML)
+ * @title XML
  * @langEn The module *XML* may be enabled for every API with a feature provider.
  * It is disabled by default. It provides the resources *Landing Page*, *Conformance Declaration*,
  * *Feature Collections* and *Feature Collection* as XML.
@@ -34,7 +34,7 @@ import javax.inject.Singleton;
  * Feature Collection.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @see de.ii.ogcapi.xml.domain.XmlConfiguration
+ * @propertyTable {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
  */
 @Singleton
 @AutoBind

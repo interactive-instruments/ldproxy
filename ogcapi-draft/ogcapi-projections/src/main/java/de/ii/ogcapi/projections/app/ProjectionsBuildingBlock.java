@@ -19,7 +19,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * # Projections (PROJECTIONS)
+ * @title Projections
  * @langEn The module *Projections* may be enabled for every API with a feature provider.
  * It adds the following query parameters:
  *
@@ -41,9 +41,9 @@ import javax.inject.Singleton;
  * Ausgabe unterdrückt.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @see ProjectionsConfiguration
- * @see QueryParameterProperties
- * @see QueryParameterSkipGeometry
+ * @endpointTable {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
+ * @queryParameterTable {@link de.ii.ogcapi.projections.app.QueryParameterProperties},
+ * {@link de.ii.ogcapi.projections.app.QueryParameterSkipGeometry}
  */
 @Singleton
 @AutoBind

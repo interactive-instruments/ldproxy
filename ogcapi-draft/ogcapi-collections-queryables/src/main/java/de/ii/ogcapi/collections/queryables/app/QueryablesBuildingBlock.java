@@ -32,9 +32,20 @@ import javax.inject.Singleton;
  * Das Modul basiert auf den Vorgaben der Konformitätsklasse "Filter" aus dem
  * [Entwurf von OGC API - Features - Part 3: Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
  *
+ * @propertyTable {@link de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+ * @endpointTable {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
+=======
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
  * @see de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration
- * @see EndpointQueryables
+ * @endpointTable {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
  * @see de.ii.ogcapi.foundation.domain.CachingConfiguration
+>>>>>>> Stashed changes
  */
 @Singleton
 @AutoBind

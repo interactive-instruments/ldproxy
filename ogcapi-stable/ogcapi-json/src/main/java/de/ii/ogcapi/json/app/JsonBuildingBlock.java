@@ -27,7 +27,7 @@ import javax.inject.Singleton;
  * JSON unterstützt, können Clients das Ausgabeformat anfordern.
  *
  * Es gibt keine konfigurierbaren Optionen.
- * @see de.ii.ogcapi.json.domain.JsonConfiguration
+ * @propertyTable {@link de.ii.ogcapi.json.domain.ImmutableJsonConfiguration}
  */
 @Singleton
 @AutoBind

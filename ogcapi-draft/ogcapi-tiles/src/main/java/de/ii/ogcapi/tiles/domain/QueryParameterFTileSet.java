@@ -16,6 +16,13 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name fTileSet
+ * @endpoints Todo
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterFTileSet extends QueryParameterF {

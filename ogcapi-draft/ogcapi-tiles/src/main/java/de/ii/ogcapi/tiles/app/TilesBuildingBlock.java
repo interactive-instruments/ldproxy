@@ -43,7 +43,7 @@ import javax.inject.Singleton;
 import org.sqlite.SQLiteJDBCLoader;
 
 /**
- * # Vector Tiles (TILES)
+ * @title Vector Tiles
  * @langEn The "Tiles" module can be activated for any API provided by ldproxy with an SQL
  * feature provider or with an MBTiles tile provider. It enables the "Tilesets",
  * "Tileset", "Tile", "Tile Matrix Sets" and "Tile Matrix Set" resources.
@@ -103,13 +103,22 @@ import org.sqlite.SQLiteJDBCLoader;
  * Weitere Kachelschemas können als JSON-Datei gemäß dem aktuellen Entwurf für den OGC-Standard [Two Dimensional Tile Matrix Set and Tile Set Metadata 2.0](https://docs.ogc.org/DRAFTS/17-083r3.html) im Datenverzeichnis unter `api-resources/tile-matrix-sets/{tileMatrixSetId}.json` konfiguriert werden.
  *
  * Der Tile-Cache liegt im ldproxy-Datenverzeichnis unter dem relativen Pfad `cache/tiles/{apiId}`. Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann sollte das Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den aktualisierten Daten oder Regeln neu aufgebaut wird.
- * @see EndpointTileMatrixSets
- * @see EndpointTileMultiCollection
- * @see EndpointTileSetMultiCollection
- * @see EndpointTileSetSingleCollection
- * @see EndpointTileSetsMultiCollection
- * @see EndpointTileSetsSingleCollection
- * @see EndpointTileSingleCollection
+ * @example {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
+ * @endpointTable {@link de.ii.ogcapi.tiles.infra.EndpointTileMatrixSets},
+ * {@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection},
+ * {@link de.ii.ogcapi.tiles.infra.EndpointTileSetMultiCollection},
+ * {@link de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection},
+ * {@link de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection},
+ * {@link de.ii.ogcapi.tiles.infra.EndpointTileSetsSingleCollection},
+ * {@link de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}
+ * @queryParameter {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections},
+ * {@link de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile},
+ * {@link de.ii.ogcapi.tiles.domain.QueryParameterFTile},
+ * {@link de.ii.ogcapi.tiles.domain.QueryParameterFTileMatrixSets},
+ * {@link de.ii.ogcapi.tiles.domain.QueryParameterFTileSet},
+ * {@link de.ii.ogcapi.tiles.domain.QueryParameterFTileSets},
+ * {@link de.ii.ogcapi.tiles.domain.QueryParameterLimitTile},
  * @see SeedingOptions
  *
  */

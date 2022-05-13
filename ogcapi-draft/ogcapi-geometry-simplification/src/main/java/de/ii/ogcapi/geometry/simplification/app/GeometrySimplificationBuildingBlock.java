@@ -19,7 +19,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * # Geometry Simplification (GEOMETRY_SIMPLIFICATION)
+ * @title Geometry Simplification (GEOMETRY_SIMPLIFICATION)
  * @langEn The module *Geometry Simplification* may be enabled for every API with a feature provider.
  * It adds the following query parameters:
  *
@@ -44,8 +44,8 @@ import javax.inject.Singleton;
  * (`CRS84` bzw. der Wert des Parameters Query-Parameters `crs`) angegeben.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @see GeometrySimplificationConfiguration
- * @see QueryParameterMaxAllowableOffsetFeatures
+ * @propertyTable {@link de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationConfiguration}
+ * @queryParameterTable {@link de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}
  */
 @Singleton
 @AutoBind

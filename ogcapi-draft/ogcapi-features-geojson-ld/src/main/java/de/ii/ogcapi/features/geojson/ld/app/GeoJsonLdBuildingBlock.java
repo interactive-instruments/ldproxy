@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * # Features GeoJSON-LD (GEO_JSON_LD)
+ * @title Features GeoJSON-LD (GEO_JSON_LD)
  * @langEn Adds support for JSON-LD by extending the [GeoJSON](geojson.md) encoding.
  * @langDe Das Modul "Features GeoJSON-LD" kann für jede über ldproxy bereitgestellte API mit
  * einem Feature-Provider aktiviert werden, sofern die GeoJSON-Ausgabe aktiviert ist.
@@ -41,8 +41,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * Wertes aus "id" und dem in der Konfiguration angegeben URI-Template ergänzt. Dabei wird
  * `{{serviceUrl}}` durch die Landing-Page-URI der API, `{{collectionId}}` durch die
  * Collection-ID und `{{featureId}}` durch den Wert von "id" ersetzt.
- * @see de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration
- * @see EndpointJsonLdContext
+ * @example {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
+ * @queryParameterTable {@link de.ii.ogcapi.features.geojson.ld.app.PathParameterCollectionIdGeoJsonLd}
+ * @Prerequisites {@link }
  */
 @Singleton
 @AutoBind

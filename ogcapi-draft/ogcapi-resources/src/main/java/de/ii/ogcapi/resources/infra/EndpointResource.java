@@ -43,7 +43,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * fetch list of styles or a style for the service
+ * @langEn Fetches the file resource with identifier `resourceId`. The set of
+ * available resources can be retrieved at `/resources`.
+ * @langDe TODO
+ * @name Resource
+ * @path /{apiId}/resources/{resourceId}
+ * @format {@link de.ii.ogcapi.resources.domain.ResourceFormatExtension}
  */
 @Singleton
 @AutoBind

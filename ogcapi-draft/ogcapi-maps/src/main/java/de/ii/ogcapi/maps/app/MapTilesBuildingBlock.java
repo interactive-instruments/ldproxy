@@ -46,9 +46,13 @@ import javax.inject.Singleton;
  * - JPEG
  *
  * Es steht nur das Kachelschema [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) zur Verfügung.
- * @see de.ii.ogcapi.maps.domain.MapTilesConfiguration
- * @see de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection
- * @see de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection
+ * @propertyTable {@link de.ii.ogcapi.maps.domain.MapTilesConfiguration}
+ * @endpointTable {@link de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection},
+ * {@link de.ii.ogcapi.maps.infra.EndpointMapTileSetMultiCollection},
+ * {@link de.ii.ogcapi.maps.infra.EndpointMapTileSetSingleCollection},
+ * {@link de.ii.ogcapi.maps.infra.EndpointMapTileSetsMultiCollection},
+ * {@link de.ii.ogcapi.maps.infra.EndpointMapTileSetsSingleCollection},
+ * {@link de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection}
  */
 @Singleton
 @AutoBind

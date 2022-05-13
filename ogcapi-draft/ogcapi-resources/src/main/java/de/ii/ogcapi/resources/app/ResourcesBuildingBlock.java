@@ -15,16 +15,17 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * # Modul "Resources" (RESOURCES)
+ * @title Modul "Resources"
  * @langEn The Resources module can be enabled for any API provided through ldproxy. It adds resources
  * for providing and managing file resources, especially for styles (icons, sprites).
  * @langDe Das Modul "Resources" kann für jede über ldproxy bereitgestellte API aktiviert werden.
  * Es ergänzt Ressourcen für die Bereitstellung und Verwaltung von Datei-Ressourcen, vor allem
  * für Styles (Symbole, Sprites).
- * @see de.ii.ogcapi.resources.domain.ResourcesConfiguration
- * @see de.ii.ogcapi.resources.infra.EndpointResource
- * @see de.ii.ogcapi.resources.infra.EndpointResources
- * @see de.ii.ogcapi.foundation.domain.CachingConfiguration
+ * @example {@link de.ii.ogcapi.resources.domain.ResourcesConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration}
+ * @endpointTable {@link de.ii.ogcapi.resources.infra.EndpointResource},
+ * {@link de.ii.ogcapi.resources.infra.EndpointResources}
+ * @queryParameterTable {@link de.ii.ogcapi.resources.app.QueryParameterFResources}
  */
 @Singleton
 @AutoBind

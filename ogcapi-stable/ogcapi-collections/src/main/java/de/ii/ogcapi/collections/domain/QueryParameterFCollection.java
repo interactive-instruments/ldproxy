@@ -17,6 +17,12 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name Collection
+ * @endpoints Feature Collection
+ */
 @Singleton
 @AutoBind
 public class QueryParameterFCollection extends QueryParameterFSubCollection {

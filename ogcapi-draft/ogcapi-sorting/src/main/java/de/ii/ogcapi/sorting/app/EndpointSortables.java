@@ -30,6 +30,7 @@ import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputCollectionProperties;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.auth.app.external.User;
 import io.dropwizard.auth.Auth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,19 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.List;
 import java.util.Optional;
+
+/**
+ * @langEn The sortables resources identifies the properties that can be
+ * referenced in the 'sortby' parameter to order the features of the collection in the response to a query.
+ * The response is returned as a JSON Schema document that describes a single JSON object where each property is a sortable.
+ * Note that the sortables schema does not specify a schema of any object that can be retrieved from the API.
+ * JSON Schema is used for the sortables to have a consistent approach for describing schema information and JSON Schema
+ * is/will be used in other parts of OGC API Features to describe schemas for GeoJSON feature content including in OpenAPI documents.
+ * @langDe TODO
+ * @name sortables
+ * @path /collections/{collectionId}/sortables
+ * @format {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
+ */
 
 @Singleton
 @AutoBind

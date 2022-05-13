@@ -22,25 +22,17 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * # Styles (STYLES)
- *
+ * @title Styles
  * @langEn Adds support for publishing and managing styles (*Mapbox Style* or *SLD*) and related
  * resources (symbols and sprites).
- *
- * ## Scope
- *
- * ### Conformance classes
- *
- * This module implements requirements of the conformance classes *Core*, *Manage Styles*, *Validation
+ * @ScopeEn Scope
+ * @conformanceEn This module implements requirements of the conformance classes *Core*, *Manage Styles*, *Validation
  * of styles*, *Resources*, *Manage resources*, *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1*,
  * *HTML* and *Style information* from the draft specification
  * [OGC API - Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html).
  * The implementation is subject to change in the course of the development and approval
  * process of the draft.
- *
- * ### Storage
- *
- * The stylesheets, style metadata and style information all reside as files in the data
+ * @storageEn The stylesheets, style metadata and style information all reside as files in the data
  * directory:
  *
  * * Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`, where
@@ -53,8 +45,8 @@ import javax.inject.Singleton;
  * @langDe Das Modul "Styles" kann für jede über ldproxy bereitgestellte API aktiviert werden.
  * Es ergänzt verschiedene Ressourcen für die Bereitstellung und Verwaltung von Styles.
  * (Mapbox Style, SLD).
- *
- * Das Modul basiert auf den Vorgaben der Konformitätsklassen *Core*, *Manage styles*,
+ * @ScopeDe Scope
+ * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklassen *Core*, *Manage styles*,
  * *Validation of styles*, *Mapbox Style*, *OGC SLD 1.0* und *OGC SLD 1.1* aus dem
  * [Entwurf von OGC API - Styles](https://docs.ogc.org/DRAFTS/20-009.html).
  * Die Implementierung wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
@@ -90,13 +82,19 @@ import javax.inject.Singleton;
  * `api-resources/styles/{apiId}/{styleId}.metadata` liegen.
  * Links können dabei Templates sein (d.h. `templated` ist `true`) und als Parameter
  * `{serviceUrl}` enthalten.
- * @see StylesConfiguration
- * @see EndpointStyle
- * @see EndpointStyles
- * @see EndpointStyleMetadata
- * @see EndpointStyleMetadataCollection
- * @see EndpointStyleCollection
- * @see EndpointStylesCollection
+ * @example {@link de.ii.ogcapi.styles.domain.StylesConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration}
+ * @endpointTable {@link de.ii.ogcapi.styles.infra.EndpointStyle},
+ * {@link de.ii.ogcapi.styles.infra.EndpointStyleCollection},
+ * {@link de.ii.ogcapi.styles.infra.EndpointStyleMetadata},
+ * {@link de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection},
+ * {@link de.ii.ogcapi.styles.infra.EndpointStyles},
+ * {@link de.ii.ogcapi.styles.infra.EndpointStylesCollection},
+ * {@link de.ii.ogcapi.resources.infra.EndpointResource}
+ * {@link de.ii.ogcapi.resources.infra.EndpointResources}
+ * @queryParameterTable {@link de.ii.ogcapi.styles.domain.QueryParameterFStyle},
+ * {@link de.ii.ogcapi.styles.domain.QueryParameterFStyles}
+ *
  */
 @Singleton
 @AutoBind

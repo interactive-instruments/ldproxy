@@ -18,6 +18,13 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 
 import java.util.Objects;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name Sub Collection
+ * @endpoints Todo
+ */
+
 public abstract class QueryParameterFSubCollection extends QueryParameterF {
 
     public QueryParameterFSubCollection(ExtensionRegistry extensionRegistry) {

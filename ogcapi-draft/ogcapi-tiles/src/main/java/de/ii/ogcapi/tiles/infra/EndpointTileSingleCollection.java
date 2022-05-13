@@ -44,6 +44,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * @langEn Access single-layer tiles
+ * @langDe TODO
+ * @name Tile
+ * @path /{apiId}/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ */
+
+
+/**
  * Handle responses under '/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
  */
 @Singleton

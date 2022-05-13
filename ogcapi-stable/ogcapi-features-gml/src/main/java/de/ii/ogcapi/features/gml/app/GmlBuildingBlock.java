@@ -22,7 +22,7 @@ import javax.inject.Singleton;
  * @langEn The module *Features GML* may be enabled for every API with a WFS feature provider.
  * It provides the resources *Features* and *Feature* encoded as GML.
  *
- * *Features GML* implements all requirements of conformance class *Geography Markup Language
+ * @conformanceEn *Features GML* implements all requirements of conformance class *Geography Markup Language
  * (GML), Simple Features Profile, Level 2* from
  * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_gmlsf2)
  * for the two mentioned resources.
@@ -32,12 +32,12 @@ import javax.inject.Singleton;
  * WFS-Feature-Provider aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen
  * Features und Feature in GML.
  *
- * Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der
+ * @conformanceDe Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der
  * Konformitätsklasse "Geography Markup Language (GML), Simple Features Profile, Level 2" von
  * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_gmlsf2).
  *
  * In der Konfiguration können keine weiteren Optionen gewählt werden.
- * @see GmlConfiguration
+ * @propertyTable {@link de.ii.ogcapi.features.gml.app.GmlConfiguration}
  */
 @Singleton
 @AutoBind

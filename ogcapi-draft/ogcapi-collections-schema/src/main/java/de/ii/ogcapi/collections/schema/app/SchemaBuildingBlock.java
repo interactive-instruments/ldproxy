@@ -15,7 +15,7 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * # Collections Schema (SCHEMA)
+ * @title Collections Schema
  * @langEn The module *Collections Schema* may be enabled for every API with a feature provider.
  * It provides a sub-resource *Schema* for the resource *Feature Collection* that publishes
  * the JSON Schema (Draft 07) of the features. The schema is automatically derived from the
@@ -29,9 +29,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * GeoJSON-Ausgabe unterstützt.
  *
  * In der Konfiguration können keine Optionen gewählt werden.
- * @see de.ii.ogcapi.collections.schema.domain.SchemaConfiguration
- * @see de.ii.ogcapi.collections.schema.infra.EndpointSchema
- * @see de.ii.ogcapi.foundation.domain.CachingConfiguration
+ * @propertyTable {@link de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration}
+ * @endpointTable {@link de.ii.ogcapi.collections.schema.infra.EndpointSchema},
+ * @queryParameterTable {@link de.ii.ogcapi.collections.schema.domain.QueryParameterFSchema},
+ * {@link de.ii.ogcapi.collections.schema.domain.QueryParameterProfileSchema}
  */
 @Singleton
 @AutoBind

@@ -57,6 +57,15 @@ import org.threeten.extra.Interval;
  * "Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von
  * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
  * für die zwei genannten Ressourcen.
+ * @example {@link de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration}
+ * @endpointTable {@link de.ii.ogcapi.features.core.app.EndpointFeatures}
+ * @queryParameterTable {@link de.ii.ogcapi.features.core.app.QueryParameterBbox},
+ * {@link de.ii.ogcapi.features.core.app.QueryParameterDatetime},
+ * {@link de.ii.ogcapi.features.core.app.QueryParameterFFeatures},
+ * {@link de.ii.ogcapi.features.core.app.QueryParameterLimitFeatures},
+ * {@link de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures},
+ * {@link de.ii.ogcapi.features.core.app.QueryParameterQ}
  * @see de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration
  * @see EndpointFeatures
  */

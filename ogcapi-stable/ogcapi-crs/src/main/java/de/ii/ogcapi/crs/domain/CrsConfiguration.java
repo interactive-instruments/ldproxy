@@ -15,6 +15,9 @@ import org.immutables.value.Value;
 import java.util.Set;
 
 /**
+ * @langEn Todo
+ * @langDe Das Default-Koordinatenreferenzsystem `CRS84` entspricht `code: 4326,
+ * forceAxisOrder: LON_LAT`, `CRS84h` entspricht `code: 4979, forceAxisOrder: LON_LAT`.
  * @example <code>
  * ```yaml
  * - buildingBlock: CRS
@@ -29,6 +32,9 @@ import java.util.Set;
  *     forceAxisOrder: NONE
  * ```
  * </code>
+ * @langEn Todo
+ * @langDe Durch Angabe des Query-Parameters `crs` bei den Ressourcen "Features" und "Feature" können die Koordinaten
+ * in einem der konfigurierten Koordinatenreferenzsystemen angefordert werden.
  */
 @Value.Immutable
 @Value.Style(builder = "new")

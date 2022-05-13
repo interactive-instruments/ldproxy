@@ -35,15 +35,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * # Sorting (SORTING)
+ * @title Sorting
  * @langEn The module *Sorting* may be enabled for every API with a feature provider that
- * supports sorting. It adds the following query parameter:
- *
- * * `sortby` (resource *Features*): If the parameter is specified,
- * the features are returned sorted according to the attributes specified in
- * a comma-separated list. The attribute name can be preceded by `+`
- * (ascending, the default behavior) or `-` (descending). Example: `sortby=type,-name`.
+ * supports sorting.
  * @langDe Das Modul "Sorting" kann für jede über ldproxy bereitgestellte API mit einem
+<<<<<<< Updated upstream
+ * Feature-Provider, der Sortierung unterstützt, aktiviert werden.
+=======
  * Feature-Provider, der Sortierung unterstützt, aktiviert werden. Es ergänzt die
  * folgenden Query-Parameter:
  *
@@ -51,7 +49,32 @@ import org.slf4j.LoggerFactory;
  * sortiert zurückgegeben. Sortiert wird nach den in einer kommaseparierten Liste
  * angegebenen Attributen. Dem Attributnamen kann ein `+` (aufsteigend, das Standardverhalten)
  * oder ein `-` (absteigend) vorangestellt werden. Beispiel: `sortby=type,-name`.
- * @see SortingConfiguration
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+ * @endpointTable {@link de.ii.ogcapi.sorting.app.EndpointSortables}
+ * @propertyTable {@link de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration}
+ * @queryParameterTable {@link de.ii.ogcapi.sorting.app.QueryParameterSortbyFeatures},
+ * {@link de.ii.ogcapi.sorting.app.QueryParameterFSortables}
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+ *
+ *
+>>>>>>> Stashed changes
+=======
+ *
+ *
+>>>>>>> Stashed changes
+=======
+ *
+ *
+>>>>>>> Stashed changes
  */
 @Singleton
 @AutoBind

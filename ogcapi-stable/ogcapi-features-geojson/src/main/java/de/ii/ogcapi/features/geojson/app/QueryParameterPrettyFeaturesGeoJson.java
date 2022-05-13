@@ -20,6 +20,12 @@ import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Debug option in development environments: Pretty print the GeoJSON output.
+ * @langDe Todo
+ * @name pretty
+ * @endpoints Features, Todo
+ */
 @Singleton
 @AutoBind
 public class QueryParameterPrettyFeaturesGeoJson extends ApiExtensionCache implements OgcApiQueryParameter {
