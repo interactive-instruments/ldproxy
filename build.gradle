@@ -59,6 +59,12 @@ tasks.publish {
     dependsOn(':ldproxy-cfg:publish')
 }
 
+tasks.clean {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':cleanAll')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':cleanAll')
+    dependsOn(':ldproxy-cfg:clean')
+}
+
 apply from: 'license-headers.gradle'
 
 apply from: 'docker.gradle'
