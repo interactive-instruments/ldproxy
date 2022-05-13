@@ -89,12 +89,11 @@ import javax.inject.Singleton;
  * {@link de.ii.ogcapi.styles.infra.EndpointStyleMetadata},
  * {@link de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection},
  * {@link de.ii.ogcapi.styles.infra.EndpointStyles},
- * {@link de.ii.ogcapi.styles.infra.EndpointStylesCollection},
- * {@link de.ii.ogcapi.resources.infra.EndpointResource}
- * {@link de.ii.ogcapi.resources.infra.EndpointResources}
+ * {@link de.ii.ogcapi.styles.infra.EndpointStylesCollection}
  * @queryParameterTable {@link de.ii.ogcapi.styles.domain.QueryParameterFStyle},
  * {@link de.ii.ogcapi.styles.domain.QueryParameterFStyles}
- *
+ * @todo de.ii.ogcapi.resources.infra.EndpointResource
+ * @todo de.ii.ogcapi.resources.infra.EndpointResources
  */
 @Singleton
 @AutoBind

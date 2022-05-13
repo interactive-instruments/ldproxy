@@ -30,7 +30,6 @@ import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputCollectionProperties;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.auth.app.external.User;
 import io.dropwizard.auth.Auth;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
