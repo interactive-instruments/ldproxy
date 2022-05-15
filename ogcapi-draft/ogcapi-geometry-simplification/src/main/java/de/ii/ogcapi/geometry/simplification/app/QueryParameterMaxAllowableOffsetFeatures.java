@@ -28,7 +28,7 @@ import java.util.Map;
  * The maxAllowableOffset is in the units of the response coordinate reference system.
  * @langDe Todo
  * @name maxAllowableOffset
- * @endpoints Features, Todo
+ * @endpoints Feature
  */
 @Singleton
 @AutoBind

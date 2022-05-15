@@ -19,7 +19,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title "Create, Replace, Update, Delete" (TRANSACTIONAL)
+ * @title "Create, Replace, Update, Delete"
  * @langEn The module is based on the specifications of the conformance classes "Create/Replace/Delete"
  * and "Features" from the
  * [Draft OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html).

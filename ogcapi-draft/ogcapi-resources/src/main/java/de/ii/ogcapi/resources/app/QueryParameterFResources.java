@@ -23,7 +23,7 @@ import javax.inject.Singleton;
  * @langEn Todo
  * @langDe Todo
  * @name fResources
- * @endpoints fResources
+ * @endpoints Resources
  */
 
 @Singleton

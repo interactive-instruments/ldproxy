@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
  * @langEn The optional limit parameter limits the number of features that are included in the tile.
  * @langDe Todo
  * @name limit
- * @endpoints Todo
+ * @endpoints Tile
  */
 
 @Singleton

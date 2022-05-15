@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * # Modul "Features JSON-FG" (JSON_FG)
+ * @title Modul "Features JSON-FG"
  * @langEn The Features JSON-FG module can be enabled for any API provided through ldproxy with a feature provider.
  * It enables the provisioning of the Features and Feature resources in JSON-FG.
  *
@@ -28,7 +28,8 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  *
  * Das Modul basiert auf den [Entwürfen für JSON-FG](https://github.com/opengeospatial/ogc-feat-geo-json).
  * Die Implementierung wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
- * @see JsonFgBuildingBlock
+ * @example {@link de.ii.ogcapi.features.json.fg.domain.JsonFgConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.features.json.fg.domain.ImmutableJsonFgConfiguration}
  */
 @Singleton
 @AutoBind

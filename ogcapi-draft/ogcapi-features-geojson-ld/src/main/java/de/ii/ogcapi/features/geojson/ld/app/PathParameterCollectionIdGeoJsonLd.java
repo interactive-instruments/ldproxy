@@ -19,7 +19,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * @langEn
  * @langDe
  * @name JSON-LD Context
- * @endpoints Features, Todo
+ * @endpoints Todo
  */
 @Singleton
 @AutoBind

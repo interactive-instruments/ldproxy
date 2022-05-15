@@ -18,7 +18,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * # Features GML (GML)
+ * @title Features GML
  * @langEn The module *Features GML* may be enabled for every API with a WFS feature provider.
  * It provides the resources *Features* and *Feature* encoded as GML.
  *

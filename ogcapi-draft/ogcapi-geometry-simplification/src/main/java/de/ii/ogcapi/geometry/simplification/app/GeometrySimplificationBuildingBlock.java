@@ -19,7 +19,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title Geometry Simplification (GEOMETRY_SIMPLIFICATION)
+ * @title Geometry Simplification
  * @langEn The module *Geometry Simplification* may be enabled for every API with a feature provider.
  * It adds the following query parameters:
  *

@@ -33,7 +33,7 @@ import javax.inject.Singleton;
  * list of property names. By default, all feature properties with a value are returned.
  * @langDe Todo
  * @name properties
- * @endpoints properties
+ * @endpoints Tile
  */
 
 @Singleton

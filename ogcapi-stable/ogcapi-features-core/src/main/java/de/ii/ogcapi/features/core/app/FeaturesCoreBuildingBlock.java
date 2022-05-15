@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
 /**
- * # Modul Features Core
+ * @title Modul Features Core
  * @langEn The module *Features Core* has to be enabled for every API with a feature provider.
  * It provides the resources *Features* and *Feature*.
  *
@@ -66,8 +66,6 @@ import org.threeten.extra.Interval;
  * {@link de.ii.ogcapi.features.core.app.QueryParameterLimitFeatures},
  * {@link de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures},
  * {@link de.ii.ogcapi.features.core.app.QueryParameterQ}
- * @see de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration
- * @see EndpointFeatures
  */
 @Singleton
 @AutoBind

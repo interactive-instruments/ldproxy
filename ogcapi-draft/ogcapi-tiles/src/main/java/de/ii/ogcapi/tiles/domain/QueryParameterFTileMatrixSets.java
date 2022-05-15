@@ -20,8 +20,8 @@ import javax.inject.Singleton;
 /**
  * @langEn Todo
  * @langDe Todo
- * @name fTileMatrixSets
- * @endpoints Todo
+ * @name TileMatrixSets
+ * @endpoints Tileset
  */
 
 @Singleton

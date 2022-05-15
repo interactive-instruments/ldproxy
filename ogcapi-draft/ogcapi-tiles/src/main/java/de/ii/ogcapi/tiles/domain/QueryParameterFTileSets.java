@@ -19,8 +19,8 @@ import javax.inject.Singleton;
 /**
  * @langEn Todo
  * @langDe Todo
- * @name fTileSets
- * @endpoints Todo
+ * @name TileSets
+ * @endpoints Tilesets
  */
 
 @Singleton

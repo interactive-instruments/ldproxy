@@ -25,7 +25,7 @@ import javax.inject.Singleton;
  * @langEn Todo
  * @langDe Todo
  * @name fTile
- * @endpoints Todo
+ * @endpoints Tile
  */
 
 @Singleton

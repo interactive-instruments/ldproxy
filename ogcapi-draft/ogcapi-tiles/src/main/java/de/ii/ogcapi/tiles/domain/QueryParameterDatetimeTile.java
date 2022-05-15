@@ -21,7 +21,7 @@ import java.util.Optional;
  * @langEn Todo
  * @langDe Todo
  * @name Datetime Tile
- * @endpoints Todo
+ * @endpoints Tile
  */
 
 @Singleton

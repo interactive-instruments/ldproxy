@@ -21,7 +21,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * # Modul "Map Tiles" (MAP_TILES)
+ * @title Modul "Map Tiles"
  * @langEn The " Map Tiles" module activates the "Map Tilesets", "Map Tileset" and "Map Tile" resources.
  *
  * The module is based on the drafts of [OGC API - Maps](https://github.com/opengeospatial/OGC-API-Maps).

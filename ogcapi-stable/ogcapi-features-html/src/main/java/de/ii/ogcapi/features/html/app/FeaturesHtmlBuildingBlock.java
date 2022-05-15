@@ -20,7 +20,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title Features HTML (FEATURES_HTML)
+ * @title Features HTML
  * @langEn The module *Features HTML* may be enabled for every API with a feature provider. It provides the
  * resources *Features* and *Feature* encoded as HTML.
  *

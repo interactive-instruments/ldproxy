@@ -46,7 +46,7 @@ import javax.inject.Singleton;
  * In den Fällen, in denen die Box den Antimeridian überspannt, ist der erste Wert (westlichster Boxrand) jedoch größer
  * als der dritte Wert (östlichste Kante der Box).
  * @name bbox
- * @endpoints Collections
+ * @endpoints Features
  */
 
 @Singleton

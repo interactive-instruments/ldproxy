@@ -24,7 +24,7 @@ import javax.inject.Singleton;
  * @langEn Debug option in development environments: Bare HTML output for feature pages.
  * @langDe Todo
  * @name bare
- * @endpoints Features Todo
+ * @endpoints Feature
  */
 
 //TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be moved to community

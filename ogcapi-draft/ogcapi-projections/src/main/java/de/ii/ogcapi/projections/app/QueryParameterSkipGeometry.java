@@ -27,7 +27,7 @@ import java.util.Objects;
  * @langEn Use this option to exclude geometries from the response for each feature.
  * @langDe Todo
  * @name skipGeometry
- * @endpoints skipGeometry
+ * @endpoints Feature
  */
 
 @Singleton
