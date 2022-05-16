@@ -25,7 +25,6 @@ import javax.inject.Singleton;
  * @title Styles
  * @langEn Adds support for publishing and managing styles (*Mapbox Style* or *SLD*) and related
  * resources (symbols and sprites).
- * @ScopeEn Scope
  * @conformanceEn This module implements requirements of the conformance classes *Core*, *Manage Styles*, *Validation
  * of styles*, *Resources*, *Manage resources*, *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1*,
  * *HTML* and *Style information* from the draft specification
@@ -42,10 +41,9 @@ import javax.inject.Singleton;
  * Links might be templates (by setting `templated` to `true`) containing `{serviceUrl}`.
  * * Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`.
  * Links might be templates (by setting `templated` to `true`) containing `{serviceUrl}` and `{collectionId}`.
- * @langDe Das Modul "Styles" kann für jede über ldproxy bereitgestellte API aktiviert werden.
+ * @langDe Das Modul *Styles* kann für jede über ldproxy bereitgestellte API aktiviert werden.
  * Es ergänzt verschiedene Ressourcen für die Bereitstellung und Verwaltung von Styles.
  * (Mapbox Style, SLD).
- * @ScopeDe Scope
  * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklassen *Core*, *Manage styles*,
  * *Validation of styles*, *Mapbox Style*, *OGC SLD 1.0* und *OGC SLD 1.1* aus dem
  * [Entwurf von OGC API - Styles](https://docs.ogc.org/DRAFTS/20-009.html).

@@ -20,15 +20,11 @@ import com.github.azahnen.dagger.annotations.AutoBind;
  * It provides a sub-resource *Schema* for the resource *Feature Collection* that publishes
  * the JSON Schema (Draft 07) of the features. The schema is automatically derived from the
  * type definitions in the feature provider.
- *
- * This module has no configuration options.
  * @langDe Das Modul "Collections Schema" kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider aktiviert werden. Es ergänzt Ressourcen als Sub-Ressource zu jeder Feature
  * Collection, die das Schema der GeoJSON Features veröffentlicht. Das Schema wird aus den
  * Schemainformationen im Feature-Provider abgeleitet. Aktuell wird JSON Schema 2019-09 für die
  * GeoJSON-Ausgabe unterstützt.
- *
- * In der Konfiguration können keine Optionen gewählt werden.
  * @propertyTable {@link de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration}
  * @endpointTable {@link de.ii.ogcapi.collections.schema.infra.EndpointSchema},
  * @queryParameterTable {@link de.ii.ogcapi.collections.schema.domain.QueryParameterFSchema},

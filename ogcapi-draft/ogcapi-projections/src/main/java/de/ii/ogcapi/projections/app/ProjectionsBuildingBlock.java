@@ -28,9 +28,7 @@ import javax.inject.Singleton;
  * Mapbox Vector Tiles `tags`.
  * * `skipGeometry` (for resources *Features* and *Feature*): if set to `true`, geometries
  * will be skipped in the output.<br>_since version 2.2
- *
- * This module has no configuration options.
- * @langDe Das Modul "Projections" kann für jede über ldproxy bereitgestellte API mit einem
+ * @langDe Das Modul *Projections* kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider aktiviert werden. Es ergänzt die folgenden Query-Parameter:
  *
  * * `properties` (Ressourcen "Features", "Feature" und "Vector Tile"): Ist der Parameter
@@ -39,8 +37,6 @@ import javax.inject.Singleton;
  * im `tags`-Feld enthalten sind;
  * * `skipGeometry` (Ressourcen "Features" und "Feature"): Bei `true` werden Geometrien in der
  * Ausgabe unterdrückt.
- *
- * In der Konfiguration können keine Optionen gewählt werden.
  * @propertyTable {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
  * @queryParameterTable {@link de.ii.ogcapi.projections.app.QueryParameterProperties},
  * {@link de.ii.ogcapi.projections.app.QueryParameterSkipGeometry}

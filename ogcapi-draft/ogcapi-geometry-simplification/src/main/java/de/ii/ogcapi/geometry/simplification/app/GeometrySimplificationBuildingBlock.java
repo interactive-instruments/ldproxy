@@ -30,9 +30,7 @@ import javax.inject.Singleton;
  * ([Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance)).
  * The value has to use the unit of the given coordinate reference system
  * (`CRS84` or the value of parameter `crs`).
- *
- * This module has no configuration options.
- * @langDe Das Modul "Geometry Simplification" kann für jede über ldproxy bereitgestellte API mit
+ * @langDe Das Modul *Geometry Simplification* kann für jede über ldproxy bereitgestellte API mit
  * einem Feature-Provider aktiviert werden. Es ergänzt den Query-Parameter `maxAllowableOffset`
  * für die Ressourcen "Features" und "Feature". Ist der Parameter angegeben, werden alle
  * Geometrien mit dem
@@ -42,8 +40,6 @@ import javax.inject.Singleton;
  * ([Hausdorff-Abstand](https://en.wikipedia.org/wiki/Hausdorff_distance)).
  * Der Wert ist in den Einheiten des Koordinatenreferenzsystems der Ausgabe
  * (`CRS84` bzw. der Wert des Parameters Query-Parameters `crs`) angegeben.
- *
- * In der Konfiguration können keine Optionen gewählt werden.
  * @propertyTable {@link de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationConfiguration}
  * @queryParameterTable {@link de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}
  */

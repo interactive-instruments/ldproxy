@@ -31,7 +31,7 @@ import javax.inject.Singleton;
  * Custom templates are supported, they have to reside in the data directory under the
  * relative path `templates/html/{templateName}.mustache`, where `{templateName}`
  * equals the name of a default template (see [source code on GitHub](https://github.com/search?q=repo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache&type=Code)).
- * @langDe Das Modul "HTML" kann für jede über ldproxy bereitgestellte API aktiviert werden
+ * @langDe Das Modul *HTML* kann für jede über ldproxy bereitgestellte API aktiviert werden
  * und ist standardmäßig aktiviert. Soweit für eine Ressource keine speziellen Regelungen für
  * die Ausgabeformate bestehen (wie zum Beispiel für [Features](features-html.md))
  * und die Ressource HTML unterstützt, können Clients das Ausgabeformat HTML anfordern.

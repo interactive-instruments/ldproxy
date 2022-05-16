@@ -15,10 +15,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Modul "Resources"
- * @langEn The Resources module can be enabled for any API provided through ldproxy. It adds resources
+ * @title Resources
+ * @langEn The *Resources* module can be enabled for any API provided through ldproxy. It adds resources
  * for providing and managing file resources, especially for styles (icons, sprites).
- * @langDe Das Modul "Resources" kann für jede über ldproxy bereitgestellte API aktiviert werden.
+ * @langDe Das Modul *Resources* kann für jede über ldproxy bereitgestellte API aktiviert werden.
  * Es ergänzt Ressourcen für die Bereitstellung und Verwaltung von Datei-Ressourcen, vor allem
  * für Styles (Symbole, Sprites).
  * @example {@link de.ii.ogcapi.resources.domain.ResourcesConfiguration}

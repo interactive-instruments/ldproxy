@@ -27,7 +27,7 @@ import javax.inject.Singleton;
  * @conformanceEn *Features HTML* implements all requirements of conformance class *HTML* of [OGC API - Features -
  * Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_html) for the two mentioned
  * resources.
- * @langDe Das Modul "Features HTML" kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider
+ * @langDe Das Modul *Features HTML* kann für jede über ldproxy bereitgestellte API mit einem Feature-Provider
  * aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen Features und Feature in HTML.
  *
  * @conformanceDe Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der Konformitätsklasse

@@ -44,7 +44,7 @@ import org.sqlite.SQLiteJDBCLoader;
 
 /**
  * @title Vector Tiles
- * @langEn The "Tiles" module can be activated for any API provided by ldproxy with an SQL
+ * @langEn The *Tiles* module can be activated for any API provided by ldproxy with an SQL
  * feature provider or with an MBTiles tile provider. It enables the "Tilesets",
  * "Tileset", "Tile", "Tile Matrix Sets" and "Tile Matrix Set" resources.
  *
@@ -73,7 +73,7 @@ import org.sqlite.SQLiteJDBCLoader;
  * Additional tile schemas can be configured as JSON files according to the current draft OGC standard [Two Dimensional Tile Matrix Set and Tile Set Metadata 2.0](https://docs.ogc.org/DRAFTS/17-083r3.html) in the data directory at `api-resources/tile-matrix-sets/{tileMatrixSetId}.json`.
  *
  * The tile cache is located in the ldproxy data directory under the relative path `cache/tiles/{apiId}`. If the data for an API or tile configuration has been changed, then the cache directory for the API should be deleted so that the cache is rebuilt with the updated data or rules.
- * @langDe Das Modul "Tiles" kann für jede über ldproxy bereitgestellte API mit einem
+ * @langDe Das Modul *Tiles* kann für jede über ldproxy bereitgestellte API mit einem
  * SQL-Feature-Provider oder mit einem MBTiles-Tile-Provider aktiviert werden.
  * Es aktiviert die Ressourcen "Tilesets", "Tileset", "Tile", "Tile Matrix Sets"
  * und "Tile Matrix Set".

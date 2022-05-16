@@ -19,7 +19,7 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title "Create, Replace, Update, Delete"
+ * @title CRUD
  * @langEn The module is based on the specifications of the conformance classes "Create/Replace/Delete"
  * and "Features" from the
  * [Draft OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html).
@@ -28,8 +28,6 @@ import javax.inject.Singleton;
  * "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
  * Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
  * weiteren Standardisierung des Entwurfs noch ändern.
- *
- * In der Konfiguration können keine Optionen gewählt werden.
  * @propertyTable {@link de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration}
  * @endpointTable {@link de.ii.ogcapi.transactional.app.EndpointTransactional}
  */
