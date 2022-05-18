@@ -26,9 +26,13 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 /**
- * # Overview
- * @langEn Each API represents a deployment of a single OGC Web API.
- * @langDe Jede API stellt eine OGC Web API bereit.
+ *
+ * @langEn # Overview
+ * <p>
+ * Each API represents a deployment of a single OGC Web API.
+ * @langDe # Übersicht
+ * <p>
+ * Jede API stellt eine OGC Web API bereit.
  *
  * Die Konfiguration einer API wird in einer Konfigurationsdatei in einem Objekt mit den folgenden
  * Eigenschaften beschrieben.
@@ -43,35 +47,46 @@ import org.immutables.value.Value;
  * @see FeatureTypeConfigurationOgcApi
  * @see de.ii.xtraplatform.features.domain.FeatureTypeConfiguration
  *
- * ## API modules
- * @langEn Modules might be configured for the API or for single collections. The final configuration is
+ *
+ * @langEn ## Building Blocks
+ * <p>
+ * Building blocks might be configured for the API or for single collections. The final configuration is
  * formed by merging the following sources in this order:
  *
- * * The module defaults, see [API modules](building-blocks/README.md).
- * * Optional deployment defaults in the `defaults` directory.
- * * API level configuration.
- * * Collection level configuration.
- * * Optional deployment overrides in the `overrides` directory.
- * @langDe Ein Array dieser Modul-Konfigurationen steht auf der Ebene der gesamten API und für
+ * - The building block defaults, see [Building Blocks](building-blocks/README.md).
+ * - Optional deployment defaults in the `defaults` directory.
+ * - API level configuration.
+ * - Collection level configuration.
+ * - Optional deployment overrides in the `overrides` directory.
+ * @langDe ## Bausteine
+ * <p>
+ * Ein Array dieser Baustein-Konfigurationen steht auf der Ebene der gesamten API und für
  * jede Collection zur Verfügung. Die jeweils gültige Konfiguration ergibt sich aus der Priorisierung:
  *
- * * Ist nichts angegeben, dann gelten die im ldproxy-Code vordefinierten Standardwerte. Diese sind bei den jeweiligen [API-Modulen](building-blocks/README.md) spezifiziert.
- * * Diese systemseitigen Standardwerte können von den Angaben im Verzeichnis "defaults" überschrieben werden.
- * * Diese deploymentweiten Standardwerte können von den Angaben in der API-Definition auf Ebene der API überschrieben werden.
- * * Diese API-weiten Standardwerte können bei den Collection-Ressourcen und untergeordneten Ressourcen von den Angaben in der API-Definition auf Ebene der Collection überschrieben werden.
- * * Diese Werte können durch Angaben im Verzeichnis "overrides" überschrieben werden.
+ * - Ist nichts angegeben, dann gelten die im ldproxy-Code vordefinierten Standardwerte. Diese sind bei den jeweiligen [Bausteinen](building-blocks/README.md) spezifiziert.
+ * - Diese systemseitigen Standardwerte können von den Angaben im Verzeichnis `defaults` überschrieben werden.
+ * - Diese deploymentweiten Standardwerte können von den Angaben in der API-Definition auf Ebene der API überschrieben werden.
+ * - Diese API-weiten Standardwerte können bei den Collection-Ressourcen und untergeordneten Ressourcen von den Angaben in der API-Definition auf Ebene der Collection überschrieben werden.
+ * - Diese Werte können durch Angaben im Verzeichnis `overrides` überschrieben werden.
  *
- * ## Example
- * @langEn See the
+ *
+ * @langEn ## Example
+ * <p>
+ * See the
  * [API configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  * of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).
- * @langDe Als Beispiel siehe die
+ * @langDe ## Beispiel
+ * <p>
+ * Als Beispiel siehe die
  * [API-Konfiguration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  * der API [Weinlagen in Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
  *
- * ## Storage
- * @langEn API configurations reside under the relative path `store/entities/services/{apiId}.yml` in the data directory.
- * @langDe API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml` im Datenverzeichnis.
+ * @langEn ## Storage
+ * <p>
+ * API configurations reside under the relative path `store/entities/services/{apiId}.yml` in the data directory.
+ * @langDe ## Storage
+ * <p>
+ * API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml` im Datenverzeichnis.
  */
 @DocFile(path = "configuration/services", name="README.md")
 @Value.Immutable

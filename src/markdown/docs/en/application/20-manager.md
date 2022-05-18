@@ -1,3 +1,3 @@
 # Manager
 
-This is a placeholder for the future documentation of the ldproxy manager.
+Currently only available in [German](../de/application/20-manager.md).
