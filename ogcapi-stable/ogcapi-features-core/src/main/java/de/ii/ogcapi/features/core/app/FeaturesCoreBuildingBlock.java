@@ -201,8 +201,9 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
         BoundingBox boundingBox = spatialExtent.get();
         if (!boundingBox.getEpsgCrs().equals(OgcCrs.CRS84)
             && !boundingBox.getEpsgCrs().equals(OgcCrs.CRS84h)) {
-          Optional<CrsTransformer> transformer =
-              crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
+          Optional<CrsTransformer> transformer = boundingBox.is3d()
+              ? crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84h)
+              : crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
           if (transformer.isPresent()) {
             try {
               boundingBox = transformer.get().transformBoundingBox(boundingBox);

@@ -7,62 +7,31 @@
  */
 package de.ii.ogcapi.common.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.TemporalExtent;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import org.immutables.value.Value;
 
 import java.util.Optional;
 
-public class OgcApiExtent {
-    private Optional<OgcApiExtentSpatial> spatial;
-    private Optional<OgcApiExtentTemporal> temporal;
+@Value.Immutable
+@Value.Style(deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableOgcApiExtent.Builder.class)
+public interface OgcApiExtent {
 
-    public OgcApiExtent() {
-        this.spatial = Optional.empty();
-        this.temporal = Optional.empty();
-    }
+    Optional<OgcApiExtentSpatial> getSpatial();
+    Optional<OgcApiExtentTemporal> getTemporal();
 
-    public OgcApiExtent(String xmin, String ymin, String xmax, String ymax) {
-        this.spatial = Optional.of(new OgcApiExtentSpatial(xmin, ymin, xmax, ymax));
-        this.temporal = Optional.empty();
-    }
+    static Optional<OgcApiExtent> of(Optional<BoundingBox> spatial, Optional<TemporalExtent> temporal) {
+        if (spatial.isEmpty() && temporal.isEmpty()) {
+            return Optional.empty();
+        }
 
-    public OgcApiExtent(double xmin, double ymin, double xmax, double ymax) {
-        this.spatial = Optional.of(new OgcApiExtentSpatial(xmin, ymin, xmax, ymax));
-        this.temporal = Optional.empty();
-    }
-
-    public OgcApiExtent(String begin, String end) {
-        this.spatial = Optional.empty();
-        this.temporal = Optional.of(new OgcApiExtentTemporal(begin, end));
-    }
-
-    public OgcApiExtent(Long begin, Long end) {
-        this.spatial = Optional.empty();
-        this.temporal = Optional.of(new OgcApiExtentTemporal(begin, end));
-    }
-
-    public OgcApiExtent(Long begin, Long end, double xmin, double ymin, double xmax, double ymax) {
-        this.spatial = Optional.of(new OgcApiExtentSpatial(xmin, ymin, xmax, ymax));
-        this.temporal = Optional.of(new OgcApiExtentTemporal(begin, end));
-    }
-
-    public OgcApiExtent(String begin, String end, String xmin, String ymin, String xmax, String ymax) {
-        this.spatial = Optional.of(new OgcApiExtentSpatial(xmin, ymin, xmax, ymax));
-        this.temporal = Optional.of(new OgcApiExtentTemporal(begin, end));
-    }
-    public Optional<OgcApiExtentSpatial> getSpatial() {
-        return spatial;
-    }
-
-    public void setSpatial(OgcApiExtentSpatial spatial) {
-        this.spatial = Optional.ofNullable(spatial);
-    }
-
-    public Optional<OgcApiExtentTemporal> getTemporal() {
-        return temporal;
-    }
-
-    public void setTemporal(OgcApiExtentTemporal temporal) {
-        this.temporal = Optional.ofNullable(temporal);
+        ImmutableOgcApiExtent.Builder builder = ImmutableOgcApiExtent.builder();
+        spatial.ifPresent(bbox -> builder.spatial(OgcApiExtentSpatial.of(bbox)));
+        temporal.ifPresent(interval -> builder.temporal(OgcApiExtentTemporal.of(interval)));
+        return Optional.of(builder.build());
     }
 
     @SuppressWarnings("UnstableApiUsage")

@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
@@ -15,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonDeserialize(as = ImmutableJsonSchemaNull.class)
 public abstract class JsonSchemaNull extends JsonSchema {
 
     public final String getType() { return "null"; }

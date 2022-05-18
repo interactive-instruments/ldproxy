@@ -7,21 +7,20 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
-import java.nio.charset.StandardCharsets;
-
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-public abstract class JsonSchemaRefExternal extends JsonSchema {
+@Value.Style(jdkOnly = true)
+public abstract class JsonSchemaFalse extends JsonSchema {
 
-    @JsonProperty("$ref")
-    public abstract String getRef();
+    // any instance is invalid
+
+    @JsonValue
+    public final boolean toValue() { return false; }
 
     @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaRefExternal> FUNNEL = (from, into) -> {
-        into.putString(from.getRef(), StandardCharsets.UTF_8);
+    public static final Funnel<JsonSchemaFalse> FUNNEL = (from, into) -> {
     };
 }

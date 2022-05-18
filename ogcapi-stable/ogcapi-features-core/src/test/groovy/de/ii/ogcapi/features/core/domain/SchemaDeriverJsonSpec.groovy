@@ -56,6 +56,7 @@ class SchemaDeriverJsonSpec extends Specification {
                             .title("foo > date")
                             .format("date")
                             .build())
+                    .additionalProperties(ImmutableJsonSchemaFalse.builder().build())
                     .build();
 
     static JsonSchema EXPECTED_QUERYABLES_V7 =

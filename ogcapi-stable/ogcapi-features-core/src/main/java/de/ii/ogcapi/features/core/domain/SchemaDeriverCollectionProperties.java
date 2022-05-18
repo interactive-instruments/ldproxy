@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
@@ -39,6 +40,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
         builder.putProperties(cleanName, propertySchema);
       }
     });
+    builder.additionalProperties(ImmutableJsonSchemaFalse.builder().build());
   }
 
   @Override
