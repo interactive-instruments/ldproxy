@@ -4,7 +4,7 @@ module.exports = {
 	createGroup: createGroup,
 }
 
-function createGroup(title, directory, options = { children: []}) {
+function createGroup(title, directory, options = { children: [], ignoreReadme: false}) {
   const extension = [".md"];
   const dir = normalize(directory);
   const mdPath = path.join(`${__dirname}/..${dir}`);
@@ -18,7 +18,8 @@ function createGroup(title, directory, options = { children: []}) {
     .filter(
       (item) =>
         fs.statSync(path.join(mdPath, item)).isFile() &&
-        extension.includes(path.extname(item))
+        extension.includes(path.extname(item)) &&
+        (!opts.ignoreReadme || item.toLowerCase() !== "readme.md")
     )
     .sort(sortMdFiles)
     .map(item => `${dir}${item}`);

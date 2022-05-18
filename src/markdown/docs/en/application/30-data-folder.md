@@ -1,4 +1,4 @@
-# The data folder
+# Files
 
 All deployment-specific files except the feature provider are located in the data folder (typically "data"). It is always located outside the Docker container.
 

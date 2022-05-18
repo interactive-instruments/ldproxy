@@ -1,4 +1,4 @@
-# Bereitstellung von ldproxy
+# Bereitstellung
 
 Der empfohlene Weg zur Bereitstellung von ldproxy ist die Verwendung von Docker, einer Open-Source-Containerplattform. Docker-Images für ldproxy sind auf [Docker Hub](https://hub.docker.com/r/iide/ldproxy/) verfügbar.
 

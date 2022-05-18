@@ -58,19 +58,22 @@ module.exports = {
             link: '/',
             activeMatch: '/',
           },
+          {
+            text: 'Demo',
+            link: 'https://demo.ldproxy.net',
+          },
         ],
         sidebar: [
-          createGroup('Getting Started', '/'),
-          createGroup('Configuration', 'configuration', {
+          createGroup('Getting Started', '/', {ignoreReadme: true}),
+          createGroup('Application', 'application'),
+          createGroup('APIs', 'configuration/services', {
             children: [
-              createGroup('Data Providers', 'configuration/providers'),
-              createGroup('APIs', 'configuration/services', {
-                children: [
-                  createGroup('OGC API Building Blocks', 'configuration/services/building-blocks', {collapsible: true})
-                ]
-              }),
+              createGroup('Building Blocks', 'configuration/services/building-blocks', {collapsible: true})
             ]
           }),
+          createGroup('Data Providers', 'configuration/providers'),
+          createGroup('Codelists', 'configuration/codelists'),
+          {text: 'Advanced Topics'},
         ],
         themeExtensions: {
           legalNoticeUrl: 'https://www.interactive-instruments.de/en/about/impressum/',
@@ -86,19 +89,22 @@ module.exports = {
             link: '/',
             activeMatch: '/',
           },
+          {
+            text: 'Demo',
+            link: 'https://demo.ldproxy.net',
+          },
         ],
         sidebar: [
-          createGroup('Erste Schritte', 'de'),
-          createGroup('Konfiguration', 'de/configuration', {
+          createGroup('Erste Schritte', 'de', {ignoreReadme: true}),
+          createGroup('Applikation', 'de/application'),
+          createGroup('APIs', 'de/configuration/services', {
             children: [
-              createGroup('Daten-Provider', 'de/configuration/providers'),
-              createGroup('APIs', 'de/configuration/services', {
-                children: [
-                  createGroup('OGC API Bausteine', 'de/configuration/services/building-blocks', {collapsible: true})
-                ]
-              }),
+              createGroup('Bausteine', 'de/configuration/services/building-blocks', {collapsible: true})
             ]
           }),
+          createGroup('Daten-Provider', 'de/configuration/providers'),
+          createGroup('Codelisten', 'de/configuration/codelists'),
+          {text: 'Fortgeschrittene Themen'},
         ],
         themeExtensions: {
           onThisPageLabel: 'Auf dieser Seite',

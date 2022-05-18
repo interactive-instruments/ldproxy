@@ -1,0 +1,3 @@
+# Manager
+
+This is a placeholder for the future documentation of the ldproxy manager.

@@ -1,4 +1,4 @@
-# Deploying ldproxy
+# Installation
 
 The recommended way to deploy ldproxy is using Docker, an open source container platform. Docker images for ldproxy are available on [Docker Hub](https://hub.docker.com/r/iide/ldproxy/).
 
