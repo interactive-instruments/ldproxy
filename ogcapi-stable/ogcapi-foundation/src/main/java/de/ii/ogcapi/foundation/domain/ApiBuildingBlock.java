@@ -64,7 +64,7 @@ import de.ii.xtraplatform.docs.DocVar;
  * (siehe die nachfolgende [Übersicht](#api-module-overview)).
  */
 @DocFile(
-    path = "configuration/services/building-blocks",
+    path = "services/building-blocks",
     name = "README.md",
     tables = {
         @DocTable(
@@ -97,7 +97,7 @@ import de.ii.xtraplatform.docs.DocVar;
 )
 @DocFilesTemplate(
     files = ForEach.IMPLEMENTATION,
-    path = "configuration/services/building-blocks",
+    path = "services/building-blocks",
     stripSuffix = "BuildingBlock",
     template = {
         @DocI18n(language = "en", value =

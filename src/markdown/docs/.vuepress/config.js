@@ -66,14 +66,14 @@ module.exports = {
         sidebar: [
           createGroup('Getting Started', '/', {ignoreReadme: true}),
           createGroup('Application', 'application'),
-          createGroup('APIs', 'configuration/services', {
+          createGroup('APIs', 'services', {
             children: [
-              createGroup('Building Blocks', 'configuration/services/building-blocks', {collapsible: true})
+              createGroup('Building Blocks', 'services/building-blocks', {collapsible: true})
             ]
           }),
-          createGroup('Data Providers', 'configuration/providers'),
-          createGroup('Codelists', 'configuration/codelists'),
-          {text: 'Advanced Topics'},
+          createGroup('Data Providers', 'providers'),
+          createGroup('Codelists', 'codelists'),
+          {text: 'Advanced'},
         ],
         themeExtensions: {
           legalNoticeUrl: 'https://www.interactive-instruments.de/en/about/impressum/',
@@ -97,14 +97,14 @@ module.exports = {
         sidebar: [
           createGroup('Erste Schritte', 'de', {ignoreReadme: true}),
           createGroup('Applikation', 'de/application'),
-          createGroup('APIs', 'de/configuration/services', {
+          createGroup('APIs', 'de/services', {
             children: [
-              createGroup('Bausteine', 'de/configuration/services/building-blocks', {collapsible: true})
+              createGroup('Bausteine', 'de/services/building-blocks', {collapsible: true})
             ]
           }),
-          createGroup('Daten-Provider', 'de/configuration/providers'),
-          createGroup('Codelisten', 'de/configuration/codelists'),
-          {text: 'Fortgeschrittene Themen'},
+          createGroup('Daten-Provider', 'de/providers'),
+          createGroup('Codelisten', 'de/codelists'),
+          {text: 'Fortgeschritten'},
         ],
         themeExtensions: {
           onThisPageLabel: 'Auf dieser Seite',

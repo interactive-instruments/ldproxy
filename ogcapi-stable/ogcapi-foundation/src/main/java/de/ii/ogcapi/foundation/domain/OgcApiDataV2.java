@@ -13,6 +13,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.docs.DocFile;
+import de.ii.xtraplatform.docs.DocStep;
+import de.ii.xtraplatform.docs.DocStep.Step;
+import de.ii.xtraplatform.docs.DocTable;
+import de.ii.xtraplatform.docs.DocTable.ColumnSet;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
@@ -27,55 +31,69 @@ import org.immutables.value.Value;
 
 /**
  *
- * @langEn # Overview
+ * @langEn # Common
  * <p>
  * Each API represents a deployment of a single OGC Web API.
- * @langDe # Übersicht
+ * @langDe # Allgemein
  * <p>
  * Jede API stellt eine OGC Web API bereit.
  *
  * Die Konfiguration einer API wird in einer Konfigurationsdatei in einem Objekt mit den folgenden
  * Eigenschaften beschrieben.
  *
+ * @langEn ## Configuration
+ * <p>
+ * Details regarding the API modules can be found [here](building-blocks/README.md), see `api` in the table below.
+ * <p>
+ * {@docTable:properties}
+ * @langDe ## Konfiguration
+ * <p>
  * Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/README.md), siehe
  * `api` in der nachfolgenden Tabelle.
- * @see Metadata
- * @see ExternalDocumentation
- * @see CollectionExtent
- * @see de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE
- * @see de.ii.xtraplatform.services.domain.ServiceData
- * @see FeatureTypeConfigurationOgcApi
- * @see de.ii.xtraplatform.features.domain.FeatureTypeConfiguration
- *
- *
- * @langEn ## Building Blocks
+ * <p>
+ * {@docTable:properties}
+ * @langEn ### Collection
+ * <p>
+ * Every collection corresponds to a feature type defined in the feature provider (only *Feature Collections* are currently supported).
+ * <p>
+ * {@docTable:collectionProperties}
+ * @langDe ### Collection
+ * <p>
+ * Jedes Collection-Objekt beschreibt eine Objektart aus einem Feature Provider (derzeit werden nur Feature Collections von ldproxy unterstützt). Es setzt sich aus den folgenden Eigenschaften zusammen:
+ * <p>
+ * {@docTable:collectionProperties}
+ * @langEn ### Building Blocks
  * <p>
  * Building blocks might be configured for the API or for single collections. The final configuration is
  * formed by merging the following sources in this order:
- *
+ * <p>
+ * <code>
  * - The building block defaults, see [Building Blocks](building-blocks/README.md).
  * - Optional deployment defaults in the `defaults` directory.
  * - API level configuration.
  * - Collection level configuration.
  * - Optional deployment overrides in the `overrides` directory.
- * @langDe ## Bausteine
+ * </code>
+ * <p>
+ * @langDe ### Bausteine
  * <p>
  * Ein Array dieser Baustein-Konfigurationen steht auf der Ebene der gesamten API und für
  * jede Collection zur Verfügung. Die jeweils gültige Konfiguration ergibt sich aus der Priorisierung:
- *
+ * <p>
+ * <code>
  * - Ist nichts angegeben, dann gelten die im ldproxy-Code vordefinierten Standardwerte. Diese sind bei den jeweiligen [Bausteinen](building-blocks/README.md) spezifiziert.
  * - Diese systemseitigen Standardwerte können von den Angaben im Verzeichnis `defaults` überschrieben werden.
  * - Diese deploymentweiten Standardwerte können von den Angaben in der API-Definition auf Ebene der API überschrieben werden.
  * - Diese API-weiten Standardwerte können bei den Collection-Ressourcen und untergeordneten Ressourcen von den Angaben in der API-Definition auf Ebene der Collection überschrieben werden.
  * - Diese Werte können durch Angaben im Verzeichnis `overrides` überschrieben werden.
- *
- *
- * @langEn ## Example
+ * </code>
+ * <p>
+ * @langEn ### Example
  * <p>
  * See the
  * [API configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  * of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).
- * @langDe ## Beispiel
+ * @langDe ### Beispiel
  * <p>
  * Als Beispiel siehe die
  * [API-Konfiguration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
@@ -84,11 +102,30 @@ import org.immutables.value.Value;
  * @langEn ## Storage
  * <p>
  * API configurations reside under the relative path `store/entities/services/{apiId}.yml` in the data directory.
- * @langDe ## Storage
+ * @langDe ## Speicherung
  * <p>
  * API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml` im Datenverzeichnis.
+ * @propertyTable {@link de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2}
+ * @propertyTable:collection {@link de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi}
  */
-@DocFile(path = "configuration/services", name="README.md")
+@DocFile(path = "services", name="README.md", tables = {
+    @DocTable(
+        name = "properties",
+        rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+        },
+        columnSet = ColumnSet.JSON_PROPERTIES
+    ),
+    @DocTable(
+        name = "collectionProperties",
+        rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable:collection}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+        },
+        columnSet = ColumnSet.JSON_PROPERTIES
+    ),
+})
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiDataV2.Builder.class)
 public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfiguration {
