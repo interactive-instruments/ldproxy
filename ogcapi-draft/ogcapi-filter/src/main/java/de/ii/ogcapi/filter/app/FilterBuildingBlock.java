@@ -16,7 +16,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
  * @title Filter - CQL
- * @langEn Adds support for CQL filter expressions in queries to select [Features](features-core.md) or [Vector Tiles](tiles.md).
+ * @langEn Adds support for CQL filter expressions in queries to select [Features](features_core.md) or [Vector Tiles](tiles.md).
  * @conformanceEn This module implements requirements of the conformance classes *Filter*, *Features Filter*,
  * *Simple CQL*, *CQL Text* and *CQL JSON* from the draft specification [OGC API - Features - Part 3: Common Query Language](http://docs.opengeospatial.org/DRAFTS/19-079.html). The implementation is subject to change in the course of the development and approval process of the draft.
  * @langDe Das Modul "Filter / CQL" kann für jede über ldproxy bereitgestellte API mit einem

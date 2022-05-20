@@ -119,9 +119,9 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
 
     /**
      * @langEn *Deprecated* Use the
-     * [`flatten` transformation](../../providers/transformations.md) instead.
+     * [`flatten` transformation](../../providers/details/transformations.md) instead.
      * @langDe *Deprecated* Wird abgelöst durch die
-     * [`flatten`-Transformation](../../providers/transformations.md).
+     * [`flatten`-Transformation](../../providers/details/transformations.md).
      * @default `FLATTEN
      */
     @Deprecated(since = "3.1.0")
@@ -130,9 +130,9 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
 
     /**
      * @langEn *Deprecated* Use the
-     * [`flatten` transformation](../../providers/transformations.md) instead.
+     * [`flatten` transformation](../../providers/details/transformations.md) instead.
      * @langDe *Deprecated* Wird abgelöst durch die
-     * [`flatten`-Transformation](../../providers/transformations.md).
+     * [`flatten`-Transformation](../../providers/details/transformations.md).
      * @default `SUFFIX`
      */
     @Deprecated(since = "3.1.0")
@@ -145,9 +145,9 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
 
     /**
      * @langEn *Deprecated* Use the
-     * [`flatten` transformation](../../providers/transformations.md) instead.
+     * [`flatten` transformation](../../providers/details/transformations.md) instead.
      * @langDe *Deprecated* Wird abgelöst durch die
-     * [`flatten`-Transformation](../../providers/transformations.md).
+     * [`flatten`-Transformation](../../providers/details/transformations.md).
      * @default "."
      */
     @Deprecated(since = "3.1.0")

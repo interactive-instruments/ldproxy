@@ -97,8 +97,8 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   enum POSITION {AUTO, TOP, RIGHT}
 
   /**
-   * @langEn *Deprecated* Superseded by `mapPosition` and the [`flattern` transformation](../providers/transformations.md).
-   * @langDe *Deprecated* Wird abgelöst von `mapPosition` und der [`flatten`-Transformation](../providers/transformations.md).
+   * @langEn *Deprecated* Superseded by `mapPosition` and the [`flattern` transformation](../../providers/details/transformations.md).
+   * @langDe *Deprecated* Wird abgelöst von `mapPosition` und der [`flatten`-Transformation](../../providers/details/transformations.md).
    * @default `CLASSIC`
    */
   @Deprecated(since = "3.1.0")
@@ -131,9 +131,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   Optional<String> getFeatureTitleTemplate();
 
   /**
-   * @langEn Optional transformations for feature properties for HTML, see [transformations](general-rules.md#transformations).
+   * @langEn Optional transformations for feature properties for HTML, see [transformations](README.md#transformations).
    * @langDe Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der HTML-Ausgabe
-   * [transformiert](general-rules.md#transformations) werden.
+   * [transformiert](README.md#transformations) werden.
    * @default `{}`
    */
   @JsonSerialize(converter = IgnoreLinksWildcardSerializer.class)

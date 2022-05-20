@@ -1,0 +1,3 @@
+# Konfigurations-Referenz
+
+Coming soon.

@@ -23,7 +23,7 @@ import javax.inject.Singleton;
  * @title HTML
  * @langEn The module *HTML* may be enabled for every API. It is enabled by default. Provides
  * HTML encoding for every supported resource that does not have more specific rules
- * (like [Features](features-html.md)).
+ * (like [Features](features_html.md)).
  *
  * ## Customization
  *
@@ -33,7 +33,7 @@ import javax.inject.Singleton;
  * equals the name of a default template (see [source code on GitHub](https://github.com/search?q=repo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache&type=Code)).
  * @langDe Das Modul *HTML* kann für jede über ldproxy bereitgestellte API aktiviert werden
  * und ist standardmäßig aktiviert. Soweit für eine Ressource keine speziellen Regelungen für
- * die Ausgabeformate bestehen (wie zum Beispiel für [Features](features-html.md))
+ * die Ausgabeformate bestehen (wie zum Beispiel für [Features](features_html.md))
  * und die Ressource HTML unterstützt, können Clients das Ausgabeformat HTML anfordern.
  *
  * ## Anpassung

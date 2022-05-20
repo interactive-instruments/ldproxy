@@ -24,7 +24,7 @@ pipeline:
     secrets: [ netlify_token]
     when:
       event: push
-#      branch: master
+      branch: master
 
   docker:
     image: plugins/docker
