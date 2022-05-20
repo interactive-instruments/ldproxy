@@ -10,21 +10,21 @@ pipeline:
   code:
     image: openjdk:11-slim
     commands:
-      - ./gradlew check -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew check docsVuepress -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: pull_request
 
-#  docs:
-#    image: woodpeckerci/plugin-surge-preview:next
-#    path: build/markdown/docs/.vuepress/dist/
-#    settings:
-#      surge_token: 
-#        from_secret: surge_token
-#      forge_type: github
-#      forge_url: https://github.com
-#      forge_repo_token: 
-#        from_secret: github_token
-#    secrets: [ github_token, surge_token ]
-#    when:
-#      event: pull_request
+  docs:
+    image: woodpeckerci/plugin-surge-preview:next
+    settings:
+      path: build/markdown/docs/.vuepress/dist/
+      surge_token: 
+        from_secret: surge_token
+      forge_type: github
+      forge_url: https://github.com
+      forge_repo_token: 
+        from_secret: github_token
+    secrets: [ github_token, surge_token ]
+    when:
+      event: pull_request

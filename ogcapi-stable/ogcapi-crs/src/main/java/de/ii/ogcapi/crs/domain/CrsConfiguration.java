@@ -14,6 +14,28 @@ import org.immutables.value.Value;
 
 import java.util.Set;
 
+/**
+ * @langEn Todo
+ * @langDe Das Default-Koordinatenreferenzsystem `CRS84` entspricht `code: 4326,
+ * forceAxisOrder: LON_LAT`, `CRS84h` entspricht `code: 4979, forceAxisOrder: LON_LAT`.
+ * @example <code>
+ * ```yaml
+ * - buildingBlock: CRS
+ *   additionalCrs:
+ *   - code: 25832
+ *     forceAxisOrder: NONE
+ *   - code: 4258
+ *     forceAxisOrder: NONE
+ *   - code: 4326
+ *     forceAxisOrder: NONE
+ *   - code: 3857
+ *     forceAxisOrder: NONE
+ * ```
+ * </code>
+ * @langEn Todo
+ * @langDe Durch Angabe des Query-Parameters `crs` bei den Ressourcen "Features" und "Feature" können die Koordinaten
+ * in einem der konfigurierten Koordinatenreferenzsystemen angefordert werden.
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableCrsConfiguration.Builder.class)
@@ -22,6 +44,17 @@ public interface CrsConfiguration extends ExtensionConfiguration {
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    /**
+     * @langEn Add additonal coordinate reference systems to an API or a collection.
+     * @langDe Steuert, welche weitere Koordinatenreferenzsysteme in einer API oder für eine Feature Collection
+     * unterstützt werden sollen. Das native Koordinatenreferenzsystem der Daten und das
+     * Default-Koordinatenreferenzsystem der API sind automatisch aktiviert. Koordinatenreferenzsysteme
+     * werden über ihren EPSG-Code identifiziert (`code`). Zusätzlich ist in `forceAxisOrder`
+     * die Reihenfolge der Koordinatenachsen anzugeben (`NONE`: wie im Koordinatenreferenzsystem,
+     * `LON_LAT` oder `LAT_LON`: die Reihenfolge im Koordinatenreferenzsystem wird ignoriert und die
+     * angegebene Reihenfolge wird verwendet).
+     * @default `{}`
+     */
     Set<EpsgCrs> getAdditionalCrs();
 
     @Override

@@ -31,6 +31,15 @@ import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn The coordinate reference system
+ * of the `bbox` parameter. Default is WGS84 longitude/latitude.
+ * @langDe Das Koordinatenreferenzsystem des Parameters "bbox".
+ * Default ist WGS84 longitude/latitude.
+ * @name BBOX_CRS
+ * @endpoints TODO
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterBboxCrsFeatures extends ApiExtensionCache implements OgcApiQueryParameter {

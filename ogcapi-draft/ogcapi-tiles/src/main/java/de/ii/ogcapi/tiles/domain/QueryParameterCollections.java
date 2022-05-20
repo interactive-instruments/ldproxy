@@ -30,6 +30,13 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ * @langEn The collections that should be included. The parameter value is a comma-separated list of collection names.
+ * @langDe Todo
+ * @name collections
+ * @endpoints collections
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterCollections extends ApiExtensionCache implements OgcApiQueryParameter, ConformanceClass {

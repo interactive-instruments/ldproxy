@@ -1,3 +1,0 @@
-plugins {
-    id 'de.interactive_instruments.xtraplatform-composite' version '3.5.1'
-}

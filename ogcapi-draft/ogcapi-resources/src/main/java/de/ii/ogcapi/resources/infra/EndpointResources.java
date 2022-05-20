@@ -43,6 +43,16 @@ import org.slf4j.LoggerFactory;
 /**
  * fetch list of resources available in an API
  */
+
+/**
+ * @langEn This operation fetches the set of file resources that have been
+ * created and that may be used by reference, for example, in stylesheets. For each resource the id and
+ * a link to the resource is provided.
+ * @langDe TODO
+ * @name Resources
+ * @path /{apiId}/resources
+ * @format {@link de.ii.ogcapi.resources.domain.ResourceFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointResources extends Endpoint {

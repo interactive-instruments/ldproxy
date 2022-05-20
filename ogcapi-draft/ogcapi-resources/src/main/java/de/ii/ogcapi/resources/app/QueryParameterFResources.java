@@ -19,6 +19,13 @@ import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name fResources
+ * @endpoints Resources
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterFResources extends QueryParameterF {

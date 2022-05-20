@@ -18,6 +18,127 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * @langEn Example of the specifications in the configuration file:
+ * @langDe Beispiel für die Angaben in der Konfigurationsdatei:
+ * @example <code>
+ * ```yaml
+ * - buildingBlock: STYLES
+ *   enabled: true
+ *   styleEncodings:
+ *   - Mapbox
+ *   - HTML
+ *   deriveCollectionStyles: true
+ *   managerEnabled: false
+ *   validationEnabled: false
+ * ```
+ * </code>
+ */
+
+/**
+ * @langEn Example Mapbox stylesheet
+ * @langDe Beispiel für ein Mapbox-Stylesheet:
+ * @example <code>
+ * ```json
+ * {
+ *   "bearing" : 0.0,
+ *   "version" : 8,
+ *   "pitch" : 0.0,
+ *   "name" : "kitas",
+ *   "center": [
+ *     10.0,
+ *     51.5
+ *   ],
+ *   "zoom": 12,
+ *   "sources" : {
+ *     "kindergarten" : {
+ *       "type" : "vector",
+ *       "tiles" : [ "{serviceUrl}/collections/governmentalservice/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt" ],
+ *       "maxzoom" : 16
+ *     },
+ *     "basemap" : {
+ *       "type" : "raster",
+ *       "tiles" : [ "https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png" ],
+ *       "attribution" : "&copy; <a href=\"http://www.bkg.bund.de\" class=\"link0\" target=\"_new\">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href=\"http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\" class=\"link0\" target=\"_new\">Datenquellen</a>"
+ *     }
+ *   },
+ *   "sprite" : "{serviceUrl}/resources/sprites-kitas",
+ *   "glyphs": "https://go-spatial.github.io/carto-assets/fonts/{fontstack}/{range}.pbf",
+ *   "layers" : [ {
+ *       "id": "background",
+ *       "type": "raster",
+ *     "source" : "basemap"
+ *   }, {
+ *     "type" : "symbol",
+ *     "source-layer" : "governmentalservice",
+ *     "layout" : {
+ *       "icon-image" : "kita",
+ *       "icon-size" : 0.5
+ *     },
+ *     "paint" : {
+ *       "icon-halo-width" : 2,
+ *       "icon-opacity" : 1
+ *     },
+ *     "id" : "kita",
+ *     "source" : "kitas"
+ *   } ]
+ * }
+ * ```
+ * </code>
+ */
+
+/**
+ * @langEn Example style information file
+ * @langDe Beispiel für eine Style-Metadaten-Datei:
+ * @example <code>
+ * ```json
+ * {
+ *   "id": "kitas",
+ *   "title": "Kindertageseinrichtungen",
+ *   "description": "(Hier steht eine Beschreibung des Styles...)",
+ *   "keywords": [ ],
+ *   "scope": "style",
+ *   "version": "0.0.1",
+ *   "stylesheets": [
+ *     {
+ *       "title": "Mapbox Style",
+ *       "version": "8",
+ *       "specification": "https://docs.mapbox.com/mapbox-gl-js/style-spec/",
+ *       "native": true,
+ *       "tilingScheme": "GoogleMapsCompatible",
+ *       "link": {
+ *         "href": "{serviceUrl}/styles/kitas?f=mbs",
+ *         "rel": "stylesheet",
+ *         "type": "application/vnd.mapbox.style+json",
+ *         "templated": true
+ *       }
+ *     }
+ *   ],
+ *   "layers": [
+ *     {
+ *       "id": "governmentalservice",
+ *       "type": "point",
+ *       "sampleData": {
+ *         "href": "{serviceUrl}/collections/governmentalservice/items?f=json",
+ *         "rel": "data",
+ *         "type": "application/geo+json",
+ *         "templated": true
+ *       }
+ *     }
+ *   ],
+ *   "links": [
+ *     {
+ *       "href": "{serviceUrl}/resources/kitas-thumbnail.png",
+ *       "rel": "preview",
+ *       "type": "image/png",
+ *       "title": "Thumbnail des Styles für Kindertagesstätten",
+ *       "templated": true
+ *     }
+ *   ]
+ * }
+ * ```
+ * </code>
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableStylesConfiguration.Builder.class)
@@ -26,8 +147,28 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    /**
+     * @langEn List of enabled stylesheet encodings. Supported are Mapbox Style (`Mapbox`),
+     * OGC SLD 1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`) and HTML (`HTML`). HTML is an output only
+     * encoding for web maps that requires a *Mapbox Style* stylesheet. For details see conformance
+     * classes *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.
+     * @langDe Steuert, welche Formate für Stylesheets unterstützt werden sollen. Zur Verfügung stehen
+     * Mapbox Style ("Mapbox"), OGC SLD 1.0 ("SLD10"), OGC SLD 1.1 ("SLD11"), QGIS QML ("QML"),
+     * ArcGIS Layer ("lyr" und "lyrx") und HTML ("HTML"). HTML ist ein reines Ausgabeformat im
+     * Sinne einer Webmap und wird nur für Styles unterstützt, für die ein Stylesheet im Format
+     * Mapbox Style verfügbar ist. Siehe die Konformitätsklassen "Mapbox Style", "OGC SLD 1.0",
+     * "OGC SLD 1.1" und "HTML".
+     * @default `[ "Mapbox", "HTML" ]`
+     */
     List<String> getStyleEncodings();
 
+    /**
+     * @langEn Option to manage styles using POST, PUT and DELETE. If `styleInfosOnCollection` is enabled, style
+     * information may be created and updated using PATCH. Siehe die Konformitätsklasse "Manage styles".
+     * @langDe Steuert, ob die Styles über POST, PUT und DELETE verwaltet werden können.
+     * Siehe die Konformitätsklasse "Manage styles".
+     * @default `false`
+     */
     @Nullable
     Boolean getManagerEnabled();
 
@@ -36,6 +177,13 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     @Value.Auxiliary
     default boolean isManagerEnabled() { return Objects.equals(getManagerEnabled(), true); }
 
+    /**
+     * @langEn Option to validate styles when using POST and PUT by setting the query parameter `validate`.
+     * For details see conformance class *Validation of styles*.
+     * @langDe Steuert, ob bei POST und PUT von Styles die Validierung der Styles über den Query-Parameter
+     * `validate` unterstützt werden soll. Siehe die Konformitätsklasse "Validation of styles".
+     * @default `false`
+     */
     @Nullable
     Boolean getValidationEnabled();
 
@@ -52,6 +200,11 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     @Value.Auxiliary
     default boolean shouldUseIdFromStylesheet() { return Objects.equals(getUseIdFromStylesheet(), true); }
 
+    /**
+     * @langEn *Deprecated* See `enabled` in [Modul Resources](resources.md).
+     * @langDe *Deprecated* Siehe `enabled` in [Modul Resources](resources.md).
+     * @default `false`
+     */
     @Deprecated
     @Nullable
     Boolean getResourcesEnabled();
@@ -62,6 +215,11 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     @Value.Auxiliary
     default boolean isResourcesEnabled() { return Objects.equals(getResourcesEnabled(), true); }
 
+    /**
+     * @langEn *Deprecated* See `managerEnabled` in [Modul Resources](resources.md).
+     * @langDe *Deprecated* Siehe `managerEnabled` in [Modul Resources](resources.md).
+     * @default `false`
+     */
     @Deprecated
     @Nullable
     Boolean getResourceManagerEnabled();
@@ -72,19 +230,60 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
     @Value.Auxiliary
     default boolean isResourceManagerEnabled() { return Objects.equals(getResourceManagerEnabled(), true); }
 
+    /**
+     * @langEn *Deprecated* See `defaultStyle` in [Modul HTML](html.md).
+     * @langDe *Deprecated* Siehe `defaultStyle` in [Modul HTML](html.md).
+     * @default `null`
+     */
     @Deprecated(since = "3.1.0")
     @Nullable
     String getDefaultStyle();
 
+    /**
+     * @langEn Only applies to styles in Mapbox Style format. Controls whether the styles at the
+     * collection level should be derived from the styles in the parent style collection.
+     * The prerequisite is that the name of the `source` in the stylesheet corresponds to
+     * `{apiId}` and the name of the `source-layer` corresponds to `{collectionId}`.
+     * If a style is to be used for displaying features in the FEATURES_HTML module,
+     * the option should be enabled.
+     * @langDe Nur wirksam bei Styles im Format Mapbox Style. Steuert, ob die Styles auf der Ebene
+     * der Collections aus den Styles aus der übergeordneten Style-Collection abgeleitet werden
+     * sollen. Voraussetzung ist, dass der Name der `source` im Stylesheet der `{apiId}`
+     * entspricht und der Name der `source-layer` der `{collectionId}`. Sofern ein Style für die
+     * Darstellung von Features im Modul FEATURES_HTML verwendet werden soll, sollte die Option
+     * aktiviert sein.
+     * @default `false`
+     */
     @Nullable
     Boolean getDeriveCollectionStyles();
 
+    /**
+     * @langEn Option to support popups in web maps for *Mapbox Style* styles that show attributes for
+     * the top-most object.
+     * @langDe Steuert, ob bei Webkarten zu Styles im Format Mapbox Style ein Popup mit den Attributen zum
+     * obersten Objekt angezeigt werden soll.
+     * @default `true`
+     */
     @Nullable
     Boolean getWebmapWithPopup();
 
+    /**
+     * @langEn Option to support layer controls in web maps for *Mapbox Style* styles. Allows to collectively
+     * enable and disable all layers for a certain feature collection.
+     * @langDe Steuert, ob bei Webkarten zu Styles im Format Mapbox Style die Layer ein- und ausgeschaltet werden können.
+     * Ein- und ausgeschaltet werden können jeweils gebündelt alle Layer zu einer Feature Collection.
+     * @default `false`
+     */
     @Nullable
     Boolean getWebmapWithLayerControl();
 
+    /**
+     * @langEn Option to support layer controls for additional layers like background maps.
+     * Requires `webmapWithLayerControl: true`.
+     * @langDe Nur wirksam bei `webmapWithLayerControl: true`. Steuert, ob auch Kartenlayer, die nicht aus den
+     * Vector Tiles dieser API, z.B. eine Hintergrundkarte, ein- und ausgeschaltet werden können.
+     * @default `false`
+     */
     @Nullable
     Boolean getLayerControlAllLayers();
 

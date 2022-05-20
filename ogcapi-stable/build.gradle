@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-layer' version '4.3.1'
+    id 'de.interactive_instruments.xtraplatform-layer' version '4.3.4'
     id 'com.github.hierynomus.license-report' version '0.16.1' apply false
 }
 
@@ -23,3 +23,4 @@ apply from: '../license-headers.gradle'
 task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
 task testAll { dependsOn subprojects*.tasks*.findByPath('test') }
 tasks.publish { dependsOn subprojects*.tasks*.findByPath('publish') }
+task cleanAll { dependsOn subprojects*.tasks*.findByPath('clean') }

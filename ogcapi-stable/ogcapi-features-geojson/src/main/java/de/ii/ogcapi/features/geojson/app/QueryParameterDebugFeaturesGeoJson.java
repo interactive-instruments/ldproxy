@@ -20,6 +20,12 @@ import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Debug option in development environments: Log debug information for the GeoJSON output.
+ * @langDe Todo
+ * @name debug
+ * @endpoints Features
+ */
 @Singleton
 @AutoBind
 public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache implements

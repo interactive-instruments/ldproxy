@@ -23,6 +23,13 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import java.math.BigDecimal;
 import java.util.Map;
 
+/**
+ * @langEn This option can be used to specify the maxAllowableOffset to be used for simplifying the geometries in the response.
+ * The maxAllowableOffset is in the units of the response coordinate reference system.
+ * @langDe Todo
+ * @name maxAllowableOffset
+ * @endpoints Feature
+ */
 @Singleton
 @AutoBind
 public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache implements

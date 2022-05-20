@@ -1,0 +1,48 @@
+
+/* TODO: <code> does not have language- class, override Code component from default theme
+@media (prefers-color-scheme: light) {
+  .theme-default-content div[class*=language-] {
+    @import "node_modules/prism-themes/themes/prism-vs.css";
+  }
+}*/
+
+:root {
+  --c-brand: #007bff;
+  --c-brand-light: #3f9cff;
+  --c-info: #3f9cff;
+  --c-badge-info: #3f9cff;
+/*  --code-bg-color: var(--c-bg-light);*/
+
+  @media (min-width: 1640px) {
+    --content-width: 960px !important;
+  }
+}
+
+html.dark {
+  --c-brand: #007bff;
+  --c-brand-light: #3f9cff;
+/*  --code-bg-color: #282c34;*/
+}
+
+.sidebar-item.collapsible {
+  cursor: pointer;
+}
+
+.toggle-dark-button {
+  display: none !important;
+}
+
+code {
+  background-color: var(--c-bg-lighter);
+  color: var(--c-text-light);
+  border-radius: 6px;
+}
+.custom-container.info {
+  border-color: var(--c-info);
+  background-color: var(--c-tip-bg);
+  color: var(--c-tip-text);
+  padding: 0.1rem 1.5rem;
+  border-left-width: 0.5rem;
+  border-left-style: solid;
+  margin: 1rem 0;
+}

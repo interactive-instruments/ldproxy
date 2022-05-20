@@ -10,7 +10,7 @@ The API based on the configuration described on this page is available at [https
 
 This description assumes that the following preparation steps have been completed.
 
-* ldproxy has been [deployed](../../docs/en/deployment.md). All file paths on this page are relative to the data directory of the deployment.
+* ldproxy has been [deployed](https://docs.ldproxy.net/application/10-deployment.html). All file paths on this page are relative to the data directory of the deployment.
 * A PostgreSQL deployment (version 9.6 or later) with PostGIS (version 2.4 or later) is availble.
 
 ## Step 1: Getting the data
@@ -46,7 +46,7 @@ psql -Upostgres -hlocalhost -p5432 vineyards < vineyards.dml.sql
 
 ## Step 3: Initialize the configuration
 
-ldproxy configuration options are documented in detail in the [configuration guide](https://github.com/interactive-instruments/ldproxy/blob/master/docs/en/configuration/README.md).
+ldproxy configuration options are described in detail in the [documentation](https://docs.ldproxy.net).
 
 To start an API, we need two files, one for the data provider at the backend and one for the configuration of the API. We only need to declare the minimum information in order to tell ldproxy where to find the data. ldproxy then analyses the data and creates a basic configuration.
 

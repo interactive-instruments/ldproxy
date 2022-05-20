@@ -20,6 +20,13 @@ import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Debug option in development environments: Bare HTML output for feature pages.
+ * @langDe Todo
+ * @name bare
+ * @endpoints Feature
+ */
+
 //TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be moved to community
 @Singleton
 @AutoBind

@@ -31,6 +31,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
+ * @langEn Access multi-layer tiles
+ * @langDe TODO
+ * @name Tilesets
+ * @path /{apiId}/tiles
+ * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ */
+
+/**
  * Handle responses under '/tiles'.
  */
 @Singleton

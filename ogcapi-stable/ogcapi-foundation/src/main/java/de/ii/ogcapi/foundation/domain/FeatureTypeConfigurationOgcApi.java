@@ -21,6 +21,14 @@ import org.immutables.value.Value;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * # Collection
+ * @langEn Every collection corresponds to a feature type defined in the feature provider
+ * (only *Feature Collections* are currently supported).
+ * @langDe Jedes Collection-Objekt beschreibt eine Objektart aus einem Feature Provider
+ * (derzeit werden nur Feature Collections von ldproxy unterstützt). Es setzt sich aus den
+ * folgenden Eigenschaften zusammen:
+ */
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableFeatureTypeConfigurationOgcApi.Builder.class)
 public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration, ExtendableConfiguration, Buildable<FeatureTypeConfigurationOgcApi> {
@@ -46,10 +54,34 @@ public interface FeatureTypeConfigurationOgcApi extends FeatureTypeConfiguration
         return true;
     }
 
+
+    /**
+     * @langEn The *Feature* resource defines a unique URI for every feature, but this URI is
+     * only stable as long as the API URI stays the same. For use cases where external
+     * persistent feature URIs, which redirect to the current API URI, are used, this option
+     * allows to use such URIs as canonical URI of every feature. To enable this option,
+     * provide an URI template where `{{value}}` is replaced with the feature id.
+     * @langDe Über die Feature-Ressource hat jedes Feature zwar eine feste URI, die für Links
+     * verwendet werden kann, allerdings ist die URI nur so lange stabil, wie die API stabil bleibt.
+     * Um von Veränderungen in der URI unabhängig zu sein, kann es sinnvoll oder gewünscht sein,
+     * API-unabhängige URIs für die Features zu definieren und von diesen URIs auf die jeweils
+     * gültige API-URI weiterzuleiten. Diese kananosche URI kann auch in ldproxy Konfiguriert
+     * und bei den Features kodiert werden. Hierfür ist ein Muster der Feature-URI anzugeben,
+     * wobei `{{value}}` als Ersetzungspunkt für den lokalen Identifikator des Features in der
+     * API angegeben werden kann.
+     * @default `null`
+     */
     Optional<String> getPersistentUriTemplate();
 
     Optional<CollectionExtent> getExtent();
 
+    /**
+     * @langEn Array of additional link objects, required keys are `href` (the URI), `label` and `rel` (the relation).
+     * @langDe Erlaubt es, zusätzliche Links bei jeder Objektart zu ergänzen. Der Wert ist ein Array von
+     * Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende Text
+     * (`label`) und die Link-Relation (`rel`).
+     * @default `[]
+     */
     List<Link> getAdditionalLinks();
 
     @JsonProperty(value = "api")
