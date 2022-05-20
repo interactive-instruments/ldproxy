@@ -17,10 +17,11 @@ pipeline:
 
   docs:
     image: williamjackson/netlify-cli
+    environment:
+      - XDG_CONFIG_HOME=/home/node
     commands:
-      - mkdir -p /root/.config/netlify
-      - cp /home/node/.config/netlify/config.json /root/.config/netlify/
-      - cat /root/.config/netlify/config.json
+      - export
+      - whoami
       - netlify deploy --debug --prod --auth $NETLIFY_TOKEN --site 61d8c25c-3ee2-4cc5-85a6-431afba9b9b5 --message "$CI_COMMIT_MESSAGE" --dir $CI_WORKSPACE/build/markdown/docs/.vuepress/dist/
     secrets: [ netlify_token]
     when:
