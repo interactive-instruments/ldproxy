@@ -16,12 +16,9 @@ pipeline:
       event: push
 
   docs:
-    image: lucap/drone-netlify
-    settings:
-      site_id: 61d8c25c-3ee2-4cc5-85a6-431afba9b9b5
-      path: build/markdown/docs/.vuepress/dist/
-      token:
-        from_secret: netlify_token
+    image: williamjackson/netlify-cli
+    commands:
+      - netlify deploy --prod --auth $NETLIFY_TOKEN --site 61d8c25c-3ee2-4cc5-85a6-431afba9b9b5 --message "$CI_COMMIT_MESSAGE" --dir $CI_WORKSPACE/build/markdown/docs/.vuepress/dist/
     secrets: [ netlify_token]
     when:
       event: push
