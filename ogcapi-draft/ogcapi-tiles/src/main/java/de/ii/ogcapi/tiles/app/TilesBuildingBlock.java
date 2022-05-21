@@ -119,7 +119,7 @@ import org.sqlite.SQLiteJDBCLoader;
  * {@link de.ii.ogcapi.tiles.domain.QueryParameterFTileSet},
  * {@link de.ii.ogcapi.tiles.domain.QueryParameterFTileSets},
  * {@link de.ii.ogcapi.tiles.domain.QueryParameterLimitTile},
- * @see SeedingOptions
+ * @see de.ii.ogcapi.tiles.domain.SeedingOptions
  *
  */
 @Singleton
