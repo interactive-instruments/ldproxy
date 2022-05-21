@@ -212,7 +212,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                     throw new BadRequestException(result.get());
             }));
 
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), knownParameters);
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), knownParameters);
 
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))

@@ -434,7 +434,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
         List<OgcApiQueryParameter> allowedParameters = getQueryParameters(extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(uriInfo.getQueryParameters()), allowedParameters);
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))
                 .collectionId(collectionId)
