@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.core.domain;
 
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -27,7 +28,7 @@ public interface FeaturesQuery {
                                      Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
                                      String featureId);
 
-  FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
+  FeatureQuery requestToFeatureQuery(OgcApi api, FeatureTypeConfigurationOgcApi collectionData,
                                      EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
                                      int minimumPageSize,
                                      int defaultPageSize, int maxPageSize, Map<String, String> parameters,

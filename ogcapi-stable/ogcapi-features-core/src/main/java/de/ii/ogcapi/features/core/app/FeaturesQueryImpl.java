@@ -26,9 +26,11 @@ import de.ii.ogcapi.features.core.domain.ImmutableQueryValidationInputCoordinate
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.cql.domain.And;
+import de.ii.xtraplatform.cql.domain.BooleanValue;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.CqlFilter;
 import de.ii.xtraplatform.cql.domain.CqlPredicate;
@@ -147,11 +149,12 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     }
 
     @Override
-    public FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
+    public FeatureQuery requestToFeatureQuery(OgcApi api, FeatureTypeConfigurationOgcApi collectionData,
                                               EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
                                               int minimumPageSize,
                                               int defaultPageSize, int maxPageSize, Map<String, String> parameters,
                                               List<OgcApiQueryParameter> allowedParameters) {
+        final OgcApiDataV2 apiData = api.getData();
         final Map<String, String> filterableFields = getFilterableFields(apiData, collectionData);
         final Map<String, String> queryableTypes = getQueryableTypes(apiData, collectionData);
 
@@ -228,7 +231,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             } else {
                 queryValidationInput = QueryValidationInputCoordinates.none();
             }
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, queryableTypes, cqlFormat, crs, queryValidationInput);
+            Optional<BoundingBox> spatialExtentForBboxParameter = api.getSpatialExtent(collectionId, parameters.containsKey("bbox-crs") ? EpsgCrs.fromString(parameters.get("bbox-crs")) : OgcCrs.CRS84);
+            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, queryableTypes, cqlFormat, crs, queryValidationInput, spatialExtentForBboxParameter);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -329,7 +333,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
         if (!filtersFromQuery.isEmpty()) {
 
-            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), queryableTypes, cqlFormat, OgcCrs.CRS84, QueryValidationInputCoordinates.none());
+            return getCQLFromFilters(filtersFromQuery, filterableFields, filterParameters, ImmutableList.of(), queryableTypes, cqlFormat, OgcCrs.CRS84, QueryValidationInputCoordinates.none(), Optional.empty());
         }
 
         return Optional.empty();
@@ -360,7 +364,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
                                                   List<String> qFields, Map<String, String> queryableTypes,
                                                   Cql.Format cqlFormat, EpsgCrs crs,
-                                                  QueryValidationInputCoordinates queryValidationInput) {
+                                                  QueryValidationInputCoordinates queryValidationInput,
+                                                  Optional<BoundingBox> bbox) {
 
         List<CqlPredicate> predicates = filters.entrySet()
                                                .stream()
@@ -371,7 +376,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                            FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE))
                                                            return null;
 
-                                                       CqlPredicate cqlPredicate = bboxToCql(filterableFields.get(filter.getKey()), filter.getValue());
+                                                       CqlPredicate cqlPredicate = bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), bbox);
 
                                                        if (queryValidationInput.getEnabled()) {
                                                            queryValidationInput.getBboxCrs()
@@ -428,7 +433,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         return predicates.isEmpty() ? Optional.empty() : Optional.of(predicates.size() == 1 ? CqlFilter.of(predicates.get(0)) : CqlFilter.of(And.of(predicates)));
     }
 
-    private CqlPredicate bboxToCql(String geometryField, String bboxValue) {
+    private CqlPredicate bboxToCql(String geometryField, String bboxValue, Optional<BoundingBox> optionalSpatialExtent) {
         List<String> values = ARRAY_SPLITTER.splitToList(bboxValue);
         EpsgCrs sourceCrs = OgcCrs.CRS84;
 
@@ -445,16 +450,37 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: it must have exactly four values, found %d.", values.size()));
         }
 
-        List<Double> coordinates;
+        List<Double> bboxCoordinates;
         try {
-            coordinates = values.stream()
+            bboxCoordinates = values.stream()
                                 .map(Double::valueOf)
                                 .collect(Collectors.toList());
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(String.format("The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s'", getBboxAsString(values)));
         }
 
-        Envelope envelope = Envelope.of(coordinates.get(0), coordinates.get(1), coordinates.get(2), coordinates.get(3), sourceCrs);
+        Envelope envelope = Envelope.of(bboxCoordinates.get(0), bboxCoordinates.get(1), bboxCoordinates.get(2), bboxCoordinates.get(3), sourceCrs);
+
+        if (optionalSpatialExtent.isPresent() && optionalSpatialExtent.get().getEpsgCrs().equals(sourceCrs)) {
+            BoundingBox spatialExtent = optionalSpatialExtent.get();
+            if (bboxCoordinates.get(0) > spatialExtent.getXmax() || bboxCoordinates.get(1) > spatialExtent.getYmax() ||
+                bboxCoordinates.get(2) < spatialExtent.getXmin() || bboxCoordinates.get(3) < spatialExtent.getYmin()) {
+                // bounding box does not overlap with spatial extent of the data, no match;
+                // detecting this is also important to avoid errors when converting bbox coordinates
+                // that are outside of the range of the native CRS
+                return CqlPredicate.of(ScalarLiteral.of(false));
+            } else if (bboxCoordinates.get(0) < spatialExtent.getXmin() || bboxCoordinates.get(1) < spatialExtent.getYmin() ||
+                bboxCoordinates.get(2) > spatialExtent.getXmax() || bboxCoordinates.get(3) > spatialExtent.getYmax()) {
+                // bounding box extends beyond the spatial extent of the data, reduce to overlapping area;
+                // again, detecting this is important to avoid errors when converting bbox coordinates
+                // that are outside of the range of the native CRS
+                envelope = Envelope.of(Math.max(bboxCoordinates.get(0), spatialExtent.getXmin()),
+                                       Math.max(bboxCoordinates.get(1), spatialExtent.getYmin()),
+                                       Math.min(bboxCoordinates.get(2), spatialExtent.getXmax()),
+                                       Math.min(bboxCoordinates.get(3), spatialExtent.getYmax()),
+                                       sourceCrs);
+            }
+        }
 
         return CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, geometryField, SpatialLiteral.of(envelope)));
     }
