@@ -63,19 +63,11 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
 
   @Override
   public String getDescription() {
-        /* TODO support CQL2 JSON
         return "Language of the query expression in the 'filter' parameter. Supported are 'cql2-text' (default) and 'cql2-json', " +
             "specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text' is an SQL-like text encoding for " +
             "filter expressions that also supports spatial, temporal and array predicates. 'cql2-json' is a JSON encoding of " +
             "that grammar, suitable for use as part of a JSON object that represents a query. The use of 'cql2-text' is recommended " +
             "for filter expressions in the 'filter' parameter.";
-         */
-    return
-        "Language of the query expression in the 'filter' parameter. Supported is currently only 'cql2-text', "
-            +
-            "specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text' is an SQL-like text encoding for "
-            +
-            "filter expressions that also supports spatial, temporal and array predicates.";
   }
 
   @Override
@@ -93,11 +85,7 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
                         "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
   }
 
-  /* TODO support CQL2 JSON
   private final Schema<String> schema = new StringSchema()._enum(ImmutableList.of(FILTER_LANG_CQL2_TEXT, FILTER_LANG_CQL2_JSON))._default(FILTER_LANG_CQL2_TEXT);
-   */
-  private final Schema<String> schema = new StringSchema()._enum(
-      ImmutableList.of(FILTER_LANG_CQL2_TEXT))._default(FILTER_LANG_CQL2_TEXT);
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
