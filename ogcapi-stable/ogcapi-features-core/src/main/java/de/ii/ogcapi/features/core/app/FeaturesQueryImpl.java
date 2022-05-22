@@ -31,9 +31,10 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.BooleanValue;
+import de.ii.xtraplatform.cql.domain.BooleanValue2;
 import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.cql.domain.CqlFilter;
-import de.ii.xtraplatform.cql.domain.CqlPredicate;
+import de.ii.xtraplatform.cql.domain.Cql.Format;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.Eq;
 import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
@@ -41,16 +42,13 @@ import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
+import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
-import de.ii.xtraplatform.cql.domain.SpatialOperation;
-import de.ii.xtraplatform.cql.domain.SpatialOperator;
+import de.ii.xtraplatform.cql.domain.TIntersects;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
-import de.ii.xtraplatform.cql.domain.TemporalOperation;
-import de.ii.xtraplatform.cql.domain.TemporalOperator;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -61,26 +59,18 @@ import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.measure.Unit;
-
-import org.immutables.value.Value;
 import org.kortforsyningen.proj.Units;
-import org.opengis.referencing.cs.RangeMeaning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,7 +116,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             parameters = parameter.transformParameters(collectionData, parameters, apiData);
         }
 
-        final CqlFilter filter = CqlFilter.of(In.of(ScalarLiteral.of(featureId)));
+        final Cql2Expression filter = In.of(ScalarLiteral.of(featureId));
 
         final String collectionId = collectionData.getId();
         final String featureTypeId = apiData.getCollections()
@@ -232,7 +222,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                 queryValidationInput = QueryValidationInputCoordinates.none();
             }
             Optional<BoundingBox> spatialExtentForBboxParameter = api.getSpatialExtent(collectionId, parameters.containsKey("bbox-crs") ? EpsgCrs.fromString(parameters.get("bbox-crs")) : OgcCrs.CRS84);
-            Optional<CqlFilter> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, queryableTypes, cqlFormat, crs, queryValidationInput, spatialExtentForBboxParameter);
+            Optional<Cql2Expression> cql = getCQLFromFilters(filters, filterableFields, filterParameters, qFields, queryableTypes, cqlFormat, crs, queryValidationInput, spatialExtentForBboxParameter);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Filter: {}", cql);
@@ -325,9 +315,9 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     }
 
     @Override
-    public Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
+    public Optional<Cql2Expression> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
                                                   Set<String> filterParameters, Map<String, String> queryableTypes,
-                                                  Cql.Format cqlFormat) {
+                                                  Format cqlFormat) {
 
         Map<String, String> filtersFromQuery = getFiltersFromQuery(query, filterableFields, filterParameters);
 
@@ -360,14 +350,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         return filters;
     }
 
-    private Optional<CqlFilter> getCQLFromFilters(Map<String, String> filters,
+    private Optional<Cql2Expression> getCQLFromFilters(Map<String, String> filters,
                                                   Map<String, String> filterableFields, Set<String> filterParameters,
                                                   List<String> qFields, Map<String, String> queryableTypes,
                                                   Cql.Format cqlFormat, EpsgCrs crs,
                                                   QueryValidationInputCoordinates queryValidationInput,
                                                   Optional<BoundingBox> bbox) {
 
-        List<CqlPredicate> predicates = filters.entrySet()
+        List<Cql2Expression> predicates = filters.entrySet()
                                                .stream()
                                                .map(filter -> {
                                                    if (filter.getKey()
@@ -376,7 +366,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                            FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE))
                                                            return null;
 
-                                                       CqlPredicate cqlPredicate = bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), bbox);
+                                                       Cql2Expression cqlPredicate = bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), bbox);
 
                                                        if (queryValidationInput.getEnabled()) {
                                                            queryValidationInput.getBboxCrs()
@@ -397,7 +387,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                        return qToCql(qFields, filter.getValue()).orElse(null);
                                                    }
                                                    if (filterParameters.contains(filter.getKey())) {
-                                                       CqlPredicate cqlPredicate;
+                                                       Cql2Expression cqlPredicate;
                                                        try {
                                                            cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs);
                                                        } catch (Throwable e) {
@@ -422,18 +412,18 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                    }
                                                    if (filter.getValue()
                                                              .contains("*")) {
-                                                       return CqlPredicate.of(Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue().replace("*","%"))));
+                                                       return Like.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue().replace("*","%")));
                                                    }
 
-                                                   return CqlPredicate.of(Eq.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue())));
+                                                   return Eq.of(filterableFields.get(filter.getKey()), ScalarLiteral.of(filter.getValue()));
                                                })
                                                .filter(Objects::nonNull)
                                                .collect(Collectors.toList());
 
-        return predicates.isEmpty() ? Optional.empty() : Optional.of(predicates.size() == 1 ? CqlFilter.of(predicates.get(0)) : CqlFilter.of(And.of(predicates)));
+        return predicates.isEmpty() ? Optional.empty() : Optional.of(predicates.size() == 1 ? predicates.get(0) : And.of(predicates));
     }
 
-    private CqlPredicate bboxToCql(String geometryField, String bboxValue, Optional<BoundingBox> optionalSpatialExtent) {
+    private Cql2Expression bboxToCql(String geometryField, String bboxValue, Optional<BoundingBox> optionalSpatialExtent) {
         List<String> values = ARRAY_SPLITTER.splitToList(bboxValue);
         EpsgCrs sourceCrs = OgcCrs.CRS84;
 
@@ -468,7 +458,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                 // bounding box does not overlap with spatial extent of the data, no match;
                 // detecting this is also important to avoid errors when converting bbox coordinates
                 // that are outside of the range of the native CRS
-                return CqlPredicate.of(ScalarLiteral.of(false));
+                return BooleanValue2.of(false);
             } else if (bboxCoordinates.get(0) < spatialExtent.getXmin() || bboxCoordinates.get(1) < spatialExtent.getYmin() ||
                 bboxCoordinates.get(2) > spatialExtent.getXmax() || bboxCoordinates.get(3) > spatialExtent.getYmax()) {
                 // bounding box extends beyond the spatial extent of the data, reduce to overlapping area;
@@ -482,14 +472,14 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             }
         }
 
-        return CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, geometryField, SpatialLiteral.of(envelope)));
+        return SIntersects.of(Property.of(geometryField), SpatialLiteral.of(envelope));
     }
 
     private String getBboxAsString(List<String> bboxArray) {
         return String.format("%s,%s,%s,%s", bboxArray.get(0), bboxArray.get(1), bboxArray.get(2), bboxArray.get(3));
     }
 
-    private Optional<CqlPredicate> timeToCql(String timeField, String timeValue) {
+    private Optional<Cql2Expression> timeToCql(String timeField, String timeValue) {
         // valid values: timestamp or time interval;
         // this includes open intervals indicated by ".." (see ISO 8601-2);
         // accept also unknown ("") with the same interpretation;
@@ -513,26 +503,26 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                                       .map(Property::of)
                                                       .collect(Collectors.toList()));
 
-            return Optional.of(CqlPredicate.of(TemporalOperation.of(TemporalOperator.T_INTERSECTS, intervalFunction, temporalLiteral)));
+            return Optional.of(TIntersects.of(intervalFunction, temporalLiteral));
         }
 
-        return Optional.of(CqlPredicate.of(TemporalOperation.of(TemporalOperator.T_INTERSECTS, Property.of(timeField), temporalLiteral)));
+        return Optional.of(TIntersects.of(Property.of(timeField), temporalLiteral));
     }
 
-    private Optional<CqlPredicate> qToCql(List<String> qFields, String qValue) {
+    private Optional<Cql2Expression> qToCql(List<String> qFields, String qValue) {
         // predicate that ORs LIKE operators of all values;
         List<String> qValues = Splitter.on(",")
                                        .trimResults()
                                        .splitToList(qValue);
 
         return qFields.size()>1 || qValues.size()>1
-                ? Optional.of(CqlPredicate.of(Or.of(qFields.stream()
+                ? Optional.of(Or.of(qFields.stream()
                                                         .map(qField -> qValues.stream()
-                                                                              .map(word -> CqlPredicate.of(Like.of(qField, ScalarLiteral.of("%"+word+"%"))))
+                                                                              .map(word -> Like.of(qField, ScalarLiteral.of("%"+word+"%")))
                                                                               .collect(Collectors.toUnmodifiableList()))
                                                         .flatMap(Collection::stream)
-                                                        .collect(Collectors.toUnmodifiableList()))))
-                : Optional.of(CqlPredicate.of(Like.of(qFields.get(0), ScalarLiteral.of("%"+qValues.get(0)+"%"))));
+                                                        .collect(Collectors.toUnmodifiableList())))
+                : Optional.of(Like.of(qFields.get(0), ScalarLiteral.of("%"+qValues.get(0)+"%")));
     }
 
     private int parseLimit(int minimumPageSize, int defaultPageSize, int maxPageSize, String paramLimit) {
