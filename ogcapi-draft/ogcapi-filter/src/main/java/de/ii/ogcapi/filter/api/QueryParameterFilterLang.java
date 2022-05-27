@@ -24,11 +24,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn Language of the query expression in the 'filter' parameter. Supported is currently only
- * 'cql2-text', specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text'
+ * @langEn Language of the query expression in the `filter` parameter. Supported are 'cql2-text' and 'cql2-json',
+ * specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text'
  * is an SQL-like text encoding for filter expressions that also supports spatial, temporal and
- * array predicates.
- * @langDe TODO
+ * array predicates. 'cql2-json' is a JSON encoding of the same grammar, suitable for use as part of
+ * a JSON object that represents a query. The use of 'cql2-text' is recommended for filter expressions
+ * in the 'filter' parameter.
+ * @langDe Sprache des Filterausdrucks im Parameter "filter". Unterstützt werden 'cql2-text' und 'cql2-json',
+ * spezifiziert im Entwurf des OGC-Standards 'Common Query Language (CQL2). 'cql2-text'
+ * ist eine SQL-ähnliche Textkodierung für Filterausdrücke, die auch räumliche, zeitliche und
+ * Array-Prädikate unterstützt. 'cql2-json' ist eine JSON-Kodierung der gleichen Grammatik,
+ * geeignet für die Verwendung als Teil eines JSON-Objekts, das eine Query darstellt.
+ * Die Verwendung von 'cql2-text' wird für Filterausdrücke im Parameter 'filter' empfohlen.
  * @name filter-lang
  * @endpoints Features, Vector Tile
  */
@@ -63,19 +70,11 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
 
   @Override
   public String getDescription() {
-        /* TODO support CQL2 JSON
         return "Language of the query expression in the 'filter' parameter. Supported are 'cql2-text' (default) and 'cql2-json', " +
             "specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text' is an SQL-like text encoding for " +
             "filter expressions that also supports spatial, temporal and array predicates. 'cql2-json' is a JSON encoding of " +
             "that grammar, suitable for use as part of a JSON object that represents a query. The use of 'cql2-text' is recommended " +
             "for filter expressions in the 'filter' parameter.";
-         */
-    return
-        "Language of the query expression in the 'filter' parameter. Supported is currently only 'cql2-text', "
-            +
-            "specified in the OGC candidate standard 'Common Query Language (CQL2)'. 'cql2-text' is an SQL-like text encoding for "
-            +
-            "filter expressions that also supports spatial, temporal and array predicates.";
   }
 
   @Override
@@ -93,11 +92,7 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
                         "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
   }
 
-  /* TODO support CQL2 JSON
   private final Schema<String> schema = new StringSchema()._enum(ImmutableList.of(FILTER_LANG_CQL2_TEXT, FILTER_LANG_CQL2_JSON))._default(FILTER_LANG_CQL2_TEXT);
-   */
-  private final Schema<String> schema = new StringSchema()._enum(
-      ImmutableList.of(FILTER_LANG_CQL2_TEXT))._default(FILTER_LANG_CQL2_TEXT);
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {

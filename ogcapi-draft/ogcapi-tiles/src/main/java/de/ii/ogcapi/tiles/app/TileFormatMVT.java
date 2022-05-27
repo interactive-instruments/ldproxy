@@ -36,13 +36,13 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.cql.domain.CqlFilter;
-import de.ii.xtraplatform.cql.domain.CqlPredicate;
-import de.ii.xtraplatform.cql.domain.SpatialOperation;
-import de.ii.xtraplatform.cql.domain.SpatialOperator;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.Property;
+import de.ii.xtraplatform.cql.domain.SIntersects;
+import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -232,10 +232,11 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
                 .orElse(bbox);
         }
 
-        CqlPredicate spatialPredicate = CqlPredicate.of(SpatialOperation.of(SpatialOperator.S_INTERSECTS, filterableFields.get(PARAMETER_BBOX), bbox));
+        Cql2Expression spatialPredicate = SIntersects.of(Property.of(filterableFields.get(PARAMETER_BBOX)),
+            SpatialLiteral.of(Envelope.of(bbox)));
         if (predefFilter != null || !filters.isEmpty()) {
-            Optional<CqlFilter> otherFilter = Optional.empty();
-            Optional<CqlFilter> configFilter = Optional.empty();
+            Optional<Cql2Expression> otherFilter = Optional.empty();
+            Optional<Cql2Expression> configFilter = Optional.empty();
             if (!filters.isEmpty()) {
                 Optional<String> filterLang = uriCustomizer.getQueryParams().stream()
                         .filter(param -> "filter-lang".equals(param.getName()))
@@ -250,15 +251,15 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
             if (predefFilter != null) {
                 configFilter = queryParser.getFilterFromQuery(ImmutableMap.of("filter", predefFilter), filterableFields, ImmutableSet.of("filter"), queryableTypes, Cql.Format.TEXT);
             }
-            CqlFilter combinedFilter;
+            Cql2Expression combinedFilter;
             if (otherFilter.isPresent() && configFilter.isPresent()) {
-                combinedFilter = CqlFilter.of(And.of(otherFilter.get(), configFilter.get(), spatialPredicate));
+                combinedFilter = And.of(otherFilter.get(), configFilter.get(), spatialPredicate);
             } else if (otherFilter.isPresent()) {
-                combinedFilter = CqlFilter.of(And.of(otherFilter.get(), spatialPredicate));
+                combinedFilter = And.of(otherFilter.get(), spatialPredicate);
             } else if (configFilter.isPresent()) {
-                combinedFilter = CqlFilter.of(And.of(configFilter.get(), spatialPredicate));
+                combinedFilter = And.of(configFilter.get(), spatialPredicate);
             } else {
-                combinedFilter = CqlFilter.of(spatialPredicate);
+                combinedFilter = spatialPredicate;
             }
 
             if (LOGGER.isDebugEnabled()) {
@@ -267,7 +268,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
 
             queryBuilder.filter(combinedFilter);
         } else {
-            queryBuilder.filter(CqlFilter.of(spatialPredicate));
+            queryBuilder.filter(spatialPredicate);
         }
 
         return queryBuilder.build();

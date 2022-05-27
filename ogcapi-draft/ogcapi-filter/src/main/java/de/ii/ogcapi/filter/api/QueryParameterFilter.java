@@ -38,8 +38,8 @@ import javax.inject.Singleton;
 //TODO
 //@endpoints {@link de.ii.ogcapi.features.core.app.EndpointFeatures},{@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection},{@link de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}
 /**
- * @langEn The filter expression.
- * @langDe Der Filterausdruck.
+ * @langEn The filter expression in the filter language declared in `filter-lang`. Coordinates are in the coordinate reference system declared in `filter-crs`.
+ * @langDe Der Filterausdruck in der in `filter-lang` angegebenen Filtersprache. Die Koordinaten sind in dem in `filter-crs` angegebenen Koordinatenreferenzsystem.
  * @name filter
  * @endpoints Features, Vector Tile
  */
@@ -169,7 +169,8 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
                             "http://www.opengis.net/spec/cql2/0.0/conf/temporal-operators",
                             "http://www.opengis.net/spec/cql2/0.0/conf/array-operators",
                             "http://www.opengis.net/spec/cql2/0.0/conf/property-property",
-                            "http://www.opengis.net/spec/cql2/0.0/conf/cql2-text");
+                            "http://www.opengis.net/spec/cql2/0.0/conf/cql2-text",
+                            "http://www.opengis.net/spec/cql2/0.0/conf/cql2-json");
                 if (provider.queries().supportsAccenti())
                     builder.add("http://www.opengis.net/spec/cql2/0.0/conf/accent-insensitive-comparison");
             }
