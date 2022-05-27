@@ -15,23 +15,36 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 
 /**
- * @title Filter - CQL
- * @langEn Adds support for CQL filter expressions in queries to select [Features](features_core.md) or [Vector Tiles](tiles.md).
- * @conformanceEn This module implements requirements of the conformance classes *Filter*, *Features Filter*,
- * *Simple CQL*, *CQL Text* and *CQL JSON* from the draft specification [OGC API - Features - Part 3: Common Query Language](http://docs.opengeospatial.org/DRAFTS/19-079.html). The implementation is subject to change in the course of the development and approval process of the draft.
- * @langDe Das Modul "Filter / CQL" kann für jede über ldproxy bereitgestellte API mit einem
+ * @title Filter / CQL2
+ * @langEn The module "Filter / CQL2" can be enabled for any API with a feature provider. It enables
+ * the specification of the query parameters `filter` and `filter-long` for [features](features_core.md)
+ * and [vector tiles](tiles.md). Supported are the filter languages `cql2-text` and `cql2-json`.
+ * @conformanceEn This module implements requirements of the conformance classes *Filter* and *Features Filter*
+ * from the draft specification [OGC API - Features - Part 3: Common Query Language](https://docs.ogc.org/DRAFTS/19-079r1.html)
+ * as well as the conformance classes *Basic CQL2*, *Advanced Comparison Operators*, *Case-insensitive Comparisons*,
+ * *Accent-insensitive Comparisons*, *Basic Spatial Operators*, *Spatial Operators*, *Temporal Operators*,
+ * *Array Operators*, *Property-Property Comparisons*, *CQL2 Text encoding*, and *CQL2 JSON encoding*
+ * from the draft specification [Common Query Language (CQL2](https://docs.ogc.org/DRAFTS/21-065.html).
+ * The implementation is subject to change in the course of the development and approval process of the draft.
+ * @langDe Das Modul "Filter / CQL2" kann für jede über ldproxy bereitgestellte API mit einem
  * Feature-Provider aktiviert werden. Es aktiviert die Angabe der Query-Parameter `filter`
- * und `filter-lang` für die Ressourcen "Features" und "Vector Tile". Unterstützt werden die
- * Filtersprachen `cql-text` und `cql-json`.
+ * und `filter-lang` für [Features](features_core.md) und [Vector Tiles](tiles.md). Unterstützt werden die
+ * Filtersprachen `cql2-text` und `cql2-json`.
  *
- * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklassen "Filter", "Features Filter",
- * "Simple CQL", "CQL Text" und "CQL JSON" aus dem [Entwurf von OGC API - Features - Part 3: Common
- * Query Language](http://docs.opengeospatial.org/DRAFTS/19-079.html#filter-queryables).
- * Die Implementierung wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
+ * The publication of the queryables is controlled by the [Collections Queryables module](queryables.md).
+ * If "Filter / CQL2" is enabled, then "Collections Queryables" must be enabled, too, so that clients can
+ * determine the feature properties that can be queried.
  *
- * Die Veröffentlichung der Queryables wird über des
- * [Modul "Collections Queryables"](queryables.md) gesteuert. Ist "Filter / CQL" aktiviert,
- * dann muss "Collection Queryables" aktiviert sein, damit Clients die abfragbaren
+ * @conformanceDe Dieses Modul implementiert die Anforderungen der Konformitätsklassen *Filter* und *Features Filter*
+ * aus dem Entwurf der Spezifikation [OGC API - Features - Part 3: Common Query Language](https://docs.ogc.org/DRAFTS/19-079r1.html)
+ * sowie die Konformitätsklassen *Basic CQL2*, *Advanced Comparison Operators*, *Case-insensitive Comparisons*,
+ * *Accent-insensitive Comparisons*, *Basic Spatial Operators*, *Spatial Operators*, *Temporal Operators*,
+ * *Array Operators*, *Property-Property Comparisons*, *CQL2 Text encoding*, und *CQL2 JSON encoding*
+ * aus dem Entwurf der Spezifikation [Common Query Language (CQL2](https://docs.ogc.org/DRAFTS/21-065.html).
+ * Die Implementierung kann sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
+ *
+ * Die Veröffentlichung der Queryables wird über das [Modul "Collections Queryables"](queryables.md) gesteuert.
+ * Ist "Filter / CQL2" aktiviert, dann muss "Collection Queryables" aktiviert sein, damit Clients die abfragbaren
  * Objekteigenschaften bestimmen können.
  *
  * @queryParameterTable {@link de.ii.ogcapi.filter.api.QueryParameterFilter},

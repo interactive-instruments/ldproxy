@@ -35,8 +35,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn Specify which of the supported CRSs to use to encode geometric values in a filter expression (parameter 'filter'). Default is WGS84 longitude/latitude.
- * @langDe TODO
+ * @langEn Specifies which of the supported coordinate reference systems is used to encode coordinates in the filter expression in parameter `filter`. Default is WGS84 longitude/latitude (CRS84).
+ * @langDe Gibt an, welches der unterstützten Koordinatenreferenzsysteme zur Kodierung von Koordinaten im Filterausdruck verwendet wird (Parameter `filter`). Standardwert ist WGS84 Längen-/Breitengrad (CRS84).
  * @name filter-crs
  * @endpoints Features, Vector Tile
  */
