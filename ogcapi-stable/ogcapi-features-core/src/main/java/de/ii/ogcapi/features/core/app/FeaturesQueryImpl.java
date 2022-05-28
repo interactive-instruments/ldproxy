@@ -7,12 +7,6 @@
  */
 package de.ii.ogcapi.features.core.app;
 
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
-import static de.ii.xtraplatform.cql.domain.In.ID_PLACEHOLDER;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -30,15 +24,14 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.cql.domain.And;
-import de.ii.xtraplatform.cql.domain.BooleanValue;
 import de.ii.xtraplatform.cql.domain.BooleanValue2;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.Eq;
-import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
 import de.ii.xtraplatform.cql.domain.In;
+import de.ii.xtraplatform.cql.domain.Interval;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
@@ -59,6 +52,13 @@ import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import org.kortforsyningen.proj.Units;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.measure.Unit;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -67,12 +67,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.measure.Unit;
-import org.kortforsyningen.proj.Units;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
+import static de.ii.xtraplatform.cql.domain.In.ID_PLACEHOLDER;
 
 
 @Singleton
@@ -497,13 +497,13 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         }
 
         if (timeField.contains(DATETIME_INTERVAL_SEPARATOR)) {
-            Function intervalFunction = Function.of("interval", Splitter.on(DATETIME_INTERVAL_SEPARATOR)
-                                                      .splitToList(timeField)
-                                                      .stream()
-                                                      .map(Property::of)
-                                                      .collect(Collectors.toList()));
+            Interval interval = Interval.of(Splitter.on(DATETIME_INTERVAL_SEPARATOR)
+                                                .splitToList(timeField)
+                                                .stream()
+                                                .map(Property::of)
+                                                .collect(Collectors.toList()));
 
-            return Optional.of(TIntersects.of(intervalFunction, temporalLiteral));
+            return Optional.of(TIntersects.of(interval, temporalLiteral));
         }
 
         return Optional.of(TIntersects.of(Property.of(timeField), temporalLiteral));
