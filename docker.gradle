@@ -1,30 +1,39 @@
-apply plugin: 'com.bmuschko.docker-java-application'
+//TODO: move everything to application plugin
 
-docker {
-    javaApplication {
-        baseImage = 'openjdk:11-jre-slim'
-        maintainer = 'interactive instruments GmbH'
-        port = 7080
-        tag = 'iide/ldproxy:local-dev'
+task dockerFile {
+    outputs.file new File(buildDir, 'tmp/Dockerfile')
+    doLast {
+        new File(buildDir, 'tmp/Dockerfile').text = """
+FROM openjdk:11-jre-slim
+MAINTAINER interactive instruments GmbH
+ADD ${project.name}.tar /
+ENTRYPOINT ["/${project.name}/bin/${project.name}"]
+EXPOSE 7080
+WORKDIR /${project.name}
+ENV XTRAPLATFORM_ENV CONTAINER
+"""
     }
 }
 
-dockerDistTar {
-    workingDir "/ldproxy"
-    environmentVariable 'XTRAPLATFORM_ENV', 'CONTAINER'
+task dockerCopy(type: Copy) {
+    from tasks.distTar
+    from tasks.dockerFile
+    into "$buildDir/docker"
 }
 
-dockerBuildImage {
-    outputs.upToDateWhen { dockerCopyDistResources.state.upToDate && dockerDistTar.state.upToDate }
+task dockerBuild(type: Exec) {
+    dependsOn dockerCopy
+    outputs.upToDateWhen { dockerCopy.state.upToDate }
+    workingDir "$buildDir/docker"
+    commandLine 'docker', 'build', '--platform', 'linux/amd64', '-t', 'iide/ldproxy:local-dev', '.'
 }
 
-//TODO: move everything to application plugin, remove docker plugin
 task dockerRun(type: Exec) {
-    dependsOn dockerBuildImage
+    dependsOn dockerBuild
     if (org.gradle.internal.os.OperatingSystem.current().isLinux()) {
-        commandLine 'docker', 'run', '--rm', '-i', '--network=host', '-v', "${project.findProperty('data') ?: "$buildDir/data"}:/ldproxy/data", '-e', 'XTRAPLATFORM_ENV=DEVELOPMENT', '-e', "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=${project.findProperty('debug') ? 'y' : 'n'},address=*:5005", docker.javaApplication.tag
+        commandLine 'docker', 'run', '--platform', 'linux/amd64', '--rm', '-i', '--network=host', '-v', "${project.findProperty('data') ?: "$buildDir/data"}:/ldproxy/data", '-e', 'XTRAPLATFORM_ENV=DEVELOPMENT', '-e', "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=${project.findProperty('debug') ? 'y' : 'n'},address=*:5005", 'iide/ldproxy:local-dev'
     } else {
-        commandLine 'docker', 'run', '--rm', '-i', '-p', '7080:7080', '-p', '7081:7081', '-p', '5005:5005', '-v', "${project.findProperty('data') ?: "$buildDir/data"}:/ldproxy/data", '-e', 'XTRAPLATFORM_ENV=DEVELOPMENT', '-e', "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=${project.findProperty('debug') ? 'y' : 'n'},address=*:5005", docker.javaApplication.tag
+        commandLine 'docker', 'run', '--platform', 'linux/amd64', '--rm', '-i', '-p', '7080:7080', '-p', '7081:7081', '-p', '5005:5005', '-v', "${project.findProperty('data') ?: "$buildDir/data"}:/ldproxy/data", '-e', 'XTRAPLATFORM_ENV=DEVELOPMENT', '-e', "JAVA_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=${project.findProperty('debug') ? 'y' : 'n'},address=*:5005", 'iide/ldproxy:local-dev'
     }
 }
 
@@ -33,14 +42,3 @@ if (!useNativeRun) {
     tasks.run.finalizedBy tasks.dockerRun
 }
 
-// workaround for java 11 compatibility of docker plugin
-configurations {
-    dockerJava2
-}
-dependencies {
-    dockerJava2 'com.sun.activation:javax.activation:1.2.0'
-}
-afterEvaluate {
-    configurations.dockerJava.extendsFrom(configurations.dockerJava2)
-
-}
