@@ -52,6 +52,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
 
   private final ExtensionRegistry extensionRegistry;
 
+  @SuppressWarnings("PMD.UnusedFormalParameter") // crsTransformerFactory is needed here because dagger-auto does not parse OgcApiEntity yet
   @Inject
   public OgcApiFactory(CrsTransformerFactory crsTransformerFactory, ExtensionRegistry extensionRegistry, OgcApiFactoryAssisted ogcApiFactoryAssisted) {
     super(ogcApiFactoryAssisted);

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 /**
  * @author zahnen
  */
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.GodClass"}) // this class needs that many methods, a refactoring makes no sense
 public class URICustomizer extends URIBuilder {
     public URICustomizer() {
         super();
