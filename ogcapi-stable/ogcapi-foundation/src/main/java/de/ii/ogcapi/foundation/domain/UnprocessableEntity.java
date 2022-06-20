@@ -9,6 +9,8 @@ package de.ii.ogcapi.foundation.domain;
 
 public class UnprocessableEntity extends RuntimeException {
 
+  private static final long serialVersionUID = -2187376341627253652L;
+
   public UnprocessableEntity() {
     super();
   }
