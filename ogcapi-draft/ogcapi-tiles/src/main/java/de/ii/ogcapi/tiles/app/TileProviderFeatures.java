@@ -159,15 +159,6 @@ public abstract class TileProviderFeatures extends TileProvider {
                     .build()));
 
             Map<String, FeatureQuery> queryMap = collections.stream()
-                // skip collections without spatial queryable
-                .filter(collectionId -> {
-                    Optional<FeaturesCoreConfiguration> featuresConfiguration = apiData.getCollections()
-                        .get(collectionId)
-                        .getExtension(FeaturesCoreConfiguration.class);
-                    return featuresConfiguration.isPresent()
-                        && featuresConfiguration.get().getQueryables().isPresent()
-                        && !featuresConfiguration.get().getQueryables().get().getSpatial().isEmpty();
-                })
                 .collect(ImmutableMap.toImmutableMap(collectionId -> collectionId, collectionId -> {
                     String featureTypeId = apiData.getCollections()
                         .get(collectionId)

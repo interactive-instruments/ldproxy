@@ -55,6 +55,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,6 +200,10 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
                 .values()
                 .stream()
                 .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+                // drop all collections without a primary geometry
+                .filter(collection -> providers.getFeatureSchema(apiData, collection)
+                        .flatMap(SchemaBase::getPrimaryGeometry)
+                        .isPresent())
                 .filter(collection -> {
                     Optional<TilesConfiguration> layerConfiguration = collection.getExtension(TilesConfiguration.class);
                     if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().isMultiCollectionEnabled())
