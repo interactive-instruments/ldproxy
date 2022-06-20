@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.docs.DocFile;
 import de.ii.xtraplatform.docs.DocStep;
 import de.ii.xtraplatform.docs.DocStep.Step;
@@ -22,9 +21,12 @@ import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import org.immutables.value.Value;
-
-import java.util.*;
 
 /**
  *
@@ -188,21 +190,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
      * APIs verwendet werden, z.B. `tags=INSPIRE`.<br>_seit Version 2.1_
      * @default `null`
      */
-    // TODO: move to ServiceData?
     public abstract List<String> getTags();
-
-    // TODO: move to ServiceData?
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    public List<String> getSubPath() {
-        ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
-        builder.add(getId());
-        if (getApiVersion().isPresent()) {
-            builder.add("v" + getApiVersion().get());
-        }
-        return builder.build();
-    }
 
     @JsonProperty("api")
     @JsonMerge
@@ -224,20 +212,6 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public Optional<FeatureTypeConfigurationOgcApi> getCollectionData(String collectionId) {
         return Optional.ofNullable(getCollections().get(collectionId));
-    }
-
-    @Override
-    @Value.Derived
-    public boolean isLoading() {
-        //TODO: delegate to extensions?
-        return false;
-    }
-
-    @Override
-    @Value.Derived
-    public boolean hasError() {
-        //TODO: delegate to extensions?
-        return false;
     }
 
     @Value.Check

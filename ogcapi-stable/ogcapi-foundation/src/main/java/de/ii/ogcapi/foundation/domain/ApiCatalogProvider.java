@@ -85,11 +85,10 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
         return "";
     }
 
-    private FoundationConfiguration getConfig() {
-        //TODO: encapsulate in entities/defaults layer
+    private FoundationConfiguration getFoundationConfigurationDefaults() {
         EntityDataBuilder<?> builder = defaultsStore.getBuilder(Identifier.from(EntityDataDefaultsStore.EVENT_TYPE, Service.TYPE, OgcApiDataV2.SERVICE_TYPE.toLowerCase(Locale.ROOT)));
-        if (builder instanceof ImmutableOgcApiDataV2.Builder) {
-            ImmutableOgcApiDataV2 defaults = ((ImmutableOgcApiDataV2.Builder) builder).id("NOT_SET")
+        if (builder instanceof OgcApiDataV2.Builder) {
+            OgcApiDataV2 defaults = ((OgcApiDataV2.Builder) builder.fillRequiredFieldsWithPlaceholders())
                                                                                       .build();
             return defaults.getExtension(FoundationConfiguration.class)
                            .orElse(new ImmutableFoundationConfiguration.Builder().build());
@@ -144,7 +143,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
                                                       .filter(candidate -> !candidate.label().equals(mediaType.label()))
                                                       .collect(Collectors.toList());
 
-        FoundationConfiguration config = getConfig();
+        FoundationConfiguration config = getFoundationConfigurationDefaults();
 
         URI finalUri = catalogUri;
         ImmutableApiCatalog.Builder builder = new ImmutableApiCatalog.Builder()
@@ -168,7 +167,7 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
                                       .id(api.getId())
                                       .title(api.getLabel())
                                       .description(api.getDescription())
-                                      .landingPageUri(getApiUrl(finalUri, ((OgcApiDataV2) api).getSubPath()))
+                                      .landingPageUri(getApiUrl(finalUri, api.getSubPath()))
                                       .tags(((OgcApiDataV2) api).getTags())
                                       .isDataset(((OgcApiDataV2) api).isDataset())
                                       .build();
