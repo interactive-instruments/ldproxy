@@ -65,10 +65,13 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
         if (!schemaMap.get(apiHashCode).containsKey("*")) {
             List<String> fEnum = new ArrayList<>();
             extensionRegistry.getExtensionsForType(getFormatClass())
-                    .stream()
-                    .filter(f -> f.isEnabledForApi(apiData))
-                    .filter(f -> !f.getMediaType().parameter().equals("*"))
-                    .forEach(f -> fEnum.add(f.getMediaType().parameter()));
+                .stream()
+                .filter(f -> f.isEnabledForApi(apiData))
+                .filter(f -> !f.getMediaType().parameter().equals("*"))
+                .map(f -> f.getMediaType().parameter())
+                .distinct()
+                .sorted()
+                .forEach(fEnum::add);
             schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(fEnum));
         }
         return schemaMap.get(apiHashCode).get("*");
@@ -82,10 +85,13 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
         if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
             List<String> fEnum = new ArrayList<>();
             extensionRegistry.getExtensionsForType(getFormatClass())
-                    .stream()
-                    .filter(f -> f.isEnabledForApi(apiData, collectionId))
-                    .filter(f -> !f.getMediaType().parameter().equals("*"))
-                    .forEach(f -> fEnum.add(f.getMediaType().parameter()));
+                .stream()
+                .filter(f -> f.isEnabledForApi(apiData, collectionId))
+                .filter(f -> !f.getMediaType().parameter().equals("*"))
+                .map(f -> f.getMediaType().parameter())
+                .distinct()
+                .sorted()
+                .forEach(fEnum::add);
             schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
         }
         return schemaMap.get(apiHashCode).get(collectionId);

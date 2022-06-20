@@ -30,6 +30,13 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn TODO
+ * @langDe TODO
+ * @name limit
+ * @endpoints Features
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterLimitFeatures extends ApiExtensionCache implements OgcApiQueryParameter {

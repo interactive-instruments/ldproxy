@@ -88,7 +88,7 @@ public class DatasetView extends GenericView {
                                           .omitEmptyStrings()
                                           .splitToList(without);
 
-            List<NameValuePair> query = URLEncodedUtils.parse(getQuery().substring(1), Consts.ISO_8859_1)
+            List<NameValuePair> query = URLEncodedUtils.parse(getRawQuery().substring(1), Consts.ISO_8859_1)
                                                        .stream()
                                                        .filter(kvp -> !ignore.contains(kvp.getName()
                                                                                           .toLowerCase()))

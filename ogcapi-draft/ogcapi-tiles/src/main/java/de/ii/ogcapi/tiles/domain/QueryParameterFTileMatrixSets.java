@@ -17,6 +17,13 @@ import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name TileMatrixSets
+ * @endpoints Tileset
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterFTileMatrixSets extends QueryParameterF {

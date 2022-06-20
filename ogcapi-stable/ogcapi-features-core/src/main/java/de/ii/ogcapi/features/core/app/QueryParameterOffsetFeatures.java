@@ -21,6 +21,13 @@ import java.math.BigDecimal;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn TODO
+ * @langDe TODO
+ * @name offset
+ * @endpoints Features
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {

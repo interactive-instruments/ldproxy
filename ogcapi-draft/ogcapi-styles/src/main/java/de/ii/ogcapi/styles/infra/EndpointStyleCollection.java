@@ -50,6 +50,15 @@ import org.slf4j.LoggerFactory;
 /**
  * fetch the stylesheet of a style
  */
+
+/**
+ * @langEn Fetches the style with identifier `styleId`. The set of available styles can be retrieved at `/styles`.
+ * Not all styles are available in all style encodings.
+ * @langDe TODO
+ * @name Style Collection
+ * @path /{apiId}/collections/{collectionId}/styles/{styleId}
+ * @formats {@link de.ii.ogcapi.styles.domain.StyleFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointStyleCollection extends EndpointSubCollection {

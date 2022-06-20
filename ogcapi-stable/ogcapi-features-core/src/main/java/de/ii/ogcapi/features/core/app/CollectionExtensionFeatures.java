@@ -131,36 +131,12 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                                                  .isPresent();
         Optional<BoundingBox> spatial = api.getSpatialExtent(featureType.getId());
         Optional<TemporalExtent> temporal = api.getTemporalExtent(featureType.getId());
-        if (hasSpatialQueryable && hasTemporalQueryable && spatial.isPresent() && temporal.isPresent()) {
-            collection.extent(new OgcApiExtent(
-                    temporal.get()
-                            .getStart(),
-                    temporal.get()
-                            .getEnd(),
-                    spatial.get()
-                           .getXmin(),
-                    spatial.get()
-                           .getYmin(),
-                    spatial.get()
-                           .getXmax(),
-                    spatial.get()
-                           .getYmax()));
-        } else if (hasSpatialQueryable && spatial.isPresent()) {
-            collection.extent(new OgcApiExtent(
-                    spatial.get()
-                           .getXmin(),
-                    spatial.get()
-                           .getYmin(),
-                    spatial.get()
-                           .getXmax(),
-                    spatial.get()
-                           .getYmax()));
-        } else if (hasTemporalQueryable && temporal.isPresent()) {
-            collection.extent(new OgcApiExtent(
-                    temporal.get()
-                            .getStart(),
-                    temporal.get()
-                            .getEnd()));
+        if (hasSpatialQueryable && hasTemporalQueryable) {
+            collection.extent(OgcApiExtent.of(spatial, temporal));
+        } else if (hasSpatialQueryable) {
+            collection.extent(OgcApiExtent.of(spatial, Optional.empty()));
+        } else if (hasTemporalQueryable) {
+            collection.extent(OgcApiExtent.of(Optional.empty(), temporal));
         }
 
         return collection;

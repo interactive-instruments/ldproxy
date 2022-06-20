@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
@@ -18,7 +17,6 @@ import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonDeserialize(as = ImmutableJsonSchemaString.class)
 public abstract class JsonSchemaString extends JsonSchema {
 
     public final String getType() { return "string"; }

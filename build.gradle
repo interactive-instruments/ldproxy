@@ -2,6 +2,7 @@ plugins {
     id 'de.interactive_instruments.xtraplatform-application' version '4.3.5'
     id 'com.github.hierynomus.license-report' version '0.16.1' apply false
     id 'com.bmuschko.docker-java-application' version '3.1.0' apply false
+    id "com.github.node-gradle.node" version "3.2.0" apply false
 }
 
 allprojects {
@@ -58,6 +59,12 @@ tasks.publish {
     dependsOn(':ldproxy-cfg:publish')
 }
 
+tasks.clean {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':cleanAll')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':cleanAll')
+    dependsOn(':ldproxy-cfg:clean')
+}
+
 apply from: 'license-headers.gradle'
 
 apply from: 'docker.gradle'
@@ -67,4 +74,10 @@ apply from: 'docker.gradle'
 //apply plugin: 'xtraplatform-docs'
 
 apply from: 'git-hooks.gradle'
+
+//TODO: MarkdownTask not available in docs.gradle
+tasks.register('docsExtract', de.interactive_instruments.xtraplatform.docs.MarkdownTask) {
+    docsName 'docs'
+}
+apply from: 'docs.gradle'
 

@@ -1,4 +1,0 @@
-System.setProperty("org.gradle.project.community", "true")
-
-apply from: '../composite/settings.gradle'
-

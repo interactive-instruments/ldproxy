@@ -18,6 +18,8 @@ import org.immutables.value.Value;
 
 import java.util.Set;
 
+
+
 @Value.Immutable
 public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache implements OgcApiQueryParameter {
 

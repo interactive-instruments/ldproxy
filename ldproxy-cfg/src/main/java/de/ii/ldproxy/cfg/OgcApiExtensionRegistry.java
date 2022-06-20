@@ -9,35 +9,35 @@ package de.ii.ldproxy.cfg;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ogcapi.collections.app.CapabilityCollections;
-import de.ii.ogcapi.collections.queryables.app.CapabilityQueryables;
-import de.ii.ogcapi.collections.schema.app.CapabilitySchema;
-import de.ii.ogcapi.common.domain.CapabilityCommon;
-import de.ii.ogcapi.crs.app.CapabilityCrs;
-import de.ii.ogcapi.features.core.app.CapabilityFeaturesCore;
-import de.ii.ogcapi.features.custom.extensions.app.CapabilityFeaturesExtensions;
+import de.ii.ogcapi.collections.app.CollectionsBuildingBlock;
+import de.ii.ogcapi.collections.queryables.app.QueryablesBuildingBlock;
+import de.ii.ogcapi.collections.schema.app.SchemaBuildingBlock;
+import de.ii.ogcapi.common.domain.CommonBuildingBlock;
+import de.ii.ogcapi.crs.app.CrsBuildingBlock;
+import de.ii.ogcapi.features.core.app.FeaturesCoreBuildingBlock;
+import de.ii.ogcapi.features.custom.extensions.app.FeaturesExtensionsBuildingBlock;
 import de.ii.ogcapi.features.flatgeobuf.app.CapabilityFlatgeobuf;
-import de.ii.ogcapi.features.geojson.app.CapabilityGeoJson;
-import de.ii.ogcapi.features.geojson.ld.app.CapabilityGeoJsonLd;
-import de.ii.ogcapi.features.gml.app.CapabilityGml;
-import de.ii.ogcapi.features.html.app.CapabilityFeaturesHtml;
-import de.ii.ogcapi.features.json.fg.app.CapabilityJsonFg;
-import de.ii.ogcapi.filter.app.CapabilityFilter;
+import de.ii.ogcapi.features.geojson.app.GeoJsonBuildingBlock;
+import de.ii.ogcapi.features.geojson.ld.app.GeoJsonLdBuildingBlock;
+import de.ii.ogcapi.features.gml.app.GmlBuildingBlock;
+import de.ii.ogcapi.features.html.app.FeaturesHtmlBuildingBlock;
+import de.ii.ogcapi.features.json.fg.app.JsonFgBuildingBlock;
+import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
-import de.ii.ogcapi.foundation.domain.CapabilityFoundation;
+import de.ii.ogcapi.foundation.domain.FoundationBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.geometry.simplification.app.CapabilityGeometrySimplification;
-import de.ii.ogcapi.html.app.CapabilityHtml;
-import de.ii.ogcapi.json.app.CapabilityJson;
-import de.ii.ogcapi.maps.app.CapabilityMapTiles;
-import de.ii.ogcapi.oas30.app.CapabilityOpenApi;
-import de.ii.ogcapi.projections.app.CapabilityProjections;
-import de.ii.ogcapi.resources.app.CapabilityResources;
-import de.ii.ogcapi.sorting.app.CapabilitySorting;
-import de.ii.ogcapi.styles.app.CapabilityStyles;
-import de.ii.ogcapi.tiles.app.CapabilityTiles;
-import de.ii.ogcapi.transactional.app.CapabilityTransactional;
-import de.ii.ogcapi.xml.app.CapabilityXml;
+import de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationBuildingBlock;
+import de.ii.ogcapi.html.app.HtmlBuildingBlock;
+import de.ii.ogcapi.json.app.JsonBuildingBlock;
+import de.ii.ogcapi.maps.app.MapTilesBuildingBlock;
+import de.ii.ogcapi.oas30.app.OpenApiBuildingBlock;
+import de.ii.ogcapi.projections.app.ProjectionsBuildingBlock;
+import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
+import de.ii.ogcapi.sorting.app.SortingBuildingBlock;
+import de.ii.ogcapi.styles.app.StylesBuildingBlock;
+import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
+import de.ii.ogcapi.transactional.app.TransactionalBuildingBlock;
+import de.ii.ogcapi.xml.app.XmlBuildingBlock;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,37 +48,37 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
 
   OgcApiExtensionRegistry() {
     this.apiExtensions = ImmutableSet.<ApiExtension>builder()
-        .add(new CapabilityQueryables())
-        .add(new CapabilitySchema())
-        .add(new CapabilityFeaturesExtensions())
+        .add(new QueryablesBuildingBlock())
+        .add(new SchemaBuildingBlock())
+        .add(new FeaturesExtensionsBuildingBlock())
         .add(new CapabilityFlatgeobuf())
-        .add(new CapabilityGeoJsonLd())
-        .add(new CapabilityJsonFg())
-        .add(new CapabilityFilter())
-        .add(new CapabilityGeometrySimplification())
-        .add(new CapabilityMapTiles())
-        .add(new CapabilityProjections())
-        .add(new CapabilityResources())
-        .add(new CapabilitySorting(null, null))
-        .add(new CapabilityStyles(this)) // TODO: StyleFormatExtensions
+        .add(new GeoJsonLdBuildingBlock())
+        .add(new JsonFgBuildingBlock())
+        .add(new FilterBuildingBlock())
+        .add(new GeometrySimplificationBuildingBlock())
+        .add(new MapTilesBuildingBlock())
+        .add(new ProjectionsBuildingBlock())
+        .add(new ResourcesBuildingBlock())
+        .add(new SortingBuildingBlock(null, null))
+        .add(new StylesBuildingBlock(this)) // TODO: StyleFormatExtensions
         .add(
-            new CapabilityTiles(
+            new TilesBuildingBlock(
                 this, null, null, null,
                 null)) // TODO: TileFormatWithQuerySupportExtension,
         // TileSetFormatExtension
-        .add(new CapabilityTransactional())
-        .add(new CapabilityCollections())
-        .add(new CapabilityCommon())
-        .add(new CapabilityCrs(null, null))
-        .add(new CapabilityFeaturesCore(null, null, null))
-        .add(new CapabilityGeoJson())
-        .add(new CapabilityGml())
-        .add(new CapabilityFeaturesHtml())
-        .add(new CapabilityFoundation())
-        .add(new CapabilityHtml())
-        .add(new CapabilityJson())
-        .add(new CapabilityOpenApi())
-        .add(new CapabilityXml())
+        .add(new TransactionalBuildingBlock())
+        .add(new CollectionsBuildingBlock())
+        .add(new CommonBuildingBlock())
+        .add(new CrsBuildingBlock(null, null))
+        .add(new FeaturesCoreBuildingBlock(null, null, null))
+        .add(new GeoJsonBuildingBlock())
+        .add(new GmlBuildingBlock())
+        .add(new FeaturesHtmlBuildingBlock())
+        .add(new FoundationBuildingBlock())
+        .add(new HtmlBuildingBlock())
+        .add(new JsonBuildingBlock())
+        .add(new OpenApiBuildingBlock())
+        .add(new XmlBuildingBlock())
         .build();
   }
 

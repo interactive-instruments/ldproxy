@@ -24,6 +24,13 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * @langEn Use this option to exclude geometries from the response for each feature.
+ * @langDe Todo
+ * @name skipGeometry
+ * @endpoints Feature
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterSkipGeometry extends ApiExtensionCache implements OgcApiQueryParameter {

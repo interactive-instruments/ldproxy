@@ -19,9 +19,9 @@ Key characteristics:
 * **Multiple Data Sources**: Currently three types of data sources are supported: [PostgreSQL](https://www.postgresql.org/) databases with the [PostGIS extension](https://postgis.net/), [GeoPackage](https://www.geopackage.org) and [OGC Web Feature Services (WFS)](https://www.ogc.org/standards/wfs).
 * **Extensible**: ldproxy is modular, written in Java 11 and designed to be extended to support your needs.
 
-To get an idea how the APIs look like, have a look at the [demos](docs/en/demos.md).
+To get an idea how the APIs look like, have a look at the [demos](https://demo.ldproxy.net).
 
-More information on the supported specifications and technologies is available in [English](docs/en/specifications.md) and [German](docs/de/specifications.md).
+More information on the supported specifications and technologies is available in [English](https://docs.ldproxy.net/advanced/specifications.html) and [German](https://docs.ldproxy.net/de/advanced/specifications.html).
 
 ## Getting started
 
@@ -33,9 +33,9 @@ To install and start the lastest stable ldproxy version, just run the following 
 docker run -d -p 7080:7080 -v ldproxy_data:/ldproxy/data iide/ldproxy:latest
 ```
 
-For more information, have a look at the deployment guide ([English](docs/en/deployment.md), [German](docs/de/deployment.md)).
+For more information, have a look at the deployment guide ([English](https://docs.ldproxy.net/application/10-deployment.html), [German](https://docs.ldproxy.net/de/application/10-deployment.html)).
 
-When your container is up and running, have a look at the configuration guide ([English](docs/en/configuration/README.md), [German](docs/de/configuration/README.md)).
+When your container is up and running, it is time  to create your first API ([English](https://docs.ldproxy.net/20-creating-apis.html), [German](https://docs.ldproxy.net/de/20-creating-apis.html)).
 
 To run ldproxy without docker, a 64-bit Java environment with Java 11 is recommended.
 
@@ -46,8 +46,6 @@ The only requirement is an installation of JDK 11. To set up a local development
 ```bash
 git clone https://github.com/interactive-instruments/ldproxy.git
 cd ldproxy
-git submodule update --init
-./gradlew -PdownloadNode=true assemble
 ./gradlew run
 ```
 

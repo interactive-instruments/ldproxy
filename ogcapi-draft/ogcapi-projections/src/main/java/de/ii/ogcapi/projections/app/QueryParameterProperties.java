@@ -29,6 +29,14 @@ import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn The properties that should be included for each feature. The parameter value is a comma-separated
+ * list of property names. By default, all feature properties with a value are returned.
+ * @langDe Todo
+ * @name properties
+ * @endpoints Tile
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterProperties extends ApiExtensionCache implements OgcApiQueryParameter {

@@ -30,3 +30,7 @@ bin/
 # Neutrino build directory
 build
 
+# vuepress
+.cache/
+.temp/
+dist/

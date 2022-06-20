@@ -30,6 +30,14 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
+ * @langEn Access multi-layer map tiles
+ * @langDe TODO
+ * @name Tilesets
+ * @path /{apiId}/map/tiles
+ */
+
+
+/**
  * Handle responses under '/tiles'.
  */
 @Singleton

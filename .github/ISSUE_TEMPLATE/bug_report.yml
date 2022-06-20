@@ -1,0 +1,34 @@
+name: 🐛 Bug Report
+description: Create a report to help us improve ldproxy
+labels: ["bug"]
+body:
+  - type: input
+    attributes:
+      label: ldproxy Version
+      description: Please specify which version(s) of ldproxy this issue impacts. The version is printed in the log on startup.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Current Behavior
+      description: A clear description of what the bug is and how it manifests.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected Behavior
+      description: A clear description of what you expected to happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to Reproduce
+      description: Please explain the steps required to duplicate this issue.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell

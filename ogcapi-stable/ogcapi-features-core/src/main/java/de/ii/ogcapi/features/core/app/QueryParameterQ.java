@@ -22,6 +22,13 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn TODO
+ * @langDe TODO
+ * @name q
+ * @endpoints Features
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryParameter {

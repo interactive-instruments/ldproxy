@@ -22,6 +22,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name fTile
+ * @endpoints Tile
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterFTile extends QueryParameterF {

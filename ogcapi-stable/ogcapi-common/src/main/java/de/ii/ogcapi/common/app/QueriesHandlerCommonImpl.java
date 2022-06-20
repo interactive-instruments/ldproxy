@@ -106,20 +106,12 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                         i18n,
                                                         requestContext.getLanguage());
 
-        Optional<BoundingBox> bbox = api.getSpatialExtent();
-        Optional<TemporalExtent> interval = api.getTemporalExtent();
-        OgcApiExtent spatialExtent = bbox.isPresent() && interval.isPresent() ?
-                new OgcApiExtent(interval.get().getStart(), interval.get().getEnd(), bbox.get().getXmin(), bbox.get().getYmin(), bbox.get().getXmax(), bbox.get().getYmax()) :
-            bbox.map(boundingBox -> new OgcApiExtent(boundingBox.getXmin(), boundingBox.getYmin(), boundingBox.getXmax(), boundingBox.getYmax()))
-                .orElseGet(() -> interval.map(temporalExtent -> new OgcApiExtent(temporalExtent.getStart(), temporalExtent.getEnd()))
-                    .orElse(null));;
-
         Builder builder = new Builder()
             .title(apiData.getLabel())
             .description(apiData.getDescription().orElse(""))
             .attribution(apiData.getMetadata().flatMap(ApiMetadata::getAttribution))
             .externalDocs(apiData.getExternalDocs())
-            .extent(Optional.ofNullable(spatialExtent))
+            .extent(OgcApiExtent.of(api.getSpatialExtent(), api.getTemporalExtent()))
             .links(links)
             .addAllLinks(queryInput.getAdditionalLinks());
 

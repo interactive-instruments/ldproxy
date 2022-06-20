@@ -23,6 +23,11 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
     abstract class Builder extends ExtensionConfiguration.Builder {
     }
 
+    /**
+     * @langEn Enables support for the POST HTTP method on the "Features" resource.
+     * @langDe Aktiviert die Unterstützung für die HTTP-Methode POST auf der Ressource "Features"
+     * @default `false`
+     */
     @Nullable
     Boolean getPostOnItems();
 
@@ -34,6 +39,11 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
     }
 
 
+    /**
+     * @langEn Enables support for the `intersects` query parameter on the "Features" resource
+     * @langDe Aktiviert die Unterstützung für den Query-Parameter `intersects` auf der Ressource "Features"
+     * @default `false`
+     */
     @Nullable
     Boolean getIntersectsParameter();
 

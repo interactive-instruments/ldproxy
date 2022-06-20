@@ -7,58 +7,37 @@
  */
 package de.ii.ogcapi.common.domain;
 
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.ApiInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
+import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-
+@Value.Immutable
+@Value.Style(deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableOgcApiExtentSpatial.Builder.class)
 @ApiInfo(schemaId = "SpatialExtent")
-public class OgcApiExtentSpatial {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiExtentSpatial.class);
-    private double[][] bbox;
-    private String crs;
-
-    public OgcApiExtentSpatial(String xmin, String ymin, String xmax, String ymax) {
-        double[] bbox1 = ImmutableList.of(xmin, ymin, xmax, ymax)
-                .stream()
-                .mapToDouble(Double::parseDouble)
-                .toArray();
-        this.bbox = new double[][]{ bbox1 };
-        this.crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
-    }
-
-    public OgcApiExtentSpatial(double xmin, double ymin, double xmax, double ymax) {
-        this.bbox = new double[][]{{xmin, ymin, xmax, ymax}};
-        this.crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
-    }
-
-    public double[][] getBbox() {
-        return bbox;
-    }
-
-    public void setBbox(double[][] bbox) {
-        this.bbox = bbox;
-    }
-
-    public String getCrs() {
-        return crs;
-    }
-
-    public void setCrs(String crs) {
-        this.crs = crs;
-    }
+public interface OgcApiExtentSpatial {
 
     @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<OgcApiExtentSpatial> FUNNEL = (from, into) -> {
+    Funnel<OgcApiExtentSpatial> FUNNEL = (from, into) -> {
         into.putString(from.getCrs(), StandardCharsets.UTF_8);
         Arrays.stream(from.getBbox())
-              .forEachOrdered(arr -> Arrays.stream(arr)
-                                           .forEachOrdered(val -> into.putDouble(val)));
+                .forEachOrdered(arr -> Arrays.stream(arr)
+                        .forEachOrdered(into::putDouble));
     };
+
+    double[][] getBbox();
+    String getCrs();
+
+    static OgcApiExtentSpatial of(BoundingBox bbox) {
+        return ImmutableOgcApiExtentSpatial.builder()
+            .bbox(new double[][]{bbox.toArray()})
+            .crs(bbox.is3d() ? OgcCrs.CRS84h_URI : OgcCrs.CRS84_URI)
+            .build();
+    }
 }

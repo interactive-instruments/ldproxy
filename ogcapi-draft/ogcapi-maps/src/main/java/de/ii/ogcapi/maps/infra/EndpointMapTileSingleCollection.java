@@ -46,6 +46,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * @langEn Access single-layer map tiles
+ * @langDe TODO
+ * @name Tile
+ * @path /{apiId}/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol
+ */
+
+/**
  * Handle responses under '/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
  */
 @Singleton

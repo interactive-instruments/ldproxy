@@ -48,7 +48,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * fetch the stylesheet of a style
+ * @langEn This operation fetches the set of styles available. For each style the id, a title,
+ * links to the stylesheet of the style in each supported encoding, and the link to the metadata is provided.
+ * @langDe TODO
+ * @name Style
+ * @path /{apiId}/styles/{styleId}
+ * @format {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
  */
 @Singleton
 @AutoBind

@@ -8,7 +8,6 @@
 package de.ii.ogcapi.common.domain;
 
 import static de.ii.xtraplatform.base.domain.util.LambdaWithException.mayThrow;
-import static de.ii.xtraplatform.crs.domain.OgcCrs.CRS84;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,6 +23,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import java.nio.charset.Charset;
 import java.time.Instant;
@@ -54,7 +54,9 @@ public abstract class OgcApiDatasetView extends OgcApiView {
         super(templateName, charset, apiData, breadCrumbs, htmlConfig, noIndex, urlPrefix, links, title, description);
         this.bbox = extent.flatMap(OgcApiExtent::getSpatial)
                      .map(OgcApiExtentSpatial::getBbox)
-                     .map(v -> BoundingBox.of(v[0][0], v[0][1], v[0][2], v[0][3], CRS84));
+                     .map(v -> v[0].length==4
+                         ? BoundingBox.of(v[0][0], v[0][1], v[0][2], v[0][3], OgcCrs.CRS84)
+                         : BoundingBox.of(v[0][0], v[0][1], v[0][2], v[0][3], v[0][4], v[0][5], OgcCrs.CRS84h));
         this.temporalExtentIso = extent.flatMap(OgcApiExtent::getTemporal);
         this.temporalExtent = temporalExtentIso.map(v -> v.getInterval()[0])
                                           .map(v -> {

@@ -27,6 +27,13 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * @langEn The optional limit parameter limits the number of features that are included in the tile.
+ * @langDe Todo
+ * @name limit
+ * @endpoints Tile
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApiQueryParameter {

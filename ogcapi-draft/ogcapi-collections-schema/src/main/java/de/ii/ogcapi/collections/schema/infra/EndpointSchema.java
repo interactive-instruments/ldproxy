@@ -48,6 +48,14 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @langEn Discover data collections
+ * @langDe TODO
+ * @name Feature Schema
+ * @path /{apiId}/collections/{collectionId}/schemas/feature
+ * @format {@link de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension}
+ */
+
 @Singleton
 @AutoBind
 public class EndpointSchema extends EndpointSubCollection {

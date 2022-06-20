@@ -8,36 +8,13 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.foundation.domain.PageRepresentation;
+import org.immutables.value.Value;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-import org.immutables.value.Value;
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = JsonSchemaString.class, name = "string"),
-        @JsonSubTypes.Type(value = JsonSchemaNumber.class, name = "number"),
-        @JsonSubTypes.Type(value = JsonSchemaInteger.class, name = "integer"),
-        @JsonSubTypes.Type(value = JsonSchemaBoolean.class, name = "boolean"),
-        @JsonSubTypes.Type(value = JsonSchemaObject.class, name = "object"),
-        @JsonSubTypes.Type(value = JsonSchemaArray.class, name = "array"),
-        @JsonSubTypes.Type(value = JsonSchemaNull.class, name = "null"),
-        @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$ref"),
-        @JsonSubTypes.Type(value = JsonSchemaRefExternal.class, name = "$refExternal"),
-        @JsonSubTypes.Type(value = JsonSchemaOneOf.class, name = "oneOf")
-})
 public abstract class JsonSchema {
-
-    public abstract Optional<String> getTitle();
-
-    public abstract Optional<String> getDescription();
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<JsonSchema> FUNNEL = (from, into) -> {
@@ -57,12 +34,19 @@ public abstract class JsonSchema {
             JsonSchemaArray.FUNNEL.funnel((JsonSchemaArray) from, into);
         else if (from instanceof JsonSchemaNull)
             JsonSchemaNull.FUNNEL.funnel((JsonSchemaNull) from, into);
+        else if (from instanceof JsonSchemaTrue)
+            JsonSchemaTrue.FUNNEL.funnel((JsonSchemaTrue) from, into);
+        else if (from instanceof JsonSchemaFalse)
+            JsonSchemaFalse.FUNNEL.funnel((JsonSchemaFalse) from, into);
         else if (from instanceof JsonSchemaRef)
             JsonSchemaRef.FUNNEL.funnel((JsonSchemaRef) from, into);
         else if (from instanceof JsonSchemaOneOf)
             JsonSchemaOneOf.FUNNEL.funnel((JsonSchemaOneOf) from, into);
     };
 
+    public abstract Optional<String> getTitle();
+
+    public abstract Optional<String> getDescription();
 
     @JsonIgnore
     @Value.Auxiliary

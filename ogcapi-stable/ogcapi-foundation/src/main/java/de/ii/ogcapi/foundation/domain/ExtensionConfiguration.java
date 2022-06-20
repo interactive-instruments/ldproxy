@@ -39,10 +39,16 @@ public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration
     }
 
     @JsonAlias("extensionType")
+    @Value.Derived
     default String getBuildingBlock() {
         return getBuildingBlockIdentifier(this.getClass());
     }
 
+    /**
+     * @langEn Enable the building block?
+     * @langDe Das Modul aktivieren?
+     * @default false
+     */
     @Nullable
     Boolean getEnabled();
 

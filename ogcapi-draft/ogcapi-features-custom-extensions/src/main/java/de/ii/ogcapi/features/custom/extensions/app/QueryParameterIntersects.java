@@ -39,6 +39,17 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Todo
+ * @langDe * `intersects` (Ressource "Features"): Ist der Parameter angegeben,
+ * werden die Features zusätzlich nach der als Wert angegeben Geometrie selektiert
+ * und es werden nur Features zurückgeliefert, deren primäre Geometrie sich mit der
+ * angegebenen Geometrie schneidet. Als Geometrie kann entweder eine WKT-Geometrie
+ * angegeben werden oder eine URL für ein GeoJSON-Objekt mit einer Geometrie.
+ * Im Fall einer FeatureCollection wird die erste Geometrie verwendet.
+ * @name intersects
+ * @endpoints Features, intersects
+ */
 @Singleton
 @AutoBind
 public class QueryParameterIntersects extends ApiExtensionCache implements OgcApiQueryParameter {

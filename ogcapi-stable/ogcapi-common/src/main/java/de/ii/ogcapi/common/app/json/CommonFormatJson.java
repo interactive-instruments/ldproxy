@@ -34,7 +34,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
 /**
- * @author zahnen
+ * @format JSON
  */
 @Singleton
 @AutoBind

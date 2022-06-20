@@ -24,13 +24,34 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
+/**
+ * # Tile-Provider MBTILES
+ * @langEn With this tile provider, the tiles are provided via an
+ * [MBTiles file](https://github.com/mapbox/mbtiles-spec). The tile format and all
+ * other properties of the tileset resource are derived from the contents of the
+ * MBTiles file. Only the "WebMercatorQuad" tiling scheme is supported.
+ * @langDe Bei diesem Tile-Provider werden die Kacheln über eine
+ * [MBTiles-Datei](https://github.com/mapbox/mbtiles-spec) bereitgestellt.
+ * Das Kachelformat und alle anderen Eigenschaften der Tileset-Ressource ergeben sich
+ * aus dem Inhalt der MBTiles-Datei. Unterstützt wird nur das Kachelschema "WebMercatorQuad".
+ */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileProviderMbtiles.Builder.class)
 public abstract class TileProviderMbtiles extends TileProvider {
 
+    /**
+     * @langEn Fixed value, identifies the tile provider type.
+     * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
+     * @default `MBTILES`
+     */
     public final String getType() { return "MBTILES"; }
 
+    /**
+     * @langEn Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.
+     * @langDe Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
+     * @default `null`
+     */
     @Nullable
     public abstract String getFilename();
 

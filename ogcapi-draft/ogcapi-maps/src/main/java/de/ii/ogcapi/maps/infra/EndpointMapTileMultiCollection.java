@@ -48,6 +48,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * @langEn Access multi-layer map tiles
+ * @langDe TODO
+ * @name Tile
+ * @path /{apiId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
+ */
+
+/**
  * Handle responses under '/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
  */
 @Singleton

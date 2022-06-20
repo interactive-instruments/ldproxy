@@ -16,6 +16,12 @@ import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
+/**
+ * @langEn
+ * @langDe
+ * @name JSON-LD Context
+ * @endpoints Todo
+ */
 @Singleton
 @AutoBind
 public class PathParameterCollectionIdGeoJsonLd extends AbstractPathParameterCollectionId {

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ❓ Support
+    url: https://github.com/interactive-instruments/ldproxy/discussions/new?category=setup
+    about: Get help on setup or configuration issues 
+  - name: 💬 Discussion / Question
+    about: Feel free to ask anything
+    url: https://github.com/interactive-instruments/ldproxy/discussions/new?category=general
+#  - name: 📚 View Documentation
+#    url: https://docs.ldproxy.net
+#    about: Official ldproxy documentation    

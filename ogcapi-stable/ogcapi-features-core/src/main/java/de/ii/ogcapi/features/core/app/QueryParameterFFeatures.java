@@ -21,6 +21,14 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+
+/**
+ * @langEn TODO
+ * @langDe TODO
+ * @name Features
+ * @endpoints Features
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterFFeatures extends QueryParameterFSubCollection {

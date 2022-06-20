@@ -8,10 +8,11 @@
 package de.ii.ogcapi.features.core.domain;
 
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.cql.domain.CqlFilter;
+import de.ii.xtraplatform.cql.domain.Cql.Format;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import org.immutables.value.Value;
@@ -27,7 +28,7 @@ public interface FeaturesQuery {
                                      Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
                                      String featureId);
 
-  FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
+  FeatureQuery requestToFeatureQuery(OgcApi api, FeatureTypeConfigurationOgcApi collectionData,
                                      EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
                                      int minimumPageSize,
                                      int defaultPageSize, int maxPageSize, Map<String, String> parameters,
@@ -45,9 +46,9 @@ public interface FeaturesQuery {
   Map<String, String> getQueryableTypes(OgcApiDataV2 apiData,
                                         FeatureTypeConfigurationOgcApi collectionData);
 
-  Optional<CqlFilter> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
+  Optional<Cql2Expression> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
                                          Set<String> filterParameters, Map<String, String> queryableTypes,
-                                         Cql.Format cqlFormat);
+                                         Format cqlFormat);
 
   @Value.Immutable
   interface QueryValidationInputCoordinates {

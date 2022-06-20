@@ -35,6 +35,12 @@ import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Specifies which of the supported coordinate reference systems is used to encode coordinates in the filter expression in parameter `filter`. Default is WGS84 longitude/latitude (CRS84).
+ * @langDe Gibt an, welches der unterstützten Koordinatenreferenzsysteme zur Kodierung von Koordinaten im Filterausdruck verwendet wird (Parameter `filter`). Standardwert ist WGS84 Längen-/Breitengrad (CRS84).
+ * @name filter-crs
+ * @endpoints Features, Vector Tile
+ */
 @Singleton
 @AutoBind
 public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApiQueryParameter {

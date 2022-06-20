@@ -18,6 +18,13 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
 import java.util.Optional;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name Datetime Tile
+ * @endpoints Tile
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime {

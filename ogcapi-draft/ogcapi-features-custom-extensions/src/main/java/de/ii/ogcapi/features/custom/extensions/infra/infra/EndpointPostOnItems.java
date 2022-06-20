@@ -70,6 +70,13 @@ import io.swagger.v3.oas.models.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @langEn TODO
+ * @langDe TODO
+ * @name Features
+ * @path /{apiId}/collections/{collectionId}/items
+ * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointPostOnItems extends EndpointSubCollection {
@@ -208,7 +215,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                     throw new BadRequestException(result.get());
             }));
 
-        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api.getData(), collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), knownParameters);
+        FeatureQuery query = ogcApiFeaturesQuery.requestToFeatureQuery(api, collectionData, coreConfiguration.getDefaultEpsgCrs(), coreConfiguration.getCoordinatePrecision(), minimumPageSize, defaultPageSize, maxPageSize, toFlatMap(parameters), knownParameters);
 
         FeaturesCoreQueriesHandler.QueryInputFeatures queryInput = new ImmutableQueryInputFeatures.Builder()
                 .from(getGenericQueryInput(api.getData()))

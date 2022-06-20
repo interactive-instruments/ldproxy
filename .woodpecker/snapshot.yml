@@ -1,0 +1,59 @@
+
+clone: 
+  git:
+    image: woodpeckerci/plugin-git
+    when:
+      event: push
+
+pipeline:
+
+  libs:
+    image: openjdk:11-slim
+    commands:
+      - ./gradlew publish dockerCopy docsVuepress -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
+    when:
+      event: push
+
+  docs:
+    image: williamjackson/netlify-cli
+    environment:
+      - XDG_CONFIG_HOME=/home/node
+    commands:
+      - netlify deploy --prod --auth $NETLIFY_TOKEN --site 61d8c25c-3ee2-4cc5-85a6-431afba9b9b5 --message "$CI_COMMIT_MESSAGE" --dir $CI_WORKSPACE/build/markdown/docs/.vuepress/dist/
+    secrets: [ netlify_token]
+    when:
+      event: push
+      branch: master
+
+  docker:
+    image: plugins/docker
+    settings:
+      registry: docker.ci.interactive-instruments.de
+      repo: docker.ci.interactive-instruments.de/iide/ldproxy
+      tags: ${CI_COMMIT_BRANCH}
+      force_tag: true
+      dockerfile: build/docker/Dockerfile
+      context: build/docker
+      pull_image: true
+    when:
+      event: push
+
+# TODO: is this triggered on PR merge?
+  docker-hub:
+    image: plugins/docker
+    settings:
+      repo: iide/ldproxy
+      tags: next
+      force_tag: true
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      dockerfile: build/docker/Dockerfile
+      context: build/docker
+      pull_image: true
+    secrets: [ docker_username, docker_password]
+    when:
+      event: push
+      branch: master

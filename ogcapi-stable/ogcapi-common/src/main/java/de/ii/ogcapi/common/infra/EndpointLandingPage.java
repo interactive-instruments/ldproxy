@@ -45,94 +45,103 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * @langEn The landing page provides links to the API definition (link relations `service-desc` and
+ * `service-doc`), the Conformance declaration (path `/conformance`, link relation `conformance`),
+ * and other resources in the API.
+ * @langDe TODO
+ * @name Landing Page
+ * @path /{apiId}/
+ * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointLandingPage extends Endpoint implements ConformanceClass {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLandingPage.class);
-    private static final List<String> TAGS = ImmutableList.of("Capabilities");
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLandingPage.class);
+  private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
-    private final QueriesHandlerCommon queryHandler;
+  private final QueriesHandlerCommon queryHandler;
 
-    @Inject
-    public EndpointLandingPage(ExtensionRegistry extensionRegistry,
-                               QueriesHandlerCommon queryHandler) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+  @Inject
+  public EndpointLandingPage(ExtensionRegistry extensionRegistry,
+      QueriesHandlerCommon queryHandler) {
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CommonConfiguration.class;
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    ValidationResult result = super.onStartup(api, apiValidation);
+
+    if (apiValidation == MODE.NONE) {
+      return result;
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CommonConfiguration.class;
+    ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
+        .from(result)
+        .mode(apiValidation);
+
+    Optional<CommonConfiguration> config = api.getData().getExtension(CommonConfiguration.class);
+    if (config.isPresent()) {
+      builder = FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/");
     }
 
-    @Override
-    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-        ValidationResult result = super.onStartup(api, apiValidation);
+    return builder.build();
+  }
 
-        if (apiValidation== MODE.NONE)
-            return result;
-
-        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-                .from(result)
-                .mode(apiValidation);
-
-        Optional<CommonConfiguration> config = api.getData().getExtension(CommonConfiguration.class);
-        if (config.isPresent()) {
-            builder = FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/");
-        }
-
-        return builder.build();
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null) {
+      formats = extensionRegistry.getExtensionsForType(CommonFormatExtension.class);
     }
+    return formats;
+  }
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(CommonFormatExtension.class);
-        return formats;
-    }
-
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_LANDING_PAGE);
-        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/");
-        String operationSummary = "landing page";
-        Optional<String> operationDescription = Optional.of("The landing page provides links to the API definition " +
-                "(link relations `service-desc` and `service-doc`), the Conformance declaration (path `/conformance`, " +
-                "link relation `conformance`), and other resources in the API.");
-        String path = "/";
-        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                .path(path);
-        ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
-                                 getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_LANDING_PAGE);
+    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/");
+    String operationSummary = "landing page";
+    Optional<String> operationDescription = Optional.of("The landing page provides links to the API definition " +
+            "(link relations `service-desc` and `service-doc`), the Conformance declaration (path `/conformance`, " +
+            "link relation `conformance`), and other resources in the API.");
+    String path = "/";
+    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+            .path(path);
+    ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                    getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
             )
             .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
-        definitionBuilder.putResources(path, resourceBuilder.build());
+    definitionBuilder.putResources(path, resourceBuilder.build());
+    return definitionBuilder.build();
+  }
 
-        return definitionBuilder.build();
-    }
+  @GET
+  public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApi api,
+      @Context ApiRequestContext requestContext) {
 
-    @GET
-    public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApi api,
-                                   @Context ApiRequestContext requestContext) {
+    List<Link> additionalLinks = api.getData().getExtension(CommonConfiguration.class)
+        .map(CommonConfiguration::getAdditionalLinks)
+        .orElse(ImmutableList.of());
 
-        List<Link> additionalLinks = api.getData().getExtension(CommonConfiguration.class)
-                                        .map(CommonConfiguration::getAdditionalLinks)
-                                        .orElse(ImmutableList.of());
+    QueryInputLandingPage queryInput = new Builder()
+        .from(getGenericQueryInput(api.getData()))
+        .additionalLinks(additionalLinks)
+        .build();
 
-        QueryInputLandingPage queryInput = new Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .additionalLinks(additionalLinks)
-                .build();
+    return queryHandler.handle(Query.LANDING_PAGE, queryInput, requestContext);
+  }
 
-        return queryHandler.handle(Query.LANDING_PAGE, queryInput, requestContext);
-    }
-
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core");
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/core");
+  }
 }

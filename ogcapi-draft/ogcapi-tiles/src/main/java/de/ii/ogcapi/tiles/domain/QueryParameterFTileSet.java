@@ -17,6 +17,13 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name TileSet
+ * @endpoints Tileset
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterFTileSet extends QueryParameterF {

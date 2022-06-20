@@ -19,6 +19,13 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name profileSchema
+ * @endpoints profileSchema
+ */
+
 @Singleton
 @AutoBind
 public class QueryParameterProfileSchema extends QueryParameterProfile {
