@@ -96,7 +96,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
         } else if (exception instanceof WebApplicationException) {
             return processException((WebApplicationException) exception, exceptionFormat, msg);
         } else if (exception instanceof IllegalArgumentException) {
-            return processException((IllegalArgumentException) exception, exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
+            return processException(exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
         }
 
         long id = logException(exception);
@@ -162,7 +162,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
             .build();
     }
 
-    private Response processException(@SuppressWarnings(UNUSED) IllegalArgumentException exception, ExceptionFormatExtension exceptionFormat, String msg) {
+    private Response processException(ExceptionFormatExtension exceptionFormat, String msg) {
         final Response.Status responseStatus = Response.Status.BAD_REQUEST;
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(CLIENT_ERROR_TEMPLATE, responseStatus.getStatusCode(), getRequestPath(true), msg);
