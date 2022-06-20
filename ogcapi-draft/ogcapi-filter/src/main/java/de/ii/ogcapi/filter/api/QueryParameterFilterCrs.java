@@ -20,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -49,12 +50,14 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
 
     private final CrsSupport crsSupport;
     private final FeaturesCoreProviders providers;
+    private final SchemaValidator schemaValidator;
 
     @Inject
     public QueryParameterFilterCrs(CrsSupport crsSupport,
-                                   FeaturesCoreProviders providers) {
+                                   FeaturesCoreProviders providers, SchemaValidator schemaValidator) {
         this.crsSupport = crsSupport;
         this.providers = providers;
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -133,6 +136,11 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
             schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsListBuilder.build())._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

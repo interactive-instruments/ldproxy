@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -36,10 +37,12 @@ public class QueryParameterCrsRoutes extends ApiExtensionCache implements OgcApi
     public static final String CRS = "crs";
 
     private final CrsSupport crsSupport;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public QueryParameterCrsRoutes(CrsSupport crsSupport) {
+    public QueryParameterCrsRoutes(CrsSupport crsSupport, SchemaValidator schemaValidator) {
         this.crsSupport = crsSupport;
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -65,10 +68,10 @@ public class QueryParameterCrsRoutes extends ApiExtensionCache implements OgcApi
                 definitionPath.equals("/routes"));
     }
 
-    private ConcurrentMap<Integer, Schema> schemaMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, Schema<?>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode)) {
             List<String> crsList = crsSupport.getSupportedCrsList(apiData)
@@ -79,6 +82,11 @@ public class QueryParameterCrsRoutes extends ApiExtensionCache implements OgcApi
             schemaMap.put(apiHashCode, new StringSchema()._enum(crsList)._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

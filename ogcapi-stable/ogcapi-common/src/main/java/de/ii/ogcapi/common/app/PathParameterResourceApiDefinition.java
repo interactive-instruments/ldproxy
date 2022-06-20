@@ -13,6 +13,7 @@ import de.ii.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
@@ -31,10 +32,12 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterResourceApiDefinition.class);
     Map<String,Set<String>> apiCollectionMap;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public PathParameterResourceApiDefinition() {
-        apiCollectionMap = new HashMap<>();
+    public PathParameterResourceApiDefinition(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
+        this.apiCollectionMap = new HashMap<>();
     };
 
     @Override
@@ -48,8 +51,13 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return new StringSchema();
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

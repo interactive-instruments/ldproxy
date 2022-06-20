@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.Schema;
@@ -49,10 +50,12 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
     public static final String CRS84H = "http://www.opengis.net/def/crs/OGC/0/CRS84h";
 
     private final CrsSupport crsSupport;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public QueryParameterCrsFeatures(CrsSupport crsSupport) {
+    public QueryParameterCrsFeatures(CrsSupport crsSupport, SchemaValidator schemaValidator) {
         this.crsSupport = crsSupport;
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -79,10 +82,10 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
                  definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
     }
 
-    private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, ConcurrentMap<String,Schema<?>>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -98,6 +101,11 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache implements OgcA
             schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

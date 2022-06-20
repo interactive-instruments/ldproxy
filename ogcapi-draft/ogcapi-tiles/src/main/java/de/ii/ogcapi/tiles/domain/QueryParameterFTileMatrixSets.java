@@ -12,7 +12,7 @@ import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,8 +29,8 @@ import javax.inject.Singleton;
 public class QueryParameterFTileMatrixSets extends QueryParameterF {
 
     @Inject
-    public QueryParameterFTileMatrixSets(ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+    public QueryParameterFTileMatrixSets(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+        super(extensionRegistry, schemaValidator);
     }
 
     @Override

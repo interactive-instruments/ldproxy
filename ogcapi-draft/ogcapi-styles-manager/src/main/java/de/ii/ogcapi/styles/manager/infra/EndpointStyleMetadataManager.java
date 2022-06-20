@@ -9,6 +9,7 @@ package de.ii.ogcapi.styles.manager.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
@@ -110,23 +111,22 @@ public class EndpointStyleMetadataManager extends Endpoint {
                 .apiEntrypoint("styles")
                 .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_MANAGER);
         String path = "/styles/{styleId}/metadata";
-        HttpMethods method = HttpMethods.PUT;
+        HttpMethods methodReplace = HttpMethods.PUT;
         List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-        List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, method);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodReplace);
+        List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, methodReplace);
         String operationSummary = "update the metadata document of a style";
         Optional<String> operationDescription = Optional.of("Update the style metadata for the style with the id `styleId`. " +
                 "This operation updates the complete metadata document.");
         ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                 .path(path)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
-        ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, headers, path, operationSummary, operationDescription, TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations(method.name(), operation);
-        method = HttpMethods.PATCH;
-        queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-        headers = getHeaders(extensionRegistry, apiData, path, method);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, methodReplace);
+        ApiOperation.of(path, methodReplace, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
+        HttpMethods methodUpdate = HttpMethods.PATCH;
+        queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodUpdate);
+        headers = getHeaders(extensionRegistry, apiData, path, methodUpdate);
         operationSummary = "update parts of the style metadata";
         operationDescription = Optional.of("Update selected elements of the style metadata for " +
                 "the style with the id `styleId`.\n" +
@@ -201,10 +201,9 @@ public class EndpointStyleMetadataManager extends Endpoint {
                 "\n" +
                 "The same applies to `stylesheets` and `layers`. To update " +
                 "these members, you have to send the complete new array value.");
-        requestContent = getRequestContent(apiData, path, method);
-        operation = addOperation(apiData, method, requestContent, queryParameters, headers, path, operationSummary, operationDescription, TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations(method.name(), operation);
+        requestContent = getRequestContent(apiData, path, methodUpdate);
+        ApiOperation.of(path, methodUpdate, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations(methodUpdate.name(), operation));
         definitionBuilder.putResources(path, resourceBuilder.build());
 
         return definitionBuilder.build();

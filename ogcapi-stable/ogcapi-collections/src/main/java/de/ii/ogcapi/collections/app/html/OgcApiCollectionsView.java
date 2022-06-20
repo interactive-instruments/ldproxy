@@ -13,7 +13,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.collections.domain.Collections;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.Metadata;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
@@ -32,7 +32,7 @@ public class OgcApiCollectionsView extends OgcApiView {
     public String dataSourceUrl;
     public String keywords;
     public List<String> crs;
-    public Metadata metadata;
+    public ApiMetadata metadata;
     public String collectionsTitle;
     public String supportedCrsTitle;
     public String metadataTitle;

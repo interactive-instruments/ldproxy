@@ -13,6 +13,8 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -37,6 +39,7 @@ import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingFlag;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.Geometry;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
@@ -56,6 +59,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -269,9 +273,8 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         }
         byte[] result = baos.toByteArray();
 
-        Date lastModified = null;
-        EntityTag etag = getEtag(result);
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+        EntityTag etag = ETag.from(result);
+        Response.ResponseBuilder response = evaluatePreconditions(requestContext, null, etag);
         if (Objects.nonNull(response))
             return response.build();
 
@@ -287,20 +290,17 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                 routeRepository.writeRouteAndDefinition(apiData, routeId, outputFormat, result, routeDefinition, definitionLinks);
             } catch (IOException e) {
                 LOGGER.error("Could not store route in route repository.", e);
-                if (LOGGER.isDebugEnabled())
-                    LOGGER.debug("Stacktrace: ", e);
+                if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
+                    LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
             }
         }
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(null, etag, queryInput),
                                       targetCrs,
-                                      true,
-                                      String.format("%s.%s",
-                                                    inputs.getName().orElse("Route"),
-                                                    outputFormat.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.%s",
+                                                                                inputs.getName().orElse("Route"),
+                                                                                outputFormat.getMediaType().fileExtension())))
             .entity(result)
             .build();
     }
@@ -324,10 +324,10 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                                                               requestContext.getApi(),
                                                               requestContext);
 
-        Date lastModified = getLastModified(queryInput, api);
+        Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || apiData.getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(routes, Routes.FUNNEL, outputFormatExtension)
+            ? ETag.from(routes, Routes.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -335,13 +335,9 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
         return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? routes.getLinks() : null,
-                                      lastModified,
-                                      etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("route-definition-template.%s", outputFormatExtension.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("route-definition-template.%s", outputFormatExtension.getMediaType().fileExtension())))
             .entity(entity)
             .build();
     }
@@ -361,18 +357,15 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         byte[] content = format.getRouteAsByteArray(route, apiData, requestContext);
 
         Date lastModified = routeRepository.getLastModified(apiData, routeId);
-        EntityTag etag = getEtag(content);
+        EntityTag etag = ETag.from(content);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? route.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.%s", routeId, format.getFileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.%s", routeId, format.getFileExtension())))
             .entity(content)
             .build();
     }
@@ -392,18 +385,15 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         byte[] content = outputFormat.getRouteDefinitionAsByteArray(routeDefinition, apiData, requestContext);
 
         Date lastModified = routeRepository.getLastModified(apiData, routeId);
-        EntityTag etag = getEtag(content);
+        EntityTag etag = ETag.from(content);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? routeDefinition.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.definition.%s", queryInput.getRouteId(), outputFormat.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.definition.%s", queryInput.getRouteId(), outputFormat.getMediaType().fileExtension())))
             .entity(content)
             .build();
     }

@@ -19,6 +19,8 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableRoute.Builder.class)
 public abstract class Route {
 
+    public final static String SCHEMA_REF = "#/components/schemas/Route";
+
     public final String getType() { return "FeatureCollection"; }
     public abstract Optional<String> getName();
     public abstract List<Double> getBbox();

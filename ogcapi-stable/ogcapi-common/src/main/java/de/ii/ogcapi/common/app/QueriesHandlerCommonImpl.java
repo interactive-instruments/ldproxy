@@ -18,12 +18,14 @@ import de.ii.ogcapi.common.domain.LandingPage;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
@@ -34,6 +36,7 @@ import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -107,7 +110,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         Builder builder = new Builder()
             .title(apiData.getLabel())
             .description(apiData.getDescription().orElse(""))
-            .attribution(apiData.getMetadata().flatMap(Metadata::getAttribution))
+            .attribution(apiData.getMetadata().flatMap(ApiMetadata::getAttribution))
             .externalDocs(apiData.getExternalDocs())
             .extent(OgcApiExtent.of(api.getSpatialExtent(), api.getTemporalExtent()))
             .links(links)
@@ -134,10 +137,10 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                                                                    requestContext.getApi(),
                                                                    requestContext);
 
-        Date lastModified = getLastModified(queryInput, api);
+        Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension)
+            ? ETag.from(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -145,13 +148,9 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
         return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null,
-                                      lastModified,
-                                      etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("landing-page.%s", outputFormatExtension.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("landing-page.%s", outputFormatExtension.getMediaType().fileExtension())))
                 .entity(entity)
                 .build();
     }
@@ -196,10 +195,10 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         Object entity = outputFormatExtension.getConformanceEntity(conformanceDeclaration,
                                                                    requestContext.getApi(),
                                                                    requestContext);
-        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || requestContext.getApi().getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension)
+            ? ETag.from(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -207,13 +206,9 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
         return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null,
-                                      lastModified,
-                                      etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("conformance-declaration.%s", outputFormatExtension.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("conformance-declaration.%s", outputFormatExtension.getMediaType().fileExtension())))
                 .entity(entity)
                 .build();
     }
@@ -234,7 +229,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
             return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
         }
 
-        Date lastModified = getLastModified(queryInput, requestContext.getApi());
+        Date lastModified = getLastModified(queryInput);
         // TODO support ETag
         EntityTag etag = null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);

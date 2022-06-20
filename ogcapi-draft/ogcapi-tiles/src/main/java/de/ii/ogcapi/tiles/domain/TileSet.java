@@ -10,7 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.foundation.domain.Metadata2;
+import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
@@ -24,7 +24,9 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileSet.Builder.class)
-public abstract class TileSet extends Metadata2 {
+public abstract class TileSet extends OgcResourceMetadata {
+
+    public final static String SCHEMA_REF = "#/components/schemas/TileSet";
 
     public enum DataType { map, vector, coverage }
 
@@ -52,7 +54,7 @@ public abstract class TileSet extends Metadata2 {
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<TileSet> FUNNEL = (from, into) -> {
-        Metadata2.FUNNEL.funnel(from, into);
+        OgcResourceMetadata.FUNNEL.funnel(from, into);
         into.putString(from.getDataType().toString(), StandardCharsets.UTF_8);
         into.putString(from.getTileMatrixSetId(), StandardCharsets.UTF_8);
         from.getTileMatrixSet().ifPresent(val -> TileMatrixSetData.FUNNEL.funnel(val, into));

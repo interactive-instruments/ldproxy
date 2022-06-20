@@ -18,6 +18,8 @@ import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -46,6 +48,7 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 
+import de.ii.xtraplatform.web.domain.ETag;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -268,10 +271,10 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
             etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
                 || api.getData().getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
-                ? getEtag(result)
+                ? ETag.from(result)
                 : null;
         } else {
-            lastModified = getLastModified(queryInput, requestContext.getApi(), featureProvider);
+            lastModified = getLastModified(queryInput);
         }
 
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
@@ -284,12 +287,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         return prepareSuccessResponse(requestContext, includeLinkHeader ? links.stream()
                                                                                .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
                                                                                .collect(ImmutableList.toImmutableList()) : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       targetCrs,
-                                      true,
-                                      String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().fileExtension())))
                 .entity(Objects.nonNull(result) ? result : streamingOutput)
                 .build();
     }

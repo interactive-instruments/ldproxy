@@ -90,9 +90,7 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
         FeatureTypeConfigurationOgcApi collectionData) {
         SchemaDeriverOpenApi schemaDeriver = new SchemaDeriverOpenApiReturnables(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class));
 
-        Schema<?> schema = featureSchema.accept(new WithTransformationsApplied()).accept(schemaDeriver);
-
-        return schema;
+        return featureSchema.accept(new WithTransformationsApplied()).accept(schemaDeriver);
     }
 
     @Override

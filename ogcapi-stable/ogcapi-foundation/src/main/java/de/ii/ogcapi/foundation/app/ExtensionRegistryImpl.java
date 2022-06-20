@@ -12,20 +12,17 @@ import com.google.common.collect.ImmutableList;
 import dagger.Lazy;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 @Singleton
 @AutoBind
 public class ExtensionRegistryImpl implements ExtensionRegistry {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExtensionRegistryImpl.class);
 
     private final Lazy<Set<ApiExtension>> apiExtensions;
 

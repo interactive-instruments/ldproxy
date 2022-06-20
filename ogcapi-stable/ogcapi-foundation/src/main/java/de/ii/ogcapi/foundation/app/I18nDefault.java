@@ -11,9 +11,13 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.I18n;
 
-import java.util.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 @Singleton
 @AutoBind
@@ -35,10 +39,7 @@ public class I18nDefault implements I18n {
     @Override
     public String get(String key, Optional<Locale> language) {
         try {
-            if (language.isPresent())
-                return LOCALE_RESOURCE_BUNDLE_MAP.get(language.get()).getString(key);
-
-            return LOCALE_RESOURCE_BUNDLE_MAP.get(Locale.ENGLISH).getString(key);
+            return LOCALE_RESOURCE_BUNDLE_MAP.get(language.orElse(Locale.ENGLISH)).getString(key);
         } catch (MissingResourceException ex) {
             // just return the key
             return key;

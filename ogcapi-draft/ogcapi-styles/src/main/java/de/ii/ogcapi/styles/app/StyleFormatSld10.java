@@ -23,6 +23,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
+import de.ii.xtraplatform.base.domain.LogContext;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import java.util.concurrent.Executors;
 import javax.inject.Inject;
@@ -72,8 +73,8 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension,
                 this.validator = Optional.ofNullable(schema.newValidator());
             } catch (SAXException e) {
                 LOGGER.error("StyleFormatSld10 initialization failed: Could not process SLD 1.0 XSD.");
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Stacktrace: ", e);
+                if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                    LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
                 }
             }
         });

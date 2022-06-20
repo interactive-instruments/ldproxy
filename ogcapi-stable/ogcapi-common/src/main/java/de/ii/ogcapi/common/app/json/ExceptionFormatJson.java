@@ -43,7 +43,7 @@ public class ExceptionFormatJson extends ErrorEntityWriter<ApiErrorMessage, ApiE
     @Inject
     public ExceptionFormatJson() {
         super(MEDIA_TYPE.type(), ApiErrorMessage.class);
-        // cannot yet use SchemaGenerator to generate the schema from the ApiErrorMessage class, so we generate the schema manually
+        // cannot yet use ClassSchemaCache to generate the schema from the ApiErrorMessage class, so we generate the schema manually
         schema = new ObjectSchema().addProperties("title", new StringSchema())
                                    .addProperties("detail", new StringSchema())
                                    .addProperties("status", new IntegerSchema().minimum(BigDecimal.valueOf(100)))

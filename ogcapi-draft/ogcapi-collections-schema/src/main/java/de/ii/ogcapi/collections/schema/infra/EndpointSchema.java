@@ -17,6 +17,7 @@ import de.ii.ogcapi.collections.schema.domain.SchemaConfiguration;
 import de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -32,6 +33,7 @@ import de.ii.ogcapi.collections.schema.app.ImmutableQueryInputSchema.Builder;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -40,6 +42,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
@@ -109,7 +112,7 @@ public class EndpointSchema extends EndpointSubCollection {
             LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
         } else {
             final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
             final List<String> collectionIds = (explode) ?
                     collectionIdParam.getValues(apiData) :
                     ImmutableList.of("{collectionId}");
@@ -121,9 +124,13 @@ public class EndpointSchema extends EndpointSubCollection {
                 ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                         .path(resourcePath)
                         .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, HttpMethods.GET, queryParameters, collectionId, subSubPath, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations("GET", operation);
+                Map<MediaType, ApiMediaTypeContent> responseContent = collectionId.startsWith("{") ?
+                    getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET) :
+                    getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+                ApiOperation.getResource(apiData, resourcePath, false,
+                                         queryParameters, ImmutableList.of(), responseContent,
+                                         operationSummary, operationDescription, Optional.empty(), TAGS)
+                    .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
                 definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
         }

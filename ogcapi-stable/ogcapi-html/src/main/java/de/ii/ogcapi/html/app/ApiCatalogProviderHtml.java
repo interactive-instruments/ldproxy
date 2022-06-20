@@ -49,11 +49,10 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
         super(servicesContext, i18n, defaultsStore, extensionRegistry);
     }
 
-    private HtmlConfiguration getHtmlConfig() {
-        //TODO: encapsulate in entities/defaults layer
+    private HtmlConfiguration getHtmlConfigurationDefaults() {
         EntityDataBuilder<?> builder = defaultsStore.getBuilder(Identifier.from(EntityDataDefaultsStore.EVENT_TYPE, Service.TYPE, OgcApiDataV2.SERVICE_TYPE.toLowerCase()));
         if (builder instanceof ImmutableOgcApiDataV2.Builder) {
-            ImmutableOgcApiDataV2 defaults = ((ImmutableOgcApiDataV2.Builder) builder).id("NOT_SET")
+            ImmutableOgcApiDataV2 defaults = ((ImmutableOgcApiDataV2.Builder) builder.fillRequiredFieldsWithPlaceholders())
                                                                                       .build();
             return defaults.getExtension(HtmlConfiguration.class)
                            .orElse(new ImmutableHtmlConfiguration.Builder().build());
@@ -81,7 +80,7 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
 
         // TODO: map in caller
         return Response.ok()
-                       .entity(new ServiceOverviewView(uri, apiCatalog, getHtmlConfig(), i18n, language))
+                       .entity(new ServiceOverviewView(uri, apiCatalog, getHtmlConfigurationDefaults(), i18n, language))
                        .build();
     }
 

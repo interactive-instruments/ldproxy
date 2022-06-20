@@ -11,11 +11,13 @@ import io.swagger.v3.oas.models.media.Schema;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Map;
 
 @Value.Immutable
 public interface ApiMediaTypeContent {
         String getSchemaRef();
-        Schema getSchema();
+        Schema<?> getSchema();
+        Map<String, Schema<?>> referencedSchemas();
         List<Example> getExamples();
         ApiMediaType getOgcApiMediaType();
 }

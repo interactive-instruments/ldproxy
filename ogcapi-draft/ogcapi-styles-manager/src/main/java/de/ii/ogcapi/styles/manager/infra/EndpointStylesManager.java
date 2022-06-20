@@ -144,13 +144,12 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
                 "the style definition.\n" +
                 "* The URI of the new style is returned in the header `Location`.\n";
         Optional<String> operationDescription = Optional.of(description);
-        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+        ImmutableOgcApiResourceData.Builder resourceBuilderCreate = new ImmutableOgcApiResourceData.Builder()
                 .path(path);
         Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, HttpMethods.POST);
-        ApiOperation operation = addOperation(apiData, HttpMethods.POST, requestContent, queryParameters, headers, path, operationSummary, operationDescription, Optional.empty(), TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations("POST", operation);
-        definitionBuilder.putResources(path, resourceBuilder.build());
+        ApiOperation.of(path, HttpMethods.POST, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilderCreate.putOperations(HttpMethods.POST.name(), operation));
+        definitionBuilder.putResources(path, resourceBuilderCreate.build());
         path = "/styles/{styleId}";
         ImmutableList<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
         queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
@@ -166,22 +165,20 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         description += ".\nThe style metadata resource at `/styles/{styleId}/metadata` " +
                 "is not updated.";
         operationDescription = Optional.of(description);
-        resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                .path(path)
-                .pathParameters(pathParameters);
+        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
+            .path(path)
+            .pathParameters(pathParameters);
         requestContent = getRequestContent(apiData, path, HttpMethods.PUT);
-        operation = addOperation(apiData, HttpMethods.PUT, requestContent, queryParameters, headers, path, operationSummary, operationDescription, Optional.empty(), TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations("PUT", operation);
+        ApiOperation.of(path, HttpMethods.PUT, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
         queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
         headers = getHeaders(extensionRegistry, apiData, path, HttpMethods.DELETE);
         operationSummary = "delete a style";
         operationDescription = Optional.of("Delete an existing style with the id `styleId`. " +
                 "Deleting a style also deletes the subordinate resources, i.e., the style metadata.");
         requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);
-        operation = addOperation(apiData, HttpMethods.DELETE, requestContent, queryParameters, headers, path, operationSummary, operationDescription, Optional.empty(), TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations("DELETE", operation);
+        ApiOperation.of(path, HttpMethods.DELETE, requestContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilderCreate.putOperations(HttpMethods.DELETE.name(), operation));
         definitionBuilder.putResources(path, resourceBuilder.build());
 
         return definitionBuilder.build();

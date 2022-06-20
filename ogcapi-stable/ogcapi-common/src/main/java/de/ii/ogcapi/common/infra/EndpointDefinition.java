@@ -82,22 +82,24 @@ public class EndpointDefinition extends Endpoint {
         List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/api");
         String operationSummary = "API definition";
         String path = "/api";
-        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder1 = new ImmutableOgcApiResourceAuxiliary.Builder()
                 .path(path);
-        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, Optional.empty(), ImmutableList.of());
-        if (operation!=null)
-            resourceBuilder.putOperations("GET", operation);
-        definitionBuilder.putResources(path, resourceBuilder.build());
+        ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                 getContent(apiData, path), operationSummary, Optional.empty(), Optional.empty(), ImmutableList.of()
+            )
+            .ifPresent(operation -> resourceBuilder1.putOperations("GET", operation));
+        definitionBuilder.putResources(path, resourceBuilder1.build());
         operationSummary = "support files for the API definition in HTML";
         List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, "/api/{resource}");
         path = "/api/{resource}";
-        resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
+        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder2 = new ImmutableOgcApiResourceAuxiliary.Builder()
                 .path(path)
                 .pathParameters(pathParameters);
-        operation = addOperation(apiData, queryParameters, path, operationSummary, Optional.empty(), ImmutableList.of());
-        if (operation!=null)
-            resourceBuilder.putOperations("GET", operation);
-        definitionBuilder.putResources(path, resourceBuilder.build());
+        ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                 getContent(apiData, path), operationSummary, Optional.empty(), Optional.empty(), ImmutableList.of()
+            )
+            .ifPresent(operation -> resourceBuilder2.putOperations("GET", operation));
+        definitionBuilder.putResources(path, resourceBuilder2.build());
 
         return definitionBuilder.build();
     }

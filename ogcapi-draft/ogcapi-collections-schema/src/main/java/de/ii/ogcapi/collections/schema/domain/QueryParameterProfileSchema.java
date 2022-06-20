@@ -13,6 +13,8 @@ import de.ii.ogcapi.common.domain.QueryParameterProfile;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
+
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,8 +33,8 @@ public class QueryParameterProfileSchema extends QueryParameterProfile {
     final static List<String> PROFILES = ImmutableList.of("2019-09", "07");
 
     @Inject
-    public QueryParameterProfileSchema(ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+    public QueryParameterProfileSchema(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+        super(extensionRegistry, schemaValidator);
     }
 
     @Override

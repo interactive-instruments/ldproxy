@@ -8,13 +8,16 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.base.Splitter;
+import io.swagger.v3.oas.models.OpenAPI;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -41,7 +44,7 @@ public interface OgcApiResource {
     Map<String, ApiOperation> getOperations();
 
     default boolean isSubCollectionWithExplicitId(OgcApiDataV2 apiData) {
-        return getPathParameters().stream().anyMatch(param -> param.getName().equals("collectionId") && param.getExplodeInOpenApi(apiData));
+        return getPathParameters().stream().anyMatch(param -> "collectionId".equals(param.getName()) && param.isExplodeInOpenApi(apiData));
     }
 
     default Optional<String> getCollectionId(OgcApiDataV2 apiData) {
@@ -64,5 +67,46 @@ public interface OgcApiResource {
     @Value.Lazy
     default Pattern getPathPatternCompiled() {
         return Pattern.compile(getPathPattern());
+    }
+
+    default void updateOpenApiDefinition(OgcApiDataV2 apiData, OpenAPI openAPI) {
+        String path = getPath();
+        if (path.startsWith("/api")) {
+            // skip the API definition
+            return;
+        }
+
+        Optional<String> collectionId = getCollectionId(apiData);
+
+        for (Map.Entry<String, ApiOperation> operationEntry : getOperations().entrySet()) {
+            String method = operationEntry.getKey();
+            Set<Integer> errorCodes = initErrorStatusCodes(method);
+            ApiOperation operation = operationEntry.getValue();
+            if (operation.getSuccess().isEmpty() || operation.hideInOpenAPI()) {
+                // skip
+                continue;
+            }
+            operation.updateOpenApiDefinition(apiData, collectionId, openAPI, this, method, errorCodes);
+        }
+    }
+
+    private Set<Integer> initErrorStatusCodes(String method) {
+        HashSet<Integer> errorCodes = new HashSet<>();
+        switch (method) {
+            case "GET":
+                errorCodes.add(406);
+                break;
+            case "POST":
+                errorCodes.add(415);
+                errorCodes.add(422);
+                break;
+            case "PUT":
+            case "PATCH":
+                errorCodes.add(415);
+                break;
+            case "DELETE":
+            default:
+        }
+        return errorCodes;
     }
 }

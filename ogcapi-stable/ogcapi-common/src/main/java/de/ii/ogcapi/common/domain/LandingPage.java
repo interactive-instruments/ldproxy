@@ -10,6 +10,7 @@ package de.ii.ogcapi.common.domain;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.ApiInfo;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import org.immutables.value.Value;
@@ -21,6 +22,8 @@ import java.util.Optional;
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableLandingPage.Builder.class)
 public abstract class LandingPage extends PageRepresentation {
+
+    public final static String SCHEMA_REF = "#/components/schemas/LandingPage";
 
     public abstract Optional<String> getAttribution();
 

@@ -10,8 +10,8 @@ package de.ii.ogcapi.sorting.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -21,7 +21,9 @@ import javax.inject.Singleton;
 public class PathParameterCollectionIdSortables extends AbstractPathParameterCollectionId {
 
   @Inject
-  public PathParameterCollectionIdSortables() {}
+  public PathParameterCollectionIdSortables(SchemaValidator schemaValidator) {
+    super(schemaValidator);
+  }
 
   @Override
   public String getId() {

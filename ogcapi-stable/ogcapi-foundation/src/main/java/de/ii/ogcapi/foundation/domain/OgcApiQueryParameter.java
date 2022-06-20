@@ -8,6 +8,13 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Operation;
+import io.swagger.v3.oas.models.parameters.Parameter;
+
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @AutoMultiBind
@@ -18,5 +25,26 @@ public interface OgcApiQueryParameter extends ParameterExtension {
     boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method);
     default boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) { return isApplicable(apiData, definitionPath, method); }
 
-    default Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) { return filterParameters; };
+    default Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) { return filterParameters; }
+
+    default void updateOpenApiDefinition(OgcApiDataV2 apiData, Optional<String> collectionId, OpenAPI openAPI,
+                                         Operation op) {
+        String id = getId(collectionId);
+        op.addParametersItem(new Parameter().$ref("#/components/parameters/" + id));
+        if (Objects.isNull(openAPI.getComponents().getParameters().get(id))) {
+            openAPI.getComponents().addParameters(id, newQueryParameter(apiData, collectionId));
+        }
+    }
+
+    private Parameter newQueryParameter(OgcApiDataV2 apiData, Optional<String> collectionId) {
+        return new io.swagger.v3.oas.models.parameters.QueryParameter()
+            .name(getName())
+            .description(getDescription())
+            .required(getRequired(apiData, collectionId))
+            .schema(getSchema(apiData, collectionId))
+            .style(Parameter.StyleEnum.valueOf(getStyle().toUpperCase(Locale.ROOT)))
+            .explode(getExplode());
+    }
+
+
 }

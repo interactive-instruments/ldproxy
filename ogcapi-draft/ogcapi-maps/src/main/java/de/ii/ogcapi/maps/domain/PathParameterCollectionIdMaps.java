@@ -12,6 +12,7 @@ import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import javax.inject.Inject;
@@ -27,7 +28,8 @@ import java.util.stream.Collectors;
 public class PathParameterCollectionIdMaps extends AbstractPathParameterCollectionId {
 
     @Inject
-    PathParameterCollectionIdMaps() {
+    PathParameterCollectionIdMaps(SchemaValidator schemaValidator) {
+      super(schemaValidator);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class PathParameterCollectionIdMaps extends AbstractPathParameterCollecti
     }
 
     @Override
-    public boolean getExplodeInOpenApi(OgcApiDataV2 apiData) { return false; }
+    public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) { return false; }
 
     @Override
     public String getId() {

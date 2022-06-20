@@ -12,20 +12,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ogcapi.routes.domain.Route;
 import de.ii.ogcapi.routes.domain.RouteFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
+
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -45,14 +49,15 @@ public class RouteFormatGeoJson implements ConformanceClass, RouteFormatExtensio
             .build();
 
     private final GeoJsonWriterRegistry geoJsonWriterRegistry;
-    private final Schema schemaRouteExchangeModel;
-    public final static String SCHEMA_REF_REM = "#/components/schemas/RouteExchangeModel";
+    private final Schema<?> schemaRouteExchangeModel;
+    private final Map<String, Schema<?>> referencedSchemas;
 
     @Inject
-    public RouteFormatGeoJson(SchemaGenerator schemaGenerator,
+    public RouteFormatGeoJson(ClassSchemaCache classSchemaCache,
                               GeoJsonWriterRegistry geoJsonWriterRegistry) {
         this.geoJsonWriterRegistry = geoJsonWriterRegistry;
-        this.schemaRouteExchangeModel = schemaGenerator.getSchema(Route.class);
+        this.schemaRouteExchangeModel = classSchemaCache.getSchema(Route.class);
+        this.referencedSchemas = classSchemaCache.getReferencedSchemas(Route.class);
     }
 
     @Override
@@ -73,7 +78,8 @@ public class RouteFormatGeoJson implements ConformanceClass, RouteFormatExtensio
             (path.equals("/routes/{routeId}") && method.equals(HttpMethods.GET)))
             return new ImmutableApiMediaTypeContent.Builder()
                 .schema(schemaRouteExchangeModel)
-                .schemaRef(SCHEMA_REF_REM)
+                .schemaRef(Route.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
         return null;

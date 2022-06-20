@@ -15,6 +15,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
@@ -31,11 +32,11 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
 
     public static final String FEATURE_ID_PATTERN = "[^/ ]+";
 
-    final FeaturesCoreProviders providers;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public PathParameterFeatureIdFeatures(FeaturesCoreProviders providers) {
-        this.providers = providers;
+    public PathParameterFeatureIdFeatures(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     };
 
     @Override
@@ -49,8 +50,13 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return new StringSchema().pattern(getPattern());
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

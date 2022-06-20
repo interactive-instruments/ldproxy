@@ -14,6 +14,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.base.domain.AppContext;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -30,12 +31,14 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterPrettyFeaturesGeoJson extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private final Schema schema = new BooleanSchema()._default(false);
+    private final Schema<?> schema = new BooleanSchema()._default(false);
     private final boolean allowDebug;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public QueryParameterPrettyFeaturesGeoJson(AppContext appContext) {
+    public QueryParameterPrettyFeaturesGeoJson(AppContext appContext, SchemaValidator schemaValidator) {
         this.allowDebug = appContext.isDevEnv();
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -58,13 +61,18 @@ public class QueryParameterPrettyFeaturesGeoJson extends ApiExtensionCache imple
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

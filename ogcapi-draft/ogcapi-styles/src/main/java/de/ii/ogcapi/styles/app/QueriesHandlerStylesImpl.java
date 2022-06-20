@@ -13,6 +13,8 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -28,6 +30,7 @@ import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.styles.domain.Styles;
 import de.ii.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -89,7 +92,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(styles, Styles.FUNNEL, format)
+            ? ETag.from(styles, Styles.FUNNEL, format.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -97,12 +100,9 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
 
         return prepareSuccessResponse(requestContext,
                                       queryInput.getIncludeLinkHeader() ? styles.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("styles.%s", format.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("styles.%s", format.getMediaType().fileExtension())))
                 .entity(format.getStylesEntity(styles, apiData, collectionId, requestContext))
                 .build();
     }
@@ -138,19 +138,16 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(stylesheetContent.getContent())
+            ? ETag.from(stylesheetContent.getContent())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
         return prepareSuccessResponse(requestContext, links,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.%s", styleId, format.getFileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.%s", styleId, format.getFileExtension())))
                 .entity(format.getStyleEntity(stylesheetContent, api, collectionId, styleId, requestContext))
                 .build();
     }
@@ -173,19 +170,16 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(metadata, StyleMetadata.FUNNEL, format)
+            ? ETag.from(metadata, StyleMetadata.FUNNEL, format.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? metadata.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.metadata.%s", queryInput.getStyleId(), format.getMediaType().fileExtension())))
                 .entity(format.getStyleMetadataEntity(metadata, apiData, collectionId, requestContext))
                 .build();
     }

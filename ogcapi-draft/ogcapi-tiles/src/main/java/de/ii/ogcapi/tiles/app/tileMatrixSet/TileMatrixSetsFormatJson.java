@@ -8,14 +8,15 @@
 package de.ii.ogcapi.tiles.app.tileMatrixSet;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSets;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
@@ -23,6 +24,8 @@ import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
+import java.util.AbstractMap;
+import java.util.Map;
 
 @Singleton
 @AutoBind
@@ -34,17 +37,18 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
             .parameter("json")
             .build();
 
-    private final Schema schemaStyleTileMatrixSets;
-    public final static String SCHEMA_REF_TILE_MATRIX_SETS = "#/components/schemas/TileMatrixSets";
-    private final Schema schemaStyleTileMatrixSet;
-    public final static String SCHEMA_REF_TILE_MATRIX_SET = "#/components/schemas/TileMatrixSet";
+    private final Schema<?> schemaStyleTileMatrixSets;
+    private final Map<String, Schema<?>> referencedSchemasTileMatrixSets;
+    private final Schema<?> schemaStyleTileMatrixSet;
+    private final Map<String, Schema<?>> referencedSchemasTileMatrixSet;
 
     @Inject
-    public TileMatrixSetsFormatJson(SchemaGenerator schemaGenerator) {
-        schemaStyleTileMatrixSet = schemaGenerator.getSchema(TileMatrixSetData.class);
-        schemaStyleTileMatrixSets = schemaGenerator.getSchema(TileMatrixSets.class);
+    public TileMatrixSetsFormatJson(ClassSchemaCache classSchemaCache) {
+        schemaStyleTileMatrixSet = classSchemaCache.getSchema(TileMatrixSetData.class);
+        referencedSchemasTileMatrixSet = classSchemaCache.getReferencedSchemas(TileMatrixSetData.class);
+        schemaStyleTileMatrixSets = classSchemaCache.getSchema(TileMatrixSets.class);
+        referencedSchemasTileMatrixSets = classSchemaCache.getReferencedSchemas(TileMatrixSets.class);
     }
-
 
     @Override
     public ApiMediaType getMediaType() {
@@ -55,16 +59,18 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.equals("/tileMatrixSets"))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaStyleTileMatrixSets)
-                    .schemaRef(SCHEMA_REF_TILE_MATRIX_SETS)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaStyleTileMatrixSets)
+                .schemaRef(TileMatrixSets.SCHEMA_REF)
+                .referencedSchemas(referencedSchemasTileMatrixSets)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
         else if (path.equals("/tileMatrixSets/{tileMatrixSetId}"))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaStyleTileMatrixSet)
-                    .schemaRef(SCHEMA_REF_TILE_MATRIX_SET)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaStyleTileMatrixSet)
+                .schemaRef(TileMatrixSetData.SCHEMA_REF)
+                .referencedSchemas(referencedSchemasTileMatrixSet)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
 
         throw new RuntimeException("Unexpected path: " + path);
     }

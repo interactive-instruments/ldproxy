@@ -14,7 +14,6 @@ import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
-import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Endpoint;
@@ -46,7 +45,6 @@ import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
@@ -114,11 +112,8 @@ public class EndpointRoutesGet extends Endpoint {
         );
         ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
             .path(path);
-        Map<MediaType, ApiMediaTypeContent> responseContent = getContent(apiData, "/routes", method);
-        ApiOperation operation = addOperation(apiData, method, responseContent, queryParameters, headers, path, operationSummary, operationDescription, Optional.empty(), TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations(method.toString(), operation);
-
+        ApiOperation.getResource(apiData, path, false, queryParameters, headers, getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
         definitionBuilder.putResources(path, resourceBuilder.build());
 
         return definitionBuilder.build();

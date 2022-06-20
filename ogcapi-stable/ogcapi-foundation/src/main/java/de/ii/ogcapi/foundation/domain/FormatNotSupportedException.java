@@ -8,6 +8,9 @@
 package de.ii.ogcapi.foundation.domain;
 
 public class FormatNotSupportedException extends RuntimeException {
+
+    private static final long serialVersionUID = -4303512711221862724L;
+
     public FormatNotSupportedException(String message) {
         super(message);
     }

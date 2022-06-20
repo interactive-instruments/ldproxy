@@ -13,6 +13,7 @@ import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -28,8 +29,8 @@ import javax.inject.Singleton;
 public class QueryParameterFCollection extends QueryParameterFSubCollection {
 
     @Inject
-    public QueryParameterFCollection(ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+    public QueryParameterFCollection(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+        super(extensionRegistry, schemaValidator);
     }
 
     @Override

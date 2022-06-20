@@ -11,6 +11,7 @@ package de.ii.ogcapi.tiles.domain;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -24,7 +25,8 @@ import java.util.stream.Collectors;
 public class PathParameterCollectionIdTiles extends AbstractPathParameterCollectionId {
 
     @Inject
-    PathParameterCollectionIdTiles() {
+    PathParameterCollectionIdTiles(SchemaValidator schemaValidator) {
+      super(schemaValidator);
     }
 
     @Override
@@ -42,7 +44,7 @@ public class PathParameterCollectionIdTiles extends AbstractPathParameterCollect
     }
 
     @Override
-    public boolean getExplodeInOpenApi(OgcApiDataV2 apiData) { return false; }
+    public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) { return false; }
 
     @Override
     public String getId() {

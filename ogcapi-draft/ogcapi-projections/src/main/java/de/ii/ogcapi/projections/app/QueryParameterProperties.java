@@ -17,6 +17,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -41,10 +42,12 @@ import javax.inject.Singleton;
 public class QueryParameterProperties extends ApiExtensionCache implements OgcApiQueryParameter {
 
     private final SchemaInfo schemaInfo;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public QueryParameterProperties(SchemaInfo schemaInfo) {
+    public QueryParameterProperties(SchemaInfo schemaInfo, SchemaValidator schemaValidator) {
         this.schemaInfo = schemaInfo;
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -73,10 +76,10 @@ public class QueryParameterProperties extends ApiExtensionCache implements OgcAp
                  definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
     }
 
-    private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
+    private ConcurrentMap<Integer, ConcurrentMap<String,Schema<?>>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -88,7 +91,7 @@ public class QueryParameterProperties extends ApiExtensionCache implements OgcAp
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -97,6 +100,11 @@ public class QueryParameterProperties extends ApiExtensionCache implements OgcAp
                      .put(collectionId, new ArraySchema().items(new StringSchema()._enum(schemaInfo.getPropertyNames(apiData, collectionId))));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

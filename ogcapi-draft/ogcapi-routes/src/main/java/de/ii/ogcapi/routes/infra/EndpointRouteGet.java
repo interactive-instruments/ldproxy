@@ -99,10 +99,10 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
             String operationSummary = "fetch a route";
             Optional<String> operationDescription = Optional.of("Fetches the route with identifier `routeId`. " +
                     "The set of available routes can be retrieved at `/routes`.");
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("GET", operation);
-
+            ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                     getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
+                )
+                .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
             definitionBuilder.putResources(path, resourceBuilder.build());
         }
 

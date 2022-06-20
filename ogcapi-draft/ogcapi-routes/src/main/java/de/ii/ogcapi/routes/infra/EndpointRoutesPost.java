@@ -18,27 +18,8 @@ import com.google.common.hash.Hashing;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ApiHeader;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.ApiOperation;
-import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.Endpoint;
-import de.ii.ogcapi.foundation.domain.Example;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.ImmutableExample;
-import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.*;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.routes.app.CapabilityRouting;
 import de.ii.ogcapi.routes.domain.HtmlForm;
 import de.ii.ogcapi.routes.domain.HtmlFormDefaults;
@@ -67,6 +48,7 @@ import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -99,7 +81,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     private static final List<String> TAGS = ImmutableList.of("Routing");
 
     private final QueryHandlerRoutes queryHandler;
-    private final Schema schemaRouteDefinition;
+    private final Schema<?> schemaRouteDefinition;
+    private final Map<String, Schema<?>> referencedSchemas;
     private final FeaturesQuery ogcApiFeaturesQuery;
     private final FeaturesCoreProviders providers;
     private ObjectMapper mapper;
@@ -108,13 +91,14 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     @Inject
     public EndpointRoutesPost(ExtensionRegistry extensionRegistry,
                               QueryHandlerRoutes queryHandler,
-                              SchemaGenerator schemaGenerator,
+                              ClassSchemaCache classSchemaCache,
                               FeaturesQuery ogcApiFeaturesQuery,
                               FeaturesCoreProviders providers,
                               RouteRepository routeRepository) {
         super(extensionRegistry);
         this.queryHandler = queryHandler;
-        this.schemaRouteDefinition = schemaGenerator.getSchema(RouteDefinition.class);
+        this.schemaRouteDefinition = classSchemaCache.getSchema(RouteDefinition.class);
+        this.referencedSchemas = classSchemaCache.getReferencedSchemas(RouteDefinition.class);
         this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
         this.providers = providers;
         this.routeRepository = routeRepository;
@@ -192,7 +176,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
         return ImmutableMap.of(REQUEST_MEDIA_TYPE.type(), new ImmutableApiMediaTypeContent.Builder()
             .ogcApiMediaType(REQUEST_MEDIA_TYPE)
             .schema(schemaRouteDefinition)
-            .schemaRef("#/components/schemas/RouteDefinition")
+            .schemaRef(RouteDefinition.SCHEMA_REF)
+            .referencedSchemas(referencedSchemas)
             .examples(examples)
             .build());
     }
@@ -254,10 +239,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             .path(path);
         Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(config);
         Map<MediaType, ApiMediaTypeContent> responseContent = getContent(apiData, "/routes", method);
-        ApiOperation operation = addOperation(apiData, method, OPERATION_TYPE.PROCESS, requestContent, responseContent, queryParameters, headers, path, operationSummary, operationDescription, Optional.empty(), TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations(method.toString(), operation);
-
+        ApiOperation.of(requestContent, responseContent, queryParameters, headers, operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations(method.toString(), operation));
         definitionBuilder.putResources(path, resourceBuilder.build());
 
         return definitionBuilder.build();

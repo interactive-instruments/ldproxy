@@ -15,6 +15,8 @@ import com.google.common.io.ByteSource;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -25,6 +27,8 @@ import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLConnection;
@@ -125,19 +129,16 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                                   .orElse(null);
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || apiData.getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(resources, Resources.FUNNEL, format)
+            ? ETag.from(resources, Resources.FUNNEL, format.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
         return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("resources.%s", format.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("resources.%s", format.getMediaType().fileExtension())))
                 .entity(format.getResourcesEntity(resources, apiData, requestContext))
                 .build();
     }
@@ -180,19 +181,16 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
         if (contentType==null || contentType.isEmpty())
             contentType = "application/octet-stream";
 
-        Date lastModified = getLastModified(resourceFile.toFile());
-        EntityTag etag = getEtag(resource);
+        Date lastModified = LastModified.from(resourceFile);
+        EntityTag etag = ETag.from(resource);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
         return prepareSuccessResponse(requestContext, null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      resourceId)
+                                      HeaderContentDisposition.of(resourceId))
                 .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
                 .type(contentType)
                 .build();

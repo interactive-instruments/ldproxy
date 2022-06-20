@@ -17,7 +17,18 @@ import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchemaArray;
+import de.ii.ogcapi.features.core.domain.JsonSchemaBoolean;
+import de.ii.ogcapi.features.core.domain.JsonSchemaInteger;
+import de.ii.ogcapi.features.core.domain.JsonSchemaNumber;
+import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.JsonSchemaOneOf;
+import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
+import de.ii.ogcapi.features.core.domain.JsonSchemaRefExternal;
+import de.ii.ogcapi.features.core.domain.JsonSchemaString;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.CollectionExtent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -40,6 +51,9 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
@@ -75,13 +89,15 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
 
   private final FeaturesCoreProviders providers;
   private final CrsTransformerFactory crsTransformerFactory;
+  private final ClassSchemaCache classSchemaCache;
 
-    @Inject
+  @Inject
   public FeaturesCoreBuildingBlock(
-      FeaturesCoreProviders providers, CrsTransformerFactory crsTransformerFactory) {
+      FeaturesCoreProviders providers, CrsTransformerFactory crsTransformerFactory, ClassSchemaCache classSchemaCache) {
     this.providers = providers;
     this.crsTransformerFactory = crsTransformerFactory;
-    }
+    this.classSchemaCache = classSchemaCache;
+  }
 
     @Override
     public ExtensionConfiguration getDefaultConfiguration() {
@@ -154,6 +170,29 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
         .ifPresent(
             provider ->
                 provider.getFeatureChangeHandler().addListener(onFeatureChange(api)));
+
+    // register schemas that cannot be derived automatically
+    Schema<?> stringSchema = classSchemaCache.getSchema(JsonSchemaString.class);
+    Schema<?> numberSchema = classSchemaCache.getSchema(JsonSchemaNumber.class);
+    Schema<?> integerSchema = classSchemaCache.getSchema(JsonSchemaInteger.class);
+    Schema<?> booleanSchema = classSchemaCache.getSchema(JsonSchemaBoolean.class);
+    Schema<?> objectSchema = classSchemaCache.getSchema(JsonSchemaObject.class);
+    Schema<?> arraySchema = classSchemaCache.getSchema(JsonSchemaArray.class);
+    Schema<?> refSchema = classSchemaCache.getSchema(JsonSchemaRef.class);
+    Schema<?> refExternalSchema = classSchemaCache.getSchema(JsonSchemaRefExternal.class);
+    Schema<?> oneOfSchema = classSchemaCache.getSchema(JsonSchemaOneOf.class);
+    classSchemaCache.registerSchema(JsonSchema.class, new ComposedSchema()
+        .addOneOfItem(stringSchema)
+        .addOneOfItem(numberSchema)
+        .addOneOfItem(integerSchema)
+        .addOneOfItem(booleanSchema)
+        .addOneOfItem(objectSchema)
+        .addOneOfItem(arraySchema)
+        .addOneOfItem(refSchema)
+        .addOneOfItem(refExternalSchema)
+        .addOneOfItem(oneOfSchema), ImmutableList.of(JsonSchemaString.class, JsonSchemaNumber.class, JsonSchemaInteger.class,
+                                                     JsonSchemaBoolean.class, JsonSchemaObject.class, JsonSchemaArray.class,
+                                                     JsonSchemaRef.class, JsonSchemaOneOf.class));
 
     return ValidationResult.of();
   }

@@ -11,13 +11,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.docs.DocFile;
 import de.ii.xtraplatform.docs.DocStep;
 import de.ii.xtraplatform.docs.DocStep.Step;
 import de.ii.xtraplatform.docs.DocTable;
 import de.ii.xtraplatform.docs.DocTable.ColumnSet;
-import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
@@ -26,6 +24,7 @@ import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -168,7 +167,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
         return SERVICE_TYPE;
     }
 
-    public abstract Optional<Metadata> getMetadata();
+    public abstract Optional<ApiMetadata> getMetadata();
 
     public abstract Optional<ExternalDocumentation> getExternalDocs();
 
@@ -191,22 +190,9 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
      * APIs verwendet werden, z.B. `tags=INSPIRE`.<br>_seit Version 2.1_
      * @default `null`
      */
-    // TODO: move to ServiceData?
     public abstract List<String> getTags();
 
-    // TODO: move to ServiceData?
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    public List<String> getSubPath() {
-        ImmutableList.Builder<String> builder = new ImmutableList.Builder<String>();
-        builder.add(getId());
-        if (getApiVersion().isPresent())
-            builder.add("v"+getApiVersion().get());
-        return builder.build();
-    }
-
-    @JsonProperty(value = "api")
+    @JsonProperty("api")
     @JsonMerge
     @Override
     public abstract List<ExtensionConfiguration> getExtensions();
@@ -226,20 +212,6 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public Optional<FeatureTypeConfigurationOgcApi> getCollectionData(String collectionId) {
         return Optional.ofNullable(getCollections().get(collectionId));
-    }
-
-    @Override
-    @Value.Derived
-    public boolean isLoading() {
-        //TODO: delegate to extensions?
-        return false;
-    }
-
-    @Override
-    @Value.Derived
-    public boolean hasError() {
-        //TODO: delegate to extensions?
-        return false;
     }
 
     @Value.Check
@@ -277,8 +249,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     public boolean isCollectionEnabled(final String collectionId) {
-        return getCollections().containsKey(collectionId) && getCollections().get(collectionId)
-                                                                             .getEnabled();
+        return getCollections().containsKey(collectionId)
+                && Objects.requireNonNull(getCollections().get(collectionId)).getEnabled();
     }
 
     @JsonIgnore
@@ -310,10 +282,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
 
     private Optional<CollectionExtent> mergeExtents(Optional<CollectionExtent> defaultExtent, Optional<CollectionExtent> collectionExtent) {
-        if (defaultExtent.isEmpty())
+        if (defaultExtent.isEmpty()) {
             return collectionExtent;
-        else if (collectionExtent.isEmpty())
+        } else if (collectionExtent.isEmpty()) {
             return defaultExtent;
+        }
 
         return Optional.of(new ImmutableCollectionExtent.Builder()
             .from(defaultExtent.get())
@@ -323,7 +296,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
     public <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz, String collectionId) {
         if (isCollectionEnabled(collectionId)) {
-            return getCollections().get(collectionId).getExtension(clazz);
+            return Objects.requireNonNull(getCollections().get(collectionId)).getExtension(clazz);
         }
         return getExtension(clazz);
     }

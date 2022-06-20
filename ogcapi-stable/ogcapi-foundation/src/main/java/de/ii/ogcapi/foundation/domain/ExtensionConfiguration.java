@@ -59,7 +59,6 @@ public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration
         return Objects.equals(getEnabled(), true);
     }
 
-    //TODO: is this really optional, or should we throw an exception when missing?
     @JsonIgnore
     @Value.Auxiliary
     Optional<ExtensionConfiguration> getDefaultValues();

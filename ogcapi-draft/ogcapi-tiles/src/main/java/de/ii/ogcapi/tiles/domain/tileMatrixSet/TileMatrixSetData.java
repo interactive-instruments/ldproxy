@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles.domain.tileMatrixSet;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.ApiInfo;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
 import java.net.URI;
@@ -17,6 +18,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import org.checkerframework.checker.units.qual.A;
 import org.immutables.value.Value;
 
 /**
@@ -25,7 +28,10 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileMatrixSetData.Builder.class)
+@ApiInfo(schemaId = "TileMatrixSet")
 public abstract class TileMatrixSetData extends PageRepresentationWithId {
+
+    public final static String SCHEMA_REF = "#/components/schemas/TileMatrixSet";
 
     public abstract List<String> getKeywords();
 

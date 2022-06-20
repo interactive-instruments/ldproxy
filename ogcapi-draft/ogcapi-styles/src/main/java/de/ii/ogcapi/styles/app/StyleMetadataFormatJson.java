@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -19,11 +20,13 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -39,12 +42,13 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
             .parameter("json")
             .build();
 
-    private final Schema schemaStyleMetadata;
-    public final static String SCHEMA_REF_STYLE_METADATA = "#/components/schemas/StyleMetadata";
+    private final Schema<?> schemaStyleMetadata;
+    private final Map<String, Schema<?>> referencedSchemas;
 
     @Inject
-    public StyleMetadataFormatJson(SchemaGenerator schemaGenerator) {
-        schemaStyleMetadata = schemaGenerator.getSchema(StyleMetadata.class);
+    public StyleMetadataFormatJson(ClassSchemaCache classSchemaCache) {
+        schemaStyleMetadata = classSchemaCache.getSchema(StyleMetadata.class);
+        referencedSchemas = classSchemaCache.getReferencedSchemas(StyleMetadata.class);
     }
 
     @Override
@@ -68,10 +72,11 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
         // TODO add examples
         if (path.endsWith("/styles/{styleId}/metadata"))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaStyleMetadata)
-                    .schemaRef(SCHEMA_REF_STYLE_METADATA)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaStyleMetadata)
+                .schemaRef(StyleMetadata.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
 
         throw new RuntimeException("Unexpected path: " + path);
     }
@@ -80,10 +85,11 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
     public ApiMediaTypeContent getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
         if (path.endsWith("/styles/{styleId}/metadata") && (method== HttpMethods.PUT || method== HttpMethods.PATCH))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaStyleMetadata)
-                    .schemaRef(SCHEMA_REF_STYLE_METADATA)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaStyleMetadata)
+                .schemaRef(StyleMetadata.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
 
         throw new RuntimeException("Unexpected path: " + path);
     }

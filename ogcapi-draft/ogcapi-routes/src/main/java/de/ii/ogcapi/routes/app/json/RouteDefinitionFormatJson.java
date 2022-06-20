@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -19,7 +20,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.routes.domain.RouteDefinition;
 import de.ii.ogcapi.routes.domain.RouteDefinitionFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
@@ -28,6 +29,9 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.AbstractMap;
+import java.util.Map;
 
 @Singleton
 @AutoBind
@@ -41,13 +45,14 @@ public class RouteDefinitionFormatJson implements RouteDefinitionFormatExtension
             .parameter("json")
             .build();
 
-    private final Schema schemaRouteDefinition;
-    public final static String SCHEMA_REF_ROUTE_DEFINITION = "#/components/schemas/RouteDefinition";
+    private final Schema<?> schemaRouteDefinition;
+    private final Map<String, Schema<?>> referencedSchemas;
 
     @Inject
-    public RouteDefinitionFormatJson(SchemaGenerator schemaGenerator,
+    public RouteDefinitionFormatJson(ClassSchemaCache classSchemaCache,
                                      GeoJsonWriterRegistry geoJsonWriterRegistry) {
-        this.schemaRouteDefinition = schemaGenerator.getSchema(RouteDefinition.class);
+        this.schemaRouteDefinition = classSchemaCache.getSchema(RouteDefinition.class);
+        referencedSchemas = classSchemaCache.getReferencedSchemas(RouteDefinition.class);
     }
 
     @Override
@@ -60,7 +65,8 @@ public class RouteDefinitionFormatJson implements RouteDefinitionFormatExtension
         if (path.equals("/routes/{routeId}/definition") && method.equals(HttpMethods.GET))
             return new ImmutableApiMediaTypeContent.Builder()
                 .schema(schemaRouteDefinition)
-                .schemaRef(SCHEMA_REF_ROUTE_DEFINITION)
+                .schemaRef(RouteDefinition.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
         return null;
@@ -71,7 +77,8 @@ public class RouteDefinitionFormatJson implements RouteDefinitionFormatExtension
         if (path.equals("/routes") && method.equals(HttpMethods.POST))
             return new ImmutableApiMediaTypeContent.Builder()
                 .schema(schemaRouteDefinition)
-                .schemaRef(SCHEMA_REF_ROUTE_DEFINITION)
+                .schemaRef(RouteDefinition.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
                 .ogcApiMediaType(MEDIA_TYPE)
                 .build();
         return null;

@@ -14,17 +14,18 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.MbStyleLayer;
@@ -32,13 +33,16 @@ import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleLayer;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
 import java.net.URI;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -64,13 +68,14 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             .build();
 
     private final URI servicesUri;
-    private final Schema schemaStyle;
-    public final static String SCHEMA_REF_STYLE = "#/components/schemas/MbStyleStylesheet";
+    private final Schema<?> schemaStyle;
+    private final Map<String, Schema<?>> referencedSchemas;
 
     @Inject
-    public StyleFormatMbStyle(ServicesContext servicesContext, SchemaGenerator schemaGenerator) {
+    public StyleFormatMbStyle(ServicesContext servicesContext, ClassSchemaCache classSchemaCache) {
         this.servicesUri = servicesContext.getUri();
-        this.schemaStyle = schemaGenerator.getSchema(MbStyleStylesheet.class);
+        this.schemaStyle = classSchemaCache.getSchema(MbStyleStylesheet.class);
+        referencedSchemas = classSchemaCache.getReferencedSchemas(MbStyleStylesheet.class);
     }
 
     @Override
@@ -86,19 +91,21 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaStyle)
-                .schemaRef(SCHEMA_REF_STYLE)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
+            .schema(schemaStyle)
+            .schemaRef(MbStyleStylesheet.SCHEMA_REF)
+            .referencedSchemas(referencedSchemas)
+            .ogcApiMediaType(MEDIA_TYPE)
+            .build();
     }
 
     @Override
     public ApiMediaTypeContent getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
         return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaStyle)
-                .schemaRef(SCHEMA_REF_STYLE)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
+            .schema(schemaStyle)
+            .schemaRef(MbStyleStylesheet.SCHEMA_REF)
+            .referencedSchemas(referencedSchemas)
+            .ogcApiMediaType(MEDIA_TYPE)
+            .build();
     }
 
     @Override
@@ -265,8 +272,8 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
                     throw new IllegalArgumentException("The content of the stylesheet is invalid.", e);
             }
             LOGGER.error("The content of a stylesheet ''{}'' is invalid: {}", stylesheetContent.getDescriptor(), e.getMessage());
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Stacktrace:", e);
+            if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
             }
             return Optional.empty();
         }

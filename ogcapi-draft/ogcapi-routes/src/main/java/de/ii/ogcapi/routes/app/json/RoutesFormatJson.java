@@ -8,6 +8,7 @@
 package de.ii.ogcapi.routes.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -17,7 +18,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.routes.domain.Routes;
 import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
@@ -27,6 +28,9 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.AbstractMap;
+import java.util.Map;
 
 @Singleton
 @AutoBind
@@ -39,15 +43,16 @@ public class RoutesFormatJson implements RoutesFormatExtension {
             .parameter("json")
             .build();
 
-    private final Schema schemaRoutes;
-    public final static String SCHEMA_REF_ROUTES = "#/components/schemas/Routes";
+    private final Schema<?> schemaRoutes;
+    private final Map<String, Schema<?>> referencedSchemas;
     private final I18n i18n;
 
     @Inject
-    public RoutesFormatJson(SchemaGenerator schemaGenerator,
+    public RoutesFormatJson(ClassSchemaCache classSchemaCache,
                             I18n i18n) {
         this.i18n = i18n;
-        schemaRoutes = schemaGenerator.getSchema(Routes.class);
+        schemaRoutes = classSchemaCache.getSchema(Routes.class);
+        referencedSchemas = classSchemaCache.getReferencedSchemas(Routes.class);
     }
 
     @Override
@@ -71,10 +76,11 @@ public class RoutesFormatJson implements RoutesFormatExtension {
     @Override
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaRoutes)
-                .schemaRef(SCHEMA_REF_ROUTES)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
+            .schema(schemaRoutes)
+            .schemaRef(Routes.SCHEMA_REF)
+            .referencedSchemas(referencedSchemas)
+            .ogcApiMediaType(MEDIA_TYPE)
+            .build();
     }
 
     @Override

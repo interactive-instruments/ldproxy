@@ -123,7 +123,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
             LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
         } else {
             final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            final boolean explode = collectionIdParam.getExplodeInOpenApi(apiData);
+            final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
             final List<String> collectionIds = (explode) ?
                     collectionIdParam.getValues(apiData) :
                     ImmutableList.of("{collectionId}");
@@ -142,9 +142,10 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                         .path(resourcePath)
                         .pathParameters(pathParameters);
-                ApiOperation operation = addOperation(apiData, queryParameters, resourcePath, operationSummary, operationDescription, TAGS);
-                if (operation!=null)
-                    resourceBuilder.putOperations("GET", operation);
+                ApiOperation.getResource(apiData, resourcePath, false, queryParameters, ImmutableList.of(),
+                                         getContent(apiData, resourcePath), operationSummary, operationDescription, Optional.empty(), TAGS
+                    )
+                    .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
                 definitionBuilder.putResources(resourcePath, resourceBuilder.build());
             }
         }

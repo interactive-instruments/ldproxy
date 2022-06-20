@@ -30,7 +30,9 @@ public interface ChangingTemporalExtent extends ChangingValue<TemporalExtent> {
     long deltaStart = Objects.requireNonNullElse(deltaExtent.getStart(), Long.MIN_VALUE);
     long deltaEnd = Objects.requireNonNullElse(deltaExtent.getEnd(), Long.MAX_VALUE);
 
-    if (currentStart <= deltaStart && currentEnd >= deltaEnd) return Optional.empty();
+    if (currentStart <= deltaStart && currentEnd >= deltaEnd) {
+      return Optional.empty();
+    }
 
     return Optional.of(
         ChangingTemporalExtent.of(

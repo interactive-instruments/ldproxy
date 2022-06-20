@@ -13,6 +13,7 @@ import de.ii.ogcapi.features.core.domain.ModifiableFeatureSfFlat;
 import de.ii.ogcapi.features.core.domain.ModifiablePropertySfFlat;
 import de.ii.ogcapi.features.core.domain.PropertySfFlat;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
@@ -159,8 +160,8 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
 
     } catch (Exception e) {
       LOGGER.error("Error while processing feature {} in collection {}. The feature is skipped. Error: {}", feature.getIdValue(), collectionId, e.getMessage());
-      if(LOGGER.isDebugEnabled()) {
-        LOGGER.debug("Stacktrace:", e);
+      if(LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
       }
     }
 

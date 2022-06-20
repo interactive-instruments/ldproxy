@@ -10,7 +10,6 @@ package de.ii.ogcapi.features.custom.extensions.app;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
@@ -21,13 +20,13 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.web.domain.Http;
 import de.ii.xtraplatform.web.domain.HttpClient;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
@@ -58,14 +57,16 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
     private final FeaturesCoreProviders providers;
     private final GeometryHelperWKT geometryHelper;
     private final HttpClient httpClient;
+    private final SchemaValidator schemaValidator;
 
     @Inject
     public QueryParameterIntersects(FeaturesCoreProviders providers,
                                     GeometryHelperWKT geometryHelper,
-                                    Http http) {
+                                    Http http, SchemaValidator schemaValidator) {
         this.providers = providers;
         this.geometryHelper = geometryHelper;
         this.httpClient = http.getDefaultClient();
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -93,8 +94,13 @@ public class QueryParameterIntersects extends ApiExtensionCache implements OgcAp
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return new StringSchema().pattern("^(POINT|MULTIPOINT|LINESTRING|MULTILINESTRING|POLYGON|MULTIPOLYGON|GEOMETRYCOLLECTION|http(?:s)?://).*$");
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

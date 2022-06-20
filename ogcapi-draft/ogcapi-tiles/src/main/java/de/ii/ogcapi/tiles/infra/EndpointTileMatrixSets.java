@@ -131,9 +131,10 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
         ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
                 .path(path)
                 .subResourceType("Tile Matrix Set");
-        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-        if (operation!=null)
-            resourceBuilderSet.putOperations(method.name(), operation);
+        ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                 getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
+            )
+            .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
         definitionBuilder.putResources(path, resourceBuilderSet.build());
 
         path = "/tileMatrixSets/{tileMatrixSetId}";
@@ -147,9 +148,10 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
             ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                     .path(path)
                     .pathParameters(pathParameters);
-            operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations(method.name(), operation);
+            ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                     getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
+                )
+                .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
             definitionBuilder.putResources(path, resourceBuilder.build());
         }
 

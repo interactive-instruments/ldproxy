@@ -12,12 +12,12 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
-import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SortKey;
@@ -53,9 +53,11 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
     ItemTypeSpecificConformanceClass {
 
     final static Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    QueryParameterSortbyFeatures() {
+    QueryParameterSortbyFeatures(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -107,10 +109,10 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
                 definitionPath.equals("/collections/{collectionId}/items"));
     }
 
-    private ConcurrentMap<Integer, ConcurrentMap<String,Schema>> schemaMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, ConcurrentMap<String,Schema<?>>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -132,7 +134,7 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -140,7 +142,7 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
             List<String> sortables = apiData.getCollections()
                                             .get(collectionId)
                                             .getExtension(SortingConfiguration.class)
-                                            .map(cfg -> cfg.getSortables())
+                                            .map(SortingConfiguration::getSortables)
                                             .orElse(ImmutableList.of());
             schemaMap.get(apiHashCode)
                      .put(collectionId, new ArraySchema().items(new StringSchema()._enum(sortables.stream()
@@ -149,6 +151,11 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache implements O
                                                                                                   .collect(Collectors.toUnmodifiableList()))));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override
