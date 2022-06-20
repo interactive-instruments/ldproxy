@@ -16,6 +16,15 @@ dependencies {
     modules subprojects
 }
 
+layer {
+    //minimumModuleMaturity = 'PRODUCTION'
+    
+    PRODUCTION {
+        minimumCoverage = 0.0
+    }
+}
+
+
 apply from: '../license-headers.gradle'
 
 //apply from: '../license-report.gradle'
