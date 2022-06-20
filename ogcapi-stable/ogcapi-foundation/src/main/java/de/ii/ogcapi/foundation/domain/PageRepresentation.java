@@ -22,6 +22,17 @@ import java.util.stream.Collectors;
 
 public abstract class PageRepresentation {
 
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<PageRepresentation> FUNNEL = (from, into) -> {
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getLinks()
+                .stream()
+                .sorted(Comparator.comparing(Link::getHref))
+                .forEachOrdered(link -> into.putString(link.getHref(), StandardCharsets.UTF_8)
+                        .putString(Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
+    };
+
     public static final String SORT_PRIORITY = "sortPriority";
 
     public abstract Optional<String> getTitle();
@@ -59,15 +70,4 @@ public abstract class PageRepresentation {
     public boolean getSectionsFirst() {
         return false;
     }
-
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<PageRepresentation> FUNNEL = (from, into) -> {
-        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getLinks()
-            .stream()
-            .sorted(Comparator.comparing(Link::getHref))
-            .forEachOrdered(link -> into.putString(link.getHref(), StandardCharsets.UTF_8)
-                                        .putString(Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
-    };
 }

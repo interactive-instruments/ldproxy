@@ -13,11 +13,11 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class PageRepresentationWithId extends PageRepresentation {
 
-    public abstract String getId();
-
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<PageRepresentationWithId> FUNNEL = (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
-         into.putString(from.getId(), StandardCharsets.UTF_8);
+        into.putString(from.getId(), StandardCharsets.UTF_8);
     };
+
+    public abstract String getId();
 }

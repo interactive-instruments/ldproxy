@@ -17,6 +17,27 @@ import java.util.Optional;
 
 public abstract class OgcResourceMetadata {
 
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<OgcResourceMetadata> FUNNEL = (from, into) -> {
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getLinks()
+                .stream()
+                .sorted(Comparator.comparing(Link::getHref))
+                .forEachOrdered(link -> into.putString(link.getHref(), StandardCharsets.UTF_8)
+                        .putString(Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
+        from.getKeywords()
+                .stream()
+                .sorted()
+                .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getPublisher().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getPointOfContact().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getLicense().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getAttribution().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDates().ifPresent(val -> MetadataDates.FUNNEL.funnel(val, into));
+        from.getVersion().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+    };
+
     public abstract Optional<String> getTitle();
 
     public abstract Optional<String> getDescription();
@@ -38,26 +59,4 @@ public abstract class OgcResourceMetadata {
     public abstract Optional<MetadataDates> getDates();
 
     public abstract Optional<String> getVersion();
-
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<OgcResourceMetadata> FUNNEL = (from, into) -> {
-        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getLinks()
-            .stream()
-            .sorted(Comparator.comparing(Link::getHref))
-            .forEachOrdered(link -> into.putString(link.getHref(), StandardCharsets.UTF_8)
-                .putString(Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
-        from.getKeywords()
-            .stream()
-            .sorted()
-            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getPublisher().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getPointOfContact().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getLicense().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getAttribution().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getDates().ifPresent(val -> MetadataDates.FUNNEL.funnel(val, into));
-        from.getVersion().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-    };
-
 }
