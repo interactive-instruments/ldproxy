@@ -9,15 +9,15 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
-import com.google.common.hash.Funnel;
-import com.google.common.hash.Hashing;
-import com.google.common.hash.HashingInputStream;
-import com.google.common.io.Files;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
@@ -27,20 +27,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.SimpleTimeZone;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoMultiBind
 public interface QueriesHandler<T extends QueryIdentifier> {
@@ -162,61 +150,6 @@ public interface QueriesHandler<T extends QueryIdentifier> {
 
     default Date getLastModified(QueryInput queryInput) {
         return queryInput.getLastModified().orElse(null);
-    }
-
-    default Date getLastModified(File file) {
-        return Date.from(Instant.ofEpochMilli(file.lastModified()));
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    default EntityTag getEtag(Date date) {
-        if (Objects.isNull(date)) {
-            return null;
-        }
-
-        SimpleDateFormat sdf = new SimpleDateFormat();
-        sdf.setTimeZone(new SimpleTimeZone(0, "GMT"));
-        sdf.applyPattern("dd MMM yyyy HH:mm:ss z");
-        String etag = Hashing.murmur3_128()
-                             .hashString(sdf.format(date), StandardCharsets.UTF_8)
-                             .toString();
-        return new EntityTag(etag, true);
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    default EntityTag getEtag(byte[] byteArray) {
-        String etag = Hashing.murmur3_128()
-                             .hashBytes(byteArray)
-                             .toString();
-        return new EntityTag(etag, false);
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    default EntityTag getEtag(File file) {
-        String etag;
-        try {
-            etag = Files.asByteSource(file).hash(Hashing.murmur3_128()).toString();
-        } catch (IOException e) {
-            return null;
-        }
-        return new EntityTag(etag, false);
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    default EntityTag getEtag(InputStream inputStream) {
-        String etag = new HashingInputStream(Hashing.murmur3_128(), inputStream).hash().toString();
-        return new EntityTag(etag, false);
-    }
-
-    @SuppressWarnings("UnstableApiUsage")
-    default <S> EntityTag getEtag(S entity, Funnel<S> funnel, FormatExtension outputFormat) {
-        String etag = Hashing.murmur3_128()
-                             .newHasher()
-                             .putObject(entity, funnel)
-                             .putString(Objects.nonNull(outputFormat) ? outputFormat.getMediaType().label() : "", StandardCharsets.UTF_8)
-                             .hash()
-                             .toString();
-        return new EntityTag(etag, true);
     }
 
     /**

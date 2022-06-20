@@ -33,6 +33,7 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 
+import de.ii.xtraplatform.web.domain.ETag;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -121,7 +122,7 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || apiData.getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(schema, JsonSchema.FUNNEL, outputFormat)
+            ? ETag.from(schema, JsonSchema.FUNNEL, outputFormat.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))

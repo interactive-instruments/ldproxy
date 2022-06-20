@@ -27,6 +27,8 @@ import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLConnection;
@@ -127,7 +129,7 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                                   .orElse(null);
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || apiData.getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(resources, Resources.FUNNEL, format)
+            ? ETag.from(resources, Resources.FUNNEL, format.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -179,8 +181,8 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
         if (contentType==null || contentType.isEmpty())
             contentType = "application/octet-stream";
 
-        Date lastModified = getLastModified(resourceFile.toFile());
-        EntityTag etag = getEtag(resource);
+        Date lastModified = LastModified.from(resourceFile);
+        EntityTag etag = ETag.from(resource);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

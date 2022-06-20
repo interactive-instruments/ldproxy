@@ -59,6 +59,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -272,7 +273,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         }
         byte[] result = baos.toByteArray();
 
-        EntityTag etag = getEtag(result);
+        EntityTag etag = ETag.from(result);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, null, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -326,7 +327,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || apiData.getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(routes, Routes.FUNNEL, outputFormatExtension)
+            ? ETag.from(routes, Routes.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -356,7 +357,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         byte[] content = format.getRouteAsByteArray(route, apiData, requestContext);
 
         Date lastModified = routeRepository.getLastModified(apiData, routeId);
-        EntityTag etag = getEtag(content);
+        EntityTag etag = ETag.from(content);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -384,7 +385,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         byte[] content = outputFormat.getRouteDefinitionAsByteArray(routeDefinition, apiData, requestContext);
 
         Date lastModified = routeRepository.getLastModified(apiData, routeId);
-        EntityTag etag = getEtag(content);
+        EntityTag etag = ETag.from(content);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();

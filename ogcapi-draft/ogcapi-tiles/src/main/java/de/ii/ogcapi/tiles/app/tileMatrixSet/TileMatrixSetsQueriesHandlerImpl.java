@@ -30,6 +30,7 @@ import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSets;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsLinksGenerator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetsQueriesHandler;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -111,7 +112,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(tileMatrixSets, TileMatrixSets.FUNNEL, outputFormat)
+            ? ETag.from(tileMatrixSets, TileMatrixSets.FUNNEL, outputFormat.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -152,7 +153,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat)
+            ? ETag.from(tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))

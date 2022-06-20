@@ -32,6 +32,7 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.xtraplatform.web.domain.ETag;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.immutables.value.Value;
@@ -131,7 +132,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(responseObject, Collections.FUNNEL, outputFormatExtension)
+            ? ETag.from(responseObject, Collections.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -192,7 +193,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(responseObject, OgcApiCollection.FUNNEL, outputFormatExtension)
+            ? ETag.from(responseObject, OgcApiCollection.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))

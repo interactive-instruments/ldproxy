@@ -48,6 +48,7 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 
+import de.ii.xtraplatform.web.domain.ETag;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -270,7 +271,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
             etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
                 || api.getData().getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
-                ? getEtag(result)
+                ? ETag.from(result)
                 : null;
         } else {
             lastModified = getLastModified(queryInput);

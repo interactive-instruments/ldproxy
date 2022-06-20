@@ -36,6 +36,7 @@ import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -139,7 +140,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension)
+            ? ETag.from(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -197,7 +198,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || requestContext.getApi().getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension)
+            ? ETag.from(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))

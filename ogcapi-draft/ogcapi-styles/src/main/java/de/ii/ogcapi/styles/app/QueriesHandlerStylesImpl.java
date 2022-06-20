@@ -30,6 +30,7 @@ import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.styles.domain.Styles;
 import de.ii.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -91,7 +92,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(styles, Styles.FUNNEL, format)
+            ? ETag.from(styles, Styles.FUNNEL, format.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -137,7 +138,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(stylesheetContent.getContent())
+            ? ETag.from(stylesheetContent.getContent())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -169,7 +170,7 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
         EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(metadata, StyleMetadata.FUNNEL, format)
+            ? ETag.from(metadata, StyleMetadata.FUNNEL, format.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))

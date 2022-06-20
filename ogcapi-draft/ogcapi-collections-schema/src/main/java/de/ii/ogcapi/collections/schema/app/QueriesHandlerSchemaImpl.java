@@ -36,6 +36,7 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -136,7 +137,7 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
         Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || apiData.getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(schema, JsonSchema.FUNNEL, outputFormat)
+            ? ETag.from(schema, JsonSchema.FUNNEL, outputFormat.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))

@@ -63,6 +63,8 @@ import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
+import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -222,7 +224,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(tileSets, TileSets.FUNNEL, outputFormat)
+            ? ETag.from(tileSets, TileSets.FUNNEL, outputFormat.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -279,7 +281,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || (collectionId.isEmpty() ? apiData.getExtension(HtmlConfiguration.class) : apiData.getExtension(HtmlConfiguration.class, collectionId.get()))
             .map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(tileset, TileSet.FUNNEL, outputFormat)
+            ? ETag.from(tileset, TileSet.FUNNEL, outputFormat.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
@@ -501,7 +503,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         }
 
         Date lastModified = null;
-        EntityTag etag = getEtag(result.byteArray);
+        EntityTag etag = ETag.from(result.byteArray);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -534,7 +536,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
         Date lastModified = queryInput.getLastModified()
                                       .orElse(null);
-        EntityTag etag = getEtag(content);
+        EntityTag etag = ETag.from(content);
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -567,8 +569,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                                                      i18n,
                                                                      requestContext.getLanguage());
 
-        Date lastModified = getLastModified(provider.toFile());
-        EntityTag etag = getEtag(staticTileProviderStore.getTile(provider, queryInput.getTile()));
+        Date lastModified = LastModified.from(provider);
+        EntityTag etag = ETag.from(staticTileProviderStore.getTile(provider, queryInput.getTile()));
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
@@ -622,7 +624,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             throw new RuntimeException("Could not read map tile from TileServer.",e);
         }
         Date lastModified = null;
-        EntityTag etag = getEtag(content);
+        EntityTag etag = ETag.from(content);
         Response.ResponseBuilder responseBuilder = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(responseBuilder))
             return responseBuilder.build();
@@ -651,7 +653,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         TileFormatWithQuerySupportExtension outputFormat = (TileFormatWithQuerySupportExtension) tile.getOutputFormat();
 
         Date lastModified = null;
-        EntityTag etag = getEtag(tile.getOutputFormat().getEmptyTile(tile));
+        EntityTag etag = ETag.from(tile.getOutputFormat().getEmptyTile(tile));
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
