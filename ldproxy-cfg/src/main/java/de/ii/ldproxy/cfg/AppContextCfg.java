@@ -50,7 +50,7 @@ class AppContextCfg implements AppContext {
   public AppConfiguration getConfiguration() {
     AppConfiguration appConfiguration = new AppConfiguration(true);
     appConfiguration.store = new StoreConfiguration();
-    appConfiguration.store.failOnUnknownProperties = true;
+    appConfiguration.store.failOnUnknownProperties = false;
     return appConfiguration;
   }
 
