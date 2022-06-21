@@ -38,16 +38,18 @@ public interface CityJsonConfiguration extends ExtensionConfiguration, PropertyT
     /**
      * @langEn Enables support for CityJSON text sequences (media type `application/city+json-seq`).
      * Requires version 1.1 or later.
-     * @langDe Aktivitiert die Unterstützung für CityJSON Text Sequences (Media-Type `application/city+json-seq`).
+     * @langDe Aktiviert die Unterstützung für CityJSON Text Sequences (Media-Type `application/city+json-seq`).
      * Erfordert mindestens Version 1.1.
-     * @default `false`
+     * @default false
+     * @since v3.3
      */
     Optional<Boolean> getTextSequences();
 
     /**
      * @langEn Select the CityJSON version that should be returned. Supported versions are `V10` (CityJSON 1.0) and `V11` (CityJSON 1.1).
      * @langDe Wählen Sie die CityJSON-Version, die zurückgegeben werden soll. Unterstützte Versionen sind `V10` (CityJSON 1.0) und `V11` (CityJSON 1.1).
-     * @default `V11`
+     * @default V11
+     * @since v3.3
      */
     Optional<Version> getVersion();
 

@@ -222,6 +222,7 @@ import de.ii.xtraplatform.docs.DocVar;
                 +
                 "{@body}\n\n" +
                 "## Scope\n\n" +
+                "{@scopeEn}\n\n" +
                 "{@conformanceEn ### Conformance Classes\n\n|||}\n\n" +
                 "{@docTable:endpoints ### Resources\n\n|||}\n\n" +
                 "{@docTable:queryParams ### Query Parameters\n\n|||}\n\n" +
@@ -236,7 +237,8 @@ import de.ii.xtraplatform.docs.DocVar;
                 +
                 "{@body}\n\n" +
                 "## Umfang\n\n" +
-                "{@conformanceEn ### Konformitätsklassen\n\n|||}\n\n" +
+                "{@scopeDe}\n\n" +
+                "{@conformanceDe ### Konformitätsklassen\n\n|||}\n\n" +
                 "{@docTable:endpoints ### Ressourcen\n\n|||}\n\n" +
                 "{@docTable:queryParams ### Query Parameter\n\n|||}\n\n" +
                 "## Konfiguration\n\n" +
