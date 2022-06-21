@@ -92,15 +92,20 @@ pipeline:
 #      event: push
 #      branch: master
 
-#  docker-release:
-#    image: plugins/docker
-#    repo: iide/ldproxy
-#    auto_tag: true
-#    dockerfile: build/docker/Dockerfile
-#    context: build/docker
-#    secrets: [ docker_username, docker_password]
-#    when:
-#      event: tag
+  docker-release:
+    image: plugins/docker
+    settings:
+      repo: iide/ldproxy
+      auto_tag: true
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      dockerfile: build/docker/Dockerfile
+      context: build/docker
+    secrets: [ docker_username, docker_password]
+    when:
+      event: tag
 
   github-release:
     image: node:12-alpine
