@@ -16,10 +16,6 @@ import java.util.Optional;
 
 public abstract class JsonSchema {
 
-    public abstract Optional<String> getTitle();
-
-    public abstract Optional<String> getDescription();
-
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<JsonSchema> FUNNEL = (from, into) -> {
         from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
@@ -47,6 +43,10 @@ public abstract class JsonSchema {
         else if (from instanceof JsonSchemaOneOf)
             JsonSchemaOneOf.FUNNEL.funnel((JsonSchemaOneOf) from, into);
     };
+
+    public abstract Optional<String> getTitle();
+
+    public abstract Optional<String> getDescription();
 
     @JsonIgnore
     @Value.Auxiliary

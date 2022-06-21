@@ -20,7 +20,10 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.ImmutableHeaderCaching;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -33,6 +36,7 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -130,22 +134,20 @@ public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
         else if (queryInput.getType().equals("collection"))
             schema = schemaCacheCollection.getSchema(featureSchema, apiData, collectionData, schemaUri, getVersion(queryInput.getProfile()));
 
-        Date lastModified = getLastModified(queryInput, api);
+        Date lastModified = getLastModified(queryInput);
         EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
             || apiData.getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? getEtag(schema, JsonSchema.FUNNEL, outputFormat)
+            ? ETag.from(schema, JsonSchema.FUNNEL, outputFormat.getMediaType().label())
             : null;
         Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
         if (Objects.nonNull(response))
             return response.build();
 
-        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? links : null,
-                                      lastModified, etag,
-                                      queryInput.getCacheControl().orElse(null),
-                                      queryInput.getExpires().orElse(null),
+        return prepareSuccessResponse(requestContext,
+                                      queryInput.getIncludeLinkHeader() ? links : null,
+                                      HeaderCaching.of(lastModified, etag, queryInput),
                                       null,
-                                      true,
-                                      String.format("%s.schema.%s", collectionId, outputFormat.getMediaType().fileExtension()))
+                                      HeaderContentDisposition.of(String.format("%s.schema.%s", collectionId, outputFormat.getMediaType().fileExtension())))
                 .entity(outputFormat.getEntity(schema, collectionId, api, requestContext))
                 .build();
     }

@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.CollectionExtent;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -151,7 +152,7 @@ public class TileSetsView extends OgcApiView {
 
         List<Link> tileTemplates = tiles.getTilesets()
             .stream()
-            .map(PageRepresentation::getLinks)
+            .map(OgcResourceMetadata::getLinks)
             .flatMap(Collection::stream)
             .filter(link -> Objects.equals(link.getRel(),"item"))
             .collect(Collectors.toUnmodifiableList());
@@ -176,7 +177,7 @@ public class TileSetsView extends OgcApiView {
 
         this.tileJsonLink = tiles.getTilesets()
                                  .stream()
-                                 .map(PageRepresentation::getLinks)
+                                 .map(OgcResourceMetadata::getLinks)
                                  .flatMap(Collection::stream)
                                  .filter(link -> Objects.equals(link.getRel(),"self"))
                                  .map(Link::getHref)

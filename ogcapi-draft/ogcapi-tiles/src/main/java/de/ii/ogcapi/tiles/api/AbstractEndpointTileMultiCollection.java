@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tiles.api;
 
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -56,6 +57,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,9 +132,10 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
         ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
             .path(path)
             .pathParameters(pathParameters);
-        ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, tags);
-        if (operation != null)
-            resourceBuilder.putOperations(method.name(), operation);
+        ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                 getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), tags
+            )
+            .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
         definitionBuilder.putResources(path, resourceBuilder.build());
 
         return definitionBuilder.build();
@@ -201,6 +204,10 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
                 .values()
                 .stream()
                 .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+                // drop all collections without a primary geometry
+                .filter(collection -> providers.getFeatureSchema(apiData, collection)
+                        .flatMap(SchemaBase::getPrimaryGeometry)
+                        .isPresent())
                 .filter(collection -> {
                     Optional<TilesConfiguration> layerConfiguration = collection.getExtension(TilesConfiguration.class);
                     if (layerConfiguration.isEmpty() || !layerConfiguration.get().isEnabled() || !layerConfiguration.get().isMultiCollectionEnabled())

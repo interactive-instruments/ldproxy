@@ -17,11 +17,9 @@ import java.nio.charset.StandardCharsets;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaRefExternal extends JsonSchema {
 
+    @SuppressWarnings("UnstableApiUsage")
+    public static final Funnel<JsonSchemaRefExternal> FUNNEL = (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
+
     @JsonProperty("$ref")
     public abstract String getRef();
-
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaRefExternal> FUNNEL = (from, into) -> {
-        into.putString(from.getRef(), StandardCharsets.UTF_8);
-    };
 }

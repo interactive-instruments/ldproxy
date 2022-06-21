@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.ArrayList;
@@ -33,8 +34,8 @@ import javax.inject.Singleton;
 public class QueryParameterFTile extends QueryParameterF {
 
     @Inject
-    protected QueryParameterFTile(ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+    protected QueryParameterFTile(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+        super(extensionRegistry, schemaValidator);
     }
 
     @Override

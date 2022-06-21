@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -31,20 +32,13 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
 
     public static final String TMS_REGEX = "\\w+";
 
-    private final ExtensionRegistry extensionRegistry;
-    final FeaturesCoreProviders providers;
-    final FeatureProcessInfo featureProcessInfo;
-    protected ConcurrentMap<Integer, Schema> schemaMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Integer, Schema<?>> schemaMap = new ConcurrentHashMap<>();
+    private final SchemaValidator schemaValidator;
     private final TileMatrixSetRepository tileMatrixSetRepository;
 
     @Inject
-    public PathParameterTileMatrixSetId(ExtensionRegistry extensionRegistry,
-                                        FeaturesCoreProviders providers,
-                                        FeatureProcessInfo featureProcessInfo,
-                                        TileMatrixSetRepository tileMatrixSetRepository) {
-        this.extensionRegistry = extensionRegistry;
-        this.providers = providers;
-        this.featureProcessInfo = featureProcessInfo;
+    public PathParameterTileMatrixSetId(SchemaValidator schemaValidator, TileMatrixSetRepository tileMatrixSetRepository) {
+        this.schemaValidator = schemaValidator;
         this.tileMatrixSetRepository = tileMatrixSetRepository;
     }
 
@@ -61,12 +55,17 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         if (!schemaMap.containsKey(apiData.hashCode())) {
             schemaMap.put(apiData.hashCode(),new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData))));
         }
 
         return schemaMap.get(apiData.hashCode());
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

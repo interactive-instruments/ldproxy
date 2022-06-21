@@ -40,8 +40,9 @@ public interface EndpointExtension extends ApiExtension {
 
     default ImmutableSet<ApiMediaType> getMediaTypes(OgcApiDataV2 apiData, String requestSubPath, String method) {
         ApiEndpointDefinition apiDef = getDefinition(apiData);
-        if (apiDef.getResources().isEmpty())
+        if (apiDef.getResources().isEmpty()) {
             return ImmutableSet.of();
+        }
 
         OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
                                         .orElse(null);
@@ -53,7 +54,7 @@ public interface EndpointExtension extends ApiExtension {
                         .getContent()
                         .values()
                         .stream()
-                        .map(content -> content.getOgcApiMediaType())
+                        .map(ApiMediaTypeContent::getOgcApiMediaType)
                         .collect(ImmutableSet.toImmutableSet());
             }
             return ImmutableSet.of();
@@ -68,8 +69,9 @@ public interface EndpointExtension extends ApiExtension {
 
     default List<OgcApiQueryParameter> getParameters(OgcApiDataV2 apiData, String requestSubPath, String method) {
         ApiEndpointDefinition apiDef = getDefinition(apiData);
-        if (apiDef.getResources().isEmpty())
+        if (apiDef.getResources().isEmpty()) {
             return ImmutableList.of();
+        }
 
         OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
                                         .orElse(null);
@@ -112,9 +114,8 @@ public interface EndpointExtension extends ApiExtension {
     }
 
     default void checkAuthorization(OgcApiDataV2 apiData, Optional<User> optionalUser) {
-        if (apiData.getSecured() && !optionalUser.isPresent()) {
+        if (apiData.getSecured() && optionalUser.isEmpty()) {
             throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
-            //throw new ClientErrorException(Response.Status.UNAUTHORIZED);
         }
     }
 
@@ -123,9 +124,7 @@ public interface EndpointExtension extends ApiExtension {
                 .filter(param -> param.getName().equalsIgnoreCase(parameterName))
                 .map(param -> param.validate(apiData, Optional.empty(), ImmutableList.of(parameterValue)).orElse(null))
                 .filter(Objects::nonNull)
-                .anyMatch(message -> {
-                    // unknown value, return 404
-                    throw new NotFoundException(message);
-                });
+                .findFirst()
+                .ifPresent(message -> { throw new NotFoundException(message); });
     }
 }

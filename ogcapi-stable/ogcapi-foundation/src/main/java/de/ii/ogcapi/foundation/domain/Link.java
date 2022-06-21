@@ -10,12 +10,17 @@ package de.ii.ogcapi.foundation.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMap;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 
 
 @Value.Immutable
@@ -23,6 +28,27 @@ import javax.xml.bind.annotation.XmlType;
 @JsonDeserialize(as = ImmutableLink.class)
 @XmlType(propOrder={"rel","type","title","href","hreflang","length","templated"})
 public abstract class Link {
+
+    private static final Map<String, String> LABEL_MAP = new ImmutableMap.Builder<String,String>()
+        .put("application/geo+json", "GeoJSON")
+        .put("application/fg+json", "JSON-FG")
+        .put("application/vnd.ogc.fg+json", "JSON-FG")
+        .put("application/schema+json", "JSON Schema")
+        .put("application/city+json", "CityJSON")
+        .put("application/vnd.ogc.city+json", "CityJSON")
+        .put("application/city+json-seq", "CityJSON-Seq")
+        .put("application/vnd.ogc.city+json-seq", "CityJSON-Seq")
+        .put("application/json", "JSON")
+        .put("application/ld+json", "JSON-LD")
+        .put("text/html", "HTML")
+        .put("application/flatgeobuf", "FlatGeobuf")
+        .put("application/gml+xml", "GML")
+        .put("application/xml", "XML")
+        .build();
+
+    public static final Comparator<Link> COMPARATOR_LINKS = Comparator
+        .comparing(Link::getRel)
+        .thenComparing(Link::getHref);
 
     @Nullable
     @XmlAttribute
@@ -60,49 +86,35 @@ public abstract class Link {
     public javax.ws.rs.core.Link getLink() {
         javax.ws.rs.core.Link.Builder link = javax.ws.rs.core.Link.fromUri(getHref());
 
-        if (getRel()!=null && !getRel().isEmpty())
+        if (getRel() != null && !getRel().isEmpty()) {
             link.rel(getRel());
-        if (getTitle()!=null && !getTitle().isEmpty())
+        }
+        if (getTitle() != null && !getTitle().isEmpty()) {
             link.title(getTitle());
-        if (getType()!=null && !getType().isEmpty())
+        }
+        if (getType() != null && !getType().isEmpty()) {
             link.type(getType());
+        }
 
         return link.build();
-    };
+    }
 
     @JsonIgnore
     @XmlTransient
     @Value.Derived
     public String getTypeLabel() {
-        String mediaType = getType();
-        if (mediaType == null)
-            return "";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/gml+xml"))
-            return "GML";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/geo+json"))
-            return "GeoJSON";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/ld+json"))
-            return "JSON-LD";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/schema+json"))
+        String mediaType = Objects.requireNonNullElse(getType(),"")
+            .toLowerCase(Locale.ROOT)
+            .split(";")[0];
+        if (LABEL_MAP.containsKey(mediaType)) {
+            return LABEL_MAP.get(mediaType);
+        } else if (mediaType.endsWith("+json")) {
             return "JSON";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/json"))
-            return "JSON";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/xml"))
+        } else if (mediaType.endsWith("+yaml")) {
+            return "YAML";
+        } else if (mediaType.endsWith("+xml")) {
             return "XML";
-        else if (mediaType.toLowerCase().split(";")[0].equals("text/html"))
-            return "HTML";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/flatgeobuf"))
-            return "FlatGeobuf";
-        else if (mediaType.toLowerCase().split(";")[0].endsWith("fg+json"))
-            return "JSON-FG";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/city+json"))
-            return "CityJSON";
-        else if (mediaType.toLowerCase().split(";")[0].equals("application/city+json-seq"))
-            return "CityJSON-Seq";
-        else if (mediaType.toLowerCase().split(";")[0].endsWith("+xml"))
-            return "XML";
-        else if (mediaType.toLowerCase().split(";")[0].endsWith("+json"))
-            return "JSON";
+        }
 
         return mediaType;
     }

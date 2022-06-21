@@ -129,9 +129,9 @@ public class EndpointResourcesManager extends Endpoint {
                 .apiEntrypoint("resources")
                 .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
         String path = "/resources/{resourceId}";
-        HttpMethods method = HttpMethods.PUT;
+        HttpMethods methodReplace = HttpMethods.PUT;
         List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodReplace);
         String operationSummary = "replace a file resource or add a new one";
         Optional<String> operationDescription = Optional.of("Replace an existing resource with the id `resourceId`. If no " +
                 "such resource exists, a new resource with that id is added. " +
@@ -148,19 +148,17 @@ public class EndpointResourcesManager extends Endpoint {
         ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
                 .path(path)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, method);
-        ApiOperation operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations(method.name(), operation);
-        method = HttpMethods.DELETE;
-        queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, methodReplace);
+        ApiOperation.of(path, methodReplace, requestContent, queryParameters, ImmutableList.of(), operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
+        HttpMethods methodDelete = HttpMethods.DELETE;
+        queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodDelete);
         operationSummary = "delete a file resource";
         operationDescription = Optional.of("Delete an existing resource with the id `resourceId`. If no " +
                 "such resource exists, an error is returned.");
-        requestContent = getRequestContent(apiData, path, method);
-        operation = addOperation(apiData, method, requestContent, queryParameters, path, operationSummary, operationDescription, TAGS);
-        if (operation!=null)
-            resourceBuilder.putOperations(method.name(), operation);
+        requestContent = getRequestContent(apiData, path, methodDelete);
+        ApiOperation.of(path, methodDelete, requestContent, queryParameters, ImmutableList.of(), operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations(methodDelete.name(), operation));
         definitionBuilder.putResources(path, resourceBuilder.build());
 
         return definitionBuilder.build();

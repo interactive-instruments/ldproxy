@@ -21,17 +21,7 @@ class SchemaValidatorSpec extends Specification {
         schemaValidator = new SchemaValidatorImpl()
     }
 
-    def "Validate a feature against its JSON schema (draft 2019-09, explicit)"() {
-        given:
-        String schema = new File('src/test/resources/schema.json').getText()
-        String feature = new File('src/test/resources/feature.json').getText()
-        when:
-        Optional<String> result = schemaValidator.validate(schema, feature, SpecVersion.VersionFlag.V201909)
-        then:
-        result.isEmpty()
-    }
-
-    def "Validate a feature against its JSON schema (draft 2019-09, auto-detect)"() {
+    def "Validate a feature against its JSON schema (draft 2019-09)"() {
         given:
         String schema = new File('src/test/resources/schema.json').getText()
         String feature = new File('src/test/resources/feature.json').getText()
@@ -41,17 +31,7 @@ class SchemaValidatorSpec extends Specification {
         result.isEmpty()
     }
 
-    def "Validate a feature against its JSON schema (draft 07, explicit)"() {
-        given:
-        String schema = new File('src/test/resources/schema-draft07.json').getText()
-        String feature = new File('src/test/resources/feature.json').getText()
-        when:
-        Optional<String> result = schemaValidator.validate(schema, feature, SpecVersion.VersionFlag.V7)
-        then:
-        result.isEmpty()
-    }
-
-    def "Validate a feature against its JSON schema (draft 07, auto-detect)"() {
+    def "Validate a feature against its JSON schema (draft 07)"() {
         given:
         String schema = new File('src/test/resources/schema-draft07.json').getText()
         String feature = new File('src/test/resources/feature.json').getText()

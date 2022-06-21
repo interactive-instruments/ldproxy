@@ -10,9 +10,10 @@ package de.ii.ogcapi.oas30.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
-import de.ii.ogcapi.foundation.domain.Metadata;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.oas30.domain.OpenApiExtension;
@@ -42,11 +43,13 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
     private final AuthConfig authConfig;
     private final ExtensionRegistry extensionRegistry;
+    private final ClassSchemaCache classSchemaCache;
 
     @Inject
-    public ExtendableOpenApiDefinitionImpl(AppContext appContext, ExtensionRegistry extensionRegistry) {
+    public ExtendableOpenApiDefinitionImpl(AppContext appContext, ExtensionRegistry extensionRegistry, ClassSchemaCache classSchemaCache) {
         this.authConfig = appContext.getConfiguration().auth;
         this.extensionRegistry = extensionRegistry;
+        this.classSchemaCache = classSchemaCache;
     }
 
     @Override
@@ -62,9 +65,10 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
             if (apiData.getSecured() && authConfig.isJwt()) {
                 openAPI.getComponents()
-                        .addSecuritySchemes("JWT", new SecurityScheme().name("JWT").type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
-                                .bearerFormat("JWT"));
+                        .addSecuritySchemes("JWT", new SecurityScheme()
+                            .type(SecurityScheme.Type.HTTP)
+                            .scheme("bearer")
+                            .bearerFormat("JWT"));
             }
 
             openAPI.servers(ImmutableList.of(new Server().url(requestUriCustomizer.copy()
@@ -81,7 +85,7 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
                                 .orElse(""));
 
                 if (apiData.getMetadata().isPresent()) {
-                    Metadata md = apiData.getMetadata().get();
+                    ApiMetadata md = apiData.getMetadata().get();
                     openAPI.getInfo()
                             .version(md.getVersion().orElse("1.0.0"));
                     if (md.getContactName().isPresent() || md.getContactUrl().isPresent() || md.getContactEmail().isPresent()) {

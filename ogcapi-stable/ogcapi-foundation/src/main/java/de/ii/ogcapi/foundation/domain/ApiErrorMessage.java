@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ApiErrorMessage extends io.dropwizard.jersey.errors.ErrorMessage {
@@ -19,15 +18,15 @@ public class ApiErrorMessage extends io.dropwizard.jersey.errors.ErrorMessage {
     }
 
     public ApiErrorMessage(int code, String title) {
-        super(code, (code==422 && title.isBlank()) ? "Unprocessable Entity" : title);
+        super(code, code==422 && title.isBlank() ? "Unprocessable Entity" : title);
     }
 
     public ApiErrorMessage(int code, String title, String detail) {
-        super(code, (code==422 && title.isBlank()) ? "Unprocessable Entity" : title, detail);
+        super(code, code==422 && title.isBlank() ? "Unprocessable Entity" : title, detail);
     }
 
     public ApiErrorMessage(int code, String title, String detail, String instance) {
-        super(code, (code==422 && title.isBlank()) ? "Unprocessable Entity" : title, detail);
+        super(code, code==422 && title.isBlank() ? "Unprocessable Entity" : title, detail);
         this.instance = instance;
     }
 

@@ -26,12 +26,14 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(builder = ImmutableExternalDocumentation.Builder.class)
 public abstract class ExternalDocumentation {
-    public abstract Optional<String> getDescription();
-    public abstract String getUrl();
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<ExternalDocumentation> FUNNEL = (from, into) -> {
+        assert from != null;
         from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         into.putString(from.getUrl(), StandardCharsets.UTF_8);
     };
+
+    public abstract Optional<String> getDescription();
+    public abstract String getUrl();
 }

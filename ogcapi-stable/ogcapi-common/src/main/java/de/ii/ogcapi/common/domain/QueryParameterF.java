@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.ArrayList;
@@ -23,9 +24,11 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class QueryParameterF extends ApiExtensionCache implements OgcApiQueryParameter {
 
     protected final ExtensionRegistry extensionRegistry;
+    protected final SchemaValidator schemaValidator;
 
-    protected QueryParameterF(ExtensionRegistry extensionRegistry) {
+    protected QueryParameterF(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
         this.extensionRegistry = extensionRegistry;
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -55,7 +58,7 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
     protected ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap = new ConcurrentHashMap<>();
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -75,7 +78,7 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         int apiHashCode = apiData.hashCode();
         if (!schemaMap.containsKey(apiHashCode))
             schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
@@ -92,5 +95,10 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
             schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
         }
         return schemaMap.get(apiHashCode).get(collectionId);
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 }

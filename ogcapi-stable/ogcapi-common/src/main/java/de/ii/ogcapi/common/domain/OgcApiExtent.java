@@ -9,6 +9,8 @@ package de.ii.ogcapi.common.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.ApiInfo;
+
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import org.immutables.value.Value;
@@ -18,7 +20,14 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableOgcApiExtent.Builder.class)
+@ApiInfo(schemaId = "Extent")
 public interface OgcApiExtent {
+
+    @SuppressWarnings("UnstableApiUsage")
+    Funnel<OgcApiExtent> FUNNEL = (from, into) -> {
+        from.getSpatial().ifPresent(val -> OgcApiExtentSpatial.FUNNEL.funnel(val, into));
+        from.getTemporal().ifPresent(val -> OgcApiExtentTemporal.FUNNEL.funnel(val, into));
+    };
 
     Optional<OgcApiExtentSpatial> getSpatial();
     Optional<OgcApiExtentTemporal> getTemporal();
@@ -33,11 +42,4 @@ public interface OgcApiExtent {
         temporal.ifPresent(interval -> builder.temporal(OgcApiExtentTemporal.of(interval)));
         return Optional.of(builder.build());
     }
-
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<OgcApiExtent> FUNNEL = (from, into) -> {
-        from.getSpatial().ifPresent(val -> OgcApiExtentSpatial.FUNNEL.funnel(val, into));
-        from.getTemporal().ifPresent(val -> OgcApiExtentTemporal.FUNNEL.funnel(val, into));
-    };
-
 }

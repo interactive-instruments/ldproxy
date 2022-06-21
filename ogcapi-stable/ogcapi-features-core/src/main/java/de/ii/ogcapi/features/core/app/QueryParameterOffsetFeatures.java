@@ -14,6 +14,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
@@ -31,8 +32,11 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
+    private final SchemaValidator schemaValidator;
+
     @Inject
-    QueryParameterOffsetFeatures() {
+    QueryParameterOffsetFeatures(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -59,14 +63,19 @@ public class QueryParameterOffsetFeatures extends ApiExtensionCache implements O
                 definitionPath.equals("/collections/{collectionId}/items"));
     }
 
-    private Schema schema = null;
+    private Schema<?> schema = null;
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         if (schema==null) {
             schema = new IntegerSchema()._default(0).minimum(BigDecimal.ZERO);
         }
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

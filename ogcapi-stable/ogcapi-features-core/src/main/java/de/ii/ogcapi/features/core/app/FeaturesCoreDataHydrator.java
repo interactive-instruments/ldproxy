@@ -16,8 +16,8 @@ import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMetadata;
 import de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.ImmutableMetadata;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -199,7 +199,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                         ? providerMetadata.flatMap(Metadata::getAccessConstraints)
                         : providerMetadata.flatMap(Metadata::getFees);
 
-                ImmutableMetadata metadata = new ImmutableMetadata.Builder()
+                ImmutableApiMetadata metadata = new ImmutableApiMetadata.Builder()
                         .addAllKeywords(providerMetadata.get().getKeywords())
                         .contactName(providerMetadata.get().getContactName())
                         .contactUrl(providerMetadata.get().getContactUrl())

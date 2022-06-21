@@ -12,7 +12,7 @@ import de.ii.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ogcapi.common.domain.OgcApiDatasetView;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.Metadata;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -39,7 +39,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     public List<String> crs;
     public boolean hasGeometry;
     public String storageCrs;
-    public Metadata metadata;
+    public ApiMetadata metadata;
     public Link items;
     public final Optional<String> defaultStyle;
     public final String itemTypeTitle;

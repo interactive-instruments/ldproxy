@@ -28,6 +28,9 @@ import java.util.stream.IntStream;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableRouteDefinition.Builder.class)
 public interface RouteDefinition {
+
+  String SCHEMA_REF = "#/components/schemas/RouteDefinition";
+
   RouteDefinitionInputs getInputs();
 
   List<Link> getLinks();

@@ -11,11 +11,11 @@ import static de.ii.xtraplatform.base.domain.util.LambdaWithException.mayThrow;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.ImmutableMetadata;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMetadata;
 import de.ii.ogcapi.foundation.domain.ImmutableTemporalExtent;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -97,7 +97,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                 .collect(Collectors.toList());
     }
 
-    public Optional<Metadata> getMetadata() {
+    public Optional<ApiMetadata> getMetadata() {
         return apiData.getMetadata();
     }
 
@@ -162,7 +162,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                                          Optional<FeatureTypeConfigurationOgcApi> collection,
                                          URICustomizer landingPageUriCustomizer,
                                          boolean embedded) {
-        Metadata metadata = getMetadata().orElse(new ImmutableMetadata.Builder().build());
+        ApiMetadata metadata = getMetadata().orElse(new ImmutableApiMetadata.Builder().build());
         String url = collection.map(s -> landingPageUriCustomizer.copy()
                                                                  .removeParameters()
                                                                  .ensureLastPathSegments("collections", s.getId())

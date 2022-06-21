@@ -40,8 +40,8 @@ import java.util.Optional;
  * @default `{}`
  */
 @Value.Immutable
-@JsonDeserialize(builder = ImmutableMetadata.Builder.class)
-public interface Metadata {
+@JsonDeserialize(builder = ImmutableApiMetadata.Builder.class)
+public interface ApiMetadata {
 
     Optional<String> getContactName();
 

@@ -10,11 +10,11 @@ package de.ii.ogcapi.collections.schema.domain;
 
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
 
 @Singleton
@@ -22,7 +22,8 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 public class PathParameterCollectionIdSchema extends AbstractPathParameterCollectionId {
 
     @Inject
-    PathParameterCollectionIdSchema() {
+    PathParameterCollectionIdSchema(SchemaValidator schemaValidator) {
+      super(schemaValidator);
     }
 
     @Override

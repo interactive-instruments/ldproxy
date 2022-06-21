@@ -8,18 +8,22 @@
 package de.ii.ogcapi.tiles.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import io.swagger.v3.oas.models.media.Schema;
+
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -35,12 +39,13 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
             .parameter("json")
             .build();
 
-    private final Schema schemaTiles;
-    public final static String SCHEMA_REF_TILES = "#/components/schemas/TileSets";
+    private final Schema<?> schemaTiles;
+    private final Map<String, Schema<?>> referencedSchemas;
 
     @Inject
-    public TileSetsFormatJson(SchemaGenerator schemaGenerator) {
-        schemaTiles = schemaGenerator.getSchema(TileMatrixSetData.class);
+    public TileSetsFormatJson(ClassSchemaCache classSchemaCache) {
+        schemaTiles = classSchemaCache.getSchema(TileSets.class);
+        referencedSchemas = classSchemaCache.getReferencedSchemas(TileSets.class);
     }
 
     @Override
@@ -52,10 +57,11 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles"))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaTiles)
-                    .schemaRef(SCHEMA_REF_TILES)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaTiles)
+                .schemaRef(TileSets.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
 
         throw new RuntimeException("Unexpected path: " + path);
     }

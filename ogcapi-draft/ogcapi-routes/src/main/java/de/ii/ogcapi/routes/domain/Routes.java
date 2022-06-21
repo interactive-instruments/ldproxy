@@ -23,6 +23,9 @@ import java.util.Optional;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableRoutes.Builder.class)
 public abstract class Routes {
+
+    public final static String SCHEMA_REF = "#/components/schemas/Routes";
+
     public abstract List<Link> getLinks();
 
     @JsonIgnore

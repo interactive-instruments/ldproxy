@@ -12,10 +12,10 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.domain.LandingPage;
 import de.ii.ogcapi.common.domain.OgcApiDatasetView;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -74,7 +74,7 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
         this.isDataset = apiData.isDataset() && Objects.nonNull(htmlConfig) && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
 
         this.keywords = apiData.getMetadata()
-                               .map(Metadata::getKeywords)
+                               .map(ApiMetadata::getKeywords)
                                .map(v -> Joiner.on(',')
                                       .skipNulls()
                                                .join(v))

@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
 
 public class DefaultLinksGenerator {
 
-    // TODO add option to not include self/alternate links for more compact responses (note: voids compliance with OGC API)
-
     public List<Link> generateLinks(URICustomizer uriBuilder,
                                     ApiMediaType mediaType,
                                     List<ApiMediaType> alternateMediaTypes,

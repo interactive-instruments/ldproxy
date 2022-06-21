@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -48,10 +49,12 @@ import javax.inject.Singleton;
 public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass {
 
     private final FeaturesCoreProviders providers;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public QueryParameterFilter(FeaturesCoreProviders providers) {
+    public QueryParameterFilter(FeaturesCoreProviders providers, SchemaValidator schemaValidator) {
         this.providers = providers;
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -152,6 +155,11 @@ public class QueryParameterFilter extends ApiExtensionCache implements OgcApiQue
     @Override
     public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

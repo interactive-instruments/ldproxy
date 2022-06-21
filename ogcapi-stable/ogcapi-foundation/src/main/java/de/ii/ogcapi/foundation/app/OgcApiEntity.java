@@ -53,11 +53,6 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     }
 
     @Override
-    public OgcApiDataV2 getData() {
-        return super.getData();
-    }
-
-    @Override
     protected boolean onStartup() throws InterruptedException {
 
         // validate the API, the behaviour depends on the validation option for the API:
@@ -68,8 +63,9 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
         OgcApiDataV2 apiData = getData();
         MODE apiValidation = apiData.getApiValidation();
 
-        if (apiValidation!= MODE.NONE)
+        if (apiValidation!=MODE.NONE && LOGGER.isInfoEnabled()) {
             LOGGER.info("Validating service '{}'.", apiData.getId());
+        }
 
         for (ApiExtension extension : extensionRegistry.getExtensions()) {
             if (extension.isEnabledForApi(apiData)) {
@@ -82,8 +78,9 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
             checkForStartupCancel();
         }
 
-        if (!isSuccess)
+        if (!isSuccess && LOGGER.isErrorEnabled()) {
             LOGGER.error("Service with id '{}' could not be started. See previous log messages for reasons.", apiData.getId());
+        }
 
         return isSuccess;
     }
@@ -97,8 +94,7 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
                                 .filter(outputFormatExtension -> mediaType.type()
                                                                           .isCompatible(outputFormatExtension.getMediaType()
                                                                                                              .type()))
-                                .filter(outputFormatExtension -> collectionId.isPresent() ? outputFormatExtension.isEnabledForApi(getData(),collectionId.get()) :
-                                                                                            outputFormatExtension.isEnabledForApi(getData()))
+                                .filter(outputFormatExtension -> collectionId.map(s -> outputFormatExtension.isEnabledForApi(getData(), s)).orElseGet(() -> outputFormatExtension.isEnabledForApi(getData())))
                                 .findFirst();
     }
 
@@ -116,7 +112,6 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
                                 .collect(Collectors.toList());
     }
 
-    //TODO: cleanup methods in OgcApiDataV2
     @Override
     public Optional<BoundingBox> getSpatialExtent() {
         return getChangingData().get(ChangingSpatialExtent.class)
@@ -214,12 +209,14 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
                 : crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
 
             if (crsTransformer.isPresent()) {
-                try {
-                    return Optional.ofNullable(crsTransformer.get()
-                                                   .transformBoundingBox(spatialExtent));
-                } catch (CrsTransformationException e) {
-                    LOGGER.error(String.format("Error converting bounding box '%s' to CRS '%s'.", spatialExtent, targetCrs));
+            try {
+                return Optional.ofNullable(crsTransformer.get()
+                    .transformBoundingBox(spatialExtent));
+            } catch (CrsTransformationException e) {
+                if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error(String.format("Error converting bounding box to CRS %s.", targetCrs));
                 }
+                return Optional.empty();
             }
         }
 

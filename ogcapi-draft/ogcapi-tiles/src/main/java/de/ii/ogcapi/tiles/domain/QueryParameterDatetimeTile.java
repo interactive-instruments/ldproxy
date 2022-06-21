@@ -14,6 +14,7 @@ import de.ii.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
 import java.util.Optional;
 
@@ -29,7 +30,8 @@ import java.util.Optional;
 public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime {
 
     @Inject
-    QueryParameterDatetimeTile() {
+    QueryParameterDatetimeTile(SchemaValidator schemaValidator) {
+      super(schemaValidator);
     }
 
     @Override

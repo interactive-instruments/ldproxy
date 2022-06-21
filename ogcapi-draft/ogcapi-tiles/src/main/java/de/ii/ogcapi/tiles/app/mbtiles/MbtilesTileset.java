@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
+import de.ii.xtraplatform.base.domain.LogContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,8 +103,8 @@ public class MbtilesTileset {
                     SqlHelper.addMetadata(connection,"json", mapper.writeValueAsString(ImmutableMap.of("vector_layers", metadata.getVectorLayers())));
                 } catch (JsonProcessingException e) {
                     LOGGER.error(String.format("Could not write 'json' metadata entry. Reason: %s", e.getMessage()));
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Stacktrace: ", e);
+                    if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
                     }
                     SqlHelper.addMetadata(connection,"json", mapper.writeValueAsString(ImmutableMap.of("vector_layers", ImmutableList.of())));
                 }

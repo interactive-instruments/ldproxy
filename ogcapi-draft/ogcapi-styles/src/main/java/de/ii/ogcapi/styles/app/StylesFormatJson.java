@@ -8,16 +8,20 @@
 package de.ii.ogcapi.styles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.styles.domain.Styles;
 import de.ii.ogcapi.styles.domain.StylesFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
+
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,12 +37,13 @@ public class StylesFormatJson implements StylesFormatExtension {
             .parameter("json")
             .build();
 
-    private final Schema schemaStyles;
-    public final static String SCHEMA_REF_STYLES = "#/components/schemas/Styles";
+    private final Schema<?> schemaStyles;
+    private final Map<String, Schema<?>> referencedSchemas;
 
     @Inject
-    public StylesFormatJson(SchemaGenerator schemaGenerator) {
-        schemaStyles = schemaGenerator.getSchema(Styles.class);
+    public StylesFormatJson(ClassSchemaCache classSchemaCache) {
+        schemaStyles = classSchemaCache.getSchema(Styles.class);
+        referencedSchemas = classSchemaCache.getReferencedSchemas(Styles.class);
     }
 
     @Override
@@ -57,10 +62,11 @@ public class StylesFormatJson implements StylesFormatExtension {
         // TODO add examples
         if (path.endsWith("/styles"))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaStyles)
-                    .schemaRef(SCHEMA_REF_STYLES)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaStyles)
+                .schemaRef(Styles.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
 
         throw new RuntimeException("Unexpected path: " + path);
     }

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
-import de.ii.ogcapi.foundation.domain.Metadata2;
+import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -20,7 +20,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableTileLayer.class)
-public abstract class TileLayer extends Metadata2 {
+public abstract class TileLayer extends OgcResourceMetadata {
 
     public enum GeometryType { points, lines, polygons }
 
@@ -48,7 +48,7 @@ public abstract class TileLayer extends Metadata2 {
 
     @SuppressWarnings("UnstableApiUsage")
     public static final Funnel<TileLayer> FUNNEL = (from, into) -> {
-        Metadata2.FUNNEL.funnel(from, into);
+        OgcResourceMetadata.FUNNEL.funnel(from, into);
         into.putString(from.getId(), StandardCharsets.UTF_8);
         into.putString(from.getDataType().toString(), StandardCharsets.UTF_8);
         from.getFeatureType().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));

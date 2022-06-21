@@ -40,8 +40,9 @@ public interface FormatExtension extends ApiExtension {
      * @return the Schema and an optional example object for this format and the resource in this API
      */
     default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-        if (method== HttpMethods.GET)
+        if (method== HttpMethods.GET) {
             return getContent(apiData, path);
+        }
 
         return null;
     }

@@ -15,29 +15,17 @@ import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
-import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ApiOperation;
-import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.Endpoint;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
-import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.*;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-import java.util.List;
-import java.util.Optional;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * @langEn The URIs of all conformance classes supported by the server. This information is provided
@@ -52,8 +40,6 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @AutoBind
 public class EndpointConformance extends Endpoint {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointConformance.class);
 
   private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
@@ -82,28 +68,21 @@ public class EndpointConformance extends Endpoint {
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-        .apiEntrypoint("conformance")
-        .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_CONFORMANCE);
-    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData,
-        "/conformance");
+            .apiEntrypoint("conformance")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_CONFORMANCE);
+    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/conformance");
     String operationSummary = "conformance declaration";
-    Optional<String> operationDescription = Optional.of(
-        "The URIs of all conformance classes supported by the server. " +
-            "This information is provided to support 'generic' clients that want to access multiple "
-            +
-            "OGC API implementations - and not 'just' a specific API. For clients accessing only a single "
-            +
-            "API, this information is in general not relevant and the OpenAPI definition details the "
-            +
+    Optional<String> operationDescription = Optional.of("The URIs of all conformance classes supported by the server. " +
+            "This information is provided to support 'generic' clients that want to access multiple " +
+            "OGC API implementations - and not 'just' a specific API. For clients accessing only a single " +
+            "API, this information is in general not relevant and the OpenAPI definition details the " +
             "required information about the API.");
     String path = "/conformance";
     ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-        .path(path);
-    ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary,
-        operationDescription, TAGS);
-    if (operation != null) {
-      resourceBuilder.putOperations("GET", operation);
-    }
+            .path(path);
+    ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                    getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 
     return definitionBuilder.build();

@@ -21,8 +21,8 @@ import javax.inject.Singleton;
 public class QueryParameterFSortables extends QueryParameterFSubCollection {
 
   @Inject
-  public QueryParameterFSortables(ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
+  public QueryParameterFSortables(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
   }
 
   @Override

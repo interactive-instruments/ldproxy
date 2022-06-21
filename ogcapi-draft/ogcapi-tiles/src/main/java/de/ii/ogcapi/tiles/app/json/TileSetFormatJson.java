@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tiles.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -17,11 +18,14 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
+
+import java.util.AbstractMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -37,16 +41,17 @@ public class TileSetFormatJson implements TileSetFormatExtension {
             .parameter("json")
             .build();
 
-    private final Schema schemaTileSetJson;
+    private final Schema<?> schemaTileSetJson;
+    private final Map<String, Schema<?>> referencedSchemas;
     private final FeaturesCoreProviders providers;
     private final SchemaInfo schemaInfo;
-    public final static String SCHEMA_REF_TILE_SET_JSON = "#/components/schemas/TileSetJson";
 
     @Inject
-    public TileSetFormatJson(SchemaGenerator schemaGenerator,
+    public TileSetFormatJson(ClassSchemaCache classSchemaCache,
                              FeaturesCoreProviders providers,
                              SchemaInfo schemaInfo) {
-        schemaTileSetJson = schemaGenerator.getSchema(TileSet.class);
+        schemaTileSetJson = classSchemaCache.getSchema(TileSet.class);
+        referencedSchemas = classSchemaCache.getReferencedSchemas(TileSet.class);
         this.providers = providers;
         this.schemaInfo = schemaInfo;
     }
@@ -60,10 +65,11 @@ public class TileSetFormatJson implements TileSetFormatExtension {
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
         if (path.endsWith("/tiles/{tileMatrixSetId}"))
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaTileSetJson)
-                    .schemaRef(SCHEMA_REF_TILE_SET_JSON)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaTileSetJson)
+                .schemaRef(TileSet.SCHEMA_REF)
+                .referencedSchemas(referencedSchemas)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
 
         throw new RuntimeException("Unexpected path: " + path);
     }

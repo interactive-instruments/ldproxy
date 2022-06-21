@@ -62,7 +62,9 @@ public class SchemaDeriverOpenApiReturnables extends SchemaDeriverOpenApi{
     ObjectSchema propertiesSchema = new ObjectSchema();
     propertiesSchema.properties(new LinkedHashMap<>());
     propertiesSchema.getProperties().putAll(propertiesWithoutRolesAndBrackets);
-    propertiesSchema.required(requiredProperties);
+    if (!requiredProperties.isEmpty()) {
+      propertiesSchema.required(requiredProperties);
+    }
     rootSchema.addProperties("properties", propertiesSchema);
 
     return rootSchema;

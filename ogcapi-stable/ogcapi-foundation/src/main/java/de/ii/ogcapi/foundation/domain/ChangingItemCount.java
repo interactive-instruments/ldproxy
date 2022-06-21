@@ -25,10 +25,9 @@ public interface ChangingItemCount extends ChangingValue<Long> {
   default Optional<ChangingValue<Long>> updateWith(ChangingValue<Long> delta) {
     Long deltaCount = delta.getValue();
 
-    //TODO
-    /*if (deltaCount == 0) {
-      return Optional.of(delta);
-    }*/
+    if (deltaCount == 0) {
+      return Optional.empty();
+    }
 
     return Optional.of(ChangingItemCount.of(this.getValue() + deltaCount));
   }

@@ -8,54 +8,60 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ogcapi.foundation.infra.json.SchemaValidatorImpl;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
 @AutoMultiBind
 public interface ApiHeader extends ApiExtension {
 
-    Schema SCHEMA = new StringSchema();
+    Logger LOGGER = LoggerFactory.getLogger(ApiHeader.class);
+
+    Schema<String> SCHEMA = new StringSchema();
+    String UNUSED = "unused";
 
     String getId();
+
     String getDescription();
     default boolean isRequestHeader() { return false; }
     default boolean isResponseHeader() { return false; }
-    default Schema getSchema(OgcApiDataV2 apiData) { return SCHEMA; }
+    default Schema<?> getSchema(OgcApiDataV2 apiData) { return SCHEMA; }
 
     boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method);
 
+    SchemaValidator getSchemaValidator();
+
     default Optional<String> validateSchema(OgcApiDataV2 apiData, String value) {
         try {
-            SchemaValidator validator = new SchemaValidatorImpl();
             String schemaContent = Json.mapper().writeValueAsString(getSchema(apiData));
-            Optional<String> result = validator.validate(schemaContent, "\""+value+"\"");
-            if (!result.isPresent())
-                return Optional.empty();
-            return Optional.of(String.format("Value '%s' is invalid for header '%s': %s", value, getId(), result.get()));
-        } catch (IOException e) {
-            // TODO log an error
+            Optional<String> result = getSchemaValidator().validate(schemaContent, "\""+value+"\"");
+            return result.map(s -> String.format("Value '%s' is invalid for header '%s': %s", value, getId(), s));
+        } catch (Exception e) {
+            if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+            }
             return Optional.of(String.format("An exception occurred while validating the value '%s' for header '%s'", value, getId()));
         }
-    };
+    }
 
-    default ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureType,
+    default ImmutableFeatureQuery.Builder transformQuery(@SuppressWarnings(UNUSED) FeatureTypeConfigurationOgcApi featureType,
                                                          ImmutableFeatureQuery.Builder queryBuilder,
-                                                         Map<String, String> headers,
-                                                         OgcApiDataV2 apiData) {
+                                                         @SuppressWarnings(UNUSED) Map<String, String> headers,
+                                                         @SuppressWarnings(UNUSED) OgcApiDataV2 apiData) {
         return queryBuilder;
     }
 
-    default Map<String, Object> transformContext(FeatureTypeConfigurationOgcApi featureType,
+    default Map<String, Object> transformContext(@SuppressWarnings(UNUSED) FeatureTypeConfigurationOgcApi featureType,
                                                  Map<String, Object> context,
-                                                 Map<String, String> headers,
-                                                 OgcApiDataV2 apiData) {
+                                                 @SuppressWarnings(UNUSED) Map<String, String> headers,
+                                                 @SuppressWarnings(UNUSED) OgcApiDataV2 apiData) {
         return context;
     }
 }

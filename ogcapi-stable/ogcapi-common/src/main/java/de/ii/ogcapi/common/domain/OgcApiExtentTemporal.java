@@ -10,6 +10,7 @@ package de.ii.ogcapi.common.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.ApiInfo;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import org.immutables.value.Value;
 
@@ -22,7 +23,16 @@ import java.util.Objects;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableOgcApiExtentTemporal.Builder.class)
+@ApiInfo(schemaId = "TemporalExtent")
 public interface OgcApiExtentTemporal {
+
+    @SuppressWarnings("UnstableApiUsage")
+    Funnel<OgcApiExtentTemporal> FUNNEL = (from, into) -> {
+        into.putString(from.getTrs(), StandardCharsets.UTF_8);
+        Arrays.stream(from.getInterval())
+                .forEachOrdered(arr -> Arrays.stream(arr)
+                        .forEachOrdered(val -> into.putString(Objects.requireNonNullElse(val, ".."), StandardCharsets.UTF_8)));
+    };
 
     String[][] getInterval();
     String getTrs();
@@ -45,12 +55,4 @@ public interface OgcApiExtentTemporal {
                              Objects.requireNonNullElse(getInterval()[0][0], ".."),
                              Objects.requireNonNullElse(getInterval()[0][1], ".."));
     }
-
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<OgcApiExtentTemporal> FUNNEL = (from, into) -> {
-        into.putString(from.getTrs(), StandardCharsets.UTF_8);
-        Arrays.stream(from.getInterval())
-              .forEachOrdered(arr -> Arrays.stream(arr)
-                                           .forEachOrdered(val -> into.putString(Objects.requireNonNullElse(val, ".."), StandardCharsets.UTF_8)));
-    };
 }

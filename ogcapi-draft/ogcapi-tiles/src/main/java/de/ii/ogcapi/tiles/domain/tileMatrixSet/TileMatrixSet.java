@@ -16,6 +16,7 @@ import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import de.ii.ogcapi.tiles.app.tileMatrixSet.TileMatrixSetImpl;
 import de.ii.ogcapi.tiles.domain.MinMax;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -54,8 +55,8 @@ public interface TileMatrixSet {
             return Optional.empty();
         } catch (IOException e) {
             LOGGER.error("Could not load tile matrix set '{}': {}", tileMatrixSetId, e.getMessage());
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Stacktrace: ", e);
+            if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
             }
             return Optional.empty();
         }
@@ -101,8 +102,8 @@ public interface TileMatrixSet {
             data = mapper.readValue(tileMatrixSetInputStream, TileMatrixSetData.class);
         } catch (IOException e) {
             LOGGER.error("Could not deserialize tile matrix set '{}': {}", tileMatrixSetId, e.getMessage());
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Stacktrace: ", e);
+            if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
             }
             return Optional.empty();
         }

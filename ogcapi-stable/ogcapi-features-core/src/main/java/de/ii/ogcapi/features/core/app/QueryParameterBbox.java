@@ -14,6 +14,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -53,12 +54,14 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterBbox extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private final Schema baseSchema;
+    private final Schema<?> baseSchema;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public QueryParameterBbox() {
+    public QueryParameterBbox(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
         // TODO support 6 coordinates (note: maxItems was originally set to 4 for now, but the CITE tests require maxItems=6)
-        baseSchema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(6);
+        this.baseSchema = new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(6);
     }
 
     @Override
@@ -91,13 +94,18 @@ public class QueryParameterBbox extends ApiExtensionCache implements OgcApiQuery
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return baseSchema;
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
         return baseSchema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

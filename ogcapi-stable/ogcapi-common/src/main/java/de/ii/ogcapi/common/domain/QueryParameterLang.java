@@ -16,8 +16,11 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+
+import java.util.Locale;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,12 +29,12 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterLang extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private Schema schema = null;
-    private final ExtensionRegistry extensionRegistry;
+    private Schema<?> schema = null;
+    private final SchemaValidator schemaValidator;
 
     @Inject
-    public QueryParameterLang(ExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+    public QueryParameterLang(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
     }
 
     @Override
@@ -53,11 +56,16 @@ public class QueryParameterLang extends ApiExtensionCache implements OgcApiQuery
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         if (schema==null) {
-            schema = new StringSchema()._enum(I18n.getLanguages().stream().map(lang -> lang.getLanguage()).collect(Collectors.toList()));
+            schema = new StringSchema()._enum(I18n.getLanguages().stream().map(Locale::getLanguage).collect(Collectors.toList()));
         }
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

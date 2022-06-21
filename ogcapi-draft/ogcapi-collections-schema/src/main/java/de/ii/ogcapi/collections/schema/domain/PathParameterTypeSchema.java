@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
 import java.util.List;
 
@@ -26,8 +27,8 @@ public class PathParameterTypeSchema extends PathParameterType {
     final static String SCHEMA_TYPE_PATTERN = "[\\w\\-]+";
 
     @Inject
-    public PathParameterTypeSchema(ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+    public PathParameterTypeSchema(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+        super(extensionRegistry, schemaValidator);
     }
 
     @Override

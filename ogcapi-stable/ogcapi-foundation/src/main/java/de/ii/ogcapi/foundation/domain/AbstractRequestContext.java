@@ -75,12 +75,15 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
     @Override
     public Map<String, String> getParameters() {
         return getUriCustomizer().getQueryParams()
-                                 .stream()
-                                 .map(nameValuePair -> new AbstractMap.SimpleImmutableEntry<>(nameValuePair.getName(), nameValuePair.getValue()))
-                                 .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> {
-                                     // TODO for now ignore multiple parameters with the same name
-                                     LOGGER.warn("Duplicate parameter found, the following value is ignored: " + value2);
-                                     return value1;
-                                 }));
+            .stream()
+            .map(nameValuePair -> new AbstractMap.SimpleImmutableEntry<>(nameValuePair.getName(), nameValuePair.getValue()))
+            // Currently, the OGC API standards do not make use of query parameters with explode=true.
+            // If that changes in the future, this method needs to return a multimap instead
+            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> {
+                if (LOGGER.isWarnEnabled()) {
+                    LOGGER.warn("Duplicate parameter found, the following value is ignored: {}", value2);
+                }
+                return value1;
+            }));
     }
 }

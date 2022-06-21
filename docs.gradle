@@ -1,8 +1,8 @@
 apply plugin: 'com.github.node-gradle.node'
 
 node {
-    version = '14.17.6'
-    yarnVersion = '1.22.5'
+    version = '16.15.1'
+    yarnVersion = '1.22.19'
     download = project.findProperty('downloadNode') != 'false' ?: false
 }
 

@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
@@ -22,11 +23,13 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 @AutoBind
 public class HeaderLocationTransactional extends ApiExtensionCache implements ApiHeader {
 
-    @Inject
-    HeaderLocationTransactional() {
-    }
+    private final Schema<?> schema = new StringSchema().format("uri");
+    private final SchemaValidator schemaValidator;
 
-    private final Schema schema = new StringSchema().format("uri");
+    @Inject
+    HeaderLocationTransactional(SchemaValidator schemaValidator) {
+        this.schemaValidator = schemaValidator;
+    }
 
     @Override
     public String getId() {
@@ -48,8 +51,13 @@ public class HeaderLocationTransactional extends ApiExtensionCache implements Ap
     }
 
     @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
+    public Schema<?> getSchema(OgcApiDataV2 apiData) {
         return schema;
+    }
+
+    @Override
+    public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
     }
 
     @Override

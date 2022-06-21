@@ -70,7 +70,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
         .add(new CollectionsBuildingBlock())
         .add(new CommonBuildingBlock())
         .add(new CrsBuildingBlock(null, null))
-        .add(new FeaturesCoreBuildingBlock(null, null))
+        .add(new FeaturesCoreBuildingBlock(null, null, null))
         .add(new GeoJsonBuildingBlock())
         .add(new GmlBuildingBlock())
         .add(new FeaturesHtmlBuildingBlock())

@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 /**
  * @author zahnen
  */
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.GodClass"}) // this class needs that many methods, a refactoring makes no sense
 public class URICustomizer extends URIBuilder {
     public URICustomizer() {
         super();
@@ -77,17 +78,10 @@ public class URICustomizer extends URIBuilder {
         return this;
     }
 
-    public boolean isLastPathSegment(final String segment) {
-        final List<String> pathSegments = getPathSegments();
-
-        return !pathSegments.isEmpty() && pathSegments.get(pathSegments.size() - 1)
-                                                    .equals(segment);
-    }
-
     public String getLastPathSegment() {
         final List<String> pathSegments = getPathSegments();
 
-        return !pathSegments.isEmpty() ? pathSegments.get(pathSegments.size() - 1) : null;
+        return pathSegments.isEmpty() ? null : pathSegments.get(pathSegments.size() - 1);
     }
 
     public URICustomizer ensureLastPathSegment(final String segment) {
@@ -209,17 +203,6 @@ public class URICustomizer extends URIBuilder {
 
         return this;
     }
-
-    /*public List<String> getPathSegments() {
-        return Splitter.on('/')
-                       .omitEmptyStrings()
-                       .splitToList(this.getPath());
-    }
-
-    public void setPathSegments(final List<String> pathSegments) {
-        this.setPath("/" + Joiner.on('/')
-                           .join(pathSegments));
-    }*/
 
     public URICustomizer replaceInPath(String original, String replacement) {
         this.setPath(this.getPath().replaceFirst(original, replacement));

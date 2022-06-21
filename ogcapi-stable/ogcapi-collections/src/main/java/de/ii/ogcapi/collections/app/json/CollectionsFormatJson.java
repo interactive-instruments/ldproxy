@@ -9,20 +9,24 @@ package de.ii.ogcapi.collections.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.Collections;
 import de.ii.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.SchemaGenerator;
 import io.swagger.v3.oas.models.media.Schema;
+
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -40,15 +44,17 @@ public class CollectionsFormatJson implements CollectionsFormatExtension, Confor
             .parameter("json")
             .build();
 
-    private final Schema schemaCollections;
-    public final static String SCHEMA_REF_COLLECTIONS = "#/components/schemas/Collections";
-    private final Schema schemaCollection;
-    public final static String SCHEMA_REF_COLLECTION = "#/components/schemas/Collection";
+    private final Schema<?> schemaCollections;
+    private final Map<String, Schema<?>> referencedSchemasCollections;
+    private final Schema<?> schemaCollection;
+    private final Map<String, Schema<?>> referencedSchemasCollection;
 
     @Inject
-    public CollectionsFormatJson(SchemaGenerator schemaGenerator) {
-        schemaCollections = schemaGenerator.getSchema(Collections.class);
-        schemaCollection = schemaGenerator.getSchema(OgcApiCollection.class);
+    public CollectionsFormatJson(ClassSchemaCache classSchemaCache) {
+        schemaCollections = classSchemaCache.getSchema(Collections.class);
+        referencedSchemasCollections = classSchemaCache.getReferencedSchemas(Collections.class);
+        schemaCollection = classSchemaCache.getSchema(OgcApiCollection.class);
+        referencedSchemasCollection = classSchemaCache.getReferencedSchemas(OgcApiCollection.class);
     }
 
     @Override
@@ -60,18 +66,21 @@ public class CollectionsFormatJson implements CollectionsFormatExtension, Confor
     public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
         // TODO add examples
-        if (path.equals("/collections"))
-                return new ImmutableApiMediaTypeContent.Builder()
-                        .schema(schemaCollections)
-                        .schemaRef(SCHEMA_REF_COLLECTIONS)
-                        .ogcApiMediaType(MEDIA_TYPE)
-                        .build();
-        else if (path.matches("^/collections/[^//]+/?"))
+        if (path.equals("/collections")) {
             return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schemaCollection)
-                    .schemaRef(SCHEMA_REF_COLLECTION)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
+                .schema(schemaCollections)
+                .schemaRef(Collections.SCHEMA_REF)
+                .referencedSchemas(referencedSchemasCollections)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+        } else if (path.matches("^/collections/[^//]+/?")) {
+            return new ImmutableApiMediaTypeContent.Builder()
+                .schema(schemaCollection)
+                .schemaRef(OgcApiCollection.SCHEMA_REF)
+                .referencedSchemas(referencedSchemasCollection)
+                .ogcApiMediaType(MEDIA_TYPE)
+                .build();
+        }
 
         throw new RuntimeException("Unexpected path: " + path);
     }

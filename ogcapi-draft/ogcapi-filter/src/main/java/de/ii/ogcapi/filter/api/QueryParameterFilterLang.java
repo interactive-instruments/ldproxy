@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.Schema;
@@ -47,10 +48,12 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
   private static final String FILTER_LANG_CQL2_JSON = "cql2-json";
 
   private final FeaturesCoreProviders providers;
+  private final SchemaValidator schemaValidator;
 
   @Inject
-  public QueryParameterFilterLang(FeaturesCoreProviders providers) {
+  public QueryParameterFilterLang(FeaturesCoreProviders providers, SchemaValidator schemaValidator) {
     this.providers = providers;
+    this.schemaValidator = schemaValidator;
   }
 
   @Override
@@ -103,6 +106,11 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     return schema;
   }
+
+  @Override
+  public SchemaValidator getSchemaValidator() {
+        return schemaValidator;
+    }
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

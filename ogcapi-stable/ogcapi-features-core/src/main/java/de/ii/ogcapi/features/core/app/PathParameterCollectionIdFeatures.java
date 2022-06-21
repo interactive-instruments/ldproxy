@@ -11,8 +11,9 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -21,7 +22,8 @@ import javax.inject.Singleton;
 public class PathParameterCollectionIdFeatures extends AbstractPathParameterCollectionId {
 
     @Inject
-    PathParameterCollectionIdFeatures() {
+    PathParameterCollectionIdFeatures(SchemaValidator schemaValidator) {
+      super(schemaValidator);
     }
 
     @Override

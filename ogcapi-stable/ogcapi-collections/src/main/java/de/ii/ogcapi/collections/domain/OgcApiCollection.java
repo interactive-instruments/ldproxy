@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.common.domain.OgcApiExtent;
+import de.ii.ogcapi.foundation.domain.ApiInfo;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
@@ -25,7 +26,10 @@ import java.util.Optional;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableOgcApiCollection.Builder.class)
+@ApiInfo(schemaId = "Collection")
 public abstract class OgcApiCollection extends PageRepresentationWithId {
+
+    public final static String SCHEMA_REF = "#/components/schemas/Collection";
 
     // Core, part 1
     public abstract Optional<OgcApiExtent> getExtent();

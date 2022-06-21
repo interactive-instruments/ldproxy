@@ -15,9 +15,10 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 
-public class FoundationValidator {
+public final class FoundationValidator {
+  private FoundationValidator() {}
 
-    public static ImmutableValidationResult.Builder validateLinks(ImmutableValidationResult.Builder builder, List<Link> links, String path) {
+  public static ImmutableValidationResult.Builder validateLinks(ImmutableValidationResult.Builder builder, List<Link> links, String path) {
         links.stream()
              .filter(link -> {
                  try {

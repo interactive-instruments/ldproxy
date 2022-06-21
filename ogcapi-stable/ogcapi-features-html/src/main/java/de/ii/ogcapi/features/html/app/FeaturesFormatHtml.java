@@ -22,13 +22,13 @@ import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.Metadata;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -313,7 +313,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
         }
 
         Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
-        String attribution = apiData.getMetadata().flatMap(Metadata::getAttribution).orElse(null);
+        String attribution = apiData.getMetadata().flatMap(ApiMetadata::getAttribution).orElse(null);
 
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)
@@ -370,7 +370,7 @@ public class FeaturesFormatHtml implements ItemTypeSpecificConformanceClass, Fea
         }
 
         Optional<HtmlConfiguration> htmlConfig = featureType.getExtension(HtmlConfiguration.class);
-        String attribution = apiData.getMetadata().flatMap(Metadata::getAttribution).orElse(null);
+        String attribution = apiData.getMetadata().flatMap(ApiMetadata::getAttribution).orElse(null);
 
         Optional<FeaturesHtmlConfiguration> config = featureType.getExtension(FeaturesHtmlConfiguration.class);
         MapClient.Type mapClientType = config.map(FeaturesHtmlConfiguration::getMapClientType)

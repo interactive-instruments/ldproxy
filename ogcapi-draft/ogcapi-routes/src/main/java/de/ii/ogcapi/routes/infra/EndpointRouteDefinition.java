@@ -96,9 +96,10 @@ public class EndpointRouteDefinition extends Endpoint {
             ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
                     .path(path)
                     .pathParameters(pathParameters);
-            ApiOperation operation = addOperation(apiData, queryParameters, path, operationSummary, operationDescription, TAGS);
-            if (operation!=null)
-                resourceBuilder.putOperations("GET", operation);
+            ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
+                                     getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
+                )
+                .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
             definitionBuilder.putResources(path, resourceBuilder.build());
         }
 

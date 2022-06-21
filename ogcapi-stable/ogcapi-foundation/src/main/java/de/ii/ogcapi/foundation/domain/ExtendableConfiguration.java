@@ -16,13 +16,13 @@ import java.util.stream.Collectors;
 
 public interface ExtendableConfiguration {
 
-    @JsonAlias(value = "capabilities")
+    @JsonAlias("capabilities")
     List<ExtensionConfiguration> getExtensions();
 
     default <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz) {
+        //noinspection unchecked
         return getMergedExtensions().stream()
                               .filter(extensionConfiguration -> Objects.equals(extensionConfiguration.getBuildingBlock(), ExtensionConfiguration.getBuildingBlockIdentifier(clazz)))
-                              .filter(Objects::nonNull)
                               .findFirst()
                               .map(extensionConfiguration -> (T) extensionConfiguration);
     }
