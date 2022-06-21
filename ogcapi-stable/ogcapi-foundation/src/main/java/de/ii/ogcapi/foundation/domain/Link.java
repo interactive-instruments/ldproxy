@@ -36,6 +36,7 @@ public abstract class Link {
         .put("application/schema+json", "JSON Schema")
         .put("application/city+json", "CityJSON")
         .put("application/vnd.ogc.city+json", "CityJSON")
+        .put("application/city+json-seq", "CityJSON-Seq")
         .put("application/vnd.ogc.city+json-seq", "CityJSON-Seq")
         .put("application/json", "JSON")
         .put("application/ld+json", "JSON-LD")

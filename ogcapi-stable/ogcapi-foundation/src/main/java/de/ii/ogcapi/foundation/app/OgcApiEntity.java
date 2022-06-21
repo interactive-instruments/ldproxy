@@ -203,18 +203,19 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     }
 
     private Optional<BoundingBox> transformSpatialExtent(BoundingBox spatialExtent, EpsgCrs targetCrs) {
-        Optional<CrsTransformer> crsTransformer = crsTransformerFactory.getTransformer(
-            OgcCrs.CRS84, targetCrs);
+        if (Objects.nonNull(spatialExtent)) {
+            Optional<CrsTransformer> crsTransformer = spatialExtent.is3d()
+                ? crsTransformerFactory.getTransformer(OgcCrs.CRS84h, targetCrs)
+                : crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
 
-        if (Objects.nonNull(spatialExtent) && crsTransformer.isPresent()) {
-            try {
-                return Optional.ofNullable(crsTransformer.get()
-                    .transformBoundingBox(spatialExtent));
-            } catch (CrsTransformationException e) {
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error(String.format("Error converting bounding box to CRS %s.", targetCrs));
+            if (crsTransformer.isPresent()) {
+                try {
+                    return Optional.ofNullable(crsTransformer.get()
+                        .transformBoundingBox(spatialExtent));
+                } catch (CrsTransformationException e) {
+                        LOGGER.error(
+                            String.format("Error converting bounding box to CRS %s.", targetCrs));
                 }
-                return Optional.empty();
             }
         }
 
