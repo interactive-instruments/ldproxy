@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.2.4 (21/06/2022)
+
+#### Fixed bugs
+
+-  paging error in HTML (f=html) when using a filter with a numeric character string [#634](https://github.com/interactive-instruments/ldproxy/issues/634)
+-  Tiles: NPE thrown if no spatial queryable is configured [#674](https://github.com/interactive-instruments/ldproxy/issues/674)
+
+---
+
+## v3.2.3 (04/05/2022)
+
+#### Fixed bugs
+
+-  unable to disable the manager [#652](https://github.com/interactive-instruments/ldproxy/issues/652)
+
+---
+
 ## v3.2.2 (25/04/2022)
 
 #### Fixed bugs
