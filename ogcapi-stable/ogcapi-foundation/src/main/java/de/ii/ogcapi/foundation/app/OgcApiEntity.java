@@ -209,14 +209,13 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
                 : crsTransformerFactory.getTransformer(OgcCrs.CRS84, targetCrs);
 
             if (crsTransformer.isPresent()) {
-            try {
-                return Optional.ofNullable(crsTransformer.get()
-                    .transformBoundingBox(spatialExtent));
-            } catch (CrsTransformationException e) {
-                if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error(String.format("Error converting bounding box to CRS %s.", targetCrs));
+                try {
+                    return Optional.ofNullable(crsTransformer.get()
+                        .transformBoundingBox(spatialExtent));
+                } catch (CrsTransformationException e) {
+                        LOGGER.error(
+                            String.format("Error converting bounding box to CRS %s.", targetCrs));
                 }
-                return Optional.empty();
             }
         }
 
