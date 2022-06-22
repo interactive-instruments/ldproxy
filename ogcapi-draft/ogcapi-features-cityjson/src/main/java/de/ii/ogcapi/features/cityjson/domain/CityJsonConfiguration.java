@@ -23,9 +23,9 @@ import java.util.Optional;
  *   version: V11
  * ```
  * </code>
- *
+ * <p>
  * Feature Provider:
- *
+ * <p>
  * <code>
  * ```yaml
  * types:

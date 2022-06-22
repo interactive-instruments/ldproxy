@@ -52,7 +52,7 @@ import javax.inject.Singleton;
  * The property of the `building` with the role `ID` will be used as the CityJSON id. Since the embedded building parts do not
  * have a property with a role `ID`, the building part feature must have a unique property `id`, which will be used
  * as the id of the CityJSON building part.
- *
+ * <p>
  * The example includes a sample type definition for the building features in a PostgreSQL feature
  * provider based on the CityGML profile of the German surveying and mapping authorities.
  * @langDe Das Modul *Features CityJSON* unterstützt CityJSON 1.1 als Kodierung für Features. Unterstützt werden
@@ -85,7 +85,7 @@ import javax.inject.Singleton;
  * Die Eigenschaft des `building`-Typs mit der Rolle `ID` wird als CityJSON-ID verwendet. Da die eingebetteten Gebäudeteile keine
  * Eigenschaft mit der Rolle `ID` haben, muss das Gebäudeteilmerkmal eine eindeutige Eigenschaft `id` haben, die
  * als Id des CityJSON-Gebäudeteils verwendet wird.
- *
+ * <p>
  * Das Beispiel enthält eine Typdefinition für Gebäudeobjekte in einem PostgreSQL-Feature-Provider auf Grundlage
  * des CityGML-Profils der deutschen Vermessungsverwaltung.
  * @example {@link de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration}
