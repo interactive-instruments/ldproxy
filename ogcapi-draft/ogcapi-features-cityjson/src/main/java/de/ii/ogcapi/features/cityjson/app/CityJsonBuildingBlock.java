@@ -82,6 +82,7 @@ import javax.inject.Singleton;
  * Die Eigenschaft des `building`-Typs mit der Rolle `ID` wird als CityJSON-ID verwendet. Da die eingebetteten Gebäudeteile keine
  * Eigenschaft mit der Rolle `ID` haben, muss das Gebäudeteilmerkmal eine eindeutige Eigenschaft `id` haben, die
  * als Id des CityJSON-Gebäudeteils verwendet wird.
+ * @example {@link de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration}
  * @propertyTable {@link de.ii.ogcapi.features.cityjson.domain.ImmutableCityJsonConfiguration}
  */
 @Singleton
