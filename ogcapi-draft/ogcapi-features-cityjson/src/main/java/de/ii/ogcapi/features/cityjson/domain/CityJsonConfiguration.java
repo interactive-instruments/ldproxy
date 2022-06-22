@@ -24,9 +24,7 @@ import java.util.Optional;
  * ```
  * </code>
  *
- * A sample type definition for the building features in a PostgreSQL feature
- * provider in the context of CityGML profile of the German surveying and mapping
- * authorities could be the following:
+ * Feature Provider:
  *
  * <code>
  * ```yaml
