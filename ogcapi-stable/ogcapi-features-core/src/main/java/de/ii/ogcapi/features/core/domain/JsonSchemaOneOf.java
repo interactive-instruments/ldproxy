@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,20 +8,18 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.hash.Funnel;
-import org.immutables.value.Value;
-
 import java.util.List;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaOneOf extends JsonSchema {
 
-    public abstract List<JsonSchema> getOneOf();
+  public abstract List<JsonSchema> getOneOf();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaOneOf> FUNNEL = (from, into) -> {
-        from.getOneOf()
-            .stream()
-            .forEachOrdered(val -> JsonSchema.FUNNEL.funnel(val, into));
-    };
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaOneOf> FUNNEL =
+      (from, into) -> {
+        from.getOneOf().stream().forEachOrdered(val -> JsonSchema.FUNNEL.funnel(val, into));
+      };
 }

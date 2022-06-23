@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,16 +8,16 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.hash.Funnel;
-
 import java.nio.charset.StandardCharsets;
 
 public abstract class PageRepresentationWithId extends PageRepresentation {
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<PageRepresentationWithId> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<PageRepresentationWithId> FUNNEL =
+      (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
         into.putString(from.getId(), StandardCharsets.UTF_8);
-    };
+      };
 
-    public abstract String getId();
+  public abstract String getId();
 }

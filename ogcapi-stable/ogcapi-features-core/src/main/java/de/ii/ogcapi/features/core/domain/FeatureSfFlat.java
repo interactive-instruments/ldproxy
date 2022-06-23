@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,20 +10,17 @@ package de.ii.ogcapi.features.core.domain;
 import com.google.common.collect.ImmutableSortedMap;
 import de.ii.xtraplatform.features.domain.FeatureBase;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
-import org.immutables.value.Value;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
 @Value.Modifiable
 @Value.Style(set = "*")
@@ -31,8 +28,9 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
 
   @Value.Lazy
   default Optional<PropertySfFlat> getId() {
-    return getProperties().stream().filter(property -> property.getSchema().filter(
-        SchemaBase::isId).isPresent()).findFirst();
+    return getProperties().stream()
+        .filter(property -> property.getSchema().filter(SchemaBase::isId).isPresent())
+        .findFirst();
   }
 
   @Value.Lazy
@@ -45,7 +43,9 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
     return getProperties().stream()
         .map(property -> new SimpleImmutableEntry<>(property.getName(), getValue(property, false)))
         .filter(entry -> Objects.nonNull(entry.getValue()))
-        .collect(ImmutableSortedMap.toImmutableSortedMap(String::compareTo, Map.Entry::getKey, Map.Entry::getValue));
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                String::compareTo, Map.Entry::getKey, Map.Entry::getValue));
   }
 
   // Since properties must be "flat" (no arrays or objects), we map any arrays or objects to
@@ -63,7 +63,7 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
             try {
               return Long.parseLong(Objects.requireNonNull(property.getValue()));
             } catch (Throwable e) {
-              //ignore
+              // ignore
               return null;
             }
 
@@ -71,7 +71,7 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
             try {
               return Double.parseDouble(Objects.requireNonNull(property.getValue()));
             } catch (Throwable e) {
-              //ignore
+              // ignore
               return null;
             }
 
@@ -79,7 +79,7 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
           case DATETIME:
           case STRING:
           case UNKNOWN:
-            return withQuotes ? "'"+property.getValue()+"'" : property.getValue();
+            return withQuotes ? "'" + property.getValue() + "'" : property.getValue();
 
           case GEOMETRY:
             // geometries are handled separately, ignore them in this map
@@ -88,10 +88,13 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
         }
 
       case OBJECT:
-        return property.getSchema()
-            .map(FeatureSchema::getType)
-            .orElse(Type.UNKNOWN)
-            .equals(Type.GEOMETRY) ? null : getObjectAsString(property);
+        return property
+                .getSchema()
+                .map(FeatureSchema::getType)
+                .orElse(Type.UNKNOWN)
+                .equals(Type.GEOMETRY)
+            ? null
+            : getObjectAsString(property);
 
       case ARRAY:
         return getArrayAsString(property);
@@ -101,34 +104,32 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
   }
 
   private String getObjectAsString(PropertySfFlat property) {
-    String value = property.getNestedProperties()
-        .stream()
-        .map(p -> {
-          Object val = getValue(p, true);
-          if (Objects.isNull(val))
-            return null;
-          return String.format("'%s': %s", p.getName(), val);
-        })
-        .filter(Objects::nonNull)
-        .collect(Collectors.joining(", "));
-    if (value.isBlank())
-      return null;
+    String value =
+        property.getNestedProperties().stream()
+            .map(
+                p -> {
+                  Object val = getValue(p, true);
+                  if (Objects.isNull(val)) return null;
+                  return String.format("'%s': %s", p.getName(), val);
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(", "));
+    if (value.isBlank()) return null;
     return String.format("{ %s }", value);
   }
 
   private String getArrayAsString(PropertySfFlat property) {
-    String value = property.getNestedProperties()
-        .stream()
-        .map(p -> {
-          Object val = getValue(p, true);
-          if (Objects.isNull(val))
-            return null;
-          return val.toString();
-        })
-        .filter(Objects::nonNull)
-        .collect(Collectors.joining(", "));
-    if (value.isBlank())
-      return null;
+    String value =
+        property.getNestedProperties().stream()
+            .map(
+                p -> {
+                  Object val = getValue(p, true);
+                  if (Objects.isNull(val)) return null;
+                  return val.toString();
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.joining(", "));
+    if (value.isBlank()) return null;
     return String.format("[ %s ]", value);
   }
 
@@ -140,10 +141,13 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
   @Value.Lazy
   default Optional<PropertySfFlat> getGeometry() {
     return getProperties().stream()
-        .filter(property -> property.getSchema()
-            .filter(SchemaBase::isSpatial)
-            .filter(SchemaBase::isPrimaryGeometry)
-            .isPresent())
+        .filter(
+            property ->
+                property
+                    .getSchema()
+                    .filter(SchemaBase::isSpatial)
+                    .filter(SchemaBase::isPrimaryGeometry)
+                    .isPresent())
         .findFirst();
   }
 

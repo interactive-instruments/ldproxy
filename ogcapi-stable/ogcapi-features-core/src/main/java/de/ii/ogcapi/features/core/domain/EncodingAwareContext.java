@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,9 +11,8 @@ import de.ii.xtraplatform.features.domain.FeatureEventHandler.ModifiableContext;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaMapping;
 
-public interface
-EncodingAwareContext<T extends FeatureTransformationContext> extends
-    ModifiableContext<FeatureSchema, SchemaMapping> {
+public interface EncodingAwareContext<T extends FeatureTransformationContext>
+    extends ModifiableContext<FeatureSchema, SchemaMapping> {
 
   T encoding();
 }

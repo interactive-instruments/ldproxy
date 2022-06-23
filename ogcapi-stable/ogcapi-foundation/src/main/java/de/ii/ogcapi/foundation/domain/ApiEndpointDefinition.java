@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,11 +8,10 @@
 package de.ii.ogcapi.foundation.domain;
 
 import io.swagger.v3.oas.models.OpenAPI;
-import org.immutables.value.Value;
-
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 public abstract class ApiEndpointDefinition {
@@ -67,34 +66,33 @@ public abstract class ApiEndpointDefinition {
   public static final int SORT_PRIORITY_DUMMY = Integer.MAX_VALUE;
 
   /**
-   *
-   * @return the entrypoint resource for this definition, all sub-paths are relative to this base path
+   * @return the entrypoint resource for this definition, all sub-paths are relative to this base
+   *     path
    */
   public abstract String getApiEntrypoint();
 
   /**
-   *
    * @param subPath resource path relative to the base path of the API entrypoint
    * @return API path ("/" is the API landing page)
    */
   public String getPath(String subPath) {
-    return  "/" + getApiEntrypoint() + subPath;
+    return "/" + getApiEntrypoint() + subPath;
   }
 
   /**
-   *
-   * @return the sort priority of the definition, relative to the other definitions in the API definition
+   * @return the sort priority of the definition, relative to the other definitions in the API
+   *     definition
    */
   public abstract int getSortPriority();
 
   /**
-   *
    * @return a map of API paths to the resource at the path
    */
   public abstract Map<String, OgcApiResource> getResources();
 
   /**
    * Checks, if a request is supported by this endpoint based on the API path and the HTTP method
+   *
    * @param requestPath the path of the resource
    * @param method the HTTP method that; set to {@code null} for checking against all methods
    * @return flag, whether the endpoint supports the request
@@ -105,13 +103,14 @@ public abstract class ApiEndpointDefinition {
 
   /**
    * Checks, if a request is supported by this endpoint based on the API path and the HTTP method
+   *
    * @param resource the resource
    * @param method the HTTP method that; set to {@code null} for checking against all methods
    * @return the operation that supports the request
    */
   public Optional<ApiOperation> getOperation(OgcApiResource resource, String method) {
     // at least one method is supported?
-    if (method==null) {
+    if (method == null) {
       return resource.getOperations().values().stream().findAny();
     }
 
@@ -125,6 +124,7 @@ public abstract class ApiEndpointDefinition {
 
   /**
    * Checks, if a request is supported by this endpoint based on the API path and the HTTP method
+   *
    * @param requestPath the path of the resource
    * @param method the HTTP method that; set to {@code null} for checking against all methods
    * @return the operation that supports the request
@@ -141,17 +141,19 @@ public abstract class ApiEndpointDefinition {
 
   /**
    * Checks, if a request may be supported by this endpoint based on the API path
+   *
    * @param requestPath the path of the resource
    * @return the resource that supports the request
    */
   public Optional<OgcApiResource> getResource(String requestPath) {
     OgcApiResource resource = getResources().get(requestPath);
-    if (resource==null) {
+    if (resource == null) {
       // if nothing was found, replace path parameters with their pattern
-      resource = getResources().values().stream()
-          .filter(r -> r.getPathPatternCompiled().matcher(requestPath).matches())
-          .findAny()
-          .orElse(null);
+      resource =
+          getResources().values().stream()
+              .filter(r -> r.getPathPatternCompiled().matcher(requestPath).matches())
+              .findAny()
+              .orElse(null);
     }
 
     return Optional.ofNullable(resource);
@@ -159,12 +161,12 @@ public abstract class ApiEndpointDefinition {
 
   /**
    * adds the endpoint to the OpenAPI definition
-   * @param apiData  the data about the API
+   *
+   * @param apiData the data about the API
    * @param openAPI the OpenAPI definition without the endpoint
    */
   public void updateOpenApiDefinition(OgcApiDataV2 apiData, OpenAPI openAPI) {
-    getResources().values()
-        .stream()
+    getResources().values().stream()
         .sorted(Comparator.comparing(OgcApiResource::getPath))
         .forEachOrdered(resource -> resource.updateOpenApiDefinition(apiData, openAPI));
   }

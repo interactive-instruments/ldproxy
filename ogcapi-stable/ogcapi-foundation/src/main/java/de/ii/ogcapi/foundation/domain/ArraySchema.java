@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,7 +10,10 @@ package de.ii.ogcapi.foundation.domain;
 import javax.validation.constraints.NotNull;
 
 public class ArraySchema extends io.swagger.v3.oas.models.media.ArraySchema {
-  public ArraySchema(Class<?> clazz, @NotNull Class<?> componentClazz, @NotNull ClassSchemaCache classSchemaCache) {
+  public ArraySchema(
+      Class<?> clazz,
+      @NotNull Class<?> componentClazz,
+      @NotNull ClassSchemaCache classSchemaCache) {
     super();
     this.items(classSchemaCache.getSchema(componentClazz, clazz));
   }

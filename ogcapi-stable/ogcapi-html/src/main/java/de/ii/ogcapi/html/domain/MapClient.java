@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,7 +8,6 @@
 package de.ii.ogcapi.html.domain;
 
 import com.google.common.collect.Multimap;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +20,16 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", deepImmutablesDetection = true)
 public interface MapClient {
 
-  enum Type {MAP_LIBRE, OPEN_LAYERS, CESIUM}
+  enum Type {
+    MAP_LIBRE,
+    OPEN_LAYERS,
+    CESIUM
+  }
 
-  enum Popup {HOVER_ID, CLICK_PROPERTIES}
+  enum Popup {
+    HOVER_ID,
+    CLICK_PROPERTIES
+  }
 
   @Value.Default
   default Type getType() {
@@ -39,12 +45,16 @@ public interface MapClient {
   Optional<String> getAttribution();
 
   @Value.Default
-  default boolean getSavePosition()  { return false; }
+  default boolean getSavePosition() {
+    return false;
+  }
 
   Optional<Map<String, String>> getBounds();
 
   @Value.Default
-  default boolean drawBounds() { return false; }
+  default boolean drawBounds() {
+    return false;
+  }
 
   @Value.Default
   default boolean isInteractive() {
@@ -82,7 +92,11 @@ public interface MapClient {
 
   @Value.Immutable
   interface Source {
-    enum TYPE {geojson, vector, raster}
+    enum TYPE {
+      geojson,
+      vector,
+      raster
+    }
 
     TYPE getType();
 

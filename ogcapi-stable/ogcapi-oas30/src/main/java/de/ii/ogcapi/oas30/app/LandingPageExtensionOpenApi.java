@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -31,44 +31,57 @@ import javax.inject.Singleton;
 @AutoBind
 public class LandingPageExtensionOpenApi implements LandingPageExtension {
 
-    private final I18n i18n;
-    private final ExtensionRegistry extensionRegistry;
+  private final I18n i18n;
+  private final ExtensionRegistry extensionRegistry;
 
-    @Inject
-    public LandingPageExtensionOpenApi(ExtensionRegistry extensionRegistry, I18n i18n) {
-        this.extensionRegistry = extensionRegistry;
-        this.i18n = i18n;
+  @Inject
+  public LandingPageExtensionOpenApi(ExtensionRegistry extensionRegistry, I18n i18n) {
+    this.extensionRegistry = extensionRegistry;
+    this.i18n = i18n;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return Oas30Configuration.class;
+  }
+
+  @Override
+  public ImmutableLandingPage.Builder process(
+      Builder landingPageBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+
+    if (!isEnabledForApi(api.getData())) {
+      return landingPageBuilder;
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return Oas30Configuration.class;
-    }
+    extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class).stream()
+        .filter(f -> f.isEnabledForApi(api.getData()))
+        .filter(f -> f.getRel().isPresent())
+        .sorted(Comparator.comparing(f -> f.getMediaType().parameter()))
+        .forEach(
+            f ->
+                landingPageBuilder.addLinks(
+                    new ImmutableLink.Builder()
+                        .href(
+                            uriCustomizer
+                                .copy()
+                                .ensureLastPathSegment("api")
+                                .setParameter("f", f.getMediaType().parameter())
+                                .toString())
+                        .rel(f.getRel().get())
+                        .type(f.getMediaType().type().toString())
+                        .title(
+                            i18n.get(
+                                f.getRel().get().equals("service-desc")
+                                    ? "serviceDescLink"
+                                    : "serviceDocLink",
+                                language))
+                        .build()));
 
-    @Override
-    public ImmutableLandingPage.Builder process(Builder landingPageBuilder, OgcApi api,
-                                                URICustomizer uriCustomizer, ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes, Optional<Locale> language) {
-
-        if (!isEnabledForApi(api.getData())) {
-            return landingPageBuilder;
-        }
-
-        extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class)
-                         .stream()
-                         .filter(f -> f.isEnabledForApi(api.getData()))
-                         .filter(f -> f.getRel().isPresent())
-                         .sorted(Comparator.comparing(f -> f.getMediaType().parameter()))
-                         .forEach(f -> landingPageBuilder.addLinks(new ImmutableLink.Builder()
-                                                                           .href(uriCustomizer.copy()
-                                                                                              .ensureLastPathSegment("api")
-                                                                                              .setParameter("f", f.getMediaType().parameter())
-                                                                                              .toString())
-                                                                           .rel(f.getRel().get())
-                                                                           .type(f.getMediaType().type().toString())
-                                                                           .title(i18n.get(f.getRel().get().equals("service-desc") ? "serviceDescLink" : "serviceDocLink",language))
-                                                                           .build()));
-
-        return landingPageBuilder;
-    }
+    return landingPageBuilder;
+  }
 }

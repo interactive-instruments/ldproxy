@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,12 +11,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 public interface OgcApiXml {
 
-  @XmlAttribute(name="service")
+  @XmlAttribute(name = "service")
   default String getService() {
     return "OGCAPI-Features";
   }
 
-  @XmlAttribute(name="version")
+  @XmlAttribute(name = "version")
   default String getVersion() {
     return "1.0.0";
   }

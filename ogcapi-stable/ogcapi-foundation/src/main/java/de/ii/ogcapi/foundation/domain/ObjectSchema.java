@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,10 +9,6 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.reflect.TypeToken;
 import io.swagger.v3.oas.models.media.Schema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -22,6 +18,9 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import javax.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
   private static final Logger LOGGER = LoggerFactory.getLogger(ObjectSchema.class);
@@ -29,15 +28,16 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
   public ObjectSchema(@NotNull Class<?> clazz, @NotNull ClassSchemaCache classSchemaCache) {
     super();
     Class<?> currentClazz = clazz;
-    while (currentClazz!=null && currentClazz!=Object.class) {
+    while (currentClazz != null && currentClazz != Object.class) {
       processMethods(clazz, currentClazz, classSchemaCache);
       currentClazz = currentClazz.getSuperclass();
     }
   }
 
-  private void processMethods(Class<?> baseClazz, Class<?> clazz, ClassSchemaCache classSchemaCache) {
+  private void processMethods(
+      Class<?> baseClazz, Class<?> clazz, ClassSchemaCache classSchemaCache) {
     for (Method m : clazz.getDeclaredMethods()) {
-      if (m.getParameterCount()==0
+      if (m.getParameterCount() == 0
           && Modifier.isPublic(m.getModifiers())
           && !hasIgnoreAnnotation(m)) {
         processMethod(baseClazz, m, classSchemaCache);
@@ -47,8 +47,12 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
 
   private boolean hasIgnoreAnnotation(Method m) {
     return Arrays.stream(m.getAnnotations())
-        .anyMatch(a -> Objects.equals(a.annotationType(), com.fasterxml.jackson.annotation.JsonIgnore.class)
-            || Objects.equals(a.annotationType(), com.fasterxml.jackson.annotation.JsonAnyGetter.class));
+        .anyMatch(
+            a ->
+                Objects.equals(
+                        a.annotationType(), com.fasterxml.jackson.annotation.JsonIgnore.class)
+                    || Objects.equals(
+                        a.annotationType(), com.fasterxml.jackson.annotation.JsonAnyGetter.class));
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -58,13 +62,14 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
 
     // special treatment for some classes
     if (type.equals(OptionalDouble.class)) {
-      type = new TypeToken<Optional<Double>>(){}.getType();
+      type = new TypeToken<Optional<Double>>() {}.getType();
     } else if ("java.util.OptionalInt".equals(type.getTypeName())) {
-      type = new TypeToken<Optional<Integer>>(){}.getType();
+      type = new TypeToken<Optional<Integer>>() {}.getType();
     }
 
     if (type instanceof ParameterizedType) {
-      this.addProperties(name, generateSchema((ParameterizedType) type, baseClazz, classSchemaCache));
+      this.addProperties(
+          name, generateSchema((ParameterizedType) type, baseClazz, classSchemaCache));
     } else {
       Class<?> returnType = m.getReturnType();
       if (LOGGER.isTraceEnabled()) {
@@ -94,46 +99,63 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
     return Character.toLowerCase(name.charAt(0)) + name.substring(1);
   }
 
-  private Schema<?> generateSchema(ParameterizedType pType, Class<?> referencingClazz, ClassSchemaCache classSchemaCache) {
+  private Schema<?> generateSchema(
+      ParameterizedType pType, Class<?> referencingClazz, ClassSchemaCache classSchemaCache) {
     Type rType = pType.getRawType();
     if (LOGGER.isTraceEnabled()) {
-      LOGGER.trace("Raw type: {} - Type args: {}", rType, Arrays.toString(pType.getActualTypeArguments()));
+      LOGGER.trace(
+          "Raw type: {} - Type args: {}", rType, Arrays.toString(pType.getActualTypeArguments()));
     }
     switch (rType.getTypeName()) {
       case "java.util.List":
       case "java.util.Set":
       case "java.util.Collection":
-        return generateArraySchema(pType.getActualTypeArguments()[0], referencingClazz, classSchemaCache);
+        return generateArraySchema(
+            pType.getActualTypeArguments()[0], referencingClazz, classSchemaCache);
       case "java.util.Optional":
-        return generateOptionalSchema(pType.getActualTypeArguments()[0], referencingClazz, classSchemaCache);
+        return generateOptionalSchema(
+            pType.getActualTypeArguments()[0], referencingClazz, classSchemaCache);
       case "java.util.Map":
-        return generateMapSchema(pType.getActualTypeArguments()[0], pType.getActualTypeArguments()[1], referencingClazz, classSchemaCache);
+        return generateMapSchema(
+            pType.getActualTypeArguments()[0],
+            pType.getActualTypeArguments()[1],
+            referencingClazz,
+            classSchemaCache);
       default:
         // no match
     }
 
     if (LOGGER.isWarnEnabled()) {
-      LOGGER.warn("Unhandled parameterized type during JSON Schema generation, a generic Object schema is used. Raw type: {} - Type arguments: {}", rType, Arrays.toString(pType.getActualTypeArguments()));
+      LOGGER.warn(
+          "Unhandled parameterized type during JSON Schema generation, a generic Object schema is used. Raw type: {} - Type arguments: {}",
+          rType,
+          Arrays.toString(pType.getActualTypeArguments()));
     }
 
     return new io.swagger.v3.oas.models.media.ObjectSchema();
   }
 
-  private Schema<?> generateArraySchema(Type t, Class<?> referencingClazz, ClassSchemaCache classSchemaCache) {
+  private Schema<?> generateArraySchema(
+      Type t, Class<?> referencingClazz, ClassSchemaCache classSchemaCache) {
     if (t instanceof ParameterizedType) {
-      return new io.swagger.v3.oas.models.media.ArraySchema().items(generateSchema((ParameterizedType) t, referencingClazz, classSchemaCache));
+      return new io.swagger.v3.oas.models.media.ArraySchema()
+          .items(generateSchema((ParameterizedType) t, referencingClazz, classSchemaCache));
     } else if (t instanceof Class<?>) {
       return new ArraySchema(referencingClazz, (Class<?>) t, classSchemaCache);
     }
 
     if (LOGGER.isWarnEnabled()) {
-      LOGGER.warn("Unhandled type during JSON Schema generation, a generic Object schema is used. Type: {}", t);
+      LOGGER.warn(
+          "Unhandled type during JSON Schema generation, a generic Object schema is used. Type: {}",
+          t);
     }
 
-    return new io.swagger.v3.oas.models.media.ArraySchema().items(new io.swagger.v3.oas.models.media.ObjectSchema());
+    return new io.swagger.v3.oas.models.media.ArraySchema()
+        .items(new io.swagger.v3.oas.models.media.ObjectSchema());
   }
 
-  private Schema<?> generateOptionalSchema(Type t, Class<?> referencingClazz, ClassSchemaCache classSchemaCache) {
+  private Schema<?> generateOptionalSchema(
+      Type t, Class<?> referencingClazz, ClassSchemaCache classSchemaCache) {
     if (t instanceof ParameterizedType) {
       return generateSchema((ParameterizedType) t, referencingClazz, classSchemaCache);
     } else if (t instanceof Class<?>) {
@@ -141,21 +163,32 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
     }
 
     if (LOGGER.isWarnEnabled()) {
-      LOGGER.warn("Unhandled type during JSON Schema generation, a generic Object schema is used. Type: {}", t);
+      LOGGER.warn(
+          "Unhandled type during JSON Schema generation, a generic Object schema is used. Type: {}",
+          t);
     }
 
     return new io.swagger.v3.oas.models.media.ObjectSchema();
   }
 
-  private Schema<?> generateMapSchema(@SuppressWarnings("unused") Type t1, Type t2, Class<?> referencingClazz, ClassSchemaCache classSchemaCache) {
+  private Schema<?> generateMapSchema(
+      @SuppressWarnings("unused") Type t1,
+      Type t2,
+      Class<?> referencingClazz,
+      ClassSchemaCache classSchemaCache) {
     if (t2 instanceof Class<?>) {
-      return new io.swagger.v3.oas.models.media.ObjectSchema().additionalProperties(classSchemaCache.getSchema((Class<?>) t2, referencingClazz));
+      return new io.swagger.v3.oas.models.media.ObjectSchema()
+          .additionalProperties(classSchemaCache.getSchema((Class<?>) t2, referencingClazz));
     } else if (t2 instanceof ParameterizedType) {
-      return new io.swagger.v3.oas.models.media.ObjectSchema().additionalProperties(generateSchema((ParameterizedType) t2, referencingClazz, classSchemaCache));
+      return new io.swagger.v3.oas.models.media.ObjectSchema()
+          .additionalProperties(
+              generateSchema((ParameterizedType) t2, referencingClazz, classSchemaCache));
     }
 
     if (LOGGER.isWarnEnabled()) {
-      LOGGER.warn("Unhandled type during JSON Schema generation, a generic Object schema is used. Type: {}", t2);
+      LOGGER.warn(
+          "Unhandled type during JSON Schema generation, a generic Object schema is used. Type: {}",
+          t2);
     }
 
     return new io.swagger.v3.oas.models.media.ObjectSchema();

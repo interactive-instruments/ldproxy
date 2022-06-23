@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,38 +9,35 @@ package de.ii.ogcapi.collections.app.xml;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import de.ii.ogcapi.collections.domain.Collections;
-import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.common.domain.xml.OgcApiXml;
-
-import javax.xml.bind.annotation.XmlAttribute;
+import de.ii.ogcapi.foundation.domain.Link;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @XmlRootElement(name = "Collections", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
 @XmlType(propOrder = {"links", "collections"})
 public class OgcApiCollectionsXml implements OgcApiXml {
 
-    private final Collections collections;
+  private final Collections collections;
 
-    public OgcApiCollectionsXml(Collections collections) {
-        this.collections = collections;
-    }
+  public OgcApiCollectionsXml(Collections collections) {
+    this.collections = collections;
+  }
 
-    @XmlElement(name = "atom:link", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    public List<Link> getLinks() {
-        return collections.getLinks();
-    }
+  @XmlElement(name = "atom:link", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
+  @JacksonXmlElementWrapper(useWrapping = false)
+  public List<Link> getLinks() {
+    return collections.getLinks();
+  }
 
-    @XmlElement(name = "Collection", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
-    @JacksonXmlElementWrapper(useWrapping = false)
-    public List<OgcApiCollectionXml> getCollections() {
-        return collections.getCollections()
-                          .stream()
-                          .map(OgcApiCollectionXml::new)
-                          .collect(Collectors.toList());
-    }
+  @XmlElement(name = "Collection", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
+  @JacksonXmlElementWrapper(useWrapping = false)
+  public List<OgcApiCollectionXml> getCollections() {
+    return collections.getCollections().stream()
+        .map(OgcApiCollectionXml::new)
+        .collect(Collectors.toList());
+  }
 }

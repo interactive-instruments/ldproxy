@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,20 +7,21 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import org.immutables.value.Value;
-
 import java.util.Date;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 public interface QueryInput {
 
-    // general output options
-    @Value.Default
-    default boolean getIncludeLinkHeader() { return false; }
+  // general output options
+  @Value.Default
+  default boolean getIncludeLinkHeader() {
+    return false;
+  }
 
-    Optional<Date> getLastModified();
+  Optional<Date> getLastModified();
 
-    Optional<Date> getExpires();
+  Optional<Date> getExpires();
 
-    Optional<String> getCacheControl();
+  Optional<String> getCacheControl();
 }

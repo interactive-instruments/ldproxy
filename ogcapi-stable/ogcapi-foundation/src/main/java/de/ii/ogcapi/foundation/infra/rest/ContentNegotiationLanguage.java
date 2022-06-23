@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,14 +7,15 @@
  */
 package de.ii.ogcapi.foundation.infra.rest;
 
+import java.util.Locale;
+import java.util.Optional;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
-import java.util.Locale;
-import java.util.Optional;
 
 public interface ContentNegotiationLanguage {
-    Optional<Locale> negotiateLanguage(ContainerRequestContext requestContext);
-    Optional<Locale> negotiateLanguage(Request request, HttpHeaders httpHeaders, UriInfo uriInfo);
+  Optional<Locale> negotiateLanguage(ContainerRequestContext requestContext);
+
+  Optional<Locale> negotiateLanguage(Request request, HttpHeaders httpHeaders, UriInfo uriInfo);
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,17 +9,17 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Funnel;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaRefExternal extends JsonSchema {
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaRefExternal> FUNNEL = (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaRefExternal> FUNNEL =
+      (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
 
-    @JsonProperty("$ref")
-    public abstract String getRef();
+  @JsonProperty("$ref")
+  public abstract String getRef();
 }

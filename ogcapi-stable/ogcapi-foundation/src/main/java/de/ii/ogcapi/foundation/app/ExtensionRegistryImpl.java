@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,35 +12,34 @@ import com.google.common.collect.ImmutableList;
 import dagger.Lazy;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
 public class ExtensionRegistryImpl implements ExtensionRegistry {
 
-    private final Lazy<Set<ApiExtension>> apiExtensions;
+  private final Lazy<Set<ApiExtension>> apiExtensions;
 
-    @Inject
-    ExtensionRegistryImpl(Lazy<Set<ApiExtension>> apiExtensions) {
-        this.apiExtensions = apiExtensions;
-    }
+  @Inject
+  ExtensionRegistryImpl(Lazy<Set<ApiExtension>> apiExtensions) {
+    this.apiExtensions = apiExtensions;
+  }
 
-    @Override
-    public List<ApiExtension> getExtensions() {
-        return ImmutableList.copyOf(apiExtensions.get());
-    }
+  @Override
+  public List<ApiExtension> getExtensions() {
+    return ImmutableList.copyOf(apiExtensions.get());
+  }
 
-    @Override
-    public <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
-            return apiExtensions.get().stream()
-                    .filter(extension -> extension!=null && extensionType.isAssignableFrom(extension.getClass()))
-                    .map(extensionType::cast)
-                    .collect(Collectors.toList());
-    }
+  @Override
+  public <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
+    return apiExtensions.get().stream()
+        .filter(
+            extension -> extension != null && extensionType.isAssignableFrom(extension.getClass()))
+        .map(extensionType::cast)
+        .collect(Collectors.toList());
+  }
 }

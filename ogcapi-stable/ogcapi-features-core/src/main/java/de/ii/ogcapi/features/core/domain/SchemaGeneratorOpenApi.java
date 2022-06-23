@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,11 +14,14 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.util.Optional;
 
 public interface SchemaGeneratorOpenApi {
-    String getSchemaReference(String collectionIdOrName);
+  String getSchemaReference(String collectionIdOrName);
 
-    Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId);
+  Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId);
 
-    Schema<?> getSchema(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData);
+  Schema<?> getSchema(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData);
 
-    Optional<Schema<?>> getProperty(FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData, String propertyName);
+  Optional<Schema<?>> getProperty(
+      FeatureSchema featureSchema,
+      FeatureTypeConfigurationOgcApi collectionData,
+      String propertyName);
 }

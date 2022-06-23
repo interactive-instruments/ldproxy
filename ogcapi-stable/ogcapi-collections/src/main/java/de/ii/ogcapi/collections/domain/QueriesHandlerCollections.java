@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,8 +7,7 @@
  */
 package de.ii.ogcapi.collections.domain;
 
-import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl.Query;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
 
-public interface QueriesHandlerCollections extends QueriesHandler<Query> {
-}
+public interface QueriesHandlerCollections extends QueriesHandler<Query> {}

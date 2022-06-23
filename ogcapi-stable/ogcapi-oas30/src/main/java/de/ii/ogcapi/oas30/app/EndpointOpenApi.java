@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -23,19 +23,20 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointOpenApi implements ConformanceClass {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(EndpointOpenApi.class);
+  private static Logger LOGGER = LoggerFactory.getLogger(EndpointOpenApi.class);
 
-    @Inject
-    EndpointOpenApi() {
-    }
+  @Inject
+  EndpointOpenApi() {}
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30", "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30");
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of(
+        "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
+        "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30");
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return Oas30Configuration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return Oas30Configuration.class;
+  }
 }

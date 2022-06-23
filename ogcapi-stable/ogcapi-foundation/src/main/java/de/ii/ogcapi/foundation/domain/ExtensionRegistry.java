@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,10 +9,9 @@ package de.ii.ogcapi.foundation.domain;
 
 import java.util.List;
 
-
 public interface ExtensionRegistry {
 
-    List<ApiExtension> getExtensions();
+  List<ApiExtension> getExtensions();
 
-    <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType);
+  <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType);
 }

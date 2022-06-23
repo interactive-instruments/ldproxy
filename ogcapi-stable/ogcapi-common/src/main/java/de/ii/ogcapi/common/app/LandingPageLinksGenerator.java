@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,37 +20,47 @@ import java.util.Optional;
 
 public class LandingPageLinksGenerator extends DefaultLinksGenerator {
 
-    public List<Link> generateLinks(URICustomizer uriBuilder,
-                                    Optional<String> describeFeatureTypeUrl,
-                                    ApiMediaType mediaType,
-                                    List<ApiMediaType> alternateMediaTypes,
-                                    I18n i18n,
-                                    Optional<Locale> language) {
-        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
-                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
+  public List<Link> generateLinks(
+      URICustomizer uriBuilder,
+      Optional<String> describeFeatureTypeUrl,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      I18n i18n,
+      Optional<Locale> language) {
+    final ImmutableList.Builder<Link> builder =
+        new ImmutableList.Builder<Link>()
+            .addAll(
+                super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
-        uriBuilder
-                .ensureNoTrailingSlash()
-                .removeParameters("lang")
-                .ensureParameter("f", mediaType.parameter());
+    uriBuilder
+        .ensureNoTrailingSlash()
+        .removeParameters("lang")
+        .ensureParameter("f", mediaType.parameter());
 
-        builder.add(new ImmutableLink.Builder()
-                        .href(uriBuilder.copy()
-                                        .ensureLastPathSegment("conformance")
-                                        .removeParameters("f")
-                                        .toString())
-                        .rel("conformance")
-                        .title(i18n.get("conformanceLink",language))
-                        .build())
-               .add(new ImmutableLink.Builder()
-                            .href(uriBuilder.copy()
-                                            .ensureLastPathSegment("conformance")
-                                            .removeParameters("f")
-                                            .toString())
-                            .rel("http://www.opengis.net/def/rel/ogc/1.0/conformance")
-                            .title(i18n.get("conformanceLink",language))
-                            .build());
+    builder
+        .add(
+            new ImmutableLink.Builder()
+                .href(
+                    uriBuilder
+                        .copy()
+                        .ensureLastPathSegment("conformance")
+                        .removeParameters("f")
+                        .toString())
+                .rel("conformance")
+                .title(i18n.get("conformanceLink", language))
+                .build())
+        .add(
+            new ImmutableLink.Builder()
+                .href(
+                    uriBuilder
+                        .copy()
+                        .ensureLastPathSegment("conformance")
+                        .removeParameters("f")
+                        .toString())
+                .rel("http://www.opengis.net/def/rel/ogc/1.0/conformance")
+                .title(i18n.get("conformanceLink", language))
+                .build());
 
-        return builder.build();
-    }
+    return builder.build();
+  }
 }

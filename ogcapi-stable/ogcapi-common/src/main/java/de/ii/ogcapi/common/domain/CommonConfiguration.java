@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,7 +16,6 @@ import de.ii.ogcapi.foundation.domain.Caching;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.xtraplatform.docs.DocMarker;
 import java.util.List;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -67,11 +66,12 @@ public interface CommonConfiguration extends ExtensionConfiguration, CachingConf
   Caching getCaching();
 
   /**
-   * @langEn Add additional links to the *Landing Page* resource. The value is an array of link objects.
-   * Required properties of a link are a URI (`href`), a label (`label`) and a relation (`rel`).
-   * @langDe Erlaubt es, zusätzliche Links in der Landing Page zu ergänzen. Der Wert ist ein Array von
-   * Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende Text
-   * (`label`) und die Link-Relation (`rel`).
+   * @langEn Add additional links to the *Landing Page* resource. The value is an array of link
+   *     objects. Required properties of a link are a URI (`href`), a label (`label`) and a relation
+   *     (`rel`).
+   * @langDe Erlaubt es, zusätzliche Links in der Landing Page zu ergänzen. Der Wert ist ein Array
+   *     von Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende
+   *     Text (`label`) und die Link-Relation (`rel`).
    * @default []
    */
   @JsonMerge(OptBoolean.FALSE)

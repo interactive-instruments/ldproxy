@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,5 +10,5 @@ package de.ii.ogcapi.features.geojson.domain;
 import java.util.List;
 
 public interface GeoJsonWriterRegistry {
-    List<GeoJsonWriter> getGeoJsonWriters();
+  List<GeoJsonWriter> getGeoJsonWriters();
 }

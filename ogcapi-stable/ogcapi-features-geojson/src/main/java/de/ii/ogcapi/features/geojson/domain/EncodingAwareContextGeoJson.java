@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,6 +11,5 @@ import de.ii.ogcapi.features.core.domain.EncodingAwareContext;
 import org.immutables.value.Value.Modifiable;
 
 @Modifiable
-public interface EncodingAwareContextGeoJson extends EncodingAwareContext<FeatureTransformationContextGeoJson> {
-
-}
+public interface EncodingAwareContextGeoJson
+    extends EncodingAwareContext<FeatureTransformationContextGeoJson> {}

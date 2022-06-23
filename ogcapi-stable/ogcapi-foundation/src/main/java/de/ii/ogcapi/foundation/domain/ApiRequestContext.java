@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,26 +7,26 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import javax.ws.rs.core.Request;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import javax.ws.rs.core.Request;
 
 public interface ApiRequestContext {
-    ApiMediaType getMediaType();
+  ApiMediaType getMediaType();
 
-    List<ApiMediaType> getAlternateMediaTypes();
+  List<ApiMediaType> getAlternateMediaTypes();
 
-    Optional<Locale> getLanguage();
+  Optional<Locale> getLanguage();
 
-    OgcApi getApi();
+  OgcApi getApi();
 
-    URICustomizer getUriCustomizer();
+  URICustomizer getUriCustomizer();
 
-    String getStaticUrlPrefix();
+  String getStaticUrlPrefix();
 
-    Map<String,String> getParameters();
+  Map<String, String> getParameters();
 
-    Optional<Request> getRequest();
+  Optional<Request> getRequest();
 }

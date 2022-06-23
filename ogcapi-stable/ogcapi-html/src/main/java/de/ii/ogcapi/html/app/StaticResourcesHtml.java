@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,8 +17,7 @@ import javax.inject.Singleton;
 public class StaticResourcesHtml implements StaticResources {
 
   @Inject
-  StaticResourcesHtml() {
-  }
+  StaticResourcesHtml() {}
 
   @Override
   public String getResourcePath() {

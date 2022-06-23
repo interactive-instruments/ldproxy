@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,124 +7,138 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_DUMMY;
+
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.xtraplatform.auth.domain.User;
-
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ServerErrorException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_DUMMY;
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.ServerErrorException;
 
 @AutoMultiBind
 public interface EndpointExtension extends ApiExtension {
 
-    ApiEndpointDefinition DEFAULT_DEFINITION = new ImmutableApiEndpointDefinition.Builder()
-        .apiEntrypoint("")
-        .sortPriority(SORT_PRIORITY_DUMMY)
-        .build();
+  ApiEndpointDefinition DEFAULT_DEFINITION =
+      new ImmutableApiEndpointDefinition.Builder()
+          .apiEntrypoint("")
+          .sortPriority(SORT_PRIORITY_DUMMY)
+          .build();
 
-    default ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-        return DEFAULT_DEFINITION;
+  default ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
+    return DEFAULT_DEFINITION;
+  }
+
+  default ImmutableSet<ApiMediaType> getMediaTypes(OgcApiDataV2 apiData, String requestSubPath) {
+    return getMediaTypes(apiData, requestSubPath, "GET");
+  }
+
+  default ImmutableSet<ApiMediaType> getMediaTypes(
+      OgcApiDataV2 apiData, String requestSubPath, String method) {
+    ApiEndpointDefinition apiDef = getDefinition(apiData);
+    if (apiDef.getResources().isEmpty()) {
+      return ImmutableSet.of();
     }
 
-    default ImmutableSet<ApiMediaType> getMediaTypes(OgcApiDataV2 apiData, String requestSubPath) {
-        return getMediaTypes(apiData, requestSubPath, "GET");
+    OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath)).orElse(null);
+    if (resource != null) {
+      ApiOperation operation = apiDef.getOperation(resource, method).orElse(null);
+      if (operation != null && operation.getSuccess().isPresent()) {
+        return operation.getSuccess().get().getContent().values().stream()
+            .map(ApiMediaTypeContent::getOgcApiMediaType)
+            .collect(ImmutableSet.toImmutableSet());
+      }
+      return ImmutableSet.of();
     }
 
-    default ImmutableSet<ApiMediaType> getMediaTypes(OgcApiDataV2 apiData, String requestSubPath, String method) {
-        ApiEndpointDefinition apiDef = getDefinition(apiData);
-        if (apiDef.getResources().isEmpty()) {
-            return ImmutableSet.of();
-        }
+    throw new ServerErrorException("Invalid sub path: " + requestSubPath, 500);
+  }
 
-        OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
-                                        .orElse(null);
-        if (resource!=null) {
-            ApiOperation operation = apiDef.getOperation(resource, method)
-                                           .orElse(null);
-            if (operation!=null && operation.getSuccess().isPresent()) {
-                return operation.getSuccess().get()
-                        .getContent()
-                        .values()
-                        .stream()
-                        .map(ApiMediaTypeContent::getOgcApiMediaType)
-                        .collect(ImmutableSet.toImmutableSet());
-            }
-            return ImmutableSet.of();
-        }
+  default List<OgcApiQueryParameter> getParameters(OgcApiDataV2 apiData, String requestSubPath) {
+    return getParameters(apiData, requestSubPath, "GET");
+  }
 
-        throw new ServerErrorException("Invalid sub path: "+requestSubPath, 500);
+  default List<OgcApiQueryParameter> getParameters(
+      OgcApiDataV2 apiData, String requestSubPath, String method) {
+    ApiEndpointDefinition apiDef = getDefinition(apiData);
+    if (apiDef.getResources().isEmpty()) {
+      return ImmutableList.of();
     }
 
-    default List<OgcApiQueryParameter> getParameters(OgcApiDataV2 apiData, String requestSubPath) {
-        return getParameters(apiData, requestSubPath, "GET");
+    OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath)).orElse(null);
+    if (resource != null) {
+      ApiOperation operation = apiDef.getOperation(resource, method).orElse(null);
+      if (operation != null && operation.getSuccess().isPresent()) {
+        return operation.getQueryParameters();
+      }
     }
+    return ImmutableList.of();
+  }
 
-    default List<OgcApiQueryParameter> getParameters(OgcApiDataV2 apiData, String requestSubPath, String method) {
-        ApiEndpointDefinition apiDef = getDefinition(apiData);
-        if (apiDef.getResources().isEmpty()) {
-            return ImmutableList.of();
-        }
+  default ImmutableList<OgcApiPathParameter> getPathParameters(
+      ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath) {
+    return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class).stream()
+        .filter(param -> param.isApplicable(apiData, definitionPath))
+        .sorted(Comparator.comparing(ParameterExtension::getName))
+        .collect(ImmutableList.toImmutableList());
+  }
 
-        OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath))
-                                        .orElse(null);
-        if (resource != null) {
-            ApiOperation operation = apiDef.getOperation(resource, method)
-                                           .orElse(null);
-            if (operation != null && operation.getSuccess().isPresent()) {
-                return operation.getQueryParameters();
-            }
-        }
-        return ImmutableList.of();
+  default ImmutableList<OgcApiQueryParameter> getQueryParameters(
+      ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath) {
+    return getQueryParameters(extensionRegistry, apiData, definitionPath, HttpMethods.GET);
+  }
+
+  default ImmutableList<OgcApiQueryParameter> getQueryParameters(
+      ExtensionRegistry extensionRegistry,
+      OgcApiDataV2 apiData,
+      String definitionPath,
+      HttpMethods method) {
+    return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
+        .filter(param -> param.isApplicable(apiData, definitionPath, method))
+        .sorted(Comparator.comparing(ParameterExtension::getName))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  default ImmutableList<ApiHeader> getHeaders(
+      ExtensionRegistry extensionRegistry,
+      OgcApiDataV2 apiData,
+      String definitionPath,
+      HttpMethods method) {
+    return extensionRegistry.getExtensionsForType(ApiHeader.class).stream()
+        .filter(param -> param.isApplicable(apiData, definitionPath, method))
+        .sorted(Comparator.comparing(ApiHeader::getId))
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  default void checkAuthorization(OgcApiDataV2 apiData, Optional<User> optionalUser) {
+    if (apiData.getSecured() && optionalUser.isEmpty()) {
+      throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
     }
+  }
 
-    default ImmutableList<OgcApiPathParameter> getPathParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath) {
-        return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class)
-                .stream()
-                .filter(param -> param.isApplicable(apiData, definitionPath))
-                .sorted(Comparator.comparing(ParameterExtension::getName))
-                .collect(ImmutableList.toImmutableList());
-    }
-
-    default ImmutableList<OgcApiQueryParameter> getQueryParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath) {
-        return getQueryParameters(extensionRegistry, apiData, definitionPath, HttpMethods.GET);
-    }
-
-    default ImmutableList<OgcApiQueryParameter> getQueryParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class)
-                .stream()
-                .filter(param -> param.isApplicable(apiData, definitionPath, method))
-                .sorted(Comparator.comparing(ParameterExtension::getName))
-                .collect(ImmutableList.toImmutableList());
-    }
-
-    default ImmutableList<ApiHeader> getHeaders(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return extensionRegistry.getExtensionsForType(ApiHeader.class)
-                                .stream()
-                                .filter(param -> param.isApplicable(apiData, definitionPath, method))
-                                .sorted(Comparator.comparing(ApiHeader::getId))
-                                .collect(ImmutableList.toImmutableList());
-    }
-
-    default void checkAuthorization(OgcApiDataV2 apiData, Optional<User> optionalUser) {
-        if (apiData.getSecured() && optionalUser.isEmpty()) {
-            throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
-        }
-    }
-
-    default void checkPathParameter(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, String parameterName, String parameterValue) {
-        getPathParameters(extensionRegistry, apiData, definitionPath).stream()
-                .filter(param -> param.getName().equalsIgnoreCase(parameterName))
-                .map(param -> param.validate(apiData, Optional.empty(), ImmutableList.of(parameterValue)).orElse(null))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .ifPresent(message -> { throw new NotFoundException(message); });
-    }
+  default void checkPathParameter(
+      ExtensionRegistry extensionRegistry,
+      OgcApiDataV2 apiData,
+      String definitionPath,
+      String parameterName,
+      String parameterValue) {
+    getPathParameters(extensionRegistry, apiData, definitionPath).stream()
+        .filter(param -> param.getName().equalsIgnoreCase(parameterName))
+        .map(
+            param ->
+                param
+                    .validate(apiData, Optional.empty(), ImmutableList.of(parameterValue))
+                    .orElse(null))
+        .filter(Objects::nonNull)
+        .findFirst()
+        .ifPresent(
+            message -> {
+              throw new NotFoundException(message);
+            });
+  }
 }

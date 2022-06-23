@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -23,14 +23,15 @@ import javax.inject.Singleton;
 @AutoBind
 public class JacksonSubTypeIdsGeoJson implements JacksonSubTypeIds {
 
-    @Inject
-    public JacksonSubTypeIdsGeoJson() {
-    }
+  @Inject
+  public JacksonSubTypeIdsGeoJson() {}
 
-    @Override
-    public Map<Class<?>, String> getMapping() {
-        return new ImmutableMap.Builder<Class<?>, String>()
-                .put(GeoJsonConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(GeoJsonConfiguration.class))
-                .build();
-    }
+  @Override
+  public Map<Class<?>, String> getMapping() {
+    return new ImmutableMap.Builder<Class<?>, String>()
+        .put(
+            GeoJsonConfiguration.class,
+            ExtensionConfiguration.getBuildingBlockIdentifier(GeoJsonConfiguration.class))
+        .build();
+  }
 }

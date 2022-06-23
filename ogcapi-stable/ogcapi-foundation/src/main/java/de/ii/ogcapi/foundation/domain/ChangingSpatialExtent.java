@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -27,19 +27,25 @@ public interface ChangingSpatialExtent extends ChangingValue<BoundingBox> {
   default Optional<ChangingValue<BoundingBox>> updateWith(ChangingValue<BoundingBox> delta) {
     BoundingBox deltaExtent = delta.getValue();
     if (this.getValue().getEpsgCrs().getCode() != deltaExtent.getEpsgCrs().getCode()
-        || this.getValue().getEpsgCrs().getForceAxisOrder() != deltaExtent.getEpsgCrs().getForceAxisOrder()) {
+        || this.getValue().getEpsgCrs().getForceAxisOrder()
+            != deltaExtent.getEpsgCrs().getForceAxisOrder()) {
       throw new IllegalStateException("Both bounding boxes must have the same CRS.");
     }
 
-    if (getValue().getXmin() <= deltaExtent.getXmin() && getValue().getYmin() <= deltaExtent.getYmin()
-        && getValue().getXmax() >= deltaExtent.getXmax() && getValue().getYmax() >= deltaExtent.getYmax()) {
+    if (getValue().getXmin() <= deltaExtent.getXmin()
+        && getValue().getYmin() <= deltaExtent.getYmin()
+        && getValue().getXmax() >= deltaExtent.getXmax()
+        && getValue().getYmax() >= deltaExtent.getYmax()) {
       return Optional.empty();
     }
 
-    return Optional.of(ChangingSpatialExtent.of(BoundingBox.of(Math.min(getValue().getXmin(), deltaExtent.getXmin()),
-        Math.min(getValue().getYmin(), deltaExtent.getYmin()),
-        Math.max(getValue().getXmax(), deltaExtent.getXmax()),
-        Math.max(getValue().getYmax(), deltaExtent.getYmax()),
-        OgcCrs.CRS84)));
+    return Optional.of(
+        ChangingSpatialExtent.of(
+            BoundingBox.of(
+                Math.min(getValue().getXmin(), deltaExtent.getXmin()),
+                Math.min(getValue().getYmin(), deltaExtent.getYmin()),
+                Math.max(getValue().getXmax(), deltaExtent.getXmax()),
+                Math.max(getValue().getYmax(), deltaExtent.getYmax()),
+                OgcCrs.CRS84)));
   }
 }

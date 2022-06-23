@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -33,132 +33,80 @@ import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.web.domain.ETag;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import org.immutables.value.Value;
-
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.immutables.value.Value;
 
 @Singleton
 @AutoBind
 public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections {
 
-    private final I18n i18n;
+  private final I18n i18n;
 
-    public enum Query implements QueryIdentifier {COLLECTIONS, FEATURE_COLLECTION}
+  public enum Query implements QueryIdentifier {
+    COLLECTIONS,
+    FEATURE_COLLECTION
+  }
 
-    @Value.Immutable
-    public interface QueryInputCollections extends QueryInput {
-        boolean getIncludeLinkHeader();
-        List<Link> getAdditionalLinks();
-    }
+  @Value.Immutable
+  public interface QueryInputCollections extends QueryInput {
+    boolean getIncludeLinkHeader();
 
-    @Value.Immutable
-    public interface QueryInputFeatureCollection extends QueryInput {
-        String getCollectionId();
-        boolean getIncludeLinkHeader();
-        List<Link> getAdditionalLinks();
-    }
+    List<Link> getAdditionalLinks();
+  }
 
-    private final ExtensionRegistry extensionRegistry;
-    private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+  @Value.Immutable
+  public interface QueryInputFeatureCollection extends QueryInput {
+    String getCollectionId();
 
-    @Inject
-    public QueriesHandlerCollectionsImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
-        this.extensionRegistry = extensionRegistry;
-        this.i18n = i18n;
-        this.queryHandlers = ImmutableMap.of(
-                Query.COLLECTIONS, QueryHandler.with(QueryInputCollections.class, this::getCollectionsResponse),
-                Query.FEATURE_COLLECTION, QueryHandler.with(QueryInputFeatureCollection.class, this::getCollectionResponse)
-        );
-    }
+    boolean getIncludeLinkHeader();
 
-    @Override
-    public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
-        return queryHandlers;
-    }
+    List<Link> getAdditionalLinks();
+  }
 
-    private Response getCollectionsResponse(QueryInputCollections queryInput, ApiRequestContext requestContext) {
+  private final ExtensionRegistry extensionRegistry;
+  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
-        OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
+  @Inject
+  public QueriesHandlerCollectionsImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
+    this.extensionRegistry = extensionRegistry;
+    this.i18n = i18n;
+    this.queryHandlers =
+        ImmutableMap.of(
+            Query.COLLECTIONS,
+                QueryHandler.with(QueryInputCollections.class, this::getCollectionsResponse),
+            Query.FEATURE_COLLECTION,
+                QueryHandler.with(QueryInputFeatureCollection.class, this::getCollectionResponse));
+  }
 
-        Optional<String> licenseUrl = apiData.getMetadata().flatMap(ApiMetadata::getLicenseUrl);
-        Optional<String> licenseName = apiData.getMetadata().flatMap(ApiMetadata::getLicenseName);
-        List<Link> links = new CollectionsLinksGenerator()
-                .generateLinks(requestContext.getUriCustomizer()
-                                             .copy(),
-                        Optional.empty(),
-                        requestContext.getMediaType(),
-                        requestContext.getAlternateMediaTypes(),
-                        licenseUrl,
-                        licenseName,
-                        i18n,
-                        requestContext.getLanguage());
+  @Override
+  public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
+    return queryHandlers;
+  }
 
-        ImmutableCollections.Builder collections = new ImmutableCollections.Builder()
-                .title(apiData.getLabel())
-                .description(apiData.getDescription().orElse(""))
-                .links(links)
-                .addAllLinks(queryInput.getAdditionalLinks());
+  private Response getCollectionsResponse(
+      QueryInputCollections queryInput, ApiRequestContext requestContext) {
 
-        for (CollectionsExtension ogcApiCollectionsExtension : getCollectionsExtenders()) {
-            collections = ogcApiCollectionsExtension.process(collections,
-                    api,
-                    requestContext.getUriCustomizer()
-                                  .copy(),
-                    requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes(),
-                    requestContext.getLanguage());
-        }
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
 
-        CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class,
-                                                                               requestContext.getMediaType(),
-                                                                         "/collections",
-                                                                               Optional.empty())
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
-
-        Collections responseObject = collections.build();
-
-        Date lastModified = getLastModified(queryInput);
-        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? ETag.from(responseObject, Collections.FUNNEL, outputFormatExtension.getMediaType().label())
-            : null;
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
-
-        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
-                                      HeaderCaching.of(lastModified, etag, queryInput),
-                                      null,
-                                      HeaderContentDisposition.of(String.format("collections.%s", outputFormatExtension.getMediaType().fileExtension())))
-                .entity(outputFormatExtension.getCollectionsEntity(responseObject, requestContext.getApi(), requestContext))
-                .build();
-
-    }
-
-    private Response getCollectionResponse(QueryInputFeatureCollection queryInput,
-                                           ApiRequestContext requestContext) {
-
-        OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
-        String collectionId = queryInput.getCollectionId();
-
-        Optional<String> licenseUrl = apiData.getMetadata().flatMap(ApiMetadata::getLicenseUrl);
-        Optional<String> licenseName = apiData.getMetadata().flatMap(ApiMetadata::getLicenseName);
-        List<Link> links = new CollectionLinksGenerator().generateLinks(
-                requestContext.getUriCustomizer()
-                    .copy(),
+    Optional<String> licenseUrl = apiData.getMetadata().flatMap(ApiMetadata::getLicenseUrl);
+    Optional<String> licenseName = apiData.getMetadata().flatMap(ApiMetadata::getLicenseName);
+    List<Link> links =
+        new CollectionsLinksGenerator()
+            .generateLinks(
+                requestContext.getUriCustomizer().copy(),
+                Optional.empty(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
                 licenseUrl,
@@ -166,56 +114,158 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                 i18n,
                 requestContext.getLanguage());
 
-        CollectionsFormatExtension outputFormatExtension = api.getOutputFormat(CollectionsFormatExtension.class, requestContext.getMediaType(), "/collections/"+collectionId, Optional.of(collectionId))
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+    ImmutableCollections.Builder collections =
+        new ImmutableCollections.Builder()
+            .title(apiData.getLabel())
+            .description(apiData.getDescription().orElse(""))
+            .links(links)
+            .addAllLinks(queryInput.getAdditionalLinks());
 
-        ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
-                .id(collectionId)
-                .links(links)
-                .addAllLinks(queryInput.getAdditionalLinks());
+    for (CollectionsExtension ogcApiCollectionsExtension : getCollectionsExtenders()) {
+      collections =
+          ogcApiCollectionsExtension.process(
+              collections,
+              api,
+              requestContext.getUriCustomizer().copy(),
+              requestContext.getMediaType(),
+              requestContext.getAlternateMediaTypes(),
+              requestContext.getLanguage());
+    }
 
-        FeatureTypeConfigurationOgcApi featureTypeConfiguration = apiData.getCollections()
-                                                                         .get(collectionId);
-        for (CollectionExtension ogcApiCollectionExtension : getCollectionExtenders()) {
-            ogcApiCollection = ogcApiCollectionExtension.process(ogcApiCollection,
-                    featureTypeConfiguration,
-                    api,
-                    requestContext.getUriCustomizer()
-                                  .copy(),
-                    false,
-                    requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes(),
-                    requestContext.getLanguage());
-        }
+    CollectionsFormatExtension outputFormatExtension =
+        api.getOutputFormat(
+                CollectionsFormatExtension.class,
+                requestContext.getMediaType(),
+                "/collections",
+                Optional.empty())
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
 
-        OgcApiCollection responseObject = ogcApiCollection.build();
+    Collections responseObject = collections.build();
 
-        Date lastModified = getLastModified(queryInput);
-        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || api.getData().getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? ETag.from(responseObject, OgcApiCollection.FUNNEL, outputFormatExtension.getMediaType().label())
+    Date lastModified = getLastModified(queryInput);
+    EntityTag etag =
+        !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || api.getData()
+                    .getExtension(HtmlConfiguration.class)
+                    .map(HtmlConfiguration::getSendEtags)
+                    .orElse(false)
+            ? ETag.from(
+                responseObject, Collections.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
 
-        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
-                                      HeaderCaching.of(lastModified, etag, queryInput),
-                                      null,
-                                      HeaderContentDisposition.of(String.format("%s.%s", collectionId, outputFormatExtension.getMediaType().fileExtension())))
-                .entity(outputFormatExtension.getCollectionEntity(responseObject, api, requestContext))
-                .build();
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format(
+                    "collections.%s", outputFormatExtension.getMediaType().fileExtension())))
+        .entity(
+            outputFormatExtension.getCollectionsEntity(
+                responseObject, requestContext.getApi(), requestContext))
+        .build();
+  }
+
+  private Response getCollectionResponse(
+      QueryInputFeatureCollection queryInput, ApiRequestContext requestContext) {
+
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
+    String collectionId = queryInput.getCollectionId();
+
+    Optional<String> licenseUrl = apiData.getMetadata().flatMap(ApiMetadata::getLicenseUrl);
+    Optional<String> licenseName = apiData.getMetadata().flatMap(ApiMetadata::getLicenseName);
+    List<Link> links =
+        new CollectionLinksGenerator()
+            .generateLinks(
+                requestContext.getUriCustomizer().copy(),
+                requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes(),
+                licenseUrl,
+                licenseName,
+                i18n,
+                requestContext.getLanguage());
+
+    CollectionsFormatExtension outputFormatExtension =
+        api.getOutputFormat(
+                CollectionsFormatExtension.class,
+                requestContext.getMediaType(),
+                "/collections/" + collectionId,
+                Optional.of(collectionId))
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
+
+    ImmutableOgcApiCollection.Builder ogcApiCollection =
+        ImmutableOgcApiCollection.builder()
+            .id(collectionId)
+            .links(links)
+            .addAllLinks(queryInput.getAdditionalLinks());
+
+    FeatureTypeConfigurationOgcApi featureTypeConfiguration =
+        apiData.getCollections().get(collectionId);
+    for (CollectionExtension ogcApiCollectionExtension : getCollectionExtenders()) {
+      ogcApiCollection =
+          ogcApiCollectionExtension.process(
+              ogcApiCollection,
+              featureTypeConfiguration,
+              api,
+              requestContext.getUriCustomizer().copy(),
+              false,
+              requestContext.getMediaType(),
+              requestContext.getAlternateMediaTypes(),
+              requestContext.getLanguage());
     }
 
-    private List<CollectionExtension> getCollectionExtenders() {
-        return extensionRegistry.getExtensionsForType(CollectionExtension.class);
-    }
+    OgcApiCollection responseObject = ogcApiCollection.build();
 
-    private List<CollectionsExtension> getCollectionsExtenders() {
-        return extensionRegistry.getExtensionsForType(CollectionsExtension.class);
-    }
+    Date lastModified = getLastModified(queryInput);
+    EntityTag etag =
+        !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || api.getData()
+                    .getExtension(HtmlConfiguration.class, collectionId)
+                    .map(HtmlConfiguration::getSendEtags)
+                    .orElse(false)
+            ? ETag.from(
+                responseObject,
+                OgcApiCollection.FUNNEL,
+                outputFormatExtension.getMediaType().label())
+            : null;
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
 
-    private void addLinks(Response.ResponseBuilder response, ImmutableList<Link> links) {
-        links.stream().forEach(link -> response.links(link.getLink()));
-    }
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format(
+                    "%s.%s", collectionId, outputFormatExtension.getMediaType().fileExtension())))
+        .entity(outputFormatExtension.getCollectionEntity(responseObject, api, requestContext))
+        .build();
+  }
+
+  private List<CollectionExtension> getCollectionExtenders() {
+    return extensionRegistry.getExtensionsForType(CollectionExtension.class);
+  }
+
+  private List<CollectionsExtension> getCollectionsExtenders() {
+    return extensionRegistry.getExtensionsForType(CollectionsExtension.class);
+  }
+
+  private void addLinks(Response.ResponseBuilder response, ImmutableList<Link> links) {
+    links.stream().forEach(link -> response.links(link.getLink()));
+  }
 }

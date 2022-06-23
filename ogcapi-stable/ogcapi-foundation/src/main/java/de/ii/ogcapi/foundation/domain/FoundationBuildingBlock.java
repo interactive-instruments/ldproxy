@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,13 +13,12 @@ import javax.inject.Singleton;
 
 /**
  * @title Foundation
- * @langEn Adds an API catalog with all published APIs. Provides base functionality for all
- * other modules and therefore cannot be disabled.
- * @langDe Das Modul *Foundation* ist für jede über ldproxy bereitgestellte API aktiv.
- * Es stellt im Wesentliche interne Funktionalitäten für die übrigen API-Module bereit.
- *
- * Zusätzlich wird auch die ldproxy-spezifische Ressource "API Catalog" als Liste der
- * aktiven APIs in dem Deployment bereitgestellt.
+ * @langEn Adds an API catalog with all published APIs. Provides base functionality for all other
+ *     modules and therefore cannot be disabled.
+ * @langDe Das Modul *Foundation* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt im
+ *     Wesentliche interne Funktionalitäten für die übrigen API-Module bereit.
+ *     <p>Zusätzlich wird auch die ldproxy-spezifische Ressource "API Catalog" als Liste der aktiven
+ *     APIs in dem Deployment bereitgestellt.
  * @example {@link de.ii.ogcapi.foundation.domain.FoundationConfiguration}
  * @propertyTable {@link de.ii.ogcapi.foundation.domain.ImmutableFoundationConfiguration}
  * @see ApiCatalog
@@ -28,15 +27,15 @@ import javax.inject.Singleton;
 @AutoBind
 public class FoundationBuildingBlock implements ApiBuildingBlock {
 
-    @Inject
-    public FoundationBuildingBlock() {
-    }
+  @Inject
+  public FoundationBuildingBlock() {}
 
-    @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableFoundationConfiguration.Builder().enabled(true)
-                                                             .includeLinkHeader(true)
-                                                             .useLangParameter(false)
-                                                             .build();
-    }
+  @Override
+  public ExtensionConfiguration getDefaultConfiguration() {
+    return new ImmutableFoundationConfiguration.Builder()
+        .enabled(true)
+        .includeLinkHeader(true)
+        .useLangParameter(false)
+        .build();
+  }
 }

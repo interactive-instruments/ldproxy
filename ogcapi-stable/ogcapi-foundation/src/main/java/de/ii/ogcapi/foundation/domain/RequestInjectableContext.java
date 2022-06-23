@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,6 +9,4 @@ package de.ii.ogcapi.foundation.domain;
 
 import de.ii.xtraplatform.services.domain.InjectableContext;
 
-
-public interface RequestInjectableContext extends InjectableContext<ApiRequestContext> {
-}
+public interface RequestInjectableContext extends InjectableContext<ApiRequestContext> {}

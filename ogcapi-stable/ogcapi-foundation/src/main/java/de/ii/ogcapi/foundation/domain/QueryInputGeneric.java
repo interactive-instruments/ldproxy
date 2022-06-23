@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,6 +10,4 @@ package de.ii.ogcapi.foundation.domain;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public abstract class QueryInputGeneric implements QueryInput {
-
-}
+public abstract class QueryInputGeneric implements QueryInput {}

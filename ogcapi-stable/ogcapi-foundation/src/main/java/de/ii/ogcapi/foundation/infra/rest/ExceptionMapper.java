@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,20 +9,19 @@ package de.ii.ogcapi.foundation.infra.rest;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.foundation.domain.ApiErrorMessage;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExceptionFormatExtension;
-import de.ii.ogcapi.foundation.domain.FormatNotSupportedException;
-import de.ii.ogcapi.foundation.domain.ApiErrorMessage;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.FormatNotSupportedException;
 import de.ii.xtraplatform.base.domain.LogContext;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -31,170 +30,223 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
-
+import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 @Provider
 public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionMapper.class);
-    public static final String CLIENT_ERROR_TEMPLATE = "Client error, HTTP status {}, Request path {}: {}";
-    public static final String UNUSED = "unused";
+  private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionMapper.class);
+  public static final String CLIENT_ERROR_TEMPLATE =
+      "Client error, HTTP status {}, Request path {}: {}";
+  public static final String UNUSED = "unused";
 
-    private final ExtensionRegistry extensionRegistry;
+  private final ExtensionRegistry extensionRegistry;
 
-    @SuppressWarnings(UNUSED)
-    @Context
-    private UriInfo uriInfo;
-    @SuppressWarnings(UNUSED)
-    @Context
-    private Request request;
-    @SuppressWarnings(UNUSED)
-    @Context
-    private HttpHeaders httpHeaders;
+  @SuppressWarnings(UNUSED)
+  @Context
+  private UriInfo uriInfo;
 
-    private final ContentNegotiationMediaType contentNegotiationMediaType;
+  @SuppressWarnings(UNUSED)
+  @Context
+  private Request request;
 
-    @Inject
-    public ExceptionMapper(ExtensionRegistry extensionRegistry, ContentNegotiationMediaType contentNegotiationMediaType) {
-        super();
-        this.extensionRegistry = extensionRegistry;
-        this.contentNegotiationMediaType = contentNegotiationMediaType;
+  @SuppressWarnings(UNUSED)
+  @Context
+  private HttpHeaders httpHeaders;
+
+  private final ContentNegotiationMediaType contentNegotiationMediaType;
+
+  @Inject
+  public ExceptionMapper(
+      ExtensionRegistry extensionRegistry,
+      ContentNegotiationMediaType contentNegotiationMediaType) {
+    super();
+    this.extensionRegistry = extensionRegistry;
+    this.contentNegotiationMediaType = contentNegotiationMediaType;
+  }
+
+  @Override
+  public Response toResponse(Throwable exception) {
+    // content negotiation for the error response
+    ImmutableSet<ApiMediaType> supportedMediaTypes =
+        extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class).stream()
+            .map(FormatExtension::getMediaType)
+            .collect(ImmutableSet.toImmutableSet());
+    Optional<ApiMediaType> mediaType =
+        contentNegotiationMediaType.negotiateMediaType(
+            request, httpHeaders, uriInfo, supportedMediaTypes);
+    ExceptionFormatExtension exceptionFormat =
+        mediaType
+            .flatMap(
+                apiMediaType ->
+                    extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class).stream()
+                        .filter(format -> apiMediaType == format.getMediaType())
+                        .findFirst())
+            .orElseGet(
+                () ->
+                    extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class).get(0));
+
+    String msg =
+        Objects.requireNonNullElse(
+            exception.getMessage(),
+            exception.getClass().getSimpleName()
+                + " at "
+                + exception.getStackTrace()[0].toString());
+    String msgCause =
+        Objects.requireNonNullElse(
+            Objects.nonNull(exception.getCause()) ? exception.getCause().getMessage() : "",
+            exception.getCause().getClass().getSimpleName()
+                + " at "
+                + exception.getCause().getStackTrace()[0].toString());
+
+    if (exception instanceof FormatNotSupportedException) {
+      return processException((FormatNotSupportedException) exception, exceptionFormat, msg);
+    } else if (exception instanceof InternalServerErrorException
+        && Objects.requireNonNullElse(exception.getCause(), exception)
+            instanceof MessageBodyProviderNotFoundException) {
+      // this catches exceptions when the API catalog is requested and the requested format cannot
+      // be written
+      return processException((InternalServerErrorException) exception, exceptionFormat, msgCause);
+    } else if (exception instanceof WebApplicationException) {
+      return processException((WebApplicationException) exception, exceptionFormat, msg);
+    } else if (exception instanceof IllegalArgumentException) {
+      return processException(
+          exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
     }
 
-    @Override
-    public Response toResponse(Throwable exception) {
-        // content negotiation for the error response
-        ImmutableSet<ApiMediaType> supportedMediaTypes = extensionRegistry.getExtensionsForType(
-                ExceptionFormatExtension.class)
-                                                                          .stream()
-                                                                          .map(FormatExtension::getMediaType)
-                                                                          .collect(ImmutableSet.toImmutableSet());
-        Optional<ApiMediaType> mediaType = contentNegotiationMediaType.negotiateMediaType(request, httpHeaders, uriInfo, supportedMediaTypes);
-        ExceptionFormatExtension exceptionFormat =
-            mediaType.flatMap(apiMediaType -> extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class)
-                .stream()
-                .filter(format -> apiMediaType == format.getMediaType())
-                .findFirst())
-                .orElseGet(() -> extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class).get(0));
+    long id = logException(exception);
+    final Response.Status responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
+    return Response.serverError()
+        .type(exceptionFormat.getMediaType().type())
+        .entity(
+            exceptionFormat.getExceptionEntity(
+                new ApiErrorMessage(
+                    responseStatus.getStatusCode(),
+                    responseStatus.getReasonPhrase(),
+                    String.format(
+                        "There was an error processing your request, it has been logged. Error ID: %016x",
+                        id))))
+        .build();
+  }
 
-        String msg = Objects.requireNonNullElse(exception.getMessage(),
-                                                exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString());
-        String msgCause = Objects.requireNonNullElse(Objects.nonNull(exception.getCause()) ? exception.getCause().getMessage() : "",
-                                                     exception.getCause().getClass().getSimpleName() + " at " + exception.getCause().getStackTrace()[0].toString());
+  private Response processException(
+      FormatNotSupportedException exception, ExceptionFormatExtension exceptionFormat, String msg) {
+    final Response.Status responseStatus = Response.Status.NOT_ACCEPTABLE;
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(
+          CLIENT_ERROR_TEMPLATE,
+          responseStatus.getStatusCode(),
+          getRequestPath(true),
+          exception.getMessage());
+    }
+    return Response.status(responseStatus)
+        .type(exceptionFormat.getMediaType().type())
+        .entity(
+            exceptionFormat.getExceptionEntity(
+                new ApiErrorMessage(
+                    responseStatus.getStatusCode(), responseStatus.getReasonPhrase(), msg)))
+        .build();
+  }
 
-        if (exception instanceof FormatNotSupportedException) {
-            return processException((FormatNotSupportedException) exception, exceptionFormat, msg);
-        } else if (exception instanceof InternalServerErrorException &&
-                   Objects.requireNonNullElse(exception.getCause(),exception) instanceof MessageBodyProviderNotFoundException) {
-            // this catches exceptions when the API catalog is requested and the requested format cannot be written
-            return processException((InternalServerErrorException) exception, exceptionFormat, msgCause);
-        } else if (exception instanceof WebApplicationException) {
-            return processException((WebApplicationException) exception, exceptionFormat, msg);
-        } else if (exception instanceof IllegalArgumentException) {
-            return processException(exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
-        }
+  private Response processException(
+      InternalServerErrorException exception,
+      ExceptionFormatExtension exceptionFormat,
+      String msg) {
+    final Response.Status responseStatus = Response.Status.NOT_ACCEPTABLE;
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(
+          CLIENT_ERROR_TEMPLATE,
+          responseStatus.getStatusCode(),
+          getRequestPath(true),
+          exception.getCause().getMessage());
+    }
+    return Response.status(responseStatus)
+        .type(exceptionFormat.getMediaType().type())
+        .entity(
+            exceptionFormat.getExceptionEntity(
+                new ApiErrorMessage(
+                    responseStatus.getStatusCode(), responseStatus.getReasonPhrase(), msg)))
+        .build();
+  }
 
-        long id = logException(exception);
-        final Response.Status responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
-        return Response.serverError()
-                .type(exceptionFormat.getMediaType().type())
-                .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
-                                                                            responseStatus.getReasonPhrase(),
-                                                                            String.format("There was an error processing your request, it has been logged. Error ID: %016x", id))))
-                .build();
+  private Response processException(
+      WebApplicationException exception, ExceptionFormatExtension exceptionFormat, String msg) {
+    final Response response = exception.getResponse();
+    Response.Status.Family family = response.getStatusInfo().getFamily();
+    if (family.equals(Response.Status.Family.REDIRECTION)) {
+      return response;
+    } else if (family.equals(Response.Status.Family.CLIENT_ERROR)) {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(
+            CLIENT_ERROR_TEMPLATE,
+            response.getStatus(),
+            getRequestPath(true),
+            exception.getMessage());
+      }
+      return Response.fromResponse(response)
+          .type(exceptionFormat.getMediaType().type())
+          .entity(
+              exceptionFormat.getExceptionEntity(
+                  new ApiErrorMessage(
+                      response.getStatus(), response.getStatusInfo().getReasonPhrase(), msg)))
+          .build();
     }
 
-    private Response processException(FormatNotSupportedException exception, ExceptionFormatExtension exceptionFormat, String msg) {
-        final Response.Status responseStatus = Response.Status.NOT_ACCEPTABLE;
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(CLIENT_ERROR_TEMPLATE, responseStatus.getStatusCode(), getRequestPath(true), exception.getMessage());
-        }
-        return Response.status(responseStatus)
-            .type(exceptionFormat.getMediaType().type())
-            .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
-                                                                           responseStatus.getReasonPhrase(),
-                                                                           msg)))
-            .build();
+    // family.equals(Response.Status.Family.SERVER_ERROR)
+    long id =
+        logException(Objects.nonNull(exception.getCause()) ? exception.getCause() : exception);
+    return Response.serverError()
+        .type(exceptionFormat.getMediaType().type())
+        .entity(
+            exceptionFormat.getExceptionEntity(
+                new ApiErrorMessage(
+                    response.getStatus(),
+                    response.getStatusInfo().getReasonPhrase(),
+                    String.format(
+                        "There was an error processing your request, it has been logged. Error ID: %016x",
+                        id))))
+        .build();
+  }
+
+  private Response processException(ExceptionFormatExtension exceptionFormat, String msg) {
+    final Response.Status responseStatus = Response.Status.BAD_REQUEST;
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(
+          CLIENT_ERROR_TEMPLATE, responseStatus.getStatusCode(), getRequestPath(true), msg);
     }
+    return Response.status(responseStatus)
+        .type(exceptionFormat.getMediaType().type())
+        .entity(
+            exceptionFormat.getExceptionEntity(
+                new ApiErrorMessage(
+                    responseStatus.getStatusCode(), responseStatus.getReasonPhrase(), msg)))
+        .build();
+  }
 
-    private Response processException(InternalServerErrorException exception, ExceptionFormatExtension exceptionFormat, String msg) {
-        final Response.Status responseStatus = Response.Status.NOT_ACCEPTABLE;
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(CLIENT_ERROR_TEMPLATE, responseStatus.getStatusCode(), getRequestPath(true), exception.getCause().getMessage());
-        }
-        return Response.status(responseStatus)
-            .type(exceptionFormat.getMediaType().type())
-            .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
-                                                                           responseStatus.getReasonPhrase(),
-                                                                           msg)))
-            .build();
+  @Override
+  protected long logException(Throwable exception) {
+    final long id = ThreadLocalRandom.current().nextLong();
+    String message = exception.getMessage();
+    if (Objects.isNull(message)) {
+      message =
+          exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
     }
-
-    private Response processException(WebApplicationException exception, ExceptionFormatExtension exceptionFormat, String msg) {
-        final Response response = exception.getResponse();
-        Response.Status.Family family = response.getStatusInfo().getFamily();
-        if (family.equals(Response.Status.Family.REDIRECTION)) {
-            return response;
-        } else if (family.equals(Response.Status.Family.CLIENT_ERROR)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug(CLIENT_ERROR_TEMPLATE, response.getStatus(), getRequestPath(true), exception.getMessage());
-            }
-            return Response.fromResponse(response)
-                .type(exceptionFormat.getMediaType().type())
-                .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(response.getStatus(),
-                                                                               response.getStatusInfo().getReasonPhrase(),
-                                                                               msg)))
-                .build();
-        }
-
-        // family.equals(Response.Status.Family.SERVER_ERROR)
-        long id = logException(Objects.nonNull(exception.getCause()) ? exception.getCause() : exception);
-        return Response.serverError()
-            .type(exceptionFormat.getMediaType().type())
-            .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(response.getStatus(),
-                                                                           response.getStatusInfo().getReasonPhrase(),
-                                                                           String.format("There was an error processing your request, it has been logged. Error ID: %016x", id))))
-            .build();
+    if (LOGGER.isErrorEnabled()) {
+      LOGGER.error(String.format("Server Error with ID %016x: {}", id), message);
     }
-
-    private Response processException(ExceptionFormatExtension exceptionFormat, String msg) {
-        final Response.Status responseStatus = Response.Status.BAD_REQUEST;
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(CLIENT_ERROR_TEMPLATE, responseStatus.getStatusCode(), getRequestPath(true), msg);
-        }
-        return Response.status(responseStatus)
-            .type(exceptionFormat.getMediaType().type())
-            .entity(exceptionFormat.getExceptionEntity(new ApiErrorMessage(responseStatus.getStatusCode(),
-                                                                           responseStatus.getReasonPhrase(),
-                                                                           msg)))
-            .build();
+    if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+      LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", exception);
     }
+    return id;
+  }
 
-    @Override
-    protected long logException(Throwable exception) {
-        final long id = ThreadLocalRandom.current().nextLong();
-        String message = exception.getMessage();
-        if (Objects.isNull(message)) {
-            message = exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
-        }
-        if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(String.format("Server Error with ID %016x: {}", id), message);
-        }
-        if(LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-            LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", exception);
-        }
-        return id;
-    }
-
-    private String getRequestPath(@SuppressWarnings("SameParameterValue") boolean queryParameters) {
-        String s = queryParameters ? uriInfo.getRequestUri().toString() :
-                                     uriInfo.getAbsolutePath().toString();
-        return s.substring(s.lastIndexOf("/rest/services") + 14);
-    }
-
+  private String getRequestPath(@SuppressWarnings("SameParameterValue") boolean queryParameters) {
+    String s =
+        queryParameters ? uriInfo.getRequestUri().toString() : uriInfo.getAbsolutePath().toString();
+    return s.substring(s.lastIndexOf("/rest/services") + 14);
+  }
 }

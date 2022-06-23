@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,40 +24,40 @@ import javax.inject.Singleton;
 @AutoBind
 public class OpenApiDefinition implements OpenApiExtension {
 
-    private final ExtensionRegistry extensionRegistry;
+  private final ExtensionRegistry extensionRegistry;
 
-    @Inject
-    public OpenApiDefinition(ExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+  @Inject
+  public OpenApiDefinition(ExtensionRegistry extensionRegistry) {
+    this.extensionRegistry = extensionRegistry;
+  }
+
+  @Override
+  public int getSortPriority() {
+    return 0;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return Oas30Configuration.class;
+  }
+
+  @Override
+  public OpenAPI process(OpenAPI openAPI, OgcApiDataV2 apiData) {
+    if (apiData != null) {
+
+      extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
+          .filter(endpoint -> endpoint.isEnabledForApi(apiData))
+          .map(endpoint -> endpoint.getDefinition(apiData))
+          .sorted(Comparator.comparing(ApiEndpointDefinition::getSortPriority))
+          .forEachOrdered(
+              ogcApiEndpointDefinition -> {
+                ogcApiEndpointDefinition.updateOpenApiDefinition(apiData, openAPI);
+              });
+
+      // TODO apply rename transformers for filter properties and values
+
     }
 
-    @Override
-    public int getSortPriority() {
-        return 0;
-    }
-
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return Oas30Configuration.class;
-    }
-
-    @Override
-    public OpenAPI process(OpenAPI openAPI, OgcApiDataV2 apiData) {
-        if (apiData != null) {
-
-            extensionRegistry.getExtensionsForType(EndpointExtension.class)
-                    .stream()
-                    .filter(endpoint -> endpoint.isEnabledForApi(apiData))
-                    .map(endpoint -> endpoint.getDefinition(apiData))
-                    .sorted(Comparator.comparing(ApiEndpointDefinition::getSortPriority))
-                    .forEachOrdered(ogcApiEndpointDefinition -> {
-                        ogcApiEndpointDefinition.updateOpenApiDefinition(apiData, openAPI);
-                    });
-
-            // TODO apply rename transformers for filter properties and values
-
-        }
-
-        return openAPI;
-    }
+    return openAPI;
+  }
 }

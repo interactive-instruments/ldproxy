@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,15 +24,15 @@ import javax.inject.Singleton;
 @AutoBind
 public class GeoJsonWriterRegistryImpl implements GeoJsonWriterRegistry {
 
-    private final Lazy<Set<GeoJsonWriter>> geoJsonWriters;
+  private final Lazy<Set<GeoJsonWriter>> geoJsonWriters;
 
-    @Inject
-    public GeoJsonWriterRegistryImpl(Lazy<Set<GeoJsonWriter>> geoJsonWriters) {
-        this.geoJsonWriters = geoJsonWriters;
-    }
+  @Inject
+  public GeoJsonWriterRegistryImpl(Lazy<Set<GeoJsonWriter>> geoJsonWriters) {
+    this.geoJsonWriters = geoJsonWriters;
+  }
 
-    @Override
-    public List<GeoJsonWriter> getGeoJsonWriters() {
-        return ImmutableList.copyOf(geoJsonWriters.get());
-    }
+  @Override
+  public List<GeoJsonWriter> getGeoJsonWriters() {
+    return ImmutableList.copyOf(geoJsonWriters.get());
+  }
 }

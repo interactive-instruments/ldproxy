@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,8 +12,7 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 @AutoMultiBind
 public interface OgcApiDataHydratorExtension extends ApiExtension {
 
-    int getSortPriority();
+  int getSortPriority();
 
-    OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData);
-
+  OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData);
 }

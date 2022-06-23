@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,62 +14,72 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.Set;
 import org.immutables.value.Value;
 
-import java.util.Set;
-
-
-
 @Value.Immutable
-public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache implements OgcApiQueryParameter {
+public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
+    implements OgcApiQueryParameter {
 
-    public abstract String getApiId();
-    public abstract String getCollectionId();
-    public abstract Schema<?> getSchema();
-    public abstract SchemaValidator getSchemaValidator();
+  public abstract String getApiId();
 
-    @Override
-    @Value.Default
-    public String getId() { return getName()+"_"+getCollectionId(); }
+  public abstract String getCollectionId();
 
-    @Override
-    public abstract String getName();
+  public abstract Schema<?> getSchema();
 
-    @Override
-    public abstract String getDescription();
+  public abstract SchemaValidator getSchemaValidator();
 
-    @Override
-    @Value.Default
-    public boolean getExplode() { return false; }
+  @Override
+  @Value.Default
+  public String getId() {
+    return getName() + "_" + getCollectionId();
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + collectionId + method.name(), () ->
-            apiData.getId().equals(getApiId()) &&
-                method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}") &&
-                collectionId.equals(getCollectionId()));
-    }
+  @Override
+  public abstract String getName();
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            false);
-    }
+  @Override
+  public abstract String getDescription();
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return getSchema();
-    }
+  @Override
+  @Value.Default
+  public boolean getExplode() {
+    return false;
+  }
 
-    @Override
-    public Set<String> getFilterParameters(Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
-        if (!isEnabledForApi(apiData))
-            return filterParameters;
+  @Override
+  public boolean isApplicable(
+      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName()
+            + apiData.hashCode()
+            + definitionPath
+            + collectionId
+            + method.name(),
+        () ->
+            apiData.getId().equals(getApiId())
+                && method == HttpMethods.GET
+                && definitionPath.equals("/collections/{collectionId}")
+                && collectionId.equals(getCollectionId()));
+  }
 
-        return ImmutableSet.<String>builder()
-                .addAll(filterParameters)
-                .add(getId(collectionId))
-                .build();
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () -> false);
+  }
+
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return getSchema();
+  }
+
+  @Override
+  public Set<String> getFilterParameters(
+      Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
+    if (!isEnabledForApi(apiData)) return filterParameters;
+
+    return ImmutableSet.<String>builder().addAll(filterParameters).add(getId(collectionId)).build();
+  }
 }

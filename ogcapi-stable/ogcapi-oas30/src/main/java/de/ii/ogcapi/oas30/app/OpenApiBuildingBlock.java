@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,37 +11,33 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.oas30.domain.ImmutableOas30Configuration;
-import de.ii.ogcapi.oas30.domain.Oas30Configuration;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
  * @title OpenAPI 3.0
- * @langEn The module *OpenAPI 3.0* may be enabled for every API with a feature provider.
- * It provides the resource *API Definition*.
- *
+ * @langEn The module *OpenAPI 3.0* may be enabled for every API with a feature provider. It
+ *     provides the resource *API Definition*.
  * @conformanceEn *OpenAPI 3.0* implements all requirements of conformance class *OpenAPI 3.0* from
- * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30)
- * for the mentioned resource.
- * @langDe Das Modul *OpenAPI 3.0* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt die Ressource "API Definition" bereit.
- *
+ *     [OGC API - Features - Part 1: Core
+ *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30) for the mentioned
+ *     resource.
+ * @langDe Das Modul *OpenAPI 3.0* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt
+ *     die Ressource "API Definition" bereit.
  * @conformanceDe *OpenAPI 3.0* implementiert alle Vorgaben der gleichnamigen Konformitätsklasse von
- * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30).
+ *     [OGC API - Features - Part 1: Core
+ *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30).
  * @propertyTable {@link de.ii.ogcapi.oas30.domain.ImmutableOas30Configuration}
  */
 @Singleton
 @AutoBind
 public class OpenApiBuildingBlock implements ApiBuildingBlock {
 
-    @Inject
-    public OpenApiBuildingBlock() {
-    }
+  @Inject
+  public OpenApiBuildingBlock() {}
 
-    @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableOas30Configuration.Builder().enabled(true)
-                                                        .build();
-    }
-
+  @Override
+  public ExtensionConfiguration getDefaultConfiguration() {
+    return new ImmutableOas30Configuration.Builder().enabled(true).build();
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -37,102 +37,124 @@ import javax.inject.Singleton;
 @AutoBind
 public class CollectionsOnLandingPage implements LandingPageExtension {
 
-    private final I18n i18n;
-    private final ExtensionRegistry extensionRegistry;
+  private final I18n i18n;
+  private final ExtensionRegistry extensionRegistry;
 
-    @Inject
-    public CollectionsOnLandingPage(ExtensionRegistry extensionRegistry, I18n i18n) {
-        this.extensionRegistry = extensionRegistry;
-        this.i18n = i18n;
+  @Inject
+  public CollectionsOnLandingPage(ExtensionRegistry extensionRegistry, I18n i18n) {
+    this.extensionRegistry = extensionRegistry;
+    this.i18n = i18n;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CollectionsConfiguration.class;
+  }
+
+  @Override
+  public ImmutableLandingPage.Builder process(
+      Builder landingPageBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+    OgcApiDataV2 apiData = api.getData();
+    if (!isEnabledForApi(apiData)) {
+      return landingPageBuilder;
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CollectionsConfiguration.class;
+    List<String> collectionNames =
+        apiData.getCollections().values().stream()
+            .filter(featureType -> featureType.getEnabled())
+            .map(featureType -> featureType.getLabel())
+            .collect(Collectors.toList());
+    String suffix =
+        (collectionNames.size() > 0 && collectionNames.size() <= 4)
+            ? " (" + String.join(", ", collectionNames) + ")"
+            : "";
+
+    landingPageBuilder
+        .addLinks(
+            new ImmutableLink.Builder()
+                .href(
+                    uriCustomizer
+                        .copy()
+                        .ensureNoTrailingSlash()
+                        .ensureLastPathSegment("collections")
+                        .removeParameters("f")
+                        .toString())
+                .rel("data")
+                .title(i18n.get("dataLink", language) + suffix)
+                .build())
+        .addLinks(
+            new ImmutableLink.Builder()
+                .href(
+                    uriCustomizer
+                        .copy()
+                        .ensureNoTrailingSlash()
+                        .ensureLastPathSegment("collections")
+                        .removeParameters("f")
+                        .toString())
+                .rel("http://www.opengis.net/def/rel/ogc/1.0/data")
+                .title(i18n.get("dataLink", language) + suffix)
+                .build());
+
+    ImmutableList.Builder<Link> distributionLinks =
+        new ImmutableList.Builder<Link>()
+            .addAll(
+                apiData
+                    .getExtension(CollectionsConfiguration.class)
+                    .map(CollectionsConfiguration::getAdditionalLinks)
+                    .orElse(ImmutableList.<Link>of())
+                    .stream()
+                    .filter(link -> Objects.equals(link.getRel(), "enclosure"))
+                    .collect(Collectors.toUnmodifiableList()));
+
+    // for cases with a single collection, that collection is not reported as a sub-dataset and we
+    // need to
+    // determine the distribution links (enclosure links provided in additonalLinks and the regular
+    // items
+    // links to the features in the API)
+    if (apiData.getCollections().size() == 1) {
+      String collectionId = apiData.getCollections().keySet().iterator().next();
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration =
+          apiData.getCollections().get(collectionId);
+      distributionLinks.addAll(
+          featureTypeConfiguration.getAdditionalLinks().stream()
+              .filter(link -> Objects.equals(link.getRel(), "enclosure"))
+              .collect(Collectors.toUnmodifiableList()));
+
+      ImmutableOgcApiCollection.Builder ogcApiCollection =
+          ImmutableOgcApiCollection.builder().id(collectionId);
+      for (CollectionExtension ogcApiCollectionExtension :
+          extensionRegistry.getExtensionsForType(CollectionExtension.class)) {
+        ogcApiCollection =
+            ogcApiCollectionExtension.process(
+                ogcApiCollection,
+                featureTypeConfiguration,
+                api,
+                uriCustomizer
+                    .copy()
+                    .clearParameters()
+                    .ensureLastPathSegments("collections", collectionId)
+                    .ensureNoTrailingSlash(),
+                false,
+                mediaType,
+                alternateMediaTypes,
+                language);
+      }
+      distributionLinks.addAll(
+          ogcApiCollection.build().getLinks().stream()
+              .filter(
+                  link ->
+                      Objects.equals(link.getRel(), "items")
+                          && !Objects.equals(link.getType(), "text/html"))
+              .collect(Collectors.toUnmodifiableList()));
     }
 
-    @Override
-    public ImmutableLandingPage.Builder process(Builder landingPageBuilder, OgcApi api,
-                                                URICustomizer uriCustomizer,
-                                                ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes,
-                                                Optional<Locale> language) {
-        OgcApiDataV2 apiData = api.getData();
-        if (!isEnabledForApi(apiData)) {
-            return landingPageBuilder;
-        }
+    landingPageBuilder.putExtensions("datasetDownloadLinks", distributionLinks.build());
 
-        List<String> collectionNames = apiData.getCollections()
-                .values()
-                .stream()
-                .filter(featureType -> featureType.getEnabled())
-                .map(featureType -> featureType.getLabel())
-                .collect(Collectors.toList());
-        String suffix = (collectionNames.size()>0 && collectionNames.size()<=4) ? " ("+String.join(", ", collectionNames)+")" : "";
-
-        landingPageBuilder.addLinks(new ImmutableLink.Builder()
-                                            .href(uriCustomizer.copy()
-                                                               .ensureNoTrailingSlash()
-                                                               .ensureLastPathSegment("collections")
-                                                               .removeParameters("f")
-                                                               .toString())
-                                            .rel("data")
-                                            .title(i18n.get("dataLink",language) + suffix)
-                                            .build())
-                          .addLinks(new ImmutableLink.Builder()
-                                            .href(uriCustomizer.copy()
-                                                               .ensureNoTrailingSlash()
-                                                               .ensureLastPathSegment("collections")
-                                                               .removeParameters("f")
-                                                               .toString())
-                                            .rel("http://www.opengis.net/def/rel/ogc/1.0/data")
-                                            .title(i18n.get("dataLink",language) + suffix)
-                                            .build());
-
-        ImmutableList.Builder<Link> distributionLinks = new ImmutableList.Builder<Link>()
-                .addAll(apiData.getExtension(CollectionsConfiguration.class)
-                               .map(CollectionsConfiguration::getAdditionalLinks)
-                               .orElse(ImmutableList.<Link>of())
-                               .stream()
-                               .filter(link -> Objects.equals(link.getRel(), "enclosure"))
-                               .collect(Collectors.toUnmodifiableList()));
-
-        // for cases with a single collection, that collection is not reported as a sub-dataset and we need to
-        // determine the distribution links (enclosure links provided in additonalLinks and the regular items
-        // links to the features in the API)
-        if (apiData.getCollections().size() == 1) {
-            String collectionId = apiData.getCollections().keySet().iterator().next();
-            FeatureTypeConfigurationOgcApi featureTypeConfiguration = apiData.getCollections()
-                                                                             .get(collectionId);
-            distributionLinks.addAll(featureTypeConfiguration.getAdditionalLinks()
-                                                             .stream()
-                                                             .filter(link -> Objects.equals(link.getRel(), "enclosure"))
-                                                             .collect(Collectors.toUnmodifiableList()));
-
-            ImmutableOgcApiCollection.Builder ogcApiCollection = ImmutableOgcApiCollection.builder()
-                                                                                          .id(collectionId);
-            for (CollectionExtension ogcApiCollectionExtension : extensionRegistry.getExtensionsForType(CollectionExtension.class)) {
-                ogcApiCollection = ogcApiCollectionExtension.process(ogcApiCollection,
-                                                                     featureTypeConfiguration,
-                                                                     api,
-                                                                     uriCustomizer.copy()
-                                                                                  .clearParameters()
-                                                                                  .ensureLastPathSegments("collections", collectionId)
-                                                                                  .ensureNoTrailingSlash(),
-                                                                     false,
-                                                                     mediaType,
-                                                                     alternateMediaTypes,
-                                                                     language);
-            }
-            distributionLinks.addAll(ogcApiCollection.build()
-                                                     .getLinks()
-                                                     .stream()
-                                                     .filter(link -> Objects.equals(link.getRel(), "items") && !Objects.equals(link.getType(), "text/html"))
-                                                     .collect(Collectors.toUnmodifiableList()));
-        }
-
-        landingPageBuilder.putExtensions("datasetDownloadLinks", distributionLinks.build());
-
-        return landingPageBuilder;
-    }
+    return landingPageBuilder;
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,23 +15,34 @@ import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
-import de.ii.ogcapi.foundation.domain.*;
+import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.Endpoint;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
-
+import java.util.List;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @langEn The URIs of all conformance classes supported by the server. This information is provided
- * to support 'generic' clients that want to access multiple OGC API implementations - and not
- * 'just' a specific API. For clients accessing only a single API, this information is in general
- * not relevant and the OpenAPI definition details the required information about the API.
+ *     to support 'generic' clients that want to access multiple OGC API implementations - and not
+ *     'just' a specific API. For clients accessing only a single API, this information is in
+ *     general not relevant and the OpenAPI definition details the required information about the
+ *     API.
  * @langDe TODO
  * @name Conformance Declaration
  * @path /{apiId}/conformance
@@ -46,8 +57,8 @@ public class EndpointConformance extends Endpoint {
   private final QueriesHandlerCommon queryHandler;
 
   @Inject
-  public EndpointConformance(ExtensionRegistry extensionRegistry,
-      QueriesHandlerCommon queryHandler) {
+  public EndpointConformance(
+      ExtensionRegistry extensionRegistry, QueriesHandlerCommon queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
   }
@@ -67,34 +78,50 @@ public class EndpointConformance extends Endpoint {
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("conformance")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_CONFORMANCE);
-    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/conformance");
+    List<OgcApiQueryParameter> queryParameters =
+        getQueryParameters(extensionRegistry, apiData, "/conformance");
     String operationSummary = "conformance declaration";
-    Optional<String> operationDescription = Optional.of("The URIs of all conformance classes supported by the server. " +
-            "This information is provided to support 'generic' clients that want to access multiple " +
-            "OGC API implementations - and not 'just' a specific API. For clients accessing only a single " +
-            "API, this information is in general not relevant and the OpenAPI definition details the " +
-            "required information about the API.");
+    Optional<String> operationDescription =
+        Optional.of(
+            "The URIs of all conformance classes supported by the server. "
+                + "This information is provided to support 'generic' clients that want to access multiple "
+                + "OGC API implementations - and not 'just' a specific API. For clients accessing only a single "
+                + "API, this information is in general not relevant and the OpenAPI definition details the "
+                + "required information about the API.");
     String path = "/conformance";
-    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-            .path(path);
-    ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
-                    getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS)
-            .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
+    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+        new ImmutableOgcApiResourceAuxiliary.Builder().path(path);
+    ApiOperation.getResource(
+            apiData,
+            path,
+            false,
+            queryParameters,
+            ImmutableList.of(),
+            getContent(apiData, path),
+            operationSummary,
+            operationDescription,
+            Optional.empty(),
+            TAGS)
+        .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 
     return definitionBuilder.build();
   }
 
   @GET
-  public Response getConformanceClasses(@Auth Optional<User> optionalUser, @Context OgcApi api,
+  public Response getConformanceClasses(
+      @Auth Optional<User> optionalUser,
+      @Context OgcApi api,
       @Context ApiRequestContext requestContext) {
 
-    QueriesHandlerCommonImpl.QueryInputConformance queryInput = new ImmutableQueryInputConformance.Builder()
-        .from(getGenericQueryInput(api.getData()))
-        .build();
+    QueriesHandlerCommonImpl.QueryInputConformance queryInput =
+        new ImmutableQueryInputConformance.Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .build();
 
     return queryHandler.handle(Query.CONFORMANCE_DECLARATION, queryInput, requestContext);
   }

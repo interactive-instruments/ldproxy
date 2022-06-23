@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,31 +7,27 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import org.immutables.value.Value;
-
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 public interface HeaderContentDisposition {
-    boolean getAttachment();
-    Optional<String> getFilename();
+  boolean getAttachment();
 
-    static HeaderContentDisposition of() {
-        return new ImmutableHeaderContentDisposition.Builder()
-            .attachment(false)
-            .build();
-    }
+  Optional<String> getFilename();
 
-    static HeaderContentDisposition of(boolean attachment) {
-        return new ImmutableHeaderContentDisposition.Builder()
-            .attachment(attachment)
-            .build();
-    }
+  static HeaderContentDisposition of() {
+    return new ImmutableHeaderContentDisposition.Builder().attachment(false).build();
+  }
 
-    static HeaderContentDisposition of(String filename) {
-        return new ImmutableHeaderContentDisposition.Builder()
-            .attachment(false)
-            .filename(filename)
-            .build();
-    }
+  static HeaderContentDisposition of(boolean attachment) {
+    return new ImmutableHeaderContentDisposition.Builder().attachment(attachment).build();
+  }
+
+  static HeaderContentDisposition of(String filename) {
+    return new ImmutableHeaderContentDisposition.Builder()
+        .attachment(false)
+        .filename(filename)
+        .build();
+  }
 }

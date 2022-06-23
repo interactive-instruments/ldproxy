@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,5 +26,4 @@ public class UnprocessableEntity extends RuntimeException {
   public UnprocessableEntity(Throwable cause) {
     super(cause);
   }
-
 }

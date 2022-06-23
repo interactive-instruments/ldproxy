@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,38 +16,36 @@ import javax.inject.Singleton;
 /**
  * @title Common Core
  * @langEn The module *Common Core* is always enabled. It provides the resources *Landing Page*,
- * *Conformance Declaration* and *API Definition*.
+ *     *Conformance Declaration* and *API Definition*.
  * @langDe Das Modul *Common Core* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt
- * die Ressourcen *Landing Page*, *Conformance Declaration* und *API Definition* bereit.
+ *     die Ressourcen *Landing Page*, *Conformance Declaration* und *API Definition* bereit.
  * @conformanceEn *Common Core* implements all requirements of conformance class *Core* of [OGC API
- * - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for
- * the three mentioned resources.
- * <p>
- * ::: info The conformance class *Core* was split up into multiple modules in anticipation of
- * the upcoming standard *OGC API Common*. :::
- * <p>
+ *     - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
+ *     for the three mentioned resources.
+ *     <p>::: info The conformance class *Core* was split up into multiple modules in anticipation
+ *     of the upcoming standard *OGC API Common*. :::
+ *     <p>
  * @conformanceDe *Common Core* implementiert alle Vorgaben der Konformitätsklasse *Core* von [OGC
- * API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
- * für die drei genannten Ressourcen.
- * <p>
- * ::: tip:Info Die Konformitätsklasse wurde in ldproxy auf drei Module aufgeteilt, da vorgesehen
- * ist, die jeweiligen Anforderungen für die Nutzung in anderen OGC API Standards als zwei Teile von
- * OGC API Common zu veröffentlichen. Die Module "Common Core" und "Feature Collections" bilden dies
- * ab. :::
- * <p>
+ *     API - Features - Part 1: Core
+ *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für die drei genannten
+ *     Ressourcen.
+ *     <p>::: tip:Info Die Konformitätsklasse wurde in ldproxy auf drei Module aufgeteilt, da
+ *     vorgesehen ist, die jeweiligen Anforderungen für die Nutzung in anderen OGC API Standards als
+ *     zwei Teile von OGC API Common zu veröffentlichen. Die Module "Common Core" und "Feature
+ *     Collections" bilden dies ab. :::
+ *     <p>
  * @propertyTable {@link de.ii.ogcapi.common.domain.ImmutableCommonConfiguration}
  * @example {@link de.ii.ogcapi.common.domain.CommonConfiguration}
- * @endpointTable {@link de.ii.ogcapi.common.infra.EndpointLandingPage},
- * {@link de.ii.ogcapi.common.infra.EndpointConformance},
- * {@link de.ii.ogcapi.common.infra.EndpointDefinition}
+ * @endpointTable {@link de.ii.ogcapi.common.infra.EndpointLandingPage}, {@link
+ *     de.ii.ogcapi.common.infra.EndpointConformance}, {@link
+ *     de.ii.ogcapi.common.infra.EndpointDefinition}
  */
 @Singleton
 @AutoBind
 public class CommonBuildingBlock implements ApiBuildingBlock {
 
   @Inject
-  public CommonBuildingBlock() {
-  }
+  public CommonBuildingBlock() {}
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {

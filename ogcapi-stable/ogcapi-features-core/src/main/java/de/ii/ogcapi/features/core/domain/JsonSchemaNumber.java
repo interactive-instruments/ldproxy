@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,24 +8,27 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.hash.Funnel;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaNumber extends JsonSchema {
 
-    public final String getType() { return "number"; }
+  public final String getType() {
+    return "number";
+  }
 
-    public abstract Optional<Double> getMinimum();
-    public abstract Optional<Double> getMaximum();
+  public abstract Optional<Double> getMinimum();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaNumber> FUNNEL = (from, into) -> {
+  public abstract Optional<Double> getMaximum();
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaNumber> FUNNEL =
+      (from, into) -> {
         into.putString(from.getType(), StandardCharsets.UTF_8);
         from.getMinimum().ifPresent(val -> into.putDouble(val));
         from.getMaximum().ifPresent(val -> into.putDouble(val));
-    };
+      };
 }

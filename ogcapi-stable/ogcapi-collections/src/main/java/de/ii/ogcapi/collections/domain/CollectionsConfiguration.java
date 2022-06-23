@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,12 +15,12 @@ import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.Link;
 import java.util.List;
+import java.util.Optional;
 import org.immutables.value.Value;
 
-import java.util.Optional;
-
 /**
- /**
+ * /**
+ *
  * @example <code>
  * ```yaml
  * - buildingBlock: COLLECTIONS
@@ -53,65 +53,68 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableCollectionsConfiguration.Builder.class)
 public interface CollectionsConfiguration extends ExtensionConfiguration, CachingConfiguration {
 
-    abstract class Builder extends ExtensionConfiguration.Builder {
+  abstract class Builder extends ExtensionConfiguration.Builder {}
 
-    }
   /**
-   * @langEn Add additional links to the *Collections* resource. The value is an array of link objects.
-   * Required properties of a link are a URI (`href`), a label (`label`) and a relation (`rel`).
-   * @langDe Erlaubt es, zusätzliche Links in der Ressource Feature Collections zu ergänzen. Der Wert ist
-   * ein Array von Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende Text
-   * (`label`) und die Link-Relation (`rel`).
+   * @langEn Add additional links to the *Collections* resource. The value is an array of link
+   *     objects. Required properties of a link are a URI (`href`), a label (`label`) and a relation
+   *     (`rel`).
+   * @langDe Erlaubt es, zusätzliche Links in der Ressource Feature Collections zu ergänzen. Der
+   *     Wert ist ein Array von Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`),
+   *     der anzuzeigende Text (`label`) und die Link-Relation (`rel`).
    * @default `[]`
    */
   @JsonMerge(OptBoolean.FALSE)
-    List<Link> getAdditionalLinks();
+  List<Link> getAdditionalLinks();
 
   /**
-   * @langEn Controls whether each feature collection and subresource is listed as a single resource in the
-   * API definition (`false`), or whether a path parameter `collectionId` is used and each resource is
-   * specified only once in the definition (`true`). With `true` the API definition becomes simpler and
-   * shorter, but the schema is no longer collection-specific and collection-specific query parameters
-   * can no longer be specified in the API definition.
-   * @langDe Steuert, ob in der API-Definition jede Feature Collection und untergeordnete Ressourcen jeweils
-   * als einzelne Ressource aufgeführt wird (`false`), oder ob ein Pfad-Parameter `collectionId` verwendet
-   * wird und jede Ressource nur einmal in der Definition spezifiziert wird (`true`). Bei `true` wird die
-   * API-Definition einfacher und kürzer, aber das Schema ist nicht mehr Collection-spezifisch und
-   * Collection-spezifische Query-Parameter können nicht mehr in der API-Definition spezifiziert werden.
+   * @langEn Controls whether each feature collection and subresource is listed as a single resource
+   *     in the API definition (`false`), or whether a path parameter `collectionId` is used and
+   *     each resource is specified only once in the definition (`true`). With `true` the API
+   *     definition becomes simpler and shorter, but the schema is no longer collection-specific and
+   *     collection-specific query parameters can no longer be specified in the API definition.
+   * @langDe Steuert, ob in der API-Definition jede Feature Collection und untergeordnete Ressourcen
+   *     jeweils als einzelne Ressource aufgeführt wird (`false`), oder ob ein Pfad-Parameter
+   *     `collectionId` verwendet wird und jede Ressource nur einmal in der Definition spezifiziert
+   *     wird (`true`). Bei `true` wird die API-Definition einfacher und kürzer, aber das Schema ist
+   *     nicht mehr Collection-spezifisch und Collection-spezifische Query-Parameter können nicht
+   *     mehr in der API-Definition spezifiziert werden.
    * @default `false`
    */
-    Optional<Boolean> getCollectionIdAsParameter();
+  Optional<Boolean> getCollectionIdAsParameter();
 
   /**
-   * @langEn If in the case of `collectionIdAsParameter: true` all collections have a structurally identical
-   * schema and the same queryables, the value `true` can be used to control that in the API definition
-   * schema and queryables are determined from any collection.
-   * @langDe Sofern im Fall von `collectionIdAsParameter: true` alle Collections ein strukturell identisches
-   * Schema besitzen und dieselben Queryables haben, kann mit dem Wert `true` gesteuert werden,
-   * dass in der API-Definition Schema und Queryables aus einer beliebigen Collection bestimmt werden.
+   * @langEn If in the case of `collectionIdAsParameter: true` all collections have a structurally
+   *     identical schema and the same queryables, the value `true` can be used to control that in
+   *     the API definition schema and queryables are determined from any collection.
+   * @langDe Sofern im Fall von `collectionIdAsParameter: true` alle Collections ein strukturell
+   *     identisches Schema besitzen und dieselben Queryables haben, kann mit dem Wert `true`
+   *     gesteuert werden, dass in der API-Definition Schema und Queryables aus einer beliebigen
+   *     Collection bestimmt werden.
    * @default `false`
    */
   Optional<Boolean> getCollectionDefinitionsAreIdentical();
 
-    @Override
-    default Builder getBuilder() {
-        return new ImmutableCollectionsConfiguration.Builder();
+  @Override
+  default Builder getBuilder() {
+    return new ImmutableCollectionsConfiguration.Builder();
   }
 
   @Override
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-    ImmutableCollectionsConfiguration.Builder builder = new ImmutableCollectionsConfiguration.Builder()
-        .from(source)
-        .from(this);
+    ImmutableCollectionsConfiguration.Builder builder =
+        new ImmutableCollectionsConfiguration.Builder().from(source).from(this);
 
     List<Link> links = Lists.newArrayList(((CollectionsConfiguration) source).getAdditionalLinks());
-    getAdditionalLinks().forEach(link -> {
-      if (!links.contains(link)) {
-        links.add(link);
-      }
-    });
+    getAdditionalLinks()
+        .forEach(
+            link -> {
+              if (!links.contains(link)) {
+                links.add(link);
+              }
+            });
     builder.additionalLinks(links);
 
     return builder.build();
-    }
+  }
 }

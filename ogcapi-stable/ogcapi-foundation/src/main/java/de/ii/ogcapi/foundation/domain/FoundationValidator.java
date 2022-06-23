@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -18,32 +18,45 @@ import java.util.Objects;
 public final class FoundationValidator {
   private FoundationValidator() {}
 
-  public static ImmutableValidationResult.Builder validateLinks(ImmutableValidationResult.Builder builder, List<Link> links, String path) {
-        links.stream()
-             .filter(link -> {
-                 try {
-                     new URL(link.getHref()).toURI();
-                     return false;
-                 } catch (URISyntaxException | MalformedURLException e) {
-                     return true;
-                 }
-             })
-             .forEach(link -> {
-                 builder.addStrictErrors(MessageFormat.format("Link ''{0}'' in resource ''{1}'' is not a valid URI.", link.getHref(), path));
-             });
-        links.stream()
-             .filter(link -> Objects.isNull(link.getRel()))
-             .forEach(link -> {
-                 builder.addStrictErrors(MessageFormat.format("Link ''{0}'' in resource ''{1}'' has no link relation type (attribute ''rel'').", link.getHref(), path));
-             });
-        return builder;
-    }
+  public static ImmutableValidationResult.Builder validateLinks(
+      ImmutableValidationResult.Builder builder, List<Link> links, String path) {
+    links.stream()
+        .filter(
+            link -> {
+              try {
+                new URL(link.getHref()).toURI();
+                return false;
+              } catch (URISyntaxException | MalformedURLException e) {
+                return true;
+              }
+            })
+        .forEach(
+            link -> {
+              builder.addStrictErrors(
+                  MessageFormat.format(
+                      "Link ''{0}'' in resource ''{1}'' is not a valid URI.",
+                      link.getHref(), path));
+            });
+    links.stream()
+        .filter(link -> Objects.isNull(link.getRel()))
+        .forEach(
+            link -> {
+              builder.addStrictErrors(
+                  MessageFormat.format(
+                      "Link ''{0}'' in resource ''{1}'' has no link relation type (attribute ''rel'').",
+                      link.getHref(), path));
+            });
+    return builder;
+  }
 
-    public static ImmutableValidationResult.Builder validateUri(ImmutableValidationResult.Builder builder, String uri, String path) {
-         try {
-             new URL(uri).toURI();
-         } catch (URISyntaxException | MalformedURLException e) {
-             builder.addStrictErrors(MessageFormat.format("Link ''{0}'' in resource ''{1}'' is not a valid URI.", uri, path));         }
-        return builder;
+  public static ImmutableValidationResult.Builder validateUri(
+      ImmutableValidationResult.Builder builder, String uri, String path) {
+    try {
+      new URL(uri).toURI();
+    } catch (URISyntaxException | MalformedURLException e) {
+      builder.addStrictErrors(
+          MessageFormat.format("Link ''{0}'' in resource ''{1}'' is not a valid URI.", uri, path));
     }
+    return builder;
+  }
 }

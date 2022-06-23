@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -28,9 +28,7 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
   @JsonProperty("definitions")
   public abstract Map<String, JsonSchema> getDefinitions();
 
-  abstract static class Builder extends JsonSchemaDocument.Builder {
-
-  }
+  abstract static class Builder extends JsonSchemaDocument.Builder {}
 
   @Value.Check
   public JsonSchemaDocumentV7 adjustRefs() {
@@ -49,16 +47,18 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
   }
 
   static Map<String, JsonSchema> adjustRefs(Map<String, JsonSchema> schemas) {
-    return schemas.entrySet()
-        .stream()
-        .map(property -> new SimpleImmutableEntry<>(property.getKey(),
-            isRefWithWrongVersion(property.getValue())
-                ? adjustRef((JsonSchemaRef) property.getValue())
-                : property.getValue() instanceof JsonSchemaObject
-                    ? adjustRefs((JsonSchemaObject) property.getValue())
-                    : property.getValue() instanceof JsonSchemaArray
-                        ? adjustRefs((JsonSchemaArray) property.getValue())
-                        : property.getValue()))
+    return schemas.entrySet().stream()
+        .map(
+            property ->
+                new SimpleImmutableEntry<>(
+                    property.getKey(),
+                    isRefWithWrongVersion(property.getValue())
+                        ? adjustRef((JsonSchemaRef) property.getValue())
+                        : property.getValue() instanceof JsonSchemaObject
+                            ? adjustRefs((JsonSchemaObject) property.getValue())
+                            : property.getValue() instanceof JsonSchemaArray
+                                ? adjustRefs((JsonSchemaArray) property.getValue())
+                                : property.getValue()))
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
   }
 
@@ -88,21 +88,21 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
 
   static JsonSchemaRefV7 adjustRef(JsonSchemaRef schema) {
     if (isRefWithWrongVersion(schema)) {
-      return ImmutableJsonSchemaRefV7.builder()
-          .from(schema)
-          .build();
+      return ImmutableJsonSchemaRefV7.builder().from(schema).build();
     }
 
     return (JsonSchemaRefV7) schema;
   }
 
   static boolean hasRefsWithWrongVersion(Map<String, JsonSchema> schemas) {
-    return schemas.values().stream().anyMatch(property ->
-        isRefWithWrongVersion(property)
-            || (property instanceof JsonSchemaObject
-              && hasRefsWithWrongVersion((JsonSchemaObject) property))
-            || (property instanceof JsonSchemaArray
-              && isRefWithWrongVersion(((JsonSchemaArray) property).getItems())));
+    return schemas.values().stream()
+        .anyMatch(
+            property ->
+                isRefWithWrongVersion(property)
+                    || (property instanceof JsonSchemaObject
+                        && hasRefsWithWrongVersion((JsonSchemaObject) property))
+                    || (property instanceof JsonSchemaArray
+                        && isRefWithWrongVersion(((JsonSchemaArray) property).getItems())));
   }
 
   static boolean hasRefsWithWrongVersion(JsonSchemaObject schema) {
@@ -114,8 +114,8 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
   }
 
   static boolean hasRefsWithWrongVersion(JsonSchemaDocument schema) {
-    return hasRefsWithWrongVersion(schema.getProperties()) || hasRefsWithWrongVersion(
-        schema.getDefinitions());
+    return hasRefsWithWrongVersion(schema.getProperties())
+        || hasRefsWithWrongVersion(schema.getDefinitions());
   }
 
   static boolean isRefWithWrongVersion(JsonSchema schema) {

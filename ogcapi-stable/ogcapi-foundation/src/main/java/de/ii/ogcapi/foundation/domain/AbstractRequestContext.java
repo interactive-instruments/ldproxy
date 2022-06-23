@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,82 +8,89 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.collect.ImmutableMap;
+import java.net.URI;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import javax.ws.rs.core.Request;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.Request;
-import java.net.URI;
-import java.util.*;
-
-
 @Value.Immutable
 public abstract class AbstractRequestContext implements ApiRequestContext {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestContext.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestContext.class);
 
-    abstract URI getRequestUri();
+  abstract URI getRequestUri();
 
-    abstract Optional<URI> getExternalUri();
+  abstract Optional<URI> getExternalUri();
 
-    @Override
-    public abstract ApiMediaType getMediaType();
+  @Override
+  public abstract ApiMediaType getMediaType();
 
-    @Override
-    public abstract List<ApiMediaType> getAlternateMediaTypes();
+  @Override
+  public abstract List<ApiMediaType> getAlternateMediaTypes();
 
-    @Override
-    public abstract Optional<Locale> getLanguage();
+  @Override
+  public abstract Optional<Locale> getLanguage();
 
-    @Override
-    public abstract Optional<Request> getRequest();
+  @Override
+  public abstract Optional<Request> getRequest();
 
-    @Value.Derived
-    @Override
-    public URICustomizer getUriCustomizer() {
-        URICustomizer uriCustomizer = new URICustomizer(getRequestUri());
+  @Value.Derived
+  @Override
+  public URICustomizer getUriCustomizer() {
+    URICustomizer uriCustomizer = new URICustomizer(getRequestUri());
 
-        if (getExternalUri().isPresent()) {
-            uriCustomizer.setScheme(getExternalUri().get()
-                                                    .getScheme());
-            uriCustomizer.replaceInPath("/rest/services", getExternalUri().get()
-                                                                          .getPath());
-        }
-
-        return uriCustomizer;
+    if (getExternalUri().isPresent()) {
+      uriCustomizer.setScheme(getExternalUri().get().getScheme());
+      uriCustomizer.replaceInPath("/rest/services", getExternalUri().get().getPath());
     }
 
-    @Value.Derived
-    @Override
-    public String getStaticUrlPrefix() {
-        String staticUrlPrefix = "";
+    return uriCustomizer;
+  }
 
-        if (getExternalUri().isPresent()) {
-            staticUrlPrefix = new URICustomizer(getRequestUri())
-                    .cutPathAfterSegments("rest", "services")
-                    .replaceInPath("/rest/services", getExternalUri().get()
-                                                                     .getPath())
-                    .ensureLastPathSegment("___static___")
-                    .ensureNoTrailingSlash()
-                    .getPath();
-        }
+  @Value.Derived
+  @Override
+  public String getStaticUrlPrefix() {
+    String staticUrlPrefix = "";
 
-        return staticUrlPrefix;
+    if (getExternalUri().isPresent()) {
+      staticUrlPrefix =
+          new URICustomizer(getRequestUri())
+              .cutPathAfterSegments("rest", "services")
+              .replaceInPath("/rest/services", getExternalUri().get().getPath())
+              .ensureLastPathSegment("___static___")
+              .ensureNoTrailingSlash()
+              .getPath();
     }
 
-    @Value.Derived
-    @Override
-    public Map<String, String> getParameters() {
-        return getUriCustomizer().getQueryParams()
-            .stream()
-            .map(nameValuePair -> new AbstractMap.SimpleImmutableEntry<>(nameValuePair.getName(), nameValuePair.getValue()))
-            // Currently, the OGC API standards do not make use of query parameters with explode=true.
-            // If that changes in the future, this method needs to return a multimap instead
-            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> {
-                if (LOGGER.isWarnEnabled()) {
-                    LOGGER.warn("Duplicate parameter found, the following value is ignored: {}", value2);
-                }
-                return value1;
-            }));
-    }
+    return staticUrlPrefix;
+  }
+
+  @Value.Derived
+  @Override
+  public Map<String, String> getParameters() {
+    return getUriCustomizer().getQueryParams().stream()
+        .map(
+            nameValuePair ->
+                new AbstractMap.SimpleImmutableEntry<>(
+                    nameValuePair.getName(), nameValuePair.getValue()))
+        // Currently, the OGC API standards do not make use of query parameters with explode=true.
+        // If that changes in the future, this method needs to return a multimap instead
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Map.Entry::getKey,
+                Map.Entry::getValue,
+                (value1, value2) -> {
+                  if (LOGGER.isWarnEnabled()) {
+                    LOGGER.warn(
+                        "Duplicate parameter found, the following value is ignored: {}", value2);
+                  }
+                  return value1;
+                }));
+  }
 }

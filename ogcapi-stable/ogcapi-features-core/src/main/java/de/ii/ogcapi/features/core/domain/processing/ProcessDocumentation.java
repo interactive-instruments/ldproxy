@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -23,11 +23,14 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableProcessDocumentation.Builder.class)
 public abstract class ProcessDocumentation {
 
-    public abstract Optional<String> getSummary();
-    public abstract Optional<String> getDescription();
-    public abstract Optional<ExternalDocumentation> getExternalDocs();
-    public abstract Map<String, List<Example>> getExamples();
+  public abstract Optional<String> getSummary();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+  public abstract Optional<String> getDescription();
+
+  public abstract Optional<ExternalDocumentation> getExternalDocs();
+
+  public abstract Map<String, List<Example>> getExamples();
+
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 }

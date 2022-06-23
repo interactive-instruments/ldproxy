@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -34,123 +34,134 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGeoJson implements FeatureTransformationContext {
 
-    @Override
+  @Override
+  @Value.Default
+  public ModifiableStateGeoJson getState() {
+    return ModifiableStateGeoJson.create();
+  }
+
+  public abstract GeoJsonConfiguration getGeoJsonConfig();
+
+  @Value.Default
+  public ApiMediaType getMediaType() {
+    return FeaturesFormatGeoJson.MEDIA_TYPE;
+  }
+
+  @Value.Default
+  public Boolean getSuppressPrimaryGeometry() {
+    return false;
+  }
+
+  @Value.Default
+  public Boolean getForceDefaultCrs() {
+    return false;
+  }
+
+  public abstract Map<String, Object> getExtensions();
+
+  @Value.Default
+  protected JsonGenerator getJsonGenerator() {
+    JsonGenerator json = null;
+    try {
+      json = new JsonFactory().createGenerator(getOutputStream());
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+
+    json.setCodec(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL));
+    if (getPrettify()) {
+      json.useDefaultPrettyPrinter();
+    }
+    if (getDebugJson()) {
+      // Zum JSON debuggen hier einschalten.
+      json = new JsonGeneratorDebug(json);
+    }
+
+    return json;
+  }
+
+  @Value.Default
+  public boolean getDebugJson() {
+    return false;
+  }
+
+  @Value.Default
+  public boolean getPrettify() {
+    return getGeoJsonConfig().getUseFormattedJsonOutput() == true;
+  }
+
+  // TODO: to state
+  private TokenBuffer tokenBuffer;
+
+  protected TokenBuffer getJsonBuffer() {
+    return tokenBuffer;
+  }
+
+  // @Value.Derived
+  private TokenBuffer createJsonBuffer() {
+    TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
+
+    if (getPrettify()) {
+      json.useDefaultPrettyPrinter();
+    }
+    return json;
+  }
+
+  public JsonGenerator getJson() {
+    return getState().isBuffering() ? getJsonBuffer() : getJsonGenerator();
+  }
+
+  public final void startBuffering() throws IOException {
+    getJsonGenerator().flush();
+    this.tokenBuffer = createJsonBuffer();
+    getState().setIsBuffering(true);
+  }
+
+  public final void stopBuffering() throws IOException {
+    if (getState().isBuffering()) {
+      getState().setIsBuffering(false);
+      // getJsonBuffer().serialize(getJsonGenerator());
+      getJsonBuffer().close();
+    }
+  }
+
+  public final void flushBuffer() throws IOException {
+    if (!Objects.isNull(getJsonBuffer())) {
+      getJsonBuffer().serialize(getJsonGenerator());
+      getJsonBuffer().flush();
+    }
+  }
+
+  @Value.Modifiable
+  public abstract static class StateGeoJson extends State {
+
+    public abstract Optional<GeoJsonGeometryType> getCurrentGeometryType();
+
+    public abstract Optional<ImmutableCoordinatesTransformer.Builder> getCoordinatesWriterBuilder();
+
     @Value.Default
-    public ModifiableStateGeoJson getState() {
-        return ModifiableStateGeoJson.create();
-    }
-
-    public abstract GeoJsonConfiguration getGeoJsonConfig();
-
-    @Value.Default
-    public ApiMediaType getMediaType() { return FeaturesFormatGeoJson.MEDIA_TYPE; }
-
-    @Value.Default
-    public Boolean getSuppressPrimaryGeometry() { return false; }
-
-    @Value.Default
-    public Boolean getForceDefaultCrs() { return false; }
-
-    public abstract Map<String, Object> getExtensions();
-
-    @Value.Default
-    protected JsonGenerator getJsonGenerator() {
-        JsonGenerator json = null;
-        try {
-            json = new JsonFactory().createGenerator(getOutputStream());
-        } catch (IOException e) {
-            throw new IllegalStateException(e);
-        }
-
-        json.setCodec(new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL));
-        if (getPrettify()) {
-            json.useDefaultPrettyPrinter();
-        }
-        if (getDebugJson()) {
-            // Zum JSON debuggen hier einschalten.
-            json = new JsonGeneratorDebug(json);
-        }
-
-        return json;
+    public int getCurrentGeometryNestingChange() {
+      return 0;
     }
 
     @Value.Default
-    public boolean getDebugJson() {
-        return false;
+    public boolean isBuffering() {
+      return false;
     }
 
     @Value.Default
-    public boolean getPrettify() {
-        return getGeoJsonConfig().getUseFormattedJsonOutput() == true;
+    public boolean hasMore() {
+      return false;
     }
 
-    //TODO: to state
-    private TokenBuffer tokenBuffer;
-    protected TokenBuffer getJsonBuffer() {
-        return tokenBuffer;
+    @Value.Default
+    public List<Link> getCurrentFeatureLinks() {
+      return ImmutableList.of();
     }
 
-    //@Value.Derived
-    private TokenBuffer createJsonBuffer() {
-        TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
-
-        if (getPrettify()) {
-            json.useDefaultPrettyPrinter();
-        }
-        return json;
+    @Value.Default
+    public List<Link> getCurrentFeatureCollectionLinks() {
+      return ImmutableList.of();
     }
-
-    public JsonGenerator getJson() {
-        return getState().isBuffering() ? getJsonBuffer() : getJsonGenerator();
-    }
-
-    public final void startBuffering() throws IOException {
-        getJsonGenerator().flush();
-        this.tokenBuffer = createJsonBuffer();
-        getState().setIsBuffering(true);
-    }
-
-    public final void stopBuffering() throws IOException {
-        if (getState().isBuffering()) {
-            getState().setIsBuffering(false);
-            //getJsonBuffer().serialize(getJsonGenerator());
-            getJsonBuffer().close();
-        }
-    }
-
-    public final void flushBuffer() throws IOException {
-        if(!Objects.isNull(getJsonBuffer())){
-            getJsonBuffer().serialize(getJsonGenerator());
-            getJsonBuffer().flush();
-        }
-    }
-
-    @Value.Modifiable
-    public static abstract class StateGeoJson extends State {
-
-        public abstract Optional<GeoJsonGeometryType> getCurrentGeometryType();
-
-        public abstract Optional<ImmutableCoordinatesTransformer.Builder> getCoordinatesWriterBuilder();
-
-        @Value.Default
-        public int getCurrentGeometryNestingChange() {
-            return 0;
-        }
-
-        @Value.Default
-        public boolean isBuffering() {
-            return false;
-        }
-
-        @Value.Default
-        public boolean hasMore() {
-            return false;
-        }
-
-        @Value.Default
-        public List<Link> getCurrentFeatureLinks() { return ImmutableList.of(); }
-
-        @Value.Default
-        public List<Link> getCurrentFeatureCollectionLinks() { return ImmutableList.of(); }
-    }
+  }
 }

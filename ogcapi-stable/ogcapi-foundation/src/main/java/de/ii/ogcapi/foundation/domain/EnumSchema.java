@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,15 +8,12 @@
 package de.ii.ogcapi.foundation.domain;
 
 import io.swagger.v3.oas.models.media.StringSchema;
-
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class EnumSchema extends StringSchema {
   public EnumSchema(Object... enums) {
     super();
-    this._enum(Arrays.stream(enums)
-                   .map(Object::toString)
-                   .collect(Collectors.toUnmodifiableList()));
+    this._enum(Arrays.stream(enums).map(Object::toString).collect(Collectors.toUnmodifiableList()));
   }
 }

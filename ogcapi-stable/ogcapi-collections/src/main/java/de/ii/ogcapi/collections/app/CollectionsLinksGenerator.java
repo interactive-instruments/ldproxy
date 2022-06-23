@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,35 +20,40 @@ import java.util.Optional;
 
 public class CollectionsLinksGenerator extends DefaultLinksGenerator {
 
-    public List<Link> generateLinks(URICustomizer uriBuilder,
-                                    Optional<String> describeFeatureTypeUrl,
-                                    ApiMediaType mediaType,
-                                    List<ApiMediaType> alternateMediaTypes,
-                                    Optional<String> licenseUrl,
-                                    Optional<String> licenseName,
-                                    I18n i18n,
-                                    Optional<Locale> language)
-    {
-        final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>()
-                .addAll(super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
+  public List<Link> generateLinks(
+      URICustomizer uriBuilder,
+      Optional<String> describeFeatureTypeUrl,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<String> licenseUrl,
+      Optional<String> licenseName,
+      I18n i18n,
+      Optional<Locale> language) {
+    final ImmutableList.Builder<Link> builder =
+        new ImmutableList.Builder<Link>()
+            .addAll(
+                super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
-        if (licenseUrl.isPresent()) {
-            builder.add(new ImmutableLink.Builder()
-                    .href(licenseUrl.get())
-                    .rel("license")
-                    .title(licenseName.isPresent() ? licenseName.get() : i18n.get("licenseLink",language))
-                    .build());
-        }
-
-        if (describeFeatureTypeUrl.isPresent()) {
-            builder.add(new ImmutableLink.Builder()
-                        .href(describeFeatureTypeUrl.get())
-                        .rel("describedby")
-                        .type("application/xml")
-                        .title(i18n.get("describedByXsdLink",language))
-                        .build());
-        }
-
-        return builder.build();
+    if (licenseUrl.isPresent()) {
+      builder.add(
+          new ImmutableLink.Builder()
+              .href(licenseUrl.get())
+              .rel("license")
+              .title(
+                  licenseName.isPresent() ? licenseName.get() : i18n.get("licenseLink", language))
+              .build());
     }
+
+    if (describeFeatureTypeUrl.isPresent()) {
+      builder.add(
+          new ImmutableLink.Builder()
+              .href(describeFeatureTypeUrl.get())
+              .rel("describedby")
+              .type("application/xml")
+              .title(i18n.get("describedByXsdLink", language))
+              .build());
+    }
+
+    return builder.build();
+  }
 }

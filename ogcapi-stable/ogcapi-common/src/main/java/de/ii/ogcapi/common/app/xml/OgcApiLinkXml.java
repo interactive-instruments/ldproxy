@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,14 +11,14 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 public class OgcApiLinkXml {
 
-    private final String href;
+  private final String href;
 
-    public OgcApiLinkXml(String href) {
-        this.href = href;
-    }
+  public OgcApiLinkXml(String href) {
+    this.href = href;
+  }
 
-    @XmlAttribute
-    public String getHref() {
-        return href;
-    }
+  @XmlAttribute
+  public String getHref() {
+    return href;
+  }
 }

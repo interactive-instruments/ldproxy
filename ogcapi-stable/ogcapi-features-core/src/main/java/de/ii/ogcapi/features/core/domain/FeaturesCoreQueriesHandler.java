@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -18,43 +18,46 @@ import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
-public interface FeaturesCoreQueriesHandler extends QueriesHandler<FeaturesCoreQueriesHandler.Query> {
+public interface FeaturesCoreQueriesHandler
+    extends QueriesHandler<FeaturesCoreQueriesHandler.Query> {
 
-    @Override
-    Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();
+  @Override
+  Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();
 
-    enum Query implements QueryIdentifier {FEATURES, FEATURE}
+  enum Query implements QueryIdentifier {
+    FEATURES,
+    FEATURE
+  }
 
-    @Value.Immutable
-    interface QueryInputFeatures extends QueryInput {
-        String getCollectionId();
+  @Value.Immutable
+  interface QueryInputFeatures extends QueryInput {
+    String getCollectionId();
 
-        FeatureQuery getQuery();
+    FeatureQuery getQuery();
 
-        FeatureProvider2 getFeatureProvider();
+    FeatureProvider2 getFeatureProvider();
 
-        EpsgCrs getDefaultCrs();
+    EpsgCrs getDefaultCrs();
 
-        Optional<Integer> getDefaultPageSize();
+    Optional<Integer> getDefaultPageSize();
 
-        boolean getShowsFeatureSelfLink();
+    boolean getShowsFeatureSelfLink();
 
-        boolean getIncludeLinkHeader();
-    }
+    boolean getIncludeLinkHeader();
+  }
 
-    @Value.Immutable
-    interface QueryInputFeature extends QueryInput {
-        String getCollectionId();
+  @Value.Immutable
+  interface QueryInputFeature extends QueryInput {
+    String getCollectionId();
 
-        String getFeatureId();
+    String getFeatureId();
 
-        FeatureQuery getQuery();
+    FeatureQuery getQuery();
 
-        FeatureProvider2 getFeatureProvider();
+    FeatureProvider2 getFeatureProvider();
 
-        EpsgCrs getDefaultCrs();
+    EpsgCrs getDefaultCrs();
 
-        boolean getIncludeLinkHeader();
-    }
-
+    boolean getIncludeLinkHeader();
+  }
 }

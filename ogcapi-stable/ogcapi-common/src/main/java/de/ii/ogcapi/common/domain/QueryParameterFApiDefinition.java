@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -20,28 +19,29 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterFApiDefinition extends QueryParameterF {
 
-    @Inject
-    public QueryParameterFApiDefinition(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  public QueryParameterFApiDefinition(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fApiDefinition";
-    }
+  @Override
+  public String getId() {
+    return "fApiDefinition";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return definitionPath.matches("^/api/?$");
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.matches("^/api/?$");
+  }
 
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return ApiDefinitionFormatExtension.class;
-    }
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return ApiDefinitionFormatExtension.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CommonConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CommonConfiguration.class;
+  }
 }

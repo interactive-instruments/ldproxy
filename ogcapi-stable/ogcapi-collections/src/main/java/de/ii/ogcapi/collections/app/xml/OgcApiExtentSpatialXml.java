@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,34 +14,32 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(propOrder = {"lowerCorner", "upperCorner"})
 public class OgcApiExtentSpatialXml {
 
-    @XmlAttribute
-    public String crs = null;
+  @XmlAttribute public String crs = null;
 
-    private String LowerCorner = null;
-    private String UpperCorner = null;
+  private String LowerCorner = null;
+  private String UpperCorner = null;
 
-    public OgcApiExtentSpatialXml() {
-    }
+  public OgcApiExtentSpatialXml() {}
 
-    public OgcApiExtentSpatialXml(String lowerCorner, String upperCorner) {
-        this.LowerCorner = lowerCorner;
-        this.UpperCorner = upperCorner;
-        this.crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
-    }
+  public OgcApiExtentSpatialXml(String lowerCorner, String upperCorner) {
+    this.LowerCorner = lowerCorner;
+    this.UpperCorner = upperCorner;
+    this.crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
+  }
 
-    public OgcApiExtentSpatialXml(String lowerCorner, String upperCorner, String crs) {
-        this.LowerCorner = lowerCorner;
-        this.UpperCorner = upperCorner;
-        this.crs = crs;
-    }
+  public OgcApiExtentSpatialXml(String lowerCorner, String upperCorner, String crs) {
+    this.LowerCorner = lowerCorner;
+    this.UpperCorner = upperCorner;
+    this.crs = crs;
+  }
 
-    @XmlElement(name = "LowerCorner", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
-    public String getLowerCorner() {
-        return LowerCorner;
-    }
+  @XmlElement(name = "LowerCorner", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
+  public String getLowerCorner() {
+    return LowerCorner;
+  }
 
-    @XmlElement(name = "UpperCorner", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
-    public String getUpperCorner() {
-        return UpperCorner;
-    }
+  @XmlElement(name = "UpperCorner", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
+  public String getUpperCorner() {
+    return UpperCorner;
+  }
 }

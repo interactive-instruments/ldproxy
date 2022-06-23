@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,18 +9,14 @@ package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.QueryParameterFSubCollection;
-import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
 
 /**
  * @langEn TODO
@@ -28,34 +24,33 @@ import javax.inject.Singleton;
  * @name Features
  * @endpoints Features
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterFFeatures extends QueryParameterFSubCollection {
 
-    @Inject
-    public QueryParameterFFeatures(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  public QueryParameterFFeatures(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fFeatures";
-    }
+  @Override
+  public String getId() {
+    return "fFeatures";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return definitionPath.startsWith("/collections/{collectionId}/items");
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.startsWith("/collections/{collectionId}/items");
+  }
 
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return FeatureFormatExtension.class;
-    }
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return FeatureFormatExtension.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
-    }
-
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesCoreConfiguration.class;
+  }
 }

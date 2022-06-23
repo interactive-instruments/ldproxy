@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,5 +11,5 @@ import java.io.IOException;
 import java.util.Optional;
 
 public interface SchemaValidator {
-    Optional<String> validate(String schemaContent, String jsonContent) throws IOException;
+  Optional<String> validate(String schemaContent, String jsonContent) throws IOException;
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,12 +15,13 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true)
 public abstract class JsonSchemaFalse extends JsonSchema {
 
-    // any instance is invalid
+  // any instance is invalid
 
-    @JsonValue
-    public final boolean toValue() { return false; }
+  @JsonValue
+  public final boolean toValue() {
+    return false;
+  }
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaFalse> FUNNEL = (from, into) -> {
-    };
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaFalse> FUNNEL = (from, into) -> {};
 }

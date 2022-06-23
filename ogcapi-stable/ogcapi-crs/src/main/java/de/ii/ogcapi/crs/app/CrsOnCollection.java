@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -6,7 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.crs.app;
-
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -30,64 +29,65 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/**
- * add CRS information to the collection information
- */
+/** add CRS information to the collection information */
 @Singleton
 @AutoBind
 public class CrsOnCollection implements CollectionExtension {
 
-    private final FeaturesCoreProviders providers;
-    private final CrsSupport crsSupport;
+  private final FeaturesCoreProviders providers;
+  private final CrsSupport crsSupport;
 
-    @Inject
-    public CrsOnCollection(FeaturesCoreProviders providers,
-                           CrsSupport crsSupport) {
-        this.providers = providers;
-        this.crsSupport = crsSupport;
+  @Inject
+  public CrsOnCollection(FeaturesCoreProviders providers, CrsSupport crsSupport) {
+    this.providers = providers;
+    this.crsSupport = crsSupport;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CrsConfiguration.class;
+  }
+
+  @Override
+  public ImmutableOgcApiCollection.Builder process(
+      Builder collection,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      boolean isNested,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+    boolean hasGeometry =
+        featureTypeConfiguration
+            .getExtension(FeaturesCoreConfiguration.class)
+            .flatMap(FeaturesCoreConfiguration::getQueryables)
+            .map(FeaturesCollectionQueryables::getSpatial)
+            .filter(spatial -> !spatial.isEmpty())
+            .isPresent();
+    if (isExtensionEnabled(featureTypeConfiguration, CrsConfiguration.class) && hasGeometry) {
+      List<String> crsList;
+      if (isNested) {
+        // just reference the default list of coordinate reference systems
+        crsList = ImmutableList.of("#/crs");
+      } else {
+        // this is just the collection resource, so no default to reference; include all CRSs
+        crsList =
+            crsSupport.getSupportedCrsList(api.getData(), featureTypeConfiguration).stream()
+                .map(EpsgCrs::toUriString)
+                .collect(ImmutableList.toImmutableList());
+      }
+      collection.crs(crsList);
+
+      String storageCrsUri =
+          crsSupport
+              .getStorageCrs(api.getData(), Optional.of(featureTypeConfiguration))
+              .toUriString();
+
+      // add native CRS as storageCRS
+      collection.storageCrs(storageCrsUri);
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CrsConfiguration.class;
-    }
-
-    @Override
-    public ImmutableOgcApiCollection.Builder process(Builder collection,
-                                                     FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApi api,
-                                                     URICustomizer uriCustomizer,
-                                                     boolean isNested,
-                                                     ApiMediaType mediaType,
-                                                     List<ApiMediaType> alternateMediaTypes,
-                                                     Optional<Locale> language) {
-        boolean hasGeometry = featureTypeConfiguration.getExtension(FeaturesCoreConfiguration.class)
-                .flatMap(FeaturesCoreConfiguration::getQueryables)
-                .map(FeaturesCollectionQueryables::getSpatial)
-                .filter(spatial -> !spatial.isEmpty())
-                .isPresent();
-        if (isExtensionEnabled(featureTypeConfiguration, CrsConfiguration.class) && hasGeometry) {
-            List<String> crsList;
-            if (isNested) {
-                // just reference the default list of coordinate reference systems
-                crsList = ImmutableList.of("#/crs");
-            } else {
-                // this is just the collection resource, so no default to reference; include all CRSs
-                crsList = crsSupport.getSupportedCrsList(api.getData(), featureTypeConfiguration)
-                                    .stream()
-                                    .map(EpsgCrs::toUriString)
-                                    .collect(ImmutableList.toImmutableList());
-            }
-            collection.crs(crsList);
-
-            String storageCrsUri = crsSupport.getStorageCrs(api.getData(), Optional.of(featureTypeConfiguration))
-                                             .toUriString();
-
-            // add native CRS as storageCRS
-            collection.storageCrs(storageCrsUri);
-        }
-
-        return collection;
-    }
-
+    return collection;
+  }
 }

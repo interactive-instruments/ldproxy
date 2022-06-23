@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,16 +12,15 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 @AutoMultiBind
 public interface ExceptionFormatExtension extends FormatExtension {
 
-    @Override
-    default String getPathPattern() {
-        return "^((/[\\w\\-]+)+)$";
-    }
+  @Override
+  default String getPathPattern() {
+    return "^((/[\\w\\-]+)+)$";
+  }
 
-    @Override
-    default boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return true;
-    }
+  @Override
+  default boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return true;
+  }
 
-    Object getExceptionEntity(ApiErrorMessage errorMessage);
-
+  Object getExceptionEntity(ApiErrorMessage errorMessage);
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,22 +10,23 @@ package de.ii.ogcapi.crs.domain;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-
 import java.util.List;
 import java.util.Optional;
 
 public interface CrsSupport {
 
-    boolean isEnabled(OgcApiDataV2 apiData);
+  boolean isEnabled(OgcApiDataV2 apiData);
 
-    List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData);
+  List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData);
 
-    List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration);
+  List<EpsgCrs> getSupportedCrsList(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration);
 
-    boolean isSupported(OgcApiDataV2 apiData, EpsgCrs crs);
+  boolean isSupported(OgcApiDataV2 apiData, EpsgCrs crs);
 
-    boolean isSupported(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration, EpsgCrs crs);
+  boolean isSupported(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureTypeConfiguration, EpsgCrs crs);
 
-    EpsgCrs getStorageCrs(OgcApiDataV2 apiData,
-                          Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration);
+  EpsgCrs getStorageCrs(
+      OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration);
 }

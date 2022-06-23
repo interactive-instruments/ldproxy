@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,9 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface FeaturesCoreValidation {
-    List<String> getCollectionsWithoutType(OgcApiDataV2 apiData, Map<String, FeatureSchema> featureSchemas);
+  List<String> getCollectionsWithoutType(
+      OgcApiDataV2 apiData, Map<String, FeatureSchema> featureSchemas);
 
-    List<String> getInvalidPropertyKeys(Collection<String> keys, FeatureSchema schema);
+  List<String> getInvalidPropertyKeys(Collection<String> keys, FeatureSchema schema);
 
-    Map<String, Collection<String>> getInvalidPropertyKeys(Map<String, Collection<String>> keyMap, Map<String, FeatureSchema> featureSchemas);
+  Map<String, Collection<String>> getInvalidPropertyKeys(
+      Map<String, Collection<String>> keyMap, Map<String, FeatureSchema> featureSchemas);
 }

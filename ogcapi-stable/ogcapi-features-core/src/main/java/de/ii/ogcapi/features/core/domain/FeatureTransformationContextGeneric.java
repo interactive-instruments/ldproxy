@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,5 +14,4 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
-public abstract class FeatureTransformationContextGeneric implements FeatureTransformationContext {
-}
+public abstract class FeatureTransformationContextGeneric implements FeatureTransformationContext {}

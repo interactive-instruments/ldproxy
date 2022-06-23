@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,110 +15,114 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractPathParameterCollectionId implements OgcApiPathParameter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPathParameterCollectionId.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(AbstractPathParameterCollectionId.class);
 
-    public static final String COLLECTION_ID_PATTERN = "[\\w\\-]+";
+  public static final String COLLECTION_ID_PATTERN = "[\\w\\-]+";
 
-    protected final Map<Integer, Boolean> apiExplodeMap;
-    protected final Map<Integer,List<String>> apiCollectionMap;
-    protected final SchemaValidator schemaValidator;
+  protected final Map<Integer, Boolean> apiExplodeMap;
+  protected final Map<Integer, List<String>> apiCollectionMap;
+  protected final SchemaValidator schemaValidator;
 
-    public AbstractPathParameterCollectionId(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
-        this.apiCollectionMap = new HashMap<>();
-        this.apiExplodeMap = new HashMap<>();
+  public AbstractPathParameterCollectionId(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+    this.apiCollectionMap = new HashMap<>();
+    this.apiExplodeMap = new HashMap<>();
+  }
+
+  public abstract boolean matchesPath(String definitionPath);
+
+  @Override
+  public String getPattern() {
+    return COLLECTION_ID_PATTERN;
+  }
+
+  @Override
+  public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) {
+    if (!apiExplodeMap.containsKey(apiData.hashCode())) {
+      apiExplodeMap.put(
+          apiData.hashCode(),
+          !apiData
+              .getExtension(CollectionsConfiguration.class)
+              .get()
+              .getCollectionIdAsParameter()
+              .orElse(false));
     }
 
-    abstract public boolean matchesPath(String definitionPath);
+    return apiExplodeMap.get(apiData.hashCode());
+  }
 
-    @Override
-    public String getPattern() {
-        return COLLECTION_ID_PATTERN;
+  @Override
+  public List<String> getValues(OgcApiDataV2 apiData) {
+    if (!apiCollectionMap.containsKey(apiData.hashCode())) {
+      apiCollectionMap.put(
+          apiData.hashCode(),
+          apiData.getCollections().keySet().stream()
+              .filter(collectionId -> apiData.isCollectionEnabled(collectionId))
+              .collect(Collectors.toUnmodifiableList()));
     }
 
-    @Override
-    public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) {
-        if (!apiExplodeMap.containsKey(apiData.hashCode())) {
-            apiExplodeMap.put(apiData.hashCode(), !apiData.getExtension(CollectionsConfiguration.class)
-                                                          .get()
-                                                          .getCollectionIdAsParameter()
-                                                          .orElse(false));
-        }
+    return apiCollectionMap.get(apiData.hashCode());
+  }
 
-        return apiExplodeMap.get(apiData.hashCode());
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
+  }
 
-    @Override
-    public List<String> getValues(OgcApiDataV2 apiData) {
-        if (!apiCollectionMap.containsKey(apiData.hashCode())) {
-            apiCollectionMap.put(apiData.hashCode(), apiData.getCollections().keySet().stream()
-                                                            .filter(collectionId -> apiData.isCollectionEnabled(collectionId))
-                                                            .collect(Collectors.toUnmodifiableList()));
-        }
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
 
-        return apiCollectionMap.get(apiData.hashCode());
-    }
+  @Override
+  public String getName() {
+    return "collectionId";
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return new StringSchema()._enum(ImmutableList.copyOf(getValues(apiData)));
-    }
+  @Override
+  public String getDescription() {
+    return "The local identifier of a feature collection.";
+  }
 
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CollectionsConfiguration.class;
+  }
 
-    @Override
-    public String getName() {
-        return "collectionId";
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    return matchesPath(definitionPath) && isEnabledForApi(apiData);
+  }
 
-    @Override
-    public String getDescription() {
-        return "The local identifier of a feature collection.";
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId) {
+    return matchesPath(definitionPath) && isEnabledForApi(apiData, collectionId);
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CollectionsConfiguration.class;
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData.getCollections().values().stream()
+        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return matchesPath(definitionPath) && isEnabledForApi(apiData);
-    }
-
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId) {
-        return matchesPath(definitionPath) && isEnabledForApi(apiData, collectionId);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getCollections()
-            .values()
-            .stream()
-            .filter(FeatureTypeConfigurationOgcApi::getEnabled)
-            .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        return OgcApiPathParameter.super.isEnabledForApi(apiData, collectionId) &&
-            Objects.nonNull(collectionData) &&
-            collectionData.getEnabled();
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    final FeatureTypeConfigurationOgcApi collectionData =
+        apiData.getCollections().get(collectionId);
+    return OgcApiPathParameter.super.isEnabledForApi(apiData, collectionId)
+        && Objects.nonNull(collectionData)
+        && collectionData.getEnabled();
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,68 +16,68 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 @Singleton
 @AutoBind
 public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterResourceApiDefinition.class);
-    Map<String,Set<String>> apiCollectionMap;
-    private final SchemaValidator schemaValidator;
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(PathParameterResourceApiDefinition.class);
+  Map<String, Set<String>> apiCollectionMap;
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    public PathParameterResourceApiDefinition(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
-        this.apiCollectionMap = new HashMap<>();
-    };
+  @Inject
+  public PathParameterResourceApiDefinition(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+    this.apiCollectionMap = new HashMap<>();
+  }
+  ;
 
-    @Override
-    public String getPattern() {
-        return "[^/]+";
-    }
+  @Override
+  public String getPattern() {
+    return "[^/]+";
+  }
 
-    @Override
-    public List<String> getValues(OgcApiDataV2 apiData) {
-        return ImmutableList.of();
-    }
+  @Override
+  public List<String> getValues(OgcApiDataV2 apiData) {
+    return ImmutableList.of();
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return new StringSchema();
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return new StringSchema();
+  }
 
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
 
-    @Override
-    public String getName() {
-        return "resource";
-    }
+  @Override
+  public String getName() {
+    return "resource";
+  }
 
-    @Override
-    public String getDescription() {
-        return "The filename of a file referenced from an API definition.";
-    }
+  @Override
+  public String getDescription() {
+    return "The filename of a file referenced from an API definition.";
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) &&
-                definitionPath.equals("/api/{resource}");
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    return isEnabledForApi(apiData) && definitionPath.equals("/api/{resource}");
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CommonConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CommonConfiguration.class;
+  }
 }

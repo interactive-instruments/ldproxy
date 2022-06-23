@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -45,41 +45,39 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import io.swagger.v3.oas.models.media.ComposedSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import io.swagger.v3.oas.models.media.ComposedSchema;
-import io.swagger.v3.oas.models.media.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.extra.Interval;
 
 /**
  * @title Features Core
- * @langEn The module *Features Core* has to be enabled for every API with a feature provider.
- * It provides the resources *Features* and *Feature*.
- *
- * *Features Core* implements all requirements of conformance class *Core* of
- * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
- * for the two mentioned resources.
- * @langDe Das Modul *Features Core* ist für jede über ldproxy bereitgestellte API mit einem Feature-Provider zu aktivieren. Es stellt die Ressourcen "Features" und "Feature" bereit.
- *
- * "Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von
- * [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
- * für die zwei genannten Ressourcen.
+ * @langEn The module *Features Core* has to be enabled for every API with a feature provider. It
+ *     provides the resources *Features* and *Feature*.
+ *     <p>*Features Core* implements all requirements of conformance class *Core* of [OGC API -
+ *     Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for
+ *     the two mentioned resources.
+ * @langDe Das Modul *Features Core* ist für jede über ldproxy bereitgestellte API mit einem
+ *     Feature-Provider zu aktivieren. Es stellt die Ressourcen "Features" und "Feature" bereit.
+ *     <p>"Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von [OGC API -
+ *     Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für
+ *     die zwei genannten Ressourcen.
  * @example {@link de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration}
  * @propertyTable {@link de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration}
  * @endpointTable {@link de.ii.ogcapi.features.core.app.EndpointFeatures}
- * @queryParameterTable {@link de.ii.ogcapi.features.core.app.QueryParameterBbox},
- * {@link de.ii.ogcapi.features.core.app.QueryParameterDatetime},
- * {@link de.ii.ogcapi.features.core.app.QueryParameterFFeatures},
- * {@link de.ii.ogcapi.features.core.app.QueryParameterLimitFeatures},
- * {@link de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures},
- * {@link de.ii.ogcapi.features.core.app.QueryParameterQ}
+ * @queryParameterTable {@link de.ii.ogcapi.features.core.app.QueryParameterBbox}, {@link
+ *     de.ii.ogcapi.features.core.app.QueryParameterDatetime}, {@link
+ *     de.ii.ogcapi.features.core.app.QueryParameterFFeatures}, {@link
+ *     de.ii.ogcapi.features.core.app.QueryParameterLimitFeatures}, {@link
+ *     de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures}, {@link
+ *     de.ii.ogcapi.features.core.app.QueryParameterQ}
  */
 @Singleton
 @AutoBind
@@ -93,25 +91,27 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
 
   @Inject
   public FeaturesCoreBuildingBlock(
-      FeaturesCoreProviders providers, CrsTransformerFactory crsTransformerFactory, ClassSchemaCache classSchemaCache) {
+      FeaturesCoreProviders providers,
+      CrsTransformerFactory crsTransformerFactory,
+      ClassSchemaCache classSchemaCache) {
     this.providers = providers;
     this.crsTransformerFactory = crsTransformerFactory;
     this.classSchemaCache = classSchemaCache;
   }
 
-    @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
+  @Override
+  public ExtensionConfiguration getDefaultConfiguration() {
     return new ImmutableFeaturesCoreConfiguration.Builder()
         .enabled(true)
-                                                               .itemType(FeaturesCoreConfiguration.ItemType.feature)
-                                                               .defaultCrs(FeaturesCoreConfiguration.DefaultCrs.CRS84)
-                                                               .minimumPageSize(MINIMUM_PAGE_SIZE)
-                                                               .defaultPageSize(DEFAULT_PAGE_SIZE)
-                                                               .maximumPageSize(MAX_PAGE_SIZE)
+        .itemType(FeaturesCoreConfiguration.ItemType.feature)
+        .defaultCrs(FeaturesCoreConfiguration.DefaultCrs.CRS84)
+        .minimumPageSize(MINIMUM_PAGE_SIZE)
+        .defaultPageSize(DEFAULT_PAGE_SIZE)
+        .maximumPageSize(MAX_PAGE_SIZE)
         .validateCoordinatesInQueries(false)
-                                                               .showsFeatureSelfLink(false)
-                                                               .build();
-    }
+        .showsFeatureSelfLink(false)
+        .build();
+  }
 
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
@@ -168,8 +168,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
     providers
         .getFeatureProvider(apiData)
         .ifPresent(
-            provider ->
-                provider.getFeatureChangeHandler().addListener(onFeatureChange(api)));
+            provider -> provider.getFeatureChangeHandler().addListener(onFeatureChange(api)));
 
     // register schemas that cannot be derived automatically
     Schema<?> stringSchema = classSchemaCache.getSchema(JsonSchemaString.class);
@@ -181,18 +180,27 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
     Schema<?> refSchema = classSchemaCache.getSchema(JsonSchemaRef.class);
     Schema<?> refExternalSchema = classSchemaCache.getSchema(JsonSchemaRefExternal.class);
     Schema<?> oneOfSchema = classSchemaCache.getSchema(JsonSchemaOneOf.class);
-    classSchemaCache.registerSchema(JsonSchema.class, new ComposedSchema()
-        .addOneOfItem(stringSchema)
-        .addOneOfItem(numberSchema)
-        .addOneOfItem(integerSchema)
-        .addOneOfItem(booleanSchema)
-        .addOneOfItem(objectSchema)
-        .addOneOfItem(arraySchema)
-        .addOneOfItem(refSchema)
-        .addOneOfItem(refExternalSchema)
-        .addOneOfItem(oneOfSchema), ImmutableList.of(JsonSchemaString.class, JsonSchemaNumber.class, JsonSchemaInteger.class,
-                                                     JsonSchemaBoolean.class, JsonSchemaObject.class, JsonSchemaArray.class,
-                                                     JsonSchemaRef.class, JsonSchemaOneOf.class));
+    classSchemaCache.registerSchema(
+        JsonSchema.class,
+        new ComposedSchema()
+            .addOneOfItem(stringSchema)
+            .addOneOfItem(numberSchema)
+            .addOneOfItem(integerSchema)
+            .addOneOfItem(booleanSchema)
+            .addOneOfItem(objectSchema)
+            .addOneOfItem(arraySchema)
+            .addOneOfItem(refSchema)
+            .addOneOfItem(refExternalSchema)
+            .addOneOfItem(oneOfSchema),
+        ImmutableList.of(
+            JsonSchemaString.class,
+            JsonSchemaNumber.class,
+            JsonSchemaInteger.class,
+            JsonSchemaBoolean.class,
+            JsonSchemaObject.class,
+            JsonSchemaArray.class,
+            JsonSchemaRef.class,
+            JsonSchemaOneOf.class));
 
     return ValidationResult.of();
   }
@@ -240,9 +248,10 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
         BoundingBox boundingBox = spatialExtent.get();
         if (!boundingBox.getEpsgCrs().equals(OgcCrs.CRS84)
             && !boundingBox.getEpsgCrs().equals(OgcCrs.CRS84h)) {
-          Optional<CrsTransformer> transformer = boundingBox.is3d()
-              ? crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84h)
-              : crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
+          Optional<CrsTransformer> transformer =
+              boundingBox.is3d()
+                  ? crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84h)
+                  : crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
           if (transformer.isPresent()) {
             try {
               boundingBox = transformer.get().transformBoundingBox(boundingBox);

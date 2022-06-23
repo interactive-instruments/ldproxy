@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,36 +13,36 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import java.util.Objects;
 
 public abstract class QueryParameterFSubCollection extends QueryParameterF {
 
-    public QueryParameterFSubCollection(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  public QueryParameterFSubCollection(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-        return matchesPath(definitionPath) &&
-            isEnabledForApi(apiData, collectionId) &&
-            (method.equals(HttpMethods.GET) || method.equals(HttpMethods.HEAD));
-    }
+  @Override
+  public boolean isApplicable(
+      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
+    return matchesPath(definitionPath)
+        && isEnabledForApi(apiData, collectionId)
+        && (method.equals(HttpMethods.GET) || method.equals(HttpMethods.HEAD));
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getCollections()
-            .values()
-            .stream()
-            .filter(FeatureTypeConfigurationOgcApi::getEnabled)
-            .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData.getCollections().values().stream()
+        .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+        .anyMatch(featureType -> isEnabledForApi(apiData, featureType.getId()));
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        return super.isEnabledForApi(apiData, collectionId) &&
-            Objects.nonNull(collectionData) &&
-            collectionData.getEnabled();
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    final FeatureTypeConfigurationOgcApi collectionData =
+        apiData.getCollections().get(collectionId);
+    return super.isEnabledForApi(apiData, collectionId)
+        && Objects.nonNull(collectionData)
+        && collectionData.getEnabled();
+  }
 }

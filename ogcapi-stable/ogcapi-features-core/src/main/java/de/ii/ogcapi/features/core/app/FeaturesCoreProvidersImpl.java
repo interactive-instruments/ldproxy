@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,54 +24,58 @@ import javax.inject.Singleton;
 @AutoBind
 public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
 
-    private final EntityRegistry entityRegistry;
+  private final EntityRegistry entityRegistry;
 
-    @Inject
-    public FeaturesCoreProvidersImpl(EntityRegistry entityRegistry) {
-        this.entityRegistry = entityRegistry;
+  @Inject
+  public FeaturesCoreProvidersImpl(EntityRegistry entityRegistry) {
+    this.entityRegistry = entityRegistry;
+  }
+
+  @Override
+  public boolean hasFeatureProvider(OgcApiDataV2 apiData) {
+    return getFeatureProvider(apiData).isPresent();
+  }
+
+  @Override
+  public Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData) {
+    Optional<FeatureProvider2> optionalFeatureProvider = getOptionalFeatureProvider(apiData);
+
+    if (!optionalFeatureProvider.isPresent()) {
+      optionalFeatureProvider = entityRegistry.getEntity(FeatureProvider2.class, apiData.getId());
     }
+    return optionalFeatureProvider;
+  }
 
-    @Override
-    public boolean hasFeatureProvider(OgcApiDataV2 apiData) {
-        return getFeatureProvider(apiData).isPresent();
-    }
+  @Override
+  public FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData) {
+    return getFeatureProvider(apiData)
+        .orElseThrow(() -> new IllegalStateException("No feature provider found."));
+  }
 
-    @Override
-    public Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData) {
-        Optional<FeatureProvider2> optionalFeatureProvider = getOptionalFeatureProvider(apiData);
+  @Override
+  public boolean hasFeatureProvider(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
+    return getFeatureProvider(apiData, featureType).isPresent();
+  }
 
-        if (!optionalFeatureProvider.isPresent()) {
-            optionalFeatureProvider = entityRegistry.getEntity(FeatureProvider2.class, apiData.getId());
-        }
-        return optionalFeatureProvider;
-    }
+  @Override
+  public Optional<FeatureProvider2> getFeatureProvider(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
+    return getOptionalFeatureProvider(featureType).or(() -> getFeatureProvider(apiData));
+  }
 
-    @Override
-    public FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData) {
-        return getFeatureProvider(apiData).orElseThrow(() -> new IllegalStateException("No feature provider found."));
-    }
+  @Override
+  public FeatureProvider2 getFeatureProviderOrThrow(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
+    return getOptionalFeatureProvider(featureType).orElse(getFeatureProviderOrThrow(apiData));
+  }
 
-    @Override
-    public boolean hasFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
-        return getFeatureProvider(apiData, featureType).isPresent();
-    }
-
-    @Override
-    public Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
-        return getOptionalFeatureProvider(featureType)
-                .or(() -> getFeatureProvider(apiData));
-    }
-
-    @Override
-    public FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
-        return getOptionalFeatureProvider(featureType)
-                .orElse(getFeatureProviderOrThrow(apiData));
-    }
-
-    private Optional<FeatureProvider2> getOptionalFeatureProvider(ExtendableConfiguration extendableConfiguration) {
-        return extendableConfiguration.getExtension(FeaturesCoreConfiguration.class)
-                                      .filter(ExtensionConfiguration::isEnabled)
-                                      .flatMap(FeaturesCoreConfiguration::getFeatureProvider)
-                                      .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id));
-    }
+  private Optional<FeatureProvider2> getOptionalFeatureProvider(
+      ExtendableConfiguration extendableConfiguration) {
+    return extendableConfiguration
+        .getExtension(FeaturesCoreConfiguration.class)
+        .filter(ExtensionConfiguration::isEnabled)
+        .flatMap(FeaturesCoreConfiguration::getFeatureProvider)
+        .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id));
+  }
 }

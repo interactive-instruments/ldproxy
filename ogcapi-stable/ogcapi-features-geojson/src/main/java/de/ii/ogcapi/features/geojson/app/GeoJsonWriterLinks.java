@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -32,124 +32,134 @@ import javax.inject.Singleton;
 @AutoBind
 public class GeoJsonWriterLinks implements GeoJsonWriter {
 
-    @Inject
-    public GeoJsonWriterLinks() {
+  @Inject
+  public GeoJsonWriterLinks() {}
+
+  @Override
+  public GeoJsonWriterLinks create() {
+    return new GeoJsonWriterLinks();
+  }
+
+  private Set<String> featureRels;
+
+  @Override
+  public int getSortPriority() {
+    return 25;
+  }
+
+  private void reset() {
+    this.featureRels = ImmutableSet.of();
+  }
+
+  @Override
+  public void onStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    reset();
+
+    if (context.encoding().isFeatureCollection()) {
+      OptionalLong numberReturned = context.metadata().getNumberReturned();
+      boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
+
+      // initialize with the standard resource links for the collection,
+      // but filter out "next" link, if we are on the last page
+      context
+          .encoding()
+          .getState()
+          .setCurrentFeatureCollectionLinks(
+              context.encoding().getLinks().stream()
+                  .filter(link -> !((isLastPage && Objects.equals(link.getRel(), "next"))))
+                  .collect(Collectors.toUnmodifiableList()));
+
+      // cache the link relation types to include for embedded features
+      featureRels =
+          context
+              .encoding()
+              .getApiData()
+              .getCollections()
+              .get(context.encoding().getCollectionId())
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(
+                  cfg -> {
+                    boolean addSelf = cfg.getShowsFeatureSelfLink();
+                    if (!addSelf) return cfg.getEmbeddedFeatureLinkRels();
+
+                    return ImmutableSet.<String>builder()
+                        .addAll(cfg.getEmbeddedFeatureLinkRels())
+                        .add("self")
+                        .build();
+                  })
+              .orElse(ImmutableSet.of());
     }
 
-    @Override
-    public GeoJsonWriterLinks create() {
-        return new GeoJsonWriterLinks();
+    next.accept(context);
+  }
+
+  @Override
+  public void onEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.encoding().isFeatureCollection()) {
+      this.writeLinksIfAny(
+          context.encoding().getJson(),
+          context.encoding().getState().getCurrentFeatureCollectionLinks());
     }
 
-    private Set<String> featureRels;
+    // next chain for extensions
+    next.accept(context);
+  }
 
-    @Override
-    public int getSortPriority() {
-        return 25;
+  @Override
+  public void onFeatureStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.encoding().isFeatureCollection()) {
+
+      // initialize empty for embedded features
+      context.encoding().getState().setCurrentFeatureLinks(ImmutableList.of());
+    } else {
+
+      // initialize with the standard resource links for the feature
+      context.encoding().getState().setCurrentFeatureLinks(context.encoding().getLinks());
     }
 
-    private void reset() {
-        this.featureRels = ImmutableSet.of();
+    // next chain for extensions
+    next.accept(context);
+  }
+
+  @Override
+  public void onFeatureEnd(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.encoding().isFeatureCollection()) {
+      // write links of the embedded feature
+      this.writeLinksIfAny(
+          context.encoding().getJson(),
+          context.encoding().getState().getCurrentFeatureLinks().stream()
+              .filter(link -> featureRels.contains(link.getRel()))
+              .collect(Collectors.toUnmodifiableList()));
+    } else {
+      this.writeLinksIfAny(
+          context.encoding().getJson(), context.encoding().getState().getCurrentFeatureLinks());
     }
 
-    @Override
-    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        reset();
+    // next chain for extensions
+    next.accept(context);
+  }
 
-        if (context.encoding().isFeatureCollection()) {
-            OptionalLong numberReturned = context.metadata().getNumberReturned();
-            boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
+  private void writeLinksIfAny(JsonGenerator json, List<Link> links) throws IOException {
+    if (!links.isEmpty()) {
+      json.writeArrayFieldStart("links");
 
-            // initialize with the standard resource links for the collection,
-            // but filter out "next" link, if we are on the last page
-            context.encoding().getState().setCurrentFeatureCollectionLinks(context.encoding()
-                                                                                  .getLinks()
-                                                                                  .stream()
-                                                                                  .filter(link -> !((isLastPage && Objects.equals(link.getRel(), "next"))))
-                                                                                  .collect(Collectors.toUnmodifiableList()));
+      for (Link link : links) {
+        json.writeStartObject();
+        json.writeStringField("href", link.getHref());
+        if (Objects.nonNull(link.getRel())) json.writeStringField("rel", link.getRel());
+        if (Objects.nonNull(link.getType())) json.writeStringField("type", link.getType());
+        if (Objects.nonNull(link.getTitle())) json.writeStringField("title", link.getTitle());
+        json.writeEndObject();
+      }
 
-            // cache the link relation types to include for embedded features
-            featureRels = context.encoding().getApiData()
-                                               .getCollections()
-                                               .get(context.encoding().getCollectionId())
-                                               .getExtension(FeaturesCoreConfiguration.class)
-                                               .map(cfg -> {
-                                                   boolean addSelf = cfg.getShowsFeatureSelfLink();
-                                                   if (!addSelf)
-                                                       return cfg.getEmbeddedFeatureLinkRels();
-
-                                                   return ImmutableSet.<String>builder()
-                                                                      .addAll(cfg.getEmbeddedFeatureLinkRels())
-                                                                      .add("self")
-                                                                      .build();
-                                               })
-                                               .orElse(ImmutableSet.of());
-        }
-
-        next.accept(context);
+      json.writeEndArray();
     }
-
-    @Override
-    public void onEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (context.encoding().isFeatureCollection()) {
-            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getState().getCurrentFeatureCollectionLinks());
-        }
-
-        // next chain for extensions
-        next.accept(context);
-    }
-
-    @Override
-    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (context.encoding().isFeatureCollection()) {
-
-            // initialize empty for embedded features
-            context.encoding().getState().setCurrentFeatureLinks(ImmutableList.of());
-        } else {
-
-            // initialize with the standard resource links for the feature
-            context.encoding().getState().setCurrentFeatureLinks(context.encoding().getLinks());
-        }
-
-        // next chain for extensions
-        next.accept(context);
-    }
-
-    @Override
-    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (context.encoding().isFeatureCollection()) {
-            // write links of the embedded feature
-            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getState()
-                                                                                       .getCurrentFeatureLinks()
-                                                                                       .stream()
-                                                                                       .filter(link -> featureRels.contains(link.getRel()))
-                                                                                       .collect(Collectors.toUnmodifiableList()));
-        } else {
-            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getState()
-                                                                                       .getCurrentFeatureLinks());
-        }
-
-        // next chain for extensions
-        next.accept(context);
-    }
-
-    private void writeLinksIfAny(JsonGenerator json, List<Link> links) throws IOException {
-        if (!links.isEmpty()) {
-            json.writeArrayFieldStart("links");
-
-            for (Link link : links) {
-                json.writeStartObject();
-                json.writeStringField("href", link.getHref());
-                if (Objects.nonNull(link.getRel()))
-                    json.writeStringField("rel", link.getRel());
-                if (Objects.nonNull(link.getType()))
-                    json.writeStringField("type", link.getType());
-                if (Objects.nonNull(link.getTitle()))
-                    json.writeStringField("title", link.getTitle());
-                json.writeEndObject();
-            }
-
-            json.writeEndArray();
-        }
-    }
+  }
 }

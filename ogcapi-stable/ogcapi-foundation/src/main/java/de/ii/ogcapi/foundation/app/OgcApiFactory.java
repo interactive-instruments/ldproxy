@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -52,9 +52,14 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
 
   private final ExtensionRegistry extensionRegistry;
 
-  @SuppressWarnings("PMD.UnusedFormalParameter") // crsTransformerFactory is needed here because dagger-auto does not parse OgcApiEntity yet
+  @SuppressWarnings(
+      "PMD.UnusedFormalParameter") // crsTransformerFactory is needed here because dagger-auto does
+  // not parse OgcApiEntity yet
   @Inject
-  public OgcApiFactory(CrsTransformerFactory crsTransformerFactory, ExtensionRegistry extensionRegistry, OgcApiFactoryAssisted ogcApiFactoryAssisted) {
+  public OgcApiFactory(
+      CrsTransformerFactory crsTransformerFactory,
+      ExtensionRegistry extensionRegistry,
+      OgcApiFactoryAssisted ogcApiFactoryAssisted) {
     super(ogcApiFactoryAssisted);
     this.extensionRegistry = extensionRegistry;
   }
@@ -90,9 +95,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
 
   @Override
   public EntityDataBuilder<? extends EntityData> superDataBuilder() {
-    return new ImmutableServiceDataCommon.Builder()
-        .enabled(true)
-        .secured(true);
+    return new ImmutableServiceDataCommon.Builder().enabled(true).secured(true);
   }
 
   @Override
@@ -106,10 +109,12 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
       OgcApiDataV2 hydrated = (OgcApiDataV2) entityData;
 
       if (hydrated.isAuto() && LOGGER.isInfoEnabled()) {
-        LOGGER.info("Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
+        LOGGER.info(
+            "Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
       }
 
-      List<OgcApiDataHydratorExtension> extensions = extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class);
+      List<OgcApiDataHydratorExtension> extensions =
+          extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class);
       extensions.sort(Comparator.comparing(OgcApiDataHydratorExtension::getSortPriority));
       for (OgcApiDataHydratorExtension hydrator : extensions) {
         if (hydrator.isEnabledForApi(hydrated)) {
@@ -121,10 +126,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
     } catch (Throwable e) {
       if (LOGGER.isErrorEnabled()) {
         LogContext.error(
-            LOGGER,
-            e,
-            "Service with id '{}' could not be started",
-            entityData.getId());
+            LOGGER, e, "Service with id '{}' could not be started", entityData.getId());
       }
       throw e;
     }

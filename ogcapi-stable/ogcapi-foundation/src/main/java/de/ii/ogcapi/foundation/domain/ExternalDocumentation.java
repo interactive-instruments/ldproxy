@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,16 +10,17 @@ package de.ii.ogcapi.foundation.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 /**
  * # `externalDocs`
- * @langEn |External document with additional information about this API, required keys are `url` and `description`.
- * @langDe Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der API verlinkt wird.
- * Anzugeben sind die Eigenschaften `url` und `description`.
+ *
+ * @langEn |External document with additional information about this API, required keys are `url`
+ *     and `description`.
+ * @langDe Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der
+ *     API verlinkt wird. Anzugeben sind die Eigenschaften `url` und `description`.
  * @default `{}`
  */
 @Value.Immutable
@@ -27,13 +28,15 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableExternalDocumentation.Builder.class)
 public abstract class ExternalDocumentation {
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<ExternalDocumentation> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<ExternalDocumentation> FUNNEL =
+      (from, into) -> {
         assert from != null;
         from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         into.putString(from.getUrl(), StandardCharsets.UTF_8);
-    };
+      };
 
-    public abstract Optional<String> getDescription();
-    public abstract String getUrl();
+  public abstract Optional<String> getDescription();
+
+  public abstract String getUrl();
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,39 +7,38 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import org.immutables.value.Value;
-
-import javax.ws.rs.core.MediaType;
 import java.util.Locale;
-
+import javax.ws.rs.core.MediaType;
+import org.immutables.value.Value;
 
 @Value.Immutable
 public interface ApiMediaType {
 
-    MediaType type();
+  MediaType type();
 
-    @Value.Default
-    default String label() {
-        return type().getSubtype().toUpperCase(Locale.ROOT);
-    }
+  @Value.Default
+  default String label() {
+    return type().getSubtype().toUpperCase(Locale.ROOT);
+  }
 
-    @Value.Default
-    default String parameter() {
-        return type().getSubtype().contains("+") ? type().getSubtype().substring(type().getSubtype().lastIndexOf("+")+1)  : type().getSubtype();
-    }
+  @Value.Default
+  default String parameter() {
+    return type().getSubtype().contains("+")
+        ? type().getSubtype().substring(type().getSubtype().lastIndexOf("+") + 1)
+        : type().getSubtype();
+  }
 
-    @Value.Default
-    default String fileExtension() {
-        return parameter();
-    }
+  @Value.Default
+  default String fileExtension() {
+    return parameter();
+  }
 
-    @Value.Default
-    default int qs() {
-        return 1000;
-    }
+  @Value.Default
+  default int qs() {
+    return 1000;
+  }
 
-    default boolean matches(MediaType mediaType) {
-        return type().isCompatible(mediaType);
-    }
-
+  default boolean matches(MediaType mediaType) {
+    return type().isCompatible(mediaType);
+  }
 }
