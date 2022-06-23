@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.maps.domain;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -14,70 +15,69 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
-import java.util.List;
 
 @Singleton
 @AutoBind
 public class PathParameterTileMatrix implements OgcApiPathParameter {
 
-    protected final SchemaValidator schemaValidator;
+  protected final SchemaValidator schemaValidator;
 
-    @Inject
-    PathParameterTileMatrix(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
-    }
+  @Inject
+  PathParameterTileMatrix(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+  }
 
-    @Override
-    public String getPattern() {
-        return "\\d+";
-    }
+  @Override
+  public String getPattern() {
+    return "\\d+";
+  }
 
-    @Override
-    public List<String> getValues(OgcApiDataV2 apiData) {
-        return ImmutableList.of();
-    }
+  @Override
+  public List<String> getValues(OgcApiDataV2 apiData) {
+    return ImmutableList.of();
+  }
 
-    private final Schema<?> schema = new StringSchema().pattern(getPattern());
+  private final Schema<?> schema = new StringSchema().pattern(getPattern());
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return schema;
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return schema;
+  }
 
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
 
-    @Override
-    public String getId() {
-        return "tileMatrixMapTile";
-    }
+  @Override
+  public String getId() {
+    return "tileMatrixMapTile";
+  }
 
-    @Override
-    public String getName() {
-        return "tileMatrix";
-    }
+  @Override
+  public String getName() {
+    return "tileMatrix";
+  }
 
-    @Override
-    public String getDescription() {
-        return "Zoom level of the tile. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps tiling scheme (WebMercatorQuad). " +
-                "Example: In the WebMercatorQuad tiling scheme Ireland is fully within the tile with the following values: Level 5, Row 10 and Col 15";
-    }
+  @Override
+  public String getDescription() {
+    return "Zoom level of the tile. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps tiling scheme (WebMercatorQuad). "
+        + "Example: In the WebMercatorQuad tiling scheme Ireland is fully within the tile with the following values: Level 5, Row 10 and Col 15";
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) &&
-               (definitionPath.equals("/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
-                definitionPath.equals("/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    return isEnabledForApi(apiData)
+        && (definitionPath.equals("/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+            || definitionPath.equals(
+                "/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return MapTilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return MapTilesConfiguration.class;
+  }
 }

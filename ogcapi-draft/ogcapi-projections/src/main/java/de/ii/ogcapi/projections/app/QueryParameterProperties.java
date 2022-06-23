@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -30,110 +30,121 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn The properties that should be included for each feature. The parameter value is a comma-separated
- * list of property names. By default, all feature properties with a value are returned.
+ * @langEn The properties that should be included for each feature. The parameter value is a
+ *     comma-separated list of property names. By default, all feature properties with a value are
+ *     returned.
  * @langDe Todo
  * @name properties
  * @endpoints Tile
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterProperties extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private final SchemaInfo schemaInfo;
-    private final SchemaValidator schemaValidator;
+  private final SchemaInfo schemaInfo;
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    public QueryParameterProperties(SchemaInfo schemaInfo, SchemaValidator schemaValidator) {
-        this.schemaInfo = schemaInfo;
-        this.schemaValidator = schemaValidator;
+  @Inject
+  public QueryParameterProperties(SchemaInfo schemaInfo, SchemaValidator schemaValidator) {
+    this.schemaInfo = schemaInfo;
+    this.schemaValidator = schemaValidator;
+  }
+
+  @Override
+  public String getId(String collectionId) {
+    return "properties_" + collectionId;
+  }
+
+  @Override
+  public String getName() {
+    return "properties";
+  }
+
+  @Override
+  public String getDescription() {
+    return "The properties that should be included for each feature. The parameter value is a comma-separated list of property names. By default, all feature properties with a value are returned.";
+  }
+
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.GET
+                && (definitionPath.equals("/collections/{collectionId}/items")
+                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")
+                    || definitionPath.equals(
+                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+                    || definitionPath.equals(
+                        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+  }
+
+  private ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
+      new ConcurrentHashMap<>();
+
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.get(apiHashCode).containsKey("*")) {
+      schemaMap.get(apiHashCode).put("*", new ArraySchema().items(new StringSchema()));
     }
+    return schemaMap.get(apiHashCode).get("*");
+  }
 
-    @Override
-    public String getId(String collectionId) {
-        return "properties_"+collectionId;
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+      schemaMap
+          .get(apiHashCode)
+          .put(
+              collectionId,
+              new ArraySchema()
+                  .items(
+                      new StringSchema()
+                          ._enum(schemaInfo.getPropertyNames(apiData, collectionId))));
     }
+    return schemaMap.get(apiHashCode).get(collectionId);
+  }
 
-    @Override
-    public String getName() {
-        return "properties";
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return ProjectionsConfiguration.class;
+  }
+
+  @Override
+  public ImmutableFeatureQuery.Builder transformQuery(
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+      ImmutableFeatureQuery.Builder queryBuilder,
+      Map<String, String> parameters,
+      OgcApiDataV2 datasetData) {
+
+    if (!isExtensionEnabled(
+        datasetData.getCollections().get(featureTypeConfiguration.getId()),
+        ProjectionsConfiguration.class)) {
+      return queryBuilder;
     }
+    List<String> propertiesList = getPropertiesList(parameters);
 
-    @Override
-    public String getDescription() {
-        return "The properties that should be included for each feature. The parameter value is a comma-separated list of property names. By default, all feature properties with a value are returned.";
+    return queryBuilder.fields(propertiesList);
+  }
+
+  private List<String> getPropertiesList(Map<String, String> parameters) {
+    if (parameters.containsKey("properties")) {
+      return Splitter.on(',')
+          .omitEmptyStrings()
+          .trimResults()
+          .splitToList(parameters.get("properties"));
+    } else {
+      return ImmutableList.of("*");
     }
-
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) &&
-                method== HttpMethods.GET &&
-                (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/collections/{collectionId}/items/{featureId}") ||
-                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
-                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
-    }
-
-    private ConcurrentMap<Integer, ConcurrentMap<String,Schema<?>>> schemaMap = new ConcurrentHashMap<>();
-
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaMap.containsKey(apiHashCode))
-            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaMap.get(apiHashCode).containsKey("*")) {
-            schemaMap.get(apiHashCode)
-                     .put("*", new ArraySchema().items(new StringSchema()));
-        }
-        return schemaMap.get(apiHashCode).get("*");
-    }
-
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaMap.containsKey(apiHashCode))
-            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            schemaMap.get(apiHashCode)
-                     .put(collectionId, new ArraySchema().items(new StringSchema()._enum(schemaInfo.getPropertyNames(apiData, collectionId))));
-        }
-        return schemaMap.get(apiHashCode).get(collectionId);
-    }
-
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
-
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return ProjectionsConfiguration.class;
-    }
-
-    @Override
-    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                        ImmutableFeatureQuery.Builder queryBuilder,
-                                                        Map<String, String> parameters, OgcApiDataV2 datasetData) {
-
-        if (!isExtensionEnabled(datasetData.getCollections()
-                                           .get(featureTypeConfiguration.getId()), ProjectionsConfiguration.class)) {
-            return queryBuilder;
-        }
-        List<String> propertiesList = getPropertiesList(parameters);
-
-        return queryBuilder.fields(propertiesList);
-    }
-
-    private List<String> getPropertiesList(Map<String, String> parameters) {
-        if (parameters.containsKey("properties")) {
-            return Splitter.on(',')
-                    .omitEmptyStrings()
-                    .trimResults()
-                    .splitToList(parameters.get("properties"));
-        } else {
-            return ImmutableList.of("*");
-        }
-    }
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,12 +9,12 @@ package de.ii.ogcapi.sorting.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.SchemaDeriverCollectionProperties;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
@@ -31,31 +31,47 @@ class SchemaCacheSortables extends JsonSchemaCache {
   private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
 
   @Override
-  protected JsonSchemaDocument deriveSchema(FeatureSchema schema, OgcApiDataV2 apiData,
-                                            FeatureTypeConfigurationOgcApi collectionData, Optional<String> schemaUri,
-                                            VERSION version) {
-    List<String> sortables = collectionData.getExtension(SortingConfiguration.class)
-        .map(SortingConfiguration::getSortables)
-        .orElse(ImmutableList.of());
+  protected JsonSchemaDocument deriveSchema(
+      FeatureSchema schema,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      Optional<String> schemaUri,
+      VERSION version) {
+    List<String> sortables =
+        collectionData
+            .getExtension(SortingConfiguration.class)
+            .map(SortingConfiguration::getSortables)
+            .orElse(ImmutableList.of());
 
-    WithTransformationsApplied schemaFlattener = new WithTransformationsApplied(
-        ImmutableMap.of(PropertyTransformations.WILDCARD, new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
+    WithTransformationsApplied schemaFlattener =
+        new WithTransformationsApplied(
+            ImmutableMap.of(
+                PropertyTransformations.WILDCARD,
+                new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
-    String flatteningSeparator = schemaFlattener.getFlatteningSeparator(schema).orElse(DEFAULT_FLATTENING_SEPARATOR);
+    String flatteningSeparator =
+        schemaFlattener.getFlatteningSeparator(schema).orElse(DEFAULT_FLATTENING_SEPARATOR);
 
-    List<String> sortablesWithSeparator = Objects.equals(flatteningSeparator, DEFAULT_FLATTENING_SEPARATOR)
-        ? sortables
-        : sortables.stream()
-        .map(sortable -> sortable.replaceAll(Pattern.quote(DEFAULT_FLATTENING_SEPARATOR), flatteningSeparator))
-        .collect(Collectors.toList());
+    List<String> sortablesWithSeparator =
+        Objects.equals(flatteningSeparator, DEFAULT_FLATTENING_SEPARATOR)
+            ? sortables
+            : sortables.stream()
+                .map(
+                    sortable ->
+                        sortable.replaceAll(
+                            Pattern.quote(DEFAULT_FLATTENING_SEPARATOR), flatteningSeparator))
+                .collect(Collectors.toList());
 
-    SchemaDeriverCollectionProperties schemaDeriverCollectionProperties = new SchemaDeriverCollectionProperties(
-        version, schemaUri, collectionData.getLabel(),
-        Optional.empty(), ImmutableList
-            .of(), sortablesWithSeparator);
+    SchemaDeriverCollectionProperties schemaDeriverCollectionProperties =
+        new SchemaDeriverCollectionProperties(
+            version,
+            schemaUri,
+            collectionData.getLabel(),
+            Optional.empty(),
+            ImmutableList.of(),
+            sortablesWithSeparator);
 
-    return (JsonSchemaDocument) schema
-        .accept(schemaFlattener)
-        .accept(schemaDeriverCollectionProperties);
+    return (JsonSchemaDocument)
+        schema.accept(schemaFlattener).accept(schemaDeriverCollectionProperties);
   }
 }

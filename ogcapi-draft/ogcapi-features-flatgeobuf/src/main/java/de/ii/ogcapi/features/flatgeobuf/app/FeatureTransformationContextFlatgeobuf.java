@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,8 +13,10 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-public abstract class FeatureTransformationContextFlatgeobuf implements FeatureTransformationContext {
+public abstract class FeatureTransformationContextFlatgeobuf
+    implements FeatureTransformationContext {
 
-    public abstract FeatureSchema getSchema();
-    public abstract boolean getIs3d();
+  public abstract FeatureSchema getSchema();
+
+  public abstract boolean getIs3d();
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,26 +8,24 @@
 package de.ii.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableHtmlFormDefaults.Builder.class)
 public interface HtmlFormDefaults {
 
-    Optional<String> getName();
+  Optional<String> getName();
 
-    List<Float> getStart();
+  List<Float> getStart();
 
-    List<Float> getEnd();
+  List<Float> getEnd();
 
-    List<Float> getCenter();
+  List<Float> getCenter();
 
-    @Nullable
-    Integer getCenterLevel();
-
+  @Nullable
+  Integer getCenterLevel();
 }

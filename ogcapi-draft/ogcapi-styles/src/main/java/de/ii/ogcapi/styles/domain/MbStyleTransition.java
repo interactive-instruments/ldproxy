@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,15 +8,14 @@
 package de.ii.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableMbStyleTransition.class)
 public abstract class MbStyleTransition {
-    public abstract Optional<Integer> getDuration(); // { return Optional.of(300); }
+  public abstract Optional<Integer> getDuration(); // { return Optional.of(300); }
 
-    public abstract Optional<Integer> getDelay(); // { return Optional.of(0); }
+  public abstract Optional<Integer> getDelay(); // { return Optional.of(0); }
 }

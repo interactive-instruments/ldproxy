@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,11 +24,11 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle.Builder;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
-import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle.Builder;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -48,8 +48,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn This operation fetches the set of styles available. For each style the id, a title,
- * links to the stylesheet of the style in each supported encoding, and the link to the metadata is provided.
+ * @langEn This operation fetches the set of styles available. For each style the id, a title, links
+ *     to the stylesheet of the style in each supported encoding, and the link to the metadata is
+ *     provided.
  * @langDe TODO
  * @name Style
  * @path /{apiId}/styles/{styleId}
@@ -59,113 +60,137 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointStyle extends Endpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyle.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyle.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
+  private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
-    private final StyleRepository styleRepository;
-    private final QueriesHandlerStyles queryHandler;
-    private final I18n i18n;
+  private final StyleRepository styleRepository;
+  private final QueriesHandlerStyles queryHandler;
+  private final I18n i18n;
 
-    @Inject
-    public EndpointStyle(ExtensionRegistry extensionRegistry,
-                         StyleRepository styleRepository,
-                         I18n i18n,
-                         QueriesHandlerStyles queryHandler) {
-        super(extensionRegistry);
-        this.styleRepository = styleRepository;
-        this.i18n = i18n;
-        this.queryHandler = queryHandler;
+  @Inject
+  public EndpointStyle(
+      ExtensionRegistry extensionRegistry,
+      StyleRepository styleRepository,
+      I18n i18n,
+      QueriesHandlerStyles queryHandler) {
+    super(extensionRegistry);
+    this.styleRepository = styleRepository;
+    this.i18n = i18n;
+    this.queryHandler = queryHandler;
+  }
+
+  private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDataV2 apiData) {
+    return extensionRegistry.getExtensionsForType(StyleFormatExtension.class).stream()
+        .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData));
+  }
+
+  private List<ApiMediaType> getStylesheetMediaTypes(
+      OgcApiDataV2 apiData, File apiDir, String styleId) {
+    return getStyleFormatStream(apiData)
+        .filter(
+            styleFormat ->
+                new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension())
+                    .exists())
+        .map(StyleFormatExtension::getMediaType)
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return StylesConfiguration.class;
+  }
+
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(StyleFormatExtension.class);
+    return formats;
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    ValidationResult result = super.onStartup(api, apiValidation);
+
+    if (apiValidation == MODE.NONE) return result;
+
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().from(result).mode(apiValidation);
+
+    builder = styleRepository.validate(builder, api.getData(), Optional.empty());
+
+    return builder.build();
+  }
+
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("styles")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLESHEET);
+    String path = "/styles/{styleId}";
+    List<OgcApiQueryParameter> queryParameters =
+        getQueryParameters(extensionRegistry, apiData, path);
+    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+    if (!pathParameters.stream()
+        .filter(param -> param.getName().equals("styleId"))
+        .findAny()
+        .isPresent()) {
+      LOGGER.error(
+          "Path parameter 'styleId' missing for resource at path '"
+              + path
+              + "'. The GET method will not be available.");
+    } else {
+      String operationSummary = "fetch a style";
+      Optional<String> operationDescription =
+          Optional.of(
+              "Fetches the style with identifier `styleId`. "
+                  + "The set of available styles can be retrieved at `/styles`. Not all styles are available in "
+                  + "all style encodings.");
+      ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+          new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
+      ApiOperation.getResource(
+              apiData,
+              path,
+              false,
+              queryParameters,
+              ImmutableList.of(),
+              getContent(apiData, path),
+              operationSummary,
+              operationDescription,
+              Optional.empty(),
+              TAGS)
+          .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
+      definitionBuilder.putResources(path, resourceBuilder.build());
     }
 
-    private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDataV2 apiData) {
-        return extensionRegistry.getExtensionsForType(StyleFormatExtension.class)
-                .stream()
-                .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData));
-    }
+    return definitionBuilder.build();
+  }
 
-    private List<ApiMediaType> getStylesheetMediaTypes(OgcApiDataV2 apiData, File apiDir, String styleId) {
-        return getStyleFormatStream(apiData)
-                .filter(styleFormat -> new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension()).exists())
-                .map(StyleFormatExtension::getMediaType)
-                .collect(Collectors.toList());
-    }
+  /**
+   * Fetch a style by id
+   *
+   * @param styleId the local identifier of a specific style
+   * @return the style in a json file
+   */
+  @Path("/{styleId}")
+  @GET
+  public Response getStyle(
+      @PathParam("styleId") String styleId,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext) {
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
-    }
+    OgcApiDataV2 apiData = api.getData();
+    checkPathParameter(
+        extensionRegistry,
+        apiData,
+        "/collections/{collectionId}/styles/{styleId}",
+        "styleId",
+        styleId);
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(StyleFormatExtension.class);
-        return formats;
-    }
+    QueriesHandlerStyles.QueryInputStyle queryInput =
+        new Builder().from(getGenericQueryInput(api.getData())).styleId(styleId).build();
 
-    @Override
-    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-        ValidationResult result = super.onStartup(api, apiValidation);
-
-        if (apiValidation== MODE.NONE)
-            return result;
-
-        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-                .from(result)
-                .mode(apiValidation);
-
-        builder = styleRepository.validate(builder, api.getData(), Optional.empty());
-
-        return builder.build();
-    }
-
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("styles")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLESHEET);
-        String path = "/styles/{styleId}";
-        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        if (!pathParameters.stream().filter(param -> param.getName().equals("styleId")).findAny().isPresent()) {
-            LOGGER.error("Path parameter 'styleId' missing for resource at path '" + path + "'. The GET method will not be available.");
-        } else {
-            String operationSummary = "fetch a style";
-            Optional<String> operationDescription = Optional.of("Fetches the style with identifier `styleId`. " +
-                    "The set of available styles can be retrieved at `/styles`. Not all styles are available in " +
-                    "all style encodings.");
-            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
-                                     getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
-                )
-                .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
-            definitionBuilder.putResources(path, resourceBuilder.build());
-        }
-
-        return definitionBuilder.build();
-    }
-
-    /**
-     * Fetch a style by id
-     *
-     * @param styleId the local identifier of a specific style
-     * @return the style in a json file
-     */
-    @Path("/{styleId}")
-    @GET
-    public Response getStyle(@PathParam("styleId") String styleId, @Context OgcApi api,
-                             @Context ApiRequestContext requestContext) {
-
-        OgcApiDataV2 apiData = api.getData();
-        checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}", "styleId", styleId);
-
-        QueriesHandlerStyles.QueryInputStyle queryInput = new Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .styleId(styleId)
-                .build();
-
-        return queryHandler.handle(QueriesHandlerStyles.Query.STYLE, queryInput, requestContext);
-    }
+    return queryHandler.handle(QueriesHandlerStyles.Query.STYLE, queryInput, requestContext);
+  }
 }

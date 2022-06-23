@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,9 +10,8 @@ package de.ii.ogcapi.features.cityjson.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import org.immutables.value.Value;
-
 import java.util.Optional;
+import org.immutables.value.Value;
 
 /**
  * @example <code>
@@ -23,10 +22,8 @@ import java.util.Optional;
  *   version: V11
  * ```
  * </code>
- * <p>
- * Feature Provider:
- * <p>
- * <code>
+ *     <p>Feature Provider:
+ *     <p><code>
  * ```yaml
  * types:
  *   building:
@@ -405,54 +402,58 @@ import java.util.Optional;
 @JsonDeserialize(builder = ImmutableCityJsonConfiguration.Builder.class)
 public interface CityJsonConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
-    enum Version {
+  enum Version {
+    V10("1.0"),
+    V11("1.1");
 
-        V10("1.0"), V11("1.1");
+    private final String text;
 
-        private final String text;
-
-        Version(String value) {
-            text = value;
-        }
-
-        @Override
-        public String toString() {
-            return text;
-        }
-    }
-
-    /**
-     * @langEn Enables support for CityJSON text sequences (media type `application/city+json-seq`).
-     * Requires version 1.1 or later.
-     * @langDe Aktiviert die Unterstützung für CityJSON Text Sequences (Media-Type `application/city+json-seq`).
-     * Erfordert mindestens Version 1.1.
-     * @default false
-     * @since v3.3
-     */
-    Optional<Boolean> getTextSequences();
-
-    /**
-     * @langEn Select the CityJSON version that should be returned. Supported versions are `V10` (CityJSON 1.0) and `V11` (CityJSON 1.1).
-     * @langDe Wählen Sie die CityJSON-Version, die zurückgegeben werden soll. Unterstützte Versionen sind `V10` (CityJSON 1.0) und `V11` (CityJSON 1.1).
-     * @default V11
-     * @since v3.3
-     */
-    Optional<Version> getVersion();
-
-    abstract class Builder extends ExtensionConfiguration.Builder {
+    Version(String value) {
+      text = value;
     }
 
     @Override
-    default Builder getBuilder() {
-        return new ImmutableCityJsonConfiguration.Builder();
+    public String toString() {
+      return text;
     }
+  }
 
-    @Override
-    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        return new ImmutableCityJsonConfiguration.Builder()
-            .from(source)
-            .from(this)
-            .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations())
-            .build();
-    }
+  /**
+   * @langEn Enables support for CityJSON text sequences (media type `application/city+json-seq`).
+   *     Requires version 1.1 or later.
+   * @langDe Aktiviert die Unterstützung für CityJSON Text Sequences (Media-Type
+   *     `application/city+json-seq`). Erfordert mindestens Version 1.1.
+   * @default false
+   * @since v3.3
+   */
+  Optional<Boolean> getTextSequences();
+
+  /**
+   * @langEn Select the CityJSON version that should be returned. Supported versions are `V10`
+   *     (CityJSON 1.0) and `V11` (CityJSON 1.1).
+   * @langDe Wählen Sie die CityJSON-Version, die zurückgegeben werden soll. Unterstützte Versionen
+   *     sind `V10` (CityJSON 1.0) und `V11` (CityJSON 1.1).
+   * @default V11
+   * @since v3.3
+   */
+  Optional<Version> getVersion();
+
+  abstract class Builder extends ExtensionConfiguration.Builder {}
+
+  @Override
+  default Builder getBuilder() {
+    return new ImmutableCityJsonConfiguration.Builder();
+  }
+
+  @Override
+  default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+    return new ImmutableCityJsonConfiguration.Builder()
+        .from(source)
+        .from(this)
+        .transformations(
+            PropertyTransformations.super
+                .mergeInto((PropertyTransformations) source)
+                .getTransformations())
+        .build();
+  }
 }

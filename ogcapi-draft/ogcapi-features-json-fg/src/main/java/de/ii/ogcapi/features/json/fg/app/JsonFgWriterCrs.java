@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,77 +8,82 @@
 package de.ii.ogcapi.features.json.fg.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.json.fg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
 public class JsonFgWriterCrs implements GeoJsonWriter {
 
-    static public String JSON_KEY = "coordRefSys";
+  public static String JSON_KEY = "coordRefSys";
 
-    boolean isEnabled;
+  boolean isEnabled;
 
-    @Inject
-    JsonFgWriterCrs() {
+  @Inject
+  JsonFgWriterCrs() {}
+
+  @Override
+  public JsonFgWriterCrs create() {
+    return new JsonFgWriterCrs();
+  }
+
+  @Override
+  public int getSortPriority() {
+    return 130;
+  }
+
+  @Override
+  public void onStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    isEnabled = isEnabled(context.encoding());
+
+    if (isEnabled && context.encoding().isFeatureCollection()) {
+      writeCrs(context.encoding().getJson(), context.encoding().getTargetCrs());
     }
 
-    @Override
-    public JsonFgWriterCrs create() {
-        return new JsonFgWriterCrs();
+    // next chain for extensions
+    next.accept(context);
+  }
+
+  @Override
+  public void onFeatureStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (isEnabled && !context.encoding().isFeatureCollection()) {
+      writeCrs(context.encoding().getJson(), context.encoding().getTargetCrs());
     }
 
-    @Override
-    public int getSortPriority() {
-        return 130;
-    }
+    // next chain for extensions
+    next.accept(context);
+  }
 
-    @Override
-    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        isEnabled = isEnabled(context.encoding());
+  private void writeCrs(JsonGenerator json, EpsgCrs crs) throws IOException {
+    json.writeStringField(JSON_KEY, crs.toUriString());
 
-        if (isEnabled && context.encoding().isFeatureCollection()) {
-            writeCrs(context.encoding().getJson(), context.encoding().getTargetCrs());
-        }
+    // TODO temporary additional member to support T17 clients, remove
+    json.writeStringField("coord-ref-sys", crs.toUriString());
+  }
 
-        // next chain for extensions
-        next.accept(context);
-    }
-
-    @Override
-    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (isEnabled && !context.encoding().isFeatureCollection()) {
-            writeCrs(context.encoding().getJson(), context.encoding().getTargetCrs());
-        }
-
-        // next chain for extensions
-        next.accept(context);
-    }
-
-    private void writeCrs(JsonGenerator json, EpsgCrs crs) throws IOException {
-        json.writeStringField(JSON_KEY, crs.toUriString());
-
-        // TODO temporary additional member to support T17 clients, remove
-        json.writeStringField("coord-ref-sys", crs.toUriString());
-    }
-
-    private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-        return transformationContext.getApiData()
-                                    .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
-                                    .filter(JsonFgConfiguration::isEnabled)
-                                    .filter(cfg -> Objects.requireNonNullElse(cfg.getCoordRefSys(), false))
-                                    .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.coordRefSys) ||
-                                            transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
-                                    .isPresent();
-    }
+  private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
+    return transformationContext
+        .getApiData()
+        .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
+        .filter(JsonFgConfiguration::isEnabled)
+        .filter(cfg -> Objects.requireNonNullElse(cfg.getCoordRefSys(), false))
+        .filter(
+            cfg ->
+                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.coordRefSys)
+                    || transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+        .isPresent();
+  }
 }

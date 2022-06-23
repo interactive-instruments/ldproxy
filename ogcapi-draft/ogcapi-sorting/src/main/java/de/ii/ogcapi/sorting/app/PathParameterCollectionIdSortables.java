@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,6 @@ import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

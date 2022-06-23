@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,15 +14,18 @@ import org.immutables.value.Value;
 
 public interface QueriesHandlerResources extends QueriesHandler<QueriesHandlerResources.Query> {
 
-    enum Query implements QueryIdentifier {RESOURCES, RESOURCE}
+  enum Query implements QueryIdentifier {
+    RESOURCES,
+    RESOURCE
+  }
 
-    @Value.Immutable
-    interface QueryInputResources extends QueryInput {
-        boolean getIncludeLinkHeader();
-    }
+  @Value.Immutable
+  interface QueryInputResources extends QueryInput {
+    boolean getIncludeLinkHeader();
+  }
 
-    @Value.Immutable
-    interface QueryInputResource extends QueryInput {
-        String getResourceId();
-    }
+  @Value.Immutable
+  interface QueryInputResource extends QueryInput {
+    String getResourceId();
+  }
 }

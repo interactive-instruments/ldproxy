@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,24 +9,23 @@ package de.ii.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
 import java.util.Objects;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableHtmlForm.Builder.class)
 public interface HtmlForm {
 
-    Boolean getEnabled();
+  Boolean getEnabled();
 
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    default boolean isEnabled() {
-        return Objects.equals(getEnabled(), true);
-    }
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean isEnabled() {
+    return Objects.equals(getEnabled(), true);
+  }
 
-    Optional<HtmlFormDefaults> getDefaults();
+  Optional<HtmlFormDefaults> getDefaults();
 }

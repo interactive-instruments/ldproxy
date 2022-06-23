@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,10 +11,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.Link;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
@@ -22,14 +21,16 @@ import java.util.Objects;
 @JsonDeserialize(as = ImmutableResource.class)
 public abstract class Resource {
 
-    public abstract String getId();
+  public abstract String getId();
 
-    public abstract Link getLink();
+  public abstract Link getLink();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<Resource> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<Resource> FUNNEL =
+      (from, into) -> {
         into.putString(from.getId(), StandardCharsets.UTF_8);
         into.putString(from.getLink().getHref(), StandardCharsets.UTF_8)
-            .putString(Objects.requireNonNullElse(from.getLink().getRel(), ""), StandardCharsets.UTF_8);
-    };
+            .putString(
+                Objects.requireNonNullElse(from.getLink().getRel(), ""), StandardCharsets.UTF_8);
+      };
 }

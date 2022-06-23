@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -39,62 +39,71 @@ import org.slf4j.LoggerFactory;
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
 
-/**
- * Handle responses under '/collections/{collectionId}/tiles'.
- */
+/** Handle responses under '/collections/{collectionId}/tiles'. */
 @Singleton
 @AutoBind
-public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSingleCollection implements ConformanceClass {
+public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSingleCollection
+    implements ConformanceClass {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSetsSingleCollection.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(EndpointTileSetsSingleCollection.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
 
-    @Inject
-    EndpointTileSetsSingleCollection(ExtensionRegistry extensionRegistry,
-                                     TilesQueriesHandler queryHandler,
-                                     FeaturesCoreProviders providers) {
-        super(extensionRegistry, queryHandler, providers);
-    }
+  @Inject
+  EndpointTileSetsSingleCollection(
+      ExtensionRegistry extensionRegistry,
+      TilesQueriesHandler queryHandler,
+      FeaturesCoreProviders providers) {
+    super(extensionRegistry, queryHandler, providers);
+  }
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
-                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-tilesets");
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of(
+        "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
+        "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-tilesets");
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return TilesConfiguration.class;
+  }
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return computeDefinition(apiData,
-                                 "collections",
-                                 ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION,
-                                 "/collections/{collectionId}",
-                                 "/tiles",
-                                 TAGS);
-    }
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    return computeDefinition(
+        apiData,
+        "collections",
+        ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION,
+        "/collections/{collectionId}",
+        "/tiles",
+        TAGS);
+  }
 
-    /**
-     * retrieve all available tile matrix sets from the collection
-     *
-     * @return all tile matrix sets from the collection in a json array
-     */
-    @Path("/{collectionId}/tiles")
-    @GET
-    public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext,
-                                @PathParam("collectionId") String collectionId) {
+  /**
+   * retrieve all available tile matrix sets from the collection
+   *
+   * @return all tile matrix sets from the collection in a json array
+   */
+  @Path("/{collectionId}/tiles")
+  @GET
+  public Response getTileSets(
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext,
+      @PathParam("collectionId") String collectionId) {
 
-        List<String> tileEncodings = api.getData()
+    List<String> tileEncodings =
+        api.getData()
             .getExtension(TilesConfiguration.class, collectionId)
             .map(TilesConfiguration::getTileEncodingsDerived)
             .orElseThrow(() -> new IllegalStateException("No tile encoding available."));
-        return super.getTileSets(api.getData(), requestContext,
-                                 "/collections/{collectionId}/tiles", collectionId,
-                                 false, tileEncodings);
-    }
-
+    return super.getTileSets(
+        api.getData(),
+        requestContext,
+        "/collections/{collectionId}/tiles",
+        collectionId,
+        false,
+        tileEncodings);
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,7 +15,9 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableMinMax.Builder.class)
 public interface MinMax {
-    int getMin();
-    int getMax();
-    Optional<Integer> getDefault();
+  int getMin();
+
+  int getMax();
+
+  Optional<Integer> getDefault();
 }

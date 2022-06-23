@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -22,25 +22,23 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTileMatrixSets.Builder.class)
 public abstract class TileMatrixSets extends PageRepresentation {
 
-    public final static String SCHEMA_REF = "#/components/schemas/TileMatrixSets";
+  public static final String SCHEMA_REF = "#/components/schemas/TileMatrixSets";
 
-    public abstract List<TileMatrixSetLinks> getTileMatrixSets();
+  public abstract List<TileMatrixSetLinks> getTileMatrixSets();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<TileMatrixSets> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<TileMatrixSets> FUNNEL =
+      (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
-        from.getTileMatrixSets()
-            .stream()
+        from.getTileMatrixSets().stream()
             .sorted(Comparator.comparing(TileMatrixSetLinks::getId))
             .forEachOrdered(val -> TileMatrixSetLinks.FUNNEL.funnel(val, into));
-        from.getExtensions()
-            .keySet()
-            .stream()
+        from.getExtensions().keySet().stream()
             .sorted()
             .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
         // we cannot encode the generic extension object
-    };
+      };
 }

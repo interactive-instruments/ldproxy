@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,16 +20,18 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTilesBoundingBox.Builder.class)
 public abstract class TilesBoundingBox {
 
-    public abstract BigDecimal[] getLowerLeft();
-    public abstract BigDecimal[] getUpperRight();
-    public abstract Optional<String> getCrs();
+  public abstract BigDecimal[] getLowerLeft();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<TilesBoundingBox> FUNNEL = (from, into) -> {
-        Arrays.stream(from.getLowerLeft())
-              .forEachOrdered(val -> into.putDouble(val.doubleValue()));
+  public abstract BigDecimal[] getUpperRight();
+
+  public abstract Optional<String> getCrs();
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<TilesBoundingBox> FUNNEL =
+      (from, into) -> {
+        Arrays.stream(from.getLowerLeft()).forEachOrdered(val -> into.putDouble(val.doubleValue()));
         Arrays.stream(from.getUpperRight())
-              .forEachOrdered(val -> into.putDouble(val.doubleValue()));
+            .forEachOrdered(val -> into.putDouble(val.doubleValue()));
         from.getCrs().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-    };
+      };
 }

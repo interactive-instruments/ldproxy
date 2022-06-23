@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,7 +26,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
@@ -38,57 +37,55 @@ import javax.ws.rs.core.Response;
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
 
-/**
- * Handle responses under '/tiles'.
- */
+/** Handle responses under '/tiles'. */
 @Singleton
 @AutoBind
-public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMultiCollection implements ConformanceClass {
+public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMultiCollection
+    implements ConformanceClass {
 
-    private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
-    @Inject
-    EndpointTileSetsMultiCollection(ExtensionRegistry extensionRegistry,
-                                    TilesQueriesHandler queryHandler,
-                                    FeaturesCoreProviders providers) {
-        super(extensionRegistry, queryHandler, providers);
-    }
+  @Inject
+  EndpointTileSetsMultiCollection(
+      ExtensionRegistry extensionRegistry,
+      TilesQueriesHandler queryHandler,
+      FeaturesCoreProviders providers) {
+    super(extensionRegistry, queryHandler, providers);
+  }
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
-                                "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/dataset-tilesets");
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of(
+        "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
+        "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/dataset-tilesets");
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return TilesConfiguration.class;
+  }
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
-        return formats;
-    }
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
+    return formats;
+  }
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return computeDefinition(apiData,
-                                 "tiles",
-                                 ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS,
-                                 "/tiles",
-                                 TAGS);
-    }
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    return computeDefinition(
+        apiData, "tiles", ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS, "/tiles", TAGS);
+  }
 
-    @GET
-    public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
+  @GET
+  public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
 
-        List<String> tileEncodings = api.getData()
+    List<String> tileEncodings =
+        api.getData()
             .getExtension(TilesConfiguration.class)
             .map(TilesConfiguration::getTileEncodingsDerived)
             .orElseThrow(() -> new IllegalStateException("No tile encoding available."));
-        return super.getTileSets(api.getData(), requestContext, "/tiles",
-                                 false, tileEncodings);
-    }
+    return super.getTileSets(api.getData(), requestContext, "/tiles", false, tileEncodings);
+  }
 }

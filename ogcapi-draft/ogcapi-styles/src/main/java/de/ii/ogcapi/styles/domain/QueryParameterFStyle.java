@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -23,34 +22,33 @@ import javax.inject.Singleton;
  * @name Style
  * @endpoints Style
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterFStyle extends QueryParameterF {
 
-    @Inject
-    public QueryParameterFStyle(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  public QueryParameterFStyle(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fStyle";
-    }
+  @Override
+  public String getId() {
+    return "fStyle";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return definitionPath.endsWith("/styles/{styleId}");
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.endsWith("/styles/{styleId}");
+  }
 
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return StyleFormatExtension.class;
-    }
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return StyleFormatExtension.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
-    }
-
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return StylesConfiguration.class;
+  }
 }

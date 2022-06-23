@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,19 +10,24 @@ package de.ii.ogcapi.routes.domain;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import org.immutables.value.Value;
-
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextRoutes implements FeatureTransformationContext {
 
-    public abstract RouteFormatExtension getFormat();
-    public abstract Optional<String> getName();
-    public abstract EpsgCrs getCrs();
-    public abstract CrsInfo getCrsInfo();
-    public abstract long getStartTimeNano();
-    public abstract String getSpeedLimitUnit();
-    public abstract Optional<Double> getElevationProfileSimplificationTolerance();
+  public abstract RouteFormatExtension getFormat();
+
+  public abstract Optional<String> getName();
+
+  public abstract EpsgCrs getCrs();
+
+  public abstract CrsInfo getCrsInfo();
+
+  public abstract long getStartTimeNano();
+
+  public abstract String getSpeedLimitUnit();
+
+  public abstract Optional<Double> getElevationProfileSimplificationTolerance();
 }

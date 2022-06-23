@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -54,145 +54,171 @@ import javax.ws.rs.core.Response;
 @AutoBind
 public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
 
-    private final I18n i18n;
-    private final ExtensionRegistry extensionRegistry;
-    private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-    private final java.nio.file.Path resourcesStore;
+  private final I18n i18n;
+  private final ExtensionRegistry extensionRegistry;
+  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+  private final java.nio.file.Path resourcesStore;
 
-    @Inject
-    public QueriesHandlerResourcesImpl(AppContext appContext,
-                                       ExtensionRegistry extensionRegistry,
-                                       I18n i18n) {
-        this.extensionRegistry = extensionRegistry;
-        this.i18n = i18n;
-        this.resourcesStore = appContext.getDataDir()
-            .resolve(API_RESOURCES_DIR)
-            .resolve("resources");
-        if (!resourcesStore.toFile().exists()) {
-            resourcesStore.toFile().mkdirs();
-        }
-        this.queryHandlers = ImmutableMap.of(
-                Query.RESOURCES, QueryHandler.with(QueryInputResources.class, this::getResourcesResponse),
-                Query.RESOURCE, QueryHandler.with(QueryInputResource.class, this::getResourceResponse)
-        );
+  @Inject
+  public QueriesHandlerResourcesImpl(
+      AppContext appContext, ExtensionRegistry extensionRegistry, I18n i18n) {
+    this.extensionRegistry = extensionRegistry;
+    this.i18n = i18n;
+    this.resourcesStore = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("resources");
+    if (!resourcesStore.toFile().exists()) {
+      resourcesStore.toFile().mkdirs();
+    }
+    this.queryHandlers =
+        ImmutableMap.of(
+            Query.RESOURCES,
+                QueryHandler.with(QueryInputResources.class, this::getResourcesResponse),
+            Query.RESOURCE, QueryHandler.with(QueryInputResource.class, this::getResourceResponse));
+  }
+
+  @Override
+  public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
+    return queryHandlers;
+  }
+
+  private Response getResourcesResponse(
+      QueryInputResources queryInput, ApiRequestContext requestContext) {
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
+
+    final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
+
+    final String apiId = api.getId();
+    File apiDir = new File(resourcesStore + File.separator + apiId);
+    if (!apiDir.exists()) {
+      apiDir.mkdirs();
     }
 
-    @Override
-    public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
-        return queryHandlers;
-    }
+    Resources resources =
+        ImmutableResources.builder()
+            .resources(
+                Arrays.stream(apiDir.listFiles())
+                    .filter(file -> !file.isHidden())
+                    .map(File::getName)
+                    .sorted()
+                    .map(
+                        filename ->
+                            ImmutableResource.builder()
+                                .id(filename)
+                                .link(
+                                    resourcesLinkGenerator.generateResourceLink(
+                                        requestContext.getUriCustomizer(), filename))
+                                .build())
+                    .collect(Collectors.toList()))
+            .links(
+                new DefaultLinksGenerator()
+                    .generateLinks(
+                        requestContext.getUriCustomizer(),
+                        requestContext.getMediaType(),
+                        requestContext.getAlternateMediaTypes(),
+                        i18n,
+                        requestContext.getLanguage()))
+            .build();
 
-    private Response getResourcesResponse(QueryInputResources queryInput, ApiRequestContext requestContext) {
-        OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
+    ResourcesFormatExtension format =
+        extensionRegistry.getExtensionsForType(ResourcesFormatExtension.class).stream()
+            .filter(f -> requestContext.getMediaType().matches(f.getMediaType().type()))
+            .findAny()
+            .map(ResourcesFormatExtension.class::cast)
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type {0} cannot be generated.",
+                            requestContext.getMediaType().type())));
 
-        final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
-
-        final String apiId = api.getId();
-        File apiDir = new File(resourcesStore + File.separator + apiId);
-        if (!apiDir.exists()) {
-            apiDir.mkdirs();
-        }
-
-        Resources resources = ImmutableResources.builder()
-                                                .resources(
-                                                        Arrays.stream(apiDir.listFiles())
-                                                              .filter(file -> !file.isHidden())
-                                                              .map(File::getName)
-                                                              .sorted()
-                                                              .map(filename -> ImmutableResource.builder()
-                                                                                                .id(filename)
-                                                                                                .link(resourcesLinkGenerator.generateResourceLink(requestContext.getUriCustomizer(), filename))
-                                                                                                .build())
-                                                              .collect(Collectors.toList()))
-                                                .links(new DefaultLinksGenerator()
-                                                               .generateLinks(requestContext.getUriCustomizer(),
-                                                                              requestContext.getMediaType(),
-                                                                              requestContext.getAlternateMediaTypes(),
-                                                                              i18n,
-                                                                              requestContext.getLanguage()))
-                                                .build();
-
-        ResourcesFormatExtension format = extensionRegistry.getExtensionsForType(ResourcesFormatExtension.class)
-                                                           .stream()
-                                                           .filter(f -> requestContext.getMediaType().matches(f.getMediaType().type()))
-                                                           .findAny()
-                                                           .map(ResourcesFormatExtension.class::cast)
-                                                           .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
-
-        Date lastModified = Arrays.stream(apiDir.listFiles())
-                                  .filter(file -> !file.isHidden())
-                                  .map(File::lastModified)
-                                  .max(Comparator.naturalOrder())
-                                  .map(Instant::ofEpochMilli)
-                                  .map(Date::from)
-                                  .orElse(null);
-        EntityTag etag = !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || apiData.getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
+    Date lastModified =
+        Arrays.stream(apiDir.listFiles())
+            .filter(file -> !file.isHidden())
+            .map(File::lastModified)
+            .max(Comparator.naturalOrder())
+            .map(Instant::ofEpochMilli)
+            .map(Date::from)
+            .orElse(null);
+    EntityTag etag =
+        !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || apiData
+                    .getExtension(HtmlConfiguration.class)
+                    .map(HtmlConfiguration::getSendEtags)
+                    .orElse(false)
             ? ETag.from(resources, Resources.FUNNEL, format.getMediaType().label())
             : null;
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
 
-        return prepareSuccessResponse(requestContext, queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
-                                      HeaderCaching.of(lastModified, etag, queryInput),
-                                      null,
-                                      HeaderContentDisposition.of(String.format("resources.%s", format.getMediaType().fileExtension())))
-                .entity(format.getResourcesEntity(resources, apiData, requestContext))
-                .build();
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? resources.getLinks() : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format("resources.%s", format.getMediaType().fileExtension())))
+        .entity(format.getResourcesEntity(resources, apiData, requestContext))
+        .build();
+  }
+
+  private Response getResourceResponse(
+      QueryInputResource queryInput, ApiRequestContext requestContext) {
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
+    String resourceId = queryInput.getResourceId();
+
+    final String apiId = api.getId();
+    final java.nio.file.Path resourceFile = resourcesStore.resolve(apiId).resolve(resourceId);
+
+    if (Files.notExists(resourceFile)) {
+      throw new NotFoundException(
+          MessageFormat.format("The file ''{0}'' does not exist.", resourceId));
     }
 
-    private Response getResourceResponse(QueryInputResource queryInput, ApiRequestContext requestContext) {
-        OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
-        String resourceId = queryInput.getResourceId();
-
-        final String apiId = api.getId();
-        final java.nio.file.Path resourceFile = resourcesStore.resolve(apiId).resolve(resourceId);
-
-        if (Files.notExists(resourceFile)) {
-            throw new NotFoundException(MessageFormat.format("The file ''{0}'' does not exist.", resourceId));
-        }
-
-        final ResourceFormatExtension format = extensionRegistry.getExtensionsForType(ResourceFormatExtension.class)
-                                                                .stream()
-                                                                .filter(f -> requestContext.getMediaType().matches(f.getMediaType().type()))
-                                                                .findAny()
-                                                                .map(ResourceFormatExtension.class::cast)
-                                                                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
-        ;
-        final byte[] resource;
-        try {
-            resource = Files.readAllBytes(resourceFile);
-        } catch (IOException e) {
-            throw new ServerErrorException("resource could not be read: "+resourceId, 500);
-        }
-
-        // TODO: URLConnection content-type guessing doesn't seem to work well, maybe try Apache Tika
-        String contentType = URLConnection.guessContentTypeFromName(resourceId);
-        if (contentType==null) {
-            try {
-                contentType = URLConnection.guessContentTypeFromStream(ByteSource.wrap(resource).openStream());
-            } catch (IOException e) {
-                // nothing we can do here, just take the default
-            }
-        }
-        if (contentType==null || contentType.isEmpty())
-            contentType = "application/octet-stream";
-
-        Date lastModified = LastModified.from(resourceFile);
-        EntityTag etag = ETag.from(resource);
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
-
-        return prepareSuccessResponse(requestContext, null,
-                                      HeaderCaching.of(lastModified, etag, queryInput),
-                                      null,
-                                      HeaderContentDisposition.of(resourceId))
-                .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
-                .type(contentType)
-                .build();
+    final ResourceFormatExtension format =
+        extensionRegistry.getExtensionsForType(ResourceFormatExtension.class).stream()
+            .filter(f -> requestContext.getMediaType().matches(f.getMediaType().type()))
+            .findAny()
+            .map(ResourceFormatExtension.class::cast)
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type {0} cannot be generated.",
+                            requestContext.getMediaType().type())));
+    ;
+    final byte[] resource;
+    try {
+      resource = Files.readAllBytes(resourceFile);
+    } catch (IOException e) {
+      throw new ServerErrorException("resource could not be read: " + resourceId, 500);
     }
+
+    // TODO: URLConnection content-type guessing doesn't seem to work well, maybe try Apache Tika
+    String contentType = URLConnection.guessContentTypeFromName(resourceId);
+    if (contentType == null) {
+      try {
+        contentType =
+            URLConnection.guessContentTypeFromStream(ByteSource.wrap(resource).openStream());
+      } catch (IOException e) {
+        // nothing we can do here, just take the default
+      }
+    }
+    if (contentType == null || contentType.isEmpty()) contentType = "application/octet-stream";
+
+    Date lastModified = LastModified.from(resourceFile);
+    EntityTag etag = ETag.from(resource);
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
+
+    return prepareSuccessResponse(
+            requestContext,
+            null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(resourceId))
+        .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
+        .type(contentType)
+        .build();
+  }
 }

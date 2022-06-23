@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -88,8 +88,8 @@ public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
 
     Optional<String> collectionId = getCollectionId(parameters);
 
-    if (collectionId.isPresent() && !ogcApi.get().getData()
-        .isCollectionEnabled(collectionId.get())) {
+    if (collectionId.isPresent()
+        && !ogcApi.get().getData().isCollectionEnabled(collectionId.get())) {
       output.println("No collection with the given id found");
       output.flush();
       return;
@@ -97,8 +97,8 @@ public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
 
     Optional<String> tileMatrixSetId = getTileMatrixSetId(parameters);
 
-    if (tileMatrixSetId.isPresent() && tileMatrixSetRepository.get(tileMatrixSetId.get())
-        .isEmpty()) {
+    if (tileMatrixSetId.isPresent()
+        && tileMatrixSetRepository.get(tileMatrixSetId.get()).isEmpty()) {
       output.println("No tile matrix set with the given id found");
       output.flush();
       return;
@@ -112,12 +112,16 @@ public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
       return;
     }
 
-    Optional<BoundingBox> boundingBox = bbox.isEmpty()
-        ? Optional.empty()
-        : Optional.of(BoundingBox.of(Double.parseDouble(bbox.get(0)),
-            Double.parseDouble(bbox.get(1)), Double.parseDouble(bbox.get(2)),
-            Double.parseDouble(bbox.get(3)),
-            OgcCrs.CRS84));
+    Optional<BoundingBox> boundingBox =
+        bbox.isEmpty()
+            ? Optional.empty()
+            : Optional.of(
+                BoundingBox.of(
+                    Double.parseDouble(bbox.get(0)),
+                    Double.parseDouble(bbox.get(1)),
+                    Double.parseDouble(bbox.get(2)),
+                    Double.parseDouble(bbox.get(3)),
+                    OgcCrs.CRS84));
 
     try (MDC.MDCCloseable closeable =
         LogContext.putCloseable(LogContext.CONTEXT.SERVICE, apiId.get())) {

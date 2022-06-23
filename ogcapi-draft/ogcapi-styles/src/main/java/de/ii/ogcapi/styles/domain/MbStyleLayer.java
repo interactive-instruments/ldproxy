@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,55 +9,56 @@ package de.ii.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
 import java.util.Map;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableMbStyleLayer.class)
 public abstract class MbStyleLayer {
-    public enum LayerType {
-        background("background"),
-        fill("fill"),
-        line("line"),
-        symbol("symbol"),
-        raster("raster"),
-        circle("circle"),
-        fillExtrusion("fill-extrusion"),
-        heatmap("heatmap"),
-        hillshade("hillshade");
+  public enum LayerType {
+    background("background"),
+    fill("fill"),
+    line("line"),
+    symbol("symbol"),
+    raster("raster"),
+    circle("circle"),
+    fillExtrusion("fill-extrusion"),
+    heatmap("heatmap"),
+    hillshade("hillshade");
 
-        public final String label;
+    public final String label;
 
-        LayerType(String label) {
-            this.label = label;
-        }
-
-        @Override
-        public String toString() { return label; }
+    LayerType(String label) {
+      this.label = label;
     }
 
-    public abstract String getId();
+    @Override
+    public String toString() {
+      return label;
+    }
+  }
 
-    // TODO use enum to check that we have a valid value
-    public abstract String getType();
+  public abstract String getId();
 
-    public abstract Map<String, Object> getMetadata();
+  // TODO use enum to check that we have a valid value
+  public abstract String getType();
 
-    public abstract Optional<String> getSource();
+  public abstract Map<String, Object> getMetadata();
 
-    @JsonProperty("source-layer")
-    public abstract Optional<String> getSourceLayer();
+  public abstract Optional<String> getSource();
 
-    public abstract Optional<Integer> getMinzoom();
+  @JsonProperty("source-layer")
+  public abstract Optional<String> getSourceLayer();
 
-    public abstract Optional<Integer> getMaxzoom();
+  public abstract Optional<Integer> getMinzoom();
 
-    public abstract Optional<Object> getFilter();
+  public abstract Optional<Integer> getMaxzoom();
 
-    public abstract Map<String, Object> getLayout();
+  public abstract Optional<Object> getFilter();
 
-    public abstract Map<String, Object> getPaint();
+  public abstract Map<String, Object> getLayout();
+
+  public abstract Map<String, Object> getPaint();
 }

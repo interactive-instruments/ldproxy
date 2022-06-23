@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,28 +7,32 @@
  */
 package de.ii.ogcapi.styles.domain;
 
+import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+import static de.ii.ogcapi.styles.domain.PathParameterStyleId.STYLE_ID_PATTERN;
+
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-
 import java.util.Optional;
-
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-import static de.ii.ogcapi.styles.domain.PathParameterStyleId.STYLE_ID_PATTERN;
 
 @AutoMultiBind
 public interface StyleMetadataFormatExtension extends GenericFormatExtension {
 
-    @Override
-    default String getPathPattern() {
-        return "^(?:/collections/"+COLLECTION_ID_PATTERN+")?/?styles/"+STYLE_ID_PATTERN+"/metadata/?$";
-    }
+  @Override
+  default String getPathPattern() {
+    return "^(?:/collections/"
+        + COLLECTION_ID_PATTERN
+        + ")?/?styles/"
+        + STYLE_ID_PATTERN
+        + "/metadata/?$";
+  }
 
-    Object getStyleMetadataEntity(StyleMetadata metadata,
-                                  OgcApiDataV2 apiData,
-                                  Optional<String> collectionId,
-                                  ApiRequestContext requestContext);
+  Object getStyleMetadataEntity(
+      StyleMetadata metadata,
+      OgcApiDataV2 apiData,
+      Optional<String> collectionId,
+      ApiRequestContext requestContext);
 
-    StyleMetadata parse(byte[] content, boolean strict, boolean inStore);
+  StyleMetadata parse(byte[] content, boolean strict, boolean inStore);
 }

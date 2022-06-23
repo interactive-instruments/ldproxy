@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -22,6 +22,17 @@ import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.SortedMap;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -40,18 +51,6 @@ import org.wololo.flatgeobuf.HeaderMeta;
 import org.wololo.flatgeobuf.generated.ColumnType;
 import org.wololo.flatgeobuf.generated.Feature;
 import org.wololo.flatgeobuf.generated.GeometryType;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.SortedMap;
 
 public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFlat, FeatureSfFlat> {
 
@@ -80,10 +79,12 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     this.outputStream = encodingContext.getOutputStream();
     this.fields = encodingContext.getFields();
     this.allProperties = fields.contains("*");
-    this.srid = encodingContext.getCrsTransformer()
-        .map(CrsTransformer::getTargetCrs)
-        .map(EpsgCrs::getCode)
-        .orElse(4326);
+    this.srid =
+        encodingContext
+            .getCrsTransformer()
+            .map(CrsTransformer::getTargetCrs)
+            .map(EpsgCrs::getCode)
+            .orElse(4326);
     this.is3d = encodingContext.getIs3d();
     this.featureSchema = encodingContext.getSchema();
     this.geometryFactory = new GeometryFactory();
@@ -114,13 +115,15 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
 
     try {
       push(Constants.MAGIC_BYTES);
-      headerMeta = getHeader(collectionId, context.metadata().getNumberReturned().orElse(0)); // 0 = unknown
+      headerMeta =
+          getHeader(collectionId, context.metadata().getNumberReturned().orElse(0)); // 0 = unknown
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       HeaderMeta.write(headerMeta, baos, builder);
       push(baos.toByteArray());
       builder.clear();
     } catch (IOException e) {
-      throw new IllegalStateException("Could not write to Flatgeobuf output stream: " + e.getMessage(), e);
+      throw new IllegalStateException(
+          "Could not write to Flatgeobuf output stream: " + e.getMessage(), e);
     }
   }
 
@@ -135,23 +138,27 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
 
       // promote primitives to multi, if this is the specified geometry type;
       // data from some sources (e.g., Shapefile) supports to mix primitives and aggregates
-      if (currentGeometry instanceof Polygon && headerMeta.geometryType==GeometryType.MultiPolygon) {
+      if (currentGeometry instanceof Polygon
+          && headerMeta.geometryType == GeometryType.MultiPolygon) {
         Polygon[] array = new Polygon[1];
         array[0] = (Polygon) currentGeometry;
         currentGeometry = currentGeometry.getFactory().createMultiPolygon(array);
-      } else if (currentGeometry instanceof LineString && headerMeta.geometryType==GeometryType.MultiLineString) {
+      } else if (currentGeometry instanceof LineString
+          && headerMeta.geometryType == GeometryType.MultiLineString) {
         LineString[] array = new LineString[1];
         array[0] = (LineString) currentGeometry;
         currentGeometry = currentGeometry.getFactory().createMultiLineString(array);
-      } else if (currentGeometry instanceof Point && headerMeta.geometryType==GeometryType.MultiPoint) {
+      } else if (currentGeometry instanceof Point
+          && headerMeta.geometryType == GeometryType.MultiPoint) {
         Point[] array = new Point[1];
         array[0] = (Point) currentGeometry;
         currentGeometry = currentGeometry.getFactory().createMultiPoint(array);
       }
       final int geometryOffset;
-      geometryOffset = Objects.nonNull(currentGeometry)
-          ? GeometryConversions.serialize(builder, currentGeometry, headerMeta.geometryType)
-          : 0;
+      geometryOffset =
+          Objects.nonNull(currentGeometry)
+              ? GeometryConversions.serialize(builder, currentGeometry, headerMeta.geometryType)
+              : 0;
       final int featureOffset = Feature.createFeature(builder, geometryOffset, propertiesOffset, 0);
       builder.finishSizePrefixed(featureOffset);
       push(builder.sizedByteArray());
@@ -159,8 +166,12 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
       written++;
 
     } catch (Exception e) {
-      LOGGER.error("Error while processing feature {} in collection {}. The feature is skipped. Error: {}", feature.getIdValue(), collectionId, e.getMessage());
-      if(LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+      LOGGER.error(
+          "Error while processing feature {} in collection {}. The feature is skipped. Error: {}",
+          feature.getIdValue(),
+          collectionId,
+          e.getMessage());
+      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
         LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
       }
     }
@@ -173,9 +184,15 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     if (LOGGER.isTraceEnabled()) {
       long transformerDuration = (System.nanoTime() - transformerStart) / 1000000;
       long processingDuration = (System.nanoTime() - processingStart) / 1000000;
-      LOGGER.trace(String.format("Collection %s, features returned: %d, written: %d, total duration: %dms, processing: %dms, feature processing: %dms.",
-                                 collectionId,  context.metadata().getNumberReturned().orElse(0), written,
-                                 transformerDuration, processingDuration, featureDuration / 1000000));
+      LOGGER.trace(
+          String.format(
+              "Collection %s, features returned: %d, written: %d, total duration: %dms, processing: %dms, feature processing: %dms.",
+              collectionId,
+              context.metadata().getNumberReturned().orElse(0),
+              written,
+              transformerDuration,
+              processingDuration,
+              featureDuration / 1000000));
     }
   }
 
@@ -188,8 +205,9 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
 
     byte geometryType = GeometryType.Unknown;
     for (FeatureSchema schema : featureSchema.getProperties()) {
-      if (schema.getType()==SchemaBase.Type.GEOMETRY) {
-        // Flatgeobuf can handle only one geometry; ignore all geometries except the primary geometry
+      if (schema.getType() == SchemaBase.Type.GEOMETRY) {
+        // Flatgeobuf can handle only one geometry; ignore all geometries except the primary
+        // geometry
         if (schema.isPrimaryGeometry()) {
           switch (schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
             case POINT:
@@ -219,8 +237,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
         }
       } else {
         ColumnMeta column = createColumn(schema.getName(), schema);
-        if (Objects.nonNull(column))
-          columns.add(column);
+        if (Objects.nonNull(column)) columns.add(column);
       }
     }
 
@@ -234,8 +251,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     ColumnMeta column = new ColumnMeta();
     column.name = name;
 
-    if (!allProperties && !fields.contains(schema.getFullPathAsString()))
-      return null;
+    if (!allProperties && !fields.contains(schema.getFullPathAsString())) return null;
 
     switch (schema.getType()) {
       case BOOLEAN:
@@ -251,7 +267,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
       case DATETIME:
         column.type = ColumnType.DateTime;
         break;
-      // Flatgeobuf can handle only primitives; map objects and arrays to strings
+        // Flatgeobuf can handle only primitives; map objects and arrays to strings
       case OBJECT:
       case OBJECT_ARRAY:
       case VALUE_ARRAY:
@@ -259,12 +275,18 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
         column.type = ColumnType.String;
         break;
       default:
-        LOGGER.warn("Property '{}' with unsupported type '{}' mapped to String in FlatGeobuf output.", column.name, schema.getType().toString());
+        LOGGER.warn(
+            "Property '{}' with unsupported type '{}' mapped to String in FlatGeobuf output.",
+            column.name,
+            schema.getType().toString());
         column.type = ColumnType.String;
     }
     schema.getLabel().ifPresent(s -> column.title = s);
     schema.getDescription().ifPresent(s -> column.description = s);
-    schema.getConstraints().flatMap(SchemaConstraints::getRequired).ifPresent(b -> column.nullable = !b);
+    schema
+        .getConstraints()
+        .flatMap(SchemaConstraints::getRequired)
+        .ifPresent(b -> column.nullable = !b);
     schema.getRole().ifPresent(r -> column.unique = r.equals(SchemaBase.Role.ID));
     return column;
   }
@@ -282,8 +304,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
           byte type = column.type;
 
           Object value = properties.get(column.name);
-          if (value == null)
-            continue;
+          if (value == null) continue;
 
           switch (type) {
             case ColumnType.Bool:
@@ -291,7 +312,11 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
                 propBuffer.putShort(i);
                 propBuffer.put((byte) ((Boolean) value ? 1 : 0));
               } else {
-                LOGGER.warn("Property '{}' with invalid value '{}' for type '{}' skipped in FlatGeobuf output.", column.name, value, type);
+                LOGGER.warn(
+                    "Property '{}' with invalid value '{}' for type '{}' skipped in FlatGeobuf output.",
+                    column.name,
+                    value,
+                    type);
               }
               break;
 
@@ -300,7 +325,11 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
                 propBuffer.putShort(i);
                 propBuffer.putInt(((Long) value).intValue());
               } else {
-                LOGGER.warn("Property '{}' with invalid value '{}' for type '{}' skipped in FlatGeobuf output.", column.name, value, type);
+                LOGGER.warn(
+                    "Property '{}' with invalid value '{}' for type '{}' skipped in FlatGeobuf output.",
+                    column.name,
+                    value,
+                    type);
               }
               break;
 
@@ -309,7 +338,11 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
                 propBuffer.putShort(i);
                 propBuffer.putDouble((Double) value);
               } else {
-                LOGGER.warn("Property '{}' with invalid value '{}' for type '{}' skipped in FlatGeobuf output.", column.name, value, type);
+                LOGGER.warn(
+                    "Property '{}' with invalid value '{}' for type '{}' skipped in FlatGeobuf output.",
+                    column.name,
+                    value,
+                    type);
               }
               break;
 
@@ -322,7 +355,10 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
               break;
 
             default:
-              LOGGER.warn("Property '{}' with unknown type '{}' skipped in FlatGeobuf output.", column.name, type);
+              LOGGER.warn(
+                  "Property '{}' with unknown type '{}' skipped in FlatGeobuf output.",
+                  column.name,
+                  type);
           }
         }
         done = true;

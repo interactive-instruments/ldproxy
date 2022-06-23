@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -48,177 +48,187 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class FeaturesFormatJsonFg implements FeatureFormatExtension {
 
-    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "vnd.ogc.fg+json"))
-            .label("JSON-FG")
-            .parameter("jsonfg")
-            .build();
-    public static final ApiMediaType COLLECTION_MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "json"))
-            .label("JSON")
-            .parameter("json")
-            .build();
+  public static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "vnd.ogc.fg+json"))
+          .label("JSON-FG")
+          .parameter("jsonfg")
+          .build();
+  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "json"))
+          .label("JSON")
+          .parameter("json")
+          .build();
 
-    private final SchemaGeneratorOpenApi schemaGeneratorFeature;
-    private final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
-    private final GeoJsonWriterRegistry geoJsonWriterRegistry;
-    private final CrsTransformerFactory crsTransformerFactory;
+  private final SchemaGeneratorOpenApi schemaGeneratorFeature;
+  private final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
+  private final GeoJsonWriterRegistry geoJsonWriterRegistry;
+  private final CrsTransformerFactory crsTransformerFactory;
 
-    @Inject
-    public FeaturesFormatJsonFg(SchemaGeneratorOpenApi schemaGeneratorFeature,
-                                SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-                                GeoJsonWriterRegistry geoJsonWriterRegistry,
-                                CrsTransformerFactory crsTransformerFactory) {
-        this.schemaGeneratorFeature = schemaGeneratorFeature;
-        this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
-        this.geoJsonWriterRegistry = geoJsonWriterRegistry;
-        this.crsTransformerFactory = crsTransformerFactory;
+  @Inject
+  public FeaturesFormatJsonFg(
+      SchemaGeneratorOpenApi schemaGeneratorFeature,
+      SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
+      GeoJsonWriterRegistry geoJsonWriterRegistry,
+      CrsTransformerFactory crsTransformerFactory) {
+    this.schemaGeneratorFeature = schemaGeneratorFeature;
+    this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
+    this.geoJsonWriterRegistry = geoJsonWriterRegistry;
+    this.crsTransformerFactory = crsTransformerFactory;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return JsonFgConfiguration.class;
+  }
+
+  @Override
+  public boolean canSupportTransactions() {
+    return true;
+  }
+
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+
+    // no additional operational checks for now, only validation; we can stop, if no validation is
+    // requested
+    if (apiValidation == MODE.NONE) return ValidationResult.of();
+
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().mode(apiValidation);
+
+    // TODO anything to validate?
+
+    return builder.build();
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    String schemaRef = "#/components/schemas/anyObject";
+    Schema schema = new ObjectSchema();
+    String collectionId = path.split("/", 4)[2];
+    if (collectionId.equals("{collectionId}")
+        && apiData
+            .getExtension(CollectionsConfiguration.class)
+            .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
+            .isPresent()) {
+      collectionId = apiData.getCollections().keySet().iterator().next();
+    }
+    // TODO support JSON-FG extensions
+    if (!collectionId.equals("{collectionId}")) {
+      if (path.matches("/collections/[^//]+/items/?")) {
+        schemaRef = schemaGeneratorFeatureCollection.getSchemaReference(collectionId);
+        schema = schemaGeneratorFeatureCollection.getSchema(apiData, collectionId);
+      } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
+        schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
+        schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
+      }
+    }
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schema)
+        .schemaRef(schemaRef)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
+
+  @Override
+  public ApiMediaTypeContent getRequestContent(
+      OgcApiDataV2 apiData, String path, HttpMethods method) {
+    String schemaRef = "#/components/schemas/anyObject";
+    Schema schema = new ObjectSchema();
+    String collectionId = path.split("/", 4)[2];
+    if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PUT)
+        || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)) {
+
+      if (collectionId.equals("{collectionId}")
+          && apiData
+              .getExtension(CollectionsConfiguration.class)
+              .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
+              .isPresent()) {
+        collectionId = apiData.getCollections().keySet().iterator().next();
+      }
+      if (!collectionId.equals("{collectionId}")) {
+        // TODO: implement getMutablesSchema with SchemaDeriverOpenApiMutables
+        schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
+        schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
+      }
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(schema)
+          .schemaRef(schemaRef)
+          .ogcApiMediaType(MEDIA_TYPE)
+          .build();
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return JsonFgConfiguration.class;
-    }
+    return null;
+  }
 
-    @Override
-    public boolean canSupportTransactions() {
-        return true;
-    }
+  @Override
+  public ApiMediaType getCollectionMediaType() {
+    return COLLECTION_MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public boolean canEncodeFeatures() {
+    return true;
+  }
 
-    @Override
-    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+  @Override
+  public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+      FeatureTransformationContext transformationContext, Optional<Locale> language) {
 
-        // no additional operational checks for now, only validation; we can stop, if no validation is requested
-        if (apiValidation== MODE.NONE)
-            return ValidationResult.of();
+    // TODO support language
+    ImmutableSortedSet<GeoJsonWriter> geoJsonWriters =
+        geoJsonWriterRegistry.getGeoJsonWriters().stream()
+            .map(GeoJsonWriter::create)
+            .collect(
+                ImmutableSortedSet.toImmutableSortedSet(
+                    Comparator.comparingInt(GeoJsonWriter::getSortPriority)));
 
-        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-                .mode(apiValidation);
+    GeoJsonConfiguration geoJsonConfig =
+        transformationContext
+            .getApiData()
+            .getExtension(GeoJsonConfiguration.class, transformationContext.getCollectionId())
+            .get();
+    ImmutableFeatureTransformationContextGeoJson.Builder transformationContextJsonFgBuilder =
+        ImmutableFeatureTransformationContextGeoJson.builder()
+            .from(transformationContext)
+            .geoJsonConfig(geoJsonConfig)
+            .mediaType(MEDIA_TYPE)
+            .prettify(
+                Optional.ofNullable(
+                            transformationContext.getOgcApiRequest().getParameters().get("pretty"))
+                        .filter(value -> Objects.equals(value, "true"))
+                        .isPresent()
+                    || (Objects.requireNonNullElse(
+                        geoJsonConfig.getUseFormattedJsonOutput(), false)))
+            .debugJson(
+                Optional.ofNullable(
+                        transformationContext.getOgcApiRequest().getParameters().get("debug"))
+                    .filter(value -> Objects.equals(value, "true"))
+                    .isPresent());
 
-        // TODO anything to validate?
+    // the GeoJSON "geometry" member is included, if and only if
+    // - the value of "where" and "geometry" are identical in which case "geometry" is used or
+    // - the collection is configured to always include the GeoJSON "geometry" member
+    boolean includePrimaryGeometry =
+        transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs())
+            || transformationContext
+                .getApiData()
+                .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
+                .map(JsonFgConfiguration::getWhere)
+                .map(WhereConfiguration::getAlwaysIncludeGeoJsonGeometry)
+                .orElse(false);
+    transformationContextJsonFgBuilder
+        .suppressPrimaryGeometry(!includePrimaryGeometry)
+        .forceDefaultCrs(true);
 
-        return builder.build();
-    }
-
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        String schemaRef = "#/components/schemas/anyObject";
-        Schema schema = new ObjectSchema();
-        String collectionId = path.split("/", 4)[2];
-        if (collectionId.equals("{collectionId}") && apiData.getExtension(CollectionsConfiguration.class)
-                                                            .filter(config -> config.getCollectionDefinitionsAreIdentical()
-                                                                                    .orElse(false))
-                                                            .isPresent()) {
-            collectionId = apiData.getCollections()
-                                  .keySet()
-                                  .iterator()
-                                  .next();
-        }
-        // TODO support JSON-FG extensions
-        if (!collectionId.equals("{collectionId}")) {
-            if (path.matches("/collections/[^//]+/items/?")) {
-                schemaRef = schemaGeneratorFeatureCollection.getSchemaReference(collectionId);
-                schema = schemaGeneratorFeatureCollection.getSchema(apiData, collectionId);
-            } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-                schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
-                schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
-            }
-        }
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schema)
-                .schemaRef(schemaRef)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
-
-    @Override
-    public ApiMediaTypeContent getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-        String schemaRef = "#/components/schemas/anyObject";
-        Schema schema = new ObjectSchema();
-        String collectionId = path.split("/", 4)[2];
-        if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method== HttpMethods.PUT) ||
-            (path.matches("/collections/[^//]+/items/?") && method== HttpMethods.POST)) {
-
-            if (collectionId.equals("{collectionId}") && apiData.getExtension(CollectionsConfiguration.class)
-                                                                .filter(config -> config.getCollectionDefinitionsAreIdentical()
-                                                                                        .orElse(false))
-                                                                .isPresent()) {
-                collectionId = apiData.getCollections()
-                                      .keySet()
-                                      .iterator()
-                                      .next();
-            }
-            if (!collectionId.equals("{collectionId}")) {
-                //TODO: implement getMutablesSchema with SchemaDeriverOpenApiMutables
-                schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
-                schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
-            }
-            return new ImmutableApiMediaTypeContent.Builder()
-                    .schema(schema)
-                    .schemaRef(schemaRef)
-                    .ogcApiMediaType(MEDIA_TYPE)
-                    .build();
-        }
-
-        return null;
-    }
-
-    @Override
-    public ApiMediaType getCollectionMediaType() {
-        return COLLECTION_MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean canEncodeFeatures() {
-        return true;
-    }
-
-    @Override
-    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(FeatureTransformationContext transformationContext,
-                                                              Optional<Locale> language) {
-
-        // TODO support language
-        ImmutableSortedSet<GeoJsonWriter> geoJsonWriters = geoJsonWriterRegistry.getGeoJsonWriters()
-                                                                                .stream()
-                                                                                .map(GeoJsonWriter::create)
-                                                                                .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.comparingInt(GeoJsonWriter::getSortPriority)));
-
-        GeoJsonConfiguration geoJsonConfig = transformationContext.getApiData().getExtension(GeoJsonConfiguration.class, transformationContext.getCollectionId()).get();
-        ImmutableFeatureTransformationContextGeoJson.Builder transformationContextJsonFgBuilder =
-                ImmutableFeatureTransformationContextGeoJson.builder()
-                                                            .from(transformationContext)
-                                                            .geoJsonConfig(geoJsonConfig)
-                                                            .mediaType(MEDIA_TYPE)
-                                                            .prettify(Optional.ofNullable(transformationContext.getOgcApiRequest()
-                                                                                                               .getParameters()
-                                                                                                               .get("pretty"))
-                                                                              .filter(value -> Objects.equals(value, "true"))
-                                                                              .isPresent() ||
-                                                                              (Objects.requireNonNullElse(geoJsonConfig.getUseFormattedJsonOutput(), false)))
-                                                            .debugJson(Optional.ofNullable(transformationContext.getOgcApiRequest()
-                                                                                                                .getParameters()
-                                                                                                                .get("debug"))
-                                                                               .filter(value -> Objects.equals(value, "true"))
-                                                                               .isPresent());
-
-        // the GeoJSON "geometry" member is included, if and only if
-        // - the value of "where" and "geometry" are identical in which case "geometry" is used or
-        // - the collection is configured to always include the GeoJSON "geometry" member
-        boolean includePrimaryGeometry = transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs())
-                || transformationContext.getApiData()
-                                        .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
-                                        .map(JsonFgConfiguration::getWhere)
-                                        .map(WhereConfiguration::getAlwaysIncludeGeoJsonGeometry)
-                                        .orElse(false);
-        transformationContextJsonFgBuilder.suppressPrimaryGeometry(!includePrimaryGeometry)
-                                          .forceDefaultCrs(true);
-
-        return Optional.of(new FeatureEncoderGeoJson(transformationContextJsonFgBuilder.build(), geoJsonWriters));
-    }
-
+    return Optional.of(
+        new FeatureEncoderGeoJson(transformationContextJsonFgBuilder.build(), geoJsonWriters));
+  }
 }

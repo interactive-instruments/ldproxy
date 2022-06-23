@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,10 +11,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
-import org.immutables.value.Value;
-
 import java.util.Comparator;
 import java.util.List;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
@@ -22,16 +21,16 @@ import java.util.List;
 @JsonDeserialize(as = ImmutableResources.class)
 public abstract class Resources extends PageRepresentation {
 
-    public final static String SCHEMA_REF = "#/components/schemas/Resources";
+  public static final String SCHEMA_REF = "#/components/schemas/Resources";
 
-    public abstract List<Resource> getResources();
+  public abstract List<Resource> getResources();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<Resources> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<Resources> FUNNEL =
+      (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
-        from.getResources()
-            .stream()
+        from.getResources().stream()
             .sorted(Comparator.comparing(Resource::getId))
             .forEachOrdered(val -> Resource.FUNNEL.funnel(val, into));
-    };
+      };
 }

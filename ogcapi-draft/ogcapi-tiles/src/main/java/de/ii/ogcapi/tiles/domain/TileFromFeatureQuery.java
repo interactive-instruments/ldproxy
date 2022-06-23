@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,16 +7,15 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -25,18 +24,23 @@ import java.util.Optional;
 
 public interface TileFromFeatureQuery {
 
-  FeatureQuery getQuery(Tile tile,
-                        List<OgcApiQueryParameter> allowedParameters,
-                        Map<String, String> queryParameters,
-                        TilesConfiguration tilesConfiguration,
-                        URICustomizer uriCustomizer);
+  FeatureQuery getQuery(
+      Tile tile,
+      List<OgcApiQueryParameter> allowedParameters,
+      Map<String, String> queryParameters,
+      TilesConfiguration tilesConfiguration,
+      URICustomizer uriCustomizer);
 
   class MultiLayerTileContent {
     public byte[] byteArray;
     public boolean isComplete;
   }
 
-  MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(TileMatrixSet tileMatrixSet, Map<String, Tile> singleLayerTileMap, Map<String, ByteArrayOutputStream> singleLayerByteArrayMap) throws IOException;
+  MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(
+      TileMatrixSet tileMatrixSet,
+      Map<String, Tile> singleLayerTileMap,
+      Map<String, ByteArrayOutputStream> singleLayerByteArrayMap)
+      throws IOException;
 
   double getMaxAllowableOffset(Tile tile);
 
@@ -49,15 +53,24 @@ public interface TileFromFeatureQuery {
       FeatureTypeConfigurationOgcApi collectionData,
       Class<? extends ExtensionConfiguration> clazz) {
 
-    Optional<PropertyTransformations> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
-        .map(featuresCoreConfiguration -> ((PropertyTransformations)featuresCoreConfiguration));
+    Optional<PropertyTransformations> coreTransformations =
+        collectionData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(
+                featuresCoreConfiguration -> ((PropertyTransformations) featuresCoreConfiguration));
 
-    Optional<PropertyTransformations> formatTransformations = collectionData.getExtension(clazz)
-        .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
-        .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration));
+    Optional<PropertyTransformations> formatTransformations =
+        collectionData
+            .getExtension(clazz)
+            .filter(
+                buildingBlockConfiguration ->
+                    buildingBlockConfiguration instanceof PropertyTransformations)
+            .map(
+                buildingBlockConfiguration ->
+                    ((PropertyTransformations) buildingBlockConfiguration));
 
-
-    return formatTransformations.map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
+    return formatTransformations
+        .map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
         .or(() -> coreTransformations);
   }
 
@@ -65,7 +78,7 @@ public interface TileFromFeatureQuery {
       FeatureTypeConfigurationOgcApi collectionData,
       Map<String, String> substitutions,
       Class<? extends ExtensionConfiguration> clazz) {
-    return getPropertyTransformations(collectionData, clazz).map(propertyTransformations -> propertyTransformations.withSubstitutions(substitutions));
+    return getPropertyTransformations(collectionData, clazz)
+        .map(propertyTransformations -> propertyTransformations.withSubstitutions(substitutions));
   }
-
 }

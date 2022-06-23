@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -25,154 +25,169 @@ import javax.inject.Singleton;
 @AutoBind
 public class JsonFgWriterWhere implements GeoJsonWriter {
 
-    static public String JSON_KEY = "where";
+  public static String JSON_KEY = "where";
 
-    @Inject
-    JsonFgWriterWhere() {
+  @Inject
+  JsonFgWriterWhere() {}
+
+  @Override
+  public JsonFgWriterWhere create() {
+    return new JsonFgWriterWhere();
+  }
+
+  boolean isEnabled;
+  private boolean geometryOpen;
+  private boolean hasPrimaryGeometry;
+  private boolean suppressWhere;
+  private TokenBuffer json;
+
+  @Override
+  public int getSortPriority() {
+    return 140;
+  }
+
+  private void reset(EncodingAwareContextGeoJson context) {
+    this.geometryOpen = false;
+    this.hasPrimaryGeometry = false;
+    this.json = new TokenBuffer(new ObjectMapper(), false);
+    if (context.encoding().getPrettify()) {
+      json.useDefaultPrettyPrinter();
+    }
+  }
+
+  @Override
+  public void onStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    isEnabled = isEnabled(context);
+
+    // set where to null, if the geometry is in WGS84 (in this case it is in "geometry")
+    suppressWhere = context.encoding().getTargetCrs().equals(context.encoding().getDefaultCrs());
+
+    next.accept(context);
+  }
+
+  @Override
+  public void onFeatureStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (isEnabled) reset(context);
+
+    next.accept(context);
+  }
+
+  @Override
+  public void onObjectStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (isEnabled
+        && !suppressWhere
+        && context.schema().filter(SchemaBase::isSpatial).isPresent()
+        && context.geometryType().isPresent()
+        && context.schema().get().isPrimaryGeometry()) {
+
+      json.writeFieldName(JSON_KEY);
+      json.writeStartObject();
+      json.writeStringField(
+          "type",
+          GeoJsonGeometryType.forSimpleFeatureType(context.geometryType().get()).toString());
+      json.writeFieldName("coordinates");
+
+      geometryOpen = true;
+      hasPrimaryGeometry = true;
     }
 
-    @Override
-    public JsonFgWriterWhere create() {
-        return new JsonFgWriterWhere();
+    next.accept(context);
+  }
+
+  @Override
+  public void onArrayStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+
+    if (geometryOpen) {
+      json.writeStartArray();
     }
 
-    boolean isEnabled;
-    private boolean geometryOpen;
-    private boolean hasPrimaryGeometry;
-    private boolean suppressWhere;
-    private TokenBuffer json;
+    next.accept(context);
+  }
 
-    @Override
-    public int getSortPriority() {
-        return 140;
+  @Override
+  public void onArrayEnd(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+
+    if (geometryOpen) {
+      json.writeEndArray();
     }
 
-    private void reset(EncodingAwareContextGeoJson context) {
-        this.geometryOpen = false;
-        this.hasPrimaryGeometry = false;
-        this.json = new TokenBuffer(new ObjectMapper(), false);
-        if (context.encoding().getPrettify()) {
-            json.useDefaultPrettyPrinter();
-        }
+    next.accept(context);
+  }
+
+  @Override
+  public void onObjectEnd(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.schema().filter(SchemaBase::isSpatial).isPresent() && geometryOpen) {
+
+      this.geometryOpen = false;
+
+      // close geometry object
+      json.writeEndObject();
     }
 
-    @Override
-    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        isEnabled = isEnabled(context);
+    next.accept(context);
+  }
 
-        // set where to null, if the geometry is in WGS84 (in this case it is in "geometry")
-        suppressWhere = context.encoding().getTargetCrs().equals(context.encoding().getDefaultCrs());
+  @Override
+  public void onValue(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
 
-        next.accept(context);
+    if (geometryOpen) {
+      json.writeRawValue(context.value());
     }
 
-    @Override
-    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (isEnabled)
-            reset(context);
+    next.accept(context);
+  }
 
-        next.accept(context);
+  @Override
+  public void onFeatureEnd(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+
+    if (isEnabled) {
+      if (!hasPrimaryGeometry) {
+        // write null geometry if none was written for this feature
+        json.writeFieldName(JSON_KEY);
+        json.writeNull();
+      }
+      json.serialize(context.encoding().getJson());
+      json.flush();
     }
 
-    @Override
-    public void onObjectStart(EncodingAwareContextGeoJson context,
-                              Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (isEnabled
-                && !suppressWhere
-                && context.schema()
-                   .filter(SchemaBase::isSpatial)
-                   .isPresent()
-                && context.geometryType().isPresent()
-                && context.schema().get().isPrimaryGeometry()) {
+    next.accept(context);
+  }
 
-            json.writeFieldName(JSON_KEY);
-            json.writeStartObject();
-            json.writeStringField("type", GeoJsonGeometryType.forSimpleFeatureType(context.geometryType().get()).toString());
-            json.writeFieldName("coordinates");
-
-            geometryOpen = true;
-            hasPrimaryGeometry = true;
-        }
-
-        next.accept(context);
-    }
-
-    @Override
-    public void onArrayStart(EncodingAwareContextGeoJson context,
-                             Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-
-        if (geometryOpen) {
-            json.writeStartArray();
-        }
-
-        next.accept(context);
-    }
-
-    @Override
-    public void onArrayEnd(EncodingAwareContextGeoJson context,
-                           Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-
-        if (geometryOpen) {
-            json.writeEndArray();
-        }
-
-        next.accept(context);
-    }
-
-    @Override
-    public void onObjectEnd(EncodingAwareContextGeoJson context,
-                            Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (context.schema()
-                   .filter(SchemaBase::isSpatial)
-                   .isPresent()
-                && geometryOpen) {
-
-            this.geometryOpen = false;
-
-            //close geometry object
-            json.writeEndObject();
-        }
-
-        next.accept(context);
-    }
-
-    @Override
-    public void onValue(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-
-        if (geometryOpen) {
-            json.writeRawValue(context.value());
-        }
-
-        next.accept(context);
-    }
-
-
-    @Override
-    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-
-        if (isEnabled) {
-            if (!hasPrimaryGeometry) {
-                // write null geometry if none was written for this feature
-                json.writeFieldName(JSON_KEY);
-                json.writeNull();
-            }
-            json.serialize(context.encoding().getJson());
-            json.flush();
-        }
-
-        next.accept(context);
-    }
-
-    private boolean isEnabled(EncodingAwareContextGeoJson context) {
-        return context.encoding().getApiData()
-                                    .getCollections()
-                                    .get(context.encoding().getCollectionId())
-                                    .getExtension(JsonFgConfiguration.class)
-                                    .filter(JsonFgConfiguration::isEnabled)
-                                    .filter(cfg -> Objects.requireNonNullElse(Objects.nonNull(cfg.getWhere()) ? Objects.requireNonNullElse(cfg.getWhere()
-                                                                                                                                              .getEnabled(), true) : true, true))
-                                    .filter(cfg -> cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.where) ||
-                                            context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
-                                    .isPresent();
-    }
+  private boolean isEnabled(EncodingAwareContextGeoJson context) {
+    return context
+        .encoding()
+        .getApiData()
+        .getCollections()
+        .get(context.encoding().getCollectionId())
+        .getExtension(JsonFgConfiguration.class)
+        .filter(JsonFgConfiguration::isEnabled)
+        .filter(
+            cfg ->
+                Objects.requireNonNullElse(
+                    Objects.nonNull(cfg.getWhere())
+                        ? Objects.requireNonNullElse(cfg.getWhere().getEnabled(), true)
+                        : true,
+                    true))
+        .filter(
+            cfg ->
+                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.where)
+                    || context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
+        .isPresent();
+  }
 }

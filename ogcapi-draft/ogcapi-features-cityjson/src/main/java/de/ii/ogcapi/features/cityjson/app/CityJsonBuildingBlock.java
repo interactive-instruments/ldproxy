@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,18 +16,17 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
  * @title Features CityJSON
- * @langEn The module *Features CityJSON* adds support for CityJSON 1.0 and 1.1 as a feature encoding. Supported
- * are the feature types `Building` and `BuildingPart`.
- * @scopeEn The module requires that the feature provider includes a type `building` that is mapped to a
- * CityJSON Building feature. Properties of the type `building` are mapped to CityJSON as follows:
- * <p>
- * <code>
+ * @langEn The module *Features CityJSON* adds support for CityJSON 1.0 and 1.1 as a feature
+ *     encoding. Supported are the feature types `Building` and `BuildingPart`.
+ * @scopeEn The module requires that the feature provider includes a type `building` that is mapped
+ *     to a CityJSON Building feature. Properties of the type `building` are mapped to CityJSON as
+ *     follows:
+ *     <p><code>
  * - `consistsOfBuildingPart`: The value must be an object with the same properties as `building`.
  *   The object is encoded as a BuildingPart feature of the Building feature.
  * - `address`: The value must be an array of address objects. The following attributes are mapped
@@ -48,19 +47,19 @@ import javax.inject.Singleton;
  *   geometry that represents the surface geometry.
  * - all other properties: The property will be mapped to a CityJSON attribute, except for `gml_id` properties.
  * </code>
- * <p>
- * The property of the `building` with the role `ID` will be used as the CityJSON id. Since the embedded building parts do not
- * have a property with a role `ID`, the building part feature must have a unique property `id`, which will be used
- * as the id of the CityJSON building part.
- * <p>
- * The example includes a sample type definition for the building features in a PostgreSQL feature
- * provider based on the CityGML profile of the German surveying and mapping authorities.
- * @langDe Das Modul *Features CityJSON* unterstützt CityJSON 1.0 und 1.1 als Kodierung für Features. Unterstützt werden
- * die Objektarten `Building` und `BuildingPart`.
- * @scopeDe Das Modul erfordert, dass der Feature-Provider einen Typ `building` enthält, der auf ein CityJSON-Building-Feature
- * abgebildet wird. Eigenschaften des Typs `building` werden wie folgt auf CityJSON abgebildet:
- * <p>
- * <code>
+ *     <p>The property of the `building` with the role `ID` will be used as the CityJSON id. Since
+ *     the embedded building parts do not have a property with a role `ID`, the building part
+ *     feature must have a unique property `id`, which will be used as the id of the CityJSON
+ *     building part.
+ *     <p>The example includes a sample type definition for the building features in a PostgreSQL
+ *     feature provider based on the CityGML profile of the German surveying and mapping
+ *     authorities.
+ * @langDe Das Modul *Features CityJSON* unterstützt CityJSON 1.0 und 1.1 als Kodierung für
+ *     Features. Unterstützt werden die Objektarten `Building` und `BuildingPart`.
+ * @scopeDe Das Modul erfordert, dass der Feature-Provider einen Typ `building` enthält, der auf ein
+ *     CityJSON-Building-Feature abgebildet wird. Eigenschaften des Typs `building` werden wie folgt
+ *     auf CityJSON abgebildet:
+ *     <p><code>
  * - `consistsOfBuildingPart`: Der Wert muss ein Objekt mit denselben Eigenschaften wie bei `building` sein.
  *   Das Objekt wird als ein BuildingPart-Feature zu dem Gebäude kodiert.
  * - `address`: Der Wert muss ein Array von Adressobjekten sein. Die folgenden Attribute werden abgebildet
@@ -81,13 +80,13 @@ import javax.inject.Singleton;
  *   Geometrie, die die Flächengeometrie darstellt.
  * - alle anderen Eigenschaften: Die Eigenschaft wird auf ein CityJSON-Attribut abgebildet, mit Ausnahme der Eigenschaft "gml_id".
  * </code>
- * <p>
- * Die Eigenschaft des `building`-Typs mit der Rolle `ID` wird als CityJSON-ID verwendet. Da die eingebetteten Gebäudeteile keine
- * Eigenschaft mit der Rolle `ID` haben, muss das Gebäudeteilmerkmal eine eindeutige Eigenschaft `id` haben, die
- * als Id des CityJSON-Gebäudeteils verwendet wird.
- * <p>
- * Das Beispiel enthält eine Typdefinition für Gebäudeobjekte in einem PostgreSQL-Feature-Provider auf Grundlage
- * des CityGML-Profils der deutschen Vermessungsverwaltung.
+ *     <p>Die Eigenschaft des `building`-Typs mit der Rolle `ID` wird als CityJSON-ID verwendet. Da
+ *     die eingebetteten Gebäudeteile keine Eigenschaft mit der Rolle `ID` haben, muss das
+ *     Gebäudeteilmerkmal eine eindeutige Eigenschaft `id` haben, die als Id des
+ *     CityJSON-Gebäudeteils verwendet wird.
+ *     <p>Das Beispiel enthält eine Typdefinition für Gebäudeobjekte in einem
+ *     PostgreSQL-Feature-Provider auf Grundlage des CityGML-Profils der deutschen
+ *     Vermessungsverwaltung.
  * @example {@link de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration}
  * @propertyTable {@link de.ii.ogcapi.features.cityjson.domain.ImmutableCityJsonConfiguration}
  */
@@ -95,43 +94,52 @@ import javax.inject.Singleton;
 @AutoBind
 public class CityJsonBuildingBlock implements ApiBuildingBlock {
 
-    @Inject
-    CityJsonBuildingBlock() {
+  @Inject
+  CityJsonBuildingBlock() {}
+
+  @Override
+  public ExtensionConfiguration getDefaultConfiguration() {
+    return new ImmutableCityJsonConfiguration.Builder()
+        .enabled(false)
+        .textSequences(false)
+        .version(CityJsonConfiguration.Version.V11)
+        .build();
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, ValidationResult.MODE apiValidation) {
+
+    // no additional operational checks for now, only validation; we can stop, if no validation is
+    // requested
+    if (apiValidation == ValidationResult.MODE.NONE) {
+      return ValidationResult.of();
     }
 
-    @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableCityJsonConfiguration.Builder().enabled(false)
-            .textSequences(false)
-            .version(CityJsonConfiguration.Version.V11)
-            .build();
-    }
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().mode(apiValidation);
 
-    @Override
-    public ValidationResult onStartup(OgcApi api, ValidationResult.MODE apiValidation) {
+    OgcApiDataV2 apiData = api.getData();
 
-        // no additional operational checks for now, only validation; we can stop, if no validation is requested
-        if (apiValidation== ValidationResult.MODE.NONE) {
-            return ValidationResult.of();
-        }
+    // check that text sequences are not enabled for version 1.0
+    apiData
+        .getCollections()
+        .forEach(
+            (key, value) ->
+                value
+                    .getExtension(CityJsonConfiguration.class)
+                    .ifPresent(
+                        config -> {
+                          if (config.isEnabled()
+                              && config.getTextSequences().orElse(false)
+                              && config
+                                  .getVersion()
+                                  .filter(v -> v.equals(CityJsonConfiguration.Version.V10))
+                                  .isPresent()) {
+                            builder.addErrors(
+                                "CityJSON Text Sequences can only be enabled for CityJSON 1.1 or later, not for CityJSON 1.0.");
+                          }
+                        }));
 
-        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-            .mode(apiValidation);
-
-        OgcApiDataV2 apiData = api.getData();
-
-        // check that text sequences are not enabled for version 1.0
-        apiData.getCollections()
-            .forEach((key, value) -> value.getExtension(CityJsonConfiguration.class)
-                .ifPresent(config -> {
-                    if (config.isEnabled()
-                        && config.getTextSequences().orElse(false)
-                        && config.getVersion().filter(v -> v.equals(CityJsonConfiguration.Version.V10)).isPresent()) {
-                        builder.addErrors("CityJSON Text Sequences can only be enabled for CityJSON 1.1 or later, not for CityJSON 1.0.");
-                    }
-                }));
-
-        return builder.build();
-    }
-
+    return builder.build();
+  }
 }

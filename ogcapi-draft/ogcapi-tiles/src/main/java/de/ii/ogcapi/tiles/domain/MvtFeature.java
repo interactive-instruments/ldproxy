@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,16 +17,14 @@ import org.locationtech.jts.geom.Geometry;
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableMvtFeature.Builder.class)
 public abstract class MvtFeature implements Comparable {
-    public abstract Geometry getGeometry();
+  public abstract Geometry getGeometry();
 
-    public abstract Map<String, Object> getProperties();
+  public abstract Map<String, Object> getProperties();
 
-    public abstract Long getId();
+  public abstract Long getId();
 
-    @Override
-    public int compareTo(@NonNull Object o) {
-        return o instanceof MvtFeature ?
-                ((MvtFeature) o).getId().compareTo(getId()) :
-                0;
-    }
+  @Override
+  public int compareTo(@NonNull Object o) {
+    return o instanceof MvtFeature ? ((MvtFeature) o).getId().compareTo(getId()) : 0;
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -31,65 +31,77 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
-/**
- * add styles information to the collection
- *
- */
+/** add styles information to the collection */
 @Singleton
 @AutoBind
 public class StylesOnCollection implements CollectionExtension {
 
-    private final I18n i18n;
-    private final StyleRepository styleRepo;
+  private final I18n i18n;
+  private final StyleRepository styleRepo;
 
-    @Inject
-    public StylesOnCollection(I18n i18n,
-                              StyleRepository styleRepo) {
-        this.styleRepo = styleRepo;
-        this.i18n = i18n;
+  @Inject
+  public StylesOnCollection(I18n i18n, StyleRepository styleRepo) {
+    this.styleRepo = styleRepo;
+    this.i18n = i18n;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return StylesConfiguration.class;
+  }
+
+  @Override
+  public ImmutableOgcApiCollection.Builder process(
+      Builder collection,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      boolean isNested,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+    // skip link on /collections
+    if (isNested) return collection;
+
+    OgcApiDataV2 apiData = api.getData();
+    // nothing to add if disabled
+    String collectionId = featureTypeConfiguration.getId();
+    if (!isEnabledForApi(apiData, collectionId)) {
+      return collection;
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
+    String defaultStyle =
+        apiData
+            .getCollections()
+            .get(collectionId)
+            .getExtension(StylesConfiguration.class)
+            .map(StylesConfiguration::getDefaultStyle)
+            .map(s -> s.equals("NONE") ? null : s)
+            .orElse(null);
+    if (Objects.isNull(defaultStyle)) {
+      defaultStyle =
+          apiData
+              .getCollections()
+              .get(collectionId)
+              .getExtension(HtmlConfiguration.class)
+              .map(HtmlConfiguration::getDefaultStyle)
+              .map(s -> s.equals("NONE") ? null : s)
+              .orElse(null);
     }
-
-    @Override
-    public ImmutableOgcApiCollection.Builder process(Builder collection,
-                                                     FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApi api, URICustomizer uriCustomizer, boolean isNested,
-                                                     ApiMediaType mediaType, List<ApiMediaType> alternateMediaTypes,
-                                                     Optional<Locale> language) {
-        // skip link on /collections
-        if (isNested)
-            return collection;
-
-        OgcApiDataV2 apiData = api.getData();
-        // nothing to add if disabled
-        String collectionId = featureTypeConfiguration.getId();
-        if (!isEnabledForApi(apiData, collectionId)) {
-            return collection;
-        }
-
-        String defaultStyle = apiData.getCollections()
-                                     .get(collectionId)
-                                     .getExtension(StylesConfiguration.class)
-                                     .map(StylesConfiguration::getDefaultStyle)
-                                     .map(s -> s.equals("NONE") ? null : s)
-                                     .orElse(null);
-        if (Objects.isNull(defaultStyle)) {
-            defaultStyle = apiData.getCollections()
-                                  .get(collectionId)
-                                  .getExtension(HtmlConfiguration.class)
-                                  .map(HtmlConfiguration::getDefaultStyle)
-                                  .map(s -> s.equals("NONE") ? null : s)
-                                  .orElse(null);
-        }
-        if (Objects.nonNull(defaultStyle)) {
-            Optional<StyleFormatExtension> htmlStyleFormat = styleRepo.getStyleFormatStream(apiData, Optional.of(collectionId)).filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)).findAny();
-            if (htmlStyleFormat.isPresent() && !styleRepo.stylesheetExists(apiData, Optional.of(collectionId), defaultStyle, htmlStyleFormat.get(), true))
-                defaultStyle = null;
-        }
-        return collection.addAllLinks(new StylesLinkGenerator().generateCollectionLinks(uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language));
+    if (Objects.nonNull(defaultStyle)) {
+      Optional<StyleFormatExtension> htmlStyleFormat =
+          styleRepo
+              .getStyleFormatStream(apiData, Optional.of(collectionId))
+              .filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE))
+              .findAny();
+      if (htmlStyleFormat.isPresent()
+          && !styleRepo.stylesheetExists(
+              apiData, Optional.of(collectionId), defaultStyle, htmlStyleFormat.get(), true))
+        defaultStyle = null;
     }
+    return collection.addAllLinks(
+        new StylesLinkGenerator()
+            .generateCollectionLinks(
+                uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language));
+  }
 }

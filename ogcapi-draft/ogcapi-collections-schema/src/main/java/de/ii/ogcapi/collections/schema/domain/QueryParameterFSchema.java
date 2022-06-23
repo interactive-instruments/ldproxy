@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -23,35 +22,33 @@ import javax.inject.Singleton;
  * @name fSchema
  * @endpoints fSchema
  */
-
-
 @Singleton
 @AutoBind
 public class QueryParameterFSchema extends QueryParameterF {
 
-    @Inject
-    public QueryParameterFSchema(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  public QueryParameterFSchema(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fSchema";
-    }
+  @Override
+  public String getId() {
+    return "fSchema";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return definitionPath.equals("/collections/{collectionId}/schemas/{type}");
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/schemas/{type}");
+  }
 
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return SchemaFormatExtension.class;
-    }
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return SchemaFormatExtension.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return SchemaConfiguration.class;
-    }
-
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return SchemaConfiguration.class;
+  }
 }

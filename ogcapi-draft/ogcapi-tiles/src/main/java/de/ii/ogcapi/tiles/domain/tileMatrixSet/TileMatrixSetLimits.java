@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,18 +16,23 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableTileMatrixSetLimits.Builder.class)
 public abstract class TileMatrixSetLimits {
-    public abstract String getTileMatrix();
-    public abstract Integer getMinTileRow();
-    public abstract Integer getMaxTileRow();
-    public abstract Integer getMinTileCol();
-    public abstract Integer getMaxTileCol();
+  public abstract String getTileMatrix();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<TileMatrixSetLimits> FUNNEL = (from, into) -> {
+  public abstract Integer getMinTileRow();
+
+  public abstract Integer getMaxTileRow();
+
+  public abstract Integer getMinTileCol();
+
+  public abstract Integer getMaxTileCol();
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<TileMatrixSetLimits> FUNNEL =
+      (from, into) -> {
         into.putString(from.getTileMatrix(), StandardCharsets.UTF_8);
         into.putInt(from.getMinTileRow());
         into.putInt(from.getMaxTileRow());
         into.putInt(from.getMinTileCol());
         into.putInt(from.getMaxTileCol());
-    };
+      };
 }

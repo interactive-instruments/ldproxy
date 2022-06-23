@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -47,76 +47,101 @@ import org.slf4j.LoggerFactory;
  * @langEn Access single-layer tiles
  * @langDe TODO
  * @name Tile
- * @path /{apiId}/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @path
+ *     /{apiId}/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
 
-
 /**
- * Handle responses under '/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
+ * Handle responses under
+ * '/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
  */
 @Singleton
 @AutoBind
-public class EndpointTileSingleCollection extends AbstractEndpointTileSingleCollection implements ConformanceClass {
+public class EndpointTileSingleCollection extends AbstractEndpointTileSingleCollection
+    implements ConformanceClass {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSingleCollection.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSingleCollection.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
 
-    @Inject
-    EndpointTileSingleCollection(FeaturesCoreProviders providers,
-                                 ExtensionRegistry extensionRegistry,
-                                 TilesQueriesHandler queryHandler,
-                                 CrsTransformerFactory crsTransformerFactory,
-                                 TileMatrixSetLimitsGenerator limitsGenerator,
-                                 TileCache cache,
-                                 StaticTileProviderStore staticTileProviderStore,
-                                 TileMatrixSetRepository tileMatrixSetRepository) {
-        super(providers, extensionRegistry, queryHandler, crsTransformerFactory, limitsGenerator, cache, staticTileProviderStore, tileMatrixSetRepository);
-    }
+  @Inject
+  EndpointTileSingleCollection(
+      FeaturesCoreProviders providers,
+      ExtensionRegistry extensionRegistry,
+      TilesQueriesHandler queryHandler,
+      CrsTransformerFactory crsTransformerFactory,
+      TileMatrixSetLimitsGenerator limitsGenerator,
+      TileCache cache,
+      StaticTileProviderStore staticTileProviderStore,
+      TileMatrixSetRepository tileMatrixSetRepository) {
+    super(
+        providers,
+        extensionRegistry,
+        queryHandler,
+        crsTransformerFactory,
+        limitsGenerator,
+        cache,
+        staticTileProviderStore,
+        tileMatrixSetRepository);
+  }
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/core");
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/core");
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return TilesConfiguration.class;
+  }
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
-        return formats;
-    }
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
+    return formats;
+  }
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return computeDefinition(apiData,
-                                 "collections",
-                                 ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION,
-                                 "/collections/{collectionId}",
-                                 "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-                                 TAGS);
-    }
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    return computeDefinition(
+        apiData,
+        "collections",
+        ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION,
+        "/collections/{collectionId}",
+        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        TAGS);
+  }
 
-    @Path("/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-    @GET
-    public Response getTile(@Context OgcApi api, @PathParam("collectionId") String collectionId,
-                            @PathParam("tileMatrixSetId") String tileMatrixSetId, @PathParam("tileMatrix") String tileMatrix,
-                            @PathParam("tileRow") String tileRow, @PathParam("tileCol") String tileCol,
-                            @Context UriInfo uriInfo, @Context ApiRequestContext requestContext)
-            throws CrsTransformationException, IOException, NotFoundException {
+  @Path("/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+  @GET
+  public Response getTile(
+      @Context OgcApi api,
+      @PathParam("collectionId") String collectionId,
+      @PathParam("tileMatrixSetId") String tileMatrixSetId,
+      @PathParam("tileMatrix") String tileMatrix,
+      @PathParam("tileRow") String tileRow,
+      @PathParam("tileCol") String tileCol,
+      @Context UriInfo uriInfo,
+      @Context ApiRequestContext requestContext)
+      throws CrsTransformationException, IOException, NotFoundException {
 
-        TileProvider tileProvider = api.getData()
+    TileProvider tileProvider =
+        api.getData()
             .getExtension(TilesConfiguration.class)
             .map(TilesConfiguration::getTileProvider)
             .orElseThrow();
-        return super.getTile(api, requestContext, uriInfo,
-                             "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-                             collectionId, tileMatrixSetId, tileMatrix, tileRow, tileCol,
-                             tileProvider);
-    }
+    return super.getTile(
+        api,
+        requestContext,
+        uriInfo,
+        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        collectionId,
+        tileMatrixSetId,
+        tileMatrix,
+        tileRow,
+        tileCol,
+        tileProvider);
+  }
 }

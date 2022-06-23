@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,33 +11,35 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.Link;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableRoutes.Builder.class)
 public abstract class Routes {
 
-    public final static String SCHEMA_REF = "#/components/schemas/Routes";
+  public static final String SCHEMA_REF = "#/components/schemas/Routes";
 
-    public abstract List<Link> getLinks();
+  public abstract List<Link> getLinks();
 
-    @JsonIgnore
-    public abstract Optional<RouteDefinitionInfo> getTemplateInfo();
+  @JsonIgnore
+  public abstract Optional<RouteDefinitionInfo> getTemplateInfo();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<Routes> FUNNEL = (from, into) -> {
-        from.getLinks()
-            .stream()
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<Routes> FUNNEL =
+      (from, into) -> {
+        from.getLinks().stream()
             .sorted(Comparator.comparing(Link::getHref))
-            .forEachOrdered(link -> into.putString(link.getHref(), StandardCharsets.UTF_8)
-                .putString(Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
+            .forEachOrdered(
+                link ->
+                    into.putString(link.getHref(), StandardCharsets.UTF_8)
+                        .putString(
+                            Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
         from.getTemplateInfo().ifPresent(val -> RouteDefinitionInfo.FUNNEL.funnel(val, into));
-    };
+      };
 }

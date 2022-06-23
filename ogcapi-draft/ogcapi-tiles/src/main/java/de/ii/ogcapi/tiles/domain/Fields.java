@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,8 +16,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableFields.class)
-public abstract class Fields
-{
-    @JsonAnyGetter
-    public abstract Map<String, String> getAdditionalProperties();
+public abstract class Fields {
+  @JsonAnyGetter
+  public abstract Map<String, String> getAdditionalProperties();
 }

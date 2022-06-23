@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -40,94 +40,111 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * fetch the definition of a route
- */
+/** fetch the definition of a route */
 @Singleton
 @AutoBind
 public class EndpointRouteDefinition extends Endpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteDefinition.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteDefinition.class);
 
-    protected static final List<String> TAGS = ImmutableList.of("Routing");
+  protected static final List<String> TAGS = ImmutableList.of("Routing");
 
-    private final QueryHandlerRoutes queryHandler;
+  private final QueryHandlerRoutes queryHandler;
 
-    @Inject
-    public EndpointRouteDefinition(ExtensionRegistry extensionRegistry,
-                                   QueryHandlerRoutes queryHandler) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+  @Inject
+  public EndpointRouteDefinition(
+      ExtensionRegistry extensionRegistry, QueryHandlerRoutes queryHandler) {
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return RoutingConfiguration.class;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(RoutingConfiguration.class)
+        .filter(RoutingConfiguration::isEnabled)
+        .filter(RoutingConfiguration::isManageRoutesEnabled)
+        .isPresent();
+  }
+
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(RouteDefinitionFormatExtension.class);
+    return formats;
+  }
+
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("routes")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTE_DEFINITION);
+    String path = "/routes/{routeId}/definition";
+    ImmutableList<OgcApiQueryParameter> queryParameters =
+        getQueryParameters(extensionRegistry, apiData, path);
+    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+    if (pathParameters.stream().noneMatch(param -> param.getName().equals("routeId"))) {
+      LOGGER.error(
+          "Path parameter 'routeId' missing for resource at path '"
+              + path
+              + "'. The GET method will not be available.");
+    } else {
+      String operationSummary = "fetch the definition of route `routeId`";
+      Optional<String> operationDescription =
+          Optional.of(
+              "This operation returns the parameters used to create the route with id `routeId`.");
+      ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+          new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
+      ApiOperation.getResource(
+              apiData,
+              path,
+              false,
+              queryParameters,
+              ImmutableList.of(),
+              getContent(apiData, path),
+              operationSummary,
+              operationDescription,
+              Optional.empty(),
+              TAGS)
+          .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
+      definitionBuilder.putResources(path, resourceBuilder.build());
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return RoutingConfiguration.class;
-    }
+    return definitionBuilder.build();
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(RoutingConfiguration.class)
-            .filter(RoutingConfiguration::isEnabled)
-            .filter(RoutingConfiguration::isManageRoutesEnabled)
-            .isPresent();
-    }
+  /**
+   * Fetch the definition of a route
+   *
+   * @param routeId the local identifier of route
+   * @return the style in a json file
+   */
+  @Path("/{routeId}/definition")
+  @GET
+  public Response getRouteDefinition(
+      @Auth Optional<User> optionalUser,
+      @PathParam("routeId") String routeId,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext) {
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(RouteDefinitionFormatExtension.class);
-        return formats;
-    }
+    OgcApiDataV2 apiData = api.getData();
+    checkAuthorization(apiData, optionalUser);
+    checkPathParameter(
+        extensionRegistry, apiData, "/routes/{routeId}/definition", "routeId", routeId);
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("routes")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTE_DEFINITION);
-        String path = "/routes/{routeId}/definition";
-        ImmutableList<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        if (pathParameters.stream().noneMatch(param -> param.getName().equals("routeId"))) {
-            LOGGER.error("Path parameter 'routeId' missing for resource at path '" + path + "'. The GET method will not be available.");
-        } else {
-            String operationSummary = "fetch the definition of route `routeId`";
-            Optional<String> operationDescription = Optional.of("This operation returns the parameters used to create the route with id `routeId`.");
-            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
-                                     getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
-                )
-                .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
-            definitionBuilder.putResources(path, resourceBuilder.build());
-        }
+    QueryHandlerRoutes.QueryInputRoute queryInput =
+        new ImmutableQueryInputRoute.Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .routeId(routeId)
+            .build();
 
-        return definitionBuilder.build();
-    }
-
-    /**
-     * Fetch the definition of a route
-     *
-     * @param routeId the local identifier of route
-     * @return the style in a json file
-     */
-    @Path("/{routeId}/definition")
-    @GET
-    public Response getRouteDefinition(@Auth Optional<User> optionalUser,
-                                       @PathParam("routeId") String routeId,
-                                       @Context OgcApi api,
-                                       @Context ApiRequestContext requestContext) {
-
-        OgcApiDataV2 apiData = api.getData();
-        checkAuthorization(apiData, optionalUser);
-        checkPathParameter(extensionRegistry, apiData, "/routes/{routeId}/definition", "routeId", routeId);
-
-        QueryHandlerRoutes.QueryInputRoute queryInput = new ImmutableQueryInputRoute.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .routeId(routeId)
-                .build();
-
-        return queryHandler.handle(QueryHandlerRoutes.Query.GET_ROUTE_DEFINITION, queryInput, requestContext);
-    }
+    return queryHandler.handle(
+        QueryHandlerRoutes.Query.GET_ROUTE_DEFINITION, queryInput, requestContext);
+  }
 }

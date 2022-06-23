@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -33,8 +33,8 @@ import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingFlag;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import io.dropwizard.auth.Auth;
 import java.util.AbstractMap;
 import java.util.List;
@@ -50,147 +50,190 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * computes routes
- */
+/** computes routes */
 @Singleton
 @AutoBind
 public class EndpointRoutesGet extends Endpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRoutesGet.class);
-    private static final List<String> TAGS = ImmutableList.of("Routing");
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRoutesGet.class);
+  private static final List<String> TAGS = ImmutableList.of("Routing");
 
-    private final QueryHandlerRoutes queryHandler;
-    private final FeaturesCoreProviders providers;
+  private final QueryHandlerRoutes queryHandler;
+  private final FeaturesCoreProviders providers;
 
-    @Inject
-    public EndpointRoutesGet(ExtensionRegistry extensionRegistry,
-                             QueryHandlerRoutes queryHandler,
-                             FeaturesCoreProviders providers) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
-        this.providers = providers;
-    }
+  @Inject
+  public EndpointRoutesGet(
+      ExtensionRegistry extensionRegistry,
+      QueryHandlerRoutes queryHandler,
+      FeaturesCoreProviders providers) {
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+    this.providers = providers;
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<RoutingConfiguration> extension = apiData.getExtension(RoutingConfiguration.class);
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    Optional<RoutingConfiguration> extension = apiData.getExtension(RoutingConfiguration.class);
 
-        return extension.filter(RoutingConfiguration::isEnabled).isPresent() &&
-                (extension.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false) ||
-                 extension.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false));
-    }
+    return extension.filter(RoutingConfiguration::isEnabled).isPresent()
+        && (extension.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false)
+            || extension.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false));
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return RoutingConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return RoutingConfiguration.class;
+  }
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(RoutesFormatExtension.class);
-        return formats;
-    }
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(RoutesFormatExtension.class);
+    return formats;
+  }
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        Optional<RoutingConfiguration> config = apiData.getExtension(RoutingConfiguration.class);
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("routes")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTES_GET);
-        String path = "/routes";
-        HttpMethods method = HttpMethods.GET;
-        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-        List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, method);
-        String operationSummary = config.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false)
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    Optional<RoutingConfiguration> config = apiData.getExtension(RoutingConfiguration.class);
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("routes")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTES_GET);
+    String path = "/routes";
+    HttpMethods method = HttpMethods.GET;
+    List<OgcApiQueryParameter> queryParameters =
+        getQueryParameters(extensionRegistry, apiData, path, method);
+    List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, method);
+    String operationSummary =
+        config.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false)
             ? "fetch the list of routes"
-            : (config.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false) ? "provide a HTML form to compute a route" : "");
-        Optional<String> operationDescription = Optional.of(
-            (config.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false) ? "This operation returns a list of routes that are currently available on the server. " : "") +
-            (config.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false) ? "The HTML representation also includes a HTML form to compute a route." : "")
-        );
-        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-            .path(path);
-        ApiOperation.getResource(apiData, path, false, queryParameters, headers, getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS)
-            .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
-        definitionBuilder.putResources(path, resourceBuilder.build());
+            : (config.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false)
+                ? "provide a HTML form to compute a route"
+                : "");
+    Optional<String> operationDescription =
+        Optional.of(
+            (config.map(RoutingConfiguration::isManageRoutesEnabled).orElse(false)
+                    ? "This operation returns a list of routes that are currently available on the server. "
+                    : "")
+                + (config.map(RoutingConfiguration::getHtml).map(HtmlForm::isEnabled).orElse(false)
+                    ? "The HTML representation also includes a HTML form to compute a route."
+                    : ""));
+    ImmutableOgcApiResourceData.Builder resourceBuilder =
+        new ImmutableOgcApiResourceData.Builder().path(path);
+    ApiOperation.getResource(
+            apiData,
+            path,
+            false,
+            queryParameters,
+            headers,
+            getContent(apiData, path),
+            operationSummary,
+            operationDescription,
+            Optional.empty(),
+            TAGS)
+        .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
+    definitionBuilder.putResources(path, resourceBuilder.build());
 
-        return definitionBuilder.build();
-    }
+    return definitionBuilder.build();
+  }
 
-    /**
-     * lists all stored routes and prepares the necessary information to create a form for requesting a new route
-     *
-     * @return a route according to the RouteExchangeModel
-     */
-    @GET
-    public Response getRoutes(@Auth Optional<User> optionalUser,
-                            @Context OgcApi api,
-                            @Context ApiRequestContext requestContext,
-                            @Context UriInfo uriInfo,
-                            @Context HttpServletRequest request) {
+  /**
+   * lists all stored routes and prepares the necessary information to create a form for requesting
+   * a new route
+   *
+   * @return a route according to the RouteExchangeModel
+   */
+  @GET
+  public Response getRoutes(
+      @Auth Optional<User> optionalUser,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext,
+      @Context UriInfo uriInfo,
+      @Context HttpServletRequest request) {
 
-        OgcApiDataV2 apiData = api.getData();
-        checkAuthorization(apiData, optionalUser);
+    OgcApiDataV2 apiData = api.getData();
+    checkAuthorization(apiData, optionalUser);
 
-        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
-        ensureFeatureProviderSupportsRouting(featureProvider);
+    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
+    ensureFeatureProviderSupportsRouting(featureProvider);
 
-        Map<String, String> preferences = featureProvider.getData().getExtension(
-                RoutesConfiguration.class)
+    Map<String, String> preferences =
+        featureProvider
+            .getData()
+            .getExtension(RoutesConfiguration.class)
             .map(RoutesConfiguration::getPreferences)
-            .map(map -> map.entrySet()
-                .stream()
-                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue().getLabel()))
-                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .map(
+                map ->
+                    map.entrySet().stream()
+                        .map(
+                            entry ->
+                                new AbstractMap.SimpleImmutableEntry<>(
+                                    entry.getKey(), entry.getValue().getLabel()))
+                        .collect(
+                            ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .orElse(ImmutableMap.of());
 
-        Map<String, String> modes = featureProvider.getData().getExtension(
-                RoutesConfiguration.class)
+    Map<String, String> modes =
+        featureProvider
+            .getData()
+            .getExtension(RoutesConfiguration.class)
             .map(RoutesConfiguration::getModes)
-            .map(map -> map.entrySet()
-                .stream()
-                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()))
-                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .map(
+                map ->
+                    map.entrySet().stream()
+                        .map(
+                            entry ->
+                                new AbstractMap.SimpleImmutableEntry<>(
+                                    entry.getKey(), entry.getValue()))
+                        .collect(
+                            ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .orElse(ImmutableMap.of());
 
-        Map<String, RoutingFlag> additionalFlags = apiData.getExtension(RoutingConfiguration.class)
+    Map<String, RoutingFlag> additionalFlags =
+        apiData
+            .getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getAdditionalFlags)
-            .map(map -> map.entrySet()
-                .stream()
-                .map(entry -> new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), entry.getValue()))
-                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .map(
+                map ->
+                    map.entrySet().stream()
+                        .map(
+                            entry ->
+                                new AbstractMap.SimpleImmutableEntry<>(
+                                    entry.getKey(), entry.getValue()))
+                        .collect(
+                            ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .orElse(ImmutableMap.of());
 
-        QueryHandlerRoutes.QueryInputRoutes queryInput = new ImmutableQueryInputRoutes.Builder()
+    QueryHandlerRoutes.QueryInputRoutes queryInput =
+        new ImmutableQueryInputRoutes.Builder()
             .from(getGenericQueryInput(api.getData()))
-            .templateInfo(new ImmutableRouteDefinitionInfo.Builder()
-                              .preferences(preferences)
-                              .defaultPreference(apiData.getExtension(RoutingConfiguration.class)
-                                                     .map(RoutingConfiguration::getDefaultPreference)
-                                                     .orElse(preferences.keySet()
-                                                                 .stream()
-                                                                 .findFirst()
-                                                                 .orElseThrow()))
-                              .modes(modes)
-                              .defaultMode(apiData.getExtension(RoutingConfiguration.class)
-                                               .map(RoutingConfiguration::getDefaultMode)
-                                               .orElse(preferences.keySet()
-                                                           .stream()
-                                                           .findFirst()
-                                                           .orElseThrow()))
-                              .additionalFlags(additionalFlags)
-                              .build())
+            .templateInfo(
+                new ImmutableRouteDefinitionInfo.Builder()
+                    .preferences(preferences)
+                    .defaultPreference(
+                        apiData
+                            .getExtension(RoutingConfiguration.class)
+                            .map(RoutingConfiguration::getDefaultPreference)
+                            .orElse(preferences.keySet().stream().findFirst().orElseThrow()))
+                    .modes(modes)
+                    .defaultMode(
+                        apiData
+                            .getExtension(RoutingConfiguration.class)
+                            .map(RoutingConfiguration::getDefaultMode)
+                            .orElse(preferences.keySet().stream().findFirst().orElseThrow()))
+                    .additionalFlags(additionalFlags)
+                    .build())
             .build();
-        return queryHandler.handle(QueryHandlerRoutes.Query.GET_ROUTES, queryInput, requestContext);
-    }
+    return queryHandler.handle(QueryHandlerRoutes.Query.GET_ROUTES, queryInput, requestContext);
+  }
 
-    private static void ensureFeatureProviderSupportsRouting(FeatureProvider2 featureProvider) {
-        if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("Feature provider does not support queries.");
-        }
-        featureProvider.getData().getExtension(RoutesConfiguration.class)
-            .orElseThrow(() -> new IllegalStateException("Feature provider does not support routing."));
+  private static void ensureFeatureProviderSupportsRouting(FeatureProvider2 featureProvider) {
+    if (!featureProvider.supportsQueries()) {
+      throw new IllegalStateException("Feature provider does not support queries.");
     }
+    featureProvider
+        .getData()
+        .getExtension(RoutesConfiguration.class)
+        .orElseThrow(() -> new IllegalStateException("Feature provider does not support routing."));
+  }
 }

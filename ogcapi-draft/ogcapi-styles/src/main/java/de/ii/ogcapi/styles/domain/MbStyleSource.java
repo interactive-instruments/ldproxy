@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,17 +11,20 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        include = JsonTypeInfo.As.EXISTING_PROPERTY,
-        property = "type")
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = MbStyleVectorSource.class, name = "vector"),
-        @JsonSubTypes.Type(value = MbStyleRasterSource.class, name = "raster"),
-        @JsonSubTypes.Type(value = MbStyleRasterDemSource.class, name = "raster-dem"),
-        @JsonSubTypes.Type(value = MbStyleGeojsonSource.class, name = "geojson"),
-        @JsonSubTypes.Type(value = MbStyleImageSource.class, name = "image"),
-        @JsonSubTypes.Type(value = MbStyleVideoSource.class, name = "video")
+  @JsonSubTypes.Type(value = MbStyleVectorSource.class, name = "vector"),
+  @JsonSubTypes.Type(value = MbStyleRasterSource.class, name = "raster"),
+  @JsonSubTypes.Type(value = MbStyleRasterDemSource.class, name = "raster-dem"),
+  @JsonSubTypes.Type(value = MbStyleGeojsonSource.class, name = "geojson"),
+  @JsonSubTypes.Type(value = MbStyleImageSource.class, name = "image"),
+  @JsonSubTypes.Type(value = MbStyleVideoSource.class, name = "video")
 })
 public abstract class MbStyleSource {
-    public enum Scheme { xyz, tms }
+  public enum Scheme {
+    xyz,
+    tms
+  }
 }

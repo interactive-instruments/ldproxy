@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,31 +7,27 @@
  */
 package de.ii.ogcapi.sorting.app;
 
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.collections.domain.CollectionExtension;
+import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection.Builder;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
-import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
-import de.ii.ogcapi.collections.domain.CollectionExtension;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-/**
- * add a link to the Sortables to the collection
- */
+/** add a link to the Sortables to the collection */
 @Singleton
 @AutoBind
 public class SortablesOnCollection implements CollectionExtension {
@@ -49,30 +45,33 @@ public class SortablesOnCollection implements CollectionExtension {
   }
 
   @Override
-  public ImmutableOgcApiCollection.Builder process(Builder collection,
-                                                   FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                   OgcApi api,
-                                                   URICustomizer uriCustomizer,
-                                                   boolean isNested,
-                                                   ApiMediaType mediaType,
-                                                   List<ApiMediaType> alternateMediaTypes,
-                                                   Optional<Locale> language) {
+  public ImmutableOgcApiCollection.Builder process(
+      Builder collection,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      boolean isNested,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
     if (isExtensionEnabled(featureTypeConfiguration, SortingConfiguration.class) && !isNested) {
       collection.addAllLinks(
           ImmutableList.<Link>builder()
-              .add(new ImmutableLink.Builder()
-                       .href(uriCustomizer.copy()
-                                 .ensureNoTrailingSlash()
-                                 .ensureLastPathSegment("sortables")
-                                 .removeParameters("f")
-                                 .toString())
-                       .rel("http://www.opengis.net/def/rel/ogc/1.0/sortables")
-                       .title(i18n.get("sortablesLink", language))
-                       .build())
+              .add(
+                  new ImmutableLink.Builder()
+                      .href(
+                          uriCustomizer
+                              .copy()
+                              .ensureNoTrailingSlash()
+                              .ensureLastPathSegment("sortables")
+                              .removeParameters("f")
+                              .toString())
+                      .rel("http://www.opengis.net/def/rel/ogc/1.0/sortables")
+                      .title(i18n.get("sortablesLink", language))
+                      .build())
               .build());
     }
 
     return collection;
   }
-
 }

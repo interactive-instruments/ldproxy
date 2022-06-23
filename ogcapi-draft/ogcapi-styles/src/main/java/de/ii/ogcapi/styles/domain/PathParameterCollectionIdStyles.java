@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,58 +7,63 @@
  */
 package de.ii.ogcapi.styles.domain;
 
-
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
 public class PathParameterCollectionIdStyles extends AbstractPathParameterCollectionId {
 
-    @Inject
-    PathParameterCollectionIdStyles(SchemaValidator schemaValidator) {
-      super(schemaValidator);
+  @Inject
+  PathParameterCollectionIdStyles(SchemaValidator schemaValidator) {
+    super(schemaValidator);
+  }
+
+  @Override
+  public List<String> getValues(OgcApiDataV2 apiData) {
+    if (!apiCollectionMap.containsKey(apiData.hashCode())) {
+      apiCollectionMap.put(
+          apiData.hashCode(),
+          apiData.getCollections().values().stream()
+              .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+              .filter(
+                  collection ->
+                      collection
+                          .getExtension(StylesConfiguration.class)
+                          .filter(ExtensionConfiguration::isEnabled)
+                          .isPresent())
+              .map(FeatureTypeConfiguration::getId)
+              .collect(Collectors.toUnmodifiableList()));
     }
 
-    @Override
-    public List<String> getValues(OgcApiDataV2 apiData) {
-        if (!apiCollectionMap.containsKey(apiData.hashCode())) {
-            apiCollectionMap.put(apiData.hashCode(), apiData.getCollections().values()
-                                                            .stream()
-                                                            .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                                                            .filter(collection -> collection.getExtension(StylesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
-                                                            .map(FeatureTypeConfiguration::getId)
-                                                            .collect(Collectors.toUnmodifiableList()));
-        }
+    return apiCollectionMap.get(apiData.hashCode());
+  }
 
-        return apiCollectionMap.get(apiData.hashCode());
-    }
+  @Override
+  public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) {
+    return false;
+  }
 
-    @Override
-    public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) { return false;
-    }
+  @Override
+  public String getId() {
+    return "collectionIdStyles";
+  }
 
-    @Override
-    public String getId() {
-        return "collectionIdStyles";
-    }
+  @Override
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.startsWith("/collections/{collectionId}/styles");
+  }
 
-    @Override
-    public boolean matchesPath(String definitionPath) {
-        return definitionPath.startsWith("/collections/{collectionId}/styles");
-    }
-
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return StylesConfiguration.class;
+  }
 }

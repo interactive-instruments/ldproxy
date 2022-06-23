@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -22,11 +22,11 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ImmutableQueryInputResource;
 import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
+import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -42,8 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn Fetches the file resource with identifier `resourceId`. The set of
- * available resources can be retrieved at `/resources`.
+ * @langEn Fetches the file resource with identifier `resourceId`. The set of available resources
+ *     can be retrieved at `/resources`.
  * @langDe TODO
  * @name Resource
  * @path /{apiId}/resources/{resourceId}
@@ -53,80 +53,103 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointResource extends Endpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResource.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResource.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Discover and fetch other resources");
+  private static final List<String> TAGS = ImmutableList.of("Discover and fetch other resources");
 
-    private final QueriesHandlerResources queryHandler;
+  private final QueriesHandlerResources queryHandler;
 
-    @Inject
-    public EndpointResource(ExtensionRegistry extensionRegistry,
-                            QueriesHandlerResources queryHandler) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+  @Inject
+  public EndpointResource(
+      ExtensionRegistry extensionRegistry, QueriesHandlerResources queryHandler) {
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData)
+        || apiData
+            .getExtension(StylesConfiguration.class)
+            .map(StylesConfiguration::isResourcesEnabled)
+            .orElse(false);
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return ResourcesConfiguration.class;
+  }
+
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(ResourceFormatExtension.class);
+    return formats;
+  }
+
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("resources")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCE);
+    String path = "/resources/{resourceId}";
+    List<OgcApiQueryParameter> queryParameters =
+        getQueryParameters(extensionRegistry, apiData, path);
+    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+    if (!pathParameters.stream()
+        .filter(param -> param.getName().equals("resourceId"))
+        .findAny()
+        .isPresent()) {
+      LOGGER.error(
+          "Path parameter 'resourceId' missing for resource at path '"
+              + path
+              + "'. The GET method will not be available.");
+    } else {
+      String operationSummary = "fetch the file resource `{resourceId}`";
+      Optional<String> operationDescription =
+          Optional.of(
+              "Fetches the file resource with identifier `resourceId`. The set of "
+                  + "available resources can be retrieved at `/resources`.");
+      ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+          new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
+      ApiOperation.getResource(
+              apiData,
+              path,
+              false,
+              queryParameters,
+              ImmutableList.of(),
+              getContent(apiData, path),
+              operationSummary,
+              operationDescription,
+              Optional.empty(),
+              TAGS)
+          .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
+      definitionBuilder.putResources(path, resourceBuilder.build());
     }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) ||
-            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourcesEnabled).orElse(false);
-    }
+    return definitionBuilder.build();
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return ResourcesConfiguration.class;
-    }
+  /**
+   * Fetch a resource by id
+   *
+   * @param resourceId the local identifier of a specific resource
+   * @return the resources as a file
+   */
+  @Path("/{resourceId}")
+  @GET
+  @Produces(MediaType.WILDCARD)
+  public Response getResource(
+      @PathParam("resourceId") String resourceId,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext) {
+    QueriesHandlerResources.QueryInputResource queryInput =
+        ImmutableQueryInputResource.builder()
+            .from(getGenericQueryInput(api.getData()))
+            .resourceId(resourceId)
+            .build();
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(ResourceFormatExtension.class);
-        return formats;
-    }
-
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("resources")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCE);
-        String path = "/resources/{resourceId}";
-        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        if (!pathParameters.stream().filter(param -> param.getName().equals("resourceId")).findAny().isPresent()) {
-            LOGGER.error("Path parameter 'resourceId' missing for resource at path '" + path + "'. The GET method will not be available.");
-        } else {
-            String operationSummary = "fetch the file resource `{resourceId}`";
-            Optional<String> operationDescription = Optional.of("Fetches the file resource with identifier `resourceId`. The set of " +
-                    "available resources can be retrieved at `/resources`.");
-            ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                    .path(path)
-                    .pathParameters(pathParameters);
-            ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
-                                     getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
-                )
-                .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
-            definitionBuilder.putResources(path, resourceBuilder.build());
-        }
-
-        return definitionBuilder.build();
-    }
-
-    /**
-     * Fetch a resource by id
-     *
-     * @param resourceId the local identifier of a specific resource
-     * @return the resources as a file
-     */
-    @Path("/{resourceId}")
-    @GET
-    @Produces(MediaType.WILDCARD)
-    public Response getResource(@PathParam("resourceId") String resourceId, @Context OgcApi api,
-                                @Context ApiRequestContext requestContext) {
-        QueriesHandlerResources.QueryInputResource queryInput = ImmutableQueryInputResource.builder()
-                                                                                           .from(getGenericQueryInput(api.getData()))
-                                                                                           .resourceId(resourceId)
-                                                                                           .build();
-
-        return queryHandler.handle(QueriesHandlerResources.Query.RESOURCE, queryInput, requestContext);
-    }
+    return queryHandler.handle(QueriesHandlerResources.Query.RESOURCE, queryInput, requestContext);
+  }
 }

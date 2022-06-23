@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -49,107 +49,138 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointJsonLdContext extends EndpointSubCollection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointJsonLdContext.class);
-    private static final List<String> TAGS = ImmutableList.of("Discover data collections");
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointJsonLdContext.class);
+  private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-    private final java.nio.file.Path contextDirectory;
+  private final java.nio.file.Path contextDirectory;
 
-    @Inject
-    EndpointJsonLdContext(AppContext appContext, ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
-        this.contextDirectory = appContext.getDataDir()
-            .resolve(API_RESOURCES_DIR)
-            .resolve("json-ld-contexts");
+  @Inject
+  EndpointJsonLdContext(AppContext appContext, ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
+    this.contextDirectory =
+        appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("json-ld-contexts");
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return GeoJsonLdConfiguration.class;
+  }
+
+  private java.nio.file.Path getContextPath(
+      String apiId, String collectionId, String contextFileName, String extension) {
+    return Objects.nonNull(contextFileName)
+        ? contextDirectory.resolve(apiId).resolve(contextFileName)
+        : contextDirectory.resolve(apiId).resolve(collectionId + "." + extension);
+  }
+
+  @Path("/{collectionId}/context")
+  @GET
+  @Produces("application/ld+json")
+  public Response getContext(
+      @Context ApiRequestContext apiRequestContext,
+      @Context OgcApi api,
+      @PathParam("collectionId") String collectionId)
+      throws IOException {
+
+    ContextFormatExtension format =
+        extensionRegistry.getExtensionsForType(ContextFormatExtension.class).stream()
+            .filter(f -> f.isEnabledForApi(api.getData()))
+            .filter(f -> f.getMediaType().matches(apiRequestContext.getMediaType().type()))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            apiRequestContext.getMediaType())));
+
+    Optional<String> contextFileName =
+        api.getData()
+            .getCollections()
+            .get(collectionId)
+            .getExtension(GeoJsonLdConfiguration.class)
+            .map(cfg -> cfg.getContextFileName());
+    java.nio.file.Path context =
+        getContextPath(
+            api.getId(),
+            collectionId,
+            contextFileName.orElse(null),
+            format.getMediaType().parameter());
+
+    if (!Files.isRegularFile(context)) {
+      throw new NotFoundException(
+          String.format("The %s context was not found.", format.getMediaType().label()));
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return GeoJsonLdConfiguration.class;
+    // TODO validate, that it is a valid JSON-LD Context document
+
+    return Response.ok(format.getInputStream(context), "application/ld+json").build();
+  }
+
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(ContextFormatExtension.class);
+    return formats;
+  }
+
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("collections")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_JSONLD_CONTEXT);
+    String subSubPath = "/context";
+    String path = "/collections/{collectionId}" + subSubPath;
+    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+    Optional<OgcApiPathParameter> optCollectionIdParam =
+        pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+    if (!optCollectionIdParam.isPresent()) {
+      LOGGER.error(
+          "Path parameter 'collectionId' missing for resource at path '"
+              + path
+              + "'. The resource will not be available.");
+    } else {
+      final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+      final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
+      final List<String> collectionIds =
+          (explode) ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
+      for (String collectionId : collectionIds) {
+        if (explode
+            && !apiData
+                .getCollections()
+                .get(collectionId)
+                .getExtension(GeoJsonLdConfiguration.class)
+                .map(ExtensionConfiguration::isEnabled)
+                .orElse(false))
+          // skip, if disabled for the collection
+          continue;
+        final List<OgcApiQueryParameter> queryParameters =
+            getQueryParameters(extensionRegistry, apiData, path, collectionId);
+        final String operationSummary =
+            "retrieve the JSON-LD context for the feature collection '" + collectionId + "'";
+        Optional<String> operationDescription = Optional.empty();
+        String resourcePath = "/collections/" + collectionId + subSubPath;
+        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+            new ImmutableOgcApiResourceAuxiliary.Builder()
+                .path(resourcePath)
+                .pathParameters(pathParameters);
+        ApiOperation.getResource(
+                apiData,
+                resourcePath,
+                false,
+                queryParameters,
+                ImmutableList.of(),
+                getContent(apiData, resourcePath),
+                operationSummary,
+                operationDescription,
+                Optional.empty(),
+                TAGS)
+            .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
+        definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+      }
     }
 
-    private java.nio.file.Path getContextPath(String apiId, String collectionId, String contextFileName, String extension) {
-        return Objects.nonNull(contextFileName)
-                ? contextDirectory.resolve(apiId)
-                                  .resolve(contextFileName)
-                : contextDirectory.resolve(apiId)
-                                  .resolve(collectionId + "." + extension);
-    }
-
-    @Path("/{collectionId}/context")
-    @GET
-    @Produces("application/ld+json")
-    public Response getContext(@Context ApiRequestContext apiRequestContext, @Context OgcApi api,
-                               @PathParam("collectionId") String collectionId) throws IOException {
-
-        ContextFormatExtension format = extensionRegistry.getExtensionsForType(ContextFormatExtension.class)
-                                                         .stream()
-                                                         .filter(f -> f.isEnabledForApi(api.getData()))
-                                                         .filter(f -> f.getMediaType()
-                                                                       .matches(apiRequestContext.getMediaType()
-                                                                                                 .type()))
-                                                         .findFirst()
-                                                         .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", apiRequestContext.getMediaType())));
-
-        Optional<String> contextFileName = api.getData().getCollections().get(collectionId).getExtension(GeoJsonLdConfiguration.class).map(cfg -> cfg.getContextFileName());
-        java.nio.file.Path context = getContextPath(api.getId(), collectionId, contextFileName.orElse(null), format.getMediaType().parameter());
-
-        if (!Files.isRegularFile(context)) {
-            throw new NotFoundException(String.format("The %s context was not found.", format.getMediaType().label()));
-        }
-
-        // TODO validate, that it is a valid JSON-LD Context document
-
-        return Response.ok(format.getInputStream(context),"application/ld+json")
-                       .build();
-    }
-
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(ContextFormatExtension.class);
-        return formats;
-    }
-
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("collections")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_JSONLD_CONTEXT);
-        String subSubPath = "/context";
-        String path = "/collections/{collectionId}" + subSubPath;
-        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-        if (!optCollectionIdParam.isPresent()) {
-            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The resource will not be available.");
-        } else {
-            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
-            final List<String> collectionIds = (explode) ?
-                    collectionIdParam.getValues(apiData) :
-                    ImmutableList.of("{collectionId}");
-            for (String collectionId : collectionIds) {
-                if (explode && !apiData.getCollections()
-                                       .get(collectionId)
-                                       .getExtension(GeoJsonLdConfiguration.class)
-                                       .map(ExtensionConfiguration::isEnabled)
-                                       .orElse(false))
-                    // skip, if disabled for the collection
-                    continue;
-                final List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
-                final String operationSummary = "retrieve the JSON-LD context for the feature collection '" + collectionId + "'";
-                Optional<String> operationDescription = Optional.empty();
-                String resourcePath = "/collections/" + collectionId + subSubPath;
-                ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-                        .path(resourcePath)
-                        .pathParameters(pathParameters);
-                ApiOperation.getResource(apiData, resourcePath, false, queryParameters, ImmutableList.of(),
-                                         getContent(apiData, resourcePath), operationSummary, operationDescription, Optional.empty(), TAGS
-                    )
-                    .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
-                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-            }
-        }
-
-        return definitionBuilder.build();
-    }
+    return definitionBuilder.build();
+  }
 }

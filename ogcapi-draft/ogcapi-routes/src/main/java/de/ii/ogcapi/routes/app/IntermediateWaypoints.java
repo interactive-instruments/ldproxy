@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,25 +7,23 @@
  */
 package de.ii.ogcapi.routes.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
 import java.util.List;
 import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
 public class IntermediateWaypoints implements ConformanceClass {
 
   @Inject
-  IntermediateWaypoints() {
-  }
+  IntermediateWaypoints() {}
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
@@ -35,9 +33,12 @@ public class IntermediateWaypoints implements ConformanceClass {
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return ConformanceClass.super.isEnabledForApi(apiData)
-        && apiData.getExtension(getBuildingBlockConfigurationType())
-        .flatMap(config-> Optional.ofNullable(((RoutingConfiguration) config).getIntermediateWaypoints()))
-        .orElse(false);
+        && apiData
+            .getExtension(getBuildingBlockConfigurationType())
+            .flatMap(
+                config ->
+                    Optional.ofNullable(((RoutingConfiguration) config).getIntermediateWaypoints()))
+            .orElse(false);
   }
 
   @Override

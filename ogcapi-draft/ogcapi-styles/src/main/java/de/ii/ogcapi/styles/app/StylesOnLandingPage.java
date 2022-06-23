@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -31,61 +31,70 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
-/**
- * add styles information to the landing page
- *
- */
+/** add styles information to the landing page */
 @Singleton
 @AutoBind
 public class StylesOnLandingPage implements LandingPageExtension {
 
-    private final I18n i18n;
-    private final StyleRepository styleRepo;
+  private final I18n i18n;
+  private final StyleRepository styleRepo;
 
-    @Inject
-    public StylesOnLandingPage(I18n i18n,
-                               StyleRepository styleRepo) {
-        this.i18n = i18n;
-        this.styleRepo = styleRepo;
+  @Inject
+  public StylesOnLandingPage(I18n i18n, StyleRepository styleRepo) {
+    this.i18n = i18n;
+    this.styleRepo = styleRepo;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return StylesConfiguration.class;
+  }
+
+  @Override
+  public ImmutableLandingPage.Builder process(
+      Builder landingPageBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+    OgcApiDataV2 apiData = api.getData();
+    if (!isEnabledForApi(apiData)) {
+      return landingPageBuilder;
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
+    final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
+
+    String defaultStyle =
+        apiData
+            .getExtension(StylesConfiguration.class)
+            .map(StylesConfiguration::getDefaultStyle)
+            .map(s -> s.equals("NONE") ? null : s)
+            .orElse(null);
+    if (Objects.isNull(defaultStyle)) {
+      defaultStyle =
+          apiData
+              .getExtension(HtmlConfiguration.class)
+              .map(HtmlConfiguration::getDefaultStyle)
+              .map(s -> s.equals("NONE") ? null : s)
+              .orElse(null);
     }
-
-    @Override
-    public ImmutableLandingPage.Builder process(Builder landingPageBuilder,
-                                                OgcApi api,
-                                                URICustomizer uriCustomizer,
-                                                ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes,
-                                                Optional<Locale> language) {
-        OgcApiDataV2 apiData = api.getData();
-        if (!isEnabledForApi(apiData)) {
-            return landingPageBuilder;
-        }
-
-        final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
-
-        String defaultStyle = apiData.getExtension(StylesConfiguration.class)
-                                     .map(StylesConfiguration::getDefaultStyle)
-                                     .map(s -> s.equals("NONE") ? null : s)
-                                     .orElse(null);
-        if (Objects.isNull(defaultStyle)) {
-            defaultStyle = apiData.getExtension(HtmlConfiguration.class)
-                                  .map(HtmlConfiguration::getDefaultStyle)
-                                  .map(s -> s.equals("NONE") ? null : s)
-                                  .orElse(null);
-        }
-        if (Objects.nonNull(defaultStyle)) {
-            Optional<StyleFormatExtension> htmlStyleFormat = styleRepo.getStyleFormatStream(apiData, Optional.empty()).filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)).findAny();
-            if (htmlStyleFormat.isPresent() && !styleRepo.stylesheetExists(apiData, Optional.empty(), defaultStyle, htmlStyleFormat.get(), true))
-                defaultStyle = null;
-        }
-        List<Link> links = stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language);
-        landingPageBuilder.addAllLinks(links);
-
-        return landingPageBuilder;
+    if (Objects.nonNull(defaultStyle)) {
+      Optional<StyleFormatExtension> htmlStyleFormat =
+          styleRepo
+              .getStyleFormatStream(apiData, Optional.empty())
+              .filter(f -> f.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE))
+              .findAny();
+      if (htmlStyleFormat.isPresent()
+          && !styleRepo.stylesheetExists(
+              apiData, Optional.empty(), defaultStyle, htmlStyleFormat.get(), true))
+        defaultStyle = null;
     }
+    List<Link> links =
+        stylesLinkGenerator.generateLandingPageLinks(
+            uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language);
+    landingPageBuilder.addAllLinks(links);
+
+    return landingPageBuilder;
+  }
 }

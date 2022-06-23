@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,8 +20,8 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
-import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -32,115 +32,143 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/**
- * add routes information to the conformance declaration
- */
+/** add routes information to the conformance declaration */
 @Singleton
 @AutoBind
 public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExtension {
 
-    private final FeaturesCoreProviders providers;
+  private final FeaturesCoreProviders providers;
 
-    @Inject
-    public RoutesOnConformanceDeclaration(FeaturesCoreProviders providers) {
-        this.providers = providers;
-    }
+  @Inject
+  public RoutesOnConformanceDeclaration(FeaturesCoreProviders providers) {
+    this.providers = providers;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return RoutingConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return RoutingConfiguration.class;
+  }
 
-    @Override
-    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-        ValidationResult result = ConformanceDeclarationExtension.super.onStartup(api, apiValidation);
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    ValidationResult result = ConformanceDeclarationExtension.super.onStartup(api, apiValidation);
 
-        if (apiValidation== ValidationResult.MODE.NONE)
-            return result;
+    if (apiValidation == ValidationResult.MODE.NONE) return result;
 
-        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-            .from(result)
-            .mode(apiValidation);
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().from(result).mode(apiValidation);
 
-        // check that there is at least one preference/mode and that the default preference/mode is one of them
-        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
+    // check that there is at least one preference/mode and that the default preference/mode is one
+    // of them
+    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
 
-        List<String> preferences = List.copyOf(featureProvider.getData().getExtension(
-                RoutesConfiguration.class)
-                                                   .map(RoutesConfiguration::getPreferences)
-                                                   .map(Map::keySet)
-                                                   .orElse(ImmutableSet.of()));
-        if (preferences.isEmpty())
-            builder.addErrors("Routing: There must be at least one value for the routing preference.");
-        api.getData().getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getDefaultPreference)
-            .ifPresentOrElse(defaultPreference -> {
-                if (!preferences.contains(defaultPreference)) {
-                    builder.addErrors("Routing: The default preference '{}' is not one of the known preference values: {}.", defaultPreference, preferences.toString());
-                }
-            }, () -> builder.addErrors("Routing: No default preference has been configured."));
+    List<String> preferences =
+        List.copyOf(
+            featureProvider
+                .getData()
+                .getExtension(RoutesConfiguration.class)
+                .map(RoutesConfiguration::getPreferences)
+                .map(Map::keySet)
+                .orElse(ImmutableSet.of()));
+    if (preferences.isEmpty())
+      builder.addErrors("Routing: There must be at least one value for the routing preference.");
+    api.getData()
+        .getExtension(RoutingConfiguration.class)
+        .map(RoutingConfiguration::getDefaultPreference)
+        .ifPresentOrElse(
+            defaultPreference -> {
+              if (!preferences.contains(defaultPreference)) {
+                builder.addErrors(
+                    "Routing: The default preference '{}' is not one of the known preference values: {}.",
+                    defaultPreference,
+                    preferences.toString());
+              }
+            },
+            () -> builder.addErrors("Routing: No default preference has been configured."));
 
-        List<String> modes = List.copyOf(featureProvider.getData().getExtension(
-                RoutesConfiguration.class)
-                                             .map(RoutesConfiguration::getModes)
-                                             .map(Map::keySet)
-                                             .orElse(ImmutableSet.of()));
-        if (modes.isEmpty())
-            builder.addErrors("Routing: There must be at least one value for the routing mode.");
-        api.getData().getExtension(RoutingConfiguration.class)
-            .map(RoutingConfiguration::getDefaultMode)
-            .ifPresentOrElse(defaultMode -> {
-                if (!modes.contains(defaultMode)) {
-                    builder.addErrors("Routing: The default mode '{}' is not one of the known modes: {}.", defaultMode, modes.toString());
-                }
-            }, () -> builder.addErrors("Routing: No default mode has been configured."));
-        modes.forEach(mode -> {
-            if (!featureProvider.getData().getExtension(RoutesConfiguration.class)
-                .map(RoutesConfiguration::getFromToQuery)
-                .map(q -> q.containsKey(mode))
-                .orElse(false))
-                builder.addErrors("Routing: No 'fromToQuery' is specified for mode '{}'.", mode);
-            if (!featureProvider.getData().getExtension(RoutesConfiguration.class)
-                .map(RoutesConfiguration::getEdgesQuery)
-                .map(q -> q.containsKey(mode))
-                .orElse(false))
-                builder.addErrors("Routing: No 'edgesQuery' is specified for mode '{}'.", mode);
+    List<String> modes =
+        List.copyOf(
+            featureProvider
+                .getData()
+                .getExtension(RoutesConfiguration.class)
+                .map(RoutesConfiguration::getModes)
+                .map(Map::keySet)
+                .orElse(ImmutableSet.of()));
+    if (modes.isEmpty())
+      builder.addErrors("Routing: There must be at least one value for the routing mode.");
+    api.getData()
+        .getExtension(RoutingConfiguration.class)
+        .map(RoutingConfiguration::getDefaultMode)
+        .ifPresentOrElse(
+            defaultMode -> {
+              if (!modes.contains(defaultMode)) {
+                builder.addErrors(
+                    "Routing: The default mode '{}' is not one of the known modes: {}.",
+                    defaultMode,
+                    modes.toString());
+              }
+            },
+            () -> builder.addErrors("Routing: No default mode has been configured."));
+    modes.forEach(
+        mode -> {
+          if (!featureProvider
+              .getData()
+              .getExtension(RoutesConfiguration.class)
+              .map(RoutesConfiguration::getFromToQuery)
+              .map(q -> q.containsKey(mode))
+              .orElse(false))
+            builder.addErrors("Routing: No 'fromToQuery' is specified for mode '{}'.", mode);
+          if (!featureProvider
+              .getData()
+              .getExtension(RoutesConfiguration.class)
+              .map(RoutesConfiguration::getEdgesQuery)
+              .map(q -> q.containsKey(mode))
+              .orElse(false))
+            builder.addErrors("Routing: No 'edgesQuery' is specified for mode '{}'.", mode);
         });
 
-        return builder.build();
+    return builder.build();
+  }
+
+  @Override
+  public ImmutableConformanceDeclaration.Builder process(
+      ImmutableConformanceDeclaration.Builder builder,
+      OgcApiDataV2 apiData,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+
+    if (!isEnabledForApi(apiData)) {
+      return builder;
     }
 
-    @Override
-    public ImmutableConformanceDeclaration.Builder process(ImmutableConformanceDeclaration.Builder builder,
-                                                           OgcApiDataV2 apiData,
-                                                           URICustomizer uriCustomizer,
-                                                           ApiMediaType mediaType,
-                                                           List<ApiMediaType> alternateMediaTypes,
-                                                           Optional<Locale> language) {
+    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
 
-        if (!isEnabledForApi(apiData)) {
-            return builder;
-        }
-
-        FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
-
-        List<String> preferences = List.copyOf(featureProvider.getData().getExtension(
-                RoutesConfiguration.class)
-            .map(RoutesConfiguration::getPreferences)
-            .map(Map::keySet)
-            .orElse(ImmutableSet.of()));
-        List<String> modes = List.copyOf(featureProvider.getData().getExtension(
-                RoutesConfiguration.class)
-            .map(RoutesConfiguration::getModes)
-            .map(Map::keySet)
-            .orElse(ImmutableSet.of()));
-        builder.putExtensions("properties",
-                              ImmutableMap.of(CapabilityRouting.CORE,
-                                              ImmutableMap.of("preferences",
-                                                              preferences.stream().collect(ImmutableList.toImmutableList())),
-                                              CapabilityRouting.MODE,
-                                              ImmutableMap.of("modes",
-                                                              modes.stream().collect(ImmutableList.toImmutableList()))));
-        return builder;
-    }
+    List<String> preferences =
+        List.copyOf(
+            featureProvider
+                .getData()
+                .getExtension(RoutesConfiguration.class)
+                .map(RoutesConfiguration::getPreferences)
+                .map(Map::keySet)
+                .orElse(ImmutableSet.of()));
+    List<String> modes =
+        List.copyOf(
+            featureProvider
+                .getData()
+                .getExtension(RoutesConfiguration.class)
+                .map(RoutesConfiguration::getModes)
+                .map(Map::keySet)
+                .orElse(ImmutableSet.of()));
+    builder.putExtensions(
+        "properties",
+        ImmutableMap.of(
+            CapabilityRouting.CORE,
+            ImmutableMap.of(
+                "preferences", preferences.stream().collect(ImmutableList.toImmutableList())),
+            CapabilityRouting.MODE,
+            ImmutableMap.of("modes", modes.stream().collect(ImmutableList.toImmutableList()))));
+    return builder;
+  }
 }

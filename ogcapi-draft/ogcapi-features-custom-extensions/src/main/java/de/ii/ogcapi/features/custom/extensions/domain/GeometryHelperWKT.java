@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,17 +12,23 @@ import de.ii.ogcapi.features.html.domain.Geometry;
 
 public interface GeometryHelperWKT {
 
-    // TODO: centralize WKT handling
+  // TODO: centralize WKT handling
 
-    String getPointRegex();
-    String getMultiPointRegex();
-    String getLineStringRegex();
-    String getMultiLineStringRegex();
-    String getPolygonRegex();
-    String getMultiPolygonRegex();
+  String getPointRegex();
 
-    String convertGeometryToWkt(Geometry geom);
-    String convertGeoJsonToWkt(JsonNode geom);
+  String getMultiPointRegex();
 
-    Geometry extractGeometry(String text);
+  String getLineStringRegex();
+
+  String getMultiLineStringRegex();
+
+  String getPolygonRegex();
+
+  String getMultiPolygonRegex();
+
+  String convertGeometryToWkt(Geometry geom);
+
+  String convertGeoJsonToWkt(JsonNode geom);
+
+  Geometry extractGeometry(String text);
 }

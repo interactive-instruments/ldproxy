@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -25,42 +25,40 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/**
- * add styles information to the landing page
- *
- */
+/** add styles information to the landing page */
 @Singleton
 @AutoBind
 public class RoutesOnLandingPage implements LandingPageExtension {
 
-    private final I18n i18n;
+  private final I18n i18n;
 
-    @Inject
-    public RoutesOnLandingPage(I18n i18n) {
-        this.i18n = i18n;
+  @Inject
+  public RoutesOnLandingPage(I18n i18n) {
+    this.i18n = i18n;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return RoutingConfiguration.class;
+  }
+
+  @Override
+  public ImmutableLandingPage.Builder process(
+      Builder landingPageBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+
+    if (!isEnabledForApi(api.getData())) {
+      return landingPageBuilder;
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return RoutingConfiguration.class;
-    }
+    final RoutesLinksGenerator linkGenerator = new RoutesLinksGenerator();
+    final List<Link> links = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
+    landingPageBuilder.addAllLinks(links);
 
-    @Override
-    public ImmutableLandingPage.Builder process(Builder landingPageBuilder,
-                                                OgcApi api,
-                                                URICustomizer uriCustomizer,
-                                                ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes,
-                                                Optional<Locale> language) {
-
-        if (!isEnabledForApi(api.getData())) {
-            return landingPageBuilder;
-        }
-
-        final RoutesLinksGenerator linkGenerator = new RoutesLinksGenerator();
-        final List<Link> links = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
-        landingPageBuilder.addAllLinks(links);
-
-        return landingPageBuilder;
-    }
+    return landingPageBuilder;
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -39,59 +39,62 @@ import javax.ws.rs.core.Response;
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
 
-/**
- * Handle responses under '/tiles/{tileMatrixSetId}'.
- */
+/** Handle responses under '/tiles/{tileMatrixSetId}'. */
 @Singleton
 @AutoBind
-public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMultiCollection implements ConformanceClass {
+public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMultiCollection
+    implements ConformanceClass {
 
-    private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
-    @Inject
-    EndpointTileSetMultiCollection(ExtensionRegistry extensionRegistry,
-                                   TilesQueriesHandler queryHandler,
-                                   FeaturesCoreProviders providers) {
-        super(extensionRegistry, queryHandler, providers);
-    }
+  @Inject
+  EndpointTileSetMultiCollection(
+      ExtensionRegistry extensionRegistry,
+      TilesQueriesHandler queryHandler,
+      FeaturesCoreProviders providers) {
+    super(extensionRegistry, queryHandler, providers);
+  }
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset");
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset");
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return TilesConfiguration.class;
+  }
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class);
-        return formats;
-    }
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class);
+    return formats;
+  }
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return computeDefinition(apiData,
-                                 "tiles",
-                                 ApiEndpointDefinition.SORT_PRIORITY_TILE_SET,
-                                 "/tiles/{tileMatrixSetId}",
-                                 TAGS);
-    }
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    return computeDefinition(
+        apiData,
+        "tiles",
+        ApiEndpointDefinition.SORT_PRIORITY_TILE_SET,
+        "/tiles/{tileMatrixSetId}",
+        TAGS);
+  }
 
-    /**
-     * retrieve tilejson for the MVT tile sets
-     *
-     * @return a tilejson file
-     */
-    @Path("/{tileMatrixSetId}")
-    @GET
-    public Response getTileSet(@Context OgcApi api,
-                                       @Context ApiRequestContext requestContext,
-                                       @PathParam("tileMatrixSetId") String tileMatrixSetId) {
+  /**
+   * retrieve tilejson for the MVT tile sets
+   *
+   * @return a tilejson file
+   */
+  @Path("/{tileMatrixSetId}")
+  @GET
+  public Response getTileSet(
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext,
+      @PathParam("tileMatrixSetId") String tileMatrixSetId) {
 
-        return super.getTileSet(api.getData(), requestContext, "/tiles/{tileMatrixSetId}", tileMatrixSetId);
-    }
+    return super.getTileSet(
+        api.getData(), requestContext, "/tiles/{tileMatrixSetId}", tileMatrixSetId);
+  }
 }

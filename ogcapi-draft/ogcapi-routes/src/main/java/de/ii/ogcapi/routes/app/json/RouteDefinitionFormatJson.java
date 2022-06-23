@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,92 +11,92 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.routes.domain.RouteDefinition;
 import de.ii.ogcapi.routes.domain.RouteDefinitionFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.AbstractMap;
-import java.util.Map;
-
 @Singleton
 @AutoBind
 public class RouteDefinitionFormatJson implements RouteDefinitionFormatExtension {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RouteDefinitionFormatJson.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(RouteDefinitionFormatJson.class);
 
-    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .label("JSON")
-            .parameter("json")
-            .build();
+  public static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.APPLICATION_JSON_TYPE)
+          .label("JSON")
+          .parameter("json")
+          .build();
 
-    private final Schema<?> schemaRouteDefinition;
-    private final Map<String, Schema<?>> referencedSchemas;
+  private final Schema<?> schemaRouteDefinition;
+  private final Map<String, Schema<?>> referencedSchemas;
 
-    @Inject
-    public RouteDefinitionFormatJson(ClassSchemaCache classSchemaCache,
-                                     GeoJsonWriterRegistry geoJsonWriterRegistry) {
-        this.schemaRouteDefinition = classSchemaCache.getSchema(RouteDefinition.class);
-        referencedSchemas = classSchemaCache.getReferencedSchemas(RouteDefinition.class);
+  @Inject
+  public RouteDefinitionFormatJson(
+      ClassSchemaCache classSchemaCache, GeoJsonWriterRegistry geoJsonWriterRegistry) {
+    this.schemaRouteDefinition = classSchemaCache.getSchema(RouteDefinition.class);
+    referencedSchemas = classSchemaCache.getReferencedSchemas(RouteDefinition.class);
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return getContent(apiData, path, HttpMethods.GET);
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
+    if (path.equals("/routes/{routeId}/definition") && method.equals(HttpMethods.GET))
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(schemaRouteDefinition)
+          .schemaRef(RouteDefinition.SCHEMA_REF)
+          .referencedSchemas(referencedSchemas)
+          .ogcApiMediaType(MEDIA_TYPE)
+          .build();
+    return null;
+  }
+
+  @Override
+  public ApiMediaTypeContent getRequestContent(
+      OgcApiDataV2 apiData, String path, HttpMethods method) {
+    if (path.equals("/routes") && method.equals(HttpMethods.POST))
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(schemaRouteDefinition)
+          .schemaRef(RouteDefinition.SCHEMA_REF)
+          .referencedSchemas(referencedSchemas)
+          .ogcApiMediaType(MEDIA_TYPE)
+          .build();
+    return null;
+  }
+
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
+
+  @Override
+  public byte[] getRouteDefinitionAsByteArray(
+      RouteDefinition routeDefinition, OgcApiDataV2 apiData, ApiRequestContext requestContext) {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new Jdk8Module());
+    try {
+      return mapper.writeValueAsBytes(routeDefinition);
+    } catch (JsonProcessingException e) {
+      throw new IllegalStateException("Could not write route definition.", e);
     }
-
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return getContent(apiData, path, HttpMethods.GET);
-    }
-
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-        if (path.equals("/routes/{routeId}/definition") && method.equals(HttpMethods.GET))
-            return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaRouteDefinition)
-                .schemaRef(RouteDefinition.SCHEMA_REF)
-                .referencedSchemas(referencedSchemas)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-        return null;
-    }
-
-    @Override
-    public ApiMediaTypeContent getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-        if (path.equals("/routes") && method.equals(HttpMethods.POST))
-            return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaRouteDefinition)
-                .schemaRef(RouteDefinition.SCHEMA_REF)
-                .referencedSchemas(referencedSchemas)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-        return null;
-    }
-
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
-
-    @Override
-    public byte[] getRouteDefinitionAsByteArray(RouteDefinition routeDefinition, OgcApiDataV2 apiData, ApiRequestContext requestContext) {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new Jdk8Module());
-        try {
-            return mapper.writeValueAsBytes(routeDefinition);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("Could not write route definition.", e);
-        }
-    }
+  }
 }

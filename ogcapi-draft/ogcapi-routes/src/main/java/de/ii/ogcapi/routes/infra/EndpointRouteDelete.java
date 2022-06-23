@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -45,85 +45,103 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointRouteDelete extends Endpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteDelete.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteDelete.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Routing");
+  private static final List<String> TAGS = ImmutableList.of("Routing");
 
-    private final QueryHandlerRoutes queryHandler;
+  private final QueryHandlerRoutes queryHandler;
 
-    @Inject
-    public EndpointRouteDelete(ExtensionRegistry extensionRegistry,
-                               QueryHandlerRoutes queryHandler) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+  @Inject
+  public EndpointRouteDelete(ExtensionRegistry extensionRegistry, QueryHandlerRoutes queryHandler) {
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return RoutingConfiguration.class;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(RoutingConfiguration.class)
+        .filter(RoutingConfiguration::isEnabled)
+        .filter(RoutingConfiguration::isManageRoutesEnabled)
+        .isPresent();
+  }
+
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    return ImmutableList.of();
+  }
+
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("routes")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTE_DELETE);
+    String path = "/routes/{routeId}";
+    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+        new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
+
+    if (pathParameters.stream().noneMatch(param -> param.getName().equals("routeId"))) {
+      LOGGER.error(
+          "Path parameter 'routeId' missing for resource at path '"
+              + path
+              + "'. The DELETE method will not be available.");
+    } else {
+      HttpMethods method = HttpMethods.DELETE;
+      List<OgcApiQueryParameter> queryParameters =
+          getQueryParameters(extensionRegistry, apiData, path, method);
+
+      String operationSummary = "delete a route";
+      Optional<String> operationDescription =
+          Optional.of(
+              "Delete the route with identifier `routeId`. The set of available routes can be retrieved at `/routes`.");
+      ApiOperation.of(
+              path,
+              method,
+              ImmutableMap.of(),
+              queryParameters,
+              ImmutableList.of(),
+              operationSummary,
+              operationDescription,
+              Optional.empty(),
+              TAGS)
+          .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
+      definitionBuilder.putResources(path, resourceBuilder.build());
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return RoutingConfiguration.class;
-    }
+    return definitionBuilder.build();
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(RoutingConfiguration.class)
-            .filter(RoutingConfiguration::isEnabled)
-            .filter(RoutingConfiguration::isManageRoutesEnabled)
-            .isPresent();
-    }
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        return ImmutableList.of();
-    }
+  /**
+   * Delete a route by id
+   *
+   * @param routeId the local identifier of a route
+   * @return the style in a json file
+   */
+  @Path("/{routeId}")
+  @DELETE
+  public Response deleteRoute(
+      @Auth Optional<User> optionalUser,
+      @PathParam("routeId") String routeId,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext) {
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("routes")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTE_DELETE);
-        String path = "/routes/{routeId}";
-        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-            .path(path)
-            .pathParameters(pathParameters);
+    OgcApiDataV2 apiData = api.getData();
+    checkAuthorization(apiData, optionalUser);
+    checkPathParameter(extensionRegistry, apiData, "/routes/{routeId}", "routeId", routeId);
 
-        if (pathParameters.stream().noneMatch(param -> param.getName().equals("routeId"))) {
-            LOGGER.error("Path parameter 'routeId' missing for resource at path '" + path + "'. The DELETE method will not be available.");
-        } else {
-            HttpMethods method = HttpMethods.DELETE;
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-
-            String operationSummary = "delete a route";
-            Optional<String> operationDescription = Optional.of("Delete the route with identifier `routeId`. The set of available routes can be retrieved at `/routes`.");
-            ApiOperation.of(path, method, ImmutableMap.of(), queryParameters, ImmutableList.of(), operationSummary, operationDescription, Optional.empty(), TAGS)
-                .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
-            definitionBuilder.putResources(path, resourceBuilder.build());
-        }
-
-        return definitionBuilder.build();
-    }
-
-    /**
-     * Delete a route by id
-     *
-     * @param routeId the local identifier of a route
-     * @return the style in a json file
-     */
-    @Path("/{routeId}")
-    @DELETE
-    public Response deleteRoute(@Auth Optional<User> optionalUser,
-                                @PathParam("routeId") String routeId,
-                                @Context OgcApi api,
-                                @Context ApiRequestContext requestContext) {
-
-        OgcApiDataV2 apiData = api.getData();
-        checkAuthorization(apiData, optionalUser);
-        checkPathParameter(extensionRegistry, apiData, "/routes/{routeId}", "routeId", routeId);
-
-        QueryHandlerRoutes.QueryInputRoute queryInput = new ImmutableQueryInputRoute.Builder()
+    QueryHandlerRoutes.QueryInputRoute queryInput =
+        new ImmutableQueryInputRoute.Builder()
             .from(getGenericQueryInput(api.getData()))
             .routeId(routeId)
             .build();
 
-        return queryHandler.handle(QueryHandlerRoutes.Query.DELETE_ROUTE, queryInput, requestContext);
-    }
+    return queryHandler.handle(QueryHandlerRoutes.Query.DELETE_ROUTE, queryInput, requestContext);
+  }
 }

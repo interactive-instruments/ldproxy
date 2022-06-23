@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,53 +7,52 @@
  */
 package de.ii.ogcapi.collections.schema.domain;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.domain.PathParameterType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
-import java.util.List;
 
 @Singleton
 @AutoBind
 public class PathParameterTypeSchema extends PathParameterType {
 
-    final static List<String> TYPES = ImmutableList.of("feature", "collection");
-    final static String SCHEMA_TYPE_PATTERN = "[\\w\\-]+";
+  static final List<String> TYPES = ImmutableList.of("feature", "collection");
+  static final String SCHEMA_TYPE_PATTERN = "[\\w\\-]+";
 
-    @Inject
-    public PathParameterTypeSchema(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  public PathParameterTypeSchema(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "typeSchema";
-    }
+  @Override
+  public String getId() {
+    return "typeSchema";
+  }
 
-    @Override
-    protected boolean isApplicablePath(OgcApiDataV2 apiData, String definitionPath) {
-        return definitionPath.equals("/collections/{collectionId}/schemas/{type}");
-    }
+  @Override
+  protected boolean isApplicablePath(OgcApiDataV2 apiData, String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/schemas/{type}");
+  }
 
-    @Override
-    public List<String> getValues(OgcApiDataV2 apiData) {
-        return TYPES;
-    }
+  @Override
+  public List<String> getValues(OgcApiDataV2 apiData) {
+    return TYPES;
+  }
 
-    @Override
-    public String getPattern() {
-        return SCHEMA_TYPE_PATTERN;
-    }
+  @Override
+  public String getPattern() {
+    return SCHEMA_TYPE_PATTERN;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return SchemaConfiguration.class;
-    }
-
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return SchemaConfiguration.class;
+  }
 }

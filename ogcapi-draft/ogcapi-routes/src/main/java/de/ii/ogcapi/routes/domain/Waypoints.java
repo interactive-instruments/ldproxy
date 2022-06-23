@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,10 +15,11 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableWaypoints.Builder.class)
 public interface Waypoints {
-    WaypointsValue getValue();
+  WaypointsValue getValue();
 
-    @SuppressWarnings("UnstableApiUsage")
-    Funnel<Waypoints> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<Waypoints> FUNNEL =
+      (from, into) -> {
         WaypointsValue.FUNNEL.funnel(from.getValue(), into);
-    };
+      };
 }

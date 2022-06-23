@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -19,11 +19,12 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTileMatrixSetLinks.Builder.class)
 public abstract class TileMatrixSetLinks extends PageRepresentationWithId {
 
-    public abstract Optional<String> getTileMatrixSetURI();
+  public abstract Optional<String> getTileMatrixSetURI();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<TileMatrixSetLinks> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<TileMatrixSetLinks> FUNNEL =
+      (from, into) -> {
         PageRepresentationWithId.FUNNEL.funnel(from, into);
         from.getTileMatrixSetURI().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-    };
+      };
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,25 +12,24 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
-import org.immutables.value.Value;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableStyleEntry.Builder.class)
 public abstract class StyleEntry extends PageRepresentationWithId {
 
-    @JsonIgnore
-    @Value.Lazy
-    public List<Link> getLinksSorted() {
-        return getLinks().stream()
-                         .sorted(Comparator.comparing(Link::getTitle))
-                         .collect(Collectors.toList());
-    }
+  @JsonIgnore
+  @Value.Lazy
+  public List<Link> getLinksSorted() {
+    return getLinks().stream()
+        .sorted(Comparator.comparing(Link::getTitle))
+        .collect(Collectors.toList());
+  }
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<StyleEntry> FUNNEL = PageRepresentationWithId.FUNNEL::funnel;
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<StyleEntry> FUNNEL = PageRepresentationWithId.FUNNEL::funnel;
 }
