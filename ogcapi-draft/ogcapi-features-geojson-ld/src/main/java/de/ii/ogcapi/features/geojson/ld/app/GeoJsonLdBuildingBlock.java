@@ -38,8 +38,7 @@ import javax.inject.Singleton;
  * @example {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
  * @propertyTable {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
  * @queryParameterTable {@link
- *     de.ii.ogcapi.features.geojson.ld.app.PathParameterCollectionIdGeoJsonLd} @Prerequisites
- *     {@link de.ii.ogcapi.features.geojson.app.GeoJsonBuildingBlock}
+ *     de.ii.ogcapi.features.geojson.ld.app.PathParameterCollectionIdGeoJsonLd}
  */
 @Singleton
 @AutoBind
