@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,18 +7,23 @@
  */
 package de.ii.ogcapi.collections.schema.domain;
 
+import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
+import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
-
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
 public interface SchemaFormatExtension extends FormatExtension {
 
-    default String getPathPattern() {
-        return "^/?collections/"+COLLECTION_ID_PATTERN+"/schemas/"+ PathParameterTypeSchema.SCHEMA_TYPE_PATTERN+"/?$";
-    }
+  default String getPathPattern() {
+    return "^/?collections/"
+        + COLLECTION_ID_PATTERN
+        + "/schemas/"
+        + PathParameterTypeSchema.SCHEMA_TYPE_PATTERN
+        + "/?$";
+  }
 
-    Object getEntity(JsonSchemaObject schema, String collectionId, OgcApi api, ApiRequestContext requestContext);
+  Object getEntity(
+      JsonSchemaObject schema, String collectionId, OgcApi api, ApiRequestContext requestContext);
 }

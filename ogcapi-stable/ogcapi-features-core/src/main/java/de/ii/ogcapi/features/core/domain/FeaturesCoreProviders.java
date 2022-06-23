@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -19,44 +19,49 @@ import java.util.Optional;
 
 public interface FeaturesCoreProviders {
 
-    boolean hasFeatureProvider(OgcApiDataV2 apiData);
+  boolean hasFeatureProvider(OgcApiDataV2 apiData);
 
-    Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData);
+  Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData);
 
-    FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData);
+  FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData);
 
-    boolean hasFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
+  boolean hasFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
 
-    Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
+  Optional<FeatureProvider2> getFeatureProvider(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
 
-    FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
+  FeatureProvider2 getFeatureProviderOrThrow(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
 
-    default Optional<FeatureSchema> getFeatureSchema(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
-        String featureTypeId = featureType.getExtension(FeaturesCoreConfiguration.class)
-                                          .flatMap(FeaturesCoreConfiguration::getFeatureType)
-                                          .orElse(featureType.getId());
-        Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
-        return featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
-    }
+  default Optional<FeatureSchema> getFeatureSchema(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
+    String featureTypeId =
+        featureType
+            .getExtension(FeaturesCoreConfiguration.class)
+            .flatMap(FeaturesCoreConfiguration::getFeatureType)
+            .orElse(featureType.getId());
+    Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
+    return featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
+  }
 
-    default Map<String, FeatureSchema> getFeatureSchemas(OgcApiDataV2 apiData) {
-        return apiData.getCollections()
-                      .entrySet()
-                      .stream()
-                      .map(entry -> {
-                          FeatureTypeConfigurationOgcApi featureType = entry.getValue();
-                          String featureTypeId = featureType.getExtension(FeaturesCoreConfiguration.class)
-                                                            .map(cfg -> cfg.getFeatureType()
-                                                                           .orElse(featureType.getId()))
-                                                            .orElse(featureType.getId());
-                          Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
-                          Optional<FeatureSchema> schema = featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
-                          if (schema.isEmpty())
-                              return null;
+  default Map<String, FeatureSchema> getFeatureSchemas(OgcApiDataV2 apiData) {
+    return apiData.getCollections().entrySet().stream()
+        .map(
+            entry -> {
+              FeatureTypeConfigurationOgcApi featureType = entry.getValue();
+              String featureTypeId =
+                  featureType
+                      .getExtension(FeaturesCoreConfiguration.class)
+                      .map(cfg -> cfg.getFeatureType().orElse(featureType.getId()))
+                      .orElse(featureType.getId());
+              Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
+              Optional<FeatureSchema> schema =
+                  featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
+              if (schema.isEmpty()) return null;
 
-                          return new AbstractMap.SimpleImmutableEntry<>(featureType.getId(), schema.get());
-                      })
-                      .filter(Objects::nonNull)
-                      .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
+              return new AbstractMap.SimpleImmutableEntry<>(featureType.getId(), schema.get());
+            })
+        .filter(Objects::nonNull)
+        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
 }

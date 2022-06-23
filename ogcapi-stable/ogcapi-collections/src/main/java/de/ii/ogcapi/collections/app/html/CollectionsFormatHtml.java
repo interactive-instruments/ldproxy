@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -36,121 +36,148 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class CollectionsFormatHtml implements CollectionsFormatExtension, ConformanceClass {
 
-    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.TEXT_HTML_TYPE)
-            .label("HTML")
-            .parameter("html")
+  static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.TEXT_HTML_TYPE)
+          .label("HTML")
+          .parameter("html")
+          .build();
+  private final Schema schema = new StringSchema().example("<html>...</html>");
+  private final I18n i18n;
+  private static final String schemaRef = "#/components/schemas/htmlSchema";
+
+  @Inject
+  public CollectionsFormatHtml(I18n i18n) {
+    this.i18n = i18n;
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/html");
+  }
+
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schema)
+        .schemaRef(schemaRef)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
+
+  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getNoIndexEnabled)
+        .orElse(true);
+  }
+
+  private boolean showCollectionDescriptionsInOverview(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getCollectionDescriptionsInOverview)
+        .orElse(false);
+  }
+
+  @Override
+  public Object getCollectionsEntity(
+      Collections collections, OgcApi api, ApiRequestContext requestContext) {
+
+    String rootTitle = i18n.get("root", requestContext.getLanguage());
+    String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
+
+    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
+    final List<NavigationDTO> breadCrumbs =
+        new ImmutableList.Builder<NavigationDTO>()
+            .add(
+                new NavigationDTO(
+                    rootTitle,
+                    resourceUri
+                        .copy()
+                        .removeLastPathSegments(api.getData().getSubPath().size() + 1)
+                        .toString()))
+            .add(
+                new NavigationDTO(
+                    api.getData().getLabel(),
+                    resourceUri.copy().removeLastPathSegments(1).toString()))
+            .add(new NavigationDTO(collectionsTitle))
             .build();
-    private final Schema schema = new StringSchema().example("<html>...</html>");
-    private final I18n i18n;
-    private final static String schemaRef = "#/components/schemas/htmlSchema";
 
-    @Inject
-    public CollectionsFormatHtml(I18n i18n) {
-        this.i18n = i18n;
-    }
+    HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/html");
-    }
+    OgcApiCollectionsView collectionsView =
+        new OgcApiCollectionsView(
+            api.getData(),
+            collections,
+            api.getSpatialExtent(),
+            breadCrumbs,
+            requestContext.getStaticUrlPrefix(),
+            htmlConfig,
+            isNoIndexEnabledForApi(api.getData()),
+            showCollectionDescriptionsInOverview(api.getData()),
+            i18n,
+            requestContext.getLanguage(),
+            Optional.empty()
+            /* TODO no access to feature providers at this point
+            providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
+            */
+            );
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+    return collectionsView;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schema)
-                .schemaRef(schemaRef)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
+  @Override
+  public Object getCollectionEntity(
+      OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
 
-    private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(HtmlConfiguration.class)
-                .map(HtmlConfiguration::getNoIndexEnabled)
-                .orElse(true);
-    }
+    String rootTitle = i18n.get("root", requestContext.getLanguage());
+    String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
 
-    private boolean showCollectionDescriptionsInOverview(OgcApiDataV2 apiData) {
-        return apiData.getExtension(HtmlConfiguration.class)
-                .map(HtmlConfiguration::getCollectionDescriptionsInOverview)
-                .orElse(false);
-    }
-
-    @Override
-    public Object getCollectionsEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
-
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-
-        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, resourceUri.copy()
-                        .removeLastPathSegments(api.getData()
-                                                   .getSubPath()
-                                                   .size() + 1)
+    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
+    final List<NavigationDTO> breadCrumbs =
+        new ImmutableList.Builder<NavigationDTO>()
+            .add(
+                new NavigationDTO(
+                    rootTitle,
+                    resourceUri
+                        .copy()
+                        .removeLastPathSegments(api.getData().getSubPath().size() + 2)
                         .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(), resourceUri.copy()
-                        .removeLastPathSegments(1)
-                        .toString()))
-                .add(new NavigationDTO(collectionsTitle))
-                .build();
+            .add(
+                new NavigationDTO(
+                    api.getData().getLabel(),
+                    resourceUri.copy().removeLastPathSegments(2).toString()))
+            .add(
+                new NavigationDTO(
+                    collectionsTitle, resourceUri.copy().removeLastPathSegments(1).toString()))
+            .add(new NavigationDTO(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId())))
+            .build();
 
-        HtmlConfiguration htmlConfig = api.getData()
-                                          .getExtension(HtmlConfiguration.class)
-                                          .orElse(null);
+    HtmlConfiguration htmlConfig =
+        api.getData()
+            .getCollections()
+            .get(ogcApiCollection.getId())
+            .getExtension(HtmlConfiguration.class)
+            .orElse(null);
 
-        OgcApiCollectionsView collectionsView = new OgcApiCollectionsView(api.getData(), collections, api.getSpatialExtent(), breadCrumbs,
-                                                                          requestContext.getStaticUrlPrefix(), htmlConfig,
-                                                                          isNoIndexEnabledForApi(api.getData()),
-                                                                          showCollectionDescriptionsInOverview(api.getData()),
-                                                                          i18n, requestContext.getLanguage(),
-                                                                          Optional.empty()
-                                                                          /* TODO no access to feature providers at this point
-                                                                          providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
-                                                                          */
-                                                                          );
+    OgcApiCollectionView collectionView =
+        new OgcApiCollectionView(
+            api.getData(),
+            ogcApiCollection,
+            api.getSpatialExtent(ogcApiCollection.getId()),
+            breadCrumbs,
+            requestContext.getStaticUrlPrefix(),
+            htmlConfig,
+            isNoIndexEnabledForApi(api.getData()),
+            requestContext.getUriCustomizer(),
+            i18n,
+            requestContext.getLanguage());
 
-        return collectionsView;
-    }
-
-
-    @Override
-    public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
-                                      OgcApi api,
-                                      ApiRequestContext requestContext) {
-
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-
-        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, resourceUri.copy()
-                        .removeLastPathSegments(api.getData()
-                                                   .getSubPath()
-                                                   .size() + 2)
-                        .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(), resourceUri.copy()
-                        .removeLastPathSegments(2)
-                        .toString()))
-                .add(new NavigationDTO(collectionsTitle, resourceUri.copy()
-                        .removeLastPathSegments(1)
-                        .toString()))
-                .add(new NavigationDTO(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId())))
-                .build();
-
-        HtmlConfiguration htmlConfig = api.getData()
-                                                 .getCollections()
-                                                 .get(ogcApiCollection.getId())
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
-
-        OgcApiCollectionView collectionView = new OgcApiCollectionView(api.getData(), ogcApiCollection, api.getSpatialExtent(ogcApiCollection.getId()), breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-
-        return collectionView;
-    }
+    return collectionView;
+  }
 }

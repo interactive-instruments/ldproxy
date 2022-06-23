@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,19 +16,19 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-
 @Singleton
 @AutoBind
 public class JacksonSubTypeIdsFeaturesCore implements JacksonSubTypeIds {
 
-    @Inject
-    public JacksonSubTypeIdsFeaturesCore() {
-    }
+  @Inject
+  public JacksonSubTypeIdsFeaturesCore() {}
 
-    @Override
-    public Map<Class<?>, String> getMapping() {
-        return new ImmutableMap.Builder<Class<?>, String>()
-                .put(FeaturesCoreConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(FeaturesCoreConfiguration.class))
-                .build();
-    }
+  @Override
+  public Map<Class<?>, String> getMapping() {
+    return new ImmutableMap.Builder<Class<?>, String>()
+        .put(
+            FeaturesCoreConfiguration.class,
+            ExtensionConfiguration.getBuildingBlockIdentifier(FeaturesCoreConfiguration.class))
+        .build();
+  }
 }

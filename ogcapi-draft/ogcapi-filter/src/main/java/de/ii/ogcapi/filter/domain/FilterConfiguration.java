@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,11 +16,10 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableFilterConfiguration.Builder.class)
 public interface FilterConfiguration extends ExtensionConfiguration {
 
-    abstract class Builder extends ExtensionConfiguration.Builder {
-    }
+  abstract class Builder extends ExtensionConfiguration.Builder {}
 
-    @Override
-    default Builder getBuilder() {
-        return new ImmutableFilterConfiguration.Builder();
-    }
+  @Override
+  default Builder getBuilder() {
+    return new ImmutableFilterConfiguration.Builder();
+  }
 }

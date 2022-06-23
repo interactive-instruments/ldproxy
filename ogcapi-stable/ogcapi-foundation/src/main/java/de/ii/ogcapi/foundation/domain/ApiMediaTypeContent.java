@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,16 +8,19 @@
 package de.ii.ogcapi.foundation.domain;
 
 import io.swagger.v3.oas.models.media.Schema;
-import org.immutables.value.Value;
-
 import java.util.List;
 import java.util.Map;
+import org.immutables.value.Value;
 
 @Value.Immutable
 public interface ApiMediaTypeContent {
-        String getSchemaRef();
-        Schema<?> getSchema();
-        Map<String, Schema<?>> referencedSchemas();
-        List<Example> getExamples();
-        ApiMediaType getOgcApiMediaType();
+  String getSchemaRef();
+
+  Schema<?> getSchema();
+
+  Map<String, Schema<?>> referencedSchemas();
+
+  List<Example> getExamples();
+
+  ApiMediaType getOgcApiMediaType();
 }

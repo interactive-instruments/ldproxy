@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,8 +21,8 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableProcessing.Builder.class)
 public abstract class Processing extends PageRepresentation {
 
-    public abstract List<Process> getEndpoints();
+  public abstract List<Process> getEndpoints();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 }

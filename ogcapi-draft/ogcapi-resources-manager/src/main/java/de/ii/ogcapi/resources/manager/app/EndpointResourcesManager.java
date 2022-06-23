@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,9 +26,9 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
+import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -59,159 +59,196 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * creates, updates and deletes a resource from the service
- */
+/** creates, updates and deletes a resource from the service */
 @Singleton
 @AutoBind
 public class EndpointResourcesManager extends Endpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
-    private static final List<String> TAGS = ImmutableList.of("Create, update and delete other resources");
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
+  private static final List<String> TAGS =
+      ImmutableList.of("Create, update and delete other resources");
 
-    private final java.nio.file.Path resourcesStore;
+  private final java.nio.file.Path resourcesStore;
 
-    @Inject
-    public EndpointResourcesManager(AppContext appContext, ExtensionRegistry extensionRegistry) {
-        super(extensionRegistry);
+  @Inject
+  public EndpointResourcesManager(AppContext appContext, ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
 
-        this.resourcesStore = appContext.getDataDir()
-            .resolve(API_RESOURCES_DIR)
-            .resolve("resources");
+    this.resourcesStore = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("resources");
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().mode(apiValidation);
+
+    try {
+      Files.createDirectories(resourcesStore);
+    } catch (IOException e) {
+      builder.addErrors();
     }
 
-    @Override
-    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-            .mode(apiValidation);
+    return builder.build();
+  }
 
-        try {
-            Files.createDirectories(resourcesStore);
-        } catch (IOException e) {
-            builder.addErrors();
-        }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+            .getExtension(ResourcesConfiguration.class)
+            .map(ResourcesConfiguration::isManagerEnabled)
+            .orElse(false)
+        || apiData
+            .getExtension(StylesConfiguration.class)
+            .map(StylesConfiguration::isResourceManagerEnabled)
+            .orElse(false);
+  }
 
-        return builder.build();
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return ResourcesConfiguration.class;
+  }
+
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats =
+          extensionRegistry.getExtensionsForType(ResourceFormatExtension.class).stream()
+              .filter(ResourceFormatExtension::canSupportTransactions)
+              .collect(Collectors.toList());
+    return formats;
+  }
+
+  private Map<MediaType, ApiMediaTypeContent> getRequestContent(
+      OgcApiDataV2 apiData, String path, HttpMethods method) {
+    return getFormats().stream()
+        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
+        .map(f -> f.getRequestContent(apiData, path, method))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
+  }
+
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("resources")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
+    String path = "/resources/{resourceId}";
+    HttpMethods methodReplace = HttpMethods.PUT;
+    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+    List<OgcApiQueryParameter> queryParameters =
+        getQueryParameters(extensionRegistry, apiData, path, methodReplace);
+    String operationSummary = "replace a file resource or add a new one";
+    Optional<String> operationDescription =
+        Optional.of(
+            "Replace an existing resource with the id `resourceId`. If no "
+                + "such resource exists, a new resource with that id is added. "
+                + "A sprite used in a Mapbox Style stylesheet consists of "
+                + "three resources. Each of the resources needs to be created "
+                + "(and eventually deleted) separately.\n"
+                + "The PNG bitmap image (resourceId ends in '.png'), the JSON "
+                + "index file (resourceId of the same name, but ends in '.json' "
+                + "instead of '.png') and the PNG  bitmap image for "
+                + "high-resolution displays (the file ends in '.@2x.png').\n"
+                + "The resource will only by available in the native format in "
+                + "which the resource is posted. There is no support for "
+                + "automated conversions to other representations.");
+    ImmutableOgcApiResourceData.Builder resourceBuilder =
+        new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
+    Map<MediaType, ApiMediaTypeContent> requestContent =
+        getRequestContent(apiData, path, methodReplace);
+    ApiOperation.of(
+            path,
+            methodReplace,
+            requestContent,
+            queryParameters,
+            ImmutableList.of(),
+            operationSummary,
+            operationDescription,
+            Optional.empty(),
+            TAGS)
+        .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
+    HttpMethods methodDelete = HttpMethods.DELETE;
+    queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodDelete);
+    operationSummary = "delete a file resource";
+    operationDescription =
+        Optional.of(
+            "Delete an existing resource with the id `resourceId`. If no "
+                + "such resource exists, an error is returned.");
+    requestContent = getRequestContent(apiData, path, methodDelete);
+    ApiOperation.of(
+            path,
+            methodDelete,
+            requestContent,
+            queryParameters,
+            ImmutableList.of(),
+            operationSummary,
+            operationDescription,
+            Optional.empty(),
+            TAGS)
+        .ifPresent(operation -> resourceBuilder.putOperations(methodDelete.name(), operation));
+    definitionBuilder.putResources(path, resourceBuilder.build());
+
+    return definitionBuilder.build();
+  }
+
+  /**
+   * create or update a resource
+   *
+   * @param resourceId the local identifier of a specific style
+   * @return empty response (204)
+   */
+  @Path("/{resourceId}")
+  @PUT
+  @Consumes(MediaType.WILDCARD)
+  public Response putResource(
+      @Auth Optional<User> optionalUser,
+      @PathParam("resourceId") String resourceId,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext,
+      @Context HttpServletRequest request,
+      byte[] requestBody)
+      throws IOException {
+
+    checkAuthorization(api.getData(), optionalUser);
+
+    return getFormats().stream()
+        .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
+        .findAny()
+        .map(ResourceFormatExtension.class::cast)
+        .orElseThrow(
+            () ->
+                new NotSupportedException(
+                    MessageFormat.format(
+                        "The provided media type ''{0}'' is not supported for this resource.",
+                        requestContext.getMediaType())))
+        .putResource(resourcesStore, requestBody, resourceId, api.getData(), requestContext);
+  }
+
+  /**
+   * deletes a resource
+   *
+   * @param resourceId the local identifier of a specific style
+   * @return empty response (204)
+   */
+  @Path("/{resourceId}")
+  @DELETE
+  public Response deleteResource(
+      @Auth Optional<User> optionalUser,
+      @PathParam("resourceId") String resourceId,
+      @Context OgcApi dataset) {
+
+    checkAuthorization(dataset.getData(), optionalUser);
+
+    final String datasetId = dataset.getId();
+    File apiDir = new File(resourcesStore + File.separator + datasetId);
+    if (!apiDir.exists()) {
+      apiDir.mkdirs();
     }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(ResourcesConfiguration.class).map(ResourcesConfiguration::isManagerEnabled).orElse(false) ||
-            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourceManagerEnabled).orElse(false);
-    }
+    File resourceFile = new File(apiDir + File.separator + resourceId);
+    if (resourceFile.exists()) resourceFile.delete();
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return ResourcesConfiguration.class;
-    }
-
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(ResourceFormatExtension.class)
-                    .stream()
-                    .filter(ResourceFormatExtension::canSupportTransactions)
-                    .collect(Collectors.toList());
-        return formats;
-    }
-
-    private Map<MediaType, ApiMediaTypeContent> getRequestContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-        return getFormats().stream()
-                .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-                .map(f -> f.getRequestContent(apiData, path, method))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(),c -> c));
-    }
-
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("resources")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_RESOURCES_MANAGER);
-        String path = "/resources/{resourceId}";
-        HttpMethods methodReplace = HttpMethods.PUT;
-        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodReplace);
-        String operationSummary = "replace a file resource or add a new one";
-        Optional<String> operationDescription = Optional.of("Replace an existing resource with the id `resourceId`. If no " +
-                "such resource exists, a new resource with that id is added. " +
-                "A sprite used in a Mapbox Style stylesheet consists of " +
-                "three resources. Each of the resources needs to be created " +
-                "(and eventually deleted) separately.\n" +
-                "The PNG bitmap image (resourceId ends in '.png'), the JSON " +
-                "index file (resourceId of the same name, but ends in '.json' " +
-                "instead of '.png') and the PNG  bitmap image for " +
-                "high-resolution displays (the file ends in '.@2x.png').\n" +
-                "The resource will only by available in the native format in " +
-                "which the resource is posted. There is no support for " +
-                "automated conversions to other representations.");
-        ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                .path(path)
-                .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData, path, methodReplace);
-        ApiOperation.of(path, methodReplace, requestContent, queryParameters, ImmutableList.of(), operationSummary, operationDescription, Optional.empty(), TAGS)
-            .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
-        HttpMethods methodDelete = HttpMethods.DELETE;
-        queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodDelete);
-        operationSummary = "delete a file resource";
-        operationDescription = Optional.of("Delete an existing resource with the id `resourceId`. If no " +
-                "such resource exists, an error is returned.");
-        requestContent = getRequestContent(apiData, path, methodDelete);
-        ApiOperation.of(path, methodDelete, requestContent, queryParameters, ImmutableList.of(), operationSummary, operationDescription, Optional.empty(), TAGS)
-            .ifPresent(operation -> resourceBuilder.putOperations(methodDelete.name(), operation));
-        definitionBuilder.putResources(path, resourceBuilder.build());
-
-        return definitionBuilder.build();
-    }
-
-    /**
-     * create or update a resource
-     *
-     * @param resourceId the local identifier of a specific style
-     * @return empty response (204)
-     */
-    @Path("/{resourceId}")
-    @PUT
-    @Consumes(MediaType.WILDCARD)
-    public Response putResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
-                                @Context OgcApi api, @Context ApiRequestContext requestContext,
-                                @Context HttpServletRequest request, byte[] requestBody) throws IOException {
-
-        checkAuthorization(api.getData(), optionalUser);
-
-        return getFormats().stream()
-                .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
-                .findAny()
-                .map(ResourceFormatExtension.class::cast)
-                .orElseThrow(() -> new NotSupportedException(MessageFormat.format("The provided media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())))
-                .putResource(resourcesStore, requestBody, resourceId, api.getData(), requestContext);
-    }
-
-    /**
-     * deletes a resource
-     *
-     * @param resourceId the local identifier of a specific style
-     * @return empty response (204)
-     */
-    @Path("/{resourceId}")
-    @DELETE
-    public Response deleteResource(@Auth Optional<User> optionalUser, @PathParam("resourceId") String resourceId,
-                                @Context OgcApi dataset) {
-
-        checkAuthorization(dataset.getData(), optionalUser);
-
-        final String datasetId = dataset.getId();
-        File apiDir = new File(resourcesStore + File.separator + datasetId);
-        if (!apiDir.exists()) {
-            apiDir.mkdirs();
-        }
-
-        File resourceFile = new File(apiDir + File.separator + resourceId);
-        if (resourceFile.exists())
-            resourceFile.delete();
-
-        return Response.noContent()
-                       .build();
-    }
-
+    return Response.noContent().build();
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,19 +13,21 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
 public interface ItemTypeSpecificConformanceClass extends ConformanceClass {
 
-    default boolean isItemTypeUsed(OgcApiDataV2 apiData, FeaturesCoreConfiguration.ItemType itemType) {
-        return apiData.getCollections()
-            .values()
-            .stream()
-            .anyMatch(collection -> collection.getEnabled() &&
-                collection.getExtension(FeaturesCoreConfiguration.class)
-                    .flatMap(FeaturesCoreConfiguration::getItemType)
-                    .orElse(FeaturesCoreConfiguration.ItemType.feature)
-                    .equals(itemType));
-    }
+  default boolean isItemTypeUsed(
+      OgcApiDataV2 apiData, FeaturesCoreConfiguration.ItemType itemType) {
+    return apiData.getCollections().values().stream()
+        .anyMatch(
+            collection ->
+                collection.getEnabled()
+                    && collection
+                        .getExtension(FeaturesCoreConfiguration.class)
+                        .flatMap(FeaturesCoreConfiguration::getItemType)
+                        .orElse(FeaturesCoreConfiguration.ItemType.feature)
+                        .equals(itemType));
+  }
 
-    @Override
-    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
-    }
+  @Override
+  default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesCoreConfiguration.class;
+  }
 }

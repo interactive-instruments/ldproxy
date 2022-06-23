@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -22,37 +22,50 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableTileLayer.class)
 public abstract class TileLayer extends OgcResourceMetadata {
 
-    public enum GeometryType { points, lines, polygons }
+  public enum GeometryType {
+    points,
+    lines,
+    polygons
+  }
 
-    public abstract String getId();
+  public abstract String getId();
 
-    public abstract TileSet.DataType getDataType();
-    public abstract Optional<String> getFeatureType();
-    public abstract Optional<GeometryType> getGeometryType();
+  public abstract TileSet.DataType getDataType();
 
-    public abstract Optional<String> getTheme();
+  public abstract Optional<String> getFeatureType();
 
-    public abstract Optional<String> getMinTileMatrix();
-    public abstract Optional<String> getMaxTileMatrix();
-    public abstract Optional<Double> getMinCellSize();
-    public abstract Optional<Double> getMaxCellSize();
-    public abstract Optional<Double> getMinScaleDenominator();
-    public abstract Optional<Double> getMaxScaleDenominator();
+  public abstract Optional<GeometryType> getGeometryType();
 
-    public abstract Optional<TilesBoundingBox> getBoundingBox();
+  public abstract Optional<String> getTheme();
 
-    public abstract Optional<JsonSchemaObject> getPropertiesSchema();
+  public abstract Optional<String> getMinTileMatrix();
 
-    // this is for map tiles, so we do not support the following for now:
-    // public abstract Optional<StyleEntry> getStyle();
+  public abstract Optional<String> getMaxTileMatrix();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<TileLayer> FUNNEL = (from, into) -> {
+  public abstract Optional<Double> getMinCellSize();
+
+  public abstract Optional<Double> getMaxCellSize();
+
+  public abstract Optional<Double> getMinScaleDenominator();
+
+  public abstract Optional<Double> getMaxScaleDenominator();
+
+  public abstract Optional<TilesBoundingBox> getBoundingBox();
+
+  public abstract Optional<JsonSchemaObject> getPropertiesSchema();
+
+  // this is for map tiles, so we do not support the following for now:
+  // public abstract Optional<StyleEntry> getStyle();
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<TileLayer> FUNNEL =
+      (from, into) -> {
         OgcResourceMetadata.FUNNEL.funnel(from, into);
         into.putString(from.getId(), StandardCharsets.UTF_8);
         into.putString(from.getDataType().toString(), StandardCharsets.UTF_8);
         from.getFeatureType().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getGeometryType().ifPresent(val -> into.putString(val.toString(), StandardCharsets.UTF_8));
+        from.getGeometryType()
+            .ifPresent(val -> into.putString(val.toString(), StandardCharsets.UTF_8));
         from.getTheme().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getMinTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getMaxTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
@@ -62,5 +75,5 @@ public abstract class TileLayer extends OgcResourceMetadata {
         from.getMaxScaleDenominator().ifPresent(into::putDouble);
         from.getBoundingBox().ifPresent(val -> TilesBoundingBox.FUNNEL.funnel(val, into));
         from.getPropertiesSchema().ifPresent(val -> JsonSchema.FUNNEL.funnel(val, into));
-    };
+      };
 }

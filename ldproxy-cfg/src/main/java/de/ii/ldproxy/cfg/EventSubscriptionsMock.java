@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -34,7 +34,5 @@ class EventSubscriptionsMock implements EventSubscriptions {
   }
 
   @Override
-  public void startListening() {
-
-  }
+  public void startListening() {}
 }

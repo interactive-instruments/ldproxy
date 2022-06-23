@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,4 +7,12 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-public enum HttpMethods {GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS}
+public enum HttpMethods {
+  GET,
+  POST,
+  PUT,
+  DELETE,
+  PATCH,
+  HEAD,
+  OPTIONS
+}

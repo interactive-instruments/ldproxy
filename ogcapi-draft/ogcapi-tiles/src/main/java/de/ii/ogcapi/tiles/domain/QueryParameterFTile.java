@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -28,73 +28,70 @@ import javax.inject.Singleton;
  * @name fTile
  * @endpoints Tile
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterFTile extends QueryParameterF {
 
-    @Inject
-    protected QueryParameterFTile(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
+  @Inject
+  protected QueryParameterFTile(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
+
+  @Override
+  public String getId() {
+    return "fTile";
+  }
+
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return (definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+        || definitionPath.equals(
+            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+  }
+
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return TileFormatExtension.class;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return TilesConfiguration.class;
+  }
+
+  // TODO: remove the getSchema methods again, this is a temporary solution/hack to remove any
+  // MapTile formats
+
+  @Override
+  public Schema getSchema(OgcApiDataV2 apiData) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.get(apiHashCode).containsKey("*")) {
+      List<String> fEnum = new ArrayList<>();
+      extensionRegistry.getExtensionsForType(getFormatClass()).stream()
+          .filter(f -> !f.getClass().getSimpleName().startsWith("Map")) // TODO
+          .filter(f -> f.isEnabledForApi(apiData))
+          .filter(f -> !f.getMediaType().parameter().equals("*"))
+          .forEach(f -> fEnum.add(f.getMediaType().parameter()));
+      schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(fEnum));
     }
+    return schemaMap.get(apiHashCode).get("*");
+  }
 
-    @Override
-    public String getId() {
-        return "fTile";
+  @Override
+  public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+      List<String> fEnum = new ArrayList<>();
+      extensionRegistry.getExtensionsForType(getFormatClass()).stream()
+          .filter(f -> !f.getClass().getSimpleName().startsWith("Map")) // TODO
+          .filter(f -> f.isEnabledForApi(apiData, collectionId))
+          .filter(f -> !f.getMediaType().parameter().equals("*"))
+          .forEach(f -> fEnum.add(f.getMediaType().parameter()));
+      schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
     }
-
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return (definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
-            definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
-    }
-
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return TileFormatExtension.class;
-    }
-
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
-    }
-
-    // TODO: remove the getSchema methods again, this is a temporary solution/hack to remove any MapTile formats
-
-    @Override
-    public Schema getSchema(OgcApiDataV2 apiData) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaMap.containsKey(apiHashCode))
-            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaMap.get(apiHashCode).containsKey("*")) {
-            List<String> fEnum = new ArrayList<>();
-            extensionRegistry.getExtensionsForType(getFormatClass())
-                .stream()
-                .filter(f -> !f.getClass().getSimpleName().startsWith("Map")) // TODO
-                .filter(f -> f.isEnabledForApi(apiData))
-                .filter(f -> !f.getMediaType().parameter().equals("*"))
-                .forEach(f -> fEnum.add(f.getMediaType().parameter()));
-            schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(fEnum));
-        }
-        return schemaMap.get(apiHashCode).get("*");
-    }
-
-    @Override
-    public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaMap.containsKey(apiHashCode))
-            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            List<String> fEnum = new ArrayList<>();
-            extensionRegistry.getExtensionsForType(getFormatClass())
-                .stream()
-                .filter(f -> !f.getClass().getSimpleName().startsWith("Map")) // TODO
-                .filter(f -> f.isEnabledForApi(apiData, collectionId))
-                .filter(f -> !f.getMediaType().parameter().equals("*"))
-                .forEach(f -> fEnum.add(f.getMediaType().parameter()));
-            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
-        }
-        return schemaMap.get(apiHashCode).get(collectionId);
-    }
-
+    return schemaMap.get(apiHashCode).get(collectionId);
+  }
 }

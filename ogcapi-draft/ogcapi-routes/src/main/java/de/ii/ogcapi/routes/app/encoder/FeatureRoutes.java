@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,11 +11,10 @@ import de.ii.ogcapi.features.core.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureBase;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import org.immutables.value.Value;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Modifiable
 @Value.Style(set = "*")
@@ -24,13 +23,16 @@ public interface FeatureRoutes extends FeatureBase<PropertyRoutes, FeatureSchema
   @Override
   @Value.Default
   default String getName() {
-    return getId().flatMap(id -> Optional.ofNullable(id.getFirstValue())).orElse(FeatureBase.super.getName());
+    return getId()
+        .flatMap(id -> Optional.ofNullable(id.getFirstValue()))
+        .orElse(FeatureBase.super.getName());
   }
 
   @Value.Lazy
   default Optional<PropertyRoutes> getId() {
-    return getProperties().stream().filter(property -> property.getSchema().filter(
-        SchemaBase::isId).isPresent()).findFirst();
+    return getProperties().stream()
+        .filter(property -> property.getSchema().filter(SchemaBase::isId).isPresent())
+        .findFirst();
   }
 
   @Value.Lazy
@@ -43,11 +45,13 @@ public interface FeatureRoutes extends FeatureBase<PropertyRoutes, FeatureSchema
     return getProperties().stream()
         .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isPresent())
         .findFirst()
-        .or(() -> getProperties().stream()
-            .map(property -> property.getGeometry())
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findFirst());
+        .or(
+            () ->
+                getProperties().stream()
+                    .map(property -> property.getGeometry())
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst());
   }
 
   @Value.Lazy
@@ -63,11 +67,14 @@ public interface FeatureRoutes extends FeatureBase<PropertyRoutes, FeatureSchema
     return getProperties().stream()
         .filter(property -> Objects.equals(property.getPropertyPath(), path))
         .findFirst()
-        .or(() -> getProperties().stream()
-            .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
-            .map(property -> property.findPropertyByPath(path))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findFirst());
+        .or(
+            () ->
+                getProperties().stream()
+                    .filter(
+                        property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
+                    .map(property -> property.findPropertyByPath(path))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst());
   }
 }

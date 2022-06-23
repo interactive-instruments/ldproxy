@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,7 +13,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -23,34 +22,34 @@ import javax.inject.Singleton;
  * @name TileSets
  * @endpoints Tilesets
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterFTileSets extends QueryParameterF {
 
-    @Inject
-    protected QueryParameterFTileSets(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  protected QueryParameterFTileSets(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fTileSets";
-    }
+  @Override
+  public String getId() {
+    return "fTileSets";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return (definitionPath.equals("/tiles") ||
-            definitionPath.equals("/collections/{collectionId}/tiles"));
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return (definitionPath.equals("/tiles")
+        || definitionPath.equals("/collections/{collectionId}/tiles"));
+  }
 
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return TileSetsFormatExtension.class;
-    }
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return TileSetsFormatExtension.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return TilesConfiguration.class;
+  }
 }

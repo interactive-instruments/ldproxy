@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,9 +10,8 @@ package de.ii.ogcapi.foundation.domain;
 import org.immutables.value.Value;
 
 /**
- * A resource that processes some input. Pre-defined input is the parent resource. Additional input may
- * be provided via parameters and/or the request body.
+ * A resource that processes some input. Pre-defined input is the parent resource. Additional input
+ * may be provided via parameters and/or the request body.
  */
 @Value.Immutable
-public interface OgcApiResourceProcess extends OgcApiResource {
-}
+public interface OgcApiResourceProcess extends OgcApiResource {}

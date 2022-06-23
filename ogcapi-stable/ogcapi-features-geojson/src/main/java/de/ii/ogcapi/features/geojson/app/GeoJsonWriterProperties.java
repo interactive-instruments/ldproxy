@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -34,8 +34,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   private boolean currentStarted;
 
   @Inject
-  public GeoJsonWriterProperties() {
-  }
+  public GeoJsonWriterProperties() {}
 
   @Override
   public GeoJsonWriterProperties create() {
@@ -48,33 +47,31 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   @Override
-  public void onPropertiesEnd(EncodingAwareContextGeoJson context,
-      Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+  public void onPropertiesEnd(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
 
     if (currentStarted) {
       this.currentStarted = false;
 
       // end of "properties"
-      context.encoding().getJson()
-          .writeEndObject();
+      context.encoding().getJson().writeEndObject();
     }
 
     next.accept(context);
   }
 
   @Override
-  public void onArrayStart(EncodingAwareContextGeoJson context,
-      Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-    if (context.schema()
-        .filter(FeatureSchema::isArray)
-        .isPresent()) {
+  public void onArrayStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.schema().filter(FeatureSchema::isArray).isPresent()) {
       FeatureSchema schema = context.schema().get();
 
       if (!currentStarted) {
         this.currentStarted = true;
 
-        context.encoding().getJson()
-            .writeObjectFieldStart(getPropertiesFieldName());
+        context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
       }
 
       context.encoding().getJson().writeArrayFieldStart(schema.getName());
@@ -84,18 +81,16 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   @Override
-  public void onObjectStart(EncodingAwareContextGeoJson context,
-      Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-    if (context.schema()
-        .filter(FeatureSchema::isObject)
-        .isPresent()) {
+  public void onObjectStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.schema().filter(FeatureSchema::isObject).isPresent()) {
       FeatureSchema schema = context.schema().get();
 
       if (!currentStarted) {
         this.currentStarted = true;
 
-        context.encoding().getJson()
-            .writeObjectFieldStart(getPropertiesFieldName());
+        context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
       }
 
       openObject(context.encoding(), schema);
@@ -105,11 +100,10 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   @Override
-  public void onObjectEnd(EncodingAwareContextGeoJson context,
-      Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-    if (context.schema()
-        .filter(FeatureSchema::isObject)
-        .isPresent()) {
+  public void onObjectEnd(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.schema().filter(FeatureSchema::isObject).isPresent()) {
       closeObject(context.encoding());
     }
 
@@ -117,11 +111,10 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   @Override
-  public void onArrayEnd(EncodingAwareContextGeoJson context,
-      Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-    if (context.schema()
-        .filter(FeatureSchema::isArray)
-        .isPresent()) {
+  public void onArrayEnd(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.schema().filter(FeatureSchema::isArray).isPresent()) {
       context.encoding().getJson().writeEndArray();
     }
 
@@ -129,8 +122,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   @Override
-  public void onValue(EncodingAwareContextGeoJson context,
-      Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+  public void onValue(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
     if (!shouldSkipProperty(context)) {
       FeatureSchema schema = context.schema().get();
       String value = context.value();
@@ -139,8 +133,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
       if (!currentStarted) {
         this.currentStarted = true;
 
-        context.encoding().getJson()
-            .writeObjectFieldStart(getPropertiesFieldName());
+        context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
       }
 
       if (schema.isArray()) {
@@ -159,24 +152,19 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   protected boolean shouldSkipProperty(EncodingAwareContextGeoJson context) {
-    return !hasMappingAndValue(context)
-        || (context.schema().get().isId()
-        || context.inGeometry());
+    return !hasMappingAndValue(context) || (context.schema().get().isId() || context.inGeometry());
   }
 
   protected boolean hasMappingAndValue(EncodingAwareContextGeoJson context) {
-    return context.schema()
-        .filter(FeatureSchema::isValue)
-        .isPresent()
+    return context.schema().filter(FeatureSchema::isValue).isPresent()
         && Objects.nonNull(context.value());
   }
 
-  //TODO: centralize value type mappings (either as transformer or as part of context)
+  // TODO: centralize value type mappings (either as transformer or as part of context)
   private void writeValue(JsonGenerator json, String value, Type type) throws IOException {
     switch (type) {
-
       case BOOLEAN:
-        //TODO: normalize in decoder
+        // TODO: normalize in decoder
         json.writeBoolean(
             value.equalsIgnoreCase("t") || value.equalsIgnoreCase("true") || value.equals("1"));
         break;
@@ -185,30 +173,30 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
           json.writeNumber(Long.parseLong(value));
           break;
         } catch (NumberFormatException e) {
-          //ignore
+          // ignore
         }
       case FLOAT:
         try {
           json.writeNumber(Double.parseDouble(value));
           break;
         } catch (NumberFormatException e) {
-          //ignore
+          // ignore
         }
       default:
         json.writeString(value);
     }
   }
 
-  private void openObject(FeatureTransformationContextGeoJson encoding, FeatureSchema schema) throws IOException {
-      if (schema.isArray()) {
-          encoding.getJson().writeStartObject();
-      } else {
-        encoding.getJson().writeObjectFieldStart(schema.getName());
-      }
+  private void openObject(FeatureTransformationContextGeoJson encoding, FeatureSchema schema)
+      throws IOException {
+    if (schema.isArray()) {
+      encoding.getJson().writeStartObject();
+    } else {
+      encoding.getJson().writeObjectFieldStart(schema.getName());
+    }
   }
 
   private void closeObject(FeatureTransformationContextGeoJson encoding) throws IOException {
-      encoding.getJson().writeEndObject();
+    encoding.getJson().writeEndObject();
   }
-
 }

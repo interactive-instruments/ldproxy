@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,28 +7,28 @@
  */
 package de.ii.ogcapi.collections.queryables.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
-import java.util.Map;
 
 @Singleton
 @AutoBind
 public class JacksonSubTypeIdsQueryables implements JacksonSubTypeIds {
 
-    @Inject
-    public JacksonSubTypeIdsQueryables() {
-    }
+  @Inject
+  public JacksonSubTypeIdsQueryables() {}
 
-    @Override
-    public Map<Class<?>, String> getMapping() {
-        return new ImmutableMap.Builder<Class<?>, String>()
-                .put(QueryablesConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(QueryablesConfiguration.class))
-                .build();
-    }
+  @Override
+  public Map<Class<?>, String> getMapping() {
+    return new ImmutableMap.Builder<Class<?>, String>()
+        .put(
+            QueryablesConfiguration.class,
+            ExtensionConfiguration.getBuildingBlockIdentifier(QueryablesConfiguration.class))
+        .build();
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,10 +14,10 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile.Builder;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileProvider;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile.Builder;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,101 +26,106 @@ import org.immutables.value.Value;
 
 /**
  * # Tile-Provider MBTILES
- * @langEn With this tile provider, the tiles are provided via an
- * [MBTiles file](https://github.com/mapbox/mbtiles-spec). The tile format and all
- * other properties of the tileset resource are derived from the contents of the
- * MBTiles file. Only the "WebMercatorQuad" tiling scheme is supported.
+ *
+ * @langEn With this tile provider, the tiles are provided via an [MBTiles
+ *     file](https://github.com/mapbox/mbtiles-spec). The tile format and all other properties of
+ *     the tileset resource are derived from the contents of the MBTiles file. Only the
+ *     "WebMercatorQuad" tiling scheme is supported.
  * @langDe Bei diesem Tile-Provider werden die Kacheln über eine
- * [MBTiles-Datei](https://github.com/mapbox/mbtiles-spec) bereitgestellt.
- * Das Kachelformat und alle anderen Eigenschaften der Tileset-Ressource ergeben sich
- * aus dem Inhalt der MBTiles-Datei. Unterstützt wird nur das Kachelschema "WebMercatorQuad".
+ *     [MBTiles-Datei](https://github.com/mapbox/mbtiles-spec) bereitgestellt. Das Kachelformat und
+ *     alle anderen Eigenschaften der Tileset-Ressource ergeben sich aus dem Inhalt der
+ *     MBTiles-Datei. Unterstützt wird nur das Kachelschema "WebMercatorQuad".
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileProviderMbtiles.Builder.class)
 public abstract class TileProviderMbtiles extends TileProvider {
 
-    /**
-     * @langEn Fixed value, identifies the tile provider type.
-     * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
-     * @default `MBTILES`
-     */
-    public final String getType() { return "MBTILES"; }
+  /**
+   * @langEn Fixed value, identifies the tile provider type.
+   * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
+   * @default `MBTILES`
+   */
+  public final String getType() {
+    return "MBTILES";
+  }
 
-    /**
-     * @langEn Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.
-     * @langDe Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
-     * @default `null`
-     */
-    @Nullable
-    public abstract String getFilename();
+  /**
+   * @langEn Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.
+   * @langDe Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
+   * @default `null`
+   */
+  @Nullable
+  public abstract String getFilename();
 
-    @JsonIgnore
-    public abstract Map<String, MinMax> getZoomLevels();
+  @JsonIgnore
+  public abstract Map<String, MinMax> getZoomLevels();
 
-    @Nullable
-    @JsonIgnore
-    public abstract String getTileEncoding();
+  @Nullable
+  @JsonIgnore
+  public abstract String getTileEncoding();
 
-    @JsonIgnore
-    @Value.Auxiliary
-    @Value.Derived
-    public List<String> getTileEncodings() { return Objects.nonNull(getTileEncoding()) ? ImmutableList.of(getTileEncoding()) : ImmutableList.of(); }
+  @JsonIgnore
+  @Value.Auxiliary
+  @Value.Derived
+  public List<String> getTileEncodings() {
+    return Objects.nonNull(getTileEncoding())
+        ? ImmutableList.of(getTileEncoding())
+        : ImmutableList.of();
+  }
 
-    @JsonIgnore
-    public abstract List<Double> getCenter();
+  @JsonIgnore
+  public abstract List<Double> getCenter();
 
-    @Override
-    @JsonIgnore
-    @Value.Default
-    public boolean requiresQuerySupport() { return false; }
+  @Override
+  @JsonIgnore
+  @Value.Default
+  public boolean requiresQuerySupport() {
+    return false;
+  }
 
-    @Override
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    public boolean isMultiCollectionEnabled() {
-        return true;
-    }
+  @Override
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  public boolean isMultiCollectionEnabled() {
+    return true;
+  }
 
-    @Override
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    public boolean isSingleCollectionEnabled() {
-        return false;
-    }
+  @Override
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  public boolean isSingleCollectionEnabled() {
+    return false;
+  }
 
-    @Override
-    public TileProvider mergeInto(TileProvider source) {
-        if (Objects.isNull(source) || !(source instanceof TileProviderMbtiles))
-            return this;
+  @Override
+  public TileProvider mergeInto(TileProvider source) {
+    if (Objects.isNull(source) || !(source instanceof TileProviderMbtiles)) return this;
 
-        TileProviderMbtiles src = (TileProviderMbtiles) source;
+    TileProviderMbtiles src = (TileProviderMbtiles) source;
 
-        ImmutableTileProviderMbtiles.Builder builder = ImmutableTileProviderMbtiles.builder()
-                                                                                   .from(src)
-                                                                                   .from(this);
+    ImmutableTileProviderMbtiles.Builder builder =
+        ImmutableTileProviderMbtiles.builder().from(src).from(this);
 
-        if (!getCenter().isEmpty())
-            builder.center(getCenter());
-        else if (!src.getCenter().isEmpty())
-            builder.center(src.getCenter());
+    if (!getCenter().isEmpty()) builder.center(getCenter());
+    else if (!src.getCenter().isEmpty()) builder.center(src.getCenter());
 
-        return builder.build();
-    }
+    return builder.build();
+  }
 
-    @Override
-    @JsonIgnore
-    @Value.Derived
-    public QueryInput getQueryInput(OgcApiDataV2 apiData, URICustomizer uriCustomizer,
-                                    Map<String, String> queryParameters, List<OgcApiQueryParameter> allowedParameters,
-                                    QueryInput genericInput, Tile tile) {
+  @Override
+  @JsonIgnore
+  @Value.Derived
+  public QueryInput getQueryInput(
+      OgcApiDataV2 apiData,
+      URICustomizer uriCustomizer,
+      Map<String, String> queryParameters,
+      List<OgcApiQueryParameter> allowedParameters,
+      QueryInput genericInput,
+      Tile tile) {
 
-        return new Builder()
-            .from(genericInput)
-            .tile(tile)
-            .provider(this)
-            .build();
-    }
+    return new Builder().from(genericInput).tile(tile).provider(this).build();
+  }
 }

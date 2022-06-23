@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -28,67 +28,70 @@ import javax.inject.Singleton;
  * @endpoints Feature
  */
 
-//TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be moved to community
+// TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be
+// moved to community
 @Singleton
 @AutoBind
 public class QueryParameterBareHtml extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private final Schema<?> schema = new BooleanSchema()._default(false);
-    private final boolean allowDebug;
-    private final SchemaValidator schemaValidator;
+  private final Schema<?> schema = new BooleanSchema()._default(false);
+  private final boolean allowDebug;
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    public QueryParameterBareHtml(AppContext appContext, SchemaValidator schemaValidator) {
-        this.allowDebug = appContext.isDevEnv();
-        this.schemaValidator = schemaValidator;
-    }
+  @Inject
+  public QueryParameterBareHtml(AppContext appContext, SchemaValidator schemaValidator) {
+    this.allowDebug = appContext.isDevEnv();
+    this.schemaValidator = schemaValidator;
+  }
 
-    @Override
-    public String getName() {
-        return "bare";
-    }
+  @Override
+  public String getName() {
+    return "bare";
+  }
 
-    @Override
-    public String getDescription() {
-        return "Debug option in development environments: Bare HTML output for feature pages.";
-    }
+  @Override
+  public String getDescription() {
+    return "Debug option in development environments: Bare HTML output for feature pages.";
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) &&
-                method== HttpMethods.GET &&
-                (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.GET
+                && (definitionPath.equals("/collections/{collectionId}/items")
+                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return schema;
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return schema;
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-        return schema;
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+    return schema;
+  }
 
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return OgcApiQueryParameter.super.isEnabledForApi(apiData) && allowDebug;
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return OgcApiQueryParameter.super.isEnabledForApi(apiData) && allowDebug;
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return OgcApiQueryParameter.super.isEnabledForApi(apiData, collectionId) && allowDebug;
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return OgcApiQueryParameter.super.isEnabledForApi(apiData, collectionId) && allowDebug;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return HtmlConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return HtmlConfiguration.class;
+  }
 }

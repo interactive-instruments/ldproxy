@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -22,33 +22,48 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTileMatrix.Builder.class)
 public abstract class TileMatrix {
 
-    public static final int SIGNIFICANT_DIGITS = 15;
+  public static final int SIGNIFICANT_DIGITS = 15;
 
-    public abstract String getId();
-    public abstract Optional<String> getTitle();
-    public abstract Optional<String> getDescription();
-    public abstract List<String> getKeywords();
-    public abstract long getTileWidth();
-    public abstract long getTileHeight();
-    public abstract long getMatrixWidth();
-    public abstract long getMatrixHeight();
-    public abstract BigDecimal getScaleDenominator();
-    public abstract BigDecimal getCellSize();
-    public abstract BigDecimal[] getPointOfOrigin();
-    @Value.Default
-    public String getCornerOfOrigin() { return "topLeft"; }
+  public abstract String getId();
 
-    @JsonIgnore
-    @Value.Derived
-    public int getTileLevel() { return Integer.parseInt(getId()); }
+  public abstract Optional<String> getTitle();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<TileMatrix> FUNNEL = (from, into) -> {
+  public abstract Optional<String> getDescription();
+
+  public abstract List<String> getKeywords();
+
+  public abstract long getTileWidth();
+
+  public abstract long getTileHeight();
+
+  public abstract long getMatrixWidth();
+
+  public abstract long getMatrixHeight();
+
+  public abstract BigDecimal getScaleDenominator();
+
+  public abstract BigDecimal getCellSize();
+
+  public abstract BigDecimal[] getPointOfOrigin();
+
+  @Value.Default
+  public String getCornerOfOrigin() {
+    return "topLeft";
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public int getTileLevel() {
+    return Integer.parseInt(getId());
+  }
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<TileMatrix> FUNNEL =
+      (from, into) -> {
         into.putString(from.getId(), StandardCharsets.UTF_8);
         from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getKeywords()
-            .stream()
+        from.getKeywords().stream()
             .sorted()
             .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
         into.putLong(from.getTileWidth());
@@ -57,7 +72,7 @@ public abstract class TileMatrix {
         into.putLong(from.getMatrixHeight());
         into.putDouble(from.getScaleDenominator().doubleValue());
         Arrays.stream(from.getPointOfOrigin())
-              .forEachOrdered(val -> into.putDouble(val.doubleValue()));
+            .forEachOrdered(val -> into.putDouble(val.doubleValue()));
         into.putString(from.getCornerOfOrigin(), StandardCharsets.UTF_8);
-    };
+      };
 }

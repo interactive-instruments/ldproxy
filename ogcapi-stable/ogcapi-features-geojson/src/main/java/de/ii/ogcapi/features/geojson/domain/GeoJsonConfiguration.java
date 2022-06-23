@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -93,7 +93,7 @@ import org.immutables.value.Value;
  */
 
 /**
- * @langEn  Example of the specifications in the configuration file:
+ * @langEn Example of the specifications in the configuration file:
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei:
  * @example <code>
  * ```yaml
@@ -104,94 +104,105 @@ import org.immutables.value.Value;
  * ```
  * </code>
  */
-
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
 public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
-  enum NESTED_OBJECTS {NEST, FLATTEN}
+  enum NESTED_OBJECTS {
+    NEST,
+    FLATTEN
+  }
 
-  enum MULTIPLICITY {ARRAY, SUFFIX}
+  enum MULTIPLICITY {
+    ARRAY,
+    SUFFIX
+  }
 
-  abstract class Builder extends ExtensionConfiguration.Builder {
+  abstract class Builder extends ExtensionConfiguration.Builder {}
+
+  /**
+   * @langEn *Deprecated* Use the [`flatten`
+   *     transformation](../../providers/details/transformations.md) instead.
+   * @langDe *Deprecated* Wird abgelöst durch die
+   *     [`flatten`-Transformation](../../providers/details/transformations.md).
+   * @default `FLATTEN
+   */
+  @Deprecated(since = "3.1.0")
+  @Nullable
+  NESTED_OBJECTS getNestedObjectStrategy();
+
+  /**
+   * @langEn *Deprecated* Use the [`flatten`
+   *     transformation](../../providers/details/transformations.md) instead.
+   * @langDe *Deprecated* Wird abgelöst durch die
+   *     [`flatten`-Transformation](../../providers/details/transformations.md).
+   * @default `SUFFIX`
+   */
+  @Deprecated(since = "3.1.0")
+  @Nullable
+  MULTIPLICITY getMultiplicityStrategy();
+
+  @Deprecated(since = "3.1.0")
+  @Nullable
+  Boolean getUseFormattedJsonOutput();
+
+  /**
+   * @langEn *Deprecated* Use the [`flatten`
+   *     transformation](../../providers/details/transformations.md) instead.
+   * @langDe *Deprecated* Wird abgelöst durch die
+   *     [`flatten`-Transformation](../../providers/details/transformations.md).
+   * @default "."
+   */
+  @Deprecated(since = "3.1.0")
+  @Nullable
+  String getSeparator();
+
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean isFlattened() {
+    return hasTransformation(
+        PropertyTransformations.WILDCARD,
+        transformation -> transformation.getFlatten().isPresent());
+  }
+
+  @Value.Check
+  default GeoJsonConfiguration backwardsCompatibility() {
+    if (getNestedObjectStrategy() == NESTED_OBJECTS.FLATTEN
+        && getMultiplicityStrategy() == MULTIPLICITY.SUFFIX
+        && !isFlattened()) {
+
+      Map<String, List<PropertyTransformation>> transformations =
+          withTransformation(
+              PropertyTransformations.WILDCARD,
+              new ImmutablePropertyTransformation.Builder()
+                  .flatten(Optional.ofNullable(getSeparator()).orElse("."))
+                  .build());
+
+      return new ImmutableGeoJsonConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
     }
 
-    /**
-     * @langEn *Deprecated* Use the
-     * [`flatten` transformation](../../providers/details/transformations.md) instead.
-     * @langDe *Deprecated* Wird abgelöst durch die
-     * [`flatten`-Transformation](../../providers/details/transformations.md).
-     * @default `FLATTEN
-     */
-    @Deprecated(since = "3.1.0")
-    @Nullable
-    NESTED_OBJECTS getNestedObjectStrategy();
+    return this;
+  }
 
-    /**
-     * @langEn *Deprecated* Use the
-     * [`flatten` transformation](../../providers/details/transformations.md) instead.
-     * @langDe *Deprecated* Wird abgelöst durch die
-     * [`flatten`-Transformation](../../providers/details/transformations.md).
-     * @default `SUFFIX`
-     */
-    @Deprecated(since = "3.1.0")
-    @Nullable
-    MULTIPLICITY getMultiplicityStrategy();
+  @Override
+  default Builder getBuilder() {
+    return new ImmutableGeoJsonConfiguration.Builder();
+  }
 
-    @Deprecated(since = "3.1.0")
-    @Nullable
-    Boolean getUseFormattedJsonOutput();
-
-    /**
-     * @langEn *Deprecated* Use the
-     * [`flatten` transformation](../../providers/details/transformations.md) instead.
-     * @langDe *Deprecated* Wird abgelöst durch die
-     * [`flatten`-Transformation](../../providers/details/transformations.md).
-     * @default "."
-     */
-    @Deprecated(since = "3.1.0")
-    @Nullable
-    String getSeparator();
-
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    default boolean isFlattened() {
-        return hasTransformation(PropertyTransformations.WILDCARD, transformation -> transformation.getFlatten().isPresent());
-    }
-
-    @Value.Check
-    default GeoJsonConfiguration backwardsCompatibility() {
-        if (getNestedObjectStrategy() == NESTED_OBJECTS.FLATTEN
-            && getMultiplicityStrategy() == MULTIPLICITY.SUFFIX
-            && !isFlattened()) {
-
-            Map<String, List<PropertyTransformation>> transformations = withTransformation(PropertyTransformations.WILDCARD,
-                new ImmutablePropertyTransformation.Builder()
-                .flatten(Optional.ofNullable(getSeparator()).orElse("."))
-                .build());
-
-            return new ImmutableGeoJsonConfiguration.Builder()
-                .from(this)
-                .transformations(transformations)
-                .build();
-        }
-
-        return this;
-    }
-
-    @Override
-    default Builder getBuilder() {
-        return new ImmutableGeoJsonConfiguration.Builder();
-    }
-
-    @Override
-    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        return new ImmutableGeoJsonConfiguration.Builder()
-            .from(source)
-            .from(this)
-            .transformations(PropertyTransformations.super.mergeInto((PropertyTransformations) source).getTransformations())
-            .build();
-    }
+  @Override
+  default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+    return new ImmutableGeoJsonConfiguration.Builder()
+        .from(source)
+        .from(this)
+        .transformations(
+            PropertyTransformations.super
+                .mergeInto((PropertyTransformations) source)
+                .getTransformations())
+        .build();
+  }
 }

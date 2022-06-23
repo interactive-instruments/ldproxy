@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -33,96 +33,102 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesHtmlDataHydrator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesHtmlDataHydrator.class);
 
-    private final FeaturesCoreProviders providers;
+  private final FeaturesCoreProviders providers;
 
-    @Inject
-    public FeaturesHtmlDataHydrator(FeaturesCoreProviders providers) {
-        this.providers = providers;
-    }
+  @Inject
+  public FeaturesHtmlDataHydrator(FeaturesCoreProviders providers) {
+    this.providers = providers;
+  }
 
-    @Override
-    public int getSortPriority() {
-        // this must be processed after the FeaturesCoreDataHydrator
-        return 120;
-    }
+  @Override
+  public int getSortPriority() {
+    // this must be processed after the FeaturesCoreDataHydrator
+    return 120;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesHtmlConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesHtmlConfiguration.class;
+  }
 
-    @Override
-    public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
+  @Override
+  public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
 
-        // any Features HTML hydration actions are not taken in STRICT validation mode;
-        // STRICT: an invalid service definition will not start
-        if (apiData.getApiValidation()!= MODE.STRICT)
-            return apiData;
+    // any Features HTML hydration actions are not taken in STRICT validation mode;
+    // STRICT: an invalid service definition will not start
+    if (apiData.getApiValidation() != MODE.STRICT) return apiData;
 
-        OgcApiDataV2 data = apiData;
+    OgcApiDataV2 data = apiData;
 
-        // get Features Core configurations to process, normalize property names to exclude all square brackets
-        Map<String, FeaturesHtmlConfiguration> configs = data.getCollections()
-                                                        .entrySet()
-                                                        .stream()
-                                                        .map(entry -> {
-                                                            // normalize the property references in transformations by removing all
-                                                            // parts in square brackets
+    // get Features Core configurations to process, normalize property names to exclude all square
+    // brackets
+    Map<String, FeaturesHtmlConfiguration> configs =
+        data.getCollections().entrySet().stream()
+            .map(
+                entry -> {
+                  // normalize the property references in transformations by removing all
+                  // parts in square brackets
 
-                                                            final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
-                                                            FeaturesHtmlConfiguration config = collectionData.getExtension(FeaturesHtmlConfiguration.class).orElse(null);
-                                                            if (Objects.isNull(config))
-                                                                return null;
+                  final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                  FeaturesHtmlConfiguration config =
+                      collectionData.getExtension(FeaturesHtmlConfiguration.class).orElse(null);
+                  if (Objects.isNull(config)) return null;
 
-                                                            final String collectionId = entry.getKey();
-                                                            final String buildingBlock = config.getBuildingBlock();
+                  final String collectionId = entry.getKey();
+                  final String buildingBlock = config.getBuildingBlock();
 
-                                                            if (config.hasDeprecatedTransformationKeys())
-                                                                config = new ImmutableFeaturesHtmlConfiguration.Builder()
-                                                                        .from(config)
-                                                                        .transformations(config.normalizeTransformationKeys(buildingBlock,collectionId))
-                                                                        .build();
+                  if (config.hasDeprecatedTransformationKeys())
+                    config =
+                        new ImmutableFeaturesHtmlConfiguration.Builder()
+                            .from(config)
+                            .transformations(
+                                config.normalizeTransformationKeys(buildingBlock, collectionId))
+                            .build();
 
-                                                            return new AbstractMap.SimpleImmutableEntry<>(collectionId, config);
-                                                        })
-                                                        .filter(Objects::nonNull)
-                                                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                  return new AbstractMap.SimpleImmutableEntry<>(collectionId, config);
+                })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        // update data with changes
-        data = new ImmutableOgcApiDataV2.Builder()
-                .from(data)
-                .collections(
-                        data.getCollections()
-                            .entrySet()
-                            .stream()
-                            .map(entry -> {
-                                final String collectionId = entry.getKey();
-                                if (!configs.containsKey(collectionId))
-                                    return entry;
+    // update data with changes
+    data =
+        new ImmutableOgcApiDataV2.Builder()
+            .from(data)
+            .collections(
+                data.getCollections().entrySet().stream()
+                    .map(
+                        entry -> {
+                          final String collectionId = entry.getKey();
+                          if (!configs.containsKey(collectionId)) return entry;
 
-                                final FeaturesHtmlConfiguration config = configs.get(collectionId);
-                                final String buildingBlock = config.getBuildingBlock();
+                          final FeaturesHtmlConfiguration config = configs.get(collectionId);
+                          final String buildingBlock = config.getBuildingBlock();
 
-                                return new AbstractMap.SimpleImmutableEntry<String, FeatureTypeConfigurationOgcApi>(collectionId, new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                                        .from(entry.getValue())
-                                        .extensions(new ImmutableList.Builder<ExtensionConfiguration>()
-                                                            // do not touch any other extension
-                                                            .addAll(entry.getValue()
-                                                                         .getExtensions()
-                                                                         .stream()
-                                                                         .filter(ext -> !ext.getBuildingBlock().equals(buildingBlock))
-                                                                         .collect(Collectors.toUnmodifiableList()))
-                                                            // add the GeoJSON configuration
-                                                            .add(config)
-                                                            .build()
-                                        )
-                                        .build());
-                            })
-                            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
-                .build();
+                          return new AbstractMap.SimpleImmutableEntry<
+                              String, FeatureTypeConfigurationOgcApi>(
+                              collectionId,
+                              new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                  .from(entry.getValue())
+                                  .extensions(
+                                      new ImmutableList.Builder<ExtensionConfiguration>()
+                                          // do not touch any other extension
+                                          .addAll(
+                                              entry.getValue().getExtensions().stream()
+                                                  .filter(
+                                                      ext ->
+                                                          !ext.getBuildingBlock()
+                                                              .equals(buildingBlock))
+                                                  .collect(Collectors.toUnmodifiableList()))
+                                          // add the GeoJSON configuration
+                                          .add(config)
+                                          .build())
+                                  .build());
+                        })
+                    .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .build();
 
-        return data;
-    }
+    return data;
+  }
 }

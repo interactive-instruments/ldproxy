@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -29,9 +29,9 @@ public abstract class ApiExtensionCache implements ApiExtension {
   @Override
   public <T extends ExtensionConfiguration> boolean isExtensionEnabled(
       ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
-    return ENABLED_CACHE
-        .computeIfAbsent(extendableConfiguration.hashCode() + clazz.getName(),
-            ignore -> ApiExtension.super.isExtensionEnabled(extendableConfiguration, clazz));
+    return ENABLED_CACHE.computeIfAbsent(
+        extendableConfiguration.hashCode() + clazz.getName(),
+        ignore -> ApiExtension.super.isExtensionEnabled(extendableConfiguration, clazz));
   }
 
   @Override

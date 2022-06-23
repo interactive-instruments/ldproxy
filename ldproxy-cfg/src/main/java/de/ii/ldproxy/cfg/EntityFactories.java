@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -23,84 +23,72 @@ public interface EntityFactories {
 
   static Set<EntityFactory> factories(ExtensionRegistry extensionRegistry) {
     return ImmutableSet.<EntityFactory>builder()
-        .add(new CodelistFactory(null) {
-          @Override
-          public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
-            return CompletableFuture.completedFuture(null);
-          }
+        .add(
+            new CodelistFactory(null) {
+              @Override
+              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
 
-          @Override
-          public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
-            return CompletableFuture.completedFuture(null);
-          }
+              @Override
+              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
 
-          @Override
-          public void deleteInstance(String id) {
+              @Override
+              public void deleteInstance(String id) {}
 
-          }
+              @Override
+              public void addEntityListener(
+                  Consumer<PersistentEntity> listener, boolean existing) {}
 
-          @Override
-          public void addEntityListener(Consumer<PersistentEntity> listener, boolean existing) {
+              @Override
+              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
+            })
+        .add(
+            new FeatureProviderSqlFactory(null, null, null, null, null, null, null, null) {
+              @Override
+              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
 
-          }
+              @Override
+              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
 
-          @Override
-          public void addEntityGoneListener(Consumer<PersistentEntity> listener) {
+              @Override
+              public void deleteInstance(String id) {}
 
-          }
-        })
-        .add(new FeatureProviderSqlFactory(null, null, null, null, null, null, null, null) {
-          @Override
-          public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
-            return CompletableFuture.completedFuture(null);
-          }
+              @Override
+              public void addEntityListener(
+                  Consumer<PersistentEntity> listener, boolean existing) {}
 
-          @Override
-          public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
-            return CompletableFuture.completedFuture(null);
-          }
+              @Override
+              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
+            })
+        .add(
+            new OgcApiFactory(null, extensionRegistry, null) {
+              @Override
+              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
 
-          @Override
-          public void deleteInstance(String id) {
+              @Override
+              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
 
-          }
+              @Override
+              public void deleteInstance(String id) {}
 
-          @Override
-          public void addEntityListener(Consumer<PersistentEntity> listener, boolean existing) {
+              @Override
+              public void addEntityListener(
+                  Consumer<PersistentEntity> listener, boolean existing) {}
 
-          }
-
-          @Override
-          public void addEntityGoneListener(Consumer<PersistentEntity> listener) {
-
-          }
-        })
-        .add(new OgcApiFactory(null, extensionRegistry, null) {
-          @Override
-          public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
-            return CompletableFuture.completedFuture(null);
-          }
-
-          @Override
-          public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
-            return CompletableFuture.completedFuture(null);
-          }
-
-          @Override
-          public void deleteInstance(String id) {
-
-          }
-
-          @Override
-          public void addEntityListener(Consumer<PersistentEntity> listener, boolean existing) {
-
-          }
-
-          @Override
-          public void addEntityGoneListener(Consumer<PersistentEntity> listener) {
-
-          }
-        })
+              @Override
+              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
+            })
         .build();
   }
 }

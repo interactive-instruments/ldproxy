@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -32,86 +32,101 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class StylesFormatHtml implements StylesFormatExtension {
 
-    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.TEXT_HTML_TYPE)
-            .label("HTML")
-            .parameter("html")
-            .build();
+  static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.TEXT_HTML_TYPE)
+          .label("HTML")
+          .parameter("html")
+          .build();
 
-    private final I18n i18n;
+  private final I18n i18n;
 
-    @Inject
-    public StylesFormatHtml(I18n i18n) {
-        this.i18n = i18n;
-    }
+  @Inject
+  public StylesFormatHtml(I18n i18n) {
+    this.i18n = i18n;
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(new StringSchema().example("<html>...</html>"))
-                .schemaRef("#/components/schemas/htmlSchema")
-                .ogcApiMediaType(MEDIA_TYPE)
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(new StringSchema().example("<html>...</html>"))
+        .schemaRef("#/components/schemas/htmlSchema")
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
+
+  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getNoIndexEnabled)
+        .orElse(true);
+  }
+
+  @Override
+  public Object getStylesEntity(
+      Styles styles,
+      OgcApiDataV2 apiData,
+      Optional<String> collectionId,
+      ApiRequestContext requestContext) {
+    String rootTitle = i18n.get("root", requestContext.getLanguage());
+    String stylesTitle = i18n.get("stylesTitle", requestContext.getLanguage());
+    String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
+
+    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
+    final List<NavigationDTO> breadCrumbs =
+        collectionId.isPresent()
+            ? new ImmutableList.Builder<NavigationDTO>()
+                .add(
+                    new NavigationDTO(
+                        rootTitle,
+                        resourceUri
+                            .copy()
+                            .removeLastPathSegments(apiData.getSubPath().size() + 3)
+                            .toString()))
+                .add(
+                    new NavigationDTO(
+                        apiData.getLabel(),
+                        resourceUri.copy().removeLastPathSegments(3).toString()))
+                .add(
+                    new NavigationDTO(
+                        collectionsTitle, resourceUri.copy().removeLastPathSegments(2).toString()))
+                .add(
+                    new NavigationDTO(
+                        apiData.getCollections().get(collectionId.get()).getLabel(),
+                        resourceUri.copy().removeLastPathSegments(1).toString()))
+                .add(new NavigationDTO(stylesTitle))
+                .build()
+            : new ImmutableList.Builder<NavigationDTO>()
+                .add(
+                    new NavigationDTO(
+                        rootTitle,
+                        resourceUri
+                            .copy()
+                            .removeLastPathSegments(apiData.getSubPath().size() + 1)
+                            .toString()))
+                .add(
+                    new NavigationDTO(
+                        apiData.getLabel(),
+                        resourceUri.copy().removeLastPathSegments(1).toString()))
+                .add(new NavigationDTO(stylesTitle))
                 .build();
-    }
 
-    private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(HtmlConfiguration.class)
-                .map(HtmlConfiguration::getNoIndexEnabled)
-                .orElse(true);
-    }
+    HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class).orElse(null);
 
-    @Override
-    public Object getStylesEntity(Styles styles,
-                                  OgcApiDataV2 apiData,
-                                  Optional<String> collectionId,
-                                  ApiRequestContext requestContext) {
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String stylesTitle = i18n.get("stylesTitle", requestContext.getLanguage());
-        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-
-        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
-        final List<NavigationDTO> breadCrumbs = collectionId.isPresent() ?
-                new ImmutableList.Builder<NavigationDTO>()
-                        .add(new NavigationDTO(rootTitle, resourceUri
-                                                                        .copy()
-                                                                        .removeLastPathSegments(apiData.getSubPath().size() + 3)
-                                                                        .toString()))
-                        .add(new NavigationDTO(apiData.getLabel(), resourceUri
-                                                                                 .copy()
-                                                                                 .removeLastPathSegments(3)
-                                                                                 .toString()))
-                        .add(new NavigationDTO(collectionsTitle, resourceUri
-                                                                               .copy()
-                                                                               .removeLastPathSegments(2)
-                                                                               .toString()))
-                        .add(new NavigationDTO(apiData.getCollections()
-                                                      .get(collectionId.get())
-                                                      .getLabel(), resourceUri
-                                                                                 .copy()
-                                                                                 .removeLastPathSegments(1)
-                                                                                 .toString()))
-                        .add(new NavigationDTO(stylesTitle))
-                        .build() :
-                new ImmutableList.Builder<NavigationDTO>()
-                        .add(new NavigationDTO(rootTitle, resourceUri
-                                                                        .copy()
-                                                                        .removeLastPathSegments(apiData.getSubPath().size() + 1)
-                                                                        .toString()))
-                        .add(new NavigationDTO(apiData.getLabel(), resourceUri
-                                                                                 .copy()
-                                                                                 .removeLastPathSegments(1)
-                                                                                 .toString()))
-                        .add(new NavigationDTO(stylesTitle))
-                        .build();
-
-        HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class)
-                                              .orElse(null);
-
-        return new StylesView(apiData, styles, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(apiData), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-    }
+    return new StylesView(
+        apiData,
+        styles,
+        breadCrumbs,
+        requestContext.getStaticUrlPrefix(),
+        htmlConfig,
+        isNoIndexEnabledForApi(apiData),
+        requestContext.getUriCustomizer(),
+        i18n,
+        requestContext.getLanguage());
+  }
 }

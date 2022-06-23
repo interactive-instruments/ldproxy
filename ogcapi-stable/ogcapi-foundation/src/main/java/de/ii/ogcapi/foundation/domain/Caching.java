@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,25 +8,23 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
 import java.util.Date;
+import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableCaching.Builder.class)
 public interface Caching {
 
-    @Nullable
-    Date getLastModified();
+  @Nullable
+  Date getLastModified();
 
-    @Nullable
-    Date getExpires();
+  @Nullable
+  Date getExpires();
 
-    @Nullable
-    String getCacheControl();
+  @Nullable
+  String getCacheControl();
 
-    @Nullable
-    String getCacheControlItems();
-
+  @Nullable
+  String getCacheControlItems();
 }

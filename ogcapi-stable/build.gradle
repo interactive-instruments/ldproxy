@@ -1,6 +1,6 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-layer' version '4.3.6'
-    id 'com.github.hierynomus.license-report' version '0.16.1' apply false
+    id 'de.interactive_instruments.xtraplatform-layer' version '4.3.7'
+    id "com.diffplug.spotless" version "6.7.2" apply false
 }
 
 allprojects {
@@ -10,6 +10,8 @@ allprojects {
 apply from: '../version.gradle'
 
 apply from: '../xtraplatform.gradle'
+
+apply from: '../formatting.gradle'
 
 dependencies {
     // modules to include in this layer
@@ -25,11 +27,8 @@ layer {
 }
 
 
-apply from: '../license-headers.gradle'
-
-//apply from: '../license-report.gradle'
-
 task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
 task testAll { dependsOn subprojects*.tasks*.findByPath('test') }
 tasks.publish { dependsOn subprojects*.tasks*.findByPath('publish') }
 task cleanAll { dependsOn subprojects*.tasks*.findByPath('clean') }
+task spotlessApplyAll { dependsOn subprojects*.tasks*.findByPath('spotlessApply') }

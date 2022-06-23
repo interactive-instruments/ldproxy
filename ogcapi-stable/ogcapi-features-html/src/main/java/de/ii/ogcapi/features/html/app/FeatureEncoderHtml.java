@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -48,15 +48,18 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
   @Override
   public void onStart(ModifiableContext context) {
-    if (transformationContext.isFeatureCollection() && context.metadata().getNumberReturned()
-        .isPresent()) {
+    if (transformationContext.isFeatureCollection()
+        && context.metadata().getNumberReturned().isPresent()) {
       long returned = context.metadata().getNumberReturned().getAsLong();
       long matched = context.metadata().getNumberMatched().orElse(-1);
 
       long pages = Math.max(transformationContext.getPage(), 0);
       if (returned > 0 && matched > -1) {
-        pages = Math.max(pages, matched / transformationContext.getLimit() + (
-            matched % transformationContext.getLimit() > 0 ? 1 : 0));
+        pages =
+            Math.max(
+                pages,
+                matched / transformationContext.getLimit()
+                    + (matched % transformationContext.getLimit() > 0 ? 1 : 0));
       }
 
       LOGGER.debug("numberMatched {}", matched);
@@ -69,19 +72,25 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();
       if (transformationContext.getPage() > 1) {
         pagination
-            .add(new NavigationDTO("«",
-                String.format("limit=%d&offset=%d", transformationContext.getLimit(), 0)))
-            .add(new NavigationDTO("‹",
-                String.format("limit=%d&offset=%d", transformationContext.getLimit(),
-                    transformationContext.getOffset() - transformationContext.getLimit())));
-        metaPagination
-            .add(new NavigationDTO("prev",
-                String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+            .add(
+                new NavigationDTO(
+                    "«", String.format("limit=%d&offset=%d", transformationContext.getLimit(), 0)))
+            .add(
+                new NavigationDTO(
+                    "‹",
+                    String.format(
+                        "limit=%d&offset=%d",
+                        transformationContext.getLimit(),
+                        transformationContext.getOffset() - transformationContext.getLimit())));
+        metaPagination.add(
+            new NavigationDTO(
+                "prev",
+                String.format(
+                    "limit=%d&offset=%d",
+                    transformationContext.getLimit(),
                     transformationContext.getOffset() - transformationContext.getLimit())));
       } else {
-        pagination
-            .add(new NavigationDTO("«"))
-            .add(new NavigationDTO("‹"));
+        pagination.add(new NavigationDTO("«")).add(new NavigationDTO("‹"));
       }
 
       if (matched > -1) {
@@ -94,28 +103,41 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
           if (i == transformationContext.getPage()) {
             pagination.add(new NavigationDTO(String.valueOf(i), true));
           } else {
-            pagination.add(new NavigationDTO(String.valueOf(i),
-                String.format("limit=%d&offset=%d", transformationContext.getLimit(),
-                    (i - 1) * transformationContext.getLimit())));
+            pagination.add(
+                new NavigationDTO(
+                    String.valueOf(i),
+                    String.format(
+                        "limit=%d&offset=%d",
+                        transformationContext.getLimit(),
+                        (i - 1) * transformationContext.getLimit())));
           }
         }
 
         if (transformationContext.getPage() < pages) {
           pagination
-              .add(new NavigationDTO("›",
-                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
-                      transformationContext.getOffset() + transformationContext.getLimit())))
-              .add(new NavigationDTO("»",
-                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
-                      (pages - 1) * transformationContext.getLimit())));
-          metaPagination
-              .add(new NavigationDTO("next",
-                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+              .add(
+                  new NavigationDTO(
+                      "›",
+                      String.format(
+                          "limit=%d&offset=%d",
+                          transformationContext.getLimit(),
+                          transformationContext.getOffset() + transformationContext.getLimit())))
+              .add(
+                  new NavigationDTO(
+                      "»",
+                      String.format(
+                          "limit=%d&offset=%d",
+                          transformationContext.getLimit(),
+                          (pages - 1) * transformationContext.getLimit())));
+          metaPagination.add(
+              new NavigationDTO(
+                  "next",
+                  String.format(
+                      "limit=%d&offset=%d",
+                      transformationContext.getLimit(),
                       transformationContext.getOffset() + transformationContext.getLimit())));
         } else {
-          pagination
-              .add(new NavigationDTO("›"))
-              .add(new NavigationDTO("»"));
+          pagination.add(new NavigationDTO("›")).add(new NavigationDTO("»"));
         }
       } else {
         int from = Math.max(1, transformationContext.getPage() - 2);
@@ -124,23 +146,32 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
           if (i == transformationContext.getPage()) {
             pagination.add(new NavigationDTO(String.valueOf(i), true));
           } else {
-            pagination.add(new NavigationDTO(String.valueOf(i),
-                String.format("limit=%d&offset=%d", transformationContext.getLimit(),
-                    (i - 1) * transformationContext.getLimit())));
+            pagination.add(
+                new NavigationDTO(
+                    String.valueOf(i),
+                    String.format(
+                        "limit=%d&offset=%d",
+                        transformationContext.getLimit(),
+                        (i - 1) * transformationContext.getLimit())));
           }
         }
         if (returned >= transformationContext.getLimit()) {
-          pagination
-              .add(new NavigationDTO("›",
-                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+          pagination.add(
+              new NavigationDTO(
+                  "›",
+                  String.format(
+                      "limit=%d&offset=%d",
+                      transformationContext.getLimit(),
                       transformationContext.getOffset() + transformationContext.getLimit())));
-          metaPagination
-              .add(new NavigationDTO("next",
-                  String.format("limit=%d&offset=%d", transformationContext.getLimit(),
+          metaPagination.add(
+              new NavigationDTO(
+                  "next",
+                  String.format(
+                      "limit=%d&offset=%d",
+                      transformationContext.getLimit(),
                       transformationContext.getOffset() + transformationContext.getLimit())));
         } else {
-          pagination
-              .add(new NavigationDTO("›"));
+          pagination.add(new NavigationDTO("›"));
         }
       }
 
@@ -159,27 +190,39 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       transformationContext.collectionView().hideMap = false;
     }
 
-    transformationContext.featuresHtmlConfiguration()
+    transformationContext
+        .featuresHtmlConfiguration()
         .getFeatureTitleTemplate()
-        .ifPresent(template -> {
-          Function<String, String> lookup = pathString -> feature.findPropertyByPath(pathString).map(PropertyHtml::getFirstValue)
-              .orElse(null);
-          String name = StringTemplateFilters.applyTemplate(template, lookup);
-          if (Objects.nonNull(name) && !name.isEmpty()) {
-            feature.name(name);
-          }
-        });
+        .ifPresent(
+            template -> {
+              Function<String, String> lookup =
+                  pathString ->
+                      feature
+                          .findPropertyByPath(pathString)
+                          .map(PropertyHtml::getFirstValue)
+                          .orElse(null);
+              String name = StringTemplateFilters.applyTemplate(template, lookup);
+              if (Objects.nonNull(name) && !name.isEmpty()) {
+                feature.name(name);
+              }
+            });
 
-    //TODO: generalize as value transformer
+    // TODO: generalize as value transformer
     if (transformationContext.getI18n().isPresent()) {
-      translateBooleans(feature.getProperties(), transformationContext.getI18n().get(),
+      translateBooleans(
+          feature.getProperties(),
+          transformationContext.getI18n().get(),
           transformationContext.getLanguage());
     }
 
     if (!transformationContext.isFeatureCollection()) {
       transformationContext.collectionView().title = feature.getName();
-      transformationContext.collectionView().breadCrumbs.get(
-          transformationContext.collectionView().breadCrumbs.size() - 1).label = feature.getName();
+      transformationContext
+              .collectionView()
+              .breadCrumbs
+              .get(transformationContext.collectionView().breadCrumbs.size() - 1)
+              .label =
+          feature.getName();
     } else {
       feature.inCollection(true);
     }
@@ -194,12 +237,12 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
   @Override
   public void onEnd(ModifiableContext context) {
 
-    //TODO: FeatureTokenEncoderBytes.getOutputStream
+    // TODO: FeatureTokenEncoderBytes.getOutputStream
     OutputStreamWriter writer = new OutputStreamWriter(new OutputStreamToByteConsumer(this::push));
 
     try {
-      ((MustacheRenderer) transformationContext.mustacheRenderer()).render(
-          transformationContext.collectionView(), writer);
+      ((MustacheRenderer) transformationContext.mustacheRenderer())
+          .render(transformationContext.collectionView(), writer);
       writer.flush();
     } catch (IOException e) {
       throw new IllegalStateException(e);
@@ -210,23 +253,37 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     for (int i = 0; i < properties.size(); i++) {
       PropertyHtml property = properties.get(i);
       if ((property.isObject() || property.isArray())
-          && property.getSchema()
-          .flatMap(schema -> schema.getObjectType()
-              .filter(objectType -> Objects.equals(objectType, "Link")))
-          .isPresent()) {
+          && property
+              .getSchema()
+              .flatMap(
+                  schema ->
+                      schema
+                          .getObjectType()
+                          .filter(objectType -> Objects.equals(objectType, "Link")))
+              .isPresent()) {
 
-        String href = property.getNestedProperties().stream()
-            .filter(valueProperty -> valueProperty.getSchema()
-                .filter(schema -> schema.getName().equals("href")).isPresent())
-            .findFirst()
-            .flatMap(valueProperty -> Optional.ofNullable(valueProperty.getValue()))
-            .orElse("");
-        String title = property.getNestedProperties().stream()
-            .filter(valueProperty -> valueProperty.getSchema()
-                .filter(schema -> schema.getName().equals("title")).isPresent())
-            .findFirst()
-            .flatMap(valueProperty -> Optional.ofNullable(valueProperty.getValue()))
-            .orElse("Link");
+        String href =
+            property.getNestedProperties().stream()
+                .filter(
+                    valueProperty ->
+                        valueProperty
+                            .getSchema()
+                            .filter(schema -> schema.getName().equals("href"))
+                            .isPresent())
+                .findFirst()
+                .flatMap(valueProperty -> Optional.ofNullable(valueProperty.getValue()))
+                .orElse("");
+        String title =
+            property.getNestedProperties().stream()
+                .filter(
+                    valueProperty ->
+                        valueProperty
+                            .getSchema()
+                            .filter(schema -> schema.getName().equals("title"))
+                            .isPresent())
+                .findFirst()
+                .flatMap(valueProperty -> Optional.ofNullable(valueProperty.getValue()))
+                .orElse("Link");
 
         property.type(PropertyBase.Type.VALUE);
         property.value(String.format("<a href=\"%s\">%s</a>", href, title));
@@ -236,13 +293,15 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     }
   }
 
-  private void translateBooleans(List<PropertyHtml> properties, I18n i18n,
-      Optional<Locale> language) {
+  private void translateBooleans(
+      List<PropertyHtml> properties, I18n i18n, Optional<Locale> language) {
     for (PropertyHtml property : properties) {
       if (property.isValue()) {
         if (Objects.nonNull(property.getValue())
-            && property.getSchema().filter(schema -> schema.getType() == Type.BOOLEAN)
-            .isPresent()) {
+            && property
+                .getSchema()
+                .filter(schema -> schema.getType() == Type.BOOLEAN)
+                .isPresent()) {
           if (property.getValue().matches("[fF](alse|ALSE)?|0")) {
             property.value(i18n.get("false", language));
           } else if (property.getValue().matches("[tT](rue|RUE)?|[\\-\\+]?1")) {

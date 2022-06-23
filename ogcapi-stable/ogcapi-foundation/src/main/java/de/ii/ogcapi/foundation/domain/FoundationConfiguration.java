@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,9 +8,8 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
 import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 /**
  * @langEn The schema of the API Catalog resource:
@@ -62,63 +61,63 @@ import javax.annotation.Nullable;
 @JsonDeserialize(builder = ImmutableFoundationConfiguration.Builder.class)
 public interface FoundationConfiguration extends ExtensionConfiguration {
 
-    String API_RESOURCES_DIR = "api-resources";
-    String CACHE_DIR = "cache";
-    String TMP_DIR = "tmp";
+  String API_RESOURCES_DIR = "api-resources";
+  String CACHE_DIR = "cache";
+  String TMP_DIR = "tmp";
 
-    abstract class Builder extends ExtensionConfiguration.Builder {
-    }
+  abstract class Builder extends ExtensionConfiguration.Builder {}
 
-    /**
-     * @langEn Support query parameter `lang` to set the desired response language.
-     * @langDe Steuert, ob die Sprache der Antwort bei allen GET-Operationen nur über den
-     * `Accept-Lang`-Header oder auch über einen Parameter `lang` ausgewählt werden kann.
-     * @default `false`
-     */
-    @Nullable
-    Boolean getUseLangParameter();
+  /**
+   * @langEn Support query parameter `lang` to set the desired response language.
+   * @langDe Steuert, ob die Sprache der Antwort bei allen GET-Operationen nur über den
+   *     `Accept-Lang`-Header oder auch über einen Parameter `lang` ausgewählt werden kann.
+   * @default `false`
+   */
+  @Nullable
+  Boolean getUseLangParameter();
 
-    /**
-     * @langEn Return links contained in API responses also as
-     * [HTTP header](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_link_headers).
-     * @langDe Steuert, ob die in Antworten der API enthaltenen Links auch als
-     * [HTTP-Header](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_link_headers)
-     * zurückgegeben werden.
-     * @default `true`
-     */
-    @Nullable
-    Boolean getIncludeLinkHeader();
+  /**
+   * @langEn Return links contained in API responses also as [HTTP
+   *     header](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_link_headers).
+   * @langDe Steuert, ob die in Antworten der API enthaltenen Links auch als
+   *     [HTTP-Header](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_link_headers)
+   *     zurückgegeben werden.
+   * @default `true`
+   */
+  @Nullable
+  Boolean getIncludeLinkHeader();
 
-    /**
-     * @langEn Title for resource *API Catalog*.
-     * @langDe Titel für die API-Catalog-Ressource in diesem Deployment.
-     * @default "API Overview"
-     */
-    @Nullable
-    String getApiCatalogLabel();
+  /**
+   * @langEn Title for resource *API Catalog*.
+   * @langDe Titel für die API-Catalog-Ressource in diesem Deployment.
+   * @default "API Overview"
+   */
+  @Nullable
+  String getApiCatalogLabel();
 
-    /**
-     * @langEn Description for resource *API Catalog*. May contain HTML elements.
-     * @langDe Beschreibung für die API-Catalog-Ressource
-     * in diesem Deployment. HTML-Markup wird bei der HTML-Ausgabe aufbereitet.
-     * @default "The following OGC APIs are available."
-     */
-    @Nullable
-    String getApiCatalogDescription();
+  /**
+   * @langEn Description for resource *API Catalog*. May contain HTML elements.
+   * @langDe Beschreibung für die API-Catalog-Ressource in diesem Deployment. HTML-Markup wird bei
+   *     der HTML-Ausgabe aufbereitet.
+   * @default "The following OGC APIs are available."
+   */
+  @Nullable
+  String getApiCatalogDescription();
 
-    /**
-     * @langEn If set, the value is embedded in the HTML page of the API catalog resource in
-     * a "googleSiteVerification" meta tag (`<meta name="`google-site-verification`" content="{value}">).
-     * @langDe Sofern gesetzt, wird der Wert in die HTML-Seite des API-Catalog-Ressource in einem
-     * "googleSiteVerification"-Meta-Tag eingebettet (`<meta name="`google-site-verification`"
-     * content="{value}">).
-     * @default `null`
-     */
-    @Nullable
-    String getGoogleSiteVerification();
+  /**
+   * @langEn If set, the value is embedded in the HTML page of the API catalog resource in a
+   *     "googleSiteVerification" meta tag (`<meta name="`google-site-verification`"
+   *     content="{value}">).
+   * @langDe Sofern gesetzt, wird der Wert in die HTML-Seite des API-Catalog-Ressource in einem
+   *     "googleSiteVerification"-Meta-Tag eingebettet (`<meta name="`google-site-verification`"
+   *     content="{value}">).
+   * @default `null`
+   */
+  @Nullable
+  String getGoogleSiteVerification();
 
-    @Override
-    default Builder getBuilder() {
-        return new ImmutableFoundationConfiguration.Builder();
-    }
+  @Override
+  default Builder getBuilder() {
+    return new ImmutableFoundationConfiguration.Builder();
+  }
 }

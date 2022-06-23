@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,10 +12,15 @@ import java.util.List;
 
 public interface FeatureProcessInfo {
 
-    List<FeatureProcessChain> getProcessingChains(OgcApiDataV2 apiData, String collectionId,
-                                                  Class<? extends FeatureProcess> processType);
-    List<FeatureProcessChain> getProcessingChains(OgcApiDataV2 apiData,
-                                                  Class<? extends FeatureProcess> processType);
-    boolean matches(OgcApiDataV2 apiData, Class<? extends FeatureProcess> processType,
-                    String definitionPath, String... processNames);
+  List<FeatureProcessChain> getProcessingChains(
+      OgcApiDataV2 apiData, String collectionId, Class<? extends FeatureProcess> processType);
+
+  List<FeatureProcessChain> getProcessingChains(
+      OgcApiDataV2 apiData, Class<? extends FeatureProcess> processType);
+
+  boolean matches(
+      OgcApiDataV2 apiData,
+      Class<? extends FeatureProcess> processType,
+      String definitionPath,
+      String... processNames);
 }

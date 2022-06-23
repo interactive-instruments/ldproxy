@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,13 +15,11 @@ import de.ii.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ogcapi.foundation.domain.ApiInfo;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
@@ -29,56 +27,57 @@ import java.util.Optional;
 @ApiInfo(schemaId = "Collection")
 public abstract class OgcApiCollection extends PageRepresentationWithId {
 
-    public final static String SCHEMA_REF = "#/components/schemas/Collection";
+  public static final String SCHEMA_REF = "#/components/schemas/Collection";
 
-    // Core, part 1
-    public abstract Optional<OgcApiExtent> getExtent();
-    public abstract Optional<String> getItemType();
-    public abstract List<String> getCrs();
+  // Core, part 1
+  public abstract Optional<OgcApiExtent> getExtent();
 
-    // CRS, part 2
-    public abstract Optional<String> getStorageCrs();
-    public abstract Optional<Float> getStorageCrsCoordinateEpoch();
+  public abstract Optional<String> getItemType();
 
-    // restrict to information in ogcapi-stable, everything else goes into the extensions map
+  public abstract List<String> getCrs();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+  // CRS, part 2
+  public abstract Optional<String> getStorageCrs();
 
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    public Optional<String> getDefaultStyle() {
-        return getExtensions().containsKey("defaultStyle")
-            ? Optional.of((String) getExtensions().get("defaultStyle"))
-            : Optional.empty();
-    }
+  public abstract Optional<Float> getStorageCrsCoordinateEpoch();
 
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    public Optional<Long> getItemCount() {
-        return getExtensions().containsKey("itemCount")
-            ? Optional.of((Long) getExtensions().get("itemCount"))
-            : Optional.empty();
-    }
+  // restrict to information in ogcapi-stable, everything else goes into the extensions map
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<OgcApiCollection> FUNNEL = (from, into) -> {
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
+
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  public Optional<String> getDefaultStyle() {
+    return getExtensions().containsKey("defaultStyle")
+        ? Optional.of((String) getExtensions().get("defaultStyle"))
+        : Optional.empty();
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  public Optional<Long> getItemCount() {
+    return getExtensions().containsKey("itemCount")
+        ? Optional.of((Long) getExtensions().get("itemCount"))
+        : Optional.empty();
+  }
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<OgcApiCollection> FUNNEL =
+      (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
         from.getExtent().ifPresent(val -> OgcApiExtent.FUNNEL.funnel(val, into));
         from.getItemType().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getCrs()
-            .stream()
+        from.getCrs().stream()
             .sorted()
             .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getStorageCrs().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getStorageCrsCoordinateEpoch().ifPresent(val -> into.putFloat(val));
-        from.getExtensions()
-            .keySet()
-            .stream()
+        from.getExtensions().keySet().stream()
             .sorted()
             .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
         // we cannot encode the generic extension object
-    };
+      };
 }

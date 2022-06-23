@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -27,59 +27,61 @@ import javax.inject.Singleton;
  * @name offset
  * @endpoints Features
  */
-
 @Singleton
 @AutoBind
-public class QueryParameterOffsetFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterOffsetFeatures extends ApiExtensionCache
+    implements OgcApiQueryParameter {
 
-    private final SchemaValidator schemaValidator;
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    QueryParameterOffsetFeatures(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
+  @Inject
+  QueryParameterOffsetFeatures(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+  }
+
+  @Override
+  public String getId() {
+    return "offsetFeatures";
+  }
+
+  @Override
+  public String getName() {
+    return "offset";
+  }
+
+  @Override
+  public String getDescription() {
+    return "The optional offset parameter identifies the index of the first feature in the response in the overall "
+        + "result set.";
+  }
+
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.GET
+                && definitionPath.equals("/collections/{collectionId}/items"));
+  }
+
+  private Schema<?> schema = null;
+
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    if (schema == null) {
+      schema = new IntegerSchema()._default(0).minimum(BigDecimal.ZERO);
     }
+    return schema;
+  }
 
-    @Override
-    public String getId() {
-        return "offsetFeatures";
-    }
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
 
-    @Override
-    public String getName() {
-        return "offset";
-    }
-
-    @Override
-    public String getDescription() {
-        return "The optional offset parameter identifies the index of the first feature in the response in the overall " +
-                "result set.";
-    }
-
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) &&
-                method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items"));
-    }
-
-    private Schema<?> schema = null;
-
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        if (schema==null) {
-            schema = new IntegerSchema()._default(0).minimum(BigDecimal.ZERO);
-        }
-        return schema;
-    }
-
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
-
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesCoreConfiguration.class;
+  }
 }

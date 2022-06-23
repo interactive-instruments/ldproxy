@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -28,73 +28,82 @@ import javax.inject.Singleton;
  * @name q
  * @endpoints Features
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private final Schema<?> baseSchema;
-    private final SchemaValidator schemaValidator;
+  private final Schema<?> baseSchema;
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    public QueryParameterQ(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
-        this.baseSchema = new ArraySchema().items(new StringSchema());
-    }
+  @Inject
+  public QueryParameterQ(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+    this.baseSchema = new ArraySchema().items(new StringSchema());
+  }
 
-    @Override
-    public String getName() {
-        return "q";
-    }
+  @Override
+  public String getName() {
+    return "q";
+  }
 
-    @Override
-    public String getDescription() {
-        return "General text search in multiple text properties of the data. Separate search terms by comma." +
-               "If at least one of the search terms is included in an item, it is included in the result set. " +
-               "Known limitation: The search should be case-insensitive, but currently is case-sensitive.";
-    }
+  @Override
+  public String getDescription() {
+    return "General text search in multiple text properties of the data. Separate search terms by comma."
+        + "If at least one of the search terms is included in an item, it is included in the result set. "
+        + "Known limitation: The search should be case-insensitive, but currently is case-sensitive.";
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) &&
-               method== HttpMethods.GET &&
-               definitionPath.equals("/collections/{collectionId}/items"));
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.GET
+                && definitionPath.equals("/collections/{collectionId}/items"));
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + collectionId + method.name(), () ->
-            isEnabledForApi(apiData, collectionId) &&
-                method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items"));
-    }
+  @Override
+  public boolean isApplicable(
+      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName()
+            + apiData.hashCode()
+            + definitionPath
+            + collectionId
+            + method.name(),
+        () ->
+            isEnabledForApi(apiData, collectionId)
+                && method == HttpMethods.GET
+                && definitionPath.equals("/collections/{collectionId}/items"));
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return isExtensionEnabled(apiData.getCollections().get(collectionId), FeaturesCoreConfiguration.class, config -> !config.getQueryables()
-            .orElse(FeaturesCollectionQueryables.of())
-            .getQ()
-            .isEmpty());
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return isExtensionEnabled(
+        apiData.getCollections().get(collectionId),
+        FeaturesCoreConfiguration.class,
+        config ->
+            !config.getQueryables().orElse(FeaturesCollectionQueryables.of()).getQ().isEmpty());
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return baseSchema;
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return baseSchema;
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-        return baseSchema;
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+    return baseSchema;
+  }
 
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesCoreConfiguration.class;
+  }
 }

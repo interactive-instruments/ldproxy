@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,37 +11,34 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableStyles.Builder.class)
 public abstract class Styles extends PageRepresentation {
 
-    public final static String SCHEMA_REF = "#/components/schemas/Styles";
+  public static final String SCHEMA_REF = "#/components/schemas/Styles";
 
-    public abstract List<StyleEntry> getStyles();
+  public abstract List<StyleEntry> getStyles();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<Styles> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<Styles> FUNNEL =
+      (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
-        from.getStyles()
-            .stream()
+        from.getStyles().stream()
             .sorted(Comparator.comparing(StyleEntry::getId))
             .forEachOrdered(val -> StyleEntry.FUNNEL.funnel(val, into));
-        from.getExtensions()
-            .keySet()
-            .stream()
+        from.getExtensions().keySet().stream()
             .sorted()
             .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
         // we cannot encode the generic extension object
-    };
+      };
 }

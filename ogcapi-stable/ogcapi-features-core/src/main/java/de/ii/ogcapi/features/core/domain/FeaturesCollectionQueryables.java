@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,65 +13,65 @@ import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.store.domain.entities.Mergeable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
-import org.immutables.value.Value;
-
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCollectionQueryables.Builder.class)
-public interface FeaturesCollectionQueryables extends Buildable<FeaturesCollectionQueryables>, Mergeable<FeaturesCollectionQueryables> {
+public interface FeaturesCollectionQueryables
+    extends Buildable<FeaturesCollectionQueryables>, Mergeable<FeaturesCollectionQueryables> {
 
-    abstract class Builder implements BuildableBuilder<FeaturesCollectionQueryables> {
-    }
+  abstract class Builder implements BuildableBuilder<FeaturesCollectionQueryables> {}
 
-    @Override
-    default FeaturesCollectionQueryables.Builder getBuilder() {
-        return new ImmutableFeaturesCollectionQueryables.Builder().from(this);
-    }
+  @Override
+  default FeaturesCollectionQueryables.Builder getBuilder() {
+    return new ImmutableFeaturesCollectionQueryables.Builder().from(this);
+  }
 
-    static FeaturesCollectionQueryables of() {
-        return new ImmutableFeaturesCollectionQueryables.Builder().build();
-    }
+  static FeaturesCollectionQueryables of() {
+    return new ImmutableFeaturesCollectionQueryables.Builder().build();
+  }
 
-    List<String> getSpatial();
+  List<String> getSpatial();
 
-    List<String> getTemporal();
+  List<String> getTemporal();
 
-    List<String> getQ();
+  List<String> getQ();
 
-    List<String> getOther();
+  List<String> getOther();
 
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    default List<String> getAll() {
-        return ImmutableList.<String>builder()
-                .addAll(getSpatial())
-                .addAll(getTemporal())
-                .addAll(getQ())
-                .addAll(getOther())
-                .build();
-    }
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default List<String> getAll() {
+    return ImmutableList.<String>builder()
+        .addAll(getSpatial())
+        .addAll(getTemporal())
+        .addAll(getQ())
+        .addAll(getOther())
+        .build();
+  }
 
-    @Override
-    default FeaturesCollectionQueryables mergeInto(FeaturesCollectionQueryables source) {
-        return new ImmutableFeaturesCollectionQueryables.Builder().from(source)
-                                                                  .from(this)
-                                                                  .spatial(Stream.concat(source.getSpatial()
-                                                                                               .stream(), getSpatial().stream())
-                                                                                 .distinct()
-                                                                                 .collect(Collectors.toList()))
-                                                                  .temporal(Stream.concat(source.getTemporal()
-                                                                                                .stream(), getTemporal().stream())
-                                                                                  .distinct()
-                                                                                  .collect(Collectors.toList()))
-                                                                  .other(Stream.concat(source.getOther()
-                                                                                             .stream(), getOther().stream())
-                                                                               .distinct()
-                                                                               .collect(Collectors.toList()))
-                                                                  .build();
-    }
+  @Override
+  default FeaturesCollectionQueryables mergeInto(FeaturesCollectionQueryables source) {
+    return new ImmutableFeaturesCollectionQueryables.Builder()
+        .from(source)
+        .from(this)
+        .spatial(
+            Stream.concat(source.getSpatial().stream(), getSpatial().stream())
+                .distinct()
+                .collect(Collectors.toList()))
+        .temporal(
+            Stream.concat(source.getTemporal().stream(), getTemporal().stream())
+                .distinct()
+                .collect(Collectors.toList()))
+        .other(
+            Stream.concat(source.getOther().stream(), getOther().stream())
+                .distinct()
+                .collect(Collectors.toList()))
+        .build();
+  }
 }

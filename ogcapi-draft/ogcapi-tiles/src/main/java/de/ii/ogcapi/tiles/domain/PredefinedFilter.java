@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,9 +14,10 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutablePredefinedFilter.Builder.class)
-public
-interface PredefinedFilter {
-    int getMin();
-    int getMax();
-    Optional<String> getFilter();
+public interface PredefinedFilter {
+  int getMin();
+
+  int getMax();
+
+  Optional<String> getFilter();
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,36 +13,37 @@ import java.nio.file.Path;
 
 public class StylesheetContent {
 
-    final String descriptor;
-    final byte[] content;
-    final boolean inStore;
+  final String descriptor;
+  final byte[] content;
+  final boolean inStore;
 
-    public StylesheetContent(File file) throws IOException {
-        content = java.nio.file.Files.readAllBytes(file.toPath());
-        descriptor = file.getAbsolutePath();
-        inStore = true;
-    }
+  public StylesheetContent(File file) throws IOException {
+    content = java.nio.file.Files.readAllBytes(file.toPath());
+    descriptor = file.getAbsolutePath();
+    inStore = true;
+  }
 
-    public StylesheetContent(Path path) throws IOException {
-        content = java.nio.file.Files.readAllBytes(path);
-        descriptor = path.toFile().getAbsolutePath();
-        inStore = true;
-    }
+  public StylesheetContent(Path path) throws IOException {
+    content = java.nio.file.Files.readAllBytes(path);
+    descriptor = path.toFile().getAbsolutePath();
+    inStore = true;
+  }
 
-    public StylesheetContent(byte[] content, String descriptor, boolean inStore) {
-        this.content = content;
-        this.descriptor = descriptor;
-        this.inStore = inStore;
-    }
+  public StylesheetContent(byte[] content, String descriptor, boolean inStore) {
+    this.content = content;
+    this.descriptor = descriptor;
+    this.inStore = inStore;
+  }
 
-    public byte[] getContent() {
-        return content;
-    }
+  public byte[] getContent() {
+    return content;
+  }
 
-    public String getDescriptor() {
-        return descriptor;
-    }
+  public String getDescriptor() {
+    return descriptor;
+  }
 
-    public boolean getInStore() { return inStore; }
-
+  public boolean getInStore() {
+    return inStore;
+  }
 }

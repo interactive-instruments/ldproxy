@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,9 +14,9 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public abstract class JsonSchemaRefV7 extends JsonSchemaRef {
 
-    @JsonIgnore
-    @Value.Auxiliary
-    public String getDefsName() {
-        return "definitions";
-    }
+  @JsonIgnore
+  @Value.Auxiliary
+  public String getDefsName() {
+    return "definitions";
+  }
 }

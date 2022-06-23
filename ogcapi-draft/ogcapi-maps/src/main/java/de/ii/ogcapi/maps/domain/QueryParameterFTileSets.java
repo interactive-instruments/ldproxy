@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,28 +21,29 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterFTileSets extends QueryParameterF {
 
-    @Inject
-    protected QueryParameterFTileSets(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  protected QueryParameterFTileSets(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fTileSetsMap";
-    }
+  @Override
+  public String getId() {
+    return "fTileSetsMap";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return definitionPath.endsWith("/map/tiles");
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.endsWith("/map/tiles");
+  }
 
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return TileSetsFormatExtension.class;
-    }
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return TileSetsFormatExtension.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return MapTilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return MapTilesConfiguration.class;
+  }
 }

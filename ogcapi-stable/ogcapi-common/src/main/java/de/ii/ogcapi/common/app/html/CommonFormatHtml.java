@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -38,100 +38,120 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass {
 
-    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.TEXT_HTML_TYPE)
-            .label("HTML")
-            .parameter("html")
-            .build();
-    private final Schema schema = new StringSchema().example("<html>...</html>");
-    private final static String schemaRef = "#/components/schemas/htmlSchema";
+  static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.TEXT_HTML_TYPE)
+          .label("HTML")
+          .parameter("html")
+          .build();
+  private final Schema schema = new StringSchema().example("<html>...</html>");
+  private static final String schemaRef = "#/components/schemas/htmlSchema";
 
-    private final I18n i18n;
+  private final I18n i18n;
 
-    @Inject
-    public CommonFormatHtml(I18n i18n) {
-        this.i18n = i18n;
-    }
+  @Inject
+  public CommonFormatHtml(I18n i18n) {
+    this.i18n = i18n;
+  }
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html");
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/html");
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schema)
-                .schemaRef(schemaRef)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schema)
+        .schemaRef(schemaRef)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
 
-    private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(HtmlConfiguration.class)
-                .map(HtmlConfiguration::getNoIndexEnabled)
-                .orElse(true);
-    }
+  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getNoIndexEnabled)
+        .orElse(true);
+  }
 
-    @Override
-    public Object getLandingPageEntity(LandingPage apiLandingPage,
-                                       OgcApi api,
-                                       ApiRequestContext requestContext) {
+  @Override
+  public Object getLandingPageEntity(
+      LandingPage apiLandingPage, OgcApi api, ApiRequestContext requestContext) {
 
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
+    String rootTitle = i18n.get("root", requestContext.getLanguage());
 
-        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle, resourceUri.copy()
-                        .removeLastPathSegments(api.getData()
-                                                   .getSubPath()
-                                                   .size())
+    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
+    final List<NavigationDTO> breadCrumbs =
+        new ImmutableList.Builder<NavigationDTO>()
+            .add(
+                new NavigationDTO(
+                    rootTitle,
+                    resourceUri
+                        .copy()
+                        .removeLastPathSegments(api.getData().getSubPath().size())
                         .toString()))
-                .add(new NavigationDTO(api.getData().getLabel()))
-                .build();
+            .add(new NavigationDTO(api.getData().getLabel()))
+            .build();
 
-        HtmlConfiguration htmlConfig = api.getData()
-                                          .getExtension(HtmlConfiguration.class)
-                                          .orElse(null);
+    HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-        OgcApiLandingPageView landingPageView = new OgcApiLandingPageView(api.getData(), apiLandingPage, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
+    OgcApiLandingPageView landingPageView =
+        new OgcApiLandingPageView(
+            api.getData(),
+            apiLandingPage,
+            breadCrumbs,
+            requestContext.getStaticUrlPrefix(),
+            htmlConfig,
+            isNoIndexEnabledForApi(api.getData()),
+            requestContext.getUriCustomizer(),
+            i18n,
+            requestContext.getLanguage());
 
-        return landingPageView;
-    }
+    return landingPageView;
+  }
 
-    @Override
-    public Object getConformanceEntity(ConformanceDeclaration conformanceDeclaration,
-                                       OgcApi api, ApiRequestContext requestContext)  {
+  @Override
+  public Object getConformanceEntity(
+      ConformanceDeclaration conformanceDeclaration, OgcApi api, ApiRequestContext requestContext) {
 
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String conformanceDeclarationTitle = i18n.get("conformanceDeclarationTitle", requestContext.getLanguage());
+    String rootTitle = i18n.get("root", requestContext.getLanguage());
+    String conformanceDeclarationTitle =
+        i18n.get("conformanceDeclarationTitle", requestContext.getLanguage());
 
-        final URICustomizer uriCustomizer = requestContext.getUriCustomizer().clearParameters();
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle,
-                                       uriCustomizer.copy()
-                                                     .removeLastPathSegments(api.getData()
-                                                                                .getSubPath()
-                                                                                .size() + 1)
-                                                     .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(),
-                                       uriCustomizer.copy()
-                                                    .removeLastPathSegments(1)
-                                                    .toString()))
-                .add(new NavigationDTO(conformanceDeclarationTitle))
-                .build();
+    final URICustomizer uriCustomizer = requestContext.getUriCustomizer().clearParameters();
+    final List<NavigationDTO> breadCrumbs =
+        new ImmutableList.Builder<NavigationDTO>()
+            .add(
+                new NavigationDTO(
+                    rootTitle,
+                    uriCustomizer
+                        .copy()
+                        .removeLastPathSegments(api.getData().getSubPath().size() + 1)
+                        .toString()))
+            .add(
+                new NavigationDTO(
+                    api.getData().getLabel(),
+                    uriCustomizer.copy().removeLastPathSegments(1).toString()))
+            .add(new NavigationDTO(conformanceDeclarationTitle))
+            .build();
 
-        HtmlConfiguration htmlConfig = api.getData()
-                                          .getExtension(HtmlConfiguration.class)
-                                          .orElse(null);
+    HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-        OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
-                new OgcApiConformanceDeclarationView(conformanceDeclaration, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), i18n, requestContext.getLanguage());
-        return ogcApiConformanceDeclarationView;
-    }
+    OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
+        new OgcApiConformanceDeclarationView(
+            conformanceDeclaration,
+            breadCrumbs,
+            requestContext.getStaticUrlPrefix(),
+            htmlConfig,
+            isNoIndexEnabledForApi(api.getData()),
+            i18n,
+            requestContext.getLanguage());
+    return ogcApiConformanceDeclarationView;
+  }
 }

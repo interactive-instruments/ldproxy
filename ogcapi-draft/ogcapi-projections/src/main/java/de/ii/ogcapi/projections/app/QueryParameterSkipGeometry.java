@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.projections.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -17,12 +18,10 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
 import java.util.Map;
 import java.util.Objects;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  * @langEn Use this option to exclude geometries from the response for each feature.
@@ -30,82 +29,86 @@ import java.util.Objects;
  * @name skipGeometry
  * @endpoints Feature
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterSkipGeometry extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private static final Schema<?> SCHEMA = new BooleanSchema()._default(false);
-    private final SchemaValidator schemaValidator;
+  private static final Schema<?> SCHEMA = new BooleanSchema()._default(false);
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    QueryParameterSkipGeometry(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
+  @Inject
+  QueryParameterSkipGeometry(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+  }
+
+  @Override
+  public String getId(String collectionId) {
+    return String.format("%s_%s", getName(), collectionId);
+  }
+
+  @Override
+  public String getName() {
+    return "skipGeometry";
+  }
+
+  @Override
+  public String getDescription() {
+    return "Use this option to exclude geometries from the response for each feature.";
+  }
+
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.GET
+                && (definitionPath.equals("/collections/{collectionId}/items")
+                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+  }
+
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return SCHEMA;
+  }
+
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+    return SCHEMA;
+  }
+
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return ProjectionsConfiguration.class;
+  }
+
+  @Override
+  public ImmutableFeatureQuery.Builder transformQuery(
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+      ImmutableFeatureQuery.Builder queryBuilder,
+      Map<String, String> parameters,
+      OgcApiDataV2 datasetData) {
+
+    if (!isExtensionEnabled(
+        datasetData.getCollections().get(featureTypeConfiguration.getId()),
+        ProjectionsConfiguration.class)) {
+      return queryBuilder;
     }
 
-    @Override
-    public String getId(String collectionId) {
-        return String.format("%s_%s", getName(), collectionId);
+    boolean skipGeometry = getSkipGeometry(parameters);
+
+    return queryBuilder.skipGeometry(skipGeometry);
+  }
+
+  private boolean getSkipGeometry(Map<String, String> parameters) {
+    if (parameters.containsKey(getName())) {
+      return Objects.equals(parameters.get(getName()), "true");
     }
-
-    @Override
-    public String getName() {
-        return "skipGeometry";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Use this option to exclude geometries from the response for each feature.";
-    }
-
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) &&
-                method == HttpMethods.GET &&
-                (definitionPath.equals("/collections/{collectionId}/items") ||
-                        definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
-    }
-
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return SCHEMA;
-    }
-
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-        return SCHEMA;
-    }
-
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
-
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return ProjectionsConfiguration.class;
-    }
-
-    @Override
-    public ImmutableFeatureQuery.Builder transformQuery(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                        ImmutableFeatureQuery.Builder queryBuilder,
-                                                        Map<String, String> parameters, OgcApiDataV2 datasetData) {
-
-        if (!isExtensionEnabled(datasetData.getCollections()
-                                           .get(featureTypeConfiguration.getId()), ProjectionsConfiguration.class)) {
-            return queryBuilder;
-        }
-
-        boolean skipGeometry = getSkipGeometry(parameters);
-
-        return queryBuilder.skipGeometry(skipGeometry);
-    }
-
-    private boolean getSkipGeometry(Map<String, String> parameters) {
-        if (parameters.containsKey(getName())) {
-            return Objects.equals(parameters.get(getName()), "true");
-        }
-        return false;
-    }
+    return false;
+  }
 }

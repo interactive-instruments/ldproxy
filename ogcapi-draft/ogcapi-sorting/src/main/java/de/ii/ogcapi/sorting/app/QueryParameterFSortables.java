@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,10 +9,12 @@ package de.ii.ogcapi.sorting.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.QueryParameterFSubCollection;
-import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
-import de.ii.ogcapi.foundation.domain.*;
-
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -21,7 +23,8 @@ import javax.inject.Singleton;
 public class QueryParameterFSortables extends QueryParameterFSubCollection {
 
   @Inject
-  public QueryParameterFSortables(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+  public QueryParameterFSortables(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
     super(extensionRegistry, schemaValidator);
   }
 
@@ -44,5 +47,4 @@ public class QueryParameterFSortables extends QueryParameterFSubCollection {
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return SortingConfiguration.class;
   }
-
 }

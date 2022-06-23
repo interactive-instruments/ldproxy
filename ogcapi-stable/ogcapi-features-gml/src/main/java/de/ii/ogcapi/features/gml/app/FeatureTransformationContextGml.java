@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,9 +8,8 @@
 package de.ii.ogcapi.features.gml.app;
 
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
-import org.immutables.value.Value;
-
 import java.util.Map;
+import org.immutables.value.Value;
 
 /**
  * @author zahnen
@@ -19,5 +18,5 @@ import java.util.Map;
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGml implements FeatureTransformationContext {
 
-    public abstract Map<String, String> getNamespaces();
+  public abstract Map<String, String> getNamespaces();
 }

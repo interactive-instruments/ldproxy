@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,7 +9,6 @@ package de.ii.ogcapi.features.cityjson.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -63,17 +62,35 @@ public interface CityJsonWriter {
   String WALL_SURFACE = "WallSurface";
   String WINDOW = "Window";
 
-  List<String> ADDRESS_ATTRIBUTES = ImmutableList.of(COUNTRY_NAME, LOCALITY_NAME, THOROUGHFARE_NAME,
-                                                     THOROUGHFARE_NUMBER, POSTAL_CODE, ADMINISTRATIVE_AREA);
-  List<String> SURFACE_TYPES = ImmutableList.of(CEILING_SURFACE, CLOSURE_SURFACE, DOOR, FLOOR_SURFACE, GROUND_SURFACE,
-                                                INTERIOR_WALL_SURFACE, OUTER_CEILING_SURFACE, OUTER_FLOOR_SURFACE,
-                                                ROOF_SURFACE, WALL_SURFACE, WINDOW);
+  List<String> ADDRESS_ATTRIBUTES =
+      ImmutableList.of(
+          COUNTRY_NAME,
+          LOCALITY_NAME,
+          THOROUGHFARE_NAME,
+          THOROUGHFARE_NUMBER,
+          POSTAL_CODE,
+          ADMINISTRATIVE_AREA);
+  List<String> SURFACE_TYPES =
+      ImmutableList.of(
+          CEILING_SURFACE,
+          CLOSURE_SURFACE,
+          DOOR,
+          FLOOR_SURFACE,
+          GROUND_SURFACE,
+          INTERIOR_WALL_SURFACE,
+          OUTER_CEILING_SURFACE,
+          OUTER_FLOOR_SURFACE,
+          ROOF_SURFACE,
+          WALL_SURFACE,
+          WINDOW);
 
   CityJsonWriter create();
 
   int getSortPriority();
 
-  default void onEvent(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {
+  default void onEvent(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
     switch (context.getState().getEvent()) {
       case START:
         onStart(context, next);
@@ -85,7 +102,8 @@ public interface CityJsonWriter {
         onFeatureStart(context, next);
         break;
       case FEATURE_END:
-        if (context.getState().inSection() == FeatureTransformationContextCityJson.StateCityJson.Section.OUTSIDE) {
+        if (context.getState().inSection()
+            == FeatureTransformationContextCityJson.StateCityJson.Section.OUTSIDE) {
           onFeatureEndEnd(context, next);
         } else {
           onFeatureEnd(context, next);
@@ -115,27 +133,75 @@ public interface CityJsonWriter {
     }
   }
 
-  default void onStart(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onStart(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onEnd(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onEnd(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onFeatureStart(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onFeatureStart(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onFeatureEnd(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onFeatureEnd(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onFeatureEndEnd(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onFeatureEndEnd(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onArrayStart(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onArrayStart(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onObjectStart(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onObjectStart(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onObjectEnd(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onObjectEnd(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onArrayEnd(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onArrayEnd(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onValue(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onValue(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onCoordinates(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onCoordinates(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 
-  default void onGeometryEnd(EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next) throws IOException {next.accept(context);}
+  default void onGeometryEnd(
+      EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
+      throws IOException {
+    next.accept(context);
+  }
 }

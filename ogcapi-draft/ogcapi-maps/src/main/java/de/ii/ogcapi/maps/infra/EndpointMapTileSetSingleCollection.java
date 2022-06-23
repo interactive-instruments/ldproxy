@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -37,55 +37,62 @@ import org.slf4j.LoggerFactory;
  * @path /{apiId}/collections/{collectionId}/map/tiles/{tileMatrixSetId}
  */
 
-/**
- * Handle responses under '/collections/{collectionId}/map/tiles/{tileMatrixSetId}'.
- */
+/** Handle responses under '/collections/{collectionId}/map/tiles/{tileMatrixSetId}'. */
 @Singleton
 @AutoBind
 public class EndpointMapTileSetSingleCollection extends AbstractEndpointTileSetSingleCollection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointMapTileSetSingleCollection.class);
-    private static final List<String> TAGS = ImmutableList.of("Access single-layer map tiles");
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(EndpointMapTileSetSingleCollection.class);
+  private static final List<String> TAGS = ImmutableList.of("Access single-layer map tiles");
 
-    @Inject
-    EndpointMapTileSetSingleCollection(ExtensionRegistry extensionRegistry,
-                                       TilesQueriesHandler queryHandler,
-                                       FeaturesCoreProviders providers) {
-        super(extensionRegistry, queryHandler, providers);
-    }
+  @Inject
+  EndpointMapTileSetSingleCollection(
+      ExtensionRegistry extensionRegistry,
+      TilesQueriesHandler queryHandler,
+      FeaturesCoreProviders providers) {
+    super(extensionRegistry, queryHandler, providers);
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        if (apiData.getExtension(MapTilesConfiguration.class, collectionId)
-            .filter(ExtensionConfiguration::isEnabled)
-            .filter(MapTilesConfiguration::isSingleCollectionEnabled)
-            .isPresent())
-            return super.isEnabledForApi(apiData, collectionId);
-        return false;
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    if (apiData
+        .getExtension(MapTilesConfiguration.class, collectionId)
+        .filter(ExtensionConfiguration::isEnabled)
+        .filter(MapTilesConfiguration::isSingleCollectionEnabled)
+        .isPresent()) return super.isEnabledForApi(apiData, collectionId);
+    return false;
+  }
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return computeDefinition(apiData,
-                                 "collections",
-                                 ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SET_COLLECTION,
-                                 "/collections/{collectionId}",
-                                 "/map/tiles/{tileMatrixSetId}",
-                                 TAGS);
-    }
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    return computeDefinition(
+        apiData,
+        "collections",
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SET_COLLECTION,
+        "/collections/{collectionId}",
+        "/map/tiles/{tileMatrixSetId}",
+        TAGS);
+  }
 
-    /**
-     * retrieve tilejson for the MVT tile sets
-     *
-     * @return a tilejson file
-     */
-    @Path("/{collectionId}/map/tiles/{tileMatrixSetId}")
-    @GET
-    public Response getTileSet(@Context OgcApi api,
-                                       @Context ApiRequestContext requestContext,
-                                       @PathParam("collectionId") String collectionId,
-                                       @PathParam("tileMatrixSetId") String tileMatrixSetId) {
+  /**
+   * retrieve tilejson for the MVT tile sets
+   *
+   * @return a tilejson file
+   */
+  @Path("/{collectionId}/map/tiles/{tileMatrixSetId}")
+  @GET
+  public Response getTileSet(
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext,
+      @PathParam("collectionId") String collectionId,
+      @PathParam("tileMatrixSetId") String tileMatrixSetId) {
 
-        return super.getTileSet(api.getData(), requestContext, "/collections/{collectionId}/map/tiles/{tileMatrixSetId}", collectionId, tileMatrixSetId);
-    }
+    return super.getTileSet(
+        api.getData(),
+        requestContext,
+        "/collections/{collectionId}/map/tiles/{tileMatrixSetId}",
+        collectionId,
+        tileMatrixSetId);
+  }
 }

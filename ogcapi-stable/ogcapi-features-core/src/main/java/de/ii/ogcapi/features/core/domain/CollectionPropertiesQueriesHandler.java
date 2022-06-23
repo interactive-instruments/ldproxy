@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -13,9 +13,12 @@ import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import org.immutables.value.Value;
 
-public interface CollectionPropertiesQueriesHandler extends QueriesHandler<CollectionPropertiesQueriesHandlerImpl.Query> {
+public interface CollectionPropertiesQueriesHandler
+    extends QueriesHandler<CollectionPropertiesQueriesHandlerImpl.Query> {
 
-  enum Query implements QueryIdentifier {COLLECTION_PROPERTIES}
+  enum Query implements QueryIdentifier {
+    COLLECTION_PROPERTIES
+  }
 
   @Value.Immutable
   interface QueryInputCollectionProperties extends QueryInput {
@@ -27,5 +30,4 @@ public interface CollectionPropertiesQueriesHandler extends QueriesHandler<Colle
 
     boolean getIncludeLinkHeader();
   }
-
 }

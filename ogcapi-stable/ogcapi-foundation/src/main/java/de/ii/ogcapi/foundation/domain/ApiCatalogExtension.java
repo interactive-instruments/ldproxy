@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,12 +15,15 @@ import java.util.Optional;
 @AutoMultiBind
 public interface ApiCatalogExtension extends ContentExtension {
 
-    ImmutableApiCatalog.Builder process(ImmutableApiCatalog.Builder apiCatalogBuilder,
-                                        URICustomizer uriCustomizer,
-                                        ApiMediaType mediaType,
-                                        List<ApiMediaType> alternateMediaTypes,
-                                        Optional<Locale> language);
+  ImmutableApiCatalog.Builder process(
+      ImmutableApiCatalog.Builder apiCatalogBuilder,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language);
 
-    @Override
-    default String getResourceName() { return "API Catalog"; }
+  @Override
+  default String getResourceName() {
+    return "API Catalog";
+  }
 }

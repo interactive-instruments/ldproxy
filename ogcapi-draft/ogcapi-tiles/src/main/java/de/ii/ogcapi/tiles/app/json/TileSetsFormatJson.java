@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,7 +8,6 @@
 package de.ii.ogcapi.tiles.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -19,10 +18,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetData;
 import io.swagger.v3.oas.models.media.Schema;
-
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -33,42 +29,43 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class TileSetsFormatJson implements TileSetsFormatExtension {
 
-    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .label("JSON")
-            .parameter("json")
-            .build();
+  public static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.APPLICATION_JSON_TYPE)
+          .label("JSON")
+          .parameter("json")
+          .build();
 
-    private final Schema<?> schemaTiles;
-    private final Map<String, Schema<?>> referencedSchemas;
+  private final Schema<?> schemaTiles;
+  private final Map<String, Schema<?>> referencedSchemas;
 
-    @Inject
-    public TileSetsFormatJson(ClassSchemaCache classSchemaCache) {
-        schemaTiles = classSchemaCache.getSchema(TileSets.class);
-        referencedSchemas = classSchemaCache.getReferencedSchemas(TileSets.class);
-    }
+  @Inject
+  public TileSetsFormatJson(ClassSchemaCache classSchemaCache) {
+    schemaTiles = classSchemaCache.getSchema(TileSets.class);
+    referencedSchemas = classSchemaCache.getReferencedSchemas(TileSets.class);
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        if (path.endsWith("/tiles"))
-            return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaTiles)
-                .schemaRef(TileSets.SCHEMA_REF)
-                .referencedSchemas(referencedSchemas)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    if (path.endsWith("/tiles"))
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(schemaTiles)
+          .schemaRef(TileSets.SCHEMA_REF)
+          .referencedSchemas(referencedSchemas)
+          .ogcApiMediaType(MEDIA_TYPE)
+          .build();
 
-        throw new RuntimeException("Unexpected path: " + path);
-    }
+    throw new RuntimeException("Unexpected path: " + path);
+  }
 
-    @Override
-    public Object getTileSetsEntity(TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext) {
-        return tiles;
-    }
-
+  @Override
+  public Object getTileSetsEntity(
+      TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext) {
+    return tiles;
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,36 +10,36 @@ package de.ii.ogcapi.features.core.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Funnel;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaRef extends JsonSchema {
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaRef> FUNNEL = (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaRef> FUNNEL =
+      (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
 
-    @JsonProperty("$ref")
-    @Value.Derived
-    public String getRef() {
-        return String.format("#/%s/%s", getDefsName(), getObjectType());
-    }
+  @JsonProperty("$ref")
+  @Value.Derived
+  public String getRef() {
+    return String.format("#/%s/%s", getDefsName(), getObjectType());
+  }
 
-    @JsonIgnore
-    @Value.Auxiliary
-    public String getDefsName() {
-        return "$defs";
-    }
+  @JsonIgnore
+  @Value.Auxiliary
+  public String getDefsName() {
+    return "$defs";
+  }
 
-    @JsonIgnore
-    @Value.Auxiliary
-    public abstract String getObjectType();
+  @JsonIgnore
+  @Value.Auxiliary
+  public abstract String getObjectType();
 
-    @JsonIgnore
-    @Nullable
-    @Value.Auxiliary
-    public abstract JsonSchema getDef();
+  @JsonIgnore
+  @Nullable
+  @Value.Auxiliary
+  public abstract JsonSchema getDef();
 }

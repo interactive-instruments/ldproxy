@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,9 +10,6 @@ package de.ii.ogcapi.collections.domain;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import org.immutables.value.Value;
 
-/**
- * A resource that represents data.
- */
+/** A resource that represents data. */
 @Value.Immutable
-public interface OgcApiResourceData extends OgcApiResource {
-}
+public interface OgcApiResourceData extends OgcApiResource {}

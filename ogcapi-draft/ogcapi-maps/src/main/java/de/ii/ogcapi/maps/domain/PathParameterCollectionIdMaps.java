@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.maps.domain;
 
-
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -15,61 +15,68 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
 public class PathParameterCollectionIdMaps extends AbstractPathParameterCollectionId {
 
-    @Inject
-    PathParameterCollectionIdMaps(SchemaValidator schemaValidator) {
-      super(schemaValidator);
+  @Inject
+  PathParameterCollectionIdMaps(SchemaValidator schemaValidator) {
+    super(schemaValidator);
+  }
+
+  @Override
+  public List<String> getValues(OgcApiDataV2 apiData) {
+    if (!apiCollectionMap.containsKey(apiData.hashCode())) {
+      apiCollectionMap.put(
+          apiData.hashCode(),
+          apiData.getCollections().values().stream()
+              .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+              .filter(
+                  collection ->
+                      collection
+                          .getExtension(TilesConfiguration.class)
+                          .filter(ExtensionConfiguration::isEnabled)
+                          .isPresent())
+              .map(FeatureTypeConfiguration::getId)
+              .collect(Collectors.toUnmodifiableList()));
     }
 
-    @Override
-    public List<String> getValues(OgcApiDataV2 apiData) {
-        if (!apiCollectionMap.containsKey(apiData.hashCode())) {
-            apiCollectionMap.put(apiData.hashCode(), apiData.getCollections().values()
-                                                            .stream()
-                                                            .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                                                            .filter(collection -> collection.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled).isPresent())
-                                                            .map(FeatureTypeConfiguration::getId)
-                                                            .collect(Collectors.toUnmodifiableList()));
-        }
+    return apiCollectionMap.get(apiData.hashCode());
+  }
 
-        return apiCollectionMap.get(apiData.hashCode());
-    }
+  @Override
+  public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) {
+    return false;
+  }
 
-    @Override
-    public boolean isExplodeInOpenApi(OgcApiDataV2 apiData) { return false; }
+  @Override
+  public String getId() {
+    return "collectionIdMapTiles";
+  }
 
-    @Override
-    public String getId() {
-        return "collectionIdMapTiles";
-    }
+  @Override
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.startsWith("/collections/{collectionId}/map/tiles");
+  }
 
-    @Override
-    public boolean matchesPath(String definitionPath) {
-        return definitionPath.startsWith("/collections/{collectionId}/map/tiles");
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return MapTilesConfiguration.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return MapTilesConfiguration.class;
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        final FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        return super.isEnabledForApi(apiData, collectionId) &&
-            Objects.nonNull(collectionData) &&
-            isExtensionEnabled(collectionData, TilesConfiguration.class) &&
-            collectionData.getEnabled();
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    final FeatureTypeConfigurationOgcApi collectionData =
+        apiData.getCollections().get(collectionId);
+    return super.isEnabledForApi(apiData, collectionId)
+        && Objects.nonNull(collectionData)
+        && isExtensionEnabled(collectionData, TilesConfiguration.class)
+        && collectionData.getEnabled();
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,20 +7,18 @@
  */
 package de.ii.ogcapi.crs.app;
 
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.collections.domain.CollectionsExtension;
 import de.ii.ogcapi.collections.domain.ImmutableCollections;
 import de.ii.ogcapi.collections.domain.ImmutableCollections.Builder;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.collections.domain.CollectionsExtension;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -34,37 +32,37 @@ import javax.inject.Singleton;
 @AutoBind
 public class CrsOnCollections implements CollectionsExtension {
 
-    private final CrsSupport crsSupport;
+  private final CrsSupport crsSupport;
 
-    @Inject
-    public CrsOnCollections(CrsSupport crsSupport) {
-        this.crsSupport = crsSupport;
+  @Inject
+  public CrsOnCollections(CrsSupport crsSupport) {
+    this.crsSupport = crsSupport;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CrsConfiguration.class;
+  }
+
+  @Override
+  public ImmutableCollections.Builder process(
+      Builder collectionsBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+    if (isExtensionEnabled(api.getData(), CrsConfiguration.class)) {
+
+      // list all CRSs as the list of default CRSs
+      ImmutableList<String> crsList =
+          crsSupport.getSupportedCrsList(api.getData()).stream()
+              .map(EpsgCrs::toUriString)
+              .collect(ImmutableList.toImmutableList());
+
+      collectionsBuilder.crs(crsList);
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CrsConfiguration.class;
-    }
-
-    @Override
-    public ImmutableCollections.Builder process(Builder collectionsBuilder,
-                                                OgcApi api,
-                                                URICustomizer uriCustomizer,
-                                                ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes,
-                                                Optional<Locale> language) {
-        if (isExtensionEnabled(api.getData(), CrsConfiguration.class)) {
-
-            // list all CRSs as the list of default CRSs
-            ImmutableList<String> crsList = crsSupport.getSupportedCrsList(api.getData())
-                                                      .stream()
-                                                      .map(EpsgCrs::toUriString)
-                                                      .collect(ImmutableList.toImmutableList());
-
-            collectionsBuilder.crs(crsList);
-        }
-
-        return collectionsBuilder;
-    }
-
+    return collectionsBuilder;
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,24 +7,24 @@
  */
 package de.ii.ogcapi.features.cityjson.domain;
 
+import static de.ii.xtraplatform.base.domain.util.LambdaWithException.consumerMayThrow;
+
 import com.google.common.collect.ImmutableCollection;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext.Event;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoderDefault;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import javax.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static de.ii.xtraplatform.base.domain.util.LambdaWithException.consumerMayThrow;
-
-public class FeatureEncoderCityJson extends FeatureTokenEncoderDefault<EncodingAwareContextCityJson> {
+public class FeatureEncoderCityJson
+    extends FeatureTokenEncoderDefault<EncodingAwareContextCityJson> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderCityJson.class);
 
@@ -36,8 +36,9 @@ public class FeatureEncoderCityJson extends FeatureTokenEncoderDefault<EncodingA
   private long featureCount;
   private long featuresDuration;
 
-  public FeatureEncoderCityJson(FeatureTransformationContextCityJson transformationContext,
-                                ImmutableCollection<CityJsonWriter> featureWriters) {
+  public FeatureEncoderCityJson(
+      FeatureTransformationContextCityJson transformationContext,
+      ImmutableCollection<CityJsonWriter> featureWriters) {
     super();
     this.transformationContext = transformationContext;
     this.featureWriters = featureWriters;
@@ -45,12 +46,14 @@ public class FeatureEncoderCityJson extends FeatureTokenEncoderDefault<EncodingA
 
   private Consumer<EncodingAwareContextCityJson> executePipeline(
       final Iterator<CityJsonWriter> featureWriterIterator) {
-    return consumerMayThrow(nextTransformationContext -> {
-      if (featureWriterIterator.hasNext()) {
-        featureWriterIterator.next()
-                             .onEvent(nextTransformationContext, this.executePipeline(featureWriterIterator));
-      }
-    });
+    return consumerMayThrow(
+        nextTransformationContext -> {
+          if (featureWriterIterator.hasNext()) {
+            featureWriterIterator
+                .next()
+                .onEvent(nextTransformationContext, this.executePipeline(featureWriterIterator));
+          }
+        });
   }
 
   @Override
@@ -58,7 +61,8 @@ public class FeatureEncoderCityJson extends FeatureTokenEncoderDefault<EncodingA
     this.processingStart = System.nanoTime();
 
     if (transformationContext.getOutputStream() instanceof OutputStreamToByteConsumer) {
-      ((OutputStreamToByteConsumer) transformationContext.getOutputStream()).setByteConsumer(this::push);
+      ((OutputStreamToByteConsumer) transformationContext.getOutputStream())
+          .setByteConsumer(this::push);
     }
 
     getState().setNumberReturned(context.metadata().getNumberReturned());
@@ -73,8 +77,7 @@ public class FeatureEncoderCityJson extends FeatureTokenEncoderDefault<EncodingA
     executePipeline(featureWriters.iterator()).accept(context);
 
     try {
-      transformationContext.getJson()
-                           .close();
+      transformationContext.getJson().close();
     } catch (IOException e) {
       if (LOGGER.isErrorEnabled()) {
         LOGGER.error("Error while closing the JSON generator for CityJSON.", e);
@@ -87,9 +90,15 @@ public class FeatureEncoderCityJson extends FeatureTokenEncoderDefault<EncodingA
     if (LOGGER.isDebugEnabled()) {
       long transformerDuration = toMilliseconds(System.nanoTime() - transformerStart);
       long processingDuration = toMilliseconds(System.nanoTime() - processingStart);
-      String text = String.format("Collection %s. CityJSON features returned: %d, total duration: %dms, processing: %dms, feature processing: %dms, average feature processing: %dms.",
-                                  context.encoding().getCollectionId(), featureCount,
-                                  transformerDuration, processingDuration, toMilliseconds(featuresDuration), featureCount == 0 ? 0 : toMilliseconds(featuresDuration / featureCount));
+      String text =
+          String.format(
+              "Collection %s. CityJSON features returned: %d, total duration: %dms, processing: %dms, feature processing: %dms, average feature processing: %dms.",
+              context.encoding().getCollectionId(),
+              featureCount,
+              transformerDuration,
+              processingDuration,
+              toMilliseconds(featuresDuration),
+              featureCount == 0 ? 0 : toMilliseconds(featuresDuration / featureCount));
       if (processingDuration > 200) {
         LOGGER.debug(text);
       } else if (LOGGER.isTraceEnabled()) {
@@ -117,7 +126,7 @@ public class FeatureEncoderCityJson extends FeatureTokenEncoderDefault<EncodingA
     // write vertices in case of text sequences
     executePipeline(featureWriters.iterator()).accept(context);
 
-    this.featuresDuration += System.nanoTime()-featureStart;
+    this.featuresDuration += System.nanoTime() - featureStart;
     this.featureCount++;
   }
 

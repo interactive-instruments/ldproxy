@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,15 +17,15 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableTilePoint.Builder.class)
-public
-interface TilePoint {
-    List<Double> getCoordinates();
-    Optional<String> getTileMatrix();
+public interface TilePoint {
+  List<Double> getCoordinates();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<TilePoint> FUNNEL = (from, into) -> {
-        from.getCoordinates()
-            .forEach(into::putDouble);
+  Optional<String> getTileMatrix();
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<TilePoint> FUNNEL =
+      (from, into) -> {
+        from.getCoordinates().forEach(into::putDouble);
         from.getTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-    };
+      };
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,16 +12,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import org.immutables.value.Value;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
 
 public interface Geometry<T> {
 
-  enum Type {Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon}
+  enum Type {
+    Point,
+    LineString,
+    Polygon,
+    MultiPoint,
+    MultiLineString,
+    MultiPolygon
+  }
 
   Type getType();
 
@@ -39,26 +45,22 @@ public interface Geometry<T> {
   interface Point extends Geometry<Coordinate> {
 
     static Point of(double x, double y) {
-      return new ImmutablePoint.Builder().addCoordinates(Coordinate.of(x, y))
-          .build();
+      return new ImmutablePoint.Builder().addCoordinates(Coordinate.of(x, y)).build();
     }
 
     static Point of(double x, double y, double z) {
-      return new ImmutablePoint.Builder().addCoordinates(Coordinate.of(x, y, z))
-          .build();
+      return new ImmutablePoint.Builder().addCoordinates(Coordinate.of(x, y, z)).build();
     }
 
     static Point of(List<Double> xyz) {
-      if (xyz.size()==2)
-        return Point.of(xyz.get(0), xyz.get(1));
-      else if (xyz.size()==3)
-        return Point.of(xyz.get(0), xyz.get(1), xyz.get(2));
-      throw new IllegalArgumentException(String.format("A coordinate requires 2 or 3 values. Found: %s", xyz));
+      if (xyz.size() == 2) return Point.of(xyz.get(0), xyz.get(1));
+      else if (xyz.size() == 3) return Point.of(xyz.get(0), xyz.get(1), xyz.get(2));
+      throw new IllegalArgumentException(
+          String.format("A coordinate requires 2 or 3 values. Found: %s", xyz));
     }
 
     static Point of(Coordinate coordinate) {
-      return new ImmutablePoint.Builder().addCoordinates(coordinate)
-          .build();
+      return new ImmutablePoint.Builder().addCoordinates(coordinate).build();
     }
 
     @Override
@@ -74,19 +76,21 @@ public interface Geometry<T> {
     @Value.Derived
     @Value.Auxiliary
     default boolean is3d() {
-      return getCoordinates().get(0).size()==3;
+      return getCoordinates().get(0).size() == 3;
     }
 
     @Value.Check
     default void check() {
-      Preconditions.checkState(getCoordinates().size() == 1, "A point must have only one coordinate, found %d coordinates.", getCoordinates().size());
+      Preconditions.checkState(
+          getCoordinates().size() == 1,
+          "A point must have only one coordinate, found %d coordinates.",
+          getCoordinates().size());
     }
 
     @Override
     default Type getType() {
       return Type.Point;
     }
-
   }
 
   @Value.Immutable
@@ -94,13 +98,11 @@ public interface Geometry<T> {
   interface LineString extends Geometry<Coordinate> {
 
     static LineString of(Coordinate... coordinates) {
-      return new ImmutableLineString.Builder().addCoordinates(coordinates)
-          .build();
+      return new ImmutableLineString.Builder().addCoordinates(coordinates).build();
     }
 
     static LineString of(List<Coordinate> coordinates) {
-      return new ImmutableLineString.Builder().addAllCoordinates(coordinates)
-          .build();
+      return new ImmutableLineString.Builder().addAllCoordinates(coordinates).build();
     }
 
     @Override
@@ -116,22 +118,26 @@ public interface Geometry<T> {
     @Value.Derived
     @Value.Auxiliary
     default boolean is3d() {
-      return getCoordinates().get(0).size()==3;
+      return getCoordinates().get(0).size() == 3;
     }
 
     @Value.Check
     default void check() {
-      Preconditions.checkState(getCoordinates().size() > 1, "A line string must have at least two coordinates, found %d coordiantes.", getCoordinates().size());
+      Preconditions.checkState(
+          getCoordinates().size() > 1,
+          "A line string must have at least two coordinates, found %d coordiantes.",
+          getCoordinates().size());
       List<Coordinate> coords = getCoordinatesFlat();
-      Preconditions.checkState(coords.stream().skip(1).allMatch(c -> c.size()==coords.get(0).size()),
-                               "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.", coords.size());
+      Preconditions.checkState(
+          coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
+          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          coords.size());
     }
 
     @Override
     default Type getType() {
       return Type.LineString;
     }
-
   }
 
   @Value.Immutable
@@ -139,25 +145,19 @@ public interface Geometry<T> {
   interface Polygon extends Geometry<LineString> {
 
     static Polygon of(LineString... rings) {
-      return new ImmutablePolygon.Builder().addCoordinates(rings)
-          .build();
+      return new ImmutablePolygon.Builder().addCoordinates(rings).build();
     }
 
     static Polygon of(EpsgCrs crs, LineString... rings) {
-      return new ImmutablePolygon.Builder().crs(crs)
-          .addCoordinates(rings)
-          .build();
+      return new ImmutablePolygon.Builder().crs(crs).addCoordinates(rings).build();
     }
 
     static Polygon of(List<LineString> rings) {
-      return new ImmutablePolygon.Builder().addAllCoordinates(rings)
-          .build();
+      return new ImmutablePolygon.Builder().addAllCoordinates(rings).build();
     }
 
     static Polygon of(EpsgCrs crs, List<LineString> rings) {
-      return new ImmutablePolygon.Builder().crs(crs)
-          .addAllCoordinates(rings)
-          .build();
+      return new ImmutablePolygon.Builder().crs(crs).addAllCoordinates(rings).build();
     }
 
     @Override
@@ -176,23 +176,32 @@ public interface Geometry<T> {
     @Value.Derived
     @Value.Auxiliary
     default boolean is3d() {
-      return getCoordinates().get(0).getCoordinates().get(0).size()==3;
+      return getCoordinates().get(0).getCoordinates().get(0).size() == 3;
     }
 
     @Value.Check
     default void check() {
-      Preconditions.checkState(!getCoordinates().isEmpty(), "A polygon must have at least an outer ring, no ring was found.");
-      getCoordinates().forEach(ring -> Preconditions.checkState(ring.getCoordinates().size() > 3, "Each ring must have at least 4 coordinates, found: %d.", ring.getCoordinates().size()));
+      Preconditions.checkState(
+          !getCoordinates().isEmpty(),
+          "A polygon must have at least an outer ring, no ring was found.");
+      getCoordinates()
+          .forEach(
+              ring ->
+                  Preconditions.checkState(
+                      ring.getCoordinates().size() > 3,
+                      "Each ring must have at least 4 coordinates, found: %d.",
+                      ring.getCoordinates().size()));
       List<Coordinate> coords = getCoordinatesFlat();
-      Preconditions.checkState(coords.stream().skip(1).allMatch(c -> c.size()==coords.get(0).size()),
-                               "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.", coords.size());
+      Preconditions.checkState(
+          coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
+          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          coords.size());
     }
 
     @Override
     default Type getType() {
       return Type.Polygon;
     }
-
   }
 
   @Value.Immutable
@@ -200,13 +209,11 @@ public interface Geometry<T> {
   interface MultiPoint extends Geometry<Point> {
 
     static MultiPoint of(Point... points) {
-      return new ImmutableMultiPoint.Builder().addCoordinates(points)
-          .build();
+      return new ImmutableMultiPoint.Builder().addCoordinates(points).build();
     }
 
     static MultiPoint of(List<Point> points) {
-      return new ImmutableMultiPoint.Builder().addAllCoordinates(points)
-          .build();
+      return new ImmutableMultiPoint.Builder().addAllCoordinates(points).build();
     }
 
     @Override
@@ -231,15 +238,16 @@ public interface Geometry<T> {
     @Value.Check
     default void check() {
       List<Coordinate> coords = getCoordinatesFlat();
-      Preconditions.checkState(coords.stream().skip(1).allMatch(c -> c.size()==coords.get(0).size()),
-                               "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.", coords.size());
+      Preconditions.checkState(
+          coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
+          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          coords.size());
     }
 
     @Override
     default Type getType() {
       return Type.MultiPoint;
     }
-
   }
 
   @Value.Immutable
@@ -247,13 +255,11 @@ public interface Geometry<T> {
   interface MultiLineString extends Geometry<LineString> {
 
     static MultiLineString of(LineString... lineStrings) {
-      return new ImmutableMultiLineString.Builder().addCoordinates(lineStrings)
-          .build();
+      return new ImmutableMultiLineString.Builder().addCoordinates(lineStrings).build();
     }
 
     static MultiLineString of(List<LineString> lineStrings) {
-      return new ImmutableMultiLineString.Builder().addAllCoordinates(lineStrings)
-          .build();
+      return new ImmutableMultiLineString.Builder().addAllCoordinates(lineStrings).build();
     }
 
     @Override
@@ -278,15 +284,16 @@ public interface Geometry<T> {
     @Value.Check
     default void check() {
       List<Coordinate> coords = getCoordinatesFlat();
-      Preconditions.checkState(coords.stream().skip(1).allMatch(c -> c.size()==coords.get(0).size()),
-                               "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.", coords.size());
+      Preconditions.checkState(
+          coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
+          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          coords.size());
     }
 
     @Override
     default Type getType() {
       return Type.MultiLineString;
     }
-
   }
 
   @Value.Immutable
@@ -294,13 +301,11 @@ public interface Geometry<T> {
   interface MultiPolygon extends Geometry<Polygon> {
 
     static MultiPolygon of(Polygon... polygons) {
-      return new ImmutableMultiPolygon.Builder().addCoordinates(polygons)
-          .build();
+      return new ImmutableMultiPolygon.Builder().addCoordinates(polygons).build();
     }
 
     static MultiPolygon of(List<Polygon> polygons) {
-      return new ImmutableMultiPolygon.Builder().addAllCoordinates(polygons)
-          .build();
+      return new ImmutableMultiPolygon.Builder().addAllCoordinates(polygons).build();
     }
 
     @Override
@@ -327,15 +332,16 @@ public interface Geometry<T> {
     @Value.Check
     default void check() {
       List<Coordinate> coords = getCoordinatesFlat();
-      Preconditions.checkState(coords.stream().skip(1).allMatch(c -> c.size()==coords.get(0).size()),
-                               "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.", coords.size());
+      Preconditions.checkState(
+          coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
+          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          coords.size());
     }
 
     @Override
     default Type getType() {
       return Type.MultiPolygon;
     }
-
   }
 
   class Coordinate extends ArrayList<Double> {
@@ -349,11 +355,10 @@ public interface Geometry<T> {
     }
 
     public static Coordinate of(List<Double> xyz) {
-      if (xyz.size()==2)
-        return new Coordinate(xyz.get(0), xyz.get(1));
-      else if (xyz.size()==3)
-        return new Coordinate(xyz.get(0), xyz.get(1), xyz.get(2));
-      throw new IllegalArgumentException(String.format("A coordinate requires 2 or 3 values. Found: %s", xyz));
+      if (xyz.size() == 2) return new Coordinate(xyz.get(0), xyz.get(1));
+      else if (xyz.size() == 3) return new Coordinate(xyz.get(0), xyz.get(1), xyz.get(2));
+      throw new IllegalArgumentException(
+          String.format("A coordinate requires 2 or 3 values. Found: %s", xyz));
     }
 
     public Coordinate(double x, double y) {
@@ -367,5 +372,4 @@ public interface Geometry<T> {
       add(z);
     }
   }
-
 }

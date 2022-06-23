@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -6,6 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.foundation.infra.rest;
+
+import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_DUMMY;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableSet;
@@ -25,8 +27,14 @@ import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
-import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
-
+import java.net.URI;
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -40,82 +48,83 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
-import java.net.URI;
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_DUMMY;
+import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 
 @Singleton
 @AutoBind
 @PermitAll
 public class ApiRequestDispatcher implements ServiceEndpoint {
 
-    private static final Set<String> NOCONTENT_METHODS = ImmutableSet.of("POST", "PUT", "DELETE", "PATCH");
-    private static final ApiMediaType DEFAULT_MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "json"))
-            .label("JSON")
-            .parameter("json")
-            .build();
+  private static final Set<String> NOCONTENT_METHODS =
+      ImmutableSet.of("POST", "PUT", "DELETE", "PATCH");
+  private static final ApiMediaType DEFAULT_MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "json"))
+          .label("JSON")
+          .parameter("json")
+          .build();
 
-    private final ExtensionRegistry extensionRegistry;
-    private final RequestInjectableContext ogcApiInjectableContext;
-    private final URI servicesUri;
-    private final ContentNegotiationMediaType contentNegotiationMediaType;
-    private final ContentNegotiationLanguage contentNegotiationLanguage;
+  private final ExtensionRegistry extensionRegistry;
+  private final RequestInjectableContext ogcApiInjectableContext;
+  private final URI servicesUri;
+  private final ContentNegotiationMediaType contentNegotiationMediaType;
+  private final ContentNegotiationLanguage contentNegotiationLanguage;
 
-    @Inject
-    ApiRequestDispatcher(ExtensionRegistry extensionRegistry,
-                         RequestInjectableContext ogcApiInjectableContext,
-                         ServicesContext servicesContext,
-                         ContentNegotiationMediaType contentNegotiationMediaType,
-                         ContentNegotiationLanguage contentNegotiationLanguage) {
-        this.extensionRegistry = extensionRegistry;
-        this.ogcApiInjectableContext = ogcApiInjectableContext;
-        this.servicesUri = servicesContext.getUri();
-        this.contentNegotiationMediaType = contentNegotiationMediaType;
-        this.contentNegotiationLanguage = contentNegotiationLanguage;
-    }
+  @Inject
+  ApiRequestDispatcher(
+      ExtensionRegistry extensionRegistry,
+      RequestInjectableContext ogcApiInjectableContext,
+      ServicesContext servicesContext,
+      ContentNegotiationMediaType contentNegotiationMediaType,
+      ContentNegotiationLanguage contentNegotiationLanguage) {
+    this.extensionRegistry = extensionRegistry;
+    this.ogcApiInjectableContext = ogcApiInjectableContext;
+    this.servicesUri = servicesContext.getUri();
+    this.contentNegotiationMediaType = contentNegotiationMediaType;
+    this.contentNegotiationLanguage = contentNegotiationLanguage;
+  }
 
-    @Override
-    public String getServiceType() {
-        return OgcApiDataV2.SERVICE_TYPE;
-    }
+  @Override
+  public String getServiceType() {
+    return OgcApiDataV2.SERVICE_TYPE;
+  }
 
-    @Path("")
-    public EndpointExtension dispatchLandingPageWithoutSlash(@PathParam("entrypoint") String entrypoint, @Context OgcApi service,
-                                                             @Context ContainerRequestContext requestContext, @Context Request request) {
-        return dispatch("", service, requestContext, request);
+  @Path("")
+  public EndpointExtension dispatchLandingPageWithoutSlash(
+      @PathParam("entrypoint") String entrypoint,
+      @Context OgcApi service,
+      @Context ContainerRequestContext requestContext,
+      @Context Request request) {
+    return dispatch("", service, requestContext, request);
+  }
 
-    }
+  @Path("/{entrypoint: [^/]*}")
+  public EndpointExtension dispatch(
+      @PathParam("entrypoint") String entrypoint,
+      @Context OgcApi service,
+      @Context ContainerRequestContext requestContext,
+      @Context Request request) {
 
-    @Path("/{entrypoint: [^/]*}")
-    public EndpointExtension dispatch(@PathParam("entrypoint") String entrypoint, @Context OgcApi service,
-                                      @Context ContainerRequestContext requestContext, @Context Request request) {
+    String subPath = ((UriRoutingContext) requestContext.getUriInfo()).getFinalMatchingGroup();
+    String method = requestContext.getMethod();
 
-        String subPath = ((UriRoutingContext) requestContext.getUriInfo()).getFinalMatchingGroup();
-        String method = requestContext.getMethod();
+    EndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method);
 
-        EndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method);
+    // Check request
+    checkParameterNames(
+        requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
+    validateRequest(requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
 
-        // Check request
-        checkParameterNames(requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
-        validateRequest(requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
+    // Content negotiation
+    ImmutableSet<ApiMediaType> supportedMediaTypes =
+        ogcApiEndpoint.getMediaTypes(service.getData(), subPath, method);
+    ApiMediaType selectedMediaType = selectMediaType(requestContext, supportedMediaTypes, method);
+    Locale selectedLanguage =
+        contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
 
-        // Content negotiation
-        ImmutableSet<ApiMediaType> supportedMediaTypes = ogcApiEndpoint.getMediaTypes(service.getData(), subPath, method);
-        ApiMediaType selectedMediaType = selectMediaType(requestContext, supportedMediaTypes, method);
-        Locale selectedLanguage = contentNegotiationLanguage.negotiateLanguage(requestContext)
-            .orElse(Locale.ENGLISH);
-
-        ApiRequestContext apiRequestContext = new Builder()
-            .requestUri(requestContext.getUriInfo()
-                            .getRequestUri())
+    ApiRequestContext apiRequestContext =
+        new Builder()
+            .requestUri(requestContext.getUriInfo().getRequestUri())
             .request(request)
             .externalUri(getExternalUri())
             .mediaType(selectedMediaType)
@@ -124,149 +133,189 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
             .api(service)
             .build();
 
-        ogcApiInjectableContext.inject(requestContext, apiRequestContext);
+    ogcApiInjectableContext.inject(requestContext, apiRequestContext);
 
-        return ogcApiEndpoint;
-    }
+    return ogcApiEndpoint;
+  }
 
-    private void checkParameterNames(ContainerRequestContext requestContext, OgcApiDataV2 apiData, EndpointExtension ogcApiEndpoint,
-                                     @SuppressWarnings("unused") String entrypoint, String subPath, String method) {
-        Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
-        List<OgcApiQueryParameter> knownParameters = ogcApiEndpoint.getParameters(apiData, subPath, method);
-        Set<String> unknownParameters = parameters.stream()
-            .filter(parameter -> knownParameters.stream().noneMatch(param -> param.getName().equalsIgnoreCase(parameter)))
+  private void checkParameterNames(
+      ContainerRequestContext requestContext,
+      OgcApiDataV2 apiData,
+      EndpointExtension ogcApiEndpoint,
+      @SuppressWarnings("unused") String entrypoint,
+      String subPath,
+      String method) {
+    Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
+    List<OgcApiQueryParameter> knownParameters =
+        ogcApiEndpoint.getParameters(apiData, subPath, method);
+    Set<String> unknownParameters =
+        parameters.stream()
+            .filter(
+                parameter ->
+                    knownParameters.stream()
+                        .noneMatch(param -> param.getName().equalsIgnoreCase(parameter)))
             .collect(Collectors.toSet());
-        if (!unknownParameters.isEmpty()) {
-            throw new BadRequestException("The following query parameters are rejected: " +
-                                              String.join(", ", unknownParameters) +
-                                              ". Valid parameters for this request are: " +
-                                              knownParameters.stream().map(ParameterExtension::getName).collect(Collectors.joining(", ")));
-        }
+    if (!unknownParameters.isEmpty()) {
+      throw new BadRequestException(
+          "The following query parameters are rejected: "
+              + String.join(", ", unknownParameters)
+              + ". Valid parameters for this request are: "
+              + knownParameters.stream()
+                  .map(ParameterExtension::getName)
+                  .collect(Collectors.joining(", ")));
+    }
+  }
+
+  private void validateRequest(
+      ContainerRequestContext requestContext,
+      OgcApiDataV2 apiData,
+      EndpointExtension ogcApiEndpoint,
+      String entrypoint,
+      String subPath,
+      String method) {
+    ApiEndpointDefinition apiDef = ogcApiEndpoint.getDefinition(apiData);
+    if (!apiDef.getResources().isEmpty()) {
+      // check that the subPath is valid
+      OgcApiResource resource = apiDef.getResource("/" + entrypoint + subPath).orElse(null);
+      if (resource == null) {
+        throw new NotFoundException("The requested path is not a resource in this API.");
+      }
+
+      // no need to check the path parameters here, only the parent path parameters (service,
+      // endpoint) are available;
+      // path parameters in the sub-path have to be checked later
+      ApiOperation operation = apiDef.getOperation(resource, method).orElse(null);
+      if (operation == null) {
+        throw notAllowedOrNotFound(getMethods(apiData, entrypoint, subPath));
+      }
+
+      Optional<String> collectionId = resource.getCollectionId(apiData);
+
+      // validate query parameters
+      requestContext
+          .getUriInfo()
+          .getQueryParameters()
+          .forEach(
+              (name, values) ->
+                  operation.getQueryParameters().stream()
+                      .filter(param -> param.getName().equalsIgnoreCase(name))
+                      .forEach(
+                          param -> {
+                            Optional<String> result = param.validate(apiData, collectionId, values);
+                            if (result.isPresent()) {
+                              throw new BadRequestException(result.get());
+                            }
+                          }));
+    }
+  }
+
+  private RuntimeException notAllowedOrNotFound(Set<String> methods) {
+    if (methods.isEmpty()) {
+      return new NotFoundException("The requested path is not a resource in this API.");
+    } else {
+      String first = methods.stream().findFirst().get();
+      String[] more =
+          methods.stream().filter(method -> !method.equals(first)).toArray(String[]::new);
+      return new NotAllowedException(first, more);
+    }
+  }
+
+  private ApiMediaType selectMediaType(
+      ContainerRequestContext requestContext,
+      Set<ApiMediaType> supportedMediaTypes,
+      String method) {
+    if (supportedMediaTypes.isEmpty() && NOCONTENT_METHODS.contains(method)) {
+      return DEFAULT_MEDIA_TYPE;
     }
 
-    private void validateRequest(ContainerRequestContext requestContext, OgcApiDataV2 apiData,
-                                 EndpointExtension ogcApiEndpoint, String entrypoint, String subPath, String method) {
-        ApiEndpointDefinition apiDef = ogcApiEndpoint.getDefinition(apiData);
-        if (!apiDef.getResources().isEmpty()) {
-            // check that the subPath is valid
-            OgcApiResource resource = apiDef.getResource("/" + entrypoint + subPath).orElse(null);
-            if (resource==null) {
-                throw new NotFoundException("The requested path is not a resource in this API.");
-            }
+    return contentNegotiationMediaType
+        .negotiateMediaType(requestContext, supportedMediaTypes)
+        .orElseThrow(
+            () ->
+                new NotAcceptableException(
+                    MessageFormat.format(
+                        "The Accept header ''{0}'' does not match any of the supported media types for this resource: {1}.",
+                        requestContext.getHeaderString("Accept"),
+                        supportedMediaTypes.stream()
+                            .map(mediaType -> mediaType.type().toString())
+                            .collect(Collectors.toList()))));
+  }
 
-            // no need to check the path parameters here, only the parent path parameters (service, endpoint) are available;
-            // path parameters in the sub-path have to be checked later
-            ApiOperation operation = apiDef.getOperation(resource, method).orElse(null);
-            if (operation==null) {
-                throw notAllowedOrNotFound(getMethods(apiData, entrypoint, subPath));
-            }
+  private Set<ApiMediaType> getAlternateMediaTypes(
+      ApiMediaType selectedMediaType, Set<ApiMediaType> mediaTypes) {
+    return mediaTypes.stream()
+        .filter(mediaType -> !Objects.equals(mediaType, selectedMediaType))
+        .collect(ImmutableSet.toImmutableSet());
+  }
 
-            Optional<String> collectionId = resource.getCollectionId(apiData);
-
-            // validate query parameters
-            requestContext.getUriInfo()
-                .getQueryParameters()
-                .forEach((name, values) -> operation.getQueryParameters()
-                    .stream()
-                    .filter(param -> param.getName().equalsIgnoreCase(name))
-                    .forEach(param -> {
-                        Optional<String> result = param.validate(apiData, collectionId, values);
-                        if (result.isPresent()) {
-                            throw new BadRequestException(result.get());
-                        }
-                    }));
-        }
-    }
-
-    private RuntimeException notAllowedOrNotFound(Set<String> methods) {
-        if (methods.isEmpty()) {
-            return new NotFoundException("The requested path is not a resource in this API.");
-        } else {
-            String first = methods.stream().findFirst().get();
-            String[] more = methods.stream()
-                .filter(method -> !method.equals(first))
-                .toArray(String[]::new);
-            return new NotAllowedException(first,more);
-        }
-    }
-
-    private ApiMediaType selectMediaType(ContainerRequestContext requestContext, Set<ApiMediaType> supportedMediaTypes, String method) {
-        if (supportedMediaTypes.isEmpty() && NOCONTENT_METHODS.contains(method)) {
-            return DEFAULT_MEDIA_TYPE;
-        }
-
-        return contentNegotiationMediaType
-            .negotiateMediaType(requestContext, supportedMediaTypes)
-            .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The Accept header ''{0}'' does not match any of the supported media types for this resource: {1}.", requestContext.getHeaderString("Accept"), supportedMediaTypes.stream().map(mediaType -> mediaType.type().toString()).collect(Collectors.toList()))));
-    }
-
-    private Set<ApiMediaType> getAlternateMediaTypes(ApiMediaType selectedMediaType,
-                                                     Set<ApiMediaType> mediaTypes) {
-        return mediaTypes.stream()
-                         .filter(mediaType -> !Objects.equals(mediaType, selectedMediaType))
-                         .collect(ImmutableSet.toImmutableSet());
-    }
-
-    private EndpointExtension findEndpoint(OgcApiDataV2 dataset,
-                                           @PathParam("entrypoint") String entrypoint,
-                                           String subPath, String method) {
-        if ("OPTIONS".equals(method)) {
-            // special treatment for OPTIONS
-            // check that the resource exists and in that case use the general endpoint for all OPTIONS requests
-            boolean resourceExists = getEndpoints().stream()
-                    .filter(endpoint -> endpoint.isEnabledForApi(dataset))
-                    .anyMatch(endpoint -> {
-                        ApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
-                        if (apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY) {
-                            return apiDef.matches("/" + entrypoint + subPath, null);
-                        }
-                        return false;
-                    });
-            if (!resourceExists) {
-                throw new NotFoundException("The requested path is not a resource in this API.");
-            }
-
-            return getEndpoints().stream()
-                .filter(endpoint -> endpoint.getClass()== OptionsEndpoint.class)
-                .findAny()
-                .orElseThrow(() -> notAllowedOrNotFound(getMethods(dataset, entrypoint, subPath)));
-        }
-
-        return getEndpoints().stream()
-            .filter(endpoint -> endpoint.isEnabledForApi(dataset))
-            .filter(endpoint -> {
-                ApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
-                if (apiDef!=null && apiDef.getSortPriority()!=SORT_PRIORITY_DUMMY) {
-                    return apiDef.matches("/" + entrypoint + subPath, method);
-                }
-                return false;
-            })
-            .findFirst()
-            .orElseThrow(() -> notAllowedOrNotFound(getMethods(dataset, entrypoint, subPath)));
-    }
-
-    private Set<String> getMethods(OgcApiDataV2 dataset,
-                                   @PathParam("entrypoint") String entrypoint,
-                                   String subPath) {
-        return getEndpoints().stream()
-                .map(endpoint -> {
+  private EndpointExtension findEndpoint(
+      OgcApiDataV2 dataset,
+      @PathParam("entrypoint") String entrypoint,
+      String subPath,
+      String method) {
+    if ("OPTIONS".equals(method)) {
+      // special treatment for OPTIONS
+      // check that the resource exists and in that case use the general endpoint for all OPTIONS
+      // requests
+      boolean resourceExists =
+          getEndpoints().stream()
+              .filter(endpoint -> endpoint.isEnabledForApi(dataset))
+              .anyMatch(
+                  endpoint -> {
                     ApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
-                    if (!apiDef.getResources().isEmpty()) {
-                        Optional<OgcApiResource> resource = apiDef.getResource("/" + entrypoint + subPath);
-                        return resource.map(ogcApiResource -> ogcApiResource.getOperations().keySet()).orElse(null);
+                    if (apiDef.getSortPriority() != SORT_PRIORITY_DUMMY) {
+                      return apiDef.matches("/" + entrypoint + subPath, null);
                     }
-                    return null;
-                })
-                .filter(Objects::nonNull)
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+                    return false;
+                  });
+      if (!resourceExists) {
+        throw new NotFoundException("The requested path is not a resource in this API.");
+      }
+
+      return getEndpoints().stream()
+          .filter(endpoint -> endpoint.getClass() == OptionsEndpoint.class)
+          .findAny()
+          .orElseThrow(() -> notAllowedOrNotFound(getMethods(dataset, entrypoint, subPath)));
     }
 
-    private List<EndpointExtension> getEndpoints() {
-        return extensionRegistry.getExtensionsForType(EndpointExtension.class);
-    }
+    return getEndpoints().stream()
+        .filter(endpoint -> endpoint.isEnabledForApi(dataset))
+        .filter(
+            endpoint -> {
+              ApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
+              if (apiDef != null && apiDef.getSortPriority() != SORT_PRIORITY_DUMMY) {
+                return apiDef.matches("/" + entrypoint + subPath, method);
+              }
+              return false;
+            })
+        .findFirst()
+        .orElseThrow(() -> notAllowedOrNotFound(getMethods(dataset, entrypoint, subPath)));
+  }
 
-    private Optional<URI> getExternalUri() {
-        return Optional.of(servicesUri);
-    }
+  private Set<String> getMethods(
+      OgcApiDataV2 dataset, @PathParam("entrypoint") String entrypoint, String subPath) {
+    return getEndpoints().stream()
+        .map(
+            endpoint -> {
+              ApiEndpointDefinition apiDef = endpoint.getDefinition(dataset);
+              if (!apiDef.getResources().isEmpty()) {
+                Optional<OgcApiResource> resource = apiDef.getResource("/" + entrypoint + subPath);
+                return resource
+                    .map(ogcApiResource -> ogcApiResource.getOperations().keySet())
+                    .orElse(null);
+              }
+              return null;
+            })
+        .filter(Objects::nonNull)
+        .flatMap(Set::stream)
+        .collect(Collectors.toSet());
+  }
+
+  private List<EndpointExtension> getEndpoints() {
+    return extensionRegistry.getExtensionsForType(EndpointExtension.class);
+  }
+
+  private Optional<URI> getExternalUri() {
+    return Optional.of(servicesUri);
+  }
 }

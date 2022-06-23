@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,18 +14,18 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 @AutoMultiBind
 public interface CommonFormatExtension extends GenericFormatExtension {
 
-    /*
-     * If a new subtype is created, add it to FORMAT_MAP in GenericFormatExtension.
-     */
+  /*
+   * If a new subtype is created, add it to FORMAT_MAP in GenericFormatExtension.
+   */
 
-    @Override
-    default String getPathPattern() {
-        return "^/?(?:conformance(?:/)?)?$";
-    }
+  @Override
+  default String getPathPattern() {
+    return "^/?(?:conformance(?:/)?)?$";
+  }
 
-    Object getLandingPageEntity(LandingPage apiLandingPage,
-                                OgcApi api, ApiRequestContext requestContext);
+  Object getLandingPageEntity(
+      LandingPage apiLandingPage, OgcApi api, ApiRequestContext requestContext);
 
-    Object getConformanceEntity(ConformanceDeclaration conformanceDeclaration,
-                                OgcApi api, ApiRequestContext requestContext);
+  Object getConformanceEntity(
+      ConformanceDeclaration conformanceDeclaration, OgcApi api, ApiRequestContext requestContext);
 }

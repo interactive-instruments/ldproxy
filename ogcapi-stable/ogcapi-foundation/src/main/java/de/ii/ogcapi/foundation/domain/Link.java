@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,111 +11,108 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlType;
 import java.util.Comparator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
+import javax.annotation.Nullable;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonDeserialize(as = ImmutableLink.class)
-@XmlType(propOrder={"rel","type","title","href","hreflang","length","templated"})
+@XmlType(propOrder = {"rel", "type", "title", "href", "hreflang", "length", "templated"})
 public abstract class Link {
 
-    private static final Map<String, String> LABEL_MAP = new ImmutableMap.Builder<String,String>()
-        .put("application/geo+json", "GeoJSON")
-        .put("application/fg+json", "JSON-FG")
-        .put("application/vnd.ogc.fg+json", "JSON-FG")
-        .put("application/schema+json", "JSON Schema")
-        .put("application/city+json", "CityJSON")
-        .put("application/vnd.ogc.city+json", "CityJSON")
-        .put("application/city+json-seq", "CityJSON-Seq")
-        .put("application/vnd.ogc.city+json-seq", "CityJSON-Seq")
-        .put("application/json", "JSON")
-        .put("application/ld+json", "JSON-LD")
-        .put("text/html", "HTML")
-        .put("application/flatgeobuf", "FlatGeobuf")
-        .put("application/gml+xml", "GML")
-        .put("application/xml", "XML")
-        .build();
+  private static final Map<String, String> LABEL_MAP =
+      new ImmutableMap.Builder<String, String>()
+          .put("application/geo+json", "GeoJSON")
+          .put("application/fg+json", "JSON-FG")
+          .put("application/vnd.ogc.fg+json", "JSON-FG")
+          .put("application/schema+json", "JSON Schema")
+          .put("application/city+json", "CityJSON")
+          .put("application/vnd.ogc.city+json", "CityJSON")
+          .put("application/city+json-seq", "CityJSON-Seq")
+          .put("application/vnd.ogc.city+json-seq", "CityJSON-Seq")
+          .put("application/json", "JSON")
+          .put("application/ld+json", "JSON-LD")
+          .put("text/html", "HTML")
+          .put("application/flatgeobuf", "FlatGeobuf")
+          .put("application/gml+xml", "GML")
+          .put("application/xml", "XML")
+          .build();
 
-    public static final Comparator<Link> COMPARATOR_LINKS = Comparator
-        .comparing(Link::getRel)
-        .thenComparing(Link::getHref);
+  public static final Comparator<Link> COMPARATOR_LINKS =
+      Comparator.comparing(Link::getRel).thenComparing(Link::getHref);
 
-    @Nullable
-    @XmlAttribute
-    public abstract String getRel();
+  @Nullable
+  @XmlAttribute
+  public abstract String getRel();
 
-    @Nullable
-    @XmlAttribute
-    public abstract String getType();
+  @Nullable
+  @XmlAttribute
+  public abstract String getType();
 
-    @Nullable
-    @XmlAttribute
-    public abstract String getAnchor();
+  @Nullable
+  @XmlAttribute
+  public abstract String getAnchor();
 
-    @Nullable
-    @XmlAttribute
-    public abstract String getTitle();
+  @Nullable
+  @XmlAttribute
+  public abstract String getTitle();
 
-    @XmlAttribute
-    public abstract String getHref();
+  @XmlAttribute
+  public abstract String getHref();
 
-    @Nullable
-    @XmlAttribute
-    public abstract String getHreflang();
+  @Nullable
+  @XmlAttribute
+  public abstract String getHreflang();
 
-    @Nullable
-    @XmlAttribute
-    public abstract Integer getLength();
+  @Nullable
+  @XmlAttribute
+  public abstract Integer getLength();
 
-    @Nullable
-    @XmlAttribute
-    public abstract Boolean getTemplated();
+  @Nullable
+  @XmlAttribute
+  public abstract Boolean getTemplated();
 
-    @JsonIgnore
-    @XmlTransient
-    public javax.ws.rs.core.Link getLink() {
-        javax.ws.rs.core.Link.Builder link = javax.ws.rs.core.Link.fromUri(getHref());
+  @JsonIgnore
+  @XmlTransient
+  public javax.ws.rs.core.Link getLink() {
+    javax.ws.rs.core.Link.Builder link = javax.ws.rs.core.Link.fromUri(getHref());
 
-        if (getRel() != null && !getRel().isEmpty()) {
-            link.rel(getRel());
-        }
-        if (getTitle() != null && !getTitle().isEmpty()) {
-            link.title(getTitle());
-        }
-        if (getType() != null && !getType().isEmpty()) {
-            link.type(getType());
-        }
-
-        return link.build();
+    if (getRel() != null && !getRel().isEmpty()) {
+      link.rel(getRel());
+    }
+    if (getTitle() != null && !getTitle().isEmpty()) {
+      link.title(getTitle());
+    }
+    if (getType() != null && !getType().isEmpty()) {
+      link.type(getType());
     }
 
-    @JsonIgnore
-    @XmlTransient
-    @Value.Derived
-    public String getTypeLabel() {
-        String mediaType = Objects.requireNonNullElse(getType(),"")
-            .toLowerCase(Locale.ROOT)
-            .split(";")[0];
-        if (LABEL_MAP.containsKey(mediaType)) {
-            return LABEL_MAP.get(mediaType);
-        } else if (mediaType.endsWith("+json")) {
-            return "JSON";
-        } else if (mediaType.endsWith("+yaml")) {
-            return "YAML";
-        } else if (mediaType.endsWith("+xml")) {
-            return "XML";
-        }
+    return link.build();
+  }
 
-        return mediaType;
+  @JsonIgnore
+  @XmlTransient
+  @Value.Derived
+  public String getTypeLabel() {
+    String mediaType =
+        Objects.requireNonNullElse(getType(), "").toLowerCase(Locale.ROOT).split(";")[0];
+    if (LABEL_MAP.containsKey(mediaType)) {
+      return LABEL_MAP.get(mediaType);
+    } else if (mediaType.endsWith("+json")) {
+      return "JSON";
+    } else if (mediaType.endsWith("+yaml")) {
+      return "YAML";
+    } else if (mediaType.endsWith("+xml")) {
+      return "XML";
     }
+
+    return mediaType;
+  }
 }

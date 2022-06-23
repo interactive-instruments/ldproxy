@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,39 +24,44 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
 @Singleton
-@AutoBind(interfaces = {ExceptionFormatExtension.class, FormatExtension.class, ApiExtension.class}) //TODO: workaround for issue in dagger-auto
-public class ExceptionFormatHtml extends ErrorEntityWriter<ApiErrorMessage, OgcApiErrorView> implements ExceptionFormatExtension {
+@AutoBind(
+    interfaces = {
+      ExceptionFormatExtension.class,
+      FormatExtension.class,
+      ApiExtension.class
+    }) // TODO: workaround for issue in dagger-auto
+public class ExceptionFormatHtml extends ErrorEntityWriter<ApiErrorMessage, OgcApiErrorView>
+    implements ExceptionFormatExtension {
 
-    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.TEXT_HTML_TYPE)
-            .build();
+  static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).build();
 
-    @Inject
-    public ExceptionFormatHtml() {
-        super(MediaType.TEXT_HTML_TYPE, OgcApiErrorView.class);
-    }
+  @Inject
+  public ExceptionFormatHtml() {
+    super(MediaType.TEXT_HTML_TYPE, OgcApiErrorView.class);
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(new StringSchema().example("<html>...</html>"))
-                .schemaRef("#/components/schemas/htmlSchema")
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(new StringSchema().example("<html>...</html>"))
+        .schemaRef("#/components/schemas/htmlSchema")
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
 
-    @Override
-    public Object getExceptionEntity(ApiErrorMessage errorMessage) {
-        return getRepresentation(errorMessage);
-    }
+  @Override
+  public Object getExceptionEntity(ApiErrorMessage errorMessage) {
+    return getRepresentation(errorMessage);
+  }
 
-    @Override
-    protected OgcApiErrorView getRepresentation(ApiErrorMessage errorMessage) {
-        return new OgcApiErrorView(errorMessage);
-    }
+  @Override
+  protected OgcApiErrorView getRepresentation(ApiErrorMessage errorMessage) {
+    return new OgcApiErrorView(errorMessage);
+  }
 }

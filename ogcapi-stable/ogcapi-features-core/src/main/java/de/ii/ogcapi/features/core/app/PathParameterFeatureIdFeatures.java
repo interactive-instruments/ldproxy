@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,11 +7,9 @@
  */
 package de.ii.ogcapi.features.core.app;
 
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
@@ -28,55 +26,57 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterFeatureIdFeatures.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(PathParameterFeatureIdFeatures.class);
 
-    public static final String FEATURE_ID_PATTERN = "[^/ ]+";
+  public static final String FEATURE_ID_PATTERN = "[^/ ]+";
 
-    private final SchemaValidator schemaValidator;
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    public PathParameterFeatureIdFeatures(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
-    };
+  @Inject
+  public PathParameterFeatureIdFeatures(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+  }
+  ;
 
-    @Override
-    public String getPattern() {
-        return FEATURE_ID_PATTERN;
-    }
+  @Override
+  public String getPattern() {
+    return FEATURE_ID_PATTERN;
+  }
 
-    @Override
-    public List<String> getValues(OgcApiDataV2 apiData) {
-        return ImmutableList.of();
-    }
+  @Override
+  public List<String> getValues(OgcApiDataV2 apiData) {
+    return ImmutableList.of();
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return new StringSchema().pattern(getPattern());
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return new StringSchema().pattern(getPattern());
+  }
 
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
 
-    @Override
-    public String getName() {
-        return "featureId";
-    }
+  @Override
+  public String getName() {
+    return "featureId";
+  }
 
-    @Override
-    public String getDescription() {
-        return "The local identifier of a feature, unique within the feature collection.";
-    }
+  @Override
+  public String getDescription() {
+    return "The local identifier of a feature, unique within the feature collection.";
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) &&
-                definitionPath.equals("/collections/{collectionId}/items/{featureId}");
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    return isEnabledForApi(apiData)
+        && definitionPath.equals("/collections/{collectionId}/items/{featureId}");
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesCoreConfiguration.class;
+  }
 }

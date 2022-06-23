@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,23 +8,20 @@
 package de.ii.ogcapi.tiles.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
-
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -35,52 +32,56 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class TileSetFormatJson implements TileSetFormatExtension {
 
-    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .label("JSON")
-            .parameter("json")
-            .build();
+  public static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.APPLICATION_JSON_TYPE)
+          .label("JSON")
+          .parameter("json")
+          .build();
 
-    private final Schema<?> schemaTileSetJson;
-    private final Map<String, Schema<?>> referencedSchemas;
-    private final FeaturesCoreProviders providers;
-    private final SchemaInfo schemaInfo;
+  private final Schema<?> schemaTileSetJson;
+  private final Map<String, Schema<?>> referencedSchemas;
+  private final FeaturesCoreProviders providers;
+  private final SchemaInfo schemaInfo;
 
-    @Inject
-    public TileSetFormatJson(ClassSchemaCache classSchemaCache,
-                             FeaturesCoreProviders providers,
-                             SchemaInfo schemaInfo) {
-        schemaTileSetJson = classSchemaCache.getSchema(TileSet.class);
-        referencedSchemas = classSchemaCache.getReferencedSchemas(TileSet.class);
-        this.providers = providers;
-        this.schemaInfo = schemaInfo;
-    }
+  @Inject
+  public TileSetFormatJson(
+      ClassSchemaCache classSchemaCache, FeaturesCoreProviders providers, SchemaInfo schemaInfo) {
+    schemaTileSetJson = classSchemaCache.getSchema(TileSet.class);
+    referencedSchemas = classSchemaCache.getReferencedSchemas(TileSet.class);
+    this.providers = providers;
+    this.schemaInfo = schemaInfo;
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        if (path.endsWith("/tiles/{tileMatrixSetId}"))
-            return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaTileSetJson)
-                .schemaRef(TileSet.SCHEMA_REF)
-                .referencedSchemas(referencedSchemas)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    if (path.endsWith("/tiles/{tileMatrixSetId}"))
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(schemaTileSetJson)
+          .schemaRef(TileSet.SCHEMA_REF)
+          .referencedSchemas(referencedSchemas)
+          .ogcApiMediaType(MEDIA_TYPE)
+          .build();
 
-        throw new RuntimeException("Unexpected path: " + path);
-    }
+    throw new RuntimeException("Unexpected path: " + path);
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return TilesConfiguration.class;
+  }
 
-    @Override
-    public Object getTileSetEntity(TileSet tileset, OgcApiDataV2 apiData, Optional<String> collectionId, ApiRequestContext requestContext) {
-        return tileset;
-    }
+  @Override
+  public Object getTileSetEntity(
+      TileSet tileset,
+      OgcApiDataV2 apiData,
+      Optional<String> collectionId,
+      ApiRequestContext requestContext) {
+    return tileset;
+  }
 }

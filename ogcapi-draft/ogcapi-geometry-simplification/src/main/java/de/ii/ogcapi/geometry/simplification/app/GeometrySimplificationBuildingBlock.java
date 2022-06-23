@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,41 +20,38 @@ import javax.inject.Singleton;
 
 /**
  * @title Geometry Simplification
- * @langEn The module *Geometry Simplification* may be enabled for every API with a feature provider.
- * It adds the following query parameters:
- *
- * * `maxAllowableOffset` (for resources *Features* and *Feature*): if set all geometries are
- * simplified using the
- * [Douglas Peucker algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm).
- * The value defines the maximum distance between original and simplified geometry
- * ([Hausdorff distance](https://en.wikipedia.org/wiki/Hausdorff_distance)).
- * The value has to use the unit of the given coordinate reference system
- * (`CRS84` or the value of parameter `crs`).
+ * @langEn The module *Geometry Simplification* may be enabled for every API with a feature
+ *     provider. It adds the following query parameters:
+ *     <p>* `maxAllowableOffset` (for resources *Features* and *Feature*): if set all geometries are
+ *     simplified using the [Douglas Peucker
+ *     algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm).
+ *     The value defines the maximum distance between original and simplified geometry ([Hausdorff
+ *     distance](https://en.wikipedia.org/wiki/Hausdorff_distance)). The value has to use the unit
+ *     of the given coordinate reference system (`CRS84` or the value of parameter `crs`).
  * @langDe Das Modul *Geometry Simplification* kann für jede über ldproxy bereitgestellte API mit
- * einem Feature-Provider aktiviert werden. Es ergänzt den Query-Parameter `maxAllowableOffset`
- * für die Ressourcen "Features" und "Feature". Ist der Parameter angegeben, werden alle
- * Geometrien mit dem
- * [Douglas-Peucker-Algorithmus](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
- * vereinfacht. Der Wert von `maxAllowableOffset` legt den maximalen Abstand zwischen der
- * Originalgeometrie und der vereinfachten Geometrie fest
- * ([Hausdorff-Abstand](https://en.wikipedia.org/wiki/Hausdorff_distance)).
- * Der Wert ist in den Einheiten des Koordinatenreferenzsystems der Ausgabe
- * (`CRS84` bzw. der Wert des Parameters Query-Parameters `crs`) angegeben.
- * @propertyTable {@link de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationConfiguration}
- * @queryParameterTable {@link de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}
+ *     einem Feature-Provider aktiviert werden. Es ergänzt den Query-Parameter `maxAllowableOffset`
+ *     für die Ressourcen "Features" und "Feature". Ist der Parameter angegeben, werden alle
+ *     Geometrien mit dem
+ *     [Douglas-Peucker-Algorithmus](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
+ *     vereinfacht. Der Wert von `maxAllowableOffset` legt den maximalen Abstand zwischen der
+ *     Originalgeometrie und der vereinfachten Geometrie fest
+ *     ([Hausdorff-Abstand](https://en.wikipedia.org/wiki/Hausdorff_distance)). Der Wert ist in den
+ *     Einheiten des Koordinatenreferenzsystems der Ausgabe (`CRS84` bzw. der Wert des Parameters
+ *     Query-Parameters `crs`) angegeben.
+ * @propertyTable {@link
+ *     de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationConfiguration}
+ * @queryParameterTable {@link
+ *     de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}
  */
 @Singleton
 @AutoBind
 public class GeometrySimplificationBuildingBlock implements ApiBuildingBlock {
 
-    @Inject
-    public GeometrySimplificationBuildingBlock() {
-    }
+  @Inject
+  public GeometrySimplificationBuildingBlock() {}
 
-    @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return new Builder().enabled(false)
-                                                                         .build();
-    }
-
+  @Override
+  public ExtensionConfiguration getDefaultConfiguration() {
+    return new Builder().enabled(false).build();
+  }
 }

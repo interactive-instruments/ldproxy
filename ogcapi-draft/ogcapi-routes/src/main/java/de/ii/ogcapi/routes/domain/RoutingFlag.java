@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,24 +9,28 @@ package de.ii.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableRoutingFlag.Builder.class)
 public interface RoutingFlag {
-    String getLabel();
-    @Value.Default
-    default boolean getDefault() { return false; }
-    Optional<String> getProviderFlag();
+  String getLabel();
 
-    @SuppressWarnings("UnstableApiUsage")
-    Funnel<RoutingFlag> FUNNEL = (from, into) -> {
+  @Value.Default
+  default boolean getDefault() {
+    return false;
+  }
+
+  Optional<String> getProviderFlag();
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<RoutingFlag> FUNNEL =
+      (from, into) -> {
         into.putString(from.getLabel(), StandardCharsets.UTF_8);
         into.putBoolean(from.getDefault());
         from.getProviderFlag().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-    };
+      };
 }

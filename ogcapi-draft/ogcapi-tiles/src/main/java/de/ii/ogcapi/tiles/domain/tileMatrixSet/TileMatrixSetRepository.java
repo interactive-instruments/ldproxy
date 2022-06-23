@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,15 +8,13 @@
 package de.ii.ogcapi.tiles.domain.tileMatrixSet;
 
 import de.ii.ogcapi.foundation.domain.ApiExtension;
-
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Access to the cache for tile matrix set files.
- */
+/** Access to the cache for tile matrix set files. */
 public interface TileMatrixSetRepository extends ApiExtension {
 
-    Optional<TileMatrixSet> get(String tileMatrixSetId);
-    Map<String,TileMatrixSet> getAll();
+  Optional<TileMatrixSet> get(String tileMatrixSetId);
+
+  Map<String, TileMatrixSet> getAll();
 }

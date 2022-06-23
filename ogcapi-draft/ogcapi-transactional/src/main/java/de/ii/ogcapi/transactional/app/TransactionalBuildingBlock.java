@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,14 +20,14 @@ import javax.inject.Singleton;
 
 /**
  * @title CRUD
- * @langEn The module is based on the specifications of the conformance classes "Create/Replace/Delete"
- * and "Features" from the
- * [Draft OGC API - Features - Part 4: Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html).
- * The implementation will change as the draft is further standardized.
+ * @langEn The module is based on the specifications of the conformance classes
+ *     "Create/Replace/Delete" and "Features" from the [Draft OGC API - Features - Part 4: Create,
+ *     Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html). The implementation will
+ *     change as the draft is further standardized.
  * @langDe Das Modul basiert auf den Vorgaben der Konformitätsklassen "Create/Replace/Delete" und
- * "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
- * Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
- * weiteren Standardisierung des Entwurfs noch ändern.
+ *     "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
+ *     Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
+ *     weiteren Standardisierung des Entwurfs noch ändern.
  * @propertyTable {@link de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration}
  * @endpointTable {@link de.ii.ogcapi.transactional.app.EndpointTransactional}
  */
@@ -35,14 +35,11 @@ import javax.inject.Singleton;
 @AutoBind
 public class TransactionalBuildingBlock implements ApiBuildingBlock {
 
-    @Inject
-    public TransactionalBuildingBlock() {
-    }
+  @Inject
+  public TransactionalBuildingBlock() {}
 
-    @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return new Builder().enabled(false)
-                                                                .build();
-    }
-
+  @Override
+  public ExtensionConfiguration getDefaultConfiguration() {
+    return new Builder().enabled(false).build();
+  }
 }

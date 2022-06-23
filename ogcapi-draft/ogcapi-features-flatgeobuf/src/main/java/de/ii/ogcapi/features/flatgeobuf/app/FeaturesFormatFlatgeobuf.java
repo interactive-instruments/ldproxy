@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -32,110 +32,116 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-
-import static de.ii.ogcapi.features.flatgeobuf.app.CapabilityFlatgeobuf.DEFAULT_MULTIPLICITY;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormatExtension {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesFormatFlatgeobuf.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesFormatFlatgeobuf.class);
 
-    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "flatgeobuf"))
-            .label("FlatGeobuf")
-            .parameter("fgb")
-            .build();
-    public static final ApiMediaType COLLECTION_MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "json"))
-            .label("JSON")
-            .parameter("json")
-            .build();
+  public static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "flatgeobuf"))
+          .label("FlatGeobuf")
+          .parameter("fgb")
+          .build();
+  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "json"))
+          .label("JSON")
+          .parameter("json")
+          .build();
 
-    private final FeaturesCoreProviders providers;
-    private final CrsInfo crsInfo;
-    private final FeatureSchemaCache schemaCache;
+  private final FeaturesCoreProviders providers;
+  private final CrsInfo crsInfo;
+  private final FeatureSchemaCache schemaCache;
 
-    @Inject
-    public FeaturesFormatFlatgeobuf(FeaturesCoreProviders providers,
-                                    CrsInfo crsInfo) {
-        this.providers = providers;
-        this.crsInfo = crsInfo;
-        this.schemaCache = new SchemaCacheFlatgeobuf();
-    }
+  @Inject
+  public FeaturesFormatFlatgeobuf(FeaturesCoreProviders providers, CrsInfo crsInfo) {
+    this.providers = providers;
+    this.crsInfo = crsInfo;
+    this.schemaCache = new SchemaCacheFlatgeobuf();
+  }
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of();
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of();
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FlatgeobufConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FlatgeobufConfiguration.class;
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaType getCollectionMediaType() {
-        return COLLECTION_MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getCollectionMediaType() {
+    return COLLECTION_MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        // TODO Should we describe the schema used in the binary file? As an OpenAPI schema?
-        String schemaRef = "#/components/schemas/FlatGeobuf";
-        Schema<?> schema = new BinarySchema();
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schema)
-                .schemaRef(schemaRef)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    // TODO Should we describe the schema used in the binary file? As an OpenAPI schema?
+    String schemaRef = "#/components/schemas/FlatGeobuf";
+    Schema<?> schema = new BinarySchema();
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schema)
+        .schemaRef(schemaRef)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
 
-    @Override
-    public boolean canEncodeFeatures() {
-        return true;
-    }
+  @Override
+  public boolean canEncodeFeatures() {
+    return true;
+  }
 
-    @Override
-    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(FeatureTransformationContext transformationContext,
-                                                              Optional<Locale> language) {
+  @Override
+  public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+      FeatureTransformationContext transformationContext, Optional<Locale> language) {
 
-        OgcApiDataV2 apiData = transformationContext.getApiData();
-        String collectionId = transformationContext.getCollectionId();
-        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-        EpsgCrs crs = transformationContext.getCrsTransformer().isPresent()
+    OgcApiDataV2 apiData = transformationContext.getApiData();
+    String collectionId = transformationContext.getCollectionId();
+    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+    EpsgCrs crs =
+        transformationContext.getCrsTransformer().isPresent()
             ? transformationContext.getCrsTransformer().get().getTargetCrs()
-            : providers.getFeatureProvider(apiData)
-            .map(FeatureProvider2::getData)
-            .flatMap(FeatureProviderDataV2::getNativeCrs)
-            .orElse(EpsgCrs.of(4326, EpsgCrs.Force.LON_LAT));
+            : providers
+                .getFeatureProvider(apiData)
+                .map(FeatureProvider2::getData)
+                .flatMap(FeatureProviderDataV2::getNativeCrs)
+                .orElse(EpsgCrs.of(4326, EpsgCrs.Force.LON_LAT));
 
-        FeatureSchema schema = schemaCache.getSchema(providers.getFeatureSchema(apiData, collectionData)
-                                                         .orElse(new ImmutableFeatureSchema.Builder().name(collectionId)
-                                                                     .type(SchemaBase.Type.OBJECT)
-                                                                     .build()),
-                                                     apiData,
-                                                     apiData.getCollectionData(collectionId).orElse(null));
+    FeatureSchema schema =
+        schemaCache.getSchema(
+            providers
+                .getFeatureSchema(apiData, collectionData)
+                .orElse(
+                    new ImmutableFeatureSchema.Builder()
+                        .name(collectionId)
+                        .type(SchemaBase.Type.OBJECT)
+                        .build()),
+            apiData,
+            apiData.getCollectionData(collectionId).orElse(null));
 
-
-        return Optional.of(new FeatureEncoderFlatgeobuf(ImmutableFeatureTransformationContextFlatgeobuf.builder()
-                                                            .from(transformationContext)
-                                                            .schema(schema)
-                                                            .is3d(crsInfo.is3d(crs))
-                                                            .build()));
-    }
+    return Optional.of(
+        new FeatureEncoderFlatgeobuf(
+            ImmutableFeatureTransformationContextFlatgeobuf.builder()
+                .from(transformationContext)
+                .schema(schema)
+                .is3d(crsInfo.is3d(crs))
+                .build()));
+  }
 }

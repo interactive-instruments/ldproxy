@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,12 +10,10 @@ package de.ii.ogcapi.common.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.ApiInfo;
-
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import org.immutables.value.Value;
-
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
@@ -23,23 +21,26 @@ import java.util.Optional;
 @ApiInfo(schemaId = "Extent")
 public interface OgcApiExtent {
 
-    @SuppressWarnings("UnstableApiUsage")
-    Funnel<OgcApiExtent> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<OgcApiExtent> FUNNEL =
+      (from, into) -> {
         from.getSpatial().ifPresent(val -> OgcApiExtentSpatial.FUNNEL.funnel(val, into));
         from.getTemporal().ifPresent(val -> OgcApiExtentTemporal.FUNNEL.funnel(val, into));
-    };
+      };
 
-    Optional<OgcApiExtentSpatial> getSpatial();
-    Optional<OgcApiExtentTemporal> getTemporal();
+  Optional<OgcApiExtentSpatial> getSpatial();
 
-    static Optional<OgcApiExtent> of(Optional<BoundingBox> spatial, Optional<TemporalExtent> temporal) {
-        if (spatial.isEmpty() && temporal.isEmpty()) {
-            return Optional.empty();
-        }
+  Optional<OgcApiExtentTemporal> getTemporal();
 
-        ImmutableOgcApiExtent.Builder builder = ImmutableOgcApiExtent.builder();
-        spatial.ifPresent(bbox -> builder.spatial(OgcApiExtentSpatial.of(bbox)));
-        temporal.ifPresent(interval -> builder.temporal(OgcApiExtentTemporal.of(interval)));
-        return Optional.of(builder.build());
+  static Optional<OgcApiExtent> of(
+      Optional<BoundingBox> spatial, Optional<TemporalExtent> temporal) {
+    if (spatial.isEmpty() && temporal.isEmpty()) {
+      return Optional.empty();
     }
+
+    ImmutableOgcApiExtent.Builder builder = ImmutableOgcApiExtent.builder();
+    spatial.ifPresent(bbox -> builder.spatial(OgcApiExtentSpatial.of(bbox)));
+    temporal.ifPresent(interval -> builder.temporal(OgcApiExtentTemporal.of(interval)));
+    return Optional.of(builder.build());
+  }
 }

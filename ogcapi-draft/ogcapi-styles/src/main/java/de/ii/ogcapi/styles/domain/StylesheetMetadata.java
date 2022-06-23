@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,39 +11,42 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.Link;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableStylesheetMetadata.class)
 public abstract class StylesheetMetadata {
 
-    public abstract Optional<String> getTitle();
+  public abstract Optional<String> getTitle();
 
-    public abstract Optional<String> getVersion();
+  public abstract Optional<String> getVersion();
 
-    public abstract  Optional<String> getSpecification();
+  public abstract Optional<String> getSpecification();
 
-    @JsonProperty("native")
-    public abstract Optional<Boolean> native_();
+  @JsonProperty("native")
+  public abstract Optional<Boolean> native_();
 
-    public abstract Optional<String> getTileMatrixSet();
+  public abstract Optional<String> getTileMatrixSet();
 
-    public abstract Optional<Link> getLink();
+  public abstract Optional<Link> getLink();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<StylesheetMetadata> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<StylesheetMetadata> FUNNEL =
+      (from, into) -> {
         from.getTitle().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getVersion().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getSpecification().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.native_().ifPresent(into::putBoolean);
         from.getTileMatrixSet().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getLink().ifPresent(link -> into.putString(link.getHref(), StandardCharsets.UTF_8)
-                                             .putString(Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
-    };
-
+        from.getLink()
+            .ifPresent(
+                link ->
+                    into.putString(link.getHref(), StandardCharsets.UTF_8)
+                        .putString(
+                            Objects.requireNonNullElse(link.getRel(), ""), StandardCharsets.UTF_8));
+      };
 }

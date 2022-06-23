@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,14 +21,18 @@ import java.util.Optional;
 @AutoMultiBind
 public interface CollectionExtension extends ContentExtension {
 
-    ImmutableOgcApiCollection.Builder process(Builder collection,
-                                              FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                              OgcApi api,
-                                              URICustomizer uriCustomizer,
-                                              boolean isNested,
-                                              ApiMediaType mediaType,
-                                              List<ApiMediaType> alternateMediaTypes,
-                                              Optional<Locale> language);
+  ImmutableOgcApiCollection.Builder process(
+      Builder collection,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      boolean isNested,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language);
 
-    default String getResourceName() { return "Collection"; };
+  default String getResourceName() {
+    return "Collection";
+  }
+  ;
 }

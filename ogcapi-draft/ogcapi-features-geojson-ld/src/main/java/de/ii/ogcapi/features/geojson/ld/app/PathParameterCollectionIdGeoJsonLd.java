@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,14 +7,13 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.features.geojson.ld.domain.GeoJsonLdConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.foundation.domain.SchemaValidator;
 
 /**
  * @langEn
@@ -26,23 +25,23 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 @AutoBind
 public class PathParameterCollectionIdGeoJsonLd extends AbstractPathParameterCollectionId {
 
-    @Inject
-    PathParameterCollectionIdGeoJsonLd(SchemaValidator schemaValidator) {
-      super(schemaValidator);
-    }
+  @Inject
+  PathParameterCollectionIdGeoJsonLd(SchemaValidator schemaValidator) {
+    super(schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "collectionIdJsonLdContext";
-    }
+  @Override
+  public String getId() {
+    return "collectionIdJsonLdContext";
+  }
 
-    @Override
-    public boolean matchesPath(String definitionPath) {
-        return definitionPath.equals("/collections/{collectionId}/context");
-    }
+  @Override
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/context");
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return GeoJsonLdConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return GeoJsonLdConfiguration.class;
+  }
 }

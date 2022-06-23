@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -32,42 +32,52 @@ import javax.inject.Singleton;
 @AutoBind
 public class CollectionsExtensionFeatures implements CollectionsExtension {
 
-    private final ExtensionRegistry extensionRegistry;
+  private final ExtensionRegistry extensionRegistry;
 
-    @Inject
-    public CollectionsExtensionFeatures(ExtensionRegistry extensionRegistry) {
-        this.extensionRegistry = extensionRegistry;
+  @Inject
+  public CollectionsExtensionFeatures(ExtensionRegistry extensionRegistry) {
+    this.extensionRegistry = extensionRegistry;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesCoreConfiguration.class;
+  }
+
+  @Override
+  public ImmutableCollections.Builder process(
+      Builder collectionsBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+
+    if (!isEnabledForApi(api.getData())) {
+      return collectionsBuilder;
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
-    }
+    List<CollectionExtension> collectionExtenders =
+        extensionRegistry.getExtensionsForType(CollectionExtension.class);
 
-    @Override
-    public ImmutableCollections.Builder process(Builder collectionsBuilder, OgcApi api,
-                                                URICustomizer uriCustomizer,
-                                                ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes,
-                                                Optional<Locale> language) {
+    List<OgcApiCollection> collections =
+        api.getData().getCollections().values().stream()
+            .filter(featureType -> api.getData().isCollectionEnabled(featureType.getId()))
+            .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
+            .map(
+                featureType ->
+                    CollectionExtensionFeatures.createNestedCollection(
+                        featureType,
+                        api,
+                        mediaType,
+                        alternateMediaTypes,
+                        language,
+                        uriCustomizer,
+                        collectionExtenders))
+            .collect(Collectors.toList());
 
-        if (!isEnabledForApi(api.getData())) {
-            return collectionsBuilder;
-        }
+    collectionsBuilder.addAllCollections(collections);
 
-        List<CollectionExtension> collectionExtenders = extensionRegistry.getExtensionsForType(CollectionExtension.class);
-
-        List<OgcApiCollection> collections = api.getData().getCollections()
-                                                      .values()
-                                                      .stream()
-                                                      .filter(featureType -> api.getData().isCollectionEnabled(featureType.getId()))
-                                                      .sorted(Comparator.comparing(FeatureTypeConfigurationOgcApi::getId))
-                                                      .map(featureType -> CollectionExtensionFeatures.createNestedCollection(featureType,
-                                                          api, mediaType, alternateMediaTypes, language, uriCustomizer, collectionExtenders))
-                                                      .collect(Collectors.toList());
-
-        collectionsBuilder.addAllCollections(collections);
-
-        return collectionsBuilder; // TODO .addSections(ImmutableMap.of("collections", collections));
-    }
+    return collectionsBuilder; // TODO .addSections(ImmutableMap.of("collections", collections));
+  }
 }

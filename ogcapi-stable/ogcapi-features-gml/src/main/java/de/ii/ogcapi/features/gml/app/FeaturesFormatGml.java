@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -38,66 +38,84 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtension {
 
-    private static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "gml+xml", ImmutableMap.of("version", "3.2", "profile", "http://www.opengis.net/def/profile/ogc/2.0/gml-sf2")))
-            .label("GML")
-            .parameter("xml")
-            .build();
-    public static final ApiMediaType COLLECTION_MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "xml"))
-            .label("XML")
-            .parameter("xml")
-            .build();
+  private static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(
+              new MediaType(
+                  "application",
+                  "gml+xml",
+                  ImmutableMap.of(
+                      "version",
+                      "3.2",
+                      "profile",
+                      "http://www.opengis.net/def/profile/ogc/2.0/gml-sf2")))
+          .label("GML")
+          .parameter("xml")
+          .build();
+  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "xml"))
+          .label("XML")
+          .parameter("xml")
+          .build();
 
-    private final FeaturesCoreProviders providers;
+  private final FeaturesCoreProviders providers;
 
-    @Inject
-    public FeaturesFormatGml(FeaturesCoreProviders providers) {
-        this.providers = providers;
-    }
+  @Inject
+  public FeaturesFormatGml(FeaturesCoreProviders providers) {
+    this.providers = providers;
+  }
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2");
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2");
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(new ObjectSchema())
-                .schemaRef("#/components/schemas/anyObject")
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(new ObjectSchema())
+        .schemaRef("#/components/schemas/anyObject")
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
 
-    @Override
-    public ApiMediaType getCollectionMediaType() {
-        return COLLECTION_MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getCollectionMediaType() {
+    return COLLECTION_MEDIA_TYPE;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return GmlConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return GmlConfiguration.class;
+  }
 
-    @Override
-    public boolean canPassThroughFeatures() {
-        return true;
-    }
+  @Override
+  public boolean canPassThroughFeatures() {
+    return true;
+  }
 
-    @Override
-    public Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
-        FeatureTransformationContext transformationContext, Optional<Locale> language) {
-        return Optional.of(new FeatureEncoderGmlUpgrade(ImmutableFeatureTransformationContextGml.builder()
-            .from(transformationContext)
-            .namespaces(((ConnectionInfoWfsHttp) ((WithConnectionInfo<?>)providers.getFeatureProviderOrThrow(transformationContext.getApiData())
-                .getData()).getConnectionInfo()).getNamespaces())
-            .build()));
-    }
-
+  @Override
+  public Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
+      FeatureTransformationContext transformationContext, Optional<Locale> language) {
+    return Optional.of(
+        new FeatureEncoderGmlUpgrade(
+            ImmutableFeatureTransformationContextGml.builder()
+                .from(transformationContext)
+                .namespaces(
+                    ((ConnectionInfoWfsHttp)
+                            ((WithConnectionInfo<?>)
+                                    providers
+                                        .getFeatureProviderOrThrow(
+                                            transformationContext.getApiData())
+                                        .getData())
+                                .getConnectionInfo())
+                        .getNamespaces())
+                .build()));
+  }
 }

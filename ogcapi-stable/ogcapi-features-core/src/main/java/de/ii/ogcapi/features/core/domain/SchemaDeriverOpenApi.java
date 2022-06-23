@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,10 +7,8 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.SchemaBase.Role;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.SchemaDeriver;
@@ -40,9 +38,7 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   protected final Optional<String> description;
 
   public SchemaDeriverOpenApi(
-      String label,
-      Optional<String> description,
-      List<Codelist> codelists) {
+      String label, Optional<String> description, List<Codelist> codelists) {
     super(codelists);
     this.label = label;
     this.description = description;
@@ -70,20 +66,20 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   }
 
   @Override
-  protected abstract Schema<?> buildRootSchema(FeatureSchema schema, Map<String, Schema<?>> properties,
-      Map<String, Schema<?>> definitions, List<String> requiredProperties);
+  protected abstract Schema<?> buildRootSchema(
+      FeatureSchema schema,
+      Map<String, Schema<?>> properties,
+      Map<String, Schema<?>> definitions,
+      List<String> requiredProperties);
 
   @Override
-  protected Schema<?> buildObjectSchema(FeatureSchema schema, Map<String, Schema<?>> properties,
-      List<String> requiredProperties) {
+  protected Schema<?> buildObjectSchema(
+      FeatureSchema schema, Map<String, Schema<?>> properties, List<String> requiredProperties) {
     if (schema.getObjectType().filter(ot -> Objects.equals(ot, "Link")).isPresent()) {
-      return new Schema<>()
-          .name(schema.getName())
-          .$ref("#/components/schemas/Link");
+      return new Schema<>().name(schema.getName()).$ref("#/components/schemas/Link");
     }
 
-    Schema<?> objectSchema = new ObjectSchema()
-        .name(schema.getName());
+    Schema<?> objectSchema = new ObjectSchema().name(schema.getName());
 
     if (schema.getLabel().isPresent()) {
       objectSchema.title(schema.getLabel().get());
@@ -100,8 +96,8 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   }
 
   @Override
-  protected Schema<?> getSchemaForLiteralType(Type type, Optional<String> label,
-      Optional<String> description) {
+  protected Schema<?> getSchemaForLiteralType(
+      Type type, Optional<String> label, Optional<String> description) {
     Schema<?> valueSchema;
     switch (type) {
       case INTEGER:
@@ -136,27 +132,48 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
     Schema<?> oapiSchema;
     switch (schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
       case POINT:
-        oapiSchema = new Schema<>().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/pointGeoJSON");
+        oapiSchema =
+            new Schema<>()
+                .$ref(
+                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/pointGeoJSON");
         break;
       case MULTI_POINT:
-        oapiSchema = new Schema<>().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multipointGeoJSON");
+        oapiSchema =
+            new Schema<>()
+                .$ref(
+                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multipointGeoJSON");
         break;
       case LINE_STRING:
-        oapiSchema = new Schema<>().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/linestringGeoJSON");
+        oapiSchema =
+            new Schema<>()
+                .$ref(
+                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/linestringGeoJSON");
         break;
       case MULTI_LINE_STRING:
-        oapiSchema = new Schema<>().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multilinestringGeoJSON");
+        oapiSchema =
+            new Schema<>()
+                .$ref(
+                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multilinestringGeoJSON");
         break;
       case POLYGON:
-        oapiSchema = new Schema<>().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/polygonGeoJSON");
+        oapiSchema =
+            new Schema<>()
+                .$ref(
+                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/polygonGeoJSON");
         break;
       case MULTI_POLYGON:
-        oapiSchema = new Schema<>().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multipolygonGeoJSON");
+        oapiSchema =
+            new Schema<>()
+                .$ref(
+                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multipolygonGeoJSON");
         break;
       case GEOMETRY_COLLECTION:
       case ANY:
       default:
-        oapiSchema = new Schema<>().$ref("https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/geometryGeoJSON");
+        oapiSchema =
+            new Schema<>()
+                .$ref(
+                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/geometryGeoJSON");
         break;
       case NONE:
         oapiSchema = null;
@@ -178,7 +195,11 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   }
 
   @Override
-  protected Schema<?> withConstraints(Schema<?> oapiSchema, SchemaConstraints constraints, FeatureSchema property, List<Codelist> codelists) {
+  protected Schema<?> withConstraints(
+      Schema<?> oapiSchema,
+      SchemaConstraints constraints,
+      FeatureSchema property,
+      List<Codelist> codelists) {
     if (oapiSchema instanceof ArraySchema) {
       if (constraints.getMinOccurrence().isPresent()) {
         oapiSchema.minItems(constraints.getMinOccurrence().get());
@@ -195,33 +216,35 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
 
     if (!constraints.getEnumValues().isEmpty()) {
       // if enum is specified in the configuration, it wins over codelist
-      boolean isString = property.isArray() ?
-          property.getValueType().orElse(Type.UNKNOWN)!= Type.INTEGER :
-          property.getType()!= Type.INTEGER;
+      boolean isString =
+          property.isArray()
+              ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
+              : property.getType() != Type.INTEGER;
       if (isString) {
-        ((Schema<String>)result).setEnum(constraints.getEnumValues());
+        ((Schema<String>) result).setEnum(constraints.getEnumValues());
       } else {
-        ((Schema<Integer>)result).setEnum(constraints.getEnumValues()
-            .stream()
-            .map(Integer::parseInt)
-            .collect(Collectors.toList()));
+        ((Schema<Integer>) result)
+            .setEnum(
+                constraints.getEnumValues().stream()
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList()));
       }
     } else if (constraints.getCodelist().isPresent()) {
-      Optional<Codelist> codelist = codelists.stream()
-          .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
-          .findAny();
+      Optional<Codelist> codelist =
+          codelists.stream()
+              .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
+              .findAny();
       if (codelist.isPresent() && !codelist.get().getData().getFallback().isPresent()) {
-        boolean isString = property.isArray() ?
-            property.getValueType().orElse(Type.UNKNOWN)!= Type.INTEGER :
-            property.getType()!= Type.INTEGER;
+        boolean isString =
+            property.isArray()
+                ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
+                : property.getType() != Type.INTEGER;
         Set<String> values = codelist.get().getData().getEntries().keySet();
         if (isString) {
-          ((Schema<String>)result).setEnum(new ArrayList<>(values));
+          ((Schema<String>) result).setEnum(new ArrayList<>(values));
         } else {
-          ((Schema<Integer>)result).setEnum(values
-              .stream()
-              .map(Integer::parseInt)
-              .collect(Collectors.toList()));
+          ((Schema<Integer>) result)
+              .setEnum(values.stream().map(Integer::parseInt).collect(Collectors.toList()));
         }
       }
     }

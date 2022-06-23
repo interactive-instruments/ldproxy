@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -19,28 +18,29 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterFCommon extends QueryParameterF {
 
-    @Inject
-    public QueryParameterFCommon(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  public QueryParameterFCommon(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fCommon";
-    }
+  @Override
+  public String getId() {
+    return "fCommon";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return definitionPath.matches("^/?(?:conformance)?/?$");
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.matches("^/?(?:conformance)?/?$");
+  }
 
-    @Override
-    protected Class<? extends GenericFormatExtension> getFormatClass() {
-        return CommonFormatExtension.class;
-    }
+  @Override
+  protected Class<? extends GenericFormatExtension> getFormatClass() {
+    return CommonFormatExtension.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return CommonConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CommonConfiguration.class;
+  }
 }

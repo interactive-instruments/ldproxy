@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,52 +15,69 @@ import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import org.immutables.value.Value;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import org.immutables.value.Value;
 
 public interface FeaturesQuery {
-  FeatureQuery requestToFeatureQuery(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData,
-                                     EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
-                                     Map<String, String> parameters, List<OgcApiQueryParameter> allowedParameters,
-                                     String featureId);
+  FeatureQuery requestToFeatureQuery(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      EpsgCrs defaultCrs,
+      Map<String, Integer> coordinatePrecision,
+      Map<String, String> parameters,
+      List<OgcApiQueryParameter> allowedParameters,
+      String featureId);
 
-  FeatureQuery requestToFeatureQuery(OgcApi api, FeatureTypeConfigurationOgcApi collectionData,
-                                     EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
-                                     int minimumPageSize,
-                                     int defaultPageSize, int maxPageSize, Map<String, String> parameters,
-                                     List<OgcApiQueryParameter> allowedParameters);
+  FeatureQuery requestToFeatureQuery(
+      OgcApi api,
+      FeatureTypeConfigurationOgcApi collectionData,
+      EpsgCrs defaultCrs,
+      Map<String, Integer> coordinatePrecision,
+      int minimumPageSize,
+      int defaultPageSize,
+      int maxPageSize,
+      Map<String, String> parameters,
+      List<OgcApiQueryParameter> allowedParameters);
 
-  FeatureQuery requestToBareFeatureQuery(OgcApiDataV2 apiData, String featureTypeId,
-                                         EpsgCrs defaultCrs, Map<String, Integer> coordinatePrecision,
-                                         int minimumPageSize,
-                                         int defaultPageSize, int maxPageSize, Map<String, String> parameters,
-                                         List<OgcApiQueryParameter> allowedParameters);
+  FeatureQuery requestToBareFeatureQuery(
+      OgcApiDataV2 apiData,
+      String featureTypeId,
+      EpsgCrs defaultCrs,
+      Map<String, Integer> coordinatePrecision,
+      int minimumPageSize,
+      int defaultPageSize,
+      int maxPageSize,
+      Map<String, String> parameters,
+      List<OgcApiQueryParameter> allowedParameters);
 
-  Map<String, String> getFilterableFields(OgcApiDataV2 apiData,
-                                          FeatureTypeConfigurationOgcApi collectionData);
+  Map<String, String> getFilterableFields(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
 
-  Map<String, String> getQueryableTypes(OgcApiDataV2 apiData,
-                                        FeatureTypeConfigurationOgcApi collectionData);
+  Map<String, String> getQueryableTypes(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
 
-  Optional<Cql2Expression> getFilterFromQuery(Map<String, String> query, Map<String, String> filterableFields,
-                                         Set<String> filterParameters, Map<String, String> queryableTypes,
-                                         Format cqlFormat);
+  Optional<Cql2Expression> getFilterFromQuery(
+      Map<String, String> query,
+      Map<String, String> filterableFields,
+      Set<String> filterParameters,
+      Map<String, String> queryableTypes,
+      Format cqlFormat);
 
   @Value.Immutable
   interface QueryValidationInputCoordinates {
     boolean getEnabled();
+
     Optional<EpsgCrs> getBboxCrs();
+
     Optional<EpsgCrs> getFilterCrs();
+
     Optional<EpsgCrs> getNativeCrs();
 
     static QueryValidationInputCoordinates none() {
-      return new ImmutableQueryValidationInputCoordinates.Builder()
-          .enabled(false)
-          .build();
+      return new ImmutableQueryValidationInputCoordinates.Builder().enabled(false).build();
     }
   }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,12 +15,13 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true)
 public abstract class JsonSchemaTrue extends JsonSchema {
 
-    // any instance is valid, same as {}
+  // any instance is valid, same as {}
 
-    @JsonValue
-    public final boolean toValue() { return true; }
+  @JsonValue
+  public final boolean toValue() {
+    return true;
+  }
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaTrue> FUNNEL = (from, into) -> {
-    };
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaTrue> FUNNEL = (from, into) -> {};
 }

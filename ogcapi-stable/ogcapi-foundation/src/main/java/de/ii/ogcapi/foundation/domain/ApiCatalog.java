@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,27 +10,26 @@ package de.ii.ogcapi.foundation.domain;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableApiCatalog.Builder.class)
 public abstract class ApiCatalog extends PageRepresentation {
 
-    public abstract URI getCatalogUri();
+  public abstract URI getCatalogUri();
 
-    public abstract List<ApiCatalogEntry> getApis();
+  public abstract List<ApiCatalogEntry> getApis();
 
-    @JsonIgnore
-    public abstract String getUrlPrefix();
+  @JsonIgnore
+  public abstract String getUrlPrefix();
 
-    @JsonIgnore
-    public abstract Optional<String> getGoogleSiteVerification();
+  @JsonIgnore
+  public abstract Optional<String> getGoogleSiteVerification();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 }

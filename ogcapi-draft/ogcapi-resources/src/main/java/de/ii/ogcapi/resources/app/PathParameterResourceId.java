@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,81 +7,81 @@
  */
 package de.ii.ogcapi.resources.app;
 
-
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
+import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
-
 
 @Singleton
 @AutoBind
 public class PathParameterResourceId implements OgcApiPathParameter {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterResourceId.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterResourceId.class);
 
-    protected final SchemaValidator schemaValidator;
+  protected final SchemaValidator schemaValidator;
 
-    @Inject
-    PathParameterResourceId(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
-    }
+  @Inject
+  PathParameterResourceId(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+  }
 
-    @Override
-    public String getPattern() {
-        return "[^/]+";
-    }
+  @Override
+  public String getPattern() {
+    return "[^/]+";
+  }
 
-    @Override
-    public List<String> getValues(OgcApiDataV2 apiData) {
-        return ImmutableList.of();
-    }
+  @Override
+  public List<String> getValues(OgcApiDataV2 apiData) {
+    return ImmutableList.of();
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        return new StringSchema().pattern(getPattern());
-    }
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    return new StringSchema().pattern(getPattern());
+  }
 
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
 
-    @Override
-    public String getName() {
-        return "resourceId";
-    }
+  @Override
+  public String getName() {
+    return "resourceId";
+  }
 
-    @Override
-    public String getDescription() {
-        return "The file name of the file resource.";
-    }
+  @Override
+  public String getDescription() {
+    return "The file name of the file resource.";
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-        return isEnabledForApi(apiData) && definitionPath.equals("/resources/{resourceId}");
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    return isEnabledForApi(apiData) && definitionPath.equals("/resources/{resourceId}");
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return OgcApiPathParameter.super.isEnabledForApi(apiData) ||
-            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourcesEnabled).orElse(false);
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return OgcApiPathParameter.super.isEnabledForApi(apiData)
+        || apiData
+            .getExtension(StylesConfiguration.class)
+            .map(StylesConfiguration::isResourcesEnabled)
+            .orElse(false);
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return ResourcesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return ResourcesConfiguration.class;
+  }
 }

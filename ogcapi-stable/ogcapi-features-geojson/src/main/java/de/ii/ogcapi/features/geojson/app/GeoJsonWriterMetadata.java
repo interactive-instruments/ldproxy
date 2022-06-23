@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,7 +10,6 @@ package de.ii.ogcapi.features.geojson.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,91 +25,90 @@ import javax.inject.Singleton;
 @AutoBind
 public class GeoJsonWriterMetadata implements GeoJsonWriter {
 
-    @Inject
-    public GeoJsonWriterMetadata() {
+  @Inject
+  public GeoJsonWriterMetadata() {}
+
+  @Override
+  public GeoJsonWriterMetadata create() {
+    return new GeoJsonWriterMetadata();
+  }
+
+  @Override
+  public int getSortPriority() {
+    return 20;
+  }
+
+  @Override
+  public void onStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+
+    if (context.encoding().isFeatureCollection()) {
+      OptionalLong numberReturned = context.metadata().getNumberReturned();
+      OptionalLong numberMatched = context.metadata().getNumberMatched();
+
+      /* TODO
+      boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
+      this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), isLastPage);
+       */
+
+      if (numberReturned.isPresent()) {
+        context.encoding().getJson().writeNumberField("numberReturned", numberReturned.getAsLong());
+      }
+      if (numberMatched.isPresent()) {
+        context.encoding().getJson().writeNumberField("numberMatched", numberMatched.getAsLong());
+      }
+      context
+          .encoding()
+          .getJson()
+          .writeStringField("timeStamp", Instant.now().truncatedTo(ChronoUnit.SECONDS).toString());
     }
 
-    @Override
-    public GeoJsonWriterMetadata create() {
-        return new GeoJsonWriterMetadata();
-    }
+    next.accept(context);
+  }
 
-    @Override
-    public int getSortPriority() {
-        return 20;
-    }
+  /* TODO
+  @Override
+  public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+      if (!context.encoding().isFeatureCollection()) {
+          this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), false);
+      }
 
-    @Override
-    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+      // next chain for extensions
+      next.accept(context);
+  }
 
-        if (context.encoding().isFeatureCollection()) {
-            OptionalLong numberReturned = context.metadata().getNumberReturned();
-            OptionalLong numberMatched = context.metadata().getNumberMatched();
+  @Override
+  public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+      // next chain for extensions
+      next.accept(context);
 
-            /* TODO
-            boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
-            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), isLastPage);
-             */
+      if (!context.encoding().isFeatureCollection()) {
+          this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), false);
+      }
+  }
 
-            if (numberReturned.isPresent()) {
-                context.encoding().getJson()
-                                     .writeNumberField("numberReturned", numberReturned.getAsLong());
-            }
-            if (numberMatched.isPresent()) {
-                context.encoding().getJson()
-                                     .writeNumberField("numberMatched", numberMatched.getAsLong());
-            }
-            context.encoding().getJson()
-                                 .writeStringField("timeStamp", Instant.now()
-                                                                       .truncatedTo(ChronoUnit.SECONDS)
-                                                                       .toString());
-        }
+  private void writeLinksIfAny(JsonGenerator json, List<Link> links, boolean isLastPage) throws IOException {
+      if (!links.isEmpty()) {
+          json.writeFieldName("links");
+          json.writeStartArray();
 
-        next.accept(context);
-    }
+          for (Link link : links) {
+              if (!(isLastPage && Objects.equals(link.getRel(), "next"))) {
+                  json.writeStartObject();
+                  json.writeStringField("href", link.getHref());
+                  if (Objects.nonNull(link.getRel()))
+                      json.writeStringField("rel", link.getRel());
+                  if (Objects.nonNull(link.getType()))
+                      json.writeStringField("type", link.getType());
+                  if (Objects.nonNull(link.getTitle()))
+                      json.writeStringField("title", link.getTitle());
+                  json.writeEndObject();
+              }
+          }
 
-    /* TODO
-    @Override
-    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (!context.encoding().isFeatureCollection()) {
-            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), false);
-        }
-
-        // next chain for extensions
-        next.accept(context);
-    }
-
-    @Override
-    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        // next chain for extensions
-        next.accept(context);
-
-        if (!context.encoding().isFeatureCollection()) {
-            this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), false);
-        }
-    }
-
-    private void writeLinksIfAny(JsonGenerator json, List<Link> links, boolean isLastPage) throws IOException {
-        if (!links.isEmpty()) {
-            json.writeFieldName("links");
-            json.writeStartArray();
-
-            for (Link link : links) {
-                if (!(isLastPage && Objects.equals(link.getRel(), "next"))) {
-                    json.writeStartObject();
-                    json.writeStringField("href", link.getHref());
-                    if (Objects.nonNull(link.getRel()))
-                        json.writeStringField("rel", link.getRel());
-                    if (Objects.nonNull(link.getType()))
-                        json.writeStringField("type", link.getType());
-                    if (Objects.nonNull(link.getTitle()))
-                        json.writeStringField("title", link.getTitle());
-                    json.writeEndObject();
-                }
-            }
-
-            json.writeEndArray();
-        }
-    }
-     */
+          json.writeEndArray();
+      }
+  }
+   */
 }

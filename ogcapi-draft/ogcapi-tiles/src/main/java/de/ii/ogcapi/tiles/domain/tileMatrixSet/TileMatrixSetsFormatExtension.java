@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,17 +15,14 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 @AutoMultiBind
 public interface TileMatrixSetsFormatExtension extends GenericFormatExtension {
 
-    @Override
-    default String getPathPattern() {
-        return "^/tileMatrixSets(?:/\\w+)?/?$";
-    }
+  @Override
+  default String getPathPattern() {
+    return "^/tileMatrixSets(?:/\\w+)?/?$";
+  }
 
-    Object getTileMatrixSetsEntity(TileMatrixSets tileMatrixSets,
-                                   OgcApi api,
-                                   ApiRequestContext requestContext);
+  Object getTileMatrixSetsEntity(
+      TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext);
 
-    Object getTileMatrixSetEntity(TileMatrixSetData tileMatrixSet,
-                                  OgcApi api,
-                                  ApiRequestContext requestContext);
-
+  Object getTileMatrixSetEntity(
+      TileMatrixSetData tileMatrixSet, OgcApi api, ApiRequestContext requestContext);
 }

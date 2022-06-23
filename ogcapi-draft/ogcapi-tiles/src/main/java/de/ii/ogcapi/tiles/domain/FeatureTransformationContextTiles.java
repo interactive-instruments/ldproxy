@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -25,5 +25,4 @@ public interface FeatureTransformationContextTiles extends FeatureTransformation
   default TilesConfiguration tilesConfiguration() {
     return getConfiguration(TilesConfiguration.class);
   }
-
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,12 +14,11 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerFlatten;
-import org.immutables.value.Value;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
 
 @Value.Modifiable
 @Value.Style(set = "*")
@@ -28,13 +27,16 @@ public interface PropertyRoutes extends PropertyBase<PropertyRoutes, FeatureSche
   @Value.Default
   default String getName() {
     return isFlattened()
-    ? getSchema().map(FeatureSchema::getName).orElse("")
-    : getSchema().flatMap(FeatureSchema::getLabel).orElse(getSchema().map(FeatureSchema::getName).orElse(""));
+        ? getSchema().map(FeatureSchema::getName).orElse("")
+        : getSchema()
+            .flatMap(FeatureSchema::getLabel)
+            .orElse(getSchema().map(FeatureSchema::getName).orElse(""));
   }
 
   @Value.Lazy
   default boolean hasValues() {
-    return isValue() || (isArray() && getNestedProperties().stream().anyMatch(PropertyBase::isValue));
+    return isValue()
+        || (isArray() && getNestedProperties().stream().anyMatch(PropertyBase::isValue));
   }
 
   @Value.Lazy
@@ -42,7 +44,9 @@ public interface PropertyRoutes extends PropertyBase<PropertyRoutes, FeatureSche
     return isValue()
         ? ImmutableList.of(this)
         : isArray()
-            ? getNestedProperties().stream().filter(PropertyBase::isValue).collect(Collectors.toList())
+            ? getNestedProperties().stream()
+                .filter(PropertyBase::isValue)
+                .collect(Collectors.toList())
             : ImmutableList.of();
   }
 
@@ -56,11 +60,13 @@ public interface PropertyRoutes extends PropertyBase<PropertyRoutes, FeatureSche
     return getNestedProperties().stream()
         .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isPresent())
         .findFirst()
-        .or(() -> getNestedProperties().stream()
-            .map(PropertyRoutes::getGeometry)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findFirst());
+        .or(
+            () ->
+                getNestedProperties().stream()
+                    .map(PropertyRoutes::getGeometry)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst());
   }
 
   @Value.Lazy
@@ -78,21 +84,26 @@ public interface PropertyRoutes extends PropertyBase<PropertyRoutes, FeatureSche
     return getNestedProperties().stream()
         .filter(property -> Objects.equals(property.getPropertyPath(), path))
         .findFirst()
-        .or(() -> getNestedProperties().stream()
-            .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
-            .map(property -> property.findPropertyByPath(path))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .findFirst());
+        .or(
+            () ->
+                getNestedProperties().stream()
+                    .filter(
+                        property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
+                    .map(property -> property.findPropertyByPath(path))
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .findFirst());
   }
 
   @Value.Lazy
   default Geometry.LineString parseGeometry() {
     if (getSchema().filter(SchemaBase::isSpatial).isEmpty() || getGeometryType().isEmpty())
-      throw new IllegalStateException(String.format("Feature property with path '%s' is not a geometry: '%s'", getPropertyPath(), getSchema()));
+      throw new IllegalStateException(
+          String.format(
+              "Feature property with path '%s' is not a geometry: '%s'",
+              getPropertyPath(), getSchema()));
 
-    List<PropertyRoutes> coordinatesProperties = getNestedProperties().get(0)
-                                                                    .getNestedProperties();
+    List<PropertyRoutes> coordinatesProperties = getNestedProperties().get(0).getNestedProperties();
     switch (getGeometryType().get()) {
       case LINE_STRING:
         return Geometry.LineString.of(getCoordinates(coordinatesProperties));
@@ -102,15 +113,16 @@ public interface PropertyRoutes extends PropertyBase<PropertyRoutes, FeatureSche
   }
 
   private Geometry.Coordinate getCoordinate(List<PropertyRoutes> coordList) {
-    return Geometry.Coordinate.of(coordList.stream()
-                                           .map(PropertyBase::getValue)
-                                           .map(Double::parseDouble)
-                                           .collect(Collectors.toUnmodifiableList()));
+    return Geometry.Coordinate.of(
+        coordList.stream()
+            .map(PropertyBase::getValue)
+            .map(Double::parseDouble)
+            .collect(Collectors.toUnmodifiableList()));
   }
 
   private List<Geometry.Coordinate> getCoordinates(List<PropertyRoutes> coordsList) {
     return coordsList.stream()
-                     .map(coord -> getCoordinate(coord.getNestedProperties()))
-                     .collect(Collectors.toUnmodifiableList());
+        .map(coord -> getCoordinate(coord.getNestedProperties()))
+        .collect(Collectors.toUnmodifiableList());
   }
 }

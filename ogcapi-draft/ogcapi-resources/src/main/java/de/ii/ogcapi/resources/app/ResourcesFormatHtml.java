@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -30,62 +30,70 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class ResourcesFormatHtml implements ResourcesFormatExtension {
 
-    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.TEXT_HTML_TYPE)
-            .parameter("html")
+  static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).parameter("html").build();
+
+  private final I18n i18n;
+
+  @Inject
+  public ResourcesFormatHtml(I18n i18n) {
+    this.i18n = i18n;
+  }
+
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(new StringSchema().example("<html>...</html>"))
+        .schemaRef("#/components/schemas/htmlSchema")
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
+
+  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getNoIndexEnabled)
+        .orElse(true);
+  }
+
+  @Override
+  public Object getResourcesEntity(
+      Resources resources, OgcApiDataV2 apiData, ApiRequestContext requestContext) {
+    String rootTitle = i18n.get("root", requestContext.getLanguage());
+    String resourcesTitle = i18n.get("resourcesTitle", requestContext.getLanguage());
+
+    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
+    final List<NavigationDTO> breadCrumbs =
+        new ImmutableList.Builder<NavigationDTO>()
+            .add(
+                new NavigationDTO(
+                    rootTitle,
+                    resourceUri
+                        .copy()
+                        .removeLastPathSegments(apiData.getSubPath().size() + 1)
+                        .toString()))
+            .add(
+                new NavigationDTO(
+                    apiData.getLabel(), resourceUri.copy().removeLastPathSegments(1).toString()))
+            .add(new NavigationDTO(resourcesTitle))
             .build();
 
-    private final I18n i18n;
+    HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class).orElse(null);
 
-    @Inject
-    public ResourcesFormatHtml(I18n i18n) {
-        this.i18n = i18n;
-    }
-
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
-
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(new StringSchema().example("<html>...</html>"))
-                .schemaRef("#/components/schemas/htmlSchema")
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
-
-    private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(HtmlConfiguration.class)
-                .map(HtmlConfiguration::getNoIndexEnabled)
-                .orElse(true);
-    }
-
-    @Override
-    public Object getResourcesEntity(Resources resources,
-                                     OgcApiDataV2 apiData,
-                                     ApiRequestContext requestContext) {
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String resourcesTitle = i18n.get("resourcesTitle", requestContext.getLanguage());
-
-        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle,
-                        resourceUri.copy()
-                                .removeLastPathSegments(apiData.getSubPath().size() + 1)
-                                .toString()))
-                .add(new NavigationDTO(apiData.getLabel(),
-                        resourceUri
-                                .copy()
-                                .removeLastPathSegments(1)
-                                .toString()))
-                .add(new NavigationDTO(resourcesTitle))
-                .build();
-
-        HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class)
-                                              .orElse(null);
-
-        return new ResourcesView(apiData, resources, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(apiData), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-    }
+    return new ResourcesView(
+        apiData,
+        resources,
+        breadCrumbs,
+        requestContext.getStaticUrlPrefix(),
+        htmlConfig,
+        isNoIndexEnabledForApi(apiData),
+        requestContext.getUriCustomizer(),
+        i18n,
+        requestContext.getLanguage());
+  }
 }

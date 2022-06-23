@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,10 +21,10 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.util.List;
 import java.util.Optional;
@@ -33,77 +33,95 @@ import javax.ws.rs.core.Response;
 
 public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
 
-    private final TilesQueriesHandler queryHandler;
-    private final FeaturesCoreProviders providers;
+  private final TilesQueriesHandler queryHandler;
+  private final FeaturesCoreProviders providers;
 
-    public AbstractEndpointTileSetsMultiCollection(ExtensionRegistry extensionRegistry,
-                                                   TilesQueriesHandler queryHandler,
-                                                   FeaturesCoreProviders providers) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
-        this.providers = providers;
+  public AbstractEndpointTileSetsMultiCollection(
+      ExtensionRegistry extensionRegistry,
+      TilesQueriesHandler queryHandler,
+      FeaturesCoreProviders providers) {
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+    this.providers = providers;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
+    if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
+      // Tiles are pre-generated as a static tile set
+      return config.filter(ExtensionConfiguration::isEnabled).isPresent();
+    } else {
+      // Tiles are generated on-demand from a data source
+      if (config
+          .filter(TilesConfiguration::isEnabled)
+          .filter(TilesConfiguration::isMultiCollectionEnabled)
+          .isEmpty()) return false;
+      // currently no vector tiles support for WFS backends
+      return providers
+          .getFeatureProvider(apiData)
+          .map(FeatureProvider2::supportsHighLoad)
+          .orElse(false);
     }
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-        if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
-            // Tiles are pre-generated as a static tile set
-            return config.filter(ExtensionConfiguration::isEnabled)
-                .isPresent();
-        } else {
-            // Tiles are generated on-demand from a data source
-            if (config.filter(TilesConfiguration::isEnabled)
-                .filter(TilesConfiguration::isMultiCollectionEnabled)
-                .isEmpty()) return false;
-            // currently no vector tiles support for WFS backends
-            return providers.getFeatureProvider(apiData)
-                .map(FeatureProvider2::supportsHighLoad)
-                .orElse(false);
-        }
-    }
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
+    return formats;
+  }
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
-        return formats;
-    }
-
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData,
-                                                      String apiEntrypoint,
-                                                      int sortPriority,
-                                                      String path,
-                                                      List<String> tags) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+  protected ApiEndpointDefinition computeDefinition(
+      OgcApiDataV2 apiData,
+      String apiEntrypoint,
+      int sortPriority,
+      String path,
+      List<String> tags) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint(apiEntrypoint)
             .sortPriority(sortPriority);
-        HttpMethods method = HttpMethods.GET;
-        List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-        String operationSummary = "retrieve a list of the available tile sets";
-        Optional<String> operationDescription = Optional.of("This operation fetches the list of multi-layer tile sets supported by this API.");
-        ImmutableOgcApiResourceSet.Builder resourceBuilderSet = new ImmutableOgcApiResourceSet.Builder()
-            .path(path)
-            .subResourceType("Tile Set");
-        ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
-                                 getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), tags
-            )
-            .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
-        definitionBuilder.putResources(path, resourceBuilderSet.build());
+    HttpMethods method = HttpMethods.GET;
+    List<OgcApiQueryParameter> queryParameters =
+        getQueryParameters(extensionRegistry, apiData, path);
+    String operationSummary = "retrieve a list of the available tile sets";
+    Optional<String> operationDescription =
+        Optional.of(
+            "This operation fetches the list of multi-layer tile sets supported by this API.");
+    ImmutableOgcApiResourceSet.Builder resourceBuilderSet =
+        new ImmutableOgcApiResourceSet.Builder().path(path).subResourceType("Tile Set");
+    ApiOperation.getResource(
+            apiData,
+            path,
+            false,
+            queryParameters,
+            ImmutableList.of(),
+            getContent(apiData, path),
+            operationSummary,
+            operationDescription,
+            Optional.empty(),
+            tags)
+        .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
+    definitionBuilder.putResources(path, resourceBuilderSet.build());
 
-        return definitionBuilder.build();
-    }
+    return definitionBuilder.build();
+  }
 
-    protected Response getTileSets(OgcApiDataV2 apiData, ApiRequestContext requestContext,
-                                   String definitionPath, boolean onlyWebMercatorQuad,
-                                   List<String> tileEncodings) {
+  protected Response getTileSets(
+      OgcApiDataV2 apiData,
+      ApiRequestContext requestContext,
+      String definitionPath,
+      boolean onlyWebMercatorQuad,
+      List<String> tileEncodings) {
 
-        if (!isEnabledForApi(apiData))
-            throw new NotFoundException("Multi-collection tiles are not available in this API.");
+    if (!isEnabledForApi(apiData))
+      throw new NotFoundException("Multi-collection tiles are not available in this API.");
 
-        TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
+    TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
-        TilesQueriesHandler.QueryInputTileSets queryInput = new Builder()
+    TilesQueriesHandler.QueryInputTileSets queryInput =
+        new Builder()
             .from(getGenericQueryInput(apiData))
             .center(tilesConfiguration.getCenterDerived())
             .tileMatrixSetZoomLevels(tilesConfiguration.getZoomLevelsDerived())
@@ -112,7 +130,6 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
             .tileEncodings(tileEncodings)
             .build();
 
-        return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
-    }
-
+    return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,7 +11,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.flatgeobuf.domain.ImmutableFlatgeobufConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -19,17 +18,16 @@ import javax.inject.Singleton;
 @AutoBind
 public class CapabilityFlatgeobuf implements ApiBuildingBlock {
 
-    public static int DEFAULT_MULTIPLICITY = 3;
+  public static int DEFAULT_MULTIPLICITY = 3;
 
-    @Inject
-    public CapabilityFlatgeobuf() {
-    }
+  @Inject
+  public CapabilityFlatgeobuf() {}
 
-    @Override
-    public ExtensionConfiguration getDefaultConfiguration() {
-        return new ImmutableFlatgeobufConfiguration.Builder().enabled(false)
-            .maxMultiplicity(DEFAULT_MULTIPLICITY)
-            .build();
-    }
-
+  @Override
+  public ExtensionConfiguration getDefaultConfiguration() {
+    return new ImmutableFlatgeobufConfiguration.Builder()
+        .enabled(false)
+        .maxMultiplicity(DEFAULT_MULTIPLICITY)
+        .build();
+  }
 }

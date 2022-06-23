@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,10 +24,10 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle.Builder;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
-import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle.Builder;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,106 +43,138 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * fetch list the metadata of a style
- */
+/** fetch list the metadata of a style */
 @Singleton
 @AutoBind
 public class EndpointStyleMetadataCollection extends EndpointSubCollection {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleMetadataCollection.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(EndpointStyleMetadataCollection.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
+  private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
-    private final QueriesHandlerStyles queryHandler;
+  private final QueriesHandlerStyles queryHandler;
 
-    @Inject
-    public EndpointStyleMetadataCollection(ExtensionRegistry extensionRegistry,
-                                           QueriesHandlerStyles queryHandler) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+  @Inject
+  public EndpointStyleMetadataCollection(
+      ExtensionRegistry extensionRegistry, QueriesHandlerStyles queryHandler) {
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return StylesConfiguration.class;
+  }
+
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(StyleMetadataFormatExtension.class);
+    return formats;
+  }
+
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("collections")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_COLLECTION);
+    final String subSubPath = "/styles/{styleId}/metadata";
+    final String path = "/collections/{collectionId}" + subSubPath;
+    final List<OgcApiPathParameter> pathParameters =
+        getPathParameters(extensionRegistry, apiData, path);
+    final Optional<OgcApiPathParameter> optCollectionIdParam =
+        pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
+    if (!optCollectionIdParam.isPresent()) {
+      LOGGER.error(
+          "Path parameter 'collectionId' missing for resource at path '"
+              + path
+              + "'. The GET method will not be available.");
+    } else {
+      final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
+      boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
+      final List<String> collectionIds =
+          (explode) ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
+      for (String collectionId : collectionIds) {
+        List<OgcApiQueryParameter> queryParameters =
+            getQueryParameters(extensionRegistry, apiData, path, collectionId);
+        String operationSummary =
+            "fetch metadata about the style `{styleId}` for collection `" + collectionId + "`";
+        Optional<String> operationDescription =
+            Optional.of(
+                "Style metadata is essential information about a style in order to "
+                    + "support users to discover and select styles for rendering their data and for visual style editors "
+                    + "to create user interfaces for editing a style. This operations returns the metadata for the "
+                    + "requested style as a single document. The stylesheet of the style will typically include some "
+                    + "the metadata, too.");
+        String resourcePath = path.replace("{collectionId}", collectionId);
+        ImmutableOgcApiResourceData.Builder resourceBuilder =
+            new ImmutableOgcApiResourceData.Builder()
+                .path(resourcePath)
+                .pathParameters(pathParameters);
+        Map<MediaType, ApiMediaTypeContent> responseContent =
+            collectionId.startsWith("{")
+                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
+                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        ApiOperation.getResource(
+                apiData,
+                resourcePath,
+                false,
+                queryParameters,
+                ImmutableList.of(),
+                responseContent,
+                operationSummary,
+                operationDescription,
+                Optional.empty(),
+                TAGS)
+            .ifPresent(
+                operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
+        definitionBuilder.putResources(resourcePath, resourceBuilder.build());
+      }
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return StylesConfiguration.class;
-    }
+    return definitionBuilder.build();
+  }
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(StyleMetadataFormatExtension.class);
-        return formats;
-    }
+  /**
+   * Fetch metadata for a style
+   *
+   * @param styleId the local identifier of a specific style
+   * @return the style in a json file
+   */
+  @Path("/{collectionId}/styles/{styleId}/metadata")
+  @GET
+  @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
+  public Response getStyleMetadata(
+      @PathParam("collectionId") String collectionId,
+      @PathParam("styleId") String styleId,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext) {
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("collections")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA_COLLECTION);
-        final String subSubPath = "/styles/{styleId}/metadata";
-        final String path = "/collections/{collectionId}" + subSubPath;
-        final List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        final Optional<OgcApiPathParameter> optCollectionIdParam = pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-        if (!optCollectionIdParam.isPresent()) {
-            LOGGER.error("Path parameter 'collectionId' missing for resource at path '" + path + "'. The GET method will not be available.");
-        } else {
-            final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
-            boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
-            final List<String> collectionIds = (explode) ?
-                    collectionIdParam.getValues(apiData) :
-                    ImmutableList.of("{collectionId}");
-            for (String collectionId : collectionIds) {
-                List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, collectionId);
-                String operationSummary = "fetch metadata about the style `{styleId}` for collection `"+collectionId+"`";
-                Optional<String> operationDescription = Optional.of("Style metadata is essential information about a style in order to " +
-                                                                            "support users to discover and select styles for rendering their data and for visual style editors " +
-                                                                            "to create user interfaces for editing a style. This operations returns the metadata for the " +
-                                                                            "requested style as a single document. The stylesheet of the style will typically include some " +
-                                                                            "the metadata, too.");
-                String resourcePath = path.replace("{collectionId}", collectionId);
-                ImmutableOgcApiResourceData.Builder resourceBuilder = new ImmutableOgcApiResourceData.Builder()
-                        .path(resourcePath)
-                        .pathParameters(pathParameters);
-                Map<MediaType, ApiMediaTypeContent> responseContent = collectionId.startsWith("{") ?
-                    getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET) :
-                    getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
-                ApiOperation.getResource(apiData, resourcePath, false,
-                                         queryParameters, ImmutableList.of(), responseContent,
-                                         operationSummary, operationDescription, Optional.empty(), TAGS)
-                    .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
-                definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-            }
-        }
+    OgcApiDataV2 apiData = api.getData();
+    checkPathParameter(
+        extensionRegistry,
+        apiData,
+        "/collections/{collectionId}/styles/{styleId}/metadata",
+        "collectionId",
+        collectionId);
+    checkPathParameter(
+        extensionRegistry,
+        apiData,
+        "/collections/{collectionId}/styles/{styleId}/metadata",
+        "styleId",
+        styleId);
+    checkCollectionExists(apiData, collectionId);
 
-        return definitionBuilder.build();
-    }
+    QueriesHandlerStyles.QueryInputStyle queryInput =
+        new Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .collectionId(collectionId)
+            .styleId(styleId)
+            .build();
 
-    /**
-     * Fetch metadata for a style
-     *
-     * @param styleId the local identifier of a specific style
-     * @return the style in a json file
-     */
-    @Path("/{collectionId}/styles/{styleId}/metadata")
-    @GET
-    @Produces({MediaType.APPLICATION_JSON,MediaType.TEXT_HTML})
-    public Response getStyleMetadata(@PathParam("collectionId") String collectionId,
-                                     @PathParam("styleId") String styleId,
-                                     @Context OgcApi api,
-                                     @Context ApiRequestContext requestContext) {
-
-        OgcApiDataV2 apiData = api.getData();
-        checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}/metadata", "collectionId", collectionId);
-        checkPathParameter(extensionRegistry, apiData, "/collections/{collectionId}/styles/{styleId}/metadata", "styleId", styleId);
-        checkCollectionExists(apiData, collectionId);
-
-        QueriesHandlerStyles.QueryInputStyle queryInput = new Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .collectionId(collectionId)
-                .styleId(styleId)
-                .build();
-
-        return queryHandler.handle(QueriesHandlerStyles.Query.STYLE_METADATA, queryInput, requestContext);
-    }
+    return queryHandler.handle(
+        QueriesHandlerStyles.Query.STYLE_METADATA, queryInput, requestContext);
+  }
 }

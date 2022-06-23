@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,9 +9,6 @@ package de.ii.ogcapi.foundation.domain;
 
 import org.immutables.value.Value;
 
-/**
- * A resource that represents other types of information like styles, tiling schemes, etc.
- */
+/** A resource that represents other types of information like styles, tiling schemes, etc. */
 @Value.Immutable
-public interface OgcApiResourceAuxiliary extends OgcApiResource {
-}
+public interface OgcApiResourceAuxiliary extends OgcApiResource {}

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.xml.domain.XmlConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -21,14 +20,15 @@ import javax.inject.Singleton;
 @AutoBind
 public class JacksonSubTypeIdsXml implements JacksonSubTypeIds {
 
-    @Inject
-    public JacksonSubTypeIdsXml() {
-    }
+  @Inject
+  public JacksonSubTypeIdsXml() {}
 
-    @Override
-    public Map<Class<?>, String> getMapping() {
-        return new ImmutableMap.Builder<Class<?>, String>()
-                .put(XmlConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(XmlConfiguration.class))
-                .build();
-    }
+  @Override
+  public Map<Class<?>, String> getMapping() {
+    return new ImmutableMap.Builder<Class<?>, String>()
+        .put(
+            XmlConfiguration.class,
+            ExtensionConfiguration.getBuildingBlockIdentifier(XmlConfiguration.class))
+        .build();
+  }
 }

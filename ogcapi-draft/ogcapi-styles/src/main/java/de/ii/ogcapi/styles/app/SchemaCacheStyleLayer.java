@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,12 +7,12 @@
  */
 package de.ii.ogcapi.styles.app;
 
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
@@ -24,24 +24,28 @@ public class SchemaCacheStyleLayer extends JsonSchemaCache {
 
   private final Supplier<List<Codelist>> codelistSupplier;
 
-  public SchemaCacheStyleLayer(
-      Supplier<List<Codelist>> codelistSupplier) {
+  public SchemaCacheStyleLayer(Supplier<List<Codelist>> codelistSupplier) {
     this.codelistSupplier = codelistSupplier;
   }
 
   @Override
-  protected JsonSchemaDocument deriveSchema(FeatureSchema schema, OgcApiDataV2 apiData,
-      FeatureTypeConfigurationOgcApi collectionData, Optional<String> schemaUri,
+  protected JsonSchemaDocument deriveSchema(
+      FeatureSchema schema,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      Optional<String> schemaUri,
       VERSION version) {
 
     WithTransformationsApplied schemaTransformer = new WithTransformationsApplied();
 
-    SchemaDeriverReturnables schemaDeriverReturnables = new SchemaDeriverReturnables(
-        version, schemaUri, collectionData.getLabel(),
-        Optional.empty(), codelistSupplier.get());
+    SchemaDeriverReturnables schemaDeriverReturnables =
+        new SchemaDeriverReturnables(
+            version,
+            schemaUri,
+            collectionData.getLabel(),
+            Optional.empty(),
+            codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema
-        .accept(schemaTransformer)
-        .accept(schemaDeriverReturnables);
+    return (JsonSchemaDocument) schema.accept(schemaTransformer).accept(schemaDeriverReturnables);
   }
 }

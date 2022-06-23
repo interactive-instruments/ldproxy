@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,13 +7,13 @@
  */
 package de.ii.ogcapi.oas30.domain;
 
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.OpenAPI;
 
 public interface OpenApiExtension extends ApiExtension {
 
-    int getSortPriority();
+  int getSortPriority();
 
-    OpenAPI process(OpenAPI openAPI, OgcApiDataV2 apiData);
+  OpenAPI process(OpenAPI openAPI, OgcApiDataV2 apiData);
 }

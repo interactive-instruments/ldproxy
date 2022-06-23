@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,56 +9,66 @@ package de.ii.ogcapi.features.core.domain;
 
 import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
+import de.ii.ogcapi.features.core.app.PathParameterFeatureIdFeatures;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.features.core.app.PathParameterFeatureIdFeatures;
-import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.FeatureTransformer2;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
 import java.util.Optional;
 
 public interface FeatureFormatExtension extends FormatExtension {
 
-    default String getPathPattern() {
-        return "^/?collections/"+COLLECTION_ID_PATTERN+"/items(?:/"+ PathParameterFeatureIdFeatures.FEATURE_ID_PATTERN+")?$";
-    }
+  default String getPathPattern() {
+    return "^/?collections/"
+        + COLLECTION_ID_PATTERN
+        + "/items(?:/"
+        + PathParameterFeatureIdFeatures.FEATURE_ID_PATTERN
+        + ")?$";
+  }
 
-    ApiMediaType getCollectionMediaType();
+  ApiMediaType getCollectionMediaType();
 
-    default boolean canPassThroughFeatures() {
-        return false;
-    }
+  default boolean canPassThroughFeatures() {
+    return false;
+  }
 
-    default boolean canEncodeFeatures() {
-        return false;
-    }
+  default boolean canEncodeFeatures() {
+    return false;
+  }
 
-    default Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
-      FeatureTransformationContext transformationContext,
-      Optional<Locale> language) {
-        return Optional.empty();
-    }
+  default Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
+      FeatureTransformationContext transformationContext, Optional<Locale> language) {
+    return Optional.empty();
+  }
 
-    default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
-      FeatureTransformationContext transformationContext,
-      Optional<Locale> language) {
-        return Optional.empty();
-    }
+  default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+      FeatureTransformationContext transformationContext, Optional<Locale> language) {
+    return Optional.empty();
+  }
 
-    default Optional<PropertyTransformations> getPropertyTransformations(FeatureTypeConfigurationOgcApi collectionData) {
+  default Optional<PropertyTransformations> getPropertyTransformations(
+      FeatureTypeConfigurationOgcApi collectionData) {
 
-        Optional<PropertyTransformations> coreTransformations = collectionData.getExtension(FeaturesCoreConfiguration.class)
-            .map(featuresCoreConfiguration -> ((PropertyTransformations)featuresCoreConfiguration));
+    Optional<PropertyTransformations> coreTransformations =
+        collectionData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(
+                featuresCoreConfiguration -> ((PropertyTransformations) featuresCoreConfiguration));
 
-        Optional<PropertyTransformations> formatTransformations = collectionData.getExtension(this.getBuildingBlockConfigurationType())
-            .filter(buildingBlockConfiguration -> buildingBlockConfiguration instanceof PropertyTransformations)
-            .map(buildingBlockConfiguration -> ((PropertyTransformations)buildingBlockConfiguration));
+    Optional<PropertyTransformations> formatTransformations =
+        collectionData
+            .getExtension(this.getBuildingBlockConfigurationType())
+            .filter(
+                buildingBlockConfiguration ->
+                    buildingBlockConfiguration instanceof PropertyTransformations)
+            .map(
+                buildingBlockConfiguration ->
+                    ((PropertyTransformations) buildingBlockConfiguration));
 
-
-        return formatTransformations.map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
+    return formatTransformations
+        .map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
         .or(() -> coreTransformations);
-    }
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,12 +15,16 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableRule.Builder.class)
-public
-interface Rule {
-    int getMin();
-    int getMax();
-    Optional<Boolean> getMerge();
-    Optional<Boolean> getReduceInClusters();
-    List<String> getGroupBy();
-    List<String> getProperties();
+public interface Rule {
+  int getMin();
+
+  int getMax();
+
+  Optional<Boolean> getMerge();
+
+  Optional<Boolean> getReduceInClusters();
+
+  List<String> getGroupBy();
+
+  List<String> getProperties();
 }

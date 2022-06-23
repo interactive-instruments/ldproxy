@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -11,35 +11,32 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableConformanceDeclaration.Builder.class)
 public abstract class ConformanceDeclaration extends PageRepresentation {
 
-    public final static String SCHEMA_REF = "#/components/schemas/ConformanceDeclaration";
+  public static final String SCHEMA_REF = "#/components/schemas/ConformanceDeclaration";
 
-    public abstract List<String> getConformsTo();
+  public abstract List<String> getConformsTo();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getExtensions();
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<ConformanceDeclaration> FUNNEL = (from, into) -> {
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<ConformanceDeclaration> FUNNEL =
+      (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
-        from.getConformsTo()
-            .stream()
+        from.getConformsTo().stream()
             .sorted()
             .forEachOrdered(uri -> into.putString(uri, StandardCharsets.UTF_8));
-        from.getExtensions()
-            .keySet()
-            .stream()
+        from.getExtensions().keySet().stream()
             .sorted()
             .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
         // we cannot encode the generic extension object
-    };
+      };
 }

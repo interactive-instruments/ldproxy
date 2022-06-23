@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -6,6 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.features.cityjson.app;
+
+import static de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration.Version.V11;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration;
@@ -22,69 +24,78 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-
+import java.util.Locale;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import java.util.Locale;
-import java.util.Optional;
-
-import static de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration.Version.V11;
 
 @Singleton
 @AutoBind
 public class FeaturesFormatCityJsonSeq extends FeaturesFormatCityJsonBase {
 
-    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "city+json-seq"))
-            .label("CityJSON-Seq")
-            .parameter("cityjsonseq")
-            .build();
+  public static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "city+json-seq"))
+          .label("CityJSON-Seq")
+          .parameter("cityjsonseq")
+          .build();
 
   @Inject
-    public FeaturesFormatCityJsonSeq(FeaturesCoreProviders providers,
-                                     EntityRegistry entityRegistry,
-                                     FeaturesCoreValidation featuresCoreValidator,
-                                     SchemaGeneratorOpenApi schemaGeneratorFeature,
-                                     SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-                                     CityJsonWriterRegistry cityJsonWriterRegistry,
-                                     CrsTransformerFactory crsTransformerFactory, CrsInfo crsInfo) {
-        super(providers, entityRegistry, featuresCoreValidator, schemaGeneratorFeature, schemaGeneratorFeatureCollection,
-              cityJsonWriterRegistry, crsTransformerFactory, crsInfo);
-    }
+  public FeaturesFormatCityJsonSeq(
+      FeaturesCoreProviders providers,
+      EntityRegistry entityRegistry,
+      FeaturesCoreValidation featuresCoreValidator,
+      SchemaGeneratorOpenApi schemaGeneratorFeature,
+      SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
+      CityJsonWriterRegistry cityJsonWriterRegistry,
+      CrsTransformerFactory crsTransformerFactory,
+      CrsInfo crsInfo) {
+    super(
+        providers,
+        entityRegistry,
+        featuresCoreValidator,
+        schemaGeneratorFeature,
+        schemaGeneratorFeatureCollection,
+        cityJsonWriterRegistry,
+        crsTransformerFactory,
+        crsInfo);
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) &&
-                apiData.getExtension(CityJsonConfiguration.class)
-                       .flatMap(CityJsonConfiguration::getTextSequences)
-                       .filter(Boolean::booleanValue)
-                       .isPresent();
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData)
+        && apiData
+            .getExtension(CityJsonConfiguration.class)
+            .flatMap(CityJsonConfiguration::getTextSequences)
+            .filter(Boolean::booleanValue)
+            .isPresent();
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return super.isEnabledForApi(apiData) &&
-                apiData.getExtension(CityJsonConfiguration.class, collectionId)
-                       .flatMap(CityJsonConfiguration::getTextSequences)
-                       .filter(Boolean::booleanValue)
-                       .isPresent();
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData)
+        && apiData
+            .getExtension(CityJsonConfiguration.class, collectionId)
+            .flatMap(CityJsonConfiguration::getTextSequences)
+            .filter(Boolean::booleanValue)
+            .isPresent();
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
-        FeatureTransformationContext transformationContext,
-        Optional<Locale> language) {
-      CityJsonConfiguration.Version version = transformationContext.getApiData()
-          .getExtension(CityJsonConfiguration.class, transformationContext.getCollectionId())
-          .flatMap(CityJsonConfiguration::getVersion)
-          .orElse(V11);
-        return super.getFeatureEncoder(transformationContext, language, version, true);
-    }
-
+  @Override
+  public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+      FeatureTransformationContext transformationContext, Optional<Locale> language) {
+    CityJsonConfiguration.Version version =
+        transformationContext
+            .getApiData()
+            .getExtension(CityJsonConfiguration.class, transformationContext.getCollectionId())
+            .flatMap(CityJsonConfiguration::getVersion)
+            .orElse(V11);
+    return super.getFeatureEncoder(transformationContext, language, version, true);
+  }
 }

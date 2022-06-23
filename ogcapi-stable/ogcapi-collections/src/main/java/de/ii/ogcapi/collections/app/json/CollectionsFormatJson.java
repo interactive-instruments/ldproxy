@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,7 +9,6 @@ package de.ii.ogcapi.collections.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.Collections;
 import de.ii.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
@@ -23,8 +22,6 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.media.Schema;
-
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
@@ -38,67 +35,68 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class CollectionsFormatJson implements CollectionsFormatExtension, ConformanceClass {
 
-    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "json"))
-            .label("JSON")
-            .parameter("json")
-            .build();
+  public static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "json"))
+          .label("JSON")
+          .parameter("json")
+          .build();
 
-    private final Schema<?> schemaCollections;
-    private final Map<String, Schema<?>> referencedSchemasCollections;
-    private final Schema<?> schemaCollection;
-    private final Map<String, Schema<?>> referencedSchemasCollection;
+  private final Schema<?> schemaCollections;
+  private final Map<String, Schema<?>> referencedSchemasCollections;
+  private final Schema<?> schemaCollection;
+  private final Map<String, Schema<?>> referencedSchemasCollection;
 
-    @Inject
-    public CollectionsFormatJson(ClassSchemaCache classSchemaCache) {
-        schemaCollections = classSchemaCache.getSchema(Collections.class);
-        referencedSchemasCollections = classSchemaCache.getReferencedSchemas(Collections.class);
-        schemaCollection = classSchemaCache.getSchema(OgcApiCollection.class);
-        referencedSchemasCollection = classSchemaCache.getReferencedSchemas(OgcApiCollection.class);
+  @Inject
+  public CollectionsFormatJson(ClassSchemaCache classSchemaCache) {
+    schemaCollections = classSchemaCache.getSchema(Collections.class);
+    referencedSchemasCollections = classSchemaCache.getReferencedSchemas(Collections.class);
+    schemaCollection = classSchemaCache.getSchema(OgcApiCollection.class);
+    referencedSchemasCollection = classSchemaCache.getReferencedSchemas(OgcApiCollection.class);
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/json");
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+
+    // TODO add examples
+    if (path.equals("/collections")) {
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(schemaCollections)
+          .schemaRef(Collections.SCHEMA_REF)
+          .referencedSchemas(referencedSchemasCollections)
+          .ogcApiMediaType(MEDIA_TYPE)
+          .build();
+    } else if (path.matches("^/collections/[^//]+/?")) {
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(schemaCollection)
+          .schemaRef(OgcApiCollection.SCHEMA_REF)
+          .referencedSchemas(referencedSchemasCollection)
+          .ogcApiMediaType(MEDIA_TYPE)
+          .build();
     }
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-common-2/0.0/conf/json");
-    }
+    throw new RuntimeException("Unexpected path: " + path);
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-        // TODO add examples
-        if (path.equals("/collections")) {
-            return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaCollections)
-                .schemaRef(Collections.SCHEMA_REF)
-                .referencedSchemas(referencedSchemasCollections)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-        } else if (path.matches("^/collections/[^//]+/?")) {
-            return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaCollection)
-                .schemaRef(OgcApiCollection.SCHEMA_REF)
-                .referencedSchemas(referencedSchemasCollection)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-        }
+  @Override
+  public Object getCollectionsEntity(
+      Collections collections, OgcApi api, ApiRequestContext requestContext) {
+    return collections;
+  }
 
-        throw new RuntimeException("Unexpected path: " + path);
-    }
-
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
-
-    @Override
-    public Object getCollectionsEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
-        return collections;
-    }
-
-    @Override
-    public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
-                                          OgcApi api,
-                                          ApiRequestContext requestContext) {
-        return ogcApiCollection;
-    }
+  @Override
+  public Object getCollectionEntity(
+      OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
+    return ogcApiCollection;
+  }
 }

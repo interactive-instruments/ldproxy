@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -6,7 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 package de.ii.ogcapi.collections.queryables.app;
-
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -28,51 +27,51 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/**
- * add a link to the Queryables to the collection
- */
+/** add a link to the Queryables to the collection */
 @Singleton
 @AutoBind
 public class QueryablesOnCollection implements CollectionExtension {
 
+  private final I18n i18n;
 
-    private final I18n i18n;
+  @Inject
+  public QueryablesOnCollection(I18n i18n) {
+    this.i18n = i18n;
+  }
 
-    @Inject
-    public QueryablesOnCollection(I18n i18n) {
-        this.i18n = i18n;
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return QueryablesConfiguration.class;
+  }
+
+  @Override
+  public ImmutableOgcApiCollection.Builder process(
+      Builder collection,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      boolean isNested,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+    if (isExtensionEnabled(featureTypeConfiguration, QueryablesConfiguration.class) && !isNested) {
+      collection.addAllLinks(
+          ImmutableList.<Link>builder()
+              .add(
+                  new ImmutableLink.Builder()
+                      .href(
+                          uriCustomizer
+                              .copy()
+                              .ensureNoTrailingSlash()
+                              .ensureLastPathSegment("queryables")
+                              .removeParameters("f")
+                              .toString())
+                      .rel("http://www.opengis.net/def/rel/ogc/1.0/queryables")
+                      .title(i18n.get("queryablesLink", language))
+                      .build())
+              .build());
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return QueryablesConfiguration.class;
-    }
-
-    @Override
-    public ImmutableOgcApiCollection.Builder process(Builder collection,
-                                                     FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                     OgcApi api,
-                                                     URICustomizer uriCustomizer,
-                                                     boolean isNested,
-                                                     ApiMediaType mediaType,
-                                                     List<ApiMediaType> alternateMediaTypes,
-                                                     Optional<Locale> language) {
-        if (isExtensionEnabled(featureTypeConfiguration, QueryablesConfiguration.class) && !isNested) {
-            collection.addAllLinks(
-                ImmutableList.<Link>builder()
-                    .add(new ImmutableLink.Builder()
-                             .href(uriCustomizer.copy()
-                                       .ensureNoTrailingSlash()
-                                       .ensureLastPathSegment("queryables")
-                                       .removeParameters("f")
-                                       .toString())
-                             .rel("http://www.opengis.net/def/rel/ogc/1.0/queryables")
-                             .title(i18n.get("queryablesLink", language))
-                             .build())
-                    .build());
-        }
-
-        return collection;
-    }
-
+    return collection;
+  }
 }

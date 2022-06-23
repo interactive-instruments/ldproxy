@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,41 +7,40 @@
  */
 package de.ii.ogcapi.routes.infra;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.routes.app.CapabilityRouting;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
-import java.util.List;
 
 @Singleton
 @AutoBind
 public class ConformanceDeclarationObstacles implements ConformanceClass {
 
-    @Inject
-    ConformanceDeclarationObstacles() {
-    }
+  @Inject
+  ConformanceDeclarationObstacles() {}
 
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of(CapabilityRouting.OBSTACLES);
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of(CapabilityRouting.OBSTACLES);
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(RoutingConfiguration.class)
-            .filter(ExtensionConfiguration::isEnabled)
-            .filter(RoutingConfiguration::supportsObstacles)
-            .isPresent();
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(RoutingConfiguration.class)
+        .filter(ExtensionConfiguration::isEnabled)
+        .filter(RoutingConfiguration::supportsObstacles)
+        .isPresent();
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return RoutingConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return RoutingConfiguration.class;
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -22,79 +22,76 @@ import javax.inject.Singleton;
 @AutoBind
 public class GeoJsonWriterSkeleton implements GeoJsonWriter {
 
-    @Inject
-    public GeoJsonWriterSkeleton() {
+  @Inject
+  public GeoJsonWriterSkeleton() {}
+
+  @Override
+  public GeoJsonWriterSkeleton create() {
+    return new GeoJsonWriterSkeleton();
+  }
+
+  @Override
+  public int getSortPriority() {
+    return 0;
+  }
+
+  @Override
+  public void onStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+    if (context.encoding().isFeatureCollection()) {
+
+      context.encoding().getJson().writeStartObject();
+      context.encoding().getJson().writeStringField("type", "FeatureCollection");
     }
 
-    @Override
-    public GeoJsonWriterSkeleton create() {
-        return new GeoJsonWriterSkeleton();
+    next.accept(context);
+
+    if (context.encoding().isFeatureCollection()) {
+      context.encoding().getJson().writeFieldName("features");
+      context.encoding().getJson().writeStartArray();
+    }
+  }
+
+  @Override
+  public void onEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+
+    if (context.encoding().isFeatureCollection()) {
+      // end of features array
+      context.encoding().getJson().writeEndArray();
     }
 
-    @Override
-    public int getSortPriority() {
-        return 0;
+    // next chain for extensions
+    next.accept(context);
+
+    if (context.encoding().isFeatureCollection()) {
+      // end of collection object
+      context.encoding().getJson().writeEndObject();
     }
+  }
 
-    @Override
-    public void onStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-        if (context.encoding().isFeatureCollection()) {
+  @Override
+  public void onFeatureStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
 
-            context.encoding().getJson()
-                                 .writeStartObject();
-            context.encoding().getJson()
-                                 .writeStringField("type", "FeatureCollection");
-        }
+    context.encoding().getJson().writeStartObject();
+    context.encoding().getJson().writeStringField("type", "Feature");
 
-        next.accept(context);
+    // next chain for extensions
+    next.accept(context);
+  }
 
-        if (context.encoding().isFeatureCollection()) {
-            context.encoding().getJson()
-                                 .writeFieldName("features");
-            context.encoding().getJson()
-                                 .writeStartArray();
-        }
-    }
+  @Override
+  public void onFeatureEnd(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
 
-    @Override
-    public void onEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
+    // next chain for extensions
+    next.accept(context);
 
-        if (context.encoding().isFeatureCollection()) {
-            // end of features array
-            context.encoding().getJson()
-                                 .writeEndArray();
-        }
-
-        // next chain for extensions
-        next.accept(context);
-
-        if (context.encoding().isFeatureCollection()) {
-            // end of collection object
-            context.encoding().getJson()
-                                 .writeEndObject();
-        }
-    }
-
-    @Override
-    public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-
-        context.encoding().getJson()
-                             .writeStartObject();
-        context.encoding().getJson()
-                             .writeStringField("type", "Feature");
-
-        // next chain for extensions
-        next.accept(context);
-    }
-
-    @Override
-    public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-
-        // next chain for extensions
-        next.accept(context);
-
-        // end of feature
-        context.encoding().getJson()
-                             .writeEndObject();
-    }
+    // end of feature
+    context.encoding().getJson().writeEndObject();
+  }
 }

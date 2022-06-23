@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -33,7 +33,8 @@ public class FeatureEncoderGeoJson extends FeatureTokenEncoderDefault<EncodingAw
   private FeatureProperty currentProperty;
   private boolean combineCurrentPropertyValues;
 
-  public FeatureEncoderGeoJson(FeatureTransformationContextGeoJson transformationContext,
+  public FeatureEncoderGeoJson(
+      FeatureTransformationContextGeoJson transformationContext,
       ImmutableCollection<GeoJsonWriter> featureWriters) {
     this.transformationContext = transformationContext;
     this.featureWriters = featureWriters;
@@ -42,40 +43,38 @@ public class FeatureEncoderGeoJson extends FeatureTokenEncoderDefault<EncodingAw
 
   private Consumer<EncodingAwareContextGeoJson> executePipeline(
       final Iterator<GeoJsonWriter> featureWriterIterator) {
-    return consumerMayThrow(nextTransformationContext -> {
-      if (featureWriterIterator.hasNext()) {
-        featureWriterIterator.next()
-            .onEvent(nextTransformationContext, this.executePipeline(featureWriterIterator));
-      }
-    });
+    return consumerMayThrow(
+        nextTransformationContext -> {
+          if (featureWriterIterator.hasNext()) {
+            featureWriterIterator
+                .next()
+                .onEvent(nextTransformationContext, this.executePipeline(featureWriterIterator));
+          }
+        });
   }
 
   @Override
   public void onStart(EncodingAwareContextGeoJson context) {
-    //TODO: more elegant solution
+    // TODO: more elegant solution
     if (transformationContext.getOutputStream() instanceof OutputStreamToByteConsumer) {
-      ((OutputStreamToByteConsumer) transformationContext.getOutputStream()).setByteConsumer(this::push);
+      ((OutputStreamToByteConsumer) transformationContext.getOutputStream())
+          .setByteConsumer(this::push);
     }
 
-    transformationContext.getState()
-        .setNumberReturned(context.metadata().getNumberReturned());
-    transformationContext.getState()
-        .setNumberMatched(context.metadata().getNumberMatched());
+    transformationContext.getState().setNumberReturned(context.metadata().getNumberReturned());
+    transformationContext.getState().setNumberMatched(context.metadata().getNumberMatched());
 
-    transformationContext.getState()
-        .setEvent(FeatureTransformationContext.Event.START);
+    transformationContext.getState().setEvent(FeatureTransformationContext.Event.START);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onEnd(EncodingAwareContextGeoJson context) {
-    transformationContext.getState()
-        .setEvent(FeatureTransformationContext.Event.END);
+    transformationContext.getState().setEvent(FeatureTransformationContext.Event.END);
     executePipeline(featureWriters.iterator()).accept(context);
 
     try {
-      transformationContext.getJson()
-          .close();
+      transformationContext.getJson().close();
     } catch (IOException e) {
       if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
         LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
@@ -85,59 +84,50 @@ public class FeatureEncoderGeoJson extends FeatureTokenEncoderDefault<EncodingAw
 
   @Override
   public void onFeatureStart(EncodingAwareContextGeoJson context) {
-    //TODO: schema
-    //transformationContext.getState()
+    // TODO: schema
+    // transformationContext.getState()
     //    .setCurrentFeatureType(Optional.ofNullable(featureType));
 
-    transformationContext.getState()
-        .setEvent(FeatureTransformationContext.Event.FEATURE_START);
+    transformationContext.getState().setEvent(FeatureTransformationContext.Event.FEATURE_START);
     executePipeline(featureWriters.iterator()).accept(context);
 
-    transformationContext.getState()
-        .setCurrentFeatureType(Optional.empty());
+    transformationContext.getState().setCurrentFeatureType(Optional.empty());
   }
 
   @Override
   public void onFeatureEnd(EncodingAwareContextGeoJson context) {
-    transformationContext.getState()
-        .setCurrentFeatureType(Optional.empty());
-    transformationContext.getState()
-        .setEvent(FeatureTransformationContext.Event.FEATURE_END);
+    transformationContext.getState().setCurrentFeatureType(Optional.empty());
+    transformationContext.getState().setEvent(FeatureTransformationContext.Event.FEATURE_END);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onObjectStart(EncodingAwareContextGeoJson context) {
-    transformationContext.getState()
-        .setEvent(Event.OBJECT_START);
+    transformationContext.getState().setEvent(Event.OBJECT_START);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onObjectEnd(EncodingAwareContextGeoJson context) {
-    transformationContext.getState()
-        .setEvent(Event.OBJECT_END);
+    transformationContext.getState().setEvent(Event.OBJECT_END);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onArrayStart(EncodingAwareContextGeoJson context) {
-    transformationContext.getState()
-        .setEvent(Event.ARRAY_START);
+    transformationContext.getState().setEvent(Event.ARRAY_START);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onArrayEnd(EncodingAwareContextGeoJson context) {
-    transformationContext.getState()
-        .setEvent(Event.ARRAY_END);
+    transformationContext.getState().setEvent(Event.ARRAY_END);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onValue(EncodingAwareContextGeoJson context) {
-    transformationContext.getState()
-        .setEvent(Event.PROPERTY);
+    transformationContext.getState().setEvent(Event.PROPERTY);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 

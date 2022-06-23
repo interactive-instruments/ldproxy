@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,11 +8,10 @@
 package de.ii.ogcapi.common.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ContentExtension;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -20,12 +19,16 @@ import java.util.Optional;
 @AutoMultiBind
 public interface ConformanceDeclarationExtension extends ContentExtension {
 
-    ImmutableConformanceDeclaration.Builder process(ImmutableConformanceDeclaration.Builder conformanceDeclarationBuilder,
-                                                    OgcApiDataV2 apiData,
-                                                    URICustomizer uriCustomizer,
-                                                    ApiMediaType mediaType,
-                                                    List<ApiMediaType> alternateMediaTypes,
-                                                    Optional<Locale> language);
+  ImmutableConformanceDeclaration.Builder process(
+      ImmutableConformanceDeclaration.Builder conformanceDeclarationBuilder,
+      OgcApiDataV2 apiData,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language);
 
-    default String getResourceName() { return "Conformance Declaration"; };
+  default String getResourceName() {
+    return "Conformance Declaration";
+  }
+  ;
 }

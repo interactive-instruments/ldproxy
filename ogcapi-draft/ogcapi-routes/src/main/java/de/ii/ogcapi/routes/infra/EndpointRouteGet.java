@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,11 +24,11 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.routes.app.CapabilityRouting;
 import de.ii.ogcapi.routes.domain.ImmutableQueryInputRoute;
 import de.ii.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
-import de.ii.ogcapi.routes.app.CapabilityRouting;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.util.List;
@@ -47,95 +47,111 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointRouteGet extends Endpoint implements ConformanceClass {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteGet.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteGet.class);
 
-    private static final List<String> TAGS = ImmutableList.of("Routing");
+  private static final List<String> TAGS = ImmutableList.of("Routing");
 
-    private final QueryHandlerRoutes queryHandler;
+  private final QueryHandlerRoutes queryHandler;
 
-    @Inject
-    public EndpointRouteGet(ExtensionRegistry extensionRegistry,
-                            QueryHandlerRoutes queryHandler) {
-        super(extensionRegistry);
-        this.queryHandler = queryHandler;
+  @Inject
+  public EndpointRouteGet(ExtensionRegistry extensionRegistry, QueryHandlerRoutes queryHandler) {
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return RoutingConfiguration.class;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(RoutingConfiguration.class)
+        .filter(RoutingConfiguration::isEnabled)
+        .filter(RoutingConfiguration::isManageRoutesEnabled)
+        .isPresent();
+  }
+
+  @Override
+  public List<? extends FormatExtension> getFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(RouteFormatExtension.class);
+    return formats;
+  }
+
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
+            .apiEntrypoint("routes")
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTE_GET);
+    String path = "/routes/{routeId}";
+    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
+    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+        new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
+
+    if (pathParameters.stream().noneMatch(param -> param.getName().equals("routeId"))) {
+      LOGGER.error(
+          "Path parameter 'routeId' missing for resource at path '"
+              + path
+              + "'. The GET and DELETE methods will not be available.");
+    } else {
+      HttpMethods method = HttpMethods.GET;
+      List<OgcApiQueryParameter> queryParameters =
+          getQueryParameters(extensionRegistry, apiData, path, method);
+      String operationSummary = "fetch a route";
+      Optional<String> operationDescription =
+          Optional.of(
+              "Fetches the route with identifier `routeId`. "
+                  + "The set of available routes can be retrieved at `/routes`.");
+      ApiOperation.getResource(
+              apiData,
+              path,
+              false,
+              queryParameters,
+              ImmutableList.of(),
+              getContent(apiData, path),
+              operationSummary,
+              operationDescription,
+              Optional.empty(),
+              TAGS)
+          .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
+      definitionBuilder.putResources(path, resourceBuilder.build());
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return RoutingConfiguration.class;
-    }
+    return definitionBuilder.build();
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(RoutingConfiguration.class)
-            .filter(RoutingConfiguration::isEnabled)
-            .filter(RoutingConfiguration::isManageRoutesEnabled)
-            .isPresent();
-    }
+  /**
+   * Fetch a route by id
+   *
+   * @param routeId the local identifier of a route
+   * @return the style in a json file
+   */
+  @Path("/{routeId}")
+  @GET
+  public Response getRoute(
+      @Auth Optional<User> optionalUser,
+      @PathParam("routeId") String routeId,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext) {
 
-    @Override
-    public List<? extends FormatExtension> getFormats() {
-        if (formats==null)
-            formats = extensionRegistry.getExtensionsForType(RouteFormatExtension.class);
-        return formats;
-    }
+    OgcApiDataV2 apiData = api.getData();
+    checkAuthorization(apiData, optionalUser);
+    checkPathParameter(extensionRegistry, apiData, "/routes/{routeId}", "routeId", routeId);
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
-                .apiEntrypoint("routes")
-                .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTE_GET);
-        String path = "/routes/{routeId}";
-        List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-            .path(path)
-            .pathParameters(pathParameters);
+    QueryHandlerRoutes.QueryInputRoute queryInput =
+        new ImmutableQueryInputRoute.Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .routeId(routeId)
+            .build();
 
-        if (pathParameters.stream().noneMatch(param -> param.getName().equals("routeId"))) {
-            LOGGER.error("Path parameter 'routeId' missing for resource at path '" + path + "'. The GET and DELETE methods will not be available.");
-        } else {
-            HttpMethods method = HttpMethods.GET;
-            List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
-            String operationSummary = "fetch a route";
-            Optional<String> operationDescription = Optional.of("Fetches the route with identifier `routeId`. " +
-                    "The set of available routes can be retrieved at `/routes`.");
-            ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
-                                     getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
-                )
-                .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
-            definitionBuilder.putResources(path, resourceBuilder.build());
-        }
+    return queryHandler.handle(QueryHandlerRoutes.Query.GET_ROUTE, queryInput, requestContext);
+  }
 
-        return definitionBuilder.build();
-    }
-
-    /**
-     * Fetch a route by id
-     *
-     * @param routeId the local identifier of a route
-     * @return the style in a json file
-     */
-    @Path("/{routeId}")
-    @GET
-    public Response getRoute(@Auth Optional<User> optionalUser,
-                             @PathParam("routeId") String routeId,
-                             @Context OgcApi api,
-                             @Context ApiRequestContext requestContext) {
-
-        OgcApiDataV2 apiData = api.getData();
-        checkAuthorization(apiData, optionalUser);
-        checkPathParameter(extensionRegistry, apiData, "/routes/{routeId}", "routeId", routeId);
-
-        QueryHandlerRoutes.QueryInputRoute queryInput = new ImmutableQueryInputRoute.Builder()
-                .from(getGenericQueryInput(api.getData()))
-                .routeId(routeId)
-                .build();
-
-        return queryHandler.handle(QueryHandlerRoutes.Query.GET_ROUTE, queryInput, requestContext);
-    }
-
-    @Override
-    public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-        return ImmutableList.of(CapabilityRouting.MANAGE_ROUTES);
-    }
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of(CapabilityRouting.MANAGE_ROUTES);
+  }
 }

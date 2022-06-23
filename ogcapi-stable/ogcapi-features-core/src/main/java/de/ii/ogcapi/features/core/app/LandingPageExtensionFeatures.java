@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -27,29 +27,31 @@ import javax.inject.Singleton;
 @AutoBind
 public class LandingPageExtensionFeatures implements LandingPageExtension {
 
-    private final I18n i18n;
+  private final I18n i18n;
 
-    @Inject
-    LandingPageExtensionFeatures(I18n i18n) {
-        this.i18n = i18n;
+  @Inject
+  LandingPageExtensionFeatures(I18n i18n) {
+    this.i18n = i18n;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesCoreConfiguration.class;
+  }
+
+  @Override
+  public ImmutableLandingPage.Builder process(
+      Builder landingPageBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+
+    if (!isEnabledForApi(api.getData())) {
+      return landingPageBuilder;
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
-    }
-
-    @Override
-    public ImmutableLandingPage.Builder process(Builder landingPageBuilder, OgcApi api,
-                                                URICustomizer uriCustomizer,
-                                                ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes,
-                                                Optional<Locale> language) {
-
-        if (!isEnabledForApi(api.getData())) {
-            return landingPageBuilder;
-        }
-
-        return landingPageBuilder;
-    }
+    return landingPageBuilder;
+  }
 }

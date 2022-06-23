@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,7 +9,9 @@ package de.ii.ogcapi.common.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.common.app.ImmutableQueryInputLandingPage.Builder;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
+import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.QueryInputLandingPage;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
@@ -28,8 +30,6 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.common.app.ImmutableQueryInputLandingPage.Builder;
-import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.QueryInputLandingPage;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -47,8 +47,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @langEn The landing page provides links to the API definition (link relations `service-desc` and
- * `service-doc`), the Conformance declaration (path `/conformance`, link relation `conformance`),
- * and other resources in the API.
+ *     `service-doc`), the Conformance declaration (path `/conformance`, link relation
+ *     `conformance`), and other resources in the API.
  * @langDe TODO
  * @name Landing Page
  * @path /{apiId}/
@@ -64,8 +64,8 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
   private final QueriesHandlerCommon queryHandler;
 
   @Inject
-  public EndpointLandingPage(ExtensionRegistry extensionRegistry,
-      QueriesHandlerCommon queryHandler) {
+  public EndpointLandingPage(
+      ExtensionRegistry extensionRegistry, QueriesHandlerCommon queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
   }
@@ -83,9 +83,8 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
       return result;
     }
 
-    ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-        .from(result)
-        .mode(apiValidation);
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().from(result).mode(apiValidation);
 
     Optional<CommonConfiguration> config = api.getData().getExtension(CommonConfiguration.class);
     if (config.isPresent()) {
@@ -105,37 +104,54 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    ImmutableApiEndpointDefinition.Builder definitionBuilder = new ImmutableApiEndpointDefinition.Builder()
+    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+        new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_LANDING_PAGE);
-    List<OgcApiQueryParameter> queryParameters = getQueryParameters(extensionRegistry, apiData, "/");
+    List<OgcApiQueryParameter> queryParameters =
+        getQueryParameters(extensionRegistry, apiData, "/");
     String operationSummary = "landing page";
-    Optional<String> operationDescription = Optional.of("The landing page provides links to the API definition " +
-            "(link relations `service-desc` and `service-doc`), the Conformance declaration (path `/conformance`, " +
-            "link relation `conformance`), and other resources in the API.");
+    Optional<String> operationDescription =
+        Optional.of(
+            "The landing page provides links to the API definition "
+                + "(link relations `service-desc` and `service-doc`), the Conformance declaration (path `/conformance`, "
+                + "link relation `conformance`), and other resources in the API.");
     String path = "/";
-    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder = new ImmutableOgcApiResourceAuxiliary.Builder()
-            .path(path);
-    ApiOperation.getResource(apiData, path, false, queryParameters, ImmutableList.of(),
-                    getContent(apiData, path), operationSummary, operationDescription, Optional.empty(), TAGS
-            )
-            .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
+    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+        new ImmutableOgcApiResourceAuxiliary.Builder().path(path);
+    ApiOperation.getResource(
+            apiData,
+            path,
+            false,
+            queryParameters,
+            ImmutableList.of(),
+            getContent(apiData, path),
+            operationSummary,
+            operationDescription,
+            Optional.empty(),
+            TAGS)
+        .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
     return definitionBuilder.build();
   }
 
   @GET
-  public Response getLandingPage(@Auth Optional<User> optionalUser, @Context OgcApi api,
+  public Response getLandingPage(
+      @Auth Optional<User> optionalUser,
+      @Context OgcApi api,
       @Context ApiRequestContext requestContext) {
 
-    List<Link> additionalLinks = api.getData().getExtension(CommonConfiguration.class)
-        .map(CommonConfiguration::getAdditionalLinks)
-        .orElse(ImmutableList.of());
+    List<Link> additionalLinks =
+        api.getData()
+            .getExtension(CommonConfiguration.class)
+            .map(CommonConfiguration::getAdditionalLinks)
+            .orElse(ImmutableList.of());
 
-    QueryInputLandingPage queryInput = new Builder()
-        .from(getGenericQueryInput(api.getData()))
-        .additionalLinks(additionalLinks)
-        .build();
+    QueryInputLandingPage queryInput =
+        new Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .additionalLinks(additionalLinks)
+            .build();
 
     return queryHandler.handle(Query.LANDING_PAGE, queryInput, requestContext);
   }

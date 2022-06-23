@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,28 +7,28 @@
  */
 package de.ii.ogcapi.routes.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import com.github.azahnen.dagger.annotations.AutoBind;
-
-import java.util.Map;
 
 @Singleton
 @AutoBind
 public class JacksonSubTypeIdsRouting implements JacksonSubTypeIds {
 
-    @Inject
-    JacksonSubTypeIdsRouting() {
-    }
+  @Inject
+  JacksonSubTypeIdsRouting() {}
 
-    @Override
-    public Map<Class<?>, String> getMapping() {
-        return new ImmutableMap.Builder<Class<?>, String>()
-                .put(RoutingConfiguration.class, ExtensionConfiguration.getBuildingBlockIdentifier(RoutingConfiguration.class))
-                .build();
-    }
+  @Override
+  public Map<Class<?>, String> getMapping() {
+    return new ImmutableMap.Builder<Class<?>, String>()
+        .put(
+            RoutingConfiguration.class,
+            ExtensionConfiguration.getBuildingBlockIdentifier(RoutingConfiguration.class))
+        .build();
+  }
 }

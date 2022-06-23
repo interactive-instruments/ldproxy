@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,11 +9,10 @@ package de.ii.ogcapi.collections.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.collections.domain.ImmutableCollections.Builder;
-import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ContentExtension;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -21,12 +20,16 @@ import java.util.Optional;
 @AutoMultiBind
 public interface CollectionsExtension extends ContentExtension {
 
-    ImmutableCollections.Builder process(Builder collectionsBuilder,
-                                         OgcApi api,
-                                         URICustomizer uriCustomizer,
-                                         ApiMediaType mediaType,
-                                         List<ApiMediaType> alternateMediaTypes,
-                                         Optional<Locale> language);
+  ImmutableCollections.Builder process(
+      Builder collectionsBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language);
 
-    default String getResourceName() { return "Collections"; };
+  default String getResourceName() {
+    return "Collections";
+  }
+  ;
 }

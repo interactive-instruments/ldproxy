@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -23,7 +23,6 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableHeaderCaching;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -56,113 +55,153 @@ import org.immutables.value.Value;
 @AutoBind
 public class QueriesHandlerSchemaImpl implements QueriesHandlerSchema {
 
-    public enum Query implements QueryIdentifier {SCHEMA}
+  public enum Query implements QueryIdentifier {
+    SCHEMA
+  }
 
-    @Value.Immutable
-    public interface QueryInputSchema extends QueryInput {
-        String getCollectionId();
+  @Value.Immutable
+  public interface QueryInputSchema extends QueryInput {
+    String getCollectionId();
 
-        boolean getIncludeLinkHeader();
+    boolean getIncludeLinkHeader();
 
-        Optional<String> getProfile();
+    Optional<String> getProfile();
 
-        String getType();
+    String getType();
+  }
+
+  private final FeaturesCoreProviders providers;
+  private final I18n i18n;
+  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+  private final JsonSchemaCache schemaCache;
+  private final JsonSchemaCache schemaCacheCollection;
+
+  @Inject
+  public QueriesHandlerSchemaImpl(
+      I18n i18n, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
+    this.i18n = i18n;
+    this.providers = providers;
+    this.queryHandlers =
+        ImmutableMap.of(
+            Query.SCHEMA, QueryHandler.with(QueryInputSchema.class, this::getSchemaResponse));
+    this.schemaCache =
+        new SchemaCacheReturnables(() -> entityRegistry.getEntitiesForType(Codelist.class));
+    this.schemaCacheCollection = new SchemaCacheReturnablesCollection();
+  }
+
+  @Override
+  public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
+    return queryHandlers;
+  }
+
+  public static void checkCollectionId(OgcApiDataV2 apiData, String collectionId) {
+    if (!apiData.isCollectionEnabled(collectionId)) {
+      throw new NotFoundException(
+          MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
     }
+  }
 
-    private final FeaturesCoreProviders providers;
-    private final I18n i18n;
-    private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-    private final JsonSchemaCache schemaCache;
-    private final JsonSchemaCache schemaCacheCollection;
+  private Response getSchemaResponse(
+      QueryInputSchema queryInput, ApiRequestContext requestContext) {
 
-    @Inject
-    public QueriesHandlerSchemaImpl(I18n i18n, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
-        this.i18n = i18n;
-        this.providers = providers;
-        this.queryHandlers = ImmutableMap.of(
-                Query.SCHEMA, QueryHandler.with(QueryInputSchema.class, this::getSchemaResponse)
-        );
-        this.schemaCache = new SchemaCacheReturnables(() -> entityRegistry.getEntitiesForType(
-            Codelist.class));
-        this.schemaCacheCollection = new SchemaCacheReturnablesCollection();
-    }
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
+    String collectionId = queryInput.getCollectionId();
+    checkCollectionId(apiData, collectionId);
+    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
-    @Override
-    public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
-        return queryHandlers;
-    }
+    SchemaFormatExtension outputFormat =
+        api.getOutputFormat(
+                SchemaFormatExtension.class,
+                requestContext.getMediaType(),
+                "/collections/" + collectionId + "/schemas/" + queryInput.getType(),
+                Optional.of(collectionId))
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
 
-    public static void checkCollectionId(OgcApiDataV2 apiData, String collectionId) {
-        if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
-        }
-    }
+    List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
-    private Response getSchemaResponse(QueryInputSchema queryInput, ApiRequestContext requestContext) {
+    List<Link> links =
+        new DefaultLinksGenerator()
+            .generateLinks(
+                requestContext.getUriCustomizer(),
+                requestContext.getMediaType(),
+                alternateMediaTypes,
+                i18n,
+                requestContext.getLanguage());
 
-        OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
-        String collectionId = queryInput.getCollectionId();
-        checkCollectionId(apiData, collectionId);
-        FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
-            .get(collectionId);
-
-        SchemaFormatExtension outputFormat = api.getOutputFormat(SchemaFormatExtension.class,
-                                                                 requestContext.getMediaType(),
-                                                                 "/collections/"+collectionId+"/schemas/"+queryInput.getType(),
-                                                                 Optional.of(collectionId))
-                                                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
-
-        List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-
-        List<Link> links = new DefaultLinksGenerator()
-                .generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage());
-
-        Optional<String> schemaUri = links.stream()
+    Optional<String> schemaUri =
+        links.stream()
             .filter(link -> Objects.equals(link.getRel(), "self"))
             .map(Link::getHref)
             .findAny();
 
-        FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData)
-                                               .orElse(new ImmutableFeatureSchema.Builder().name(collectionId)
-                                                                                           .type(SchemaBase.Type.OBJECT)
-                                                                                           .build());
+    FeatureSchema featureSchema =
+        providers
+            .getFeatureSchema(apiData, collectionData)
+            .orElse(
+                new ImmutableFeatureSchema.Builder()
+                    .name(collectionId)
+                    .type(SchemaBase.Type.OBJECT)
+                    .build());
 
-        JsonSchemaDocument schema = null;
-        if (queryInput.getType().equals("feature"))
-            schema = schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri, getVersion(queryInput.getProfile()));
-        else if (queryInput.getType().equals("collection"))
-            schema = schemaCacheCollection.getSchema(featureSchema, apiData, collectionData, schemaUri, getVersion(queryInput.getProfile()));
+    JsonSchemaDocument schema = null;
+    if (queryInput.getType().equals("feature"))
+      schema =
+          schemaCache.getSchema(
+              featureSchema,
+              apiData,
+              collectionData,
+              schemaUri,
+              getVersion(queryInput.getProfile()));
+    else if (queryInput.getType().equals("collection"))
+      schema =
+          schemaCacheCollection.getSchema(
+              featureSchema,
+              apiData,
+              collectionData,
+              schemaUri,
+              getVersion(queryInput.getProfile()));
 
-        Date lastModified = getLastModified(queryInput);
-        EntityTag etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || apiData.getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
+    Date lastModified = getLastModified(queryInput);
+    EntityTag etag =
+        !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || apiData
+                    .getExtension(HtmlConfiguration.class, collectionId)
+                    .map(HtmlConfiguration::getSendEtags)
+                    .orElse(false)
             ? ETag.from(schema, JsonSchema.FUNNEL, outputFormat.getMediaType().label())
             : null;
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
 
-        return prepareSuccessResponse(requestContext,
-                                      queryInput.getIncludeLinkHeader() ? links : null,
-                                      HeaderCaching.of(lastModified, etag, queryInput),
-                                      null,
-                                      HeaderContentDisposition.of(String.format("%s.schema.%s", collectionId, outputFormat.getMediaType().fileExtension())))
-                .entity(outputFormat.getEntity(schema, collectionId, api, requestContext))
-                .build();
-    }
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? links : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format(
+                    "%s.schema.%s", collectionId, outputFormat.getMediaType().fileExtension())))
+        .entity(outputFormat.getEntity(schema, collectionId, api, requestContext))
+        .build();
+  }
 
-    private VERSION getVersion(Optional<String> profile) {
-        if (profile.isEmpty()) {
-            return VERSION.current();
-        }
-        switch (profile.get()) {
-            case "2019-09":
-                return VERSION.V201909;
-            case "07":
-                return VERSION.V7;
-            default:
-                return VERSION.current();
-        }
+  private VERSION getVersion(Optional<String> profile) {
+    if (profile.isEmpty()) {
+      return VERSION.current();
     }
+    switch (profile.get()) {
+      case "2019-09":
+        return VERSION.V201909;
+      case "07":
+        return VERSION.V7;
+      default:
+        return VERSION.current();
+    }
+  }
 }

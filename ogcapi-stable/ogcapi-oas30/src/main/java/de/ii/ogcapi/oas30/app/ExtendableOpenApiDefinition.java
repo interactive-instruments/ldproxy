@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,5 +12,5 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import javax.ws.rs.core.Response;
 
 public interface ExtendableOpenApiDefinition {
-    Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiDataV2 apiData);
+  Response getOpenApi(String type, URICustomizer requestUriCustomizer, OgcApiDataV2 apiData);
 }

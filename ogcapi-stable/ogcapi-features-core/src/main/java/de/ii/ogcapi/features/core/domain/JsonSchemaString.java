@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,31 +9,34 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Funnel;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaString extends JsonSchema {
 
-    public final String getType() { return "string"; }
+  public final String getType() {
+    return "string";
+  }
 
-    public abstract Optional<String> getFormat();
-    public abstract Optional<String> getPattern();
-    @JsonProperty("enum")
-    public abstract List<String> getEnums();
+  public abstract Optional<String> getFormat();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaString> FUNNEL = (from, into) -> {
+  public abstract Optional<String> getPattern();
+
+  @JsonProperty("enum")
+  public abstract List<String> getEnums();
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaString> FUNNEL =
+      (from, into) -> {
         into.putString(from.getType(), StandardCharsets.UTF_8);
         from.getFormat().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getPattern().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getEnums()
-            .stream()
+        from.getEnums().stream()
             .sorted()
             .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
-    };
+      };
 }

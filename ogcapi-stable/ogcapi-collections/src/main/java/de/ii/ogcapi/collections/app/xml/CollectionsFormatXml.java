@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -31,43 +31,45 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class CollectionsFormatXml implements CollectionsFormatExtension {
 
-    private static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "xml"))
-            .label("XML")
-            .parameter("xml")
-            .build();
+  private static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "xml"))
+          .label("XML")
+          .parameter("xml")
+          .build();
 
-    @Inject
-    public CollectionsFormatXml() {
-    }
+  @Inject
+  public CollectionsFormatXml() {}
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public boolean isEnabledByDefault() { return false; }
+  @Override
+  public boolean isEnabledByDefault() {
+    return false;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(new ObjectSchema())
-                .schemaRef("#/components/schemas/anyObject")
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(new ObjectSchema())
+        .schemaRef("#/components/schemas/anyObject")
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
 
-    @Override
-    public Object getCollectionsEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
-        return new OgcApiCollectionsXml(collections);
-    }
+  @Override
+  public Object getCollectionsEntity(
+      Collections collections, OgcApi api, ApiRequestContext requestContext) {
+    return new OgcApiCollectionsXml(collections);
+  }
 
-    @Override
-    public Object getCollectionEntity(OgcApiCollection ogcApiCollection,
-                                      OgcApi api, ApiRequestContext requestContext) {
-        return new OgcApiCollectionsXml(new ImmutableCollections.Builder()
-                .addCollections(ogcApiCollection)
-                .build());
-    }
+  @Override
+  public Object getCollectionEntity(
+      OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
+    return new OgcApiCollectionsXml(
+        new ImmutableCollections.Builder().addCollections(ogcApiCollection).build());
+  }
 }

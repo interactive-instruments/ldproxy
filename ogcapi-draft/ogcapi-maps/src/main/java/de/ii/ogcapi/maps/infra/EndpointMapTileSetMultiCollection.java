@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -35,52 +35,54 @@ import javax.ws.rs.core.Response;
  * @path /{apiId}/map/tiles/{tileMatrixSetId}
  */
 
-/**
- * Handle responses under '/map/tiles/{tileMatrixSetId}'.
- */
+/** Handle responses under '/map/tiles/{tileMatrixSetId}'. */
 @Singleton
 @AutoBind
 public class EndpointMapTileSetMultiCollection extends AbstractEndpointTileSetMultiCollection {
 
-    private static final List<String> TAGS = ImmutableList.of("Access multi-layer map tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access multi-layer map tiles");
 
-    @Inject
-    EndpointMapTileSetMultiCollection(ExtensionRegistry extensionRegistry,
-                                      TilesQueriesHandler queryHandler,
-                                      FeaturesCoreProviders providers) {
-        super(extensionRegistry, queryHandler, providers);
-    }
+  @Inject
+  EndpointMapTileSetMultiCollection(
+      ExtensionRegistry extensionRegistry,
+      TilesQueriesHandler queryHandler,
+      FeaturesCoreProviders providers) {
+    super(extensionRegistry, queryHandler, providers);
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        if (apiData.getExtension(MapTilesConfiguration.class)
-            .filter(ExtensionConfiguration::isEnabled)
-            .filter(MapTilesConfiguration::isMultiCollectionEnabled)
-            .isPresent())
-            return super.isEnabledForApi(apiData);
-        return false;
-    }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    if (apiData
+        .getExtension(MapTilesConfiguration.class)
+        .filter(ExtensionConfiguration::isEnabled)
+        .filter(MapTilesConfiguration::isMultiCollectionEnabled)
+        .isPresent()) return super.isEnabledForApi(apiData);
+    return false;
+  }
 
-    @Override
-    protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-        return computeDefinition(apiData,
-                                 "map",
-                                 ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SET,
-                                 "/map/tiles/{tileMatrixSetId}",
-                                 TAGS);
-    }
+  @Override
+  protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
+    return computeDefinition(
+        apiData,
+        "map",
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SET,
+        "/map/tiles/{tileMatrixSetId}",
+        TAGS);
+  }
 
-    /**
-     * retrieve tilejson for the MVT tile sets
-     *
-     * @return a tilejson file
-     */
-    @Path("/tiles/{tileMatrixSetId}")
-    @GET
-    public Response getTileSet(@Context OgcApi api,
-                               @Context ApiRequestContext requestContext,
-                               @PathParam("tileMatrixSetId") String tileMatrixSetId) {
+  /**
+   * retrieve tilejson for the MVT tile sets
+   *
+   * @return a tilejson file
+   */
+  @Path("/tiles/{tileMatrixSetId}")
+  @GET
+  public Response getTileSet(
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext,
+      @PathParam("tileMatrixSetId") String tileMatrixSetId) {
 
-        return super.getTileSet(api.getData(), requestContext, "/map/tiles/{tileMatrixSetId}", tileMatrixSetId);
-    }
+    return super.getTileSet(
+        api.getData(), requestContext, "/map/tiles/{tileMatrixSetId}", tileMatrixSetId);
+  }
 }

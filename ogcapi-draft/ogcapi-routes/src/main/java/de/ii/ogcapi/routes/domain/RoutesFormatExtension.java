@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -17,20 +17,20 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 @AutoMultiBind
 public interface RoutesFormatExtension extends FormatExtension {
 
-    @Override
-    default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return false;
-    }
+  @Override
+  default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return false;
+  }
 
-    @Override
-    default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return RoutingConfiguration.class;
-    }
+  @Override
+  default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return RoutingConfiguration.class;
+  }
 
-    @Override
-    default String getPathPattern() {
-        return "^/routes/?$";
-    }
+  @Override
+  default String getPathPattern() {
+    return "^/routes/?$";
+  }
 
-    Object getRoutesEntity(Routes routes, OgcApi api, ApiRequestContext requestContext);
+  Object getRoutesEntity(Routes routes, OgcApi api, ApiRequestContext requestContext);
 }

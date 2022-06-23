@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -36,149 +36,179 @@ import javax.inject.Singleton;
  * @name limit
  * @endpoints Features
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterLimitFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    private final SchemaValidator schemaValidator;
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    QueryParameterLimitFeatures(SchemaValidator schemaValidator) {
-        this.schemaValidator = schemaValidator;
+  @Inject
+  QueryParameterLimitFeatures(SchemaValidator schemaValidator) {
+    this.schemaValidator = schemaValidator;
+  }
+
+  @Override
+  public String getId(String collectionId) {
+    return "limitFeatures_" + collectionId;
+  }
+
+  @Override
+  public String getName() {
+    return "limit";
+  }
+
+  @Override
+  public String getDescription() {
+    return "The optional limit parameter limits the number of items that are presented in the response document. "
+        + "Only items are counted that are on the first level of the collection in the response document. "
+        + "Nested objects contained within the explicitly requested items are not counted.";
+  }
+
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.GET
+                && definitionPath.equals("/collections/{collectionId}/items"));
+  }
+
+  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
+      new ConcurrentHashMap<>();
+
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    String collectionId = "*";
+    if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+      Schema<?> schema = new IntegerSchema();
+      Optional<Integer> minimumPageSize =
+          apiData
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(FeaturesCoreConfiguration::getMinimumPageSize);
+      minimumPageSize.ifPresent(integer -> schema.minimum(BigDecimal.valueOf(integer)));
+
+      Optional<Integer> maxPageSize =
+          apiData
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(FeaturesCoreConfiguration::getMaximumPageSize);
+      maxPageSize.ifPresent(integer -> schema.maximum(BigDecimal.valueOf(integer)));
+
+      Optional<Integer> defaultPageSize =
+          apiData
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(FeaturesCoreConfiguration::getDefaultPageSize);
+      defaultPageSize.ifPresent(integer -> schema.setDefault(BigDecimal.valueOf(integer)));
+
+      schemaMap.get(apiHashCode).put(collectionId, schema);
+    }
+    return schemaMap.get(apiHashCode).get(collectionId);
+  }
+
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+      Schema<?> schema = new IntegerSchema();
+      FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
+
+      Optional<Integer> minimumPageSize =
+          featureType
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(FeaturesCoreConfiguration::getMinimumPageSize);
+      minimumPageSize.ifPresent(integer -> schema.minimum(BigDecimal.valueOf(integer)));
+
+      Optional<Integer> maxPageSize =
+          featureType
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(FeaturesCoreConfiguration::getMaximumPageSize);
+      maxPageSize.ifPresent(integer -> schema.maximum(BigDecimal.valueOf(integer)));
+
+      Optional<Integer> defaultPageSize =
+          featureType
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(FeaturesCoreConfiguration::getDefaultPageSize);
+      defaultPageSize.ifPresent(integer -> schema.setDefault(BigDecimal.valueOf(integer)));
+
+      schemaMap.get(apiHashCode).put(collectionId, schema);
+    }
+    return schemaMap.get(apiHashCode).get(collectionId);
+  }
+
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
+
+  @Override
+  public Optional<String> validateSchema(
+      OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
+    // special validation to support limit values higher than the maximum,
+    // the limit will later be reduced to the maximum
+
+    if (values.size() != 1)
+      return Optional.of(
+          String.format(
+              "Parameter value '%s' is invalid for parameter '%s': The must be a single value.",
+              values, getName()));
+
+    int limit;
+    try {
+      limit = Integer.parseInt(values.get(0));
+    } catch (NumberFormatException exception) {
+      return Optional.of(
+          String.format(
+              "Parameter value '%s' is invalid for parameter '%s': The value is not an integer.",
+              values, getName()));
     }
 
-    @Override
-    public String getId(String collectionId) {
-        return "limitFeatures_"+collectionId;
+    ExtendableConfiguration context =
+        collectionId.isPresent() ? apiData.getCollections().get(collectionId.get()) : apiData;
+    Optional<Integer> minimumPageSize =
+        context
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(FeaturesCoreConfiguration::getMinimumPageSize);
+    if (minimumPageSize.isPresent() && limit < minimumPageSize.get())
+      return Optional.of(
+          String.format(
+              "Parameter value '%s' is invalid for parameter '%s': The value is smaller than the minimum value '%d'.",
+              values, getName(), minimumPageSize.get()));
+
+    return Optional.empty();
+  }
+
+  @Override
+  public Map<String, String> transformParameters(
+      FeatureTypeConfigurationOgcApi featureType,
+      Map<String, String> parameters,
+      OgcApiDataV2 apiData) {
+    if (parameters.containsKey(getName())) {
+      // the parameter has been validated, so it must be an integer
+      int limit = Integer.parseInt(parameters.get(getName()));
+      Optional<Integer> maxPageSize =
+          featureType
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(FeaturesCoreConfiguration::getMaximumPageSize);
+      if (maxPageSize.isPresent() && limit > maxPageSize.get()) {
+        parameters =
+            new ImmutableMap.Builder<String, String>()
+                .putAll(
+                    parameters.entrySet().stream()
+                        .filter(entry -> !entry.getKey().equals(getName()))
+                        .collect(
+                            Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)))
+                .put(getName(), String.valueOf(maxPageSize.get()))
+                .build();
+      }
     }
+    return parameters;
+  }
 
-    @Override
-    public String getName() {
-        return "limit";
-    }
-
-    @Override
-    public String getDescription() {
-        return "The optional limit parameter limits the number of items that are presented in the response document. " +
-                "Only items are counted that are on the first level of the collection in the response document. " +
-                "Nested objects contained within the explicitly requested items are not counted.";
-    }
-
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) &&
-                method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items"));
-    }
-
-    private final ConcurrentMap<Integer, ConcurrentMap<String,Schema<?>>> schemaMap = new ConcurrentHashMap<>();
-
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaMap.containsKey(apiHashCode))
-            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-        String collectionId = "*";
-        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            Schema<?> schema = new IntegerSchema();
-            Optional<Integer> minimumPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
-                                                       .map(FeaturesCoreConfiguration::getMinimumPageSize);
-            minimumPageSize.ifPresent(integer -> schema.minimum(BigDecimal.valueOf(integer)));
-
-            Optional<Integer> maxPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
-                                                   .map(FeaturesCoreConfiguration::getMaximumPageSize);
-            maxPageSize.ifPresent(integer -> schema.maximum(BigDecimal.valueOf(integer)));
-
-            Optional<Integer> defaultPageSize = apiData.getExtension(FeaturesCoreConfiguration.class)
-                                                       .map(FeaturesCoreConfiguration::getDefaultPageSize);
-            defaultPageSize.ifPresent(integer -> schema.setDefault(BigDecimal.valueOf(integer)));
-
-            schemaMap.get(apiHashCode).put(collectionId, schema);
-        }
-        return schemaMap.get(apiHashCode).get(collectionId);
-    }
-
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaMap.containsKey(apiHashCode))
-            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            Schema<?> schema = new IntegerSchema();
-            FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-
-            Optional<Integer> minimumPageSize = featureType.getExtension(FeaturesCoreConfiguration.class)
-                                                           .map(FeaturesCoreConfiguration::getMinimumPageSize);
-            minimumPageSize.ifPresent(integer -> schema.minimum(BigDecimal.valueOf(integer)));
-
-            Optional<Integer> maxPageSize = featureType.getExtension(FeaturesCoreConfiguration.class)
-                                                       .map(FeaturesCoreConfiguration::getMaximumPageSize);
-            maxPageSize.ifPresent(integer -> schema.maximum(BigDecimal.valueOf(integer)));
-
-            Optional<Integer> defaultPageSize = featureType.getExtension(FeaturesCoreConfiguration.class)
-                                                           .map(FeaturesCoreConfiguration::getDefaultPageSize);
-            defaultPageSize.ifPresent(integer -> schema.setDefault(BigDecimal.valueOf(integer)));
-
-            schemaMap.get(apiHashCode).put(collectionId, schema);
-        }
-        return schemaMap.get(apiHashCode).get(collectionId);
-    }
-
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
-    }
-
-    @Override
-    public Optional<String> validateSchema(OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
-        // special validation to support limit values higher than the maximum,
-        // the limit will later be reduced to the maximum
-
-        if (values.size()!=1)
-            return Optional.of(String.format("Parameter value '%s' is invalid for parameter '%s': The must be a single value.", values, getName()));
-
-        int limit;
-        try {
-            limit = Integer.parseInt(values.get(0));
-        } catch (NumberFormatException exception) {
-            return Optional.of(String.format("Parameter value '%s' is invalid for parameter '%s': The value is not an integer.", values, getName()));
-        }
-
-        ExtendableConfiguration context = collectionId.isPresent() ? apiData.getCollections().get(collectionId.get()) : apiData;
-        Optional<Integer> minimumPageSize = context.getExtension(FeaturesCoreConfiguration.class)
-                                                   .map(FeaturesCoreConfiguration::getMinimumPageSize);
-        if (minimumPageSize.isPresent() && limit < minimumPageSize.get())
-            return Optional.of(String.format("Parameter value '%s' is invalid for parameter '%s': The value is smaller than the minimum value '%d'.", values, getName(), minimumPageSize.get()));
-
-        return Optional.empty();
-    }
-
-    @Override
-    public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureType,
-                                                   Map<String, String> parameters,
-                                                   OgcApiDataV2 apiData) {
-        if (parameters.containsKey(getName())) {
-            // the parameter has been validated, so it must be an integer
-            int limit = Integer.parseInt(parameters.get(getName()));
-            Optional<Integer> maxPageSize = featureType.getExtension(FeaturesCoreConfiguration.class)
-                                                       .map(FeaturesCoreConfiguration::getMaximumPageSize);
-            if (maxPageSize.isPresent() && limit > maxPageSize.get()) {
-                parameters = new ImmutableMap.Builder<String, String>().putAll(parameters.entrySet()
-                                                                                         .stream()
-                                                                                         .filter(entry -> !entry.getKey().equals(getName()))
-                                                                                         .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)))
-                                                                       .put(getName(), String.valueOf(maxPageSize.get()))
-                                                                       .build();
-            }
-        }
-        return parameters;
-    }
-
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FeaturesCoreConfiguration.class;
-    }
-
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FeaturesCoreConfiguration.class;
+  }
 }

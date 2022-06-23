@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,25 +16,24 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class MustacheResolverLdproxy extends PerClassMustacheResolver implements PartialMustacheResolver {
+public class MustacheResolverLdproxy extends PerClassMustacheResolver
+    implements PartialMustacheResolver {
 
-    @Inject
-    MustacheResolverLdproxy() {
-    }
+  @Inject
+  MustacheResolverLdproxy() {}
 
-    @Override
-    public int getSortPriority() {
-        return 900;
-    }
+  @Override
+  public int getSortPriority() {
+    return 900;
+  }
 
-    @Override
-    public boolean canResolve(String templateName, Class<?> viewClass) {
-        return super.canResolve(templateName, this.getClass());
-    }
+  @Override
+  public boolean canResolve(String templateName, Class<?> viewClass) {
+    return super.canResolve(templateName, this.getClass());
+  }
 
-    @Override
-    public Reader getReader(String templateName, Class<?> viewClass) {
-        return super.getReader(templateName, this.getClass());
-    }
-
+  @Override
+  public Reader getReader(String templateName, Class<?> viewClass) {
+    return super.getReader(templateName, this.getClass());
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,41 +9,41 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Funnel;
-import org.immutables.value.Value;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaObject extends JsonSchema {
 
-    public final String getType() { return "object"; }
+  public final String getType() {
+    return "object";
+  }
 
-    @JsonProperty("required")
-    public abstract List<String> getRequired();
-    public abstract Map<String, JsonSchema> getProperties();
-    public abstract Map<String, JsonSchema> getPatternProperties();
-    public abstract Optional<JsonSchema> getAdditionalProperties();
+  @JsonProperty("required")
+  public abstract List<String> getRequired();
 
-    @SuppressWarnings("UnstableApiUsage")
-    public static final Funnel<JsonSchemaObject> FUNNEL = (from, into) -> {
+  public abstract Map<String, JsonSchema> getProperties();
+
+  public abstract Map<String, JsonSchema> getPatternProperties();
+
+  public abstract Optional<JsonSchema> getAdditionalProperties();
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaObject> FUNNEL =
+      (from, into) -> {
         into.putString(from.getType(), StandardCharsets.UTF_8);
-        from.getRequired()
-            .stream()
+        from.getRequired().stream()
             .sorted()
             .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getProperties()
-            .entrySet()
-            .stream()
+        from.getProperties().entrySet().stream()
             .sorted(Map.Entry.comparingByKey())
             .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
-        from.getPatternProperties()
-            .entrySet()
-            .stream()
+        from.getPatternProperties().entrySet().stream()
             .sorted(Map.Entry.comparingByKey())
             .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
-    };
+      };
 }

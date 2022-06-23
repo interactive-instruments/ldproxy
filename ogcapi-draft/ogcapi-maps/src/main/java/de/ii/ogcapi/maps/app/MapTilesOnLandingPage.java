@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -30,61 +30,69 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/**
- * add tiling information to the dataset metadata
- */
+/** add tiling information to the dataset metadata */
 @Singleton
 @AutoBind
 public class MapTilesOnLandingPage implements LandingPageExtension {
 
-    private final I18n i18n;
-    private final ExtensionRegistry extensionRegistry;
+  private final I18n i18n;
+  private final ExtensionRegistry extensionRegistry;
 
-    @Inject
-    public MapTilesOnLandingPage(I18n i18n,
-                                 ExtensionRegistry extensionRegistry) {
-        this.i18n = i18n;
-        this.extensionRegistry = extensionRegistry;
-    }
+  @Inject
+  public MapTilesOnLandingPage(I18n i18n, ExtensionRegistry extensionRegistry) {
+    this.i18n = i18n;
+    this.extensionRegistry = extensionRegistry;
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(MapTilesConfiguration.class)
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+            .getExtension(MapTilesConfiguration.class)
             .filter(MapTilesConfiguration::isEnabled)
             .filter(MapTilesConfiguration::isMultiCollectionEnabled)
-            .isPresent() &&
-            apiData.getExtension(TilesConfiguration.class)
-                .filter(TilesConfiguration::isEnabled)
-                .filter(TilesConfiguration::isMultiCollectionEnabled)
-                .isPresent();
-    }
+            .isPresent()
+        && apiData
+            .getExtension(TilesConfiguration.class)
+            .filter(TilesConfiguration::isEnabled)
+            .filter(TilesConfiguration::isMultiCollectionEnabled)
+            .isPresent();
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return MapTilesConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return MapTilesConfiguration.class;
+  }
 
-    @Override
-    public ImmutableLandingPage.Builder process(Builder landingPageBuilder, OgcApi api,
-                                                URICustomizer uriCustomizer, ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes,
-                                                Optional<Locale> language) {
+  @Override
+  public ImmutableLandingPage.Builder process(
+      Builder landingPageBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
 
-        if (isEnabledForApi(api.getData())) {
-            Optional<TileSet.DataType> dataType = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class)
-                .stream()
-                .filter(format -> format.isApplicable(api.getData(), "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-                .filter(format -> format.isEnabledForApi(api.getData()))
-                .map(TileFormatExtension::getDataType)
-                .findAny();
-            if (dataType.isEmpty())
-                // no tile format is enabled
-                return landingPageBuilder;
-
-            final MapTilesLinkGenerator mapTilesLinkGenerator = new MapTilesLinkGenerator();
-            List<Link> links = mapTilesLinkGenerator.generateLandingPageLinks(uriCustomizer, dataType.get(), i18n, language);
-            landingPageBuilder.addAllLinks(links);
-        }
+    if (isEnabledForApi(api.getData())) {
+      Optional<TileSet.DataType> dataType =
+          extensionRegistry.getExtensionsForType(MapTileFormatExtension.class).stream()
+              .filter(
+                  format ->
+                      format.isApplicable(
+                          api.getData(),
+                          "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+              .filter(format -> format.isEnabledForApi(api.getData()))
+              .map(TileFormatExtension::getDataType)
+              .findAny();
+      if (dataType.isEmpty())
+        // no tile format is enabled
         return landingPageBuilder;
+
+      final MapTilesLinkGenerator mapTilesLinkGenerator = new MapTilesLinkGenerator();
+      List<Link> links =
+          mapTilesLinkGenerator.generateLandingPageLinks(
+              uriCustomizer, dataType.get(), i18n, language);
+      landingPageBuilder.addAllLinks(links);
     }
+    return landingPageBuilder;
+  }
 }

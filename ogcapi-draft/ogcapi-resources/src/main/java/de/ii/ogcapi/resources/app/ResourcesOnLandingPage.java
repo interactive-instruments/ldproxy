@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,8 +20,8 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
+import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -36,74 +36,72 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-/**
- * add resources link to the landing page
- *
- */
+/** add resources link to the landing page */
 @Singleton
 @AutoBind
 public class ResourcesOnLandingPage implements LandingPageExtension {
 
-    private final I18n i18n;
-    private final Path resourcesStore;
+  private final I18n i18n;
+  private final Path resourcesStore;
 
-    @Inject
-    public ResourcesOnLandingPage(AppContext appContext,
-                                  I18n i18n)  {
-        this.resourcesStore = appContext.getDataDir()
-            .resolve(API_RESOURCES_DIR)
-            .resolve("resources");
-        this.i18n = i18n;
+  @Inject
+  public ResourcesOnLandingPage(AppContext appContext, I18n i18n) {
+    this.resourcesStore = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("resources");
+    this.i18n = i18n;
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().mode(apiValidation);
+
+    try {
+      Files.createDirectories(resourcesStore);
+    } catch (IOException e) {
+      builder.addErrors();
     }
 
-    @Override
-    public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-        ImmutableValidationResult.Builder builder = ImmutableValidationResult.builder()
-            .mode(apiValidation);
+    return builder.build();
+  }
 
-        try {
-            Files.createDirectories(resourcesStore);
-        } catch (IOException e) {
-           builder.addErrors();
-        }
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return LandingPageExtension.super.isEnabledForApi(apiData)
+        || apiData
+            .getExtension(StylesConfiguration.class)
+            .map(StylesConfiguration::isResourcesEnabled)
+            .orElse(false);
+  }
 
-        return builder.build();
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return ResourcesConfiguration.class;
+  }
+
+  @Override
+  public ImmutableLandingPage.Builder process(
+      Builder landingPageBuilder,
+      OgcApi api,
+      URICustomizer uriCustomizer,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      Optional<Locale> language) {
+
+    if (!isEnabledForApi(api.getData())) {
+      return landingPageBuilder;
     }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return LandingPageExtension.super.isEnabledForApi(apiData) ||
-            apiData.getExtension(StylesConfiguration.class).map(StylesConfiguration::isResourcesEnabled).orElse(false);
+    final ResourcesLinkGenerator linkGenerator = new ResourcesLinkGenerator();
+
+    List<Link> links = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
+    landingPageBuilder.addAllLinks(links);
+
+    final String datasetId = api.getId();
+    File apiDir = new File(resourcesStore + File.separator + datasetId);
+    if (!apiDir.exists()) {
+      apiDir.mkdirs();
     }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return ResourcesConfiguration.class;
-    }
-
-    @Override
-    public ImmutableLandingPage.Builder process(Builder landingPageBuilder,
-                                                OgcApi api,
-                                                URICustomizer uriCustomizer,
-                                                ApiMediaType mediaType,
-                                                List<ApiMediaType> alternateMediaTypes,
-                                                Optional<Locale> language) {
-
-        if (!isEnabledForApi(api.getData())) {
-            return landingPageBuilder;
-        }
-
-        final ResourcesLinkGenerator linkGenerator = new ResourcesLinkGenerator();
-
-        List<Link> links = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
-        landingPageBuilder.addAllLinks(links);
-
-        final String datasetId = api.getId();
-        File apiDir = new File(resourcesStore + File.separator + datasetId);
-        if (!apiDir.exists()) {
-            apiDir.mkdirs();
-        }
-
-        return landingPageBuilder;
-    }
+    return landingPageBuilder;
+  }
 }

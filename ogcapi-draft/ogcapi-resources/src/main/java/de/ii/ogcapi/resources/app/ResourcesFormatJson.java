@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,63 +8,63 @@
 package de.ii.ogcapi.resources.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import java.util.AbstractMap;
-import java.util.Map;
 
 @Singleton
 @AutoBind
 public class ResourcesFormatJson implements ResourcesFormatExtension {
 
-    public static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(new MediaType("application", "json"))
-            .label("JSON")
-            .parameter("json")
-            .build();
+  public static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "json"))
+          .label("JSON")
+          .parameter("json")
+          .build();
 
-    private final Schema<?> schemaResources;
-    private final Map<String, Schema<?>> referencedSchemas;
+  private final Schema<?> schemaResources;
+  private final Map<String, Schema<?>> referencedSchemas;
 
-    @Inject
-    public ResourcesFormatJson(ClassSchemaCache classSchemaCache) {
-        schemaResources = classSchemaCache.getSchema(Resources.class);
-        referencedSchemas = classSchemaCache.getReferencedSchemas(Resources.class);
-    }
+  @Inject
+  public ResourcesFormatJson(ClassSchemaCache classSchemaCache) {
+    schemaResources = classSchemaCache.getSchema(Resources.class);
+    referencedSchemas = classSchemaCache.getReferencedSchemas(Resources.class);
+  }
 
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
 
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
-        // TODO add examples
-        if (path.equals("/resources"))
-            return new ImmutableApiMediaTypeContent.Builder()
-                .schema(schemaResources)
-                .schemaRef(Resources.SCHEMA_REF)
-                .referencedSchemas(referencedSchemas)
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
+    // TODO add examples
+    if (path.equals("/resources"))
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(schemaResources)
+          .schemaRef(Resources.SCHEMA_REF)
+          .referencedSchemas(referencedSchemas)
+          .ogcApiMediaType(MEDIA_TYPE)
+          .build();
 
-        throw new RuntimeException("Unexpected path: " + path);
-    }
+    throw new RuntimeException("Unexpected path: " + path);
+  }
 
-    @Override
-    public Object getResourcesEntity(Resources resources, OgcApiDataV2 apiData, ApiRequestContext requestContext) {
-        return resources;
-    }
+  @Override
+  public Object getResourcesEntity(
+      Resources resources, OgcApiDataV2 apiData, ApiRequestContext requestContext) {
+    return resources;
+  }
 }

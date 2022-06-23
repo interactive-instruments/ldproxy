@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,7 +8,6 @@
 package de.ii.ogcapi.tiles.app.tileMatrixSet;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.foundation.domain.CollectionExtent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.tiles.app.TilesHelper;
 import de.ii.ogcapi.tiles.domain.MinMax;
@@ -25,81 +24,92 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is responsible for generating a list of tileMatrixSetLimits in json responses for /tiles and /collections/{collectionsId}/tiles requests.
+ * This class is responsible for generating a list of tileMatrixSetLimits in json responses for
+ * /tiles and /collections/{collectionsId}/tiles requests.
  */
 @Singleton
 @AutoBind
 public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGenerator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TileMatrixSetLimitsGeneratorImpl.class);
-    private final CrsTransformerFactory crsTransformerFactory;
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(TileMatrixSetLimitsGeneratorImpl.class);
+  private final CrsTransformerFactory crsTransformerFactory;
 
-    @Inject
-    public TileMatrixSetLimitsGeneratorImpl(CrsTransformerFactory crsTransformerFactory) {
-        this.crsTransformerFactory = crsTransformerFactory;
+  @Inject
+  public TileMatrixSetLimitsGeneratorImpl(CrsTransformerFactory crsTransformerFactory) {
+    this.crsTransformerFactory = crsTransformerFactory;
+  }
+
+  /**
+   * Return a list of tileMatrixSetLimits for a single collection.
+   *
+   * @param api service dataset
+   * @param collectionId name of the collection
+   * @param tileMatrixSet the tile matrix set
+   * @return list of TileMatrixSetLimits
+   */
+  @Override
+  public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(
+      OgcApi api, String collectionId, TileMatrixSet tileMatrixSet, MinMax tileMatrixRange) {
+
+    Optional<BoundingBox> bbox = api.getSpatialExtent(collectionId, tileMatrixSet.getCrs());
+
+    if (bbox.isEmpty()) {
+      // fallback to bbox of the tile matrix set
+      LOGGER.debug(
+          "No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set for collection '{}'. Using the tile matrix set bounding box.",
+          collectionId);
+      bbox = Optional.of(tileMatrixSet.getBoundingBox());
     }
 
-    /**
-     * Return a list of tileMatrixSetLimits for a single collection.
-     * @param api service dataset
-     * @param collectionId name of the collection
-     * @param tileMatrixSet the tile matrix set
-     * @return list of TileMatrixSetLimits
-     */
-    @Override
-    public List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(OgcApi api, String collectionId,
-                                                                      TileMatrixSet tileMatrixSet, MinMax tileMatrixRange) {
+    return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
+  }
 
-        Optional<BoundingBox> bbox = api.getSpatialExtent(collectionId, tileMatrixSet.getCrs());
+  /**
+   * Return a list of tileMatrixSetLimits for all collections in the dataset.
+   *
+   * @param api service dataset
+   * @param tileMatrixSet the tile matrix set
+   * @return list of TileMatrixSetLimits
+   */
+  @Override
+  public List<TileMatrixSetLimits> getTileMatrixSetLimits(
+      OgcApi api, TileMatrixSet tileMatrixSet, MinMax tileMatrixRange) {
 
-        if (bbox.isEmpty()) {
-            // fallback to bbox of the tile matrix set
-            LOGGER.debug("No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set for collection '{}'. Using the tile matrix set bounding box.", collectionId);
-            bbox = Optional.of(tileMatrixSet.getBoundingBox());
-        }
+    Optional<BoundingBox> bbox = api.getSpatialExtent(tileMatrixSet.getCrs());
 
-        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
+    if (bbox.isEmpty()) {
+      // fallback to bbox of the tile matrix set
+      LOGGER.debug(
+          "No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
+      bbox = Optional.of(tileMatrixSet.getBoundingBox());
     }
 
-    /**
-     * Return a list of tileMatrixSetLimits for all collections in the dataset.
-     * @param api service dataset
-     * @param tileMatrixSet the tile matrix set
-     * @return list of TileMatrixSetLimits
-     */
-    @Override
-    public List<TileMatrixSetLimits> getTileMatrixSetLimits(OgcApi api, TileMatrixSet tileMatrixSet,
-                                                            MinMax tileMatrixRange) {
+    return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
+  }
 
-        Optional<BoundingBox> bbox = api.getSpatialExtent(tileMatrixSet.getCrs());
+  /**
+   * Return a list of tileMatrixSetLimits for all collections in the dataset.
+   *
+   * @param boundingBox a bounding box
+   * @param tileMatrixSet the tile matrix set
+   * @return list of TileMatrixSetLimits
+   */
+  @Override
+  public List<TileMatrixSetLimits> getTileMatrixSetLimits(
+      BoundingBox boundingBox, TileMatrixSet tileMatrixSet, MinMax tileMatrixRange) {
 
-        if (bbox.isEmpty()) {
-            // fallback to bbox of the tile matrix set
-            LOGGER.debug("No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
-            bbox = Optional.of(tileMatrixSet.getBoundingBox());
-        }
+    Optional<BoundingBox> bbox =
+        TilesHelper.getBoundingBoxInTargetCrs(
+            boundingBox, tileMatrixSet.getCrs(), crsTransformerFactory);
 
-        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
+    if (bbox.isEmpty()) {
+      // fallback to bbox of the tile matrix set
+      LOGGER.debug(
+          "Bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
+      bbox = Optional.of(tileMatrixSet.getBoundingBox());
     }
 
-    /**
-     * Return a list of tileMatrixSetLimits for all collections in the dataset.
-     * @param boundingBox a bounding box
-     * @param tileMatrixSet the tile matrix set
-     * @return list of TileMatrixSetLimits
-     */
-    @Override
-    public List<TileMatrixSetLimits> getTileMatrixSetLimits(BoundingBox boundingBox, TileMatrixSet tileMatrixSet,
-                                                            MinMax tileMatrixRange) {
-
-        Optional<BoundingBox> bbox = TilesHelper.getBoundingBoxInTargetCrs(boundingBox, tileMatrixSet.getCrs(), crsTransformerFactory);
-
-        if (bbox.isEmpty()) {
-            // fallback to bbox of the tile matrix set
-            LOGGER.debug("Bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
-            bbox = Optional.of(tileMatrixSet.getBoundingBox());
-        }
-
-        return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
-    }
+    return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
+  }
 }

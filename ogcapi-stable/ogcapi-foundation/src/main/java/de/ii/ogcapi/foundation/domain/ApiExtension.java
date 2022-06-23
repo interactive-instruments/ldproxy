@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,8 +21,8 @@ public interface ApiExtension {
   }
 
   default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return isExtensionEnabled(apiData.getCollections().get(collectionId),
-        getBuildingBlockConfigurationType());
+    return isExtensionEnabled(
+        apiData.getCollections().get(collectionId), getBuildingBlockConfigurationType());
   }
 
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -31,14 +31,21 @@ public interface ApiExtension {
 
   default <T extends ExtensionConfiguration> boolean isExtensionEnabled(
       ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
-    return Objects.nonNull(extendableConfiguration) && extendableConfiguration.getExtension(clazz)
-        .filter(ExtensionConfiguration::isEnabled).isPresent();
+    return Objects.nonNull(extendableConfiguration)
+        && extendableConfiguration
+            .getExtension(clazz)
+            .filter(ExtensionConfiguration::isEnabled)
+            .isPresent();
   }
 
   default <T extends ExtensionConfiguration> boolean isExtensionEnabled(
       ExtendableConfiguration extendableConfiguration, Class<T> clazz, Predicate<T> predicate) {
-    return Objects.nonNull(extendableConfiguration) && extendableConfiguration.getExtension(clazz)
-        .filter(ExtensionConfiguration::isEnabled).filter(predicate).isPresent();
+    return Objects.nonNull(extendableConfiguration)
+        && extendableConfiguration
+            .getExtension(clazz)
+            .filter(ExtensionConfiguration::isEnabled)
+            .filter(predicate)
+            .isPresent();
   }
 
   default ValidationResult onStartup(OgcApi api, MODE apiValidation) {

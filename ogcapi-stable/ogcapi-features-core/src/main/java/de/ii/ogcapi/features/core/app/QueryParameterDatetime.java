@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,11 +8,10 @@
 package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -22,21 +21,22 @@ import javax.inject.Singleton;
  * @name Datetime
  * @endpoints Features
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterDatetime extends AbstractQueryParameterDatetime {
 
-    @Inject
-    QueryParameterDatetime(SchemaValidator schemaValidator) {
-      super(schemaValidator);
-    }
+  @Inject
+  QueryParameterDatetime(SchemaValidator schemaValidator) {
+    super(schemaValidator);
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-            isEnabledForApi(apiData) &&
-                method== HttpMethods.GET &&
-                definitionPath.equals("/collections/{collectionId}/items"));
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.GET
+                && definitionPath.equals("/collections/{collectionId}/items"));
+  }
 }

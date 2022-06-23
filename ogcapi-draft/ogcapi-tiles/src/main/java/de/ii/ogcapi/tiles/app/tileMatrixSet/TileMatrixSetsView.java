@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,29 +16,36 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLinks;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSets;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 public class TileMatrixSetsView extends OgcApiView {
-    public List<TileMatrixSetLinks> tileMatrixSets;
-    public String none;
+  public List<TileMatrixSetLinks> tileMatrixSets;
+  public String none;
 
-    public TileMatrixSetsView(OgcApiDataV2 apiData,
-                              TileMatrixSets tileMatrixSets,
-                              List<NavigationDTO> breadCrumbs,
-                              String staticUrlPrefix,
-                              HtmlConfiguration htmlConfig,
-                              boolean noIndex,
-                              URICustomizer uriCustomizer,
-                              I18n i18n,
-                              Optional<Locale> language) {
-        super("tileMatrixSets.mustache", Charsets.UTF_8, apiData, breadCrumbs, htmlConfig, noIndex, staticUrlPrefix,
-                tileMatrixSets.getLinks(),
-                i18n.get("tileMatrixSetsTitle", language),
-                i18n.get("tileMatrixSetsDescription", language));
-        this.tileMatrixSets = tileMatrixSets.getTileMatrixSets();
-        this.none = i18n.get ("none", language);
-    }
+  public TileMatrixSetsView(
+      OgcApiDataV2 apiData,
+      TileMatrixSets tileMatrixSets,
+      List<NavigationDTO> breadCrumbs,
+      String staticUrlPrefix,
+      HtmlConfiguration htmlConfig,
+      boolean noIndex,
+      URICustomizer uriCustomizer,
+      I18n i18n,
+      Optional<Locale> language) {
+    super(
+        "tileMatrixSets.mustache",
+        Charsets.UTF_8,
+        apiData,
+        breadCrumbs,
+        htmlConfig,
+        noIndex,
+        staticUrlPrefix,
+        tileMatrixSets.getLinks(),
+        i18n.get("tileMatrixSetsTitle", language),
+        i18n.get("tileMatrixSetsDescription", language));
+    this.tileMatrixSets = tileMatrixSets.getTileMatrixSets();
+    this.none = i18n.get("none", language);
+  }
 }

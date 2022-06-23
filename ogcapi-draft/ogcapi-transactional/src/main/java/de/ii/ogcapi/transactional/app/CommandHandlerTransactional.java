@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -18,82 +18,75 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 
 public class CommandHandlerTransactional {
 
+  public Response postItemsResponse(
+      FeatureTransactions featureProvider,
+      ApiMediaType mediaType,
+      URICustomizer uriCustomizer,
+      String collectionName,
+      InputStream requestBody) {
 
-    public Response postItemsResponse(
-        FeatureTransactions featureProvider,
-        ApiMediaType mediaType,
-        URICustomizer uriCustomizer, String collectionName,
-        InputStream requestBody) {
+    FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
 
-        FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
+    // TODO: collectionName != featureType
+    FeatureTransactions.MutationResult result =
+        featureProvider.createFeatures(collectionName, featureTokenSource);
 
-        //TODO: collectionName != featureType
-        FeatureTransactions.MutationResult result = featureProvider.createFeatures(collectionName, featureTokenSource);
+    result.getError().ifPresent(QueriesHandler::processStreamError);
 
-        result.getError()
-            .ifPresent(QueriesHandler::processStreamError);
+    List<String> ids = result.getIds();
 
-        List<String> ids = result.getIds();
-
-        if (ids.isEmpty()) {
-            throw new IllegalArgumentException("No features found in input");
-        }
-        URI firstFeature = null;
-        try {
-            firstFeature = uriCustomizer.copy()
-                                        .ensureLastPathSegment(ids.get(0))
-                                        .build();
-        } catch (URISyntaxException e) {
-            //ignore
-        }
-
-        return Response.created(firstFeature)
-                       .build();
+    if (ids.isEmpty()) {
+      throw new IllegalArgumentException("No features found in input");
+    }
+    URI firstFeature = null;
+    try {
+      firstFeature = uriCustomizer.copy().ensureLastPathSegment(ids.get(0)).build();
+    } catch (URISyntaxException e) {
+      // ignore
     }
 
-    public Response putItemResponse(
-        FeatureTransactions featureProvider,
-        ApiMediaType mediaType,
-        String collectionName, String featureId,
-        InputStream requestBody) {
+    return Response.created(firstFeature).build();
+  }
 
-        FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
+  public Response putItemResponse(
+      FeatureTransactions featureProvider,
+      ApiMediaType mediaType,
+      String collectionName,
+      String featureId,
+      InputStream requestBody) {
 
-        //TODO: collectionName != featureType
-        FeatureTransactions.MutationResult result = featureProvider.updateFeature(collectionName, featureId, featureTokenSource);
+    FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
 
-        result.getError()
-            .ifPresent(QueriesHandler::processStreamError);
+    // TODO: collectionName != featureType
+    FeatureTransactions.MutationResult result =
+        featureProvider.updateFeature(collectionName, featureId, featureTokenSource);
 
-        return Response.noContent()
-                       .build();
-    }
+    result.getError().ifPresent(QueriesHandler::processStreamError);
 
-    public Response deleteItemResponse(
-            FeatureTransactions featureProvider,
-            String collectionName, String featureId) {
+    return Response.noContent().build();
+  }
 
-        FeatureTransactions.MutationResult result = featureProvider.deleteFeature(collectionName, featureId);
+  public Response deleteItemResponse(
+      FeatureTransactions featureProvider, String collectionName, String featureId) {
 
-        result.getError()
-            .ifPresent(QueriesHandler::processStreamError);
+    FeatureTransactions.MutationResult result =
+        featureProvider.deleteFeature(collectionName, featureId);
 
-        return Response.noContent()
-                       .build();
-    }
+    result.getError().ifPresent(QueriesHandler::processStreamError);
 
-    //TODO: to InputFormat extension matching the mediaType
-    private static FeatureTokenSource getFeatureSource(
-        ApiMediaType mediaType,
-        InputStream requestBody) {
+    return Response.noContent().build();
+  }
 
-        FeatureTokenDecoderGeoJson featureTokenDecoderGeoJson = new FeatureTokenDecoderGeoJson();
+  // TODO: to InputFormat extension matching the mediaType
+  private static FeatureTokenSource getFeatureSource(
+      ApiMediaType mediaType, InputStream requestBody) {
 
-        return Source.inputStream(requestBody).via(featureTokenDecoderGeoJson);
-    }
+    FeatureTokenDecoderGeoJson featureTokenDecoderGeoJson = new FeatureTokenDecoderGeoJson();
+
+    return Source.inputStream(requestBody).via(featureTokenDecoderGeoJson);
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -32,7 +32,9 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   private final Optional<String> description;
 
   public SchemaDeriverJsonSchema(
-      VERSION version, Optional<String> schemaUri, String label,
+      VERSION version,
+      Optional<String> schemaUri,
+      String label,
       Optional<String> description,
       List<Codelist> codelists) {
     super(codelists);
@@ -60,12 +62,16 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   }
 
   @Override
-  protected JsonSchema buildRootSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
-      Map<String, JsonSchema> definitions, List<String> requiredProperties) {
+  protected JsonSchema buildRootSchema(
+      FeatureSchema schema,
+      Map<String, JsonSchema> properties,
+      Map<String, JsonSchema> definitions,
+      List<String> requiredProperties) {
 
-    JsonSchemaDocument.Builder builder = version == VERSION.V7
-        ? ImmutableJsonSchemaDocumentV7.builder()
-        : ImmutableJsonSchemaDocument.builder();
+    JsonSchemaDocument.Builder builder =
+        version == VERSION.V7
+            ? ImmutableJsonSchemaDocumentV7.builder()
+            : ImmutableJsonSchemaDocument.builder();
 
     builder
         .id(schemaUri)
@@ -77,64 +83,71 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
     return builder.build();
   }
 
-  protected void adjustRootSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
+  protected void adjustRootSchema(
+      FeatureSchema schema,
+      Map<String, JsonSchema> properties,
       Map<String, JsonSchema> definitions,
-      List<String> requiredProperties, JsonSchemaDocument.Builder rootBuilder) {
-
-  }
+      List<String> requiredProperties,
+      JsonSchemaDocument.Builder rootBuilder) {}
 
   @Override
   protected Stream<JsonSchema> extractDefinitions(Stream<JsonSchema> properties) {
     return properties
         .filter(property -> Objects.nonNull(property) && property.getName().isPresent())
-        .map(property -> property instanceof JsonSchemaArray ? ((JsonSchemaArray) property).getItems() : property)
+        .map(
+            property ->
+                property instanceof JsonSchemaArray
+                    ? ((JsonSchemaArray) property).getItems()
+                    : property)
         .filter(property -> property instanceof JsonSchemaRef && property.getName().isPresent())
-        .filter(ref -> Objects.nonNull(((JsonSchemaRef) ref).getDef()) && ((JsonSchemaRef) ref).getDef().getName().isPresent())
+        .filter(
+            ref ->
+                Objects.nonNull(((JsonSchemaRef) ref).getDef())
+                    && ((JsonSchemaRef) ref).getDef().getName().isPresent())
         .map(ref -> ((JsonSchemaRef) ref).getDef())
-        .flatMap(def -> def instanceof JsonSchemaObject
-            ? Stream.concat(Stream.of(def), extractDefinitions(((JsonSchemaObject) def).getProperties().values()
-            .stream()))
-            : Stream.of(def));
+        .flatMap(
+            def ->
+                def instanceof JsonSchemaObject
+                    ? Stream.concat(
+                        Stream.of(def),
+                        extractDefinitions(
+                            ((JsonSchemaObject) def).getProperties().values().stream()))
+                    : Stream.of(def));
   }
 
   @Override
-  protected JsonSchema buildObjectSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
-      List<String> requiredProperties) {
-    ImmutableJsonSchemaObject.Builder builder = ImmutableJsonSchemaObject.builder()
-        .name(schema.getName())
-        .title(schema.getLabel())
-        .description(schema.getDescription());
+  protected JsonSchema buildObjectSchema(
+      FeatureSchema schema, Map<String, JsonSchema> properties, List<String> requiredProperties) {
+    ImmutableJsonSchemaObject.Builder builder =
+        ImmutableJsonSchemaObject.builder()
+            .name(schema.getName())
+            .title(schema.getLabel())
+            .description(schema.getDescription());
 
     adjustObjectSchema(schema, properties, requiredProperties, builder);
 
     return builder.build();
   }
 
-  protected void adjustObjectSchema(FeatureSchema schema, Map<String, JsonSchema> properties,
-      List<String> requiredProperties, ImmutableJsonSchemaObject.Builder objectBuilder) {
+  protected void adjustObjectSchema(
+      FeatureSchema schema,
+      Map<String, JsonSchema> properties,
+      List<String> requiredProperties,
+      ImmutableJsonSchemaObject.Builder objectBuilder) {
     objectBuilder.properties(properties);
     objectBuilder.required(requiredProperties);
   }
 
   @Override
-  protected JsonSchema getSchemaForLiteralType(Type type, Optional<String> label,
-      Optional<String> description) {
+  protected JsonSchema getSchemaForLiteralType(
+      Type type, Optional<String> label, Optional<String> description) {
     switch (type) {
       case INTEGER:
-        return ImmutableJsonSchemaInteger.builder()
-            .title(label)
-            .description(description)
-            .build();
+        return ImmutableJsonSchemaInteger.builder().title(label).description(description).build();
       case FLOAT:
-        return ImmutableJsonSchemaNumber.builder()
-            .title(label)
-            .description(description)
-            .build();
+        return ImmutableJsonSchemaNumber.builder().title(label).description(description).build();
       case BOOLEAN:
-        return ImmutableJsonSchemaBoolean.builder()
-            .title(label)
-            .description(description)
-            .build();
+        return ImmutableJsonSchemaBoolean.builder().title(label).description(description).build();
       case DATETIME:
         return ImmutableJsonSchemaString.builder()
             // validators will ignore this information as it isn't a well-known format value
@@ -151,10 +164,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             .build();
       case STRING:
       default:
-        return ImmutableJsonSchemaString.builder()
-            .title(label)
-            .description(description)
-            .build();
+        return ImmutableJsonSchemaString.builder().title(label).description(description).build();
     }
   }
 
@@ -201,107 +211,55 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   @Override
   protected JsonSchema withName(JsonSchema jsonSchema, String propertyName) {
     if (jsonSchema instanceof JsonSchemaObject) {
-      return ImmutableJsonSchemaObject.builder()
-          .from(jsonSchema)
-          .name(propertyName)
-          .build();
+      return ImmutableJsonSchemaObject.builder().from(jsonSchema).name(propertyName).build();
     } else if (jsonSchema instanceof JsonSchemaOneOf) {
-      return ImmutableJsonSchemaOneOf.builder()
-          .from(jsonSchema)
-          .name(propertyName)
-          .build();
+      return ImmutableJsonSchemaOneOf.builder().from(jsonSchema).name(propertyName).build();
     } else if (jsonSchema instanceof JsonSchemaNull) {
-      return ImmutableJsonSchemaNull.builder()
-          .from(jsonSchema)
-          .name(propertyName)
-          .build();
+      return ImmutableJsonSchemaNull.builder().from(jsonSchema).name(propertyName).build();
     } else if (jsonSchema instanceof JsonSchemaInteger) {
-      return ImmutableJsonSchemaInteger.builder()
-          .from(jsonSchema)
-          .name(propertyName)
-          .build();
+      return ImmutableJsonSchemaInteger.builder().from(jsonSchema).name(propertyName).build();
     } else if (jsonSchema instanceof JsonSchemaBoolean) {
-      return ImmutableJsonSchemaBoolean.builder()
-          .from(jsonSchema)
-          .name(propertyName)
-          .build();
+      return ImmutableJsonSchemaBoolean.builder().from(jsonSchema).name(propertyName).build();
     } else if (jsonSchema instanceof JsonSchemaNumber) {
-      return ImmutableJsonSchemaNumber.builder()
-          .from(jsonSchema)
-          .name(propertyName)
-          .build();
+      return ImmutableJsonSchemaNumber.builder().from(jsonSchema).name(propertyName).build();
     } else if (jsonSchema instanceof JsonSchemaString) {
-      return ImmutableJsonSchemaString.builder()
-          .from(jsonSchema)
-          .name(propertyName)
-          .build();
+      return ImmutableJsonSchemaString.builder().from(jsonSchema).name(propertyName).build();
     } else if (jsonSchema instanceof JsonSchemaRefExternal) {
-      return ImmutableJsonSchemaRefExternal.builder()
-          .from(jsonSchema)
-          .name(propertyName)
-          .build();
+      return ImmutableJsonSchemaRefExternal.builder().from(jsonSchema).name(propertyName).build();
     }
     return jsonSchema;
   }
 
-  //TODO: abstract builder, factor out case detection
+  // TODO: abstract builder, factor out case detection
   @Override
   protected JsonSchema withRequired(JsonSchema jsonSchema) {
     if (jsonSchema instanceof JsonSchemaObject) {
-      return ImmutableJsonSchemaObject.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaObject.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaOneOf) {
-      return ImmutableJsonSchemaOneOf.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaOneOf.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaArray) {
-      return ImmutableJsonSchemaArray.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaArray.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaRefV7) {
-      return ImmutableJsonSchemaRefV7.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaRefV7.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaRef) {
-      return ImmutableJsonSchemaRef.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaRef.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaNull) {
-      return ImmutableJsonSchemaNull.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaNull.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaInteger) {
-      return ImmutableJsonSchemaInteger.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaInteger.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaBoolean) {
-      return ImmutableJsonSchemaBoolean.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaBoolean.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaNumber) {
-      return ImmutableJsonSchemaNumber.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaNumber.builder().from(jsonSchema).isRequired(true).build();
     } else if (jsonSchema instanceof JsonSchemaString) {
-      return ImmutableJsonSchemaString.builder()
-          .from(jsonSchema)
-          .isRequired(true)
-          .build();
+      return ImmutableJsonSchemaString.builder().from(jsonSchema).isRequired(true).build();
     }
     return jsonSchema;
   }
 
-  protected JsonSchema withConstraints(JsonSchema schema, SchemaConstraints constraints,
+  protected JsonSchema withConstraints(
+      JsonSchema schema,
+      SchemaConstraints constraints,
       FeatureSchema property,
       List<Codelist> codelists) {
     if (schema instanceof JsonSchemaArray) {
@@ -320,66 +278,68 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
 
     if (!constraints.getEnumValues().isEmpty()) {
       // if enum is specified in the configuration, it wins over codelist
-      boolean string = property.isArray() ?
-          property.getValueType().orElse(SchemaBase.Type.UNKNOWN)!=SchemaBase.Type.INTEGER :
-          property.getType()!=SchemaBase.Type.INTEGER;
-      result = string ?
-          ImmutableJsonSchemaString.builder()
-              .from(result)
-              .enums(constraints.getEnumValues())
-              .build() :
-          ImmutableJsonSchemaInteger.builder()
-              .from(result)
-              .enums(constraints.getEnumValues()
-                  .stream()
-                  .map(val -> Integer.parseInt(val))
-                  .collect(Collectors.toList()))
-              .build();
+      boolean string =
+          property.isArray()
+              ? property.getValueType().orElse(SchemaBase.Type.UNKNOWN) != SchemaBase.Type.INTEGER
+              : property.getType() != SchemaBase.Type.INTEGER;
+      result =
+          string
+              ? ImmutableJsonSchemaString.builder()
+                  .from(result)
+                  .enums(constraints.getEnumValues())
+                  .build()
+              : ImmutableJsonSchemaInteger.builder()
+                  .from(result)
+                  .enums(
+                      constraints.getEnumValues().stream()
+                          .map(val -> Integer.parseInt(val))
+                          .collect(Collectors.toList()))
+                  .build();
     } else if (constraints.getCodelist().isPresent()) {
-      Optional<Codelist> codelist = codelists.stream()
-          .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
-          .findAny();
+      Optional<Codelist> codelist =
+          codelists.stream()
+              .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
+              .findAny();
       if (codelist.isPresent() && !codelist.get().getData().getFallback().isPresent()) {
-        boolean string = property.isArray() ?
-            property.getValueType().orElse(SchemaBase.Type.UNKNOWN)!=SchemaBase.Type.INTEGER :
-            property.getType()!=SchemaBase.Type.INTEGER;
+        boolean string =
+            property.isArray()
+                ? property.getValueType().orElse(SchemaBase.Type.UNKNOWN) != SchemaBase.Type.INTEGER
+                : property.getType() != SchemaBase.Type.INTEGER;
         Set<String> values = codelist.get().getData().getEntries().keySet();
-        result = string ?
-            ImmutableJsonSchemaString.builder()
-                .from(result)
-                .enums(values)
-                .build() :
-            ImmutableJsonSchemaInteger.builder()
-                .from(result)
-                .enums(values.stream()
-                    .map(val -> Integer.valueOf(val))
-                    .sorted()
-                    .collect(Collectors.toList()))
-                .build();
+        result =
+            string
+                ? ImmutableJsonSchemaString.builder().from(result).enums(values).build()
+                : ImmutableJsonSchemaInteger.builder()
+                    .from(result)
+                    .enums(
+                        values.stream()
+                            .map(val -> Integer.valueOf(val))
+                            .sorted()
+                            .collect(Collectors.toList()))
+                    .build();
       }
     }
     if (constraints.getRegex().isPresent() && result instanceof ImmutableJsonSchemaString) {
-      result = ImmutableJsonSchemaString.builder()
-          .from(result)
-          .pattern(constraints.getRegex().get())
-          .build();
+      result =
+          ImmutableJsonSchemaString.builder()
+              .from(result)
+              .pattern(constraints.getRegex().get())
+              .build();
     }
     if (constraints.getMin().isPresent() || constraints.getMax().isPresent()) {
       if (result instanceof ImmutableJsonSchemaInteger) {
-        ImmutableJsonSchemaInteger.Builder builder = ImmutableJsonSchemaInteger.builder()
-            .from(result);
+        ImmutableJsonSchemaInteger.Builder builder =
+            ImmutableJsonSchemaInteger.builder().from(result);
         if (constraints.getMin().isPresent())
           builder.minimum(Math.round(constraints.getMin().get()));
         if (constraints.getMax().isPresent())
           builder.maximum(Math.round(constraints.getMax().get()));
         result = builder.build();
       } else if (result instanceof ImmutableJsonSchemaNumber) {
-        ImmutableJsonSchemaNumber.Builder builder = ImmutableJsonSchemaNumber.builder()
-            .from(result);
-        if (constraints.getMin().isPresent())
-          builder.minimum(constraints.getMin().get());
-        if (constraints.getMax().isPresent())
-          builder.maximum(constraints.getMax().get());
+        ImmutableJsonSchemaNumber.Builder builder =
+            ImmutableJsonSchemaNumber.builder().from(result);
+        if (constraints.getMin().isPresent()) builder.minimum(constraints.getMin().get());
+        if (constraints.getMax().isPresent()) builder.maximum(constraints.getMax().get());
         result = builder.build();
       }
     }
@@ -393,29 +353,19 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       return ImmutableJsonSchemaRefV7.builder()
           .name(schema.getName())
           .objectType(objectType)
-          .def(ImmutableJsonSchemaObject.builder()
-              .from(schema)
-              .name(objectType)
-              .build())
+          .def(ImmutableJsonSchemaObject.builder().from(schema).name(objectType).build())
           .build();
     }
 
     return ImmutableJsonSchemaRef.builder()
         .name(schema.getName())
         .objectType(objectType)
-        .def(ImmutableJsonSchemaObject.builder()
-          .from(schema)
-          .name(objectType)
-          .build())
+        .def(ImmutableJsonSchemaObject.builder().from(schema).name(objectType).build())
         .build();
   }
 
   @Override
   protected JsonSchema withArrayWrapper(JsonSchema schema) {
-    return ImmutableJsonSchemaArray.builder()
-        .name(schema.getName())
-        .items(schema)
-        .build();
+    return ImmutableJsonSchemaArray.builder().name(schema.getName()).items(schema).build();
   }
-
 }

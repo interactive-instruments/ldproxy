@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -7,5 +7,4 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-public interface BackgroundTaskExceptionHandler extends Thread.UncaughtExceptionHandler {
-}
+public interface BackgroundTaskExceptionHandler extends Thread.UncaughtExceptionHandler {}

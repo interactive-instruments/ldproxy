@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,35 +20,27 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(as = ImmutableVectorLayer.class)
-@JsonPropertyOrder({
-    "id",
-    "fields",
-    "description",
-    "maxzoom",
-    "minzoom"
-})
-public abstract class VectorLayer
-{
+@JsonPropertyOrder({"id", "fields", "description", "maxzoom", "minzoom"})
+public abstract class VectorLayer {
 
-    @JsonProperty("id")
-    public abstract String getId();
+  @JsonProperty("id")
+  public abstract String getId();
 
-    @JsonProperty("fields")
-    public abstract Fields getFields();
+  @JsonProperty("fields")
+  public abstract Fields getFields();
 
-    @JsonProperty("description")
-    public abstract Optional<String> getDescription();
+  @JsonProperty("description")
+  public abstract Optional<String> getDescription();
 
-    @JsonProperty("geometry_type")
-    public abstract Optional<String> getGeometryType();
+  @JsonProperty("geometry_type")
+  public abstract Optional<String> getGeometryType();
 
-    @JsonProperty("maxzoom")
-    public abstract Optional<Integer> getMaxzoom();
+  @JsonProperty("maxzoom")
+  public abstract Optional<Integer> getMaxzoom();
 
-    @JsonProperty("minzoom")
-    public abstract Optional<Integer> getMinzoom();
+  @JsonProperty("minzoom")
+  public abstract Optional<Integer> getMinzoom();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getAdditionalProperties();
-
+  @JsonAnyGetter
+  public abstract Map<String, Object> getAdditionalProperties();
 }

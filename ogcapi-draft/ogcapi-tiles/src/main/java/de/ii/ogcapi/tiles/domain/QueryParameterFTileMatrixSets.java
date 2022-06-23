@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -23,35 +23,34 @@ import javax.inject.Singleton;
  * @name TileMatrixSets
  * @endpoints Tileset
  */
-
 @Singleton
 @AutoBind
 public class QueryParameterFTileMatrixSets extends QueryParameterF {
 
-    @Inject
-    public QueryParameterFTileMatrixSets(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  public QueryParameterFTileMatrixSets(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fTileMatrixSets";
-    }
+  @Override
+  public String getId() {
+    return "fTileMatrixSets";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return definitionPath.equals("/tileMatrixSets") ||
-                 definitionPath.equals("/tileMatrixSets/{tileMatrixSetId}");
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/tileMatrixSets")
+        || definitionPath.equals("/tileMatrixSets/{tileMatrixSetId}");
+  }
 
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return TileMatrixSetsFormatExtension.class;
-    }
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return TileMatrixSetsFormatExtension.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return TilesConfiguration.class;
-    }
-
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return TilesConfiguration.class;
+  }
 }

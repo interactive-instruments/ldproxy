@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -21,22 +21,22 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public interface FeatureTransformationContextHtml extends FeatureTransformationContext {
 
-    FeatureCollectionView collectionView();
+  FeatureCollectionView collectionView();
 
-    MustacheRenderer mustacheRenderer();
+  MustacheRenderer mustacheRenderer();
 
-    @Value.Derived
-    default boolean isSchemaOrgEnabled() {
-        return Objects.equals(htmlConfiguration().getSchemaOrgEnabled(), true);
-    }
+  @Value.Derived
+  default boolean isSchemaOrgEnabled() {
+    return Objects.equals(htmlConfiguration().getSchemaOrgEnabled(), true);
+  }
 
-    @Value.Derived
-    default FeaturesHtmlConfiguration featuresHtmlConfiguration() {
-        return getConfiguration(FeaturesHtmlConfiguration.class);
-    }
+  @Value.Derived
+  default FeaturesHtmlConfiguration featuresHtmlConfiguration() {
+    return getConfiguration(FeaturesHtmlConfiguration.class);
+  }
 
-    @Value.Derived
-    default HtmlConfiguration htmlConfiguration() {
-        return getConfiguration(HtmlConfiguration.class);
-    }
+  @Value.Derived
+  default HtmlConfiguration htmlConfiguration() {
+    return getConfiguration(HtmlConfiguration.class);
+  }
 }

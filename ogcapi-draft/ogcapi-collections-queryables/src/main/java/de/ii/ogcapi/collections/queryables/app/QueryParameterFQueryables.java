@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,14 +10,11 @@ package de.ii.ogcapi.collections.queryables.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.QueryParameterFSubCollection;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
-import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -25,29 +22,29 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterFQueryables extends QueryParameterFSubCollection {
 
-    @Inject
-    public QueryParameterFQueryables(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
-        super(extensionRegistry, schemaValidator);
-    }
+  @Inject
+  public QueryParameterFQueryables(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
 
-    @Override
-    public String getId() {
-        return "fQueryables";
-    }
+  @Override
+  public String getId() {
+    return "fQueryables";
+  }
 
-    @Override
-    protected boolean matchesPath(String definitionPath) {
-        return definitionPath.equals("/collections/{collectionId}/queryables");
-    }
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/queryables");
+  }
 
-    @Override
-    protected Class<? extends FormatExtension> getFormatClass() {
-        return CollectionPropertiesFormat.class;
-    }
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return CollectionPropertiesFormat.class;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return QueryablesConfiguration.class;
-    }
-
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return QueryablesConfiguration.class;
+  }
 }

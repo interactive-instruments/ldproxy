@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -32,13 +32,10 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureConsumer;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureSourceStream;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.Result;
-import de.ii.xtraplatform.features.domain.FeatureStream2.ResultOld;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -47,11 +44,9 @@ import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
-
 import de.ii.xtraplatform.web.domain.ETag;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -59,7 +54,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -77,250 +71,342 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesCoreQueriesHandlerImpl.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(FeaturesCoreQueriesHandlerImpl.class);
 
-    private final I18n i18n;
-    private final CrsTransformerFactory crsTransformerFactory;
-    private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-    private final EntityRegistry entityRegistry;
+  private final I18n i18n;
+  private final CrsTransformerFactory crsTransformerFactory;
+  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+  private final EntityRegistry entityRegistry;
 
-    @Inject
-    public FeaturesCoreQueriesHandlerImpl(I18n i18n,
-                                          CrsTransformerFactory crsTransformerFactory,
-                                          EntityRegistry entityRegistry) {
-        this.i18n = i18n;
-        this.crsTransformerFactory = crsTransformerFactory;
-        this.entityRegistry = entityRegistry;
+  @Inject
+  public FeaturesCoreQueriesHandlerImpl(
+      I18n i18n, CrsTransformerFactory crsTransformerFactory, EntityRegistry entityRegistry) {
+    this.i18n = i18n;
+    this.crsTransformerFactory = crsTransformerFactory;
+    this.entityRegistry = entityRegistry;
 
-        this.queryHandlers = ImmutableMap.of(
-                Query.FEATURES, QueryHandler.with(QueryInputFeatures.class, this::getItemsResponse),
-                Query.FEATURE, QueryHandler.with(QueryInputFeature.class, this::getItemResponse)
-        );
+    this.queryHandlers =
+        ImmutableMap.of(
+            Query.FEATURES, QueryHandler.with(QueryInputFeatures.class, this::getItemsResponse),
+            Query.FEATURE, QueryHandler.with(QueryInputFeature.class, this::getItemResponse));
+  }
+
+  @Override
+  public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
+    return queryHandlers;
+  }
+
+  public static void ensureCollectionIdExists(OgcApiDataV2 apiData, String collectionId) {
+    if (!apiData.isCollectionEnabled(collectionId)) {
+      throw new NotFoundException(
+          MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
     }
+  }
 
-    @Override
-    public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
-        return queryHandlers;
+  private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
+    if (!featureProvider.supportsQueries()) {
+      throw new IllegalStateException("Feature provider does not support queries.");
     }
+  }
 
-    public static void ensureCollectionIdExists(OgcApiDataV2 apiData, String collectionId) {
-        if (!apiData.isCollectionEnabled(collectionId)) {
-            throw new NotFoundException(MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
-        }
-    }
+  private Response getItemsResponse(
+      QueryInputFeatures queryInput, ApiRequestContext requestContext) {
 
-    private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
-        if (!featureProvider.supportsQueries()) {
-            throw new IllegalStateException("Feature provider does not support queries.");
-        }
-    }
+    OgcApi api = requestContext.getApi();
+    String collectionId = queryInput.getCollectionId();
+    FeatureQuery query = queryInput.getQuery();
 
-    private Response getItemsResponse(QueryInputFeatures queryInput, ApiRequestContext requestContext) {
+    Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
+    boolean onlyHitsIfMore = false; // TODO check
 
-        OgcApi api = requestContext.getApi();
-        String collectionId = queryInput.getCollectionId();
-        FeatureQuery query = queryInput.getQuery();
-
-        Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
-        boolean onlyHitsIfMore = false; // TODO check
-
-        FeatureFormatExtension outputFormat = api.getOutputFormat(
+    FeatureFormatExtension outputFormat =
+        api.getOutputFormat(
                 FeatureFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + "/items",
                 Optional.of(collectionId))
-                                                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
 
-        return getItemsResponse(api, requestContext, collectionId, null, queryInput, query, queryInput.getFeatureProvider(), null, outputFormat, onlyHitsIfMore, defaultPageSize,
-                queryInput.getShowsFeatureSelfLink(), queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
-    }
+    return getItemsResponse(
+        api,
+        requestContext,
+        collectionId,
+        null,
+        queryInput,
+        query,
+        queryInput.getFeatureProvider(),
+        null,
+        outputFormat,
+        onlyHitsIfMore,
+        defaultPageSize,
+        queryInput.getShowsFeatureSelfLink(),
+        queryInput.getIncludeLinkHeader(),
+        queryInput.getDefaultCrs());
+  }
 
-    private Response getItemResponse(QueryInputFeature queryInput,
-                                     ApiRequestContext requestContext) {
+  private Response getItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext) {
 
-        OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
-        String collectionId = queryInput.getCollectionId();
-        String featureId = queryInput.getFeatureId();
-        FeatureQuery query = queryInput.getQuery();
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
+    String collectionId = queryInput.getCollectionId();
+    String featureId = queryInput.getFeatureId();
+    FeatureQuery query = queryInput.getQuery();
 
-        FeatureFormatExtension outputFormat = api.getOutputFormat(
+    FeatureFormatExtension outputFormat =
+        api.getOutputFormat(
                 FeatureFormatExtension.class,
                 requestContext.getMediaType(),
                 "/collections/" + collectionId + "/items/" + featureId,
                 Optional.of(collectionId))
-                                                 .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
 
-        String persistentUri = null;
-        Optional<String> template = api.getData()
-                                       .getCollections()
-                                       .get(collectionId)
-                                       .getPersistentUriTemplate();
-        if (template.isPresent()) {
-            persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
-        }
-
-        return getItemsResponse(api, requestContext, collectionId, featureId, queryInput, query, queryInput.getFeatureProvider(), persistentUri, outputFormat, false, Optional.empty(),
-                false, queryInput.getIncludeLinkHeader(), queryInput.getDefaultCrs());
+    String persistentUri = null;
+    Optional<String> template =
+        api.getData().getCollections().get(collectionId).getPersistentUriTemplate();
+    if (template.isPresent()) {
+      persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
     }
 
-    private Response getItemsResponse(OgcApi api, ApiRequestContext requestContext, String collectionId, String featureId,
-                                      QueryInput queryInput, FeatureQuery query, FeatureProvider2 featureProvider,
-                                      String canonicalUri,
-                                      FeatureFormatExtension outputFormat,
-                                      boolean onlyHitsIfMore, Optional<Integer> defaultPageSize,
-                                      boolean showsFeatureSelfLink, boolean includeLinkHeader,
-                                      EpsgCrs defaultCrs) {
+    return getItemsResponse(
+        api,
+        requestContext,
+        collectionId,
+        featureId,
+        queryInput,
+        query,
+        queryInput.getFeatureProvider(),
+        persistentUri,
+        outputFormat,
+        false,
+        Optional.empty(),
+        false,
+        queryInput.getIncludeLinkHeader(),
+        queryInput.getDefaultCrs());
+  }
 
-        ensureCollectionIdExists(api.getData(), collectionId);
-        ensureFeatureProviderSupportsQueries(featureProvider);
+  private Response getItemsResponse(
+      OgcApi api,
+      ApiRequestContext requestContext,
+      String collectionId,
+      String featureId,
+      QueryInput queryInput,
+      FeatureQuery query,
+      FeatureProvider2 featureProvider,
+      String canonicalUri,
+      FeatureFormatExtension outputFormat,
+      boolean onlyHitsIfMore,
+      Optional<Integer> defaultPageSize,
+      boolean showsFeatureSelfLink,
+      boolean includeLinkHeader,
+      EpsgCrs defaultCrs) {
 
-        Optional<CrsTransformer> crsTransformer = Optional.empty();
+    ensureCollectionIdExists(api.getData(), collectionId);
+    ensureFeatureProviderSupportsQueries(featureProvider);
 
-        EpsgCrs sourceCrs = null;
-        EpsgCrs targetCrs = query.getCrs()
-                                 .orElse(defaultCrs);
-        if (featureProvider.supportsCrs()) {
-            sourceCrs = featureProvider.crs()
-                                       .getNativeCrs();
-            crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-        }
+    Optional<CrsTransformer> crsTransformer = Optional.empty();
 
-        List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-
-        List<Link> links =
-                Objects.isNull(featureId) ?
-                        new FeaturesLinksGenerator().generateLinks(requestContext.getUriCustomizer(), query.getOffset(), query.getLimit(), defaultPageSize.orElse(0), requestContext.getMediaType(), alternateMediaTypes, i18n, requestContext.getLanguage()) :
-                        new FeatureLinksGenerator().generateLinks(requestContext.getUriCustomizer(), requestContext.getMediaType(), alternateMediaTypes, outputFormat.getCollectionMediaType(), canonicalUri, i18n, requestContext.getLanguage());
-
-        String featureTypeId = api.getData().getCollections()
-                                  .get(collectionId)
-                                  .getExtension(FeaturesCoreConfiguration.class)
-                                  .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-                                  .orElse(collectionId);
-
-        ImmutableFeatureTransformationContextGeneric.Builder transformationContext = new ImmutableFeatureTransformationContextGeneric.Builder()
-                .api(api)
-                .apiData(api.getData())
-                .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
-                .collectionId(collectionId)
-                .ogcApiRequest(requestContext)
-                .crsTransformer(crsTransformer)
-                .codelists(entityRegistry.getEntitiesForType(Codelist.class)
-                                         .stream()
-                                         .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
-                .defaultCrs(defaultCrs)
-                .sourceCrs(Optional.ofNullable(sourceCrs))
-                .links(links)
-                .isFeatureCollection(Objects.isNull(featureId))
-                .isHitsOnly(query.hitsOnly())
-                .isPropertyOnly(query.propertyOnly())
-                .fields(query.getFields())
-                .limit(query.getLimit())
-                .offset(query.getOffset())
-                .maxAllowableOffset(query.getMaxAllowableOffset())
-                .geometryPrecision(query.getGeometryPrecision())
-                .isHitsOnlyIfMore(onlyHitsIfMore)
-                .showsFeatureSelfLink(showsFeatureSelfLink);
-
-        StreamingOutput streamingOutput;
-
-        if (outputFormat.canPassThroughFeatures() && featureProvider.supportsPassThrough() && outputFormat.getMediaType()
-                                                                                                          .matches(featureProvider.passThrough()
-                                                                                                                                  .getMediaType())) {
-            FeatureStream featureStream = featureProvider.passThrough()
-                                                                  .getFeatureStreamPassThrough(query);
-            ImmutableFeatureTransformationContextGeneric transformationContextGeneric = transformationContext
-                .outputStream(new OutputStreamToByteConsumer())
-                .build();
-            FeatureTokenEncoder<?> encoder = outputFormat
-                .getFeatureEncoderPassThrough(transformationContextGeneric, requestContext.getLanguage()).get();
-
-            streamingOutput = stream(featureStream, Objects.nonNull(featureId), encoder, Optional.empty());
-        } else if (outputFormat.canEncodeFeatures()) {
-            FeatureStream featureStream = featureProvider.queries()
-                                                          .getFeatureStream(query);
-
-            ImmutableFeatureTransformationContextGeneric transformationContextGeneric = transformationContext
-                .outputStream(new OutputStreamToByteConsumer())
-                .build();
-            FeatureTokenEncoder<?> encoder = outputFormat
-                .getFeatureEncoder(transformationContextGeneric, requestContext.getLanguage()).get();
-
-            Optional<PropertyTransformations> propertyTransformations = outputFormat
-                .getPropertyTransformations(api.getData().getCollections().get(collectionId))
-                .map(pt -> pt.withSubstitutions(ImmutableMap.of("serviceUrl", transformationContextGeneric.getServiceUrl())));
-
-            streamingOutput = stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
-        } else {
-            throw new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated, because it does not support streaming.", requestContext.getMediaType().type()));
-        }
-
-        Date lastModified = null;
-        EntityTag etag = null;
-        byte[] result = null;
-        if (Objects.nonNull(featureId)) {
-            // support etag from the content for a single feature
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try {
-                streamingOutput.write(baos);
-            } catch (IOException e) {
-                throw new IllegalStateException("Feature stream error.", e);
-            }
-            result = baos.toByteArray();
-
-            etag = !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-                || api.getData().getExtension(HtmlConfiguration.class, collectionId).map(HtmlConfiguration::getSendEtags).orElse(false)
-                ? ETag.from(result)
-                : null;
-        } else {
-            lastModified = getLastModified(queryInput);
-        }
-
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
-
-        // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched and OGC-numberReturned headers
-        // TODO For now remove the "next" links from the headers since at this point we don't know, whether there will be a next page
-
-        return prepareSuccessResponse(requestContext, includeLinkHeader ? links.stream()
-                                                                               .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
-                                                                               .collect(ImmutableList.toImmutableList()) : null,
-                                      HeaderCaching.of(lastModified, etag, queryInput),
-                                      targetCrs,
-                                      HeaderContentDisposition.of(String.format("%s.%s", Objects.isNull(featureId) ? collectionId : featureId, outputFormat.getMediaType().fileExtension())))
-                .entity(Objects.nonNull(result) ? result : streamingOutput)
-                .build();
+    EpsgCrs sourceCrs = null;
+    EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
+    if (featureProvider.supportsCrs()) {
+      sourceCrs = featureProvider.crs().getNativeCrs();
+      crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
 
-    private StreamingOutput stream(FeatureStream featureTransformStream, boolean failIfEmpty,
-        final FeatureTokenEncoder<?> encoder,
-        Optional<PropertyTransformations> propertyTransformations) {
-        //Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class, "stream")).time();
+    List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
-        return outputStream -> {
-            SinkTransformed<Object, byte[]> featureSink = encoder.to(Sink.outputStream(outputStream));
+    List<Link> links =
+        Objects.isNull(featureId)
+            ? new FeaturesLinksGenerator()
+                .generateLinks(
+                    requestContext.getUriCustomizer(),
+                    query.getOffset(),
+                    query.getLimit(),
+                    defaultPageSize.orElse(0),
+                    requestContext.getMediaType(),
+                    alternateMediaTypes,
+                    i18n,
+                    requestContext.getLanguage())
+            : new FeatureLinksGenerator()
+                .generateLinks(
+                    requestContext.getUriCustomizer(),
+                    requestContext.getMediaType(),
+                    alternateMediaTypes,
+                    outputFormat.getCollectionMediaType(),
+                    canonicalUri,
+                    i18n,
+                    requestContext.getLanguage());
 
-            try {
-                Result result = featureTransformStream.runWith(featureSink, propertyTransformations)
-                    .toCompletableFuture()
-                    .join();
-                //timer.stop();
+    String featureTypeId =
+        api.getData()
+            .getCollections()
+            .get(collectionId)
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+            .orElse(collectionId);
 
-                result.getError()
-                    .ifPresent(QueriesHandler::processStreamError);
+    ImmutableFeatureTransformationContextGeneric.Builder transformationContext =
+        new ImmutableFeatureTransformationContextGeneric.Builder()
+            .api(api)
+            .apiData(api.getData())
+            .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
+            .collectionId(collectionId)
+            .ogcApiRequest(requestContext)
+            .crsTransformer(crsTransformer)
+            .codelists(
+                entityRegistry.getEntitiesForType(Codelist.class).stream()
+                    .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
+            .defaultCrs(defaultCrs)
+            .sourceCrs(Optional.ofNullable(sourceCrs))
+            .links(links)
+            .isFeatureCollection(Objects.isNull(featureId))
+            .isHitsOnly(query.hitsOnly())
+            .isPropertyOnly(query.propertyOnly())
+            .fields(query.getFields())
+            .limit(query.getLimit())
+            .offset(query.getOffset())
+            .maxAllowableOffset(query.getMaxAllowableOffset())
+            .geometryPrecision(query.getGeometryPrecision())
+            .isHitsOnlyIfMore(onlyHitsIfMore)
+            .showsFeatureSelfLink(showsFeatureSelfLink);
 
-                if (result.isEmpty() && failIfEmpty) {
-                    throw new NotFoundException("The requested feature does not exist.");
-                }
+    StreamingOutput streamingOutput;
 
-            } catch (CompletionException e) {
-                if (e.getCause() instanceof WebApplicationException) {
-                    throw (WebApplicationException) e.getCause();
-                }
-                throw new IllegalStateException("Feature stream error.", e.getCause());
-            }
-        };
+    if (outputFormat.canPassThroughFeatures()
+        && featureProvider.supportsPassThrough()
+        && outputFormat.getMediaType().matches(featureProvider.passThrough().getMediaType())) {
+      FeatureStream featureStream =
+          featureProvider.passThrough().getFeatureStreamPassThrough(query);
+      ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
+          transformationContext.outputStream(new OutputStreamToByteConsumer()).build();
+      FeatureTokenEncoder<?> encoder =
+          outputFormat
+              .getFeatureEncoderPassThrough(
+                  transformationContextGeneric, requestContext.getLanguage())
+              .get();
+
+      streamingOutput =
+          stream(featureStream, Objects.nonNull(featureId), encoder, Optional.empty());
+    } else if (outputFormat.canEncodeFeatures()) {
+      FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
+
+      ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
+          transformationContext.outputStream(new OutputStreamToByteConsumer()).build();
+      FeatureTokenEncoder<?> encoder =
+          outputFormat
+              .getFeatureEncoder(transformationContextGeneric, requestContext.getLanguage())
+              .get();
+
+      Optional<PropertyTransformations> propertyTransformations =
+          outputFormat
+              .getPropertyTransformations(api.getData().getCollections().get(collectionId))
+              .map(
+                  pt ->
+                      pt.withSubstitutions(
+                          ImmutableMap.of(
+                              "serviceUrl", transformationContextGeneric.getServiceUrl())));
+
+      streamingOutput =
+          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
+    } else {
+      throw new NotAcceptableException(
+          MessageFormat.format(
+              "The requested media type {0} cannot be generated, because it does not support streaming.",
+              requestContext.getMediaType().type()));
     }
+
+    Date lastModified = null;
+    EntityTag etag = null;
+    byte[] result = null;
+    if (Objects.nonNull(featureId)) {
+      // support etag from the content for a single feature
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      try {
+        streamingOutput.write(baos);
+      } catch (IOException e) {
+        throw new IllegalStateException("Feature stream error.", e);
+      }
+      result = baos.toByteArray();
+
+      etag =
+          !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                  || api.getData()
+                      .getExtension(HtmlConfiguration.class, collectionId)
+                      .map(HtmlConfiguration::getSendEtags)
+                      .orElse(false)
+              ? ETag.from(result)
+              : null;
+    } else {
+      lastModified = getLastModified(queryInput);
+    }
+
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
+
+    // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched
+    // and OGC-numberReturned headers
+    // TODO For now remove the "next" links from the headers since at this point we don't know,
+    // whether there will be a next page
+
+    return prepareSuccessResponse(
+            requestContext,
+            includeLinkHeader
+                ? links.stream()
+                    .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
+                    .collect(ImmutableList.toImmutableList())
+                : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            targetCrs,
+            HeaderContentDisposition.of(
+                String.format(
+                    "%s.%s",
+                    Objects.isNull(featureId) ? collectionId : featureId,
+                    outputFormat.getMediaType().fileExtension())))
+        .entity(Objects.nonNull(result) ? result : streamingOutput)
+        .build();
+  }
+
+  private StreamingOutput stream(
+      FeatureStream featureTransformStream,
+      boolean failIfEmpty,
+      final FeatureTokenEncoder<?> encoder,
+      Optional<PropertyTransformations> propertyTransformations) {
+    // Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class,
+    // "stream")).time();
+
+    return outputStream -> {
+      SinkTransformed<Object, byte[]> featureSink = encoder.to(Sink.outputStream(outputStream));
+
+      try {
+        Result result =
+            featureTransformStream
+                .runWith(featureSink, propertyTransformations)
+                .toCompletableFuture()
+                .join();
+        // timer.stop();
+
+        result.getError().ifPresent(QueriesHandler::processStreamError);
+
+        if (result.isEmpty() && failIfEmpty) {
+          throw new NotFoundException("The requested feature does not exist.");
+        }
+
+      } catch (CompletionException e) {
+        if (e.getCause() instanceof WebApplicationException) {
+          throw (WebApplicationException) e.getCause();
+        }
+        throw new IllegalStateException("Feature stream error.", e.getCause());
+      }
+    };
+  }
 }

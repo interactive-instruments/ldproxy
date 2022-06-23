@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,14 +15,16 @@ import java.util.Map;
 
 public interface SchemaInfo {
 
-    List<String> getPropertyNames(FeatureSchema featureType, boolean withArrayBrackets,
-        boolean withObjects);
+  List<String> getPropertyNames(
+      FeatureSchema featureType, boolean withArrayBrackets, boolean withObjects);
 
-    Map<String, String> getNameTitleMap(FeatureSchema featureType);
+  Map<String, String> getNameTitleMap(FeatureSchema featureType);
 
-    List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId);
+  List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId);
 
-    List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId, boolean withSpatial, boolean withArrayBrackets);
+  List<String> getPropertyNames(
+      OgcApiDataV2 apiData, String collectionId, boolean withSpatial, boolean withArrayBrackets);
 
-    Map<String, SchemaBase.Type> getPropertyTypes(FeatureSchema featureType, boolean withArrayBrackets);
+  Map<String, SchemaBase.Type> getPropertyTypes(
+      FeatureSchema featureType, boolean withArrayBrackets);
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -34,102 +34,117 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class CollectionPropertiesFormatHtml implements CollectionPropertiesFormat {
 
-    static final ApiMediaType MEDIA_TYPE = new ImmutableApiMediaType.Builder()
-            .type(MediaType.TEXT_HTML_TYPE)
-            .parameter("html")
+  static final ApiMediaType MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).parameter("html").build();
+
+  private final I18n i18n;
+
+  @Inject
+  public CollectionPropertiesFormatHtml(I18n i18n) {
+    this.i18n = i18n;
+  }
+
+  @Override
+  public ApiMediaType getMediaType() {
+    return MEDIA_TYPE;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+            .getExtension(getBuildingBlockConfigurationType())
+            .map(cfg -> cfg.isEnabled())
+            .orElse(false)
+        && apiData.getExtension(HtmlConfiguration.class).map(cfg -> cfg.isEnabled()).orElse(true);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return apiData
+            .getCollections()
+            .get(collectionId)
+            .getExtension(getBuildingBlockConfigurationType())
+            .map(cfg -> cfg.isEnabled())
+            .orElse(false)
+        && apiData
+            .getCollections()
+            .get(collectionId)
+            .getExtension(HtmlConfiguration.class)
+            .map(cfg -> cfg.isEnabled())
+            .orElse(true);
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(new StringSchema().example("<html>...</html>"))
+        .schemaRef("#/components/schemas/htmlSchema")
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
+
+  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getNoIndexEnabled)
+        .orElse(true);
+  }
+
+  @Override
+  public Object getEntity(
+      JsonSchemaObject schemaProperties,
+      CollectionPropertiesType type,
+      List<Link> links,
+      String collectionId,
+      OgcApi api,
+      ApiRequestContext requestContext) {
+    String rootTitle = i18n.get("root", requestContext.getLanguage());
+    String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
+    String collectionPropertiesTitle =
+        i18n.get(type.toString() + "Title", requestContext.getLanguage());
+
+    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
+    final List<NavigationDTO> breadCrumbs =
+        new ImmutableList.Builder<NavigationDTO>()
+            .add(
+                new NavigationDTO(
+                    rootTitle,
+                    resourceUri
+                        .copy()
+                        .removeLastPathSegments(api.getData().getSubPath().size() + 3)
+                        .toString()))
+            .add(
+                new NavigationDTO(
+                    api.getData().getLabel(),
+                    resourceUri.copy().removeLastPathSegments(3).toString()))
+            .add(
+                new NavigationDTO(
+                    collectionsTitle, resourceUri.copy().removeLastPathSegments(2).toString()))
+            .add(
+                new NavigationDTO(
+                    api.getData().getCollections().get(collectionId).getLabel(),
+                    resourceUri.copy().removeLastPathSegments(1).toString()))
+            .add(new NavigationDTO(collectionPropertiesTitle))
             .build();
 
-    private final I18n i18n;
+    HtmlConfiguration htmlConfig =
+        api.getData()
+            .getCollections()
+            .get(collectionId)
+            .getExtension(HtmlConfiguration.class)
+            .orElse(null);
 
-    @Inject
-    public CollectionPropertiesFormatHtml(I18n i18n) {
-        this.i18n = i18n;
-    }
-
-    @Override
-    public ApiMediaType getMediaType() {
-        return MEDIA_TYPE;
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(getBuildingBlockConfigurationType())
-                      .map(cfg -> cfg.isEnabled())
-                      .orElse(false) &&
-                apiData.getExtension(HtmlConfiguration.class)
-                       .map(cfg -> cfg.isEnabled())
-                       .orElse(true);
-    }
-
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-        return apiData.getCollections()
-                      .get(collectionId)
-                      .getExtension(getBuildingBlockConfigurationType())
-                      .map(cfg -> cfg.isEnabled())
-                      .orElse(false) &&
-                apiData.getCollections()
-                       .get(collectionId)
-                       .getExtension(HtmlConfiguration.class)
-                       .map(cfg -> cfg.isEnabled())
-                       .orElse(true);
-    }
-
-    @Override
-    public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-        return new ImmutableApiMediaTypeContent.Builder()
-                .schema(new StringSchema().example("<html>...</html>"))
-                .schemaRef("#/components/schemas/htmlSchema")
-                .ogcApiMediaType(MEDIA_TYPE)
-                .build();
-    }
-
-    private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
-        return apiData.getExtension(HtmlConfiguration.class)
-                .map(HtmlConfiguration::getNoIndexEnabled)
-                .orElse(true);
-    }
-
-    @Override
-    public Object getEntity(JsonSchemaObject schemaProperties,
-                            CollectionPropertiesType type,
-                            List<Link> links,
-                            String collectionId,
-                            OgcApi api,
-                            ApiRequestContext requestContext) {
-        String rootTitle = i18n.get("root", requestContext.getLanguage());
-        String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-        String collectionPropertiesTitle = i18n.get(type.toString()+"Title", requestContext.getLanguage());
-
-        URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
-        final List<NavigationDTO> breadCrumbs = new ImmutableList.Builder<NavigationDTO>()
-                .add(new NavigationDTO(rootTitle,
-                        resourceUri.copy()
-                                .removeLastPathSegments(api.getData()
-                                                           .getSubPath()
-                                                           .size() + 3)
-                                .toString()))
-                .add(new NavigationDTO(api.getData().getLabel(),
-                        resourceUri
-                                .copy()
-                                .removeLastPathSegments(3)
-                                .toString()))
-                .add(new NavigationDTO(collectionsTitle, resourceUri.copy()
-                        .removeLastPathSegments(2)
-                        .toString()))
-                .add(new NavigationDTO(api.getData().getCollections().get(collectionId).getLabel(), resourceUri.copy()
-                                                                                                                  .removeLastPathSegments(1)
-                                                                                                                  .toString()))
-                .add(new NavigationDTO(collectionPropertiesTitle))
-                .build();
-
-        HtmlConfiguration htmlConfig = api.getData()
-                                                 .getCollections()
-                                                 .get(collectionId)
-                                                 .getExtension(HtmlConfiguration.class)
-                                                 .orElse(null);
-
-        return new CollectionPropertiesView(api.getData(), schemaProperties, type, links, breadCrumbs, requestContext.getStaticUrlPrefix(), htmlConfig, isNoIndexEnabledForApi(api.getData()), requestContext.getUriCustomizer(), i18n, requestContext.getLanguage());
-    }
-
+    return new CollectionPropertiesView(
+        api.getData(),
+        schemaProperties,
+        type,
+        links,
+        breadCrumbs,
+        requestContext.getStaticUrlPrefix(),
+        htmlConfig,
+        isNoIndexEnabledForApi(api.getData()),
+        requestContext.getUriCustomizer(),
+        i18n,
+        requestContext.getLanguage());
+  }
 }

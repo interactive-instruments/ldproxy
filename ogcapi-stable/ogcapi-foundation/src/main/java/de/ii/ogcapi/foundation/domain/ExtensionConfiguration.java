@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,58 +16,57 @@ import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.store.domain.entities.Mergeable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
-import org.immutables.value.Value;
-
-import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.EXISTING_PROPERTY, property = "buildingBlock")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.CUSTOM,
+    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+    property = "buildingBlock")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
-public interface ExtensionConfiguration extends Buildable<ExtensionConfiguration>,
-    Mergeable<ExtensionConfiguration> {
+public interface ExtensionConfiguration
+    extends Buildable<ExtensionConfiguration>, Mergeable<ExtensionConfiguration> {
 
-    abstract class Builder implements BuildableBuilder<ExtensionConfiguration> {
+  abstract class Builder implements BuildableBuilder<ExtensionConfiguration> {
 
-        public abstract Builder defaultValues(ExtensionConfiguration defaultValues);
-    }
+    public abstract Builder defaultValues(ExtensionConfiguration defaultValues);
+  }
 
-    static String getBuildingBlockIdentifier(Class<? extends ExtensionConfiguration> clazz) {
-        return CaseFormat.UPPER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, clazz.getSimpleName()
-                .replace("Immutable", "")
-                .replace("Configuration", ""));
-    }
+  static String getBuildingBlockIdentifier(Class<? extends ExtensionConfiguration> clazz) {
+    return CaseFormat.UPPER_CAMEL.to(
+        CaseFormat.UPPER_UNDERSCORE,
+        clazz.getSimpleName().replace("Immutable", "").replace("Configuration", ""));
+  }
 
-    @JsonAlias("extensionType")
-    @Value.Derived
-    default String getBuildingBlock() {
-        return getBuildingBlockIdentifier(this.getClass());
-    }
+  @JsonAlias("extensionType")
+  @Value.Derived
+  default String getBuildingBlock() {
+    return getBuildingBlockIdentifier(this.getClass());
+  }
 
-    /**
-     * @langEn Enable the building block?
-     * @langDe Das Modul aktivieren?
-     * @default false
-     */
-    @Nullable
-    Boolean getEnabled();
+  /**
+   * @langEn Enable the building block?
+   * @langDe Das Modul aktivieren?
+   * @default false
+   */
+  @Nullable
+  Boolean getEnabled();
 
-    @JsonIgnore
-    @Value.Derived
-    @Value.Auxiliary
-    default boolean isEnabled() {
-        return Objects.equals(getEnabled(), true);
-    }
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean isEnabled() {
+    return Objects.equals(getEnabled(), true);
+  }
 
-    @JsonIgnore
-    @Value.Auxiliary
-    Optional<ExtensionConfiguration> getDefaultValues();
+  @JsonIgnore
+  @Value.Auxiliary
+  Optional<ExtensionConfiguration> getDefaultValues();
 
-    @Override
-    default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-        return source.getBuilder()
-                .from(source)
-                .from(this)
-                .build();
-    }
+  @Override
+  default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+    return source.getBuilder().from(source).from(this).build();
+  }
 }

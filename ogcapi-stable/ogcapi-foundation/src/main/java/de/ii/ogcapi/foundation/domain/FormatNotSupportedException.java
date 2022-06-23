@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,9 +9,9 @@ package de.ii.ogcapi.foundation.domain;
 
 public class FormatNotSupportedException extends RuntimeException {
 
-    private static final long serialVersionUID = -4303512711221862724L;
+  private static final long serialVersionUID = -4303512711221862724L;
 
-    public FormatNotSupportedException(String message) {
-        super(message);
-    }
+  public FormatNotSupportedException(String message) {
+    super(message);
+  }
 }

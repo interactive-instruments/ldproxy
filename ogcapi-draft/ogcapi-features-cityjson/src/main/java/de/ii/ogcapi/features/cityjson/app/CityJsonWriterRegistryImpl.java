@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,25 +12,24 @@ import com.google.common.collect.ImmutableList;
 import dagger.Lazy;
 import de.ii.ogcapi.features.cityjson.domain.CityJsonWriter;
 import de.ii.ogcapi.features.cityjson.domain.CityJsonWriterRegistry;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.List;
 import java.util.Set;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
 public class CityJsonWriterRegistryImpl implements CityJsonWriterRegistry {
 
-    private final Lazy<Set<CityJsonWriter>> cityJsonWriters;
+  private final Lazy<Set<CityJsonWriter>> cityJsonWriters;
 
-    @Inject
-    public CityJsonWriterRegistryImpl(Lazy<Set<CityJsonWriter>> cityJsonWriters) {
-        this.cityJsonWriters = cityJsonWriters;
-    }
+  @Inject
+  public CityJsonWriterRegistryImpl(Lazy<Set<CityJsonWriter>> cityJsonWriters) {
+    this.cityJsonWriters = cityJsonWriters;
+  }
 
-    @Override
-    public List<CityJsonWriter> getCityJsonWriters() {
-        return ImmutableList.copyOf(cityJsonWriters.get());
-    }
+  @Override
+  public List<CityJsonWriter> getCityJsonWriters() {
+    return ImmutableList.copyOf(cityJsonWriters.get());
+  }
 }

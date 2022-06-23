@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -12,6 +12,5 @@ import de.ii.ogcapi.features.gml.app.FeatureTransformationContextGml;
 import org.immutables.value.Value.Modifiable;
 
 @Modifiable
-public interface EncodingAwareContextGml extends EncodingAwareContext<FeatureTransformationContextGml> {
-
-}
+public interface EncodingAwareContextGml
+    extends EncodingAwareContext<FeatureTransformationContextGml> {}

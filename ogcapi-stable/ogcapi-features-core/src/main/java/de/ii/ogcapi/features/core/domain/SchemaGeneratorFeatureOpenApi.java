@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -34,86 +34,107 @@ import javax.inject.Singleton;
 @AutoBind
 public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
 
-    public static final String DEFAULT_FLATTENING_SEPARATOR = ".";
+  public static final String DEFAULT_FLATTENING_SEPARATOR = ".";
 
-    private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaCache = new ConcurrentHashMap<>();
-    private final FeaturesCoreProviders providers;
-    private final EntityRegistry entityRegistry;
+  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaCache =
+      new ConcurrentHashMap<>();
+  private final FeaturesCoreProviders providers;
+  private final EntityRegistry entityRegistry;
 
-    @Inject
-    public SchemaGeneratorFeatureOpenApi(FeaturesCoreProviders providers,
-                                         EntityRegistry entityRegistry) {
-        this.providers = providers;
-        this.entityRegistry = entityRegistry;
+  @Inject
+  public SchemaGeneratorFeatureOpenApi(
+      FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
+    this.providers = providers;
+    this.entityRegistry = entityRegistry;
+  }
+
+  @Override
+  public String getSchemaReference(String collectionIdOrName) {
+    return "#/components/schemas/featureGeoJson_" + collectionIdOrName;
+  }
+
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaCache.containsKey(apiHashCode))
+      schemaCache.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaCache.get(apiHashCode).containsKey(collectionId)) {
+      FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+      String featureTypeId =
+          apiData
+              .getCollections()
+              .get(collectionId)
+              .getExtension(FeaturesCoreConfiguration.class)
+              .filter(ExtensionConfiguration::isEnabled)
+              .filter(
+                  cfg ->
+                      cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
+                          != FeaturesCoreConfiguration.ItemType.unknown)
+              .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+              .orElse(collectionId);
+      FeatureSchema featureType =
+          providers
+              .getFeatureProvider(apiData, collectionData)
+              .map(provider -> provider.getData().getTypes().get(featureTypeId))
+              .orElse(null);
+      if (Objects.isNull(featureType))
+        // Use an empty object schema as fallback, if we cannot get one from the provider
+        featureType =
+            new ImmutableFeatureSchema.Builder()
+                .name(featureTypeId)
+                .type(SchemaBase.Type.OBJECT)
+                .build();
+
+      schemaCache.get(apiHashCode).put(collectionId, getSchema(featureType, collectionData));
     }
+    return schemaCache.get(apiHashCode).get(collectionId);
+  }
 
-    @Override
-    public String getSchemaReference(String collectionIdOrName) {
-        return "#/components/schemas/featureGeoJson_" + collectionIdOrName;
-    }
+  @Override
+  public Schema<?> getSchema(
+      FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData) {
+    SchemaDeriverOpenApi schemaDeriver =
+        new SchemaDeriverOpenApiReturnables(
+            collectionData.getLabel(),
+            collectionData.getDescription(),
+            entityRegistry.getEntitiesForType(Codelist.class));
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaCache.containsKey(apiHashCode))
-            schemaCache.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaCache.get(apiHashCode).containsKey(collectionId)) {
-            FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections()
-                                                                   .get(collectionId);
-            String featureTypeId = apiData.getCollections()
-                                          .get(collectionId)
-                                          .getExtension(FeaturesCoreConfiguration.class)
-                                          .filter(ExtensionConfiguration::isEnabled)
-                                          .filter(cfg -> cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature) != FeaturesCoreConfiguration.ItemType.unknown)
-                                          .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-                                          .orElse(collectionId);
-            FeatureSchema featureType = providers.getFeatureProvider(apiData, collectionData)
-                                                 .map(provider -> provider.getData()
-                                                                          .getTypes()
-                                                                          .get(featureTypeId))
-                                                 .orElse(null);
-            if (Objects.isNull(featureType))
-                // Use an empty object schema as fallback, if we cannot get one from the provider
-                featureType = new ImmutableFeatureSchema.Builder()
-                                                        .name(featureTypeId)
-                                                        .type(SchemaBase.Type.OBJECT)
-                                                        .build();
+    return featureSchema.accept(new WithTransformationsApplied()).accept(schemaDeriver);
+  }
 
-            schemaCache.get(apiHashCode)
-                            .put(collectionId, getSchema(featureType, collectionData));
-        }
-        return schemaCache.get(apiHashCode).get(collectionId);
-    }
+  @Override
+  public Optional<Schema<?>> getProperty(
+      FeatureSchema featureSchema,
+      FeatureTypeConfigurationOgcApi collectionData,
+      String propertyName) {
+    WithTransformationsApplied schemaFlattener =
+        new WithTransformationsApplied(
+            ImmutableMap.of(
+                PropertyTransformations.WILDCARD,
+                new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
-    @Override
-    public Schema<?> getSchema(FeatureSchema featureSchema,
-        FeatureTypeConfigurationOgcApi collectionData) {
-        SchemaDeriverOpenApi schemaDeriver = new SchemaDeriverOpenApiReturnables(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class));
+    String flatteningSeparator =
+        schemaFlattener.getFlatteningSeparator(featureSchema).orElse(DEFAULT_FLATTENING_SEPARATOR);
 
-        return featureSchema.accept(new WithTransformationsApplied()).accept(schemaDeriver);
-    }
-
-    @Override
-    public Optional<Schema<?>> getProperty(FeatureSchema featureSchema,
-                                           FeatureTypeConfigurationOgcApi collectionData, String propertyName) {
-        WithTransformationsApplied schemaFlattener = new WithTransformationsApplied(
-            ImmutableMap.of(PropertyTransformations.WILDCARD, new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
-
-        String flatteningSeparator = schemaFlattener.getFlatteningSeparator(featureSchema).orElse(DEFAULT_FLATTENING_SEPARATOR);
-
-        String propertyWithSeparator = Objects.equals(flatteningSeparator, DEFAULT_FLATTENING_SEPARATOR)
+    String propertyWithSeparator =
+        Objects.equals(flatteningSeparator, DEFAULT_FLATTENING_SEPARATOR)
             ? propertyName
-            : propertyName.replaceAll(Pattern.quote(DEFAULT_FLATTENING_SEPARATOR), flatteningSeparator);
+            : propertyName.replaceAll(
+                Pattern.quote(DEFAULT_FLATTENING_SEPARATOR), flatteningSeparator);
 
-        SchemaDeriverOpenApi schemaDeriver = new SchemaDeriverOpenApiCollectionProperties(collectionData.getLabel(), collectionData.getDescription(), entityRegistry.getEntitiesForType(Codelist.class), ImmutableList.of(propertyWithSeparator));
+    SchemaDeriverOpenApi schemaDeriver =
+        new SchemaDeriverOpenApiCollectionProperties(
+            collectionData.getLabel(),
+            collectionData.getDescription(),
+            entityRegistry.getEntitiesForType(Codelist.class),
+            ImmutableList.of(propertyWithSeparator));
 
-        Schema<?> schema = featureSchema.accept(schemaFlattener).accept(schemaDeriver);
+    Schema<?> schema = featureSchema.accept(schemaFlattener).accept(schemaDeriver);
 
-        if (schema.getProperties().containsKey(propertyWithSeparator)) {
-            return Optional.ofNullable((Schema<?>) schema.getProperties().get(propertyWithSeparator));
-        }
-
-        return Optional.empty();
+    if (schema.getProperties().containsKey(propertyWithSeparator)) {
+      return Optional.ofNullable((Schema<?>) schema.getProperties().get(propertyWithSeparator));
     }
 
+    return Optional.empty();
+  }
 }

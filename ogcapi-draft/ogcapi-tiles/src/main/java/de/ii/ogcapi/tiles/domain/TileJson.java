@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -20,80 +20,82 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 @JsonDeserialize(as = ImmutableTileJson.class)
 @JsonPropertyOrder({
-    "tilejson",
-    "tiles",
-    "vector_layers",
-    "attribution",
-    "bounds",
-    "center",
-    "data",
-    "description",
-    "fillzoom",
-    "grids",
-    "legend",
-    "maxzoom",
-    "minzoom",
-    "name",
-    "scheme",
-    "template",
-    "version"
+  "tilejson",
+  "tiles",
+  "vector_layers",
+  "attribution",
+  "bounds",
+  "center",
+  "data",
+  "description",
+  "fillzoom",
+  "grids",
+  "legend",
+  "maxzoom",
+  "minzoom",
+  "name",
+  "scheme",
+  "template",
+  "version"
 })
 public abstract class TileJson {
 
-    public final static String SCHEMA_REF = "#/components/schemas/TileJson";
+  public static final String SCHEMA_REF = "#/components/schemas/TileJson";
 
-    @JsonProperty("tilejson")
-    @Value.Default
-    public String getTilejson() { return "3.0.0"; }
+  @JsonProperty("tilejson")
+  @Value.Default
+  public String getTilejson() {
+    return "3.0.0";
+  }
 
-    @JsonProperty("tiles")
-    public abstract List<String> getTiles();
+  @JsonProperty("tiles")
+  public abstract List<String> getTiles();
 
-    @JsonProperty("vector_layers")
-    public abstract List<VectorLayer> getVectorLayers();
+  @JsonProperty("vector_layers")
+  public abstract List<VectorLayer> getVectorLayers();
 
-    @JsonProperty("attribution")
-    public abstract Optional<String> getAttribution();
+  @JsonProperty("attribution")
+  public abstract Optional<String> getAttribution();
 
-    @JsonProperty("bounds")
-    public abstract List<Double> getBounds();
+  @JsonProperty("bounds")
+  public abstract List<Double> getBounds();
 
-    @JsonProperty("center")
-    public abstract List<Number> getCenter();
+  @JsonProperty("center")
+  public abstract List<Number> getCenter();
 
-    @JsonProperty("data")
-    public abstract List<String> getData();
+  @JsonProperty("data")
+  public abstract List<String> getData();
 
-    @JsonProperty("description")
-    public abstract Optional<String> getDescription();
+  @JsonProperty("description")
+  public abstract Optional<String> getDescription();
 
-    @JsonProperty("fillzoom")
-    public abstract Optional<Integer> getFillzoom();
+  @JsonProperty("fillzoom")
+  public abstract Optional<Integer> getFillzoom();
 
-    @JsonProperty("grids")
-    public abstract List<String> getGrids();
+  @JsonProperty("grids")
+  public abstract List<String> getGrids();
 
-    @JsonProperty("legend")
-    public abstract Optional<String> getLegend();
+  @JsonProperty("legend")
+  public abstract Optional<String> getLegend();
 
-    @JsonProperty("maxzoom")
-    public abstract Optional<Integer> getMaxzoom();
+  @JsonProperty("maxzoom")
+  public abstract Optional<Integer> getMaxzoom();
 
-    @JsonProperty("minzoom")
-    public abstract Optional<Integer> getMinzoom();
+  @JsonProperty("minzoom")
+  public abstract Optional<Integer> getMinzoom();
 
-    @JsonProperty("name")
-    public abstract Optional<String> getName();
+  @JsonProperty("name")
+  public abstract Optional<String> getName();
 
-    @JsonProperty("scheme")
-    public abstract Optional<String> getScheme();
+  @JsonProperty("scheme")
+  public abstract Optional<String> getScheme();
 
-    @JsonProperty("template")
-    public abstract Optional<String> getTemplate();
+  @JsonProperty("template")
+  public abstract Optional<String> getTemplate();
 
-    @JsonProperty("version")
-    public abstract Optional<String> getVersion();
+  @JsonProperty("version")
+  public abstract Optional<String> getVersion();
 
-    @JsonAnyGetter
-    public abstract Map<String, Object> getAdditionalProperties();
+  @JsonAnyGetter
+  public abstract Map<String, Object> getAdditionalProperties();
 }

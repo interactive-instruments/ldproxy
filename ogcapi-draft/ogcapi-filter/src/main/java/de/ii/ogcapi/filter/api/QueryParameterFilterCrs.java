@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -36,8 +36,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn Specifies which of the supported coordinate reference systems is used to encode coordinates in the filter expression in parameter `filter`. Default is WGS84 longitude/latitude (CRS84).
- * @langDe Gibt an, welches der unterstützten Koordinatenreferenzsysteme zur Kodierung von Koordinaten im Filterausdruck verwendet wird (Parameter `filter`). Standardwert ist WGS84 Längen-/Breitengrad (CRS84).
+ * @langEn Specifies which of the supported coordinate reference systems is used to encode
+ *     coordinates in the filter expression in parameter `filter`. Default is WGS84
+ *     longitude/latitude (CRS84).
+ * @langDe Gibt an, welches der unterstützten Koordinatenreferenzsysteme zur Kodierung von
+ *     Koordinaten im Filterausdruck verwendet wird (Parameter `filter`). Standardwert ist WGS84
+ *     Längen-/Breitengrad (CRS84).
  * @name filter-crs
  * @endpoints Features, Vector Tile
  */
@@ -45,131 +49,147 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApiQueryParameter {
 
-    public static final String FILTER_CRS = "filter-crs";
-    public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
+  public static final String FILTER_CRS = "filter-crs";
+  public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
 
-    private final CrsSupport crsSupport;
-    private final FeaturesCoreProviders providers;
-    private final SchemaValidator schemaValidator;
+  private final CrsSupport crsSupport;
+  private final FeaturesCoreProviders providers;
+  private final SchemaValidator schemaValidator;
 
-    @Inject
-    public QueryParameterFilterCrs(CrsSupport crsSupport,
-                                   FeaturesCoreProviders providers, SchemaValidator schemaValidator) {
-        this.crsSupport = crsSupport;
-        this.providers = providers;
-        this.schemaValidator = schemaValidator;
-    }
+  @Inject
+  public QueryParameterFilterCrs(
+      CrsSupport crsSupport, FeaturesCoreProviders providers, SchemaValidator schemaValidator) {
+    this.crsSupport = crsSupport;
+    this.providers = providers;
+    this.schemaValidator = schemaValidator;
+  }
 
-    @Override
-    public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-        return super.isEnabledForApi(apiData) && providers
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData)
+        && providers
             .getFeatureProvider(apiData)
             .filter(FeatureProvider2::supportsQueries)
             .map(FeatureProvider2::queries)
             .map(FeatureQueries::supportsCql2)
             .orElse(false);
-    }
+  }
 
-    @Override
-    public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-        return computeIfAbsent(this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(), () ->
-                isEnabledForApi(apiData) &&
-                method == HttpMethods.GET &&
-                (definitionPath.equals("/collections/{collectionId}/items") ||
-                 definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}") ||
-                 definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
-    }
+  @Override
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.GET
+                && (definitionPath.equals("/collections/{collectionId}/items")
+                    || definitionPath.equals(
+                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+                    || definitionPath.equals(
+                        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+  }
 
-    @Override
-    public String getName() {
-        return "filter-crs";
-    }
+  @Override
+  public String getName() {
+    return "filter-crs";
+  }
 
-    @Override
-    public String getDescription() {
-        return "Specify which of the supported CRSs to use to encode geometric values in a filter expression (parameter 'filter'). Default is WGS84 longitude/latitude.";
-    }
+  @Override
+  public String getDescription() {
+    return "Specify which of the supported CRSs to use to encode geometric values in a filter expression (parameter 'filter'). Default is WGS84 longitude/latitude.";
+  }
 
-    private ConcurrentMap<Integer, ConcurrentMap<String,Schema<?>>> schemaMap = new ConcurrentHashMap<>();
+  private ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
+      new ConcurrentHashMap<>();
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaMap.containsKey(apiHashCode))
-            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaMap.get(apiHashCode).containsKey("*")) {
-            // TODO: only include 2D (variants) of the CRSs
-            String defaultCrs = CRS84 /* TODO support 4 or 6 numbers
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.get(apiHashCode).containsKey("*")) {
+      // TODO: only include 2D (variants) of the CRSs
+      String defaultCrs = CRS84 /* TODO support 4 or 6 numbers
             apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
                 .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
                 .map(ImmutableEpsgCrs::toUriString)
                 .orElse(CRS84) */;
-            List<String> crsList = crsSupport.getSupportedCrsList(apiData)
-                .stream()
-                .map(crs ->crs.equals(OgcCrs.CRS84h) ? OgcCrs.CRS84 : crs)
-                .map(EpsgCrs::toUriString)
-                .collect(ImmutableList.toImmutableList());
-            schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(crsList)._default(defaultCrs));
-        }
-        return schemaMap.get(apiHashCode).get("*");
+      List<String> crsList =
+          crsSupport.getSupportedCrsList(apiData).stream()
+              .map(crs -> crs.equals(OgcCrs.CRS84h) ? OgcCrs.CRS84 : crs)
+              .map(EpsgCrs::toUriString)
+              .collect(ImmutableList.toImmutableList());
+      schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(crsList)._default(defaultCrs));
     }
+    return schemaMap.get(apiHashCode).get("*");
+  }
 
-    @Override
-    public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-        int apiHashCode = apiData.hashCode();
-        if (!schemaMap.containsKey(apiHashCode))
-            schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-        if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-            // always support both default CRSs
-            String defaultCrs = apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
-                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
-                .map(EpsgCrs::toUriString)
-                .orElse(CRS84);
-            ImmutableList.Builder<String> crsListBuilder = new ImmutableList.Builder<>();
-            List<String> crsList = crsSupport.getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
-                .stream()
-                .map(EpsgCrs::toUriString)
-                .collect(ImmutableList.toImmutableList());
-            crsListBuilder.addAll(crsList);
-            if (!crsList.contains(CRS84))
-                crsListBuilder.add(CRS84);
-            schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(crsListBuilder.build())._default(defaultCrs));
-        }
-        return schemaMap.get(apiHashCode).get(collectionId);
+  @Override
+  public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+    int apiHashCode = apiData.hashCode();
+    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+      // always support both default CRSs
+      String defaultCrs =
+          apiData
+              .getExtension(FeaturesCoreConfiguration.class, collectionId)
+              .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+              .map(EpsgCrs::toUriString)
+              .orElse(CRS84);
+      ImmutableList.Builder<String> crsListBuilder = new ImmutableList.Builder<>();
+      List<String> crsList =
+          crsSupport
+              .getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
+              .stream()
+              .map(EpsgCrs::toUriString)
+              .collect(ImmutableList.toImmutableList());
+      crsListBuilder.addAll(crsList);
+      if (!crsList.contains(CRS84)) crsListBuilder.add(CRS84);
+      schemaMap
+          .get(apiHashCode)
+          .put(collectionId, new StringSchema()._enum(crsListBuilder.build())._default(defaultCrs));
     }
+    return schemaMap.get(apiHashCode).get(collectionId);
+  }
 
-    @Override
-    public SchemaValidator getSchemaValidator() {
-        return schemaValidator;
+  @Override
+  public SchemaValidator getSchemaValidator() {
+    return schemaValidator;
+  }
+
+  @Override
+  public Map<String, String> transformParameters(
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
+      Map<String, String> parameters,
+      OgcApiDataV2 datasetData) {
+    if (!isEnabledForApi(datasetData, featureTypeConfiguration.getId())) {
+      return parameters;
     }
+    if (parameters.containsKey(FILTER_CRS)) {
+      EpsgCrs filterCrs;
+      try {
+        filterCrs = EpsgCrs.fromString(parameters.get(FILTER_CRS));
+      } catch (Throwable e) {
+        throw new IllegalArgumentException(
+            String.format("The parameter '%s' is invalid: %s", FILTER_CRS, e.getMessage()), e);
+      }
+      // CRS84 is always supported
+      if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, filterCrs)
+          && !filterCrs.equals(OgcCrs.CRS84)) {
+        throw new IllegalArgumentException(
+            String.format(
+                "The parameter '%s' is invalid: the crs '%s' is not supported",
+                FILTER_CRS, filterCrs.toUriString()));
+      }
 
-    @Override
-    public Map<String, String> transformParameters(FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-                                                   Map<String, String> parameters, OgcApiDataV2 datasetData) {
-        if (!isEnabledForApi(datasetData, featureTypeConfiguration.getId())) {
-            return parameters;
-        }
-        if (parameters.containsKey(FILTER_CRS)) {
-            EpsgCrs filterCrs;
-            try {
-                filterCrs = EpsgCrs.fromString(parameters.get(FILTER_CRS));
-            } catch (Throwable e) {
-                throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: %s", FILTER_CRS, e.getMessage()), e);
-            }
-            // CRS84 is always supported
-            if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, filterCrs) && !filterCrs.equals(OgcCrs.CRS84)) {
-                throw new IllegalArgumentException(String.format("The parameter '%s' is invalid: the crs '%s' is not supported", FILTER_CRS, filterCrs.toUriString()));
-            }
-
-            Map<String, String> newParameters = new HashMap<>(parameters);
-            newParameters.put(FILTER_CRS, filterCrs.toUriString());
-            return ImmutableMap.copyOf(newParameters);
-        }
-        return parameters;
+      Map<String, String> newParameters = new HashMap<>(parameters);
+      newParameters.put(FILTER_CRS, filterCrs.toUriString());
+      return ImmutableMap.copyOf(newParameters);
     }
+    return parameters;
+  }
 
-    @Override
-    public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-        return FilterConfiguration.class;
-    }
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return FilterConfiguration.class;
+  }
 }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -14,6 +14,7 @@ import de.ii.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ogcapi.common.domain.ConformanceDeclarationExtension;
 import de.ii.ogcapi.common.domain.ImmutableConformanceDeclaration;
+import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPage;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.common.domain.OgcApiExtent;
@@ -32,10 +33,7 @@ import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.web.domain.ETag;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -56,58 +54,71 @@ import org.immutables.value.Value;
 @AutoBind
 public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
-    public enum Query implements QueryIdentifier {LANDING_PAGE, CONFORMANCE_DECLARATION, API_DEFINITION}
+  public enum Query implements QueryIdentifier {
+    LANDING_PAGE,
+    CONFORMANCE_DECLARATION,
+    API_DEFINITION
+  }
 
-    @Value.Immutable
-    public interface QueryInputLandingPage extends QueryInput {
-        boolean getIncludeLinkHeader();
-        List<Link> getAdditionalLinks();
-    }
+  @Value.Immutable
+  public interface QueryInputLandingPage extends QueryInput {
+    boolean getIncludeLinkHeader();
 
-    @Value.Immutable
-    public interface QueryInputConformance extends QueryInput {
-        boolean getIncludeLinkHeader();
-    }
+    List<Link> getAdditionalLinks();
+  }
 
-    @Value.Immutable
-    public interface Definition extends QueryInput {
-        Optional<String> getSubPath();
-    }
+  @Value.Immutable
+  public interface QueryInputConformance extends QueryInput {
+    boolean getIncludeLinkHeader();
+  }
 
-    private final ExtensionRegistry extensionRegistry;
-    private final I18n i18n;
-    private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+  @Value.Immutable
+  public interface Definition extends QueryInput {
+    Optional<String> getSubPath();
+  }
 
-    @Inject
-    public QueriesHandlerCommonImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
-        this.extensionRegistry = extensionRegistry;
-        this.i18n = i18n;
-        this.queryHandlers = ImmutableMap.of(
-                Query.LANDING_PAGE, QueryHandler.with(QueryInputLandingPage.class, this::getLandingPageResponse),
-                Query.CONFORMANCE_DECLARATION, QueryHandler.with(QueryInputConformance.class, this::getConformanceResponse),
-                Query.API_DEFINITION, QueryHandler.with(Definition.class, this::getApiDefinitionResponse)
-        );
-    }
+  private final ExtensionRegistry extensionRegistry;
+  private final I18n i18n;
+  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
-    @Override
-    public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
-        return queryHandlers;
-    }
+  @Inject
+  public QueriesHandlerCommonImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
+    this.extensionRegistry = extensionRegistry;
+    this.i18n = i18n;
+    this.queryHandlers =
+        ImmutableMap.of(
+            Query.LANDING_PAGE,
+                QueryHandler.with(QueryInputLandingPage.class, this::getLandingPageResponse),
+            Query.CONFORMANCE_DECLARATION,
+                QueryHandler.with(QueryInputConformance.class, this::getConformanceResponse),
+            Query.API_DEFINITION,
+                QueryHandler.with(Definition.class, this::getApiDefinitionResponse));
+  }
 
-    private Response getLandingPageResponse(QueryInputLandingPage queryInput, ApiRequestContext requestContext) {
-        final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
-        OgcApi api = requestContext.getApi();
-        OgcApiDataV2 apiData = api.getData();
+  @Override
+  public Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers() {
+    return queryHandlers;
+  }
 
-        List<Link> links = linksGenerator.generateLinks(requestContext.getUriCustomizer()
-                                                                      .copy(),
-                                                        Optional.empty(), // TODO: support schema links, e.g. for WFS provider new WFSRequest(service.getWfsAdapter(), new DescribeFeatureType()).getAsUrl()
-                                                        requestContext.getMediaType(),
-                                                        requestContext.getAlternateMediaTypes(),
-                                                        i18n,
-                                                        requestContext.getLanguage());
+  private Response getLandingPageResponse(
+      QueryInputLandingPage queryInput, ApiRequestContext requestContext) {
+    final LandingPageLinksGenerator linksGenerator = new LandingPageLinksGenerator();
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
 
-        Builder builder = new Builder()
+    List<Link> links =
+        linksGenerator.generateLinks(
+            requestContext.getUriCustomizer().copy(),
+            Optional.empty(), // TODO: support schema links, e.g. for WFS provider new
+            // WFSRequest(service.getWfsAdapter(), new
+            // DescribeFeatureType()).getAsUrl()
+            requestContext.getMediaType(),
+            requestContext.getAlternateMediaTypes(),
+            i18n,
+            requestContext.getLanguage());
+
+    Builder builder =
+        new Builder()
             .title(apiData.getLabel())
             .description(apiData.getDescription().orElse(""))
             .attribution(apiData.getMetadata().flatMap(ApiMetadata::getAttribution))
@@ -116,140 +127,199 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
             .links(links)
             .addAllLinks(queryInput.getAdditionalLinks());
 
-        for (LandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
-            builder = ogcApiLandingPageExtension.process(builder,
-                    api,
-                    requestContext.getUriCustomizer()
-                                  .copy(),
-                    requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes(),
-                    requestContext.getLanguage());
-        }
-
-        CommonFormatExtension outputFormatExtension = api.getOutputFormat(CommonFormatExtension.class,
-                                                                          requestContext.getMediaType(),"/",
-                                                                          Optional.empty())
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type {0} cannot be generated.", requestContext.getMediaType().type())));
-
-        LandingPage apiLandingPage = builder.build();
-
-        Object entity = outputFormatExtension.getLandingPageEntity(apiLandingPage,
-                                                                   requestContext.getApi(),
-                                                                   requestContext);
-
-        Date lastModified = getLastModified(queryInput);
-        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || api.getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? ETag.from(apiLandingPage, PageRepresentation.FUNNEL, outputFormatExtension.getMediaType().label())
-            : null;
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
-
-        return prepareSuccessResponse(requestContext,
-                                      queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null,
-                                      HeaderCaching.of(lastModified, etag, queryInput),
-                                      null,
-                                      HeaderContentDisposition.of(String.format("landing-page.%s", outputFormatExtension.getMediaType().fileExtension())))
-                .entity(entity)
-                .build();
+    for (LandingPageExtension ogcApiLandingPageExtension : getDatasetExtenders()) {
+      builder =
+          ogcApiLandingPageExtension.process(
+              builder,
+              api,
+              requestContext.getUriCustomizer().copy(),
+              requestContext.getMediaType(),
+              requestContext.getAlternateMediaTypes(),
+              requestContext.getLanguage());
     }
 
-    private Response getConformanceResponse(QueryInputConformance queryInput,
-                                            ApiRequestContext requestContext) {
-        List<ConformanceClass> conformanceClasses = getConformanceClasses().stream()
-                                                                           .filter(conformanceClass -> conformanceClass.isEnabledForApi(requestContext.getApi().getData()))
-                                                                           .collect(Collectors.toList());
+    CommonFormatExtension outputFormatExtension =
+        api.getOutputFormat(
+                CommonFormatExtension.class, requestContext.getMediaType(), "/", Optional.empty())
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type {0} cannot be generated.",
+                            requestContext.getMediaType().type())));
 
-        List<Link> links = new ConformanceDeclarationLinksGenerator().generateLinks(
+    LandingPage apiLandingPage = builder.build();
+
+    Object entity =
+        outputFormatExtension.getLandingPageEntity(
+            apiLandingPage, requestContext.getApi(), requestContext);
+
+    Date lastModified = getLastModified(queryInput);
+    EntityTag etag =
+        !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || api.getData()
+                    .getExtension(HtmlConfiguration.class)
+                    .map(HtmlConfiguration::getSendEtags)
+                    .orElse(false)
+            ? ETag.from(
+                apiLandingPage,
+                PageRepresentation.FUNNEL,
+                outputFormatExtension.getMediaType().label())
+            : null;
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
+
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format(
+                    "landing-page.%s", outputFormatExtension.getMediaType().fileExtension())))
+        .entity(entity)
+        .build();
+  }
+
+  private Response getConformanceResponse(
+      QueryInputConformance queryInput, ApiRequestContext requestContext) {
+    List<ConformanceClass> conformanceClasses =
+        getConformanceClasses().stream()
+            .filter(
+                conformanceClass ->
+                    conformanceClass.isEnabledForApi(requestContext.getApi().getData()))
+            .collect(Collectors.toList());
+
+    List<Link> links =
+        new ConformanceDeclarationLinksGenerator()
+            .generateLinks(
                 requestContext.getUriCustomizer().copy(),
                 requestContext.getMediaType(),
                 requestContext.getAlternateMediaTypes(),
                 i18n,
                 requestContext.getLanguage());
 
-        CommonFormatExtension outputFormatExtension = requestContext.getApi().getOutputFormat(CommonFormatExtension.class, requestContext.getMediaType(), "/conformance", Optional.empty())
-                .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+    CommonFormatExtension outputFormatExtension =
+        requestContext
+            .getApi()
+            .getOutputFormat(
+                CommonFormatExtension.class,
+                requestContext.getMediaType(),
+                "/conformance",
+                Optional.empty())
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
 
-        ImmutableConformanceDeclaration.Builder builder = new ImmutableConformanceDeclaration.Builder()
-                .links(links)
-                .conformsTo(conformanceClasses.stream()
-                                              .map(conformanceClass -> conformanceClass.getConformanceClassUris(requestContext.getApi().getData()))
-                                              .flatMap(List::stream)
-                                              .distinct()
-                                              .sorted()
-                                              .collect(Collectors.toUnmodifiableList()));
+    ImmutableConformanceDeclaration.Builder builder =
+        new ImmutableConformanceDeclaration.Builder()
+            .links(links)
+            .conformsTo(
+                conformanceClasses.stream()
+                    .map(
+                        conformanceClass ->
+                            conformanceClass.getConformanceClassUris(
+                                requestContext.getApi().getData()))
+                    .flatMap(List::stream)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toUnmodifiableList()));
 
-        for (ConformanceDeclarationExtension ogcApiConformanceDeclarationExtension : getConformanceExtenders()) {
-            builder = ogcApiConformanceDeclarationExtension.process(builder,
-                    requestContext.getApi().getData(),
-                    requestContext.getUriCustomizer()
-                            .copy(),
-                    requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes(),
-                    requestContext.getLanguage());
-        }
+    for (ConformanceDeclarationExtension ogcApiConformanceDeclarationExtension :
+        getConformanceExtenders()) {
+      builder =
+          ogcApiConformanceDeclarationExtension.process(
+              builder,
+              requestContext.getApi().getData(),
+              requestContext.getUriCustomizer().copy(),
+              requestContext.getMediaType(),
+              requestContext.getAlternateMediaTypes(),
+              requestContext.getLanguage());
+    }
 
-        ConformanceDeclaration conformanceDeclaration = builder.build();
+    ConformanceDeclaration conformanceDeclaration = builder.build();
 
-        Object entity = outputFormatExtension.getConformanceEntity(conformanceDeclaration,
-                                                                   requestContext.getApi(),
-                                                                   requestContext);
-        Date lastModified = getLastModified(queryInput);
-        EntityTag etag = !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || requestContext.getApi().getData().getExtension(HtmlConfiguration.class).map(HtmlConfiguration::getSendEtags).orElse(false)
-            ? ETag.from(conformanceDeclaration, ConformanceDeclaration.FUNNEL, outputFormatExtension.getMediaType().label())
+    Object entity =
+        outputFormatExtension.getConformanceEntity(
+            conformanceDeclaration, requestContext.getApi(), requestContext);
+    Date lastModified = getLastModified(queryInput);
+    EntityTag etag =
+        !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || requestContext
+                    .getApi()
+                    .getData()
+                    .getExtension(HtmlConfiguration.class)
+                    .map(HtmlConfiguration::getSendEtags)
+                    .orElse(false)
+            ? ETag.from(
+                conformanceDeclaration,
+                ConformanceDeclaration.FUNNEL,
+                outputFormatExtension.getMediaType().label())
             : null;
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
 
-        return prepareSuccessResponse(requestContext,
-                                      queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null,
-                                      HeaderCaching.of(lastModified, etag, queryInput),
-                                      null,
-                                      HeaderContentDisposition.of(String.format("conformance-declaration.%s", outputFormatExtension.getMediaType().fileExtension())))
-                .entity(entity)
-                .build();
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format(
+                    "conformance-declaration.%s",
+                    outputFormatExtension.getMediaType().fileExtension())))
+        .entity(entity)
+        .build();
+  }
+
+  private Response getApiDefinitionResponse(
+      Definition queryInput, ApiRequestContext requestContext) {
+
+    String subPath = queryInput.getSubPath().orElse("");
+    ApiDefinitionFormatExtension outputFormatExtension =
+        requestContext
+            .getApi()
+            .getOutputFormat(
+                ApiDefinitionFormatExtension.class,
+                requestContext.getMediaType(),
+                "/api"
+                    + (subPath.isEmpty() ? "" : subPath.startsWith("/") ? subPath : "/" + subPath),
+                Optional.empty())
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
+
+    if (subPath.matches("/?[^/]+")) {
+      return outputFormatExtension.getApiDefinitionFile(
+          requestContext.getApi().getData(), requestContext, subPath);
     }
 
-    private Response getApiDefinitionResponse(Definition queryInput,
-                                              ApiRequestContext requestContext) {
+    Date lastModified = getLastModified(queryInput);
+    // TODO support ETag
+    EntityTag etag = null;
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
 
-        String subPath = queryInput.getSubPath().orElse("");
-        ApiDefinitionFormatExtension outputFormatExtension =
-                requestContext.getApi()
-                              .getOutputFormat(ApiDefinitionFormatExtension.class,
-                                               requestContext.getMediaType(),
-                                         "/api"+(subPath.isEmpty() ? "" : subPath.startsWith("/") ? subPath : "/"+subPath ),
-                                               Optional.empty())
-                              .orElseThrow(() -> new NotAcceptableException(MessageFormat.format("The requested media type ''{0}'' is not supported for this resource.", requestContext.getMediaType())));
+    // TODO support headers
+    return outputFormatExtension.getApiDefinitionResponse(
+        requestContext.getApi().getData(), requestContext);
+  }
 
-        if (subPath.matches("/?[^/]+")) {
-            return outputFormatExtension.getApiDefinitionFile(requestContext.getApi().getData(), requestContext, subPath);
-        }
+  private List<LandingPageExtension> getDatasetExtenders() {
+    return extensionRegistry.getExtensionsForType(LandingPageExtension.class);
+  }
 
-        Date lastModified = getLastModified(queryInput);
-        // TODO support ETag
-        EntityTag etag = null;
-        Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-        if (Objects.nonNull(response))
-            return response.build();
+  private List<ConformanceDeclarationExtension> getConformanceExtenders() {
+    return extensionRegistry.getExtensionsForType(ConformanceDeclarationExtension.class);
+  }
 
-        // TODO support headers
-        return outputFormatExtension.getApiDefinitionResponse(requestContext.getApi().getData(),
-                                                              requestContext);
-    }
-
-    private List<LandingPageExtension> getDatasetExtenders() {
-        return extensionRegistry.getExtensionsForType(LandingPageExtension.class);
-    }
-
-    private List<ConformanceDeclarationExtension> getConformanceExtenders() {
-        return extensionRegistry.getExtensionsForType(ConformanceDeclarationExtension.class);
-    }
-
-    private List<ConformanceClass> getConformanceClasses() {
-        return extensionRegistry.getExtensionsForType(ConformanceClass.class);
-    }
+  private List<ConformanceClass> getConformanceClasses() {
+    return extensionRegistry.getExtensionsForType(ConformanceClass.class);
+  }
 }
