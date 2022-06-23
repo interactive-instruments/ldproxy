@@ -1,7 +1,6 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '4.3.6'
-    id 'com.github.hierynomus.license-report' version '0.16.1' apply false
-    id 'com.bmuschko.docker-java-application' version '3.1.0' apply false
+    id 'de.interactive_instruments.xtraplatform-application' version '4.3.7'
+    id "com.diffplug.spotless" version "6.7.2" apply false
     id "com.github.node-gradle.node" version "3.2.0" apply false
 }
 
@@ -65,13 +64,15 @@ tasks.clean {
     dependsOn(':ldproxy-cfg:clean')
 }
 
-apply from: 'license-headers.gradle'
+tasks.spotlessApply {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':spotlessApply')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':spotlessApply')
+    dependsOn(':ldproxy-cfg:spotlessApply')
+}
+
+apply from: 'formatting.gradle'
 
 apply from: 'docker.gradle'
-
-//apply from: 'license-report.gradle'
-
-//apply plugin: 'xtraplatform-docs'
 
 apply from: 'git-hooks.gradle'
 
