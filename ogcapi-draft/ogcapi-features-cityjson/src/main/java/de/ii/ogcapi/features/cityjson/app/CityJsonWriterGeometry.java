@@ -85,9 +85,9 @@ public class CityJsonWriterGeometry implements CityJsonWriter {
             LOGGER.error("CityJSON: the bounding box is empty and cannot be used to compute the translation vector. The bbox in WGS84: {}", context.encoding().getApi().getSpatialExtent(context.encoding().getCollectionId()));
         }
         ArrayList<Double> currentTranslate = new ArrayList<>(3);
-        currentTranslate.add(bbox.map(BoundingBox::getXmin).orElse(0.0));
-        currentTranslate.add(bbox.map(BoundingBox::getYmin).orElse(0.0));
-        currentTranslate.add(0.0);
+        currentTranslate.add(bbox.map(b -> (b.getXmin()+b.getXmax())/2.0).orElse(0.0));
+        currentTranslate.add(bbox.map(b -> (b.getYmin()+b.getYmax())/2.0).orElse(0.0));
+        currentTranslate.add(bbox.map(b -> (Objects.requireNonNullElse(b.getZmin(), 0.0)+Objects.requireNonNullElse(b.getZmax(), 0.0))/2.0).orElse(0.0));
         context.getState()
                .setCurrentTranslate(currentTranslate);
 
