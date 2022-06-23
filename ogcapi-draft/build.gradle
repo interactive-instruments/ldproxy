@@ -24,3 +24,4 @@ task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
 task testAll { dependsOn subprojects*.tasks*.findByPath('test') }
 tasks.publish { dependsOn subprojects*.tasks*.findByPath('publish') }
 task cleanAll { dependsOn subprojects*.tasks*.findByPath('clean') }
+task spotlessApplyAll { dependsOn subprojects*.tasks*.findByPath('spotlessApply') }

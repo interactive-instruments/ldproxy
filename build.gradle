@@ -12,6 +12,8 @@ apply from: 'version.gradle'
 
 apply from: 'xtraplatform.gradle'
 
+apply from: 'formatting.gradle'
+
 dependencies {
     // layers to include in this application
     layers group: 'de.interactive_instruments', name: 'ogcapi-stable'
@@ -64,13 +66,11 @@ tasks.clean {
     dependsOn(':ldproxy-cfg:clean')
 }
 
-tasks.spotlessApply {
-    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':spotlessApply')
-    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':spotlessApply')
+task spotlessApply {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':spotlessApplyAll')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':spotlessApplyAll')
     dependsOn(':ldproxy-cfg:spotlessApply')
 }
-
-apply from: 'formatting.gradle'
 
 apply from: 'docker.gradle'
 
