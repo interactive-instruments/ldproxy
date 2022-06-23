@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.base.Splitter;
+import de.ii.ogcapi.foundation.domain.ImmutableApiCatalog.Builder;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.services.domain.ServiceListingProvider;
@@ -164,63 +165,18 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
 
     URI finalUri = catalogUri;
     ImmutableApiCatalog.Builder builder =
-        new ImmutableApiCatalog.Builder()
-            .title(
-                Objects.requireNonNullElse(
-                    config.getApiCatalogLabel(), i18n.get("rootTitle", language)))
-            .description(
-                Objects.requireNonNullElse(
-                    config.getApiCatalogDescription(), i18n.get("rootDescription", language)))
-            .catalogUri(
-                new URICustomizer(finalUri).clearParameters().ensureNoTrailingSlash().build())
-            .urlPrefix(urlPrefix)
-            .links(
-                linksGenerator.generateLinks(
-                    uriCustomizer, mediaType, alternateMediaTypes, i18n, language))
-            .apis(
-                services.stream()
-                    .sorted(Comparator.comparing(ServiceData::getLabel))
-                    .filter(
-                        api ->
-                            name.isEmpty()
-                                || api.getLabel()
-                                    .toLowerCase(language.orElse(Locale.ENGLISH))
-                                    .contains(
-                                        name.get().toLowerCase(language.orElse(Locale.ENGLISH))))
-                    .filter(
-                        api ->
-                            tags.isEmpty()
-                                || api instanceof OgcApiDataV2
-                                    && ((OgcApiDataV2) api)
-                                        .getTags().stream().anyMatch(tags::contains))
-                    .map(
-                        api -> {
-                          try {
-                            if (api instanceof OgcApiDataV2) {
-                              return new ImmutableApiCatalogEntry.Builder()
-                                  .id(api.getId())
-                                  .title(api.getLabel())
-                                  .description(api.getDescription())
-                                  .landingPageUri(getApiUrl(finalUri, api.getSubPath()))
-                                  .tags(((OgcApiDataV2) api).getTags())
-                                  .isDataset(((OgcApiDataV2) api).isDataset())
-                                  .build();
-                            }
-                            return new ImmutableApiCatalogEntry.Builder()
-                                .id(api.getId())
-                                .title(api.getLabel())
-                                .description(api.getDescription())
-                                .landingPageUri(
-                                    getApiUrl(finalUri, api.getId(), api.getApiVersion()))
-                                .build();
-                          } catch (URISyntaxException e) {
-                            throw new IllegalStateException(
-                                String.format(
-                                    "Could not create landing page URI for API '%s'.", api.getId()),
-                                e);
-                          }
-                        })
-                    .collect(Collectors.toList()));
+        getCatalogBuilder(
+            services,
+            language,
+            linksGenerator,
+            uriCustomizer,
+            urlPrefix,
+            tags,
+            name,
+            mediaType,
+            alternateMediaTypes,
+            config,
+            finalUri);
 
     if (Objects.nonNull(config.getGoogleSiteVerification())) {
       builder.googleSiteVerification(config.getGoogleSiteVerification());
@@ -234,5 +190,73 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
     }
 
     return builder.build();
+  }
+
+  private Builder getCatalogBuilder(
+      List<ServiceData> services,
+      Optional<Locale> language,
+      DefaultLinksGenerator linksGenerator,
+      URICustomizer uriCustomizer,
+      String urlPrefix,
+      List<String> tags,
+      Optional<String> name,
+      ApiMediaType mediaType,
+      List<ApiMediaType> alternateMediaTypes,
+      FoundationConfiguration config,
+      URI finalUri)
+      throws URISyntaxException {
+    return new Builder()
+        .title(
+            Objects.requireNonNullElse(
+                config.getApiCatalogLabel(), i18n.get("rootTitle", language)))
+        .description(
+            Objects.requireNonNullElse(
+                config.getApiCatalogDescription(), i18n.get("rootDescription", language)))
+        .catalogUri(new URICustomizer(finalUri).clearParameters().ensureNoTrailingSlash().build())
+        .urlPrefix(urlPrefix)
+        .links(
+            linksGenerator.generateLinks(
+                uriCustomizer, mediaType, alternateMediaTypes, i18n, language))
+        .apis(
+            services.stream()
+                .sorted(Comparator.comparing(ServiceData::getLabel))
+                .filter(
+                    api ->
+                        name.isEmpty()
+                            || api.getLabel()
+                                .toLowerCase(language.orElse(Locale.ENGLISH))
+                                .contains(name.get().toLowerCase(language.orElse(Locale.ENGLISH))))
+                .filter(
+                    api ->
+                        tags.isEmpty()
+                            || api instanceof OgcApiDataV2
+                                && ((OgcApiDataV2) api).getTags().stream().anyMatch(tags::contains))
+                .map(
+                    api -> {
+                      try {
+                        if (api instanceof OgcApiDataV2) {
+                          return new ImmutableApiCatalogEntry.Builder()
+                              .id(api.getId())
+                              .title(api.getLabel())
+                              .description(api.getDescription())
+                              .landingPageUri(getApiUrl(finalUri, api.getSubPath()))
+                              .tags(((OgcApiDataV2) api).getTags())
+                              .isDataset(((OgcApiDataV2) api).isDataset())
+                              .build();
+                        }
+                        return new ImmutableApiCatalogEntry.Builder()
+                            .id(api.getId())
+                            .title(api.getLabel())
+                            .description(api.getDescription())
+                            .landingPageUri(getApiUrl(finalUri, api.getId(), api.getApiVersion()))
+                            .build();
+                      } catch (URISyntaxException e) {
+                        throw new IllegalStateException(
+                            String.format(
+                                "Could not create landing page URI for API '%s'.", api.getId()),
+                            e);
+                      }
+                    })
+                .collect(Collectors.toList()));
   }
 }
