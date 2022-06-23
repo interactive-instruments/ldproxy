@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -16,5 +16,4 @@ public interface Builders {
   default OgcApiExtensionBuilders ogcApiExtension() {
     return new OgcApiExtensionBuilders() {};
   }
-
 }

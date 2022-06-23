@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -24,8 +24,8 @@ import de.ii.ogcapi.features.html.app.FeaturesHtmlBuildingBlock;
 import de.ii.ogcapi.features.json.fg.app.JsonFgBuildingBlock;
 import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
-import de.ii.ogcapi.foundation.domain.FoundationBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FoundationBuildingBlock;
 import de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationBuildingBlock;
 import de.ii.ogcapi.html.app.HtmlBuildingBlock;
 import de.ii.ogcapi.json.app.JsonBuildingBlock;
@@ -47,39 +47,39 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
   private final Set<ApiExtension> apiExtensions;
 
   OgcApiExtensionRegistry() {
-    this.apiExtensions = ImmutableSet.<ApiExtension>builder()
-        .add(new QueryablesBuildingBlock())
-        .add(new SchemaBuildingBlock())
-        .add(new FeaturesExtensionsBuildingBlock())
-        .add(new CapabilityFlatgeobuf())
-        .add(new GeoJsonLdBuildingBlock())
-        .add(new JsonFgBuildingBlock())
-        .add(new FilterBuildingBlock())
-        .add(new GeometrySimplificationBuildingBlock())
-        .add(new MapTilesBuildingBlock())
-        .add(new ProjectionsBuildingBlock())
-        .add(new ResourcesBuildingBlock())
-        .add(new SortingBuildingBlock(null, null))
-        .add(new StylesBuildingBlock(this)) // TODO: StyleFormatExtensions
-        .add(
-            new TilesBuildingBlock(
-                this, null, null, null,
-                null)) // TODO: TileFormatWithQuerySupportExtension,
-        // TileSetFormatExtension
-        .add(new TransactionalBuildingBlock())
-        .add(new CollectionsBuildingBlock())
-        .add(new CommonBuildingBlock())
-        .add(new CrsBuildingBlock(null, null))
-        .add(new FeaturesCoreBuildingBlock(null, null, null))
-        .add(new GeoJsonBuildingBlock())
-        .add(new GmlBuildingBlock())
-        .add(new FeaturesHtmlBuildingBlock())
-        .add(new FoundationBuildingBlock())
-        .add(new HtmlBuildingBlock())
-        .add(new JsonBuildingBlock())
-        .add(new OpenApiBuildingBlock())
-        .add(new XmlBuildingBlock())
-        .build();
+    this.apiExtensions =
+        ImmutableSet.<ApiExtension>builder()
+            .add(new QueryablesBuildingBlock())
+            .add(new SchemaBuildingBlock())
+            .add(new FeaturesExtensionsBuildingBlock())
+            .add(new CapabilityFlatgeobuf())
+            .add(new GeoJsonLdBuildingBlock())
+            .add(new JsonFgBuildingBlock())
+            .add(new FilterBuildingBlock())
+            .add(new GeometrySimplificationBuildingBlock())
+            .add(new MapTilesBuildingBlock())
+            .add(new ProjectionsBuildingBlock())
+            .add(new ResourcesBuildingBlock())
+            .add(new SortingBuildingBlock(null, null))
+            .add(new StylesBuildingBlock(this)) // TODO: StyleFormatExtensions
+            .add(
+                new TilesBuildingBlock(
+                    this, null, null, null, null)) // TODO: TileFormatWithQuerySupportExtension,
+            // TileSetFormatExtension
+            .add(new TransactionalBuildingBlock())
+            .add(new CollectionsBuildingBlock())
+            .add(new CommonBuildingBlock())
+            .add(new CrsBuildingBlock(null, null))
+            .add(new FeaturesCoreBuildingBlock(null, null, null))
+            .add(new GeoJsonBuildingBlock())
+            .add(new GmlBuildingBlock())
+            .add(new FeaturesHtmlBuildingBlock())
+            .add(new FoundationBuildingBlock())
+            .add(new HtmlBuildingBlock())
+            .add(new JsonBuildingBlock())
+            .add(new OpenApiBuildingBlock())
+            .add(new XmlBuildingBlock())
+            .build();
   }
 
   @Override
@@ -90,7 +90,8 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
   @Override
   public <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
     return apiExtensions.stream()
-        .filter(extension -> extension!=null && extensionType.isAssignableFrom(extension.getClass()))
+        .filter(
+            extension -> extension != null && extensionType.isAssignableFrom(extension.getClass()))
         .map(extensionType::cast)
         .collect(Collectors.toList());
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2022 interactive instruments GmbH
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -52,22 +52,23 @@ public class LdproxyCfg implements Cfg {
 
   public LdproxyCfg(Path dataDirectory) {
     this.requiredIncludes = new RequiredIncludes();
-    this.builders = new Builders() {
-    };
+    this.builders = new Builders() {};
     StoreConfiguration storeConfiguration = new StoreConfiguration();
     Jackson jackson = new JacksonProvider(JacksonSubTypes::ids);
     this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, false).getMapper(FORMAT.YML);
     EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory, storeConfiguration);
-    EventStore eventStore = new EventStoreDefault(storeConfiguration, storeDriver,
-        new EventSubscriptionsMock());
+    EventStore eventStore =
+        new EventStoreDefault(storeConfiguration, storeDriver, new EventSubscriptionsMock());
     AppContext appContext = new AppContextCfg();
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry();
     Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);
-    this.entityDataDefaultsStore = new EntityDataDefaultsStoreImpl(appContext, eventStore,
-        jackson, () -> factories);
-    this.entityDataStore = new EntityDataStoreImpl(appContext, eventStore, jackson, () -> factories,
-        entityDataDefaultsStore);
+    this.entityDataDefaultsStore =
+        new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
+    this.entityDataStore =
+        new EntityDataStoreImpl(
+            appContext, eventStore, jackson, () -> factories, entityDataDefaultsStore);
   }
+
   @Override
   public Builders builder() {
     return builders;
@@ -79,9 +80,8 @@ public class LdproxyCfg implements Cfg {
       entityDataStore.put(data.getId(), data, getType(data)).join();
 
       for (Path patch : patches) {
-        Map<String, Object> patchMap = objectMapper.readValue(patch.toFile(),
-            new TypeReference<Map<String, Object>>() {
-            });
+        Map<String, Object> patchMap =
+            objectMapper.readValue(patch.toFile(), new TypeReference<Map<String, Object>>() {});
 
         entityDataStore.patch(data.getId(), patchMap, true, getType(data)).join();
       }
@@ -95,17 +95,20 @@ public class LdproxyCfg implements Cfg {
     }
   }
 
-  //TODO: for which entity type, writes application defaults as well
+  // TODO: for which entity type, writes application defaults as well
   @Override
   public <T extends EntityData> void writeDefaults(T data, Path... defaults) throws IOException {
     Identifier defaultsIdentifier = Identifier.from(data.getId(), getType(data), getSubType(data));
-    EntityDataBuilder<EntityData> builder = entityDataDefaultsStore.getBuilder(defaultsIdentifier).fillRequiredFieldsWithPlaceholders();
+    EntityDataBuilder<EntityData> builder =
+        entityDataDefaultsStore.getBuilder(defaultsIdentifier).fillRequiredFieldsWithPlaceholders();
 
-    for(Path defaultFile: defaults) {
+    for (Path defaultFile : defaults) {
       objectMapper.readerForUpdating(builder).readValue(defaultFile.toFile());
     }
 
-    Map<String, Object> asMap = entityDataDefaultsStore.asMap(Identifier.from(data.getId(), getType(data)), builder.build());
+    Map<String, Object> asMap =
+        entityDataDefaultsStore.asMap(
+            Identifier.from(data.getId(), getType(data)), builder.build());
     try {
       entityDataDefaultsStore.patch(data.getId(), asMap, getType(data), getSubType(data)).join();
     } catch (CompletionException e) {
@@ -116,7 +119,7 @@ public class LdproxyCfg implements Cfg {
     }
   }
 
-  private static  <T extends EntityData> String getType(T data) {
+  private static <T extends EntityData> String getType(T data) {
     if (data instanceof CodelistData) {
       return Codelist.ENTITY_TYPE;
     }
@@ -141,5 +144,4 @@ public class LdproxyCfg implements Cfg {
     }
     return null;
   }
-
 }
