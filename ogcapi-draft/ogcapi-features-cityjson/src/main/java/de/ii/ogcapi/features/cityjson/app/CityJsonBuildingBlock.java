@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 
 /**
  * @title Features CityJSON
- * @langEn The module *Features CityJSON* adds support for CityJSON 1.1 as a feature encoding. Supported
+ * @langEn The module *Features CityJSON* adds support for CityJSON 1.0 and 1.1 as a feature encoding. Supported
  * are the feature types `Building` and `BuildingPart`.
  * @scopeEn The module requires that the feature provider includes a type `building` that is mapped to a
  * CityJSON Building feature. Properties of the type `building` are mapped to CityJSON as follows:
@@ -55,7 +55,7 @@ import javax.inject.Singleton;
  * <p>
  * The example includes a sample type definition for the building features in a PostgreSQL feature
  * provider based on the CityGML profile of the German surveying and mapping authorities.
- * @langDe Das Modul *Features CityJSON* unterstützt CityJSON 1.1 als Kodierung für Features. Unterstützt werden
+ * @langDe Das Modul *Features CityJSON* unterstützt CityJSON 1.0 und 1.1 als Kodierung für Features. Unterstützt werden
  * die Objektarten `Building` und `BuildingPart`.
  * @scopeDe Das Modul erfordert, dass der Feature-Provider einen Typ `building` enthält, der auf ein CityJSON-Building-Feature
  * abgebildet wird. Eigenschaften des Typs `building` werden wie folgt auf CityJSON abgebildet:
