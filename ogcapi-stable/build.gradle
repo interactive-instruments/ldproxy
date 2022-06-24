@@ -23,6 +23,7 @@ layer {
     
     PRODUCTION {
         minimumCoverage = 0.0
+        warningsAsErrors = false
     }
 }
 
