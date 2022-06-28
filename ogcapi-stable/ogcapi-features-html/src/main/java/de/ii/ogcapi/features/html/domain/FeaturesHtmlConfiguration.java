@@ -194,17 +194,11 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   Boolean getRemoveZoomLevelConstraints();
 
   /**
-   * @langEn TThis option works only for CesiumJS as map client. By default, the geometry identified
-   *     in the provider as PRIMARY_GEOMETRY is used for representation on the map. This option
-   *     allows multiple geometry properties to be specified in a list. The first geometry property
-   *     set for a feature will be used.
-   * @langDe Diese Option wirkt nur für CesiumJS als Map-Client. Als Standard wird die im Provider
-   *     als PRIMARY_GEOMETRY identifizierte Geometrie für die Darstellung in der Karte verwendet.
-   *     Diese Option ermöglicht es, mehrere Geometrieeigenschaften anzugeben in einer Liste
-   *     anzugeben. Die erste Geometrieeigenschaft, die für ein Feature gesetzt ist, wird dabei
-   *     verwendet.
+   * @langEn *Deprecated* This option is no longer used.
+   * @langDe *Deprecated* Diese Option wird nicht mehr verwendet.
    * @default `[]`
    */
+  @Deprecated(since = "3.3.0")
   @Nullable
   List<String> getGeometryProperties();
 

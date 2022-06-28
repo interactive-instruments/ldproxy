@@ -101,7 +101,6 @@ public class FeatureCollectionView extends DatasetView {
         Objects.nonNull(htmlConfig) && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
     this.mapPosition = mapPosition;
     this.uriBuilder = new URICustomizer(uri);
-    this.cesiumData = new CesiumData(features, geometryProperties);
 
     this.bbox =
         spatialExtent
@@ -131,6 +130,7 @@ public class FeatureCollectionView extends DatasetView {
               .styleUrl(Optional.ofNullable(styleUrl))
               .removeZoomLevelConstraints(removeZoomLevelConstraints)
               .build();
+      this.cesiumData = null;
     } else if (mapClientType.equals(MapClient.Type.CESIUM)) {
       this.mapClient =
           new ImmutableMapClient.Builder()
@@ -145,11 +145,16 @@ public class FeatureCollectionView extends DatasetView {
                                   .replace("{x}", "{TileCol}")))
               .attribution(getAttribution())
               .build();
+      this.cesiumData =
+          new CesiumData(
+              features, /*geometryProperties, spatialExtent.orElseThrow(),*/
+              uriBuilder.removeParameters("f").ensureParameter("f", "glb").toString());
     } else {
       LOGGER.error(
           "Configuration error: {} is not a supported map client for the HTML representation of features.",
           mapClientType);
       this.mapClient = null;
+      this.cesiumData = null;
     }
 
     if (Objects.nonNull(queryables)) {

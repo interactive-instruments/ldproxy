@@ -1,0 +1,5 @@
+maturity = 'EXPERIMENTAL'
+
+dependencies {
+    embedded (group: 'io.github.earcut4j', name: 'earcut4j', version: '2.2.2')
+}

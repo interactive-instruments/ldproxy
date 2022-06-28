@@ -5,8 +5,7 @@ import {
   Credit,
   WebMapTileServiceImageryProvider,
   Rectangle,
-  Color,
-  Cartesian3,
+  Cesium3DTileset,
 } from "c137.js";
 
 import "./style.css";
@@ -16,7 +15,7 @@ const Cesium = ({
   backgroundUrl,
   attribution,
   getExtent,
-  addEntities,
+  getTileset,
 }) => {
   Ion.defaultAccessToken = null;
   Camera.DEFAULT_VIEW_RECTANGLE = getExtent(Rectangle);
@@ -44,8 +43,10 @@ const Cesium = ({
     viewer.scene.frameState.creditDisplay.addDefaultCredit(credit);
   }
 
-  if (addEntities) {
-    addEntities(viewer, Color, Cartesian3);
+  if (getTileset) {
+    const tileset = getTileset(Cesium3DTileset);
+    viewer.scene.primitives.add(tileset);
+    viewer.flyTo(tileset);
   }
 };
 
