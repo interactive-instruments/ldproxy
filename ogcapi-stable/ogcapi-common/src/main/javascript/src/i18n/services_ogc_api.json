@@ -140,11 +140,11 @@
         }
       },
       "start": {
-        "_label": "Stop service",
+        "_label": "Start service",
         "_description": ""
       },
       "stop": {
-        "_label": "Start service",
+        "_label": "Stop service",
         "_description": ""
       },
       "show": {
