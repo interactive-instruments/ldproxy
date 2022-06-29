@@ -74,8 +74,6 @@ task spotlessApply {
 
 apply from: 'docker.gradle'
 
-apply from: 'git-hooks.gradle'
-
 //TODO: MarkdownTask not available in docs.gradle
 tasks.register('docsExtract', de.interactive_instruments.xtraplatform.docs.MarkdownTask) {
     docsName 'docs'
