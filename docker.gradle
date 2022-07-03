@@ -9,7 +9,6 @@ MAINTAINER interactive instruments GmbH
 ARG TARGETOS
 ARG TARGETARCH
 ADD ${project.name}-\$TARGETOS-\$TARGETARCH.tar /
-ADD ${project.name}.tar /
 ENTRYPOINT ["/${project.name}/bin/${project.name}"]
 EXPOSE 7080
 WORKDIR /${project.name}
