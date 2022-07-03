@@ -75,6 +75,6 @@ pipeline:
       dockerfile: build/docker/Dockerfile
       context: build/docker
       pull_image: true
-      build_args: --platform linux/arm64
+      build_args: foo=bar --platform linux/arm64
     when:
       event: push
