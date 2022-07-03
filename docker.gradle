@@ -6,6 +6,9 @@ task dockerFile {
         new File(buildDir, 'tmp/Dockerfile').text = """
 FROM openjdk:11-jre-slim
 MAINTAINER interactive instruments GmbH
+ARG TARGETOS
+ARG TARGETARCH
+ADD ${project.name}-\$TARGETOS-\$TARGETARCH.tar /
 ADD ${project.name}.tar /
 ENTRYPOINT ["/${project.name}/bin/${project.name}"]
 EXPOSE 7080
@@ -14,13 +17,17 @@ ENV XTRAPLATFORM_ENV CONTAINER
 """
     }
 }
-
+//TODO: move arch replacements to layer plugin, rebuild xtraplatform-native
 task dockerCopy(type: Copy) {
     from tasks.distTar
     from tasks.dockerFile
     into "$buildDir/docker"
+    rename {
+        it.replace("${project.name}", "${project.name}-${platform.replace('x86_64', 'amd64').replace('aarch_64', 'arm64')}")
+    }
 }
 
+//TODO: set TARGETOS and TARGETARCH
 task dockerBuild(type: Exec) {
     dependsOn dockerCopy
     outputs.upToDateWhen { dockerCopy.state.upToDate }

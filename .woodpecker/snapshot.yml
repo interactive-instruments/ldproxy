@@ -26,18 +26,18 @@ pipeline:
       event: push
       branch: master
 
-  docker:
-    image: plugins/docker
-    settings:
-      registry: docker.ci.interactive-instruments.de
-      repo: docker.ci.interactive-instruments.de/iide/ldproxy
-      tags: ${CI_COMMIT_BRANCH}
-      force_tag: true
-      dockerfile: build/docker/Dockerfile
-      context: build/docker
-      pull_image: true
-    when:
-      event: push
+#  docker:
+#    image: plugins/docker
+#    settings:
+#      registry: docker.ci.interactive-instruments.de
+#      repo: docker.ci.interactive-instruments.de/iide/ldproxy
+#      tags: ${CI_COMMIT_BRANCH}
+#      force_tag: true
+#      dockerfile: build/docker/Dockerfile
+#      context: build/docker
+#      pull_image: true
+#    when:
+#      event: push
 
   docker-hub:
     image: plugins/docker
@@ -57,7 +57,7 @@ pipeline:
       event: push
       branch: master
 
-  dist.linux-arm_64:
+  dist.linux-arm64:
     image: openjdk:11-slim
     commands:
       - ./gradlew dockerCopy -Pplatform=linux-aarch_64 -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
@@ -65,8 +65,9 @@ pipeline:
     when:
       event: push
 
-  docker.linux-arm_64:
-    image: plugins/docker
+  docker.linux-arm64:
+    image: thegeeklab/drone-docker-buildx
+    privileged: true
     settings:
       registry: docker.ci.interactive-instruments.de
       repo: docker.ci.interactive-instruments.de/iide/ldproxy
@@ -75,6 +76,8 @@ pipeline:
       dockerfile: build/docker/Dockerfile
       context: build/docker
       pull_image: true
-      build_args: foo=bar --platform linux/arm64
+      platforms:
+        - linux/amd64
+        - linux/arm64
     when:
       event: push
