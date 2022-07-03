@@ -39,7 +39,6 @@ pipeline:
     when:
       event: push
 
-# TODO: is this triggered on PR merge?
   docker-hub:
     image: plugins/docker
     settings:
@@ -57,3 +56,25 @@ pipeline:
     when:
       event: push
       branch: master
+
+  dist.linux-arm_64:
+    image: openjdk:11-slim
+    commands:
+      - ./gradlew dockerCopy -Pplatform=linux-aarch_64 -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
+    when:
+      event: push
+
+  docker.linux-arm_64:
+    image: plugins/docker
+    settings:
+      registry: docker.ci.interactive-instruments.de
+      repo: docker.ci.interactive-instruments.de/iide/ldproxy
+      tags: ${CI_COMMIT_BRANCH}
+      force_tag: true
+      dockerfile: build/docker/Dockerfile
+      context: build/docker
+      pull_image: true
+      build_args: --platform linux/arm64
+    when:
+      event: push
