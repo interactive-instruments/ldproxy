@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '4.3.7'
+    id 'de.interactive_instruments.xtraplatform-application' version '4.3.11'
     id "com.diffplug.spotless" version "6.7.2" apply false
     id "com.github.node-gradle.node" version "3.2.0" apply false
 }
