@@ -66,7 +66,7 @@ pipeline:
       event: push
 
   docker.linux-arm64:
-    image: thegeeklab/drone-docker-buildx
+    image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
     privileged: true
     settings:
       registry: docker.ci.interactive-instruments.de
@@ -76,7 +76,6 @@ pipeline:
       dockerfile: build/docker/Dockerfile
       context: build/docker
       pull_image: true
-      buildkit_config: '{} --driver-opt network=host'
       platforms:
         - linux/amd64
         - linux/arm64
