@@ -60,7 +60,7 @@ pipeline:
   dist.linux-arm64:
     image: openjdk:11-slim
     commands:
-      - ./gradlew dockerCopy -Pplatform=linux-aarch_64 -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew dockerCopy -Pplatform=linux-arm64 -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: push
@@ -76,6 +76,7 @@ pipeline:
       dockerfile: build/docker/Dockerfile
       context: build/docker
       pull_image: true
+      buildkit_config: '{} --driver-opt network=host'
       platforms:
         - linux/amd64
         - linux/arm64

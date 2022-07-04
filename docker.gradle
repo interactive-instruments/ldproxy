@@ -22,16 +22,15 @@ task dockerCopy(type: Copy) {
     from tasks.dockerFile
     into "$buildDir/docker"
     rename {
-        it.replace("${project.name}", "${project.name}-${platform.replace('x86_64', 'amd64').replace('aarch_64', 'arm64')}")
+        it.replace("${project.name}", "${project.name}-${platform}")
     }
 }
 
-//TODO: set TARGETOS and TARGETARCH
 task dockerBuild(type: Exec) {
     dependsOn dockerCopy
     outputs.upToDateWhen { dockerCopy.state.upToDate }
     workingDir "$buildDir/docker"
-    commandLine 'docker', 'build', '-t', 'iide/ldproxy:local-dev', '.'
+    commandLine 'docker', 'buildx', 'build', '-t', 'iide/ldproxy:local-dev', '--load', '.'
 }
 
 task dockerRun(type: Exec) {
