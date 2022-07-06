@@ -15,8 +15,17 @@ pipeline:
     when:
       event: tag
 
+  dist-arm64:
+    image: openjdk:11-slim
+    commands:
+      - ./gradlew dockerCopy -Pplatform=linux-arm64 -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+    secrets: [ snapshot_user, snapshot_pass]
+    when:
+      event: push
+
   docker:
-    image: plugins/docker
+    image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
+    privileged: true
     settings: 
       repo: iide/ldproxy
       auto_tag: true
@@ -26,12 +35,16 @@ pipeline:
         from_secret: docker_password
       dockerfile: build/docker/Dockerfile
       context: build/docker
+      platforms:
+        - linux/amd64
+        - linux/arm64
     secrets: [ docker_username, docker_password]
     when:
       event: tag
 
   docker-latest:
-    image: plugins/docker
+    image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
+    privileged: true
     settings: 
       repo: iide/ldproxy
       tags: latest
@@ -41,6 +54,9 @@ pipeline:
         from_secret: docker_password
       dockerfile: build/docker/Dockerfile
       context: build/docker
+      platforms:
+        - linux/amd64
+        - linux/arm64
     secrets: [ docker_username, docker_password]
     when:
       event: tag

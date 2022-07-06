@@ -16,7 +16,7 @@ ENV XTRAPLATFORM_ENV CONTAINER
 """
     }
 }
-//TODO: move arch replacements to layer plugin, rebuild xtraplatform-native
+
 task dockerCopy(type: Copy) {
     from tasks.distTar
     from tasks.dockerFile

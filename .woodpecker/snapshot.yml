@@ -26,38 +26,7 @@ pipeline:
       event: push
       branch: master
 
-#  docker:
-#    image: plugins/docker
-#    settings:
-#      registry: docker.ci.interactive-instruments.de
-#      repo: docker.ci.interactive-instruments.de/iide/ldproxy
-#      tags: ${CI_COMMIT_BRANCH}
-#      force_tag: true
-#      dockerfile: build/docker/Dockerfile
-#      context: build/docker
-#      pull_image: true
-#    when:
-#      event: push
-
-  docker-hub:
-    image: plugins/docker
-    settings:
-      repo: iide/ldproxy
-      tags: next
-      force_tag: true
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
-      dockerfile: build/docker/Dockerfile
-      context: build/docker
-      pull_image: true
-    secrets: [ docker_username, docker_password]
-    when:
-      event: push
-      branch: master
-
-  dist.linux-arm64:
+  dist-arm64:
     image: openjdk:11-slim
     commands:
       - ./gradlew dockerCopy -Pplatform=linux-arm64 -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
@@ -65,7 +34,7 @@ pipeline:
     when:
       event: push
 
-  docker.linux-arm64:
+  docker:
     image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
     privileged: true
     settings:
@@ -81,3 +50,25 @@ pipeline:
         - linux/arm64
     when:
       event: push
+
+  docker-hub:
+    image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
+    privileged: true
+    settings:
+      repo: iide/ldproxy
+      tags: next
+      force_tag: true
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+      dockerfile: build/docker/Dockerfile
+      context: build/docker
+      pull_image: true
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    secrets: [ docker_username, docker_password]
+    when:
+      event: push
+      branch: master
