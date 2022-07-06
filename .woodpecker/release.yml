@@ -21,7 +21,7 @@ pipeline:
       - ./gradlew dockerCopy -Pplatform=linux-arm64 -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
-      event: push
+      event: tag
 
   docker:
     image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
