@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '4.3.12'
+    id 'de.interactive_instruments.xtraplatform-application' version '4.4.0'
     id "com.diffplug.spotless" version "6.7.2" apply false
     id "com.github.node-gradle.node" version "3.2.0" apply false
 }
@@ -22,24 +22,6 @@ dependencies {
 
     // modules to include in this application
     modules subprojects.findAll {it.name != 'ldproxy-cfg'}
-}
-
-ext {
-    useNativeRun = org.gradle.internal.os.OperatingSystem.current().isLinux()
-            ? project.findProperty('runInDocker') != 'true'
-            : project.findProperty('runInDocker') == 'false'
-}
-
-tasks.run {
-    debug = project.findProperty('debug') ?: false
-    args = project.findProperty('data') ? [project.findProperty('data')] : args
-    onlyIf {useNativeRun}
-    doFirst {
-        println "useNativeRun: ${useNativeRun}, isLinux: ${org.gradle.internal.os.OperatingSystem.current().isLinux()}, runInDocker: ${project.findProperty('runInDocker')}"
-        if (useNativeRun && !org.gradle.internal.os.OperatingSystem.current().isLinux()) {
-            logger.warn("WARNING: Running natively is not supported for '${System.getProperty("os.name")}' and will most likely lead to errors.")
-        }
-    }
 }
 
 tasks.test {
@@ -71,8 +53,6 @@ task spotlessApply {
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':spotlessApplyAll')
     dependsOn(':ldproxy-cfg:spotlessApply')
 }
-
-apply from: 'docker.gradle'
 
 //TODO: MarkdownTask not available in docs.gradle
 tasks.register('docsExtract', de.interactive_instruments.xtraplatform.docs.MarkdownTask) {
