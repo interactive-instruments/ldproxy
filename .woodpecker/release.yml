@@ -10,7 +10,7 @@ pipeline:
   libs:
     image: openjdk:11-slim
     commands:
-      - ./gradlew publish dockerCopy -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew publish dockerContext -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: tag
@@ -18,7 +18,7 @@ pipeline:
   dist-arm64:
     image: openjdk:11-slim
     commands:
-      - ./gradlew dockerCopy -Pplatform=linux-arm64 -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew dockerContext -Pplatform=linux-arm64 -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: tag
