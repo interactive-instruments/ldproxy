@@ -17,7 +17,7 @@ import de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtension
 import de.ii.ogcapi.features.flatgeobuf.domain.ImmutableFlatgeobufConfiguration;
 import de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import de.ii.ogcapi.features.geojson.ld.domain.ImmutableGeoJsonLdConfiguration;
-import de.ii.ogcapi.features.gml.app.ImmutableGmlConfiguration;
+import de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration;
 import de.ii.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration;
 import de.ii.ogcapi.features.json.fg.domain.ImmutableJsonFgConfiguration;
 import de.ii.ogcapi.filter.domain.ImmutableFilterConfiguration;
