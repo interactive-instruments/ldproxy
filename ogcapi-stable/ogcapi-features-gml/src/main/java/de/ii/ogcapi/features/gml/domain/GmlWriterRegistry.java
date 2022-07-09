@@ -7,9 +7,6 @@
  */
 package de.ii.ogcapi.features.gml.domain;
 
-import de.ii.ogcapi.features.core.domain.EncodingAwareContext;
-import org.immutables.value.Value.Modifiable;
+import de.ii.ogcapi.features.core.domain.FeatureWriterRegistry;
 
-@Modifiable
-public interface EncodingAwareContextGml
-    extends EncodingAwareContext<FeatureTransformationContextGml> {}
+public interface GmlWriterRegistry extends FeatureWriterRegistry<GmlWriter> {}

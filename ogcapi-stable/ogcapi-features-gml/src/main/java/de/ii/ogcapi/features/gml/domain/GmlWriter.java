@@ -7,9 +7,10 @@
  */
 package de.ii.ogcapi.features.gml.domain;
 
-import de.ii.ogcapi.features.core.domain.EncodingAwareContext;
-import org.immutables.value.Value.Modifiable;
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.ogcapi.features.core.domain.FeatureWriter;
 
-@Modifiable
-public interface EncodingAwareContextGml
-    extends EncodingAwareContext<FeatureTransformationContextGml> {}
+@AutoMultiBind
+public interface GmlWriter extends FeatureWriter<EncodingAwareContextGml> {
+  GmlWriter create();
+}
