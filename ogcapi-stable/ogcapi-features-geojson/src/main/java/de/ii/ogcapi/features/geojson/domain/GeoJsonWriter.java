@@ -8,11 +8,12 @@
 package de.ii.ogcapi.features.geojson.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.ogcapi.features.core.domain.FeatureWriter;
 
 /**
  * @author zahnen
  */
 @AutoMultiBind
-public interface GeoJsonWriter extends FeatureWriterGeoJson<EncodingAwareContextGeoJson> {
+public interface GeoJsonWriter extends FeatureWriter<EncodingAwareContextGeoJson> {
   GeoJsonWriter create();
 }
