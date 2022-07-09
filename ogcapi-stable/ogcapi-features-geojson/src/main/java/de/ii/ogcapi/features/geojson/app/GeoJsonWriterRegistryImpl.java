@@ -32,7 +32,7 @@ public class GeoJsonWriterRegistryImpl implements GeoJsonWriterRegistry {
   }
 
   @Override
-  public List<GeoJsonWriter> getGeoJsonWriters() {
+  public List<GeoJsonWriter> getWriters() {
     return ImmutableList.copyOf(geoJsonWriters.get());
   }
 }

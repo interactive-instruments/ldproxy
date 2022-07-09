@@ -5,8 +5,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.geojson.domain;
+package de.ii.ogcapi.features.core.domain;
 
-import de.ii.ogcapi.features.core.domain.FeatureWriterRegistry;
+import java.util.List;
 
-public interface GeoJsonWriterRegistry extends FeatureWriterRegistry<GeoJsonWriter> {}
+public interface FeatureWriterRegistry<T> {
+
+  List<T> getWriters();
+}
