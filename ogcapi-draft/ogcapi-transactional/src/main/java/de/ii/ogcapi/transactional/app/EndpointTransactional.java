@@ -84,7 +84,7 @@ public class EndpointTransactional extends EndpointSubCollection {
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-    return TransactionalConfiguration.class;
+    return CrudConfiguration.class;
   }
 
   @Override

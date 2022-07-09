@@ -33,7 +33,7 @@ import de.ii.ogcapi.resources.app.JacksonSubTypeIdsResources;
 import de.ii.ogcapi.sorting.app.JacksonSubTypeIdsSorting;
 import de.ii.ogcapi.styles.app.JacksonSubTypeIdsStyles;
 import de.ii.ogcapi.tiles.app.JacksonSubTypeIdsTiles;
-import de.ii.ogcapi.transactional.app.JacksonSubTypeIdsTransactional;
+import de.ii.ogcapi.transactional.app.JacksonSubTypeIdsCrud;
 import de.ii.ogcapi.xml.app.JacksonSubTypeIdsXml;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderRegisterSql;
@@ -57,7 +57,7 @@ public interface JacksonSubTypes {
         .add(new JacksonSubTypeIdsSorting())
         .add(new JacksonSubTypeIdsStyles())
         .add(new JacksonSubTypeIdsTiles())
-        .add(new JacksonSubTypeIdsTransactional())
+        .add(new JacksonSubTypeIdsCrud())
         .add(new JacksonSubTypeIdsOgcApiCollections())
         .add(new JacksonSubTypeIdsOgcApiCommon())
         .add(new JacksonSubTypeIdsCrs())

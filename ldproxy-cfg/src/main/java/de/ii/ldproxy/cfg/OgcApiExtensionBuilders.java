@@ -32,7 +32,7 @@ import de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration;
 import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
 import de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
-import de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration;
+import de.ii.ogcapi.transactional.app.ImmutableCrudConfiguration;
 import de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration;
 
 public interface OgcApiExtensionBuilders {
@@ -93,8 +93,8 @@ public interface OgcApiExtensionBuilders {
     return new ImmutableTilesConfiguration.Builder();
   }
 
-  default ImmutableTransactionalConfiguration.Builder transactional() {
-    return new ImmutableTransactionalConfiguration.Builder();
+  default ImmutableCrudConfiguration.Builder transactional() {
+    return new ImmutableCrudConfiguration.Builder();
   }
 
   default ImmutableCollectionsConfiguration.Builder collections() {

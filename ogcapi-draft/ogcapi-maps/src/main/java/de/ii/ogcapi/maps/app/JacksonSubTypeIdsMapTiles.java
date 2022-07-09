@@ -8,11 +8,12 @@
 package de.ii.ogcapi.maps.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import java.util.Map;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -24,11 +25,12 @@ public class JacksonSubTypeIdsMapTiles implements JacksonSubTypeIds {
   public JacksonSubTypeIdsMapTiles() {}
 
   @Override
-  public Map<Class<?>, String> getMapping() {
-    return new ImmutableMap.Builder<Class<?>, String>()
-        .put(
-            MapTilesConfiguration.class,
-            ExtensionConfiguration.getBuildingBlockIdentifier(MapTilesConfiguration.class))
-        .build();
+  public List<JacksonSubType> getSubTypes() {
+    return ImmutableList.of(
+        ImmutableJacksonSubType.builder()
+            .superType(ExtensionConfiguration.class)
+            .subType(MapTilesConfiguration.class)
+            .id(ExtensionConfiguration.getBuildingBlockIdentifier(MapTilesConfiguration.class))
+            .build());
   }
 }

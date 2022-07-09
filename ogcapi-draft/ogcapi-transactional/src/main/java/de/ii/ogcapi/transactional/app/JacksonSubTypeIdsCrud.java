@@ -5,32 +5,36 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.xml.app;
+package de.ii.ogcapi.transactional.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.xml.domain.XmlConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @author zahnen
+ */
 @Singleton
 @AutoBind
-public class JacksonSubTypeIdsXml implements JacksonSubTypeIds {
+public class JacksonSubTypeIdsCrud implements JacksonSubTypeIds {
 
   @Inject
-  public JacksonSubTypeIdsXml() {}
+  public JacksonSubTypeIdsCrud() {}
 
   @Override
   public List<JacksonSubType> getSubTypes() {
     return ImmutableList.of(
         ImmutableJacksonSubType.builder()
             .superType(ExtensionConfiguration.class)
-            .subType(XmlConfiguration.class)
-            .id(ExtensionConfiguration.getBuildingBlockIdentifier(XmlConfiguration.class))
+            .subType(CrudConfiguration.class)
+            .id(ExtensionConfiguration.getBuildingBlockIdentifier(CrudConfiguration.class))
+            // DEPRECATED since 3.3.0
+            .addAliases("TRANSACTIONAL")
             .build());
   }
 }

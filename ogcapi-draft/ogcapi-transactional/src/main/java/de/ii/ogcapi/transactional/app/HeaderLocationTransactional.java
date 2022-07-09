@@ -68,11 +68,11 @@ public class HeaderLocationTransactional extends ApiExtensionCache implements Ap
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return isExtensionEnabled(apiData, TransactionalConfiguration.class);
+    return isExtensionEnabled(apiData, CrudConfiguration.class);
   }
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-    return TransactionalConfiguration.class;
+    return CrudConfiguration.class;
   }
 }

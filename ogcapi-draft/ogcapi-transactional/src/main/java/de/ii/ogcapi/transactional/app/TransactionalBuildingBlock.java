@@ -10,7 +10,7 @@ package de.ii.ogcapi.transactional.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration.Builder;
+import de.ii.ogcapi.transactional.app.ImmutableCrudConfiguration.Builder;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -28,7 +28,7 @@ import javax.inject.Singleton;
  *     "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
  *     Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
  *     weiteren Standardisierung des Entwurfs noch ändern.
- * @propertyTable {@link de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration}
+ * @propertyTable {@link ImmutableCrudConfiguration}
  * @endpointTable {@link de.ii.ogcapi.transactional.app.EndpointTransactional}
  */
 @Singleton

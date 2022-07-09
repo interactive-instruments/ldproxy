@@ -9,18 +9,17 @@ package de.ii.ogcapi.transactional.app;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration.Builder;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = Builder.class)
-public interface TransactionalConfiguration extends ExtensionConfiguration {
+@JsonDeserialize(builder = ImmutableCrudConfiguration.Builder.class)
+public interface CrudConfiguration extends ExtensionConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override
   default Builder getBuilder() {
-    return new ImmutableTransactionalConfiguration.Builder();
+    return new ImmutableCrudConfiguration.Builder();
   }
 }
