@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.transactional.app;
+package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -66,20 +66,20 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointTransactional extends EndpointSubCollection {
+public class EndpointCrud extends EndpointSubCollection {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTransactional.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCrud.class);
   private static final List<String> TAGS = ImmutableList.of("Mutate data");
 
   private final FeaturesCoreProviders providers;
-  private final CommandHandlerTransactional commandHandler;
+  private final CommandHandlerCrud commandHandler;
 
   @Inject
-  public EndpointTransactional(
+  public EndpointCrud(
       ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
     super(extensionRegistry);
     this.providers = providers;
-    this.commandHandler = new CommandHandlerTransactional();
+    this.commandHandler = new CommandHandlerCrud();
   }
 
   @Override

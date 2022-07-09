@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.transactional.app;
+package de.ii.ogcapi.crud.app;
 
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
@@ -20,7 +20,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import javax.ws.rs.core.Response;
 
-public class CommandHandlerTransactional {
+public class CommandHandlerCrud {
 
   public Response postItemsResponse(
       FeatureTransactions featureProvider,

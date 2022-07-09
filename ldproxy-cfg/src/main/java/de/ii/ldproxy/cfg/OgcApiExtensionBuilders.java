@@ -32,7 +32,7 @@ import de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration;
 import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
 import de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
-import de.ii.ogcapi.transactional.app.ImmutableCrudConfiguration;
+import de.ii.ogcapi.crud.app.ImmutableCrudConfiguration;
 import de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration;
 
 public interface OgcApiExtensionBuilders {
