@@ -198,7 +198,6 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    */
   Map<String, VariableName> getVariableObjectElementNames();
 
-  @Nullable
   /**
    * @langEn Various feature collection elements are in use and sometimes additional ones are
    *     specified in GML application schemas. The default is `sf:FeatureCollection` as specified by
@@ -214,9 +213,9 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    * ```
    * </code>
    */
+  @Nullable
   String getFeatureCollectionElementName();
 
-  @Nullable
   /**
    * @langEn The feature collection element referenced in `featureCollectionElementName` has a child
    *     property element that contains each feature. The default is `sf:featureMember` as specified
@@ -232,6 +231,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    * ```
    * </code>
    */
+  @Nullable
   String getFeatureMemberElementName();
 
   /**
@@ -299,7 +299,6 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
 
   @Override
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-    // TODO handle all other properties
     return new ImmutableGmlConfiguration.Builder()
         .from(source)
         .from(this)
