@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.gml.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.features.gml.domain.GmlConfiguration;
 import de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -24,6 +23,24 @@ import javax.inject.Singleton;
  *     <p>For a SQL feature provider, the features are mapped to GML object and property elements
  *     based on the provider schema. A number of configuration options exist to control how the
  *     features are mapped to XML.
+ *     <p>All configuration options of this module except `gmlSfLevel` are only applicable for
+ *     collections with a SQL feature provider. For collections with a WFS feature provider, all
+ *     other configuration options are ignored.
+ *     <p>The following descriptions all apply only to collections with a SQL feature provider:
+ *     <li>The feature property with the role `ID` in the provider schema is mapped to the `gml:id`
+ *         attribute of the feature. These properties must be a direct property of the feature type.
+ *     <li>Geometry properties will be mapped to the corresponding GML 3.2 geometry (`gml:Point` and
+ *         `gml:MultiPoint` with `gml:pos`; `gml:LineString`, `gml:MultiCurve`, `gml:Polygon`, and
+ *         `gml:MultiSurface` with `gml:posList`). No `gml:id` attribute is added to geometry
+ *         elements. The `srsName` attribute is set in each geometry.
+ *     <li>Properties that are `OBJECT`s with object type `Link` will be mapped to a `gml:Reference`
+ *         value with `xlink:href` and `xmlnk:title` attributes, if set.
+ *     <li>Properties that are `OBJECT`s with object type `Measure` will be mapped to a
+ *         `gml:MeasureType` value. The object must have the properties `value` and `uom`, which
+ *         both must be present in the data.
+ *     <li>Properties that are `FLOAT` or `INTEGER` values with a `unit` property in the provider
+ *         schema are mapped to a `gml:MeasureType` value, too. The value of `unit` is mapped to the
+ *         `uom` attribute.
  * @conformanceEn In general, *Features GML* implements all requirements of conformance class
  *     *Geography Markup Language (GML), Simple Features Profile, Level 0* and *Geography Markup
  *     Language (GML), Simple Features Profile, Level 2* from [OGC API - Features - Part 1: Core
@@ -42,6 +59,7 @@ import javax.inject.Singleton;
  *     <p>Bei einem SQL-Feature-Provider werden die Features auf der Grundlage des Provider-Schemas
  *     auf GML-Objekt- und Eigenschaftselemente abgebildet. Es gibt eine Reihe von
  *     Konfigurationsoptionen, um zu steuern, wie die Merkmale auf XML abgebildet werden.
+ *     <p>TODO
  * @conformanceDe Im Allgemeinen implementiert *Features GML* alle Anforderungen der
  *     Konformitätsklassen *Geography Markup Language (GML), Simple Features Profile, Level 0* und
  *     *Geography Markup Language (GML), Simple Features Profile, Level 2* aus [OGC API - Features -
@@ -65,7 +83,6 @@ public class GmlBuildingBlock implements ApiBuildingBlock {
   public ExtensionConfiguration getDefaultConfiguration() {
     return new ImmutableGmlConfiguration.Builder()
         .enabled(false)
-        .conformance(GmlConfiguration.Conformance.NONE)
         .featureCollectionElementName("sf:FeatureCollection")
         .featureMemberElementName("sf:featureMember")
         .supportsStandardResponseParameters(false)
