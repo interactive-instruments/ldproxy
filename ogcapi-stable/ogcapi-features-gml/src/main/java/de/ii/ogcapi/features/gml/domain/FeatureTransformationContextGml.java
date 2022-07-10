@@ -29,6 +29,13 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
   private static final String GML_ID_PLACEHOLDER = "_$$_GML_ID_i_$$_";
   private static final String OBJECT_ELEMENT_PLACEHOLDER = "_$$_OBJECT_ELEMENT_i_$$_";
 
+  /**
+   * Internal string buffer to buffer information. The buffer is flushed for every feature. This
+   * would belong to State, but we cannot move it, because Modifiable has no support for appending
+   * to a StringBuilder
+   */
+  private final StringBuilder buffer = new StringBuilder();
+
   @Override
   @Value.Default
   // This is never null, but the parent is marked as nullable.
@@ -56,13 +63,6 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
   public abstract List<String> getXmlAttributes();
 
   public abstract Optional<String> getGmlIdPrefix();
-
-  /**
-   * Internal string buffer to buffer information. The buffer is flushed for every feature. This
-   * would belong to State, but we cannot move it, because Modifiable has no support for appending
-   * to a StringBuilder
-   */
-  private final StringBuilder buffer = new StringBuilder();
 
   /**
    * Add a string to the response.
@@ -205,7 +205,7 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
    */
   public int nextGeometryItem() {
     List<Integer> nesting = getState().getCurrentGeometryNesting();
-    assert nesting.size() > 0;
+    assert !nesting.isEmpty();
     int idx = nesting.get(nesting.size() - 1) + 1;
     if (nesting.size() > 1) {
       getState()
@@ -231,7 +231,7 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
    */
   public int closeGeometryArray() {
     List<Integer> nesting = getState().getCurrentGeometryNesting();
-    assert nesting.size() > 0;
+    assert !nesting.isEmpty();
     int level = nesting.size() - 1;
     if (level > 0) {
       getState().setCurrentGeometryNesting(ImmutableList.copyOf(nesting.subList(0, level)));

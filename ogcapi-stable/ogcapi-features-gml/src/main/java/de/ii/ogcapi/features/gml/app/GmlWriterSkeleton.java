@@ -49,14 +49,10 @@ public class GmlWriterSkeleton implements GmlWriter {
     context.encoding().write(XML_PROLOG);
 
     if (context.encoding().isFeatureCollection()) {
-      try {
-        String rootElement = getFeatureCollectionTag(context);
-        context.encoding().write("\n<");
-        context.encoding().write(rootElement);
-        context.encoding().write(getNamespaceAttributes(context, rootElement));
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
+      String rootElement = getFeatureCollectionTag(context);
+      context.encoding().write("\n<");
+      context.encoding().write(rootElement);
+      writeNamespaceAttributes(context, rootElement);
     }
 
     next.accept(context);
@@ -106,7 +102,7 @@ public class GmlWriterSkeleton implements GmlWriter {
 
     if (!context.encoding().isFeatureCollection()) {
       // add namespace information
-      context.encoding().write(getNamespaceAttributes(context, elementName));
+      writeNamespaceAttributes(context, elementName);
     }
 
     context.encoding().pushElement(elementName);
@@ -148,9 +144,7 @@ public class GmlWriterSkeleton implements GmlWriter {
     return context.encoding().getFeatureMemberElementName().orElse("sf:featureMember");
   }
 
-  private String getNamespaceAttributes(EncodingAwareContextGml context, String rootElement) {
-    StringBuilder builder = new StringBuilder();
-
+  private void writeNamespaceAttributes(EncodingAwareContextGml context, String rootElement) {
     // default namespace
     context
         .encoding()
@@ -160,9 +154,9 @@ public class GmlWriterSkeleton implements GmlWriter {
                 nsPrefix -> {
                   String nsUri = context.encoding().getNamespaces().get(nsPrefix);
                   if (Objects.nonNull(nsUri)) {
-                    builder.append(" xmlns=\"");
-                    builder.append(nsUri);
-                    builder.append("\"");
+                    context.encoding().write(" xmlns=\"");
+                    context.encoding().write(nsUri);
+                    context.encoding().write("\"");
                   }
                 }));
 
@@ -183,8 +177,10 @@ public class GmlWriterSkeleton implements GmlWriter {
             consumerMayThrow(
                 prefix -> {
                   if (!Strings.isNullOrEmpty(prefix)) {
-                    builder.append(" ");
-                    builder.append(namespaceNormalizer.generateNamespaceDeclaration(prefix));
+                    context.encoding().write(" ");
+                    context
+                        .encoding()
+                        .write(namespaceNormalizer.generateNamespaceDeclaration(prefix));
                   }
                 }));
 
@@ -192,18 +188,19 @@ public class GmlWriterSkeleton implements GmlWriter {
         context.encoding().getSchemaLocations().entrySet().stream()
             .filter(entry -> effectiveNamespaces.containsKey(entry.getKey()))
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-    builder.append(" xsi:schemaLocation=\"");
-    builder.append(
-        effectiveSchemaLocations.entrySet().stream()
-            .map(
-                entry ->
-                    effectiveNamespaces.get(entry.getKey())
-                        + " "
-                        + entry
-                            .getValue()
-                            .replace("{{serviceUrl}}", context.encoding().getServiceUrl()))
-            .collect(Collectors.joining(" ")));
-    builder.append("\"");
-    return builder.toString();
+    context.encoding().write(" xsi:schemaLocation=\"");
+    context
+        .encoding()
+        .write(
+            effectiveSchemaLocations.entrySet().stream()
+                .map(
+                    entry ->
+                        effectiveNamespaces.get(entry.getKey())
+                            + " "
+                            + entry
+                                .getValue()
+                                .replace("{{serviceUrl}}", context.encoding().getServiceUrl()))
+                .collect(Collectors.joining(" ")));
+    context.encoding().write("\"");
   }
 }

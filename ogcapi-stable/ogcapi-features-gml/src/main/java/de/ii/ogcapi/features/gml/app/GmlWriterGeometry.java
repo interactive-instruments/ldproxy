@@ -42,7 +42,6 @@ public class GmlWriterGeometry implements GmlWriter {
   private static final String EXTERIOR = "gml:exterior";
   private static final String INTERIOR = "gml:interior";
   private static final String SURFACE_MEMBER = "gml:surfaceMember";
-  // TODO move mapping to GmlGeometryType
   private static final Map<SimpleFeatureGeometry, String> GEOMETRY_ELEMENT =
       ImmutableMap.of(
           SimpleFeatureGeometry.POINT, POINT,

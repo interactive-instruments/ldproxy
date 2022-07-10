@@ -28,6 +28,7 @@ public class FeatureEncoderGml extends FeatureTokenEncoderDefault<EncodingAwareC
   public FeatureEncoderGml(
       FeatureTransformationContextGml transformationContext,
       ImmutableCollection<GmlWriter> featureWriters) {
+    super();
     this.transformationContext = transformationContext;
     this.featureWriters = featureWriters;
   }

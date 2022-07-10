@@ -76,8 +76,9 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
       case 1:
       case 2:
         return Conformance.GMLSF2;
+      default:
+        return Conformance.NONE;
     }
-    return Conformance.NONE;
   }
 
   /**
