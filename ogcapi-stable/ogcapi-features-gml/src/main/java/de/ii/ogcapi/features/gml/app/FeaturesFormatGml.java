@@ -191,6 +191,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   private Conformance getConformance(Optional<GmlConfiguration> configuration) {
     return configuration
         .filter(c -> !"sf:FeatureCollection".equals(c.getFeatureCollectionElementName()))
+        .filter(c -> !"sf:featureMember".equals(c.getFeatureMemberElementName()))
         .map(c -> Conformance.NONE)
         .orElse(configuration.map(GmlConfiguration::getConformance).orElse(Conformance.NONE));
   }
