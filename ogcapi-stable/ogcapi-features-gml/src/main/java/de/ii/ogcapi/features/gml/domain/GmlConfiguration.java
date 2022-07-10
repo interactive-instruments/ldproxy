@@ -84,8 +84,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    * @langEn Every XML element will have and XML attribute can have an XML namespace. To improve
    *     readability of the XML documents, a namespace prefix is declared for every namespace.
    *     <p>Common namespaces and prefixes are pre-defined, these are: `gml` (GML 3.2), `xlink`
-   *     (XLink), `xml` (XML), `sf` (OGC API Features Core 1.0, Core-SF), `wfs` (WFS 2.0), `xs` (XML
-   *     Schema 1.0), and `xsi` (XML Schema Information).
+   *     (XLink), `xml` (XML), `sf` (OGC API Features Core 1.0, Core-SF), `wfs` (WFS 2.0), and `xsi`
+   *     (XML Schema Information).
    *     <p>Additional namespaces that are used in the data (declared in GML application schemas and
    *     imported schemas), the namespaces are configured with their prefixes. Since feature data
    *     will always use elements in application-schema-specific namespaces, this confirguration

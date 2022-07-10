@@ -335,6 +335,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
             .from(transformationContext)
             .putAllNamespaces(config.getApplicationNamespaces())
             .putAllNamespaces(STANDARD_NAMESPACES)
+            .defaultNamespace(Optional.ofNullable(config.getDefaultNamespace()))
             .putAllSchemaLocations(config.getSchemaLocations())
             .putAllSchemaLocations(STANDARD_SCHEMA_LOCATIONS)
             .objectTypeNamespaces(config.getObjectTypeNamespaces())

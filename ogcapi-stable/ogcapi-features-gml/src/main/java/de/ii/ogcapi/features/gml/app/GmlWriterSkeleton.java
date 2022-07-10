@@ -53,7 +53,6 @@ public class GmlWriterSkeleton implements GmlWriter {
         String rootElement = getFeatureCollectionTag(context);
         context.encoding().write("\n<");
         context.encoding().write(rootElement);
-        context.encoding().write(">");
         context.encoding().write(getNamespaceAttributes(context, rootElement));
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -127,14 +126,14 @@ public class GmlWriterSkeleton implements GmlWriter {
 
     String elementName = context.encoding().popElement();
 
-    context.encoding().write("</");
+    context.encoding().write("\n</");
     context.encoding().write(elementName);
     context.encoding().write(">");
 
     if (context.encoding().isFeatureCollection()) {
       context.encoding().write("</");
       context.encoding().write(getFeatureMemberTag(context));
-      context.encoding().write(">\n");
+      context.encoding().write(">");
     }
 
     context.encoding().closeGmlObject();
@@ -178,9 +177,7 @@ public class GmlWriterSkeleton implements GmlWriter {
 
     XMLNamespaceNormalizer namespaceNormalizer = new XMLNamespaceNormalizer(effectiveNamespaces);
 
-    context
-        .encoding()
-        .getNamespaces()
+    effectiveNamespaces
         .keySet()
         .forEach(
             consumerMayThrow(
@@ -197,8 +194,14 @@ public class GmlWriterSkeleton implements GmlWriter {
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     builder.append(" xsi:schemaLocation=\"");
     builder.append(
-        effectiveSchemaLocations.keySet().stream()
-            .map(s -> effectiveNamespaces.get(s) + " " + effectiveSchemaLocations.get(s))
+        effectiveSchemaLocations.entrySet().stream()
+            .map(
+                entry ->
+                    effectiveNamespaces.get(entry.getKey())
+                        + " "
+                        + entry
+                            .getValue()
+                            .replace("{{serviceUrl}}", context.encoding().getServiceUrl()))
             .collect(Collectors.joining(" ")));
     builder.append("\"");
     return builder.toString();
