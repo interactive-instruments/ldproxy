@@ -21,15 +21,15 @@ import javax.inject.Singleton;
 @AutoBind
 public class GmlWriterRegistryImpl implements GmlWriterRegistry {
 
-  private final Lazy<Set<GmlWriter>> GmlWriters;
+  private final Lazy<Set<GmlWriter>> gmlWriters;
 
   @Inject
-  public GmlWriterRegistryImpl(Lazy<Set<GmlWriter>> GmlWriters) {
-    this.GmlWriters = GmlWriters;
+  public GmlWriterRegistryImpl(Lazy<Set<GmlWriter>> gmlWriters) {
+    this.gmlWriters = gmlWriters;
   }
 
   @Override
   public List<GmlWriter> getWriters() {
-    return ImmutableList.copyOf(GmlWriters.get());
+    return ImmutableList.copyOf(gmlWriters.get());
   }
 }

@@ -188,7 +188,8 @@ public class GmlWriterProperties implements GmlWriter {
 
   private boolean shouldSkipProperty(EncodingAwareContextGml context) {
     return !hasMappingAndValue(context)
-        || (context.schema().orElseThrow().isId() || context.inGeometry());
+        || context.schema().orElseThrow().isId()
+        || context.inGeometry();
   }
 
   private boolean hasMappingAndValue(EncodingAwareContextGml context) {

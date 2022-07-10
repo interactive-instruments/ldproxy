@@ -60,73 +60,67 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtension {
 
+  private static final String XML = "xml";
+  private static final String GML = "gml";
+  private static final String XLINK = "xlink";
+  private static final String XSI = "xsi";
+  private static final String SF = "sf";
+  private static final String WFS = "wfs";
+  private static final String GML_NS = "http://www.opengis.net/gml/3.2";
+  private static final String XLINK_NS = "http://www.w3.org/1999/xlink";
+  private static final String XML_NS = "http://www.w3.org/XML/1998/namespace";
+  private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
+  private static final String SF_NS = "http://www.opengis.net/ogcapi-features-1/1.0/sf";
+  private static final String WFS_NS = "http://www.opengis.net/wfs/2.0";
   private static final Map<String, String> STANDARD_NAMESPACES =
       ImmutableMap.of(
-          "gml",
-          "http://www.opengis.net/gml/3.2",
-          "xlink",
-          "http://www.w3.org/1999/xlink",
-          "xml",
-          "http://www.w3.org/XML/1998/namespace",
-          "xsi",
-          "http://www.w3.org/2001/XMLSchema-instance",
-          "sf",
-          "http://www.opengis.net/ogcapi-features-1/1.0/sf",
-          "wfs",
-          "http://www.opengis.net/wfs/2.0");
+          GML, GML_NS, XLINK, XLINK_NS, XML, XML_NS, XSI, XSI_NS, SF, SF_NS, WFS, WFS_NS);
 
+  private static final String GML_XSD = "http://schemas.opengis.net/gml/3.2.1/gml.xsd";
+  private static final String XLINK_XSD = "http://www.w3.org/1999/xlink.xsd";
+  private static final String XML_XSD = "http://www.w3.org/2001/xml.xsd";
+  private static final String SF_XSD =
+      "http://schemas.opengis.net/ogcapi/features/part1/1.0/xml/core-sf.xsd";
+  private static final String WFS_XSD = "http://schemas.opengis.net/wfs/2.0/wfs.xsd";
   private static final Map<String, String> STANDARD_SCHEMA_LOCATIONS =
-      ImmutableMap.of(
-          "gml",
-          "http://schemas.opengis.net/gml/3.2.1/gml.xsd",
-          "xlink",
-          "http://www.w3.org/1999/xlink.xsd",
-          "xml",
-          "http://www.w3.org/2001/xml.xsd",
-          "sf",
-          "http://schemas.opengis.net/ogcapi/features/part1/1.0/xml/core-sf.xsd",
-          "wfs",
-          "http://schemas.opengis.net/wfs/2.0/wfs.xsd");
+      ImmutableMap.of(GML, GML_XSD, XLINK, XLINK_XSD, XML, XML_XSD, SF, SF_XSD, WFS, WFS_XSD);
 
+  private static final String GML_UPPERCASE = "GML";
+  private static final String APPLICATION = "application";
+  private static final String GML_XML = "gml+xml";
   private static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "gml+xml"))
-          .label("GML")
-          .parameter("xml")
+          .type(new MediaType(APPLICATION, GML_XML))
+          .label(GML_UPPERCASE)
+          .parameter(XML)
           .build();
+  private static final String VERSION = "version";
+  private static final String PROFILE = "profile";
+  private static final String V_3_2 = "3.2";
+  private static final String GMLSF0_PROFILE = "http://www.opengis.net/def/profile/ogc/2.0/gml-sf0";
   private static final ApiMediaType MEDIA_TYPE_GMLSF0 =
       new ImmutableApiMediaType.Builder()
           .type(
               new MediaType(
-                  "application",
-                  "gml+xml",
-                  ImmutableMap.of(
-                      "version",
-                      "3.2",
-                      "profile",
-                      "http://www.opengis.net/def/profile/ogc/2.0/gml-sf0")))
-          .label("GML")
-          .parameter("xml")
+                  APPLICATION, GML_XML, ImmutableMap.of(VERSION, V_3_2, PROFILE, GMLSF0_PROFILE)))
+          .label(GML_UPPERCASE)
+          .parameter(XML)
           .build();
+  private static final String GMLSF2_PROFILE = "http://www.opengis.net/def/profile/ogc/2.0/gml-sf2";
   private static final ApiMediaType MEDIA_TYPE_GMLSF2 =
       new ImmutableApiMediaType.Builder()
           .type(
               new MediaType(
-                  "application",
-                  "gml+xml",
-                  ImmutableMap.of(
-                      "version",
-                      "3.2",
-                      "profile",
-                      "http://www.opengis.net/def/profile/ogc/2.0/gml-sf2")))
-          .label("GML")
-          .parameter("xml")
+                  APPLICATION, GML_XML, ImmutableMap.of(VERSION, V_3_2, PROFILE, GMLSF2_PROFILE)))
+          .label(GML_UPPERCASE)
+          .parameter(XML)
           .build();
+  private static final String XML_UPPERCASE = "XML";
   public static final ApiMediaType COLLECTION_MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "xml"))
-          .label("XML")
-          .parameter("xml")
+          .type(new MediaType(APPLICATION, XML))
+          .label(XML_UPPERCASE)
+          .parameter(XML)
           .build();
 
   private static final Map<Conformance, ApiMediaType> MEDIA_TYPE_MAP =
@@ -134,6 +128,12 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
           Conformance.NONE, MEDIA_TYPE,
           Conformance.GMLSF0, MEDIA_TYPE_GMLSF0,
           Conformance.GMLSF2, MEDIA_TYPE_GMLSF2);
+  private static final String SF_FEATURE_COLLECTION = "sf:FeatureCollection";
+  private static final String SF_FEATURE_MEMBER = "sf:featureMember";
+  private static final String GMLSF0_CC =
+      "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0";
+  private static final String GMLSF2_CC =
+      "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2";
 
   private final FeaturesCoreProviders providers;
   private final EntityRegistry entityRegistry;
@@ -156,11 +156,11 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     switch (getConformance(apiData)) {
       case GMLSF0:
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf0");
+        return ImmutableList.of(GMLSF0_CC);
       case GMLSF2:
-        return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2");
-      default:
+        return ImmutableList.of(GMLSF2_CC);
       case NONE:
+      default:
         return ImmutableList.of();
     }
   }
@@ -190,8 +190,8 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
 
   private Conformance getConformance(Optional<GmlConfiguration> configuration) {
     return configuration
-        .filter(c -> !"sf:FeatureCollection".equals(c.getFeatureCollectionElementName()))
-        .filter(c -> !"sf:featureMember".equals(c.getFeatureMemberElementName()))
+        .filter(c -> !SF_FEATURE_COLLECTION.equals(c.getFeatureCollectionElementName()))
+        .filter(c -> !SF_FEATURE_MEMBER.equals(c.getFeatureMemberElementName()))
         .map(c -> Conformance.NONE)
         .orElse(configuration.map(GmlConfiguration::getConformance).orElse(Conformance.NONE));
   }
@@ -225,7 +225,9 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
 
     // no additional operational checks for now, only validation; we can stop, if no validation is
     // requested
-    if (apiValidation == MODE.NONE) return ValidationResult.of();
+    if (apiValidation == MODE.NONE) {
+      return ValidationResult.of();
+    }
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().mode(apiValidation);
@@ -240,7 +242,9 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
                   final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
                   final GmlConfiguration config =
                       collectionData.getExtension(GmlConfiguration.class).orElse(null);
-                  if (Objects.isNull(config)) return null;
+                  if (Objects.isNull(config)) {
+                    return null;
+                  }
                   return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
                 })
             .filter(Objects::nonNull)
