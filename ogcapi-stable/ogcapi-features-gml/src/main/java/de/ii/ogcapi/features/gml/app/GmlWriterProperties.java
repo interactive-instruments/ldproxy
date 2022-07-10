@@ -151,16 +151,19 @@ public class GmlWriterProperties implements GmlWriter {
         } else {
           context.encoding().write("\n<");
           context.encoding().write(schema.getName());
-          /* TODO uncomment after getUnit() is implemented
-          schema.getUnit()
-              .ifPresent(
-                  consumerMayThrow(
-                      uom -> {
-                        context.encoding().write(" uom=\"");
-                        context.encoding().write(uom);
-                        context.encoding().write("\"");
-                      }));
-           */
+          if (schema.getType() == Type.FLOAT || schema.getType() == Type.INTEGER) {
+            // write as gml:MeasureType, if we have a numeric property with a 'unit'
+            // property in the provider schema
+            schema
+                .getUnit()
+                .ifPresent(
+                    consumerMayThrow(
+                        uom -> {
+                          context.encoding().write(" uom=\"");
+                          context.encoding().write(uom);
+                          context.encoding().write("\"");
+                        }));
+          }
           context.encoding().write(">");
           writeValue(context, value, schema.getType());
           context.encoding().write("</");
