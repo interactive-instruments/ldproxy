@@ -27,9 +27,24 @@ import org.immutables.value.Value;
  * ```yaml
  * - buildingBlock: GML
  *   enabled: true
- *   transformations:
- *     myProperty:
- *       rename: 'ns2:myProperty'
+ *   applicationNamespaces:
+ *     ns1: http://www.example.com/ns/ns1/1.0
+ *     ns2: http://www.example.com/ns/ns2/1.0
+ *   defaultNamespace: ns1
+ *   schemaLocations:
+ *     ns1: '{{serviceUrl}}/resources/ns1.xsd'
+ *     ns2: '{{serviceUrl}}/resources/ns2.xsd'
+ *   gmlIdPrefix: '_'
+ * collections:
+ *   some_type:
+ *     ...
+ *     api:
+ *     - buildingBlock: GML
+ *       xmlAttributes:
+ *         - someAtt
+ *       transformations:
+ *         someOtherAtt:
+ *           rename: 'ns2:someOtherAtt'
  * ```
  * </code>
  */
@@ -64,6 +79,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *   gmlSfLevel: 0
    * ```
    * </code>
+   * @since v3.3
    */
   @Nullable
   Integer getGmlSfLevel();
@@ -102,6 +118,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     ns2: http://www.example.com/bar/0.1
    * ```
    * </code>
+   * @since v3.3
    */
   Map<String, String> getApplicationNamespaces();
 
@@ -122,6 +139,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *   defaultNamespace: ns1
    * ```
    * </code>
+   * @since v3.3
    */
   @Nullable
   String getDefaultNamespace();
@@ -148,6 +166,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     ns2: http://www.example.com/bar/0.1/bar.xsd
    * ```
    * </code>
+   * @since v3.3
    */
   Map<String, String> getSchemaLocations();
 
@@ -171,6 +190,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     DataTypeB: ns2
    * ```
    * </code>
+   * @since v3.3
    */
   Map<String, String> getObjectTypeNamespaces();
 
@@ -196,6 +216,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *         typeA3: 'ns2:TypeA3'
    * ```
    * </code>
+   * @since v3.3
    */
   Map<String, VariableName> getVariableObjectElementNames();
 
@@ -213,6 +234,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *   featureCollectionElementName: 'plan:XPlanAuszug'
    * ```
    * </code>
+   * @since v3.3
    */
   @Nullable
   String getFeatureCollectionElementName();
@@ -231,6 +253,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *   featureMemberElementName: 'gml:featureMember'
    * ```
    * </code>
+   * @since v3.3
    */
   @Nullable
   String getFeatureMemberElementName();
@@ -249,6 +272,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *   supportsStandardResponseParameters: false
    * ```
    * </code>
+   * @since v3.3
    */
   @Nullable
   Boolean getSupportsStandardResponseParameters();
@@ -269,6 +293,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     - someProperty.myOtherAttProperty
    * ```
    * </code>
+   * @since v3.3
    */
   List<String> getXmlAttributes();
 
@@ -287,6 +312,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *   gmlIdPrefix: '_'
    * ```
    * </code>
+   * @since v3.3
    */
   @Nullable
   String getGmlIdPrefix();
