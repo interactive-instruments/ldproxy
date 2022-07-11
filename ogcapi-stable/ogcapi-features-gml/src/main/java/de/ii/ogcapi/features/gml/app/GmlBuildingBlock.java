@@ -18,8 +18,8 @@ import javax.inject.Singleton;
  * @title Features GML
  * @langEn The module *Features GML* may be enabled for every API with a SQL or WFS feature
  *     provider. It provides the resources *Features* and *Feature* encoded as GML.
- *     <p>For a WFS feature provider, the features are accessed as GML from the WFS and rewritten to
- *     the response. In case of *Features* the root element is `sf:FeatureCollection`.
+ * @scopeEn For a WFS feature provider, the features are accessed as GML from the WFS and rewritten
+ *     to the response. In case of *Features* the root element is `sf:FeatureCollection`.
  *     <p>For a SQL feature provider, the features are mapped to GML object and property elements
  *     based on the provider schema. A number of configuration options exist to control how the
  *     features are mapped to XML.
@@ -27,20 +27,22 @@ import javax.inject.Singleton;
  *     collections with a SQL feature provider. For collections with a WFS feature provider, all
  *     other configuration options are ignored.
  *     <p>The following descriptions all apply only to collections with a SQL feature provider:
- *     <li>The feature property with the role `ID` in the provider schema is mapped to the `gml:id`
- *         attribute of the feature. These properties must be a direct property of the feature type.
- *     <li>Geometry properties will be mapped to the corresponding GML 3.2 geometry (`gml:Point` and
- *         `gml:MultiPoint` with `gml:pos`; `gml:LineString`, `gml:MultiCurve`, `gml:Polygon`, and
- *         `gml:MultiSurface` with `gml:posList`). No `gml:id` attribute is added to geometry
- *         elements. The `srsName` attribute is set in each geometry.
- *     <li>Properties that are `OBJECT`s with object type `Link` will be mapped to a `gml:Reference`
- *         value with `xlink:href` and `xmlnk:title` attributes, if set.
- *     <li>Properties that are `OBJECT`s with object type `Measure` will be mapped to a
- *         `gml:MeasureType` value. The object must have the properties `value` and `uom`, which
- *         both must be present in the data.
- *     <li>Properties that are `FLOAT` or `INTEGER` values with a `unit` property in the provider
- *         schema are mapped to a `gml:MeasureType` value, too. The value of `unit` is mapped to the
- *         `uom` attribute.
+ *     <p><code>
+ * - The feature property with the role `ID` in the provider schema is mapped to the `gml:id`
+ *   attribute of the feature. These properties must be a direct property of the feature type.
+ * - Geometry properties will be mapped to the corresponding GML 3.2 geometry (`gml:Point` and
+ *   `gml:MultiPoint` with `gml:pos`; `gml:LineString`, `gml:MultiCurve`, `gml:Polygon`, and
+ *   `gml:MultiSurface` with `gml:posList`). No `gml:id` attribute is added to geometry
+ *   elements. The `srsName` attribute is set in each geometry.
+ * - Properties that are `OBJECT`s with object type `Link` will be mapped to a `gml:Reference`
+ *   value with `xlink:href` and `xmlnk:title` attributes, if set.
+ * - Properties that are `OBJECT`s with object type `Measure` will be mapped to a
+ *   `gml:MeasureType` value. The object must have the properties `value` and `uom`, which
+ *   both must be present in the data.
+ * - Properties that are `FLOAT` or `INTEGER` values with a `unit` property in the provider
+ *   schema are mapped to a `gml:MeasureType` value, too. The value of `unit` is mapped to the
+ *   `uom` attribute.
+ * </code>
  * @conformanceEn In general, *Features GML* implements all requirements of conformance class
  *     *Geography Markup Language (GML), Simple Features Profile, Level 0* and *Geography Markup
  *     Language (GML), Simple Features Profile, Level 2* from [OGC API - Features - Part 1: Core
@@ -54,7 +56,7 @@ import javax.inject.Singleton;
  * @langDe Das Modul *Features GML* kann für jede über ldproxy bereitgestellte API mit einem SQL-
  *     oder WFS-Feature-Provider aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen
  *     Features und Feature in GML.
- *     <p>Bei einem WFS-Feature-Provider werden die Features als GML vom WFS abgerufen und in die
+ * @scopeDe Bei einem WFS-Feature-Provider werden die Features als GML vom WFS abgerufen und in die
  *     Antwort umgeschrieben. Im Falle von *Features* ist das Wurzelelement `sf:FeatureCollection`.
  *     <p>Bei einem SQL-Feature-Provider werden die Features auf der Grundlage des Provider-Schemas
  *     auf GML-Objekt- und Eigenschaftselemente abgebildet. Es gibt eine Reihe von
@@ -70,7 +72,8 @@ import javax.inject.Singleton;
  *     <p>Für SQL-Feature-Provider kann außerdem ein anderes Root-Element als `sf:FeatureCollection`
  *     für die *Features*-Ressource konfiguriert werden. In diesem Fall kann die API nicht konform
  *     zu einer der GML-Konformitätsklassen von OGC API Features sein.
- * @propertyTable {@link de.ii.ogcapi.features.gml.domain.GmlConfiguration}
+ * @example {@link de.ii.ogcapi.features.gml.domain.GmlConfiguration}
+ * @propertyTable {@link de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration}
  */
 @Singleton
 @AutoBind
