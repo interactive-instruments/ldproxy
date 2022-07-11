@@ -393,7 +393,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       double maxY = coords.stream().mapToDouble(c -> c.get(1)).max().orElseThrow();
       minZ = coords.stream().mapToDouble(c -> c.get(2)).min().orElseThrow();
       double maxZ = coords.stream().mapToDouble(c -> c.get(2)).max().orElseThrow();
-      originBuilding = new double[] {(minX + maxX) / 2.0, (minY + maxY) / 2.0, 0.0};
+      originBuilding = new double[] {(minX + maxX) / 2.0, (minY + maxY) / 2.0, (minZ + maxZ) / 2.0};
     }
 
     for (PropertyGltf surface : surfacesProperty.getNestedProperties()) {
@@ -710,6 +710,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     if (indices.size() > 0) {
 
       double[] originFeature;
+      double minZFeature;
       if (Objects.isNull(originBuilding)) {
         // translate vertices to the center of the feature to have smaller values (glTF uses float)
         ImmutableList<Double> min =
@@ -751,19 +752,22 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             new double[] {
               (min.get(0) + max.get(0)) / 2.0,
               (min.get(1) + max.get(1)) / 2.0,
-              clampToGround ? 0.0 : (min.get(2) + max.get(2)) / 2.0
+              (min.get(2) + max.get(2)) / 2.0
             };
+        minZFeature = min.get(2);
       } else {
         originFeature = originBuilding;
+        minZFeature = minZ;
       }
       double[] originFeatureEcef = crs84hToEcef.transform(originFeature, 1, 3);
+      double finalMinZ = minZFeature;
       double[] tmp =
           crs84hToEcef.transform(
               IntStream.range(0, vertices.size())
                   .mapToDouble(
                       n ->
                           (clampToGround && n % 3 == 2)
-                              ? vertices.get(n) - Objects.requireNonNull(minZ)
+                              ? vertices.get(n) - finalMinZ
                               : vertices.get(n))
                   .toArray(),
               vertices.size() / 3,
