@@ -93,15 +93,18 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
     String msg =
         Objects.requireNonNullElse(
             exception.getMessage(),
-            exception.getClass().getSimpleName()
-                + " at "
-                + exception.getStackTrace()[0].toString());
+            String.format(
+                "%s at %s",
+                exception.getClass().getSimpleName(), exception.getStackTrace()[0].toString()));
     String msgCause =
-        Objects.requireNonNullElse(
-            Objects.nonNull(exception.getCause()) ? exception.getCause().getMessage() : "",
-            exception.getCause().getClass().getSimpleName()
-                + " at "
-                + exception.getCause().getStackTrace()[0].toString());
+        Objects.nonNull(exception.getCause())
+            ? Objects.nonNull(exception.getCause().getMessage())
+                ? exception.getCause().getMessage()
+                : String.format(
+                    "%s at %s",
+                    exception.getCause().getClass().getSimpleName(),
+                    exception.getCause().getStackTrace()[0].toString())
+            : "";
 
     if (exception instanceof FormatNotSupportedException) {
       return processException((FormatNotSupportedException) exception, exceptionFormat, msg);
