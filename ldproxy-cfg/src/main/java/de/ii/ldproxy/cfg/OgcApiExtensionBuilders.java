@@ -12,6 +12,7 @@ import de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfigurati
 import de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration;
 import de.ii.ogcapi.common.domain.ImmutableCommonConfiguration;
 import de.ii.ogcapi.crs.domain.ImmutableCrsConfiguration;
+import de.ii.ogcapi.crud.app.ImmutableCrudConfiguration;
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration;
 import de.ii.ogcapi.features.flatgeobuf.domain.ImmutableFlatgeobufConfiguration;
@@ -32,7 +33,6 @@ import de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration;
 import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
 import de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
-import de.ii.ogcapi.crud.app.ImmutableCrudConfiguration;
 import de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration;
 
 public interface OgcApiExtensionBuilders {

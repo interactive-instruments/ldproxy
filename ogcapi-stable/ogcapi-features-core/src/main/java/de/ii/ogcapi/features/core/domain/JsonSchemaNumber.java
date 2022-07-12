@@ -24,8 +24,7 @@ public abstract class JsonSchemaNumber extends JsonSchema {
 
   public abstract Optional<Double> getMaximum();
 
-  public abstract static class Builder extends JsonSchema.Builder {
-  }
+  public abstract static class Builder extends JsonSchema.Builder {}
 
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaNumber> FUNNEL =

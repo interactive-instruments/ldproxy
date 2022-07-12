@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.Builder;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 

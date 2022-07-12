@@ -20,6 +20,5 @@ public abstract class JsonSchemaRefV7 extends JsonSchemaRef {
     return "definitions";
   }
 
-  public abstract static class Builder extends JsonSchema.Builder {
-  }
+  public abstract static class Builder extends JsonSchema.Builder {}
 }

@@ -58,7 +58,10 @@ public abstract class JsonSchemaCache {
       cache
           .get(apiHashCode)
           .get(collectionData.getId())
-          .put(version, deriveSchema(featureSchema.accept(withScope), apiData, collectionData, schemaUri, version));
+          .put(
+              version,
+              deriveSchema(
+                  featureSchema.accept(withScope), apiData, collectionData, schemaUri, version));
     }
 
     return cache.get(apiHashCode).get(collectionData.getId()).get(version);

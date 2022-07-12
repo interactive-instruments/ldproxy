@@ -32,7 +32,9 @@ public class JacksonSubTypeIdsGeometrySimplification implements JacksonSubTypeId
         ImmutableJacksonSubType.builder()
             .superType(ExtensionConfiguration.class)
             .subType(GeometrySimplificationConfiguration.class)
-            .id(ExtensionConfiguration.getBuildingBlockIdentifier(GeometrySimplificationConfiguration.class))
+            .id(
+                ExtensionConfiguration.getBuildingBlockIdentifier(
+                    GeometrySimplificationConfiguration.class))
             .build());
   }
 }

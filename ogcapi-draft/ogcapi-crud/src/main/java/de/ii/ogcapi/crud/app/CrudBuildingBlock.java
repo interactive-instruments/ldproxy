@@ -8,9 +8,9 @@
 package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.crud.app.ImmutableCrudConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.crud.app.ImmutableCrudConfiguration.Builder;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

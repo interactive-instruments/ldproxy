@@ -30,7 +30,9 @@ public class JacksonSubTypeIdsFeaturesExtensions implements JacksonSubTypeIds {
         ImmutableJacksonSubType.builder()
             .superType(ExtensionConfiguration.class)
             .subType(FeaturesExtensionsConfiguration.class)
-            .id(ExtensionConfiguration.getBuildingBlockIdentifier(FeaturesExtensionsConfiguration.class))
+            .id(
+                ExtensionConfiguration.getBuildingBlockIdentifier(
+                    FeaturesExtensionsConfiguration.class))
             .build());
   }
 }

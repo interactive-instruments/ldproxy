@@ -9,7 +9,6 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.features.core.domain.JsonSchema.Builder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -33,8 +32,7 @@ public abstract class JsonSchemaObject extends JsonSchema {
 
   public abstract Optional<JsonSchema> getAdditionalProperties();
 
-  public abstract static class Builder extends JsonSchema.Builder {
-  }
+  public abstract static class Builder extends JsonSchema.Builder {}
 
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaObject> FUNNEL =

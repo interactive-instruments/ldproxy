@@ -43,6 +43,5 @@ public abstract class JsonSchemaRef extends JsonSchema {
   @Value.Auxiliary
   public abstract JsonSchema getDef();
 
-  public abstract static class Builder extends JsonSchema.Builder {
-  }
+  public abstract static class Builder extends JsonSchema.Builder {}
 }

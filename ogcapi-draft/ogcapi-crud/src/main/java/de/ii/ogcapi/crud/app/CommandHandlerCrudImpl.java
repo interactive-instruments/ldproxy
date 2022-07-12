@@ -116,11 +116,12 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
                       .label("GeoJSON")
                       .parameter("json")
                       .build())
-              .addAlternateMediaTypes(new ImmutableApiMediaType.Builder()
-                  .type(MediaType.TEXT_HTML_TYPE)
-                  .label("HTML")
-                  .parameter("html")
-                  .build())
+              .addAlternateMediaTypes(
+                  new ImmutableApiMediaType.Builder()
+                      .type(MediaType.TEXT_HTML_TYPE)
+                      .label("HTML")
+                      .parameter("html")
+                      .build())
               .build();
 
       Response response = queriesHandler.handle(Query.FEATURE, queryInput, requestContextGeoJson);

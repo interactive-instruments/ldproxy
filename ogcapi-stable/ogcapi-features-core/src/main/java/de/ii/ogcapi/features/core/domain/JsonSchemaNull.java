@@ -19,8 +19,7 @@ public abstract class JsonSchemaNull extends JsonSchema {
     return "null";
   }
 
-  public abstract static class Builder extends JsonSchema.Builder {
-  }
+  public abstract static class Builder extends JsonSchema.Builder {}
 
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaNull> FUNNEL =

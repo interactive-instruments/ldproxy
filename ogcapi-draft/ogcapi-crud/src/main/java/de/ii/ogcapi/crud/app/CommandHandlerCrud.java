@@ -1,3 +1,10 @@
+/*
+ * Copyright 2022 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
 package de.ii.ogcapi.crud.app;
 
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
@@ -18,15 +25,13 @@ public interface CommandHandlerCrud {
       String collectionName,
       InputStream requestBody);
 
-  Response putItemResponse(
-      QueryInputPutFeature queryInput, ApiRequestContext requestContext);
+  Response putItemResponse(QueryInputPutFeature queryInput, ApiRequestContext requestContext);
 
   Response deleteItemResponse(
       FeatureTransactions featureProvider, String collectionName, String featureId);
 
   @Value.Immutable
-  public
-  interface QueryInputPutFeature extends QueryInputFeature {
+  public interface QueryInputPutFeature extends QueryInputFeature {
 
     String getFeatureType();
 

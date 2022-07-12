@@ -53,9 +53,11 @@ public class QueriesHandlerSchemaCrud implements QueriesHandlerSchema {
     this.providers = providers;
     this.queryHandlers =
         ImmutableMap.of(
-            QueriesHandlerSchema.Query.SCHEMA, QueryHandler.with(QueriesHandlerSchema.QueryInputSchema.class, this::getSchemaResponse));
+            QueriesHandlerSchema.Query.SCHEMA,
+            QueryHandler.with(
+                QueriesHandlerSchema.QueryInputSchema.class, this::getSchemaResponse));
     this.schemaCache = new SchemaCacheReceivables(false, false, false, true);
-    //TODO: removeId=false if id!=primaryKey
+    // TODO: removeId=false if id!=primaryKey
     this.schemaCacheCreate = new SchemaCacheReceivables(true, false, false, true);
     this.schemaCacheReplace = new SchemaCacheReceivables(true, false, false, true);
     this.schemaCacheUpdate = new SchemaCacheReceivables(true, true, true, true);
@@ -63,7 +65,8 @@ public class QueriesHandlerSchemaCrud implements QueriesHandlerSchema {
 
   @Override
   public List<String> getSupportedTypes() {
-    return List.of(SCHEMA_TYPE_RECEIVABLES, SCHEMA_TYPE_CREATE, SCHEMA_TYPE_REPLACE, SCHEMA_TYPE_UPDATE);
+    return List.of(
+        SCHEMA_TYPE_RECEIVABLES, SCHEMA_TYPE_CREATE, SCHEMA_TYPE_REPLACE, SCHEMA_TYPE_UPDATE);
   }
 
   @Override
@@ -74,8 +77,9 @@ public class QueriesHandlerSchemaCrud implements QueriesHandlerSchema {
   private Response getSchemaResponse(
       QueryInputSchema queryInput, ApiRequestContext requestContext) {
 
-    //TODO: filter for PropertyTransformations that removes everything but flattening
-    // visitor for FeatureSchema that filters properties with scope=QUERIES/MUTATIONS (and removes constants)
+    // TODO: filter for PropertyTransformations that removes everything but flattening
+    // visitor for FeatureSchema that filters properties with scope=QUERIES/MUTATIONS (and removes
+    // constants)
     // apply in SchemaCacheReturnables
     // also apply in transformation pipeline to return with features with replace schema
 
@@ -95,15 +99,16 @@ public class QueriesHandlerSchemaCrud implements QueriesHandlerSchema {
       case SCHEMA_TYPE_RECEIVABLES:
         return schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri, version);
       case SCHEMA_TYPE_CREATE:
-        return schemaCacheCreate.getSchema(featureSchema, apiData, collectionData, schemaUri, version);
+        return schemaCacheCreate.getSchema(
+            featureSchema, apiData, collectionData, schemaUri, version);
       case SCHEMA_TYPE_REPLACE:
-        return schemaCacheReplace.getSchema(featureSchema, apiData, collectionData, schemaUri, version);
+        return schemaCacheReplace.getSchema(
+            featureSchema, apiData, collectionData, schemaUri, version);
       case SCHEMA_TYPE_UPDATE:
-        return schemaCacheUpdate.getSchema(featureSchema, apiData, collectionData, schemaUri, version);
+        return schemaCacheUpdate.getSchema(
+            featureSchema, apiData, collectionData, schemaUri, version);
       default:
         return null;
     }
-
-
   }
 }

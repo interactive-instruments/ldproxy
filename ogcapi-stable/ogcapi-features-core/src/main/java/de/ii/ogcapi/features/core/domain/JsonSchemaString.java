@@ -29,8 +29,7 @@ public abstract class JsonSchemaString extends JsonSchema {
   @JsonProperty("enum")
   public abstract List<String> getEnums();
 
-  public abstract static class Builder extends JsonSchema.Builder {
-  }
+  public abstract static class Builder extends JsonSchema.Builder {}
 
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaString> FUNNEL =

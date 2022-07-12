@@ -10,14 +10,10 @@ package de.ii.ogcapi.crud.app;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
-import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import de.ii.xtraplatform.features.domain.transform.WithScope;
-import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +40,7 @@ public class SchemaCacheReceivables extends JsonSchemaCache {
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
       VERSION version) {
-    
+
     SchemaDeriverReceivables schemaDeriverReceivables =
         new SchemaDeriverReceivables(
             version,
@@ -57,7 +53,6 @@ public class SchemaCacheReceivables extends JsonSchemaCache {
             allNonRequiredNullable,
             strict);
 
-    return (JsonSchemaDocument)
-        schema.accept(schemaDeriverReceivables);
+    return (JsonSchemaDocument) schema.accept(schemaDeriverReceivables);
   }
 }

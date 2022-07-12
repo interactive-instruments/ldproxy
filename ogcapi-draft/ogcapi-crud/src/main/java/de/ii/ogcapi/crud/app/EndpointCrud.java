@@ -85,7 +85,10 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   private final CommandHandlerCrud commandHandler;
 
   @Inject
-  public EndpointCrud(ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers, CommandHandlerCrud commandHandler) {
+  public EndpointCrud(
+      ExtensionRegistry extensionRegistry,
+      FeaturesCoreProviders providers,
+      CommandHandlerCrud commandHandler) {
     super(extensionRegistry);
     this.providers = providers;
     this.commandHandler = commandHandler;
@@ -120,7 +123,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/create-replace-delete",
         "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/optimistic-locking",
         "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/features"
-        //TODO
+        // TODO
         // "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/create-replace-delete/update"
         );
   }
@@ -321,13 +324,14 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                         != FeaturesCoreConfiguration.ItemType.unknown)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
-    FeatureQuery eTagQuery = ImmutableFeatureQuery.builder()
-        .type(collectionId)
-        .filter(In.of(ScalarLiteral.of(featureId)))
-        .returnsSingleFeature(true)
-        .crs(coreConfiguration.getDefaultEpsgCrs())
-        .schemaScope(Scope.MUTATIONS)
-        .build();
+    FeatureQuery eTagQuery =
+        ImmutableFeatureQuery.builder()
+            .type(collectionId)
+            .filter(In.of(ScalarLiteral.of(featureId)))
+            .returnsSingleFeature(true)
+            .crs(coreConfiguration.getDefaultEpsgCrs())
+            .schemaScope(Scope.MUTATIONS)
+            .build();
 
     QueryInputPutFeature queryInput =
         ImmutableQueryInputPutFeature.builder()
@@ -341,9 +345,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .requestBody(requestBody)
             .build();
 
-    return commandHandler.putItemResponse(
-        queryInput,
-        apiRequestContext);
+    return commandHandler.putItemResponse(queryInput, apiRequestContext);
   }
 
   @Path("/{id}/items/{featureid}")

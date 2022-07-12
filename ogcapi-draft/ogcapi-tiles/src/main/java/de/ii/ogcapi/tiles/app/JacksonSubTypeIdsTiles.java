@@ -9,8 +9,6 @@ package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;

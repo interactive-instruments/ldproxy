@@ -26,8 +26,7 @@ public abstract class JsonSchemaArray extends JsonSchema {
 
   public abstract Optional<Integer> getMaxItems();
 
-  public abstract static class Builder extends JsonSchema.Builder {
-  }
+  public abstract static class Builder extends JsonSchema.Builder {}
 
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaArray> FUNNEL =

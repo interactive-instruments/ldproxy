@@ -18,9 +18,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -98,7 +96,8 @@ public class QueryParameterSchemaFeatures extends ApiExtensionCache
         CrudConfiguration.class)) {
       return queryBuilder;
     }
-    if (parameters.containsKey(getName()) && Objects.equals(parameters.get(getName()), "receivables")) {
+    if (parameters.containsKey(getName())
+        && Objects.equals(parameters.get(getName()), "receivables")) {
       try {
         queryBuilder.schemaScope(Scope.MUTATIONS);
       } catch (NumberFormatException e) {
