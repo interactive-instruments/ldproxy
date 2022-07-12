@@ -11,15 +11,19 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputPutFeature;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
@@ -28,8 +32,13 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.cql.domain.In;
+import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.dropwizard.auth.Auth;
 import java.io.InputStream;
 import java.util.List;
@@ -42,6 +51,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.NotAllowedException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -66,7 +76,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointCrud extends EndpointSubCollection {
+public class EndpointCrud extends EndpointSubCollection implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCrud.class);
   private static final List<String> TAGS = ImmutableList.of("Mutate data");
@@ -75,11 +85,10 @@ public class EndpointCrud extends EndpointSubCollection {
   private final CommandHandlerCrud commandHandler;
 
   @Inject
-  public EndpointCrud(
-      ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
+  public EndpointCrud(ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers, CommandHandlerCrud commandHandler) {
     super(extensionRegistry);
     this.providers = providers;
-    this.commandHandler = new CommandHandlerCrud();
+    this.commandHandler = commandHandler;
   }
 
   @Override
@@ -103,6 +112,17 @@ public class EndpointCrud extends EndpointSubCollection {
             .getFeatureProvider(apiData)
             .map(FeatureProvider2::supportsTransactions)
             .orElse(false);
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of(
+        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/create-replace-delete",
+        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/optimistic-locking",
+        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/features"
+        //TODO
+        // "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/create-replace-delete/update"
+        );
   }
 
   @Override
@@ -268,32 +288,62 @@ public class EndpointCrud extends EndpointSubCollection {
         requestBody);
   }
 
-  @Path("/{id}/items/{featureid}")
+  @Path("/{collectionId}/items/{featureid}")
   @PUT
   @Consumes("application/geo+json")
   public Response putItem(
       @Auth Optional<User> optionalUser,
-      @PathParam("id") String id,
+      @PathParam("collectionId") String collectionId,
       @PathParam("featureid") final String featureId,
-      @Context OgcApi service,
+      @Context OgcApi api,
       @Context ApiRequestContext apiRequestContext,
       @Context HttpServletRequest request,
       InputStream requestBody) {
 
+    FeatureTypeConfigurationOgcApi collectionData =
+        api.getData().getCollections().get(collectionId);
+
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(
-            service.getData(), service.getData().getCollections().get(id));
+            api.getData(), api.getData().getCollections().get(collectionId));
 
     checkTransactional(featureProvider);
 
-    checkAuthorization(service.getData(), optionalUser);
+    checkAuthorization(api.getData(), optionalUser);
+
+    FeaturesCoreConfiguration coreConfiguration =
+        collectionData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .filter(ExtensionConfiguration::isEnabled)
+            .filter(
+                cfg ->
+                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
+                        != FeaturesCoreConfiguration.ItemType.unknown)
+            .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
+
+    FeatureQuery eTagQuery = ImmutableFeatureQuery.builder()
+        .type(collectionId)
+        .filter(In.of(ScalarLiteral.of(featureId)))
+        .returnsSingleFeature(true)
+        .crs(coreConfiguration.getDefaultEpsgCrs())
+        .schemaScope(Scope.MUTATIONS)
+        .build();
+
+    QueryInputPutFeature queryInput =
+        ImmutableQueryInputPutFeature.builder()
+            .from(getGenericQueryInput(api.getData()))
+            .collectionId(collectionId)
+            .featureType(coreConfiguration.getFeatureType().orElse(collectionId))
+            .featureId(featureId)
+            .query(eTagQuery)
+            .featureProvider(featureProvider)
+            .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
+            .requestBody(requestBody)
+            .build();
 
     return commandHandler.putItemResponse(
-        (FeatureTransactions) featureProvider,
-        apiRequestContext.getMediaType(),
-        id,
-        featureId,
-        requestBody);
+        queryInput,
+        apiRequestContext);
   }
 
   @Path("/{id}/items/{featureid}")
