@@ -151,7 +151,7 @@ public class EndpointEditor extends EndpointSubCollection {
         api.getData(),
         collectionId,
         api.getSpatialExtent(collectionId),
-        URI.create(request.getRequestURI()),
+        URI.create(requestContext.getUriCustomizer().toString()),
         attribution,
         requestContext.getStaticUrlPrefix(),
         htmlConfig.orElseThrow(),
