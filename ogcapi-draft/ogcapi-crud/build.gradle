@@ -2,5 +2,6 @@
 maturity = 'EXPERIMENTAL'
 
 dependencies {
+    provided project(':ogcapi-collections-schema')
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }
