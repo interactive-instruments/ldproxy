@@ -9,7 +9,9 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.Builder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -57,5 +59,21 @@ public abstract class JsonSchema {
   @Value.Auxiliary
   public boolean isRequired() {
     return false;
+  }
+
+  public abstract static class Builder {
+    public abstract Builder title(String title);
+
+    public abstract Builder title(Optional<String> title);
+
+    public abstract Builder description(String description);
+
+    public abstract Builder description(Optional<String> description);
+
+    public abstract Builder name(String name);
+
+    public abstract Builder isRequired(boolean isRequired);
+
+    public abstract JsonSchema build();
   }
 }
