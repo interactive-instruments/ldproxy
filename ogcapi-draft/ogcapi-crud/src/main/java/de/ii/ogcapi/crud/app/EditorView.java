@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ogcapi.html.domain.ImmutableMapClient.Builder;
 import de.ii.ogcapi.html.domain.ImmutableSource;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.MapClient.Popup;
@@ -85,7 +85,7 @@ public class EditorView extends OgcApiView {
 
     if (mapClientType.equals(Type.OPEN_LAYERS)) {
       this.mapClient =
-          new ImmutableMapClient.Builder()
+          new Builder()
               .backgroundUrl(
                   Optional.ofNullable(htmlConfig.getLeafletUrl())
                       .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
@@ -95,7 +95,11 @@ public class EditorView extends OgcApiView {
               .data(
                   new ImmutableSource.Builder()
                       .type(TYPE.geojson)
-                      .url(uriBuilder.cutPathAfterSegments("v1").clearParameters().toString())
+                      .url(
+                          uriBuilder
+                              .cutPathAfterSegments(apiData.getSubPath().toArray(String[]::new))
+                              .clearParameters()
+                              .toString())
                       .putLayers(collectionId, List.of(collectionId))
                       .build())
               .popup(Popup.HOVER_ID)
