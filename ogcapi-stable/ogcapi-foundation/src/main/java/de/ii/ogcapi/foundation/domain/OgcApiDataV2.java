@@ -10,6 +10,7 @@ package de.ii.ogcapi.foundation.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.docs.DocFile;
 import de.ii.xtraplatform.docs.DocStep;
@@ -156,6 +157,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
   public abstract Optional<ExternalDocumentation> getExternalDocs();
 
+  @JsonMerge(OptBoolean.FALSE)
   public abstract Optional<CollectionExtent> getDefaultExtent();
 
   public abstract Optional<Caching> getDefaultCaching();
