@@ -50,6 +50,7 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
@@ -81,6 +82,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
   private static final Splitter ARRAY_SPLITTER = Splitter.on(',').trimResults();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesQueryImpl.class);
+  private static final double BUFFER_DEGREE = 0.00001;
+  private static final double BUFFER_METRE = 10.0;
 
   private final ExtensionRegistry extensionRegistry;
   private final CrsTransformerFactory crsTransformerFactory;
@@ -252,12 +255,32 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       } else {
         queryValidationInput = QueryValidationInputCoordinates.none();
       }
+      // We are using the spatial extent of the data to avoid
+      // coordinate transformation errors when a bbox parameter
+      // is completely outside of the domain of a projected CRS
+      // in which the data is stored. Using the minimal bounding
+      // box can lead to surprising results in particular with
+      // point features and queries in other CRSs where features
+      // on the boundary of the spatial extent are suddenly no
+      // longer included in the result. For the purpose of the
+      // filter, we do not need the minimal bounding rectangle,
+      // but we can use a small buffer to avoid those issues.
+      EpsgCrs bboxCrs =
+          parameters.containsKey("bbox-crs")
+              ? EpsgCrs.fromString(parameters.get("bbox-crs"))
+              : OgcCrs.CRS84;
+      double buffer = getBuffer(bboxCrs);
       Optional<BoundingBox> spatialExtentForBboxParameter =
-          api.getSpatialExtent(
-              collectionId,
-              parameters.containsKey("bbox-crs")
-                  ? EpsgCrs.fromString(parameters.get("bbox-crs"))
-                  : OgcCrs.CRS84);
+          api.getSpatialExtent(collectionId, bboxCrs)
+              .map(
+                  bbox ->
+                      new ImmutableBoundingBox.Builder()
+                          .from(bbox)
+                          .xmin(bbox.getXmin() - buffer)
+                          .xmax(bbox.getXmax() + buffer)
+                          .ymin(bbox.getYmin() - buffer)
+                          .ymax(bbox.getYmax() + buffer)
+                          .build());
       Optional<Cql2Expression> cql =
           getCQLFromFilters(
               filters,
@@ -278,6 +301,15 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     }
 
     return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
+  }
+
+  private double getBuffer(EpsgCrs crs) {
+    List<Unit<?>> units = crsInfo.getAxisUnits(crs);
+    if (!units.isEmpty()) {
+      return Units.METRE.equals(units.get(0)) ? BUFFER_METRE : BUFFER_DEGREE;
+    }
+    // fallback to meters
+    return BUFFER_METRE;
   }
 
   public FeatureQuery requestToBareFeatureQuery(
