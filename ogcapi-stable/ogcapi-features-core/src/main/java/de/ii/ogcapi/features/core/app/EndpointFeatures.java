@@ -48,6 +48,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import de.ii.xtraplatform.web.domain.ETag.Type;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
 import java.text.MessageFormat;
@@ -609,7 +610,8 @@ public class EndpointFeatures extends EndpointSubCollection {
             coreConfiguration.getCoordinatePrecision(),
             toFlatMap(uriInfo.getQueryParameters()),
             allowedParameters,
-            featureId);
+            featureId,
+            Optional.of(Type.STRONG));
 
     ImmutableQueryInputFeature.Builder queryInputBuilder =
         new ImmutableQueryInputFeature.Builder()

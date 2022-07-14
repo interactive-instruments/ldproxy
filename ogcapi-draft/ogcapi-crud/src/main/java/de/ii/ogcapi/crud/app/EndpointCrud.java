@@ -40,6 +40,7 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.web.domain.ETag.Type;
 import io.dropwizard.auth.Auth;
 import java.io.InputStream;
 import java.util.List;
@@ -325,20 +326,23 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                         != FeaturesCoreConfiguration.ItemType.unknown)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
+    String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
+
     FeatureQuery eTagQuery =
         ImmutableFeatureQuery.builder()
-            .type(collectionId)
+            .type(featureType)
             .filter(In.of(ScalarLiteral.of(featureId)))
             .returnsSingleFeature(true)
             .crs(coreConfiguration.getDefaultEpsgCrs())
             .schemaScope(Scope.MUTATIONS)
+            .eTag(Type.STRONG)
             .build();
 
     QueryInputPutFeature queryInput =
         ImmutableQueryInputPutFeature.builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
-            .featureType(coreConfiguration.getFeatureType().orElse(collectionId))
+            .featureType(featureType)
             .featureId(featureId)
             .query(eTagQuery)
             .featureProvider(featureProvider)
