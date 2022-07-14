@@ -58,6 +58,7 @@ import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -112,7 +113,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       Map<String, Integer> coordinatePrecision,
       Map<String, String> parameters,
       List<OgcApiQueryParameter> allowedParameters,
-      String featureId) {
+      String featureId,
+      Optional<ETag.Type> withEtag) {
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
       parameters = parameter.transformParameters(collectionData, parameters, apiData);
@@ -134,7 +136,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .type(featureTypeId)
             .filter(filter)
             .returnsSingleFeature(true)
-            .crs(defaultCrs);
+            .crs(defaultCrs)
+            .eTag(withEtag);
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
       parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);

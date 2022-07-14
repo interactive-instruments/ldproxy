@@ -9,6 +9,7 @@ package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputPutFeature;
@@ -39,6 +40,7 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.web.domain.ETag.Type;
 import io.dropwizard.auth.Auth;
 import java.io.InputStream;
 import java.util.List;
@@ -250,7 +252,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.DELETE,
-                requestContent,
+                ImmutableMap.of(),
                 queryParameters,
                 headers,
                 operationSummary,
@@ -324,20 +326,23 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                         != FeaturesCoreConfiguration.ItemType.unknown)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
+    String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
+
     FeatureQuery eTagQuery =
         ImmutableFeatureQuery.builder()
-            .type(collectionId)
+            .type(featureType)
             .filter(In.of(ScalarLiteral.of(featureId)))
             .returnsSingleFeature(true)
             .crs(coreConfiguration.getDefaultEpsgCrs())
             .schemaScope(Scope.MUTATIONS)
+            .eTag(Type.STRONG)
             .build();
 
     QueryInputPutFeature queryInput =
         ImmutableQueryInputPutFeature.builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
-            .featureType(coreConfiguration.getFeatureType().orElse(collectionId))
+            .featureType(featureType)
             .featureId(featureId)
             .query(eTagQuery)
             .featureProvider(featureProvider)
