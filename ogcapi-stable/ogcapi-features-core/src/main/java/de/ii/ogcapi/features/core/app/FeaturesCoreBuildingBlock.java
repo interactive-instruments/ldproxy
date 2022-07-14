@@ -128,24 +128,18 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
               final String collectionId = entry.getKey();
               final Optional<CollectionExtent> optionalExtent = apiData.getExtent(collectionId);
 
-              Optional<BoundingBox> optionalBoundingBox;
-              if (optionalExtent.isEmpty()
-                  || optionalExtent.get().getSpatialComputed().orElse(true)) {
-                optionalBoundingBox = computeBbox(apiData, collectionId);
-              } else {
-                optionalBoundingBox = optionalExtent.get().getSpatial();
-              }
-              optionalBoundingBox.ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
+              optionalExtent
+                  .flatMap(
+                      extent -> extent.isSpatialComputed() ? Optional.empty() : extent.getSpatial())
+                  .or(() -> computeBbox(apiData, collectionId))
+                  .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
 
-              Optional<TemporalExtent> optionalTemporalExtent;
-              if (optionalExtent.isEmpty()
-                  || optionalExtent.get().getTemporalComputed().orElse(true)) {
-                optionalTemporalExtent = computeInterval(apiData, collectionId);
-              } else {
-                optionalTemporalExtent = optionalExtent.get().getTemporal();
-              }
-              optionalTemporalExtent.ifPresent(
-                  interval -> api.updateTemporalExtent(collectionId, interval));
+              optionalExtent
+                  .flatMap(
+                      extent ->
+                          extent.isTemporalComputed() ? Optional.empty() : extent.getTemporal())
+                  .or(() -> computeInterval(apiData, collectionId))
+                  .ifPresent(interval -> api.updateTemporalExtent(collectionId, interval));
 
               final FeatureTypeConfigurationOgcApi collectionData =
                   apiData.getCollections().get(collectionId);
@@ -240,9 +234,13 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
         providers.getFeatureProvider(apiData, collectionData);
 
     if (featureProvider.map(FeatureProvider2::supportsExtents).orElse(false)) {
+      String featureType =
+          collectionData
+              .getExtension(FeaturesCoreConfiguration.class)
+              .flatMap(FeaturesCoreConfiguration::getFeatureType)
+              .orElse(collectionId);
       Optional<BoundingBox> spatialExtent =
-          featureProvider.get().extents().getSpatialExtent(collectionId);
-
+          featureProvider.get().extents().getSpatialExtent(featureType);
       if (spatialExtent.isPresent()) {
 
         BoundingBox boundingBox = spatialExtent.get();
