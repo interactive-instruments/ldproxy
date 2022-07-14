@@ -8,6 +8,7 @@
 package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.Query;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -17,15 +18,23 @@ import de.ii.ogcapi.foundation.domain.ImmutableRequestContext;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.features.domain.FeatureChange;
+import de.ii.xtraplatform.features.domain.FeatureChange.Action;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureChange;
+import de.ii.xtraplatform.features.domain.Tuple;
 import de.ii.xtraplatform.features.json.domain.FeatureTokenDecoderGeoJson;
 import de.ii.xtraplatform.streams.domain.Reactive.Source;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.EntityTag;
@@ -33,6 +42,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.extra.Interval;
 
 @Singleton
 @AutoBind
@@ -75,6 +85,16 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
       // ignore
     }
 
+    if (featureProvider instanceof FeatureProvider2) {
+      handleChange(
+          (FeatureProvider2) featureProvider,
+          collectionName,
+          ids,
+          result.getSpatialExtent(),
+          convertTemporalExtent(result.getTemporalExtent()),
+          Action.CREATE);
+    }
+
     return Response.created(firstFeature).build();
   }
 
@@ -100,10 +120,19 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     result.getError().ifPresent(QueriesHandler::processStreamError);
 
+    handleChange(
+        queryInput.getFeatureProvider(),
+        queryInput.getCollectionId(),
+        result.getIds(),
+        result.getSpatialExtent(),
+        convertTemporalExtent(result.getTemporalExtent()),
+        Action.UPDATE);
+
     return Response.noContent().build();
   }
 
   private EntityTag getETag(QueryInputPutFeature queryInput, ApiRequestContext requestContext) {
+    // TODO update
     try {
       ImmutableRequestContext requestContextGeoJson =
           new Builder()
@@ -136,12 +165,56 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   public Response deleteItemResponse(
       FeatureTransactions featureProvider, String collectionName, String featureId) {
 
+    // TODO indicate whether a feature has been deleted or not (otherwise feature counts will become
+    // incorrect)
     FeatureTransactions.MutationResult result =
         featureProvider.deleteFeature(collectionName, featureId);
 
     result.getError().ifPresent(QueriesHandler::processStreamError);
 
+    if (featureProvider instanceof FeatureProvider2) {
+      handleChange(
+          (FeatureProvider2) featureProvider,
+          collectionName,
+          ImmutableList.of(featureId),
+          result.getSpatialExtent(),
+          convertTemporalExtent(result.getTemporalExtent()),
+          Action.DELETE);
+    }
+
     return Response.noContent().build();
+  }
+
+  private void handleChange(
+      FeatureProvider2 featureProvider,
+      String collectionId,
+      List<String> ids,
+      Optional<BoundingBox> bbox,
+      Optional<Interval> interval,
+      Action action) {
+    FeatureChange change =
+        ImmutableFeatureChange.builder()
+            .action(action)
+            .featureType(collectionId)
+            .featureIds(ids)
+            .boundingBox(bbox)
+            .interval(interval)
+            .build();
+    featureProvider.getFeatureChangeHandler().handle(change);
+  }
+
+  private Optional<Interval> convertTemporalExtent(Optional<Tuple<Long, Long>> interval) {
+    if (interval.isEmpty()) {
+      return Optional.empty();
+    }
+
+    Long begin = interval.get().first();
+    Long end = interval.get().second();
+
+    Instant beginInstant = Objects.nonNull(begin) ? Instant.ofEpochMilli(begin) : Instant.MIN;
+    Instant endInstant = Objects.nonNull(end) ? Instant.ofEpochMilli(end) : Instant.MAX;
+
+    return Optional.of(Interval.of(beginInstant, endInstant));
   }
 
   // TODO: to InputFormat extension matching the mediaType
