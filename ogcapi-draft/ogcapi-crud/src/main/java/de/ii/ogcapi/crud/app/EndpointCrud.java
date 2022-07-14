@@ -9,6 +9,7 @@ package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputPutFeature;
@@ -250,7 +251,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.DELETE,
-                requestContent,
+                ImmutableMap.of(),
                 queryParameters,
                 headers,
                 operationSummary,
