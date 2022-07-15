@@ -58,8 +58,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
       context.encoding().getJson().writeEndObject();
     } else {
 
-      // no properties, write null member
-      context.encoding().getJson().writeNullField(getPropertiesFieldName());
+      // no properties, write empty object
+      context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
+      context.encoding().getJson().writeEndObject();
     }
 
     next.accept(context);
