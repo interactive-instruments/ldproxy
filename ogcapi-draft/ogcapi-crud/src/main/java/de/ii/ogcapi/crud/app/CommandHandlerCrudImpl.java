@@ -9,12 +9,14 @@ package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.Query;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableRequestContext;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -35,6 +37,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.EntityTag;
@@ -51,10 +54,14 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   private static final Logger LOGGER = LoggerFactory.getLogger(CommandHandlerCrudImpl.class);
 
   private final FeaturesCoreQueriesHandler queriesHandler;
+  private final ExtensionRegistry extensionRegistry;
+  private List<? extends FormatExtension> formats;
 
   @Inject
-  public CommandHandlerCrudImpl(FeaturesCoreQueriesHandler queriesHandler) {
+  public CommandHandlerCrudImpl(
+      FeaturesCoreQueriesHandler queriesHandler, ExtensionRegistry extensionRegistry) {
     this.queriesHandler = queriesHandler;
+    this.extensionRegistry = extensionRegistry;
   }
 
   @Override
@@ -132,9 +139,12 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   }
 
   private EntityTag getETag(QueryInputPutFeature queryInput, ApiRequestContext requestContext) {
-    // TODO update
     try {
-      ImmutableRequestContext requestContextGeoJson =
+      if (formats == null) {
+        formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
+      }
+
+      ApiRequestContext requestContextGeoJson =
           new Builder()
               .from(requestContext)
               .requestUri(
@@ -145,12 +155,16 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
                       .label("GeoJSON")
                       .parameter("json")
                       .build())
-              .addAlternateMediaTypes(
-                  new ImmutableApiMediaType.Builder()
-                      .type(MediaType.TEXT_HTML_TYPE)
-                      .label("HTML")
-                      .parameter("html")
-                      .build())
+              .alternateMediaTypes(
+                  formats.stream()
+                      .filter(
+                          f ->
+                              f.isEnabledForApi(
+                                  requestContext.getApi().getData(), queryInput.getCollectionId()))
+                      .map(FormatExtension::getMediaType)
+                      .filter(
+                          mediaType -> !"geo+json".equalsIgnoreCase(mediaType.type().getSubtype()))
+                      .collect(Collectors.toUnmodifiableSet()))
               .build();
 
       Response response = queriesHandler.handle(Query.FEATURE, queryInput, requestContextGeoJson);

@@ -16,6 +16,7 @@ import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputPutFeature;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -33,13 +34,9 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.cql.domain.In;
-import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.web.domain.ETag.Type;
 import io.dropwizard.auth.Auth;
 import java.io.InputStream;
@@ -85,15 +82,18 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
   private final FeaturesCoreProviders providers;
   private final CommandHandlerCrud commandHandler;
+  private final FeaturesQuery ogcApiFeaturesQuery;
 
   @Inject
   public EndpointCrud(
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
-      CommandHandlerCrud commandHandler) {
+      CommandHandlerCrud commandHandler,
+      FeaturesQuery ogcApiFeaturesQuery) {
     super(extensionRegistry);
     this.providers = providers;
     this.commandHandler = commandHandler;
+    this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
   }
 
   @Override
@@ -329,14 +329,15 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
 
     FeatureQuery eTagQuery =
-        ImmutableFeatureQuery.builder()
-            .type(featureType)
-            .filter(In.of(ScalarLiteral.of(featureId)))
-            .returnsSingleFeature(true)
-            .crs(coreConfiguration.getDefaultEpsgCrs())
-            .schemaScope(Scope.MUTATIONS)
-            .eTag(Type.STRONG)
-            .build();
+        ogcApiFeaturesQuery.requestToFeatureQuery(
+            api.getData(),
+            collectionData,
+            coreConfiguration.getDefaultEpsgCrs(),
+            coreConfiguration.getCoordinatePrecision(),
+            ImmutableMap.of(),
+            ImmutableList.of(),
+            featureId,
+            Optional.of(Type.STRONG));
 
     QueryInputPutFeature queryInput =
         ImmutableQueryInputPutFeature.builder()
