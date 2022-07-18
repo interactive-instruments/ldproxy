@@ -205,7 +205,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
           getCollectionId(api.getData().getCollections().values(), change.getFeatureType());
       switch (change.getAction()) {
         case CREATE:
-          api.updateItemCount(collectionId, 1L);
+          api.updateItemCount(collectionId, (long) change.getFeatureIds().size());
           change.getBoundingBox().ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
           change
               .getInterval()
@@ -220,7 +220,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
                   interval -> api.updateTemporalExtent(collectionId, TemporalExtent.of(interval)));
           break;
         case DELETE:
-          api.updateItemCount(collectionId, -1L);
+          api.updateItemCount(collectionId, (long) -change.getFeatureIds().size());
           break;
       }
       api.updateLastModified(collectionId, change.getModified());

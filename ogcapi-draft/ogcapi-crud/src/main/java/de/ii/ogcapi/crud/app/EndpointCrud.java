@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureCreate;
+import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureDelete;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureReplace;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -41,7 +42,6 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
-import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import de.ii.xtraplatform.web.domain.ETag.Type;
@@ -329,13 +329,13 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return commandHandler.postItemsResponse(queryInput, apiRequestContext);
   }
 
-  @Path("/{collectionId}/items/{featureid}")
+  @Path("/{collectionId}/items/{featureId}")
   @PUT
   @Consumes("application/geo+json")
   public Response putItem(
       @Auth Optional<User> optionalUser,
       @PathParam("collectionId") String collectionId,
-      @PathParam("featureid") final String featureId,
+      @PathParam("featureId") final String featureId,
       @HeaderParam("Content-Crs") String crs,
       @Context OgcApi api,
       @Context ApiRequestContext apiRequestContext,
@@ -364,6 +364,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
 
+    // TODO Decide after the open issues for "optimistic locking" have been resolved by the OGC SWG.
+    //      In general, it would be safer to use FeaturesQuery to generate the query, but it seems
+    //      likely that eventually Last-Modified will be used for validation, not ETag.
     Builder eTagQueryBuilder =
         ImmutableFeatureQuery.builder()
             .type(featureType)
@@ -396,23 +399,31 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return commandHandler.putItemResponse(queryInput, apiRequestContext);
   }
 
-  @Path("/{id}/items/{featureid}")
+  @Path("/{collectionId}/items/{featureId}")
   @DELETE
   public Response deleteItem(
       @Auth Optional<User> optionalUser,
-      @Context OgcApi service,
-      @PathParam("id") String id,
-      @PathParam("featureid") final String featureId) {
+      @Context OgcApi api,
+      @Context ApiRequestContext apiRequestContext,
+      @PathParam("collectionId") String collectionId,
+      @PathParam("featureId") final String featureId) {
 
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(
-            service.getData(), service.getData().getCollections().get(id));
+            api.getData(), api.getData().getCollections().get(collectionId));
 
     checkTransactional(featureProvider);
 
-    checkAuthorization(service.getData(), optionalUser);
+    checkAuthorization(api.getData(), optionalUser);
 
-    return commandHandler.deleteItemResponse((FeatureTransactions) featureProvider, id, featureId);
+    QueryInputFeatureDelete queryInput =
+        ImmutableQueryInputFeatureDelete.builder()
+            .featureProvider(featureProvider)
+            .collectionId(collectionId)
+            .featureId(featureId)
+            .build();
+
+    return commandHandler.deleteItemResponse(queryInput, apiRequestContext);
   }
 
   private void checkTransactional(FeatureProvider2 featureProvider) {
