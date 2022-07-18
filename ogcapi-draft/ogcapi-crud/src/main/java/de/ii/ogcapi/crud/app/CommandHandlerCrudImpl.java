@@ -19,8 +19,8 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureChange;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -66,17 +66,18 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   @Override
   public Response postItemsResponse(
-      FeatureTransactions featureProvider,
-      ApiMediaType mediaType,
-      URICustomizer uriCustomizer,
-      String collectionName,
-      InputStream requestBody) {
+      QueryInputFeatureCreate queryInput, ApiRequestContext requestContext) {
 
-    FeatureTokenSource featureTokenSource = getFeatureSource(mediaType, requestBody);
+    EpsgCrs crs = queryInput.getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    // TODO: collectionName != featureType
+    FeatureTokenSource featureTokenSource =
+        getFeatureSource(requestContext.getMediaType(), queryInput.getRequestBody());
+
     FeatureTransactions.MutationResult result =
-        featureProvider.createFeatures(collectionName, featureTokenSource);
+        queryInput
+            .getFeatureProvider()
+            .transactions()
+            .createFeatures(queryInput.getFeatureType(), featureTokenSource, crs);
 
     result.getError().ifPresent(QueriesHandler::processStreamError);
 
@@ -87,29 +88,30 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     }
     URI firstFeature = null;
     try {
-      firstFeature = uriCustomizer.copy().ensureLastPathSegment(ids.get(0)).build();
+      firstFeature =
+          requestContext.getUriCustomizer().copy().ensureLastPathSegment(ids.get(0)).build();
     } catch (URISyntaxException e) {
       // ignore
     }
 
-    if (featureProvider instanceof FeatureProvider2) {
-      handleChange(
-          (FeatureProvider2) featureProvider,
-          collectionName,
-          ids,
-          result.getSpatialExtent(),
-          convertTemporalExtent(result.getTemporalExtent()),
-          Action.CREATE);
-    }
+    handleChange(
+        queryInput.getFeatureProvider(),
+        queryInput.getCollectionId(),
+        ids,
+        result.getSpatialExtent(),
+        convertTemporalExtent(result.getTemporalExtent()),
+        Action.CREATE);
 
     return Response.created(firstFeature).build();
   }
 
   @Override
   public Response putItemResponse(
-      QueryInputPutFeature queryInput, ApiRequestContext requestContext) {
+      QueryInputFeatureReplace queryInput, ApiRequestContext requestContext) {
 
-    EntityTag eTag = getETag(queryInput, requestContext);
+    EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
+
+    EntityTag eTag = getETag(queryInput, requestContext, crs);
 
     Response.ResponseBuilder response =
         queriesHandler.evaluatePreconditions(requestContext, null, eTag);
@@ -123,7 +125,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
             .getFeatureProvider()
             .transactions()
             .updateFeature(
-                queryInput.getFeatureType(), queryInput.getFeatureId(), featureTokenSource);
+                queryInput.getFeatureType(), queryInput.getFeatureId(), featureTokenSource, crs);
 
     result.getError().ifPresent(QueriesHandler::processStreamError);
 
@@ -138,7 +140,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     return Response.noContent().build();
   }
 
-  private EntityTag getETag(QueryInputPutFeature queryInput, ApiRequestContext requestContext) {
+  private EntityTag getETag(
+      QueryInputFeatureReplace queryInput, ApiRequestContext requestContext, EpsgCrs crs) {
     try {
       if (formats == null) {
         formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
@@ -148,7 +151,11 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
           new Builder()
               .from(requestContext)
               .requestUri(
-                  requestContext.getUriCustomizer().addParameter("schema", "receivables").build())
+                  requestContext
+                      .getUriCustomizer()
+                      .addParameter("schema", "receivables")
+                      .addParameter("crs", crs.toUriString())
+                      .build())
               .mediaType(
                   new ImmutableApiMediaType.Builder()
                       .type(new MediaType("application", "geo+json"))
