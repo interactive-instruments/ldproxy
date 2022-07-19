@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html style="font-size: small;">
+<html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -17,11 +17,10 @@
       rel="stylesheet"
       href="https://openlayers.org/en/v6.14.1/css/ol.css"
   />
-  <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="{{urlPrefix}}/ogcapi-crud/assets/style.89c397b4.css" rel="stylesheet">
 </head>
 
-<body class="h-screen" style="font-size: small;">
+<body style="height: 100vh;">
 
 <div id="map" class="w-full h-full">
 </div>
@@ -29,191 +28,21 @@
 {{> mapClient2}}
 
 <script src="https://openlayers.org/en/v6.14.1/build/ol.js"></script>
-<script src="{{urlPrefix}}/ogcapi-crud/assets/ol-ogc-api-crud-40933f2a.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.min.js"></script>
+<script src="{{urlPrefix}}/ogcapi-crud/assets/ol-ogc-api-crud.9987bc65.umd.js"></script>
 
 <script type="text/javascript">
 
-const styles = {
-  Point: new ol.style.Style({
-    image: new ol.style.Circle({
-      radius: 5,
-      fill: new ol.style.Fill({
-        color: "red",
-      }),
-    }),
-  }),
-  LineString: [
-    new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color: "red",
-        width: 2,
-      }),
-    }),
-    new ol.style.Style({
-      image: new ol.style.Circle({
-        radius: 5,
-        fill: new ol.style.Fill({
-          color: "red",
-        }),
-      }),
-      geometry: function (feature) {
-        // return the coordinates of the first ring of each polygon
-        const coordinates = feature
-          .getGeometry()
-          .getCoordinates()
-          .reduce((prev, curr) => prev.concat(curr), []);
-        return new ol.geom.MultiPoint(coordinates);
-      },
-    }),
-  ],
-  MultiLineString: new ol.style.Style({
-    stroke: new ol.style.Stroke({
-      color: "red",
-      width: 2,
-    }),
-  }),
-  MultiPoint: new ol.style.Style({
-    image: new ol.style.Circle({
-      radius: 5,
-      fill: null,
-      stroke: new ol.style.Stroke({ color: "red", width: 1 }),
-    }),
-  }),
-  MultiPolygon: [
-    new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color: "red",
-        lineDash: [5],
-        width: 3,
-      }),
-      fill: new ol.style.Fill({
-        color: "rgba(255, 0, 0, 0.5)",
-      }),
-    }),
-    new ol.style.Style({
-      image: new ol.style.Circle({
-        radius: 5,
-        fill: new ol.style.Fill({
-          color: "red",
-        }),
-      }),
-      geometry: function (feature) {
-        // return the coordinates of the first ring of each polygon
-        const coordinates = feature
-          .getGeometry()
-          .getCoordinates()
-          .reduce((prev, curr) => prev.concat(curr[0]), []);
-        return new ol.geom.MultiPoint(coordinates);
-      },
-    }),
-  ],
-  Polygon: [
-    new ol.style.Style({
-      stroke: new ol.style.Stroke({
-        color: "red",
-        lineDash: [5],
-        width: 3,
-      }),
-      fill: new ol.style.Fill({
-        color: "rgba(255, 0, 0, 0.5)",
-      }),
-    }),
-    new ol.style.Style({
-      image: new ol.style.Circle({
-        radius: 5,
-        fill: new ol.style.Fill({
-          color: "red",
-        }),
-      }),
-      geometry: function (feature) {
-        // return the coordinates of the first ring of each polygon
-        const coordinates = feature
-          .getGeometry()
-          .getCoordinates()
-          .reduce((prev, curr) => prev.concat(curr[0]), []);
-        return new ol.geom.MultiPoint(coordinates);
-      },
-    }),
-  ],
-  GeometryCollection: new ol.style.Style({
-    stroke: new ol.style.Stroke({
-      color: "magenta",
-      width: 2,
-    }),
-    fill: new ol.style.Fill({
-      color: "magenta",
-    }),
-    image: new ol.style.Circle({
-      radius: 10,
-      fill: null,
-      stroke: new ol.style.Stroke({
-        color: "magenta",
-      }),
-    }),
-  }),
-  Circle: new ol.style.Style({
-    stroke: new ol.style.Stroke({
-      color: "red",
-      width: 2,
-    }),
-    fill: new ol.style.Fill({
-      color: "rgba(255,0,0,0.2)",
-    }),
-  }),
-};
-
-const styleFunction = (feature) => {
-  return styles[feature.getGeometry().getType()];
-};
+proj4.defs(
+  "EPSG:25832",
+  "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+);
+ol.proj.proj4.register(proj4);
+ol.proj.get("EPSG:25832").setExtent([
+  -46133.17, 5048875.268576, 1206211.101424, 6301219.54,
+]);
 
 const collectionId = Object.keys(globalThis._map.dataLayers)[0];
-
-const crs84 = new ol.proj.Projection({
-      code: "EPSG:4326",
-      axisOrientation: "neu",
-    });
-
-const vectorSource = new ol.source.Vector({
-  format: new ol.format.GeoJSON({
-    dataProjection: crs84,
-  }),
-  loader: function (extent, resolution, projection, onSuccess, onError) {
-    const url =
-      `${globalThis._map.dataUrl}/collections/${collectionId}/items` +
-      "?f=json&limit=1000&" +
-      "bbox=" +
-      extent[0] +
-      "," +
-      extent[1] +
-      "," +
-      extent[2] +
-      "," +
-      extent[3] +
-      "&bbox-crs=" +
-      encodeURIComponent("http://www.opengis.net/def/crs/EPSG/0/3857");
-
-    fetch(url).then((response) => {
-      return response.ok
-        ? response.json().then((json) => {
-            var features = vectorSource
-              .getFormat()
-              .readFeatures(json, { featureProjection: "EPSG:3857" });
-            vectorSource.addFeatures(features);
-            onSuccess(features);
-          })
-        : response
-            .text()
-            .then((text) =>
-              onError(`${response.status} ${response.statusText} - ${text}`)
-            );
-    });
-  },
-  strategy: ol.loadingstrategy.tile(
-    ol.tilegrid.createXYZ({
-      tileSize: 512,
-    })
-  ),
-});
 
 const backgroundUrl = globalThis._map.backgroundUrl.indexOf("{s}")
     ? globalThis._map.backgroundUrl.replace(/\{s\}/, "{a-c}")
@@ -228,23 +57,28 @@ var map = new ol.Map({
         url: `${backgroundUrl}`,
       }),
     }),
-    new ol.layer.Vector({
-      source: vectorSource,
-      properties: { sourceId: collectionId },
-      sourceId: collectionId,
-    }),
   ],
   view: new ol.View({
-    center: ol.proj.transform(ol.extent.getCenter(globalThis._map.bounds.flat(1)), "EPSG:4326", "EPSG:3857"),
-    zoom: 8,
+    center: ol.proj.transform(ol.extent.getCenter(globalThis._map.bounds.flat(1)), "EPSG:4326", "EPSG:25832"),
+    zoom: 4,
+    projection: "EPSG:25832",
   }),
 });
 
-var ogcApiEditor = new OgcApiEditor({
-  baseUrl: globalThis._map.dataUrl,
-  collections: { [collectionId]: { id: collectionId } },
-  styleFunction,
-  vectorSource,
+const ogcApiEditor = new OgcApiEditor({
+  api: {
+    url: globalThis._map.dataUrl,
+    collections: [collectionId],
+    crs: "http://www.opengis.net/def/crs/EPSG/0/25832",
+  },
+  tools: {
+    create: true,
+    edit: true,
+    position: {
+      top: "5rem",
+      left: "0.5rem",
+    },
+  },
 });
 ogcApiEditor.addToMap(map);
 
