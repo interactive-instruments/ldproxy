@@ -95,11 +95,7 @@ public class EditorView extends OgcApiView {
               .data(
                   new ImmutableSource.Builder()
                       .type(TYPE.geojson)
-                      .url(
-                          uriBuilder
-                              .cutPathAfterSegments(apiData.getSubPath().toArray(String[]::new))
-                              .clearParameters()
-                              .toString())
+                      .url(uriBuilder.removeLastPathSegments(3).clearParameters().toString())
                       .putLayers(collectionId, List.of(collectionId))
                       .build())
               .popup(Popup.HOVER_ID)
