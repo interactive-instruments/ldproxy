@@ -206,14 +206,20 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
       switch (change.getAction()) {
         case CREATE:
           api.updateItemCount(collectionId, (long) change.getFeatureIds().size());
-          change.getBoundingBox().ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
+          change
+              .getBoundingBox()
+              .flatMap(this::transformToCrs84)
+              .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
           change
               .getInterval()
               .ifPresent(
                   interval -> api.updateTemporalExtent(collectionId, TemporalExtent.of(interval)));
           break;
         case UPDATE:
-          change.getBoundingBox().ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
+          change
+              .getBoundingBox()
+              .flatMap(this::transformToCrs84)
+              .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
           change
               .getInterval()
               .ifPresent(
@@ -225,6 +231,24 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
       }
       api.updateLastModified(collectionId, change.getModified());
     };
+  }
+
+  private Optional<BoundingBox> transformToCrs84(BoundingBox boundingBox) {
+    if (!boundingBox.getEpsgCrs().equals(OgcCrs.CRS84)) {
+      Optional<CrsTransformer> transformer =
+          crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
+      if (transformer.isPresent()) {
+        try {
+          return Optional.ofNullable(transformer.get().transformBoundingBox(boundingBox));
+        } catch (CrsTransformationException e) {
+          LOGGER.error(
+              "Error while transforming the spatial extent of a feature to CRS84: {}",
+              e.getMessage());
+        }
+      }
+      return Optional.empty();
+    }
+    return Optional.ofNullable(boundingBox);
   }
 
   private Optional<BoundingBox> computeBbox(OgcApiDataV2 apiData, String collectionId) {
