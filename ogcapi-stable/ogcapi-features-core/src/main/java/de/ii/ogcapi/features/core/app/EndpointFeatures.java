@@ -24,6 +24,7 @@ import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -358,6 +359,8 @@ public class EndpointFeatures extends EndpointSubCollection {
         Stream<OgcApiQueryParameter> queryParameters =
             allQueryParameters.stream()
                 .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
+        List<ApiHeader> headers =
+            getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.GET);
 
         generateCollectionDefinition(
             apiData,
@@ -366,6 +369,7 @@ public class EndpointFeatures extends EndpointSubCollection {
             path,
             pathParameters,
             queryParameters,
+            headers,
             collectionId,
             summary,
             description,
@@ -381,6 +385,7 @@ public class EndpointFeatures extends EndpointSubCollection {
     } else {
       Optional<String> representativeCollectionId = getRepresentativeCollectionId(apiData);
       Stream<OgcApiQueryParameter> queryParameters = allQueryParameters.stream();
+      List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, null, HttpMethods.GET);
 
       if (representativeCollectionId.isPresent()) {
         String collectionId = representativeCollectionId.get();
@@ -396,6 +401,7 @@ public class EndpointFeatures extends EndpointSubCollection {
           path,
           pathParameters,
           queryParameters,
+          headers,
           "{collectionId}",
           summary,
           description,
@@ -410,6 +416,7 @@ public class EndpointFeatures extends EndpointSubCollection {
       String path,
       List<OgcApiPathParameter> pathParameters,
       Stream<OgcApiQueryParameter> queryParameters,
+      List<ApiHeader> headers,
       String collectionId,
       String summary,
       String description,
@@ -434,7 +441,7 @@ public class EndpointFeatures extends EndpointSubCollection {
             resourcePath,
             false,
             queryParameters1,
-            ImmutableList.of(),
+            headers,
             responseContent,
             operationSummary,
             operationDescription,
