@@ -11,7 +11,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFe
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import java.io.InputStream;
 import java.util.Optional;
 import javax.ws.rs.core.Response;
@@ -23,8 +22,7 @@ public interface CommandHandlerCrud {
 
   Response putItemResponse(QueryInputFeatureReplace queryInput, ApiRequestContext requestContext);
 
-  Response deleteItemResponse(
-      FeatureTransactions featureProvider, String collectionName, String featureId);
+  Response deleteItemResponse(QueryInputFeatureDelete queryInput, ApiRequestContext requestContext);
 
   @Value.Immutable
   interface QueryInputFeatureCreate {
@@ -48,5 +46,15 @@ public interface CommandHandlerCrud {
     String getFeatureType();
 
     InputStream getRequestBody();
+  }
+
+  @Value.Immutable
+  interface QueryInputFeatureDelete {
+
+    String getCollectionId();
+
+    String getFeatureId();
+
+    FeatureProvider2 getFeatureProvider();
   }
 }

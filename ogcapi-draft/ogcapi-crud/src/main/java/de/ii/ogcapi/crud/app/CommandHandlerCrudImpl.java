@@ -8,7 +8,6 @@
 package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.Query;
@@ -184,24 +183,23 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   @Override
   public Response deleteItemResponse(
-      FeatureTransactions featureProvider, String collectionName, String featureId) {
+      QueryInputFeatureDelete queryInput, ApiRequestContext requestContext) {
 
-    // TODO indicate whether a feature has been deleted or not (otherwise feature counts will become
-    // incorrect)
     FeatureTransactions.MutationResult result =
-        featureProvider.deleteFeature(collectionName, featureId);
+        queryInput
+            .getFeatureProvider()
+            .transactions()
+            .deleteFeature(queryInput.getCollectionId(), queryInput.getFeatureId());
 
     result.getError().ifPresent(QueriesHandler::processStreamError);
 
-    if (featureProvider instanceof FeatureProvider2) {
-      handleChange(
-          (FeatureProvider2) featureProvider,
-          collectionName,
-          ImmutableList.of(featureId),
-          result.getSpatialExtent(),
-          convertTemporalExtent(result.getTemporalExtent()),
-          Action.DELETE);
-    }
+    handleChange(
+        queryInput.getFeatureProvider(),
+        queryInput.getCollectionId(),
+        result.getIds(),
+        result.getSpatialExtent(),
+        convertTemporalExtent(result.getTemporalExtent()),
+        Action.DELETE);
 
     return Response.noContent().build();
   }
