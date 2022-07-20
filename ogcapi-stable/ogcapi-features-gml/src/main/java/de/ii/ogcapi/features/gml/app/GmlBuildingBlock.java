@@ -61,7 +61,28 @@ import javax.inject.Singleton;
  *     <p>Bei einem SQL-Feature-Provider werden die Features auf der Grundlage des Provider-Schemas
  *     auf GML-Objekt- und Eigenschaftselemente abgebildet. Es gibt eine Reihe von
  *     Konfigurationsoptionen, um zu steuern, wie die Merkmale auf XML abgebildet werden.
- *     <p>TODO
+ *     <p>Alle Konfigurationsoptionen dieses Moduls mit Ausnahme von "gmlSfLevel" sind nur für
+ *     Collections mit einem SQL-Feature-Provider anwendbar. Für Collections mit einem
+ *     WFS-Feature-Provider werden alle anderen Konfigurationsoptionen ignoriert.
+ *     <p>Die folgenden Beschreibungen gelten alle nur für Collections mit einem
+ *     SQL-Feature-Provider:
+ *     <p><code>
+ * - Die Feature-Eigenschaft mit der Rolle `ID` im Provider-Schema wird auf das Attribut `gml:id`
+ *   des Features abgebildet. Diese Eigenschaften müssen eine direkte Eigenschaft des Featuretyps
+ *   sein.
+ * - Geometrieeigenschaften werden auf die entsprechende GML 3.2 Geometrie abgebildet (`gml:Point`
+ *   und `gml:MultiPoint` mit `gml:pos`; `gml:LineString`, `gml:MultiCurve`, `gml:Polygon` und
+ *   `gml:MultiSurface` mit `gml:posList`). Das Attribut `gml:id` wird den Geometrieelementen
+ *   nicht hinzugefügt. Das Attribut "srsName" wird in jeder Geometrie gesetzt.
+ * - Eigenschaften, die `OBJECT`s mit dem Objekttyp `Link` sind, werden auf einen `gml:Reference`-
+ *   Wert mit den Attributen `xlink:href` und `xmlnk:title` abgebildet, falls gesetzt.
+ * - Eigenschaften, die `OBJECT`s mit dem Objekttyp `Measure` sind, werden auf einen
+ *   `gml:MeasureType`-Wert abgebildet. Das Objekt muss die Eigenschaften `value` und `uom`
+ *   haben, die beide in den Daten vorhanden sein müssen.
+ * - Eigenschaften, die `FLOAT`- oder `INTEGER`-Werte mit einer `unit`-Eigenschaft im
+ *   Provider-Schema sind, werden ebenfalls auf einen `gml:MeasureType`-Wert abgebildet.
+ *   Der Wert von `unit` wird auf das Attribut `uom` abgebildet.
+ * </code>
  * @conformanceDe Im Allgemeinen implementiert *Features GML* alle Anforderungen der
  *     Konformitätsklassen *Geography Markup Language (GML), Simple Features Profile, Level 0* und
  *     *Geography Markup Language (GML), Simple Features Profile, Level 2* aus [OGC API - Features -
