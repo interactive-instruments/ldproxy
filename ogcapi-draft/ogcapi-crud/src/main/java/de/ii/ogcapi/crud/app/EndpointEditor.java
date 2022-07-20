@@ -11,12 +11,14 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
@@ -29,6 +31,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
@@ -61,11 +64,14 @@ public class EndpointEditor extends EndpointSubCollection {
   private static final List<String> TAGS = ImmutableList.of("Mutate data");
 
   private final URI servicesUri;
+  private final CrsSupport crsSupport;
 
   @Inject
-  public EndpointEditor(ExtensionRegistry extensionRegistry, ServicesContext servicesContext) {
+  public EndpointEditor(
+      ExtensionRegistry extensionRegistry, ServicesContext servicesContext, CrsSupport crsSupport) {
     super(extensionRegistry);
     this.servicesUri = servicesContext.getUri();
+    this.crsSupport = crsSupport;
   }
 
   @Override
@@ -81,6 +87,18 @@ public class EndpointEditor extends EndpointSubCollection {
               .filter(ext -> ext instanceof CrudFormatHtml)
               .collect(Collectors.toList());
     return formats;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    // TODO the editor client currently requires support for EPSG:25832
+    Optional<FeatureTypeConfigurationOgcApi> optCollectionData =
+        apiData.getCollectionData(collectionId);
+    if (optCollectionData.isEmpty()
+        || !crsSupport.isSupported(apiData, optCollectionData.get(), EpsgCrs.of(25832))) {
+      return false;
+    }
+    return super.isEnabledForApi(apiData, collectionId);
   }
 
   @Override
