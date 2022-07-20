@@ -195,6 +195,10 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     return links.stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
+  public Optional<Link> getCrud() {
+    return links.stream().filter(link -> Objects.equals(link.getRel(), "edit")).findFirst();
+  }
+
   public OgcApiCollection getCollection() {
     return collection;
   }
