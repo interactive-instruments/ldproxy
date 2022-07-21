@@ -5,14 +5,3 @@ dependencies {
     layers group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '6.1.0-SNAPSHOT'
 }
 
-allprojects {
-    repositories {
-        maven {
-            url "https://repo.osgeo.org/repository/release"
-        }
-        maven {
-            url "https://maven.ecc.no/releases"
-        }
-    }
-}
-

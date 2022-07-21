@@ -5,12 +5,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.transactional.app;
+package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.crud.app.ImmutableCrudConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration.Builder;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -28,15 +28,15 @@ import javax.inject.Singleton;
  *     "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
  *     Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
  *     weiteren Standardisierung des Entwurfs noch ändern.
- * @propertyTable {@link de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration}
- * @endpointTable {@link de.ii.ogcapi.transactional.app.EndpointTransactional}
+ * @propertyTable {@link ImmutableCrudConfiguration}
+ * @endpointTable {@link EndpointCrud}
  */
 @Singleton
 @AutoBind
-public class TransactionalBuildingBlock implements ApiBuildingBlock {
+public class CrudBuildingBlock implements ApiBuildingBlock {
 
   @Inject
-  public TransactionalBuildingBlock() {}
+  public CrudBuildingBlock() {}
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {

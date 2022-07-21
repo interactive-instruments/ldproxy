@@ -8,11 +8,12 @@
 package de.ii.ogcapi.crs.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import java.util.Map;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -24,11 +25,12 @@ public class JacksonSubTypeIdsCrs implements JacksonSubTypeIds {
   public JacksonSubTypeIdsCrs() {}
 
   @Override
-  public Map<Class<?>, String> getMapping() {
-    return new ImmutableMap.Builder<Class<?>, String>()
-        .put(
-            CrsConfiguration.class,
-            ExtensionConfiguration.getBuildingBlockIdentifier(CrsConfiguration.class))
-        .build();
+  public List<JacksonSubType> getSubTypes() {
+    return ImmutableList.of(
+        ImmutableJacksonSubType.builder()
+            .superType(ExtensionConfiguration.class)
+            .subType(CrsConfiguration.class)
+            .id(ExtensionConfiguration.getBuildingBlockIdentifier(CrsConfiguration.class))
+            .build());
   }
 }

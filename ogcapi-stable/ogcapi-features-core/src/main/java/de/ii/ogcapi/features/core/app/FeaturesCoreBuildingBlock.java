@@ -128,24 +128,18 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
               final String collectionId = entry.getKey();
               final Optional<CollectionExtent> optionalExtent = apiData.getExtent(collectionId);
 
-              Optional<BoundingBox> optionalBoundingBox;
-              if (optionalExtent.isEmpty()
-                  || optionalExtent.get().getSpatialComputed().orElse(true)) {
-                optionalBoundingBox = computeBbox(apiData, collectionId);
-              } else {
-                optionalBoundingBox = optionalExtent.get().getSpatial();
-              }
-              optionalBoundingBox.ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
+              optionalExtent
+                  .flatMap(
+                      extent -> extent.isSpatialComputed() ? Optional.empty() : extent.getSpatial())
+                  .or(() -> computeBbox(apiData, collectionId))
+                  .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
 
-              Optional<TemporalExtent> optionalTemporalExtent;
-              if (optionalExtent.isEmpty()
-                  || optionalExtent.get().getTemporalComputed().orElse(true)) {
-                optionalTemporalExtent = computeInterval(apiData, collectionId);
-              } else {
-                optionalTemporalExtent = optionalExtent.get().getTemporal();
-              }
-              optionalTemporalExtent.ifPresent(
-                  interval -> api.updateTemporalExtent(collectionId, interval));
+              optionalExtent
+                  .flatMap(
+                      extent ->
+                          extent.isTemporalComputed() ? Optional.empty() : extent.getTemporal())
+                  .or(() -> computeInterval(apiData, collectionId))
+                  .ifPresent(interval -> api.updateTemporalExtent(collectionId, interval));
 
               final FeatureTypeConfigurationOgcApi collectionData =
                   apiData.getCollections().get(collectionId);
@@ -211,26 +205,50 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
           getCollectionId(api.getData().getCollections().values(), change.getFeatureType());
       switch (change.getAction()) {
         case CREATE:
-          api.updateItemCount(collectionId, 1L);
-          change.getBoundingBox().ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
+          api.updateItemCount(collectionId, (long) change.getFeatureIds().size());
+          change
+              .getBoundingBox()
+              .flatMap(this::transformToCrs84)
+              .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
           change
               .getInterval()
               .ifPresent(
                   interval -> api.updateTemporalExtent(collectionId, TemporalExtent.of(interval)));
           break;
         case UPDATE:
-          change.getBoundingBox().ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
+          change
+              .getBoundingBox()
+              .flatMap(this::transformToCrs84)
+              .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
           change
               .getInterval()
               .ifPresent(
                   interval -> api.updateTemporalExtent(collectionId, TemporalExtent.of(interval)));
           break;
         case DELETE:
-          api.updateItemCount(collectionId, -1L);
+          api.updateItemCount(collectionId, (long) -change.getFeatureIds().size());
           break;
       }
       api.updateLastModified(collectionId, change.getModified());
     };
+  }
+
+  private Optional<BoundingBox> transformToCrs84(BoundingBox boundingBox) {
+    if (!boundingBox.getEpsgCrs().equals(OgcCrs.CRS84)) {
+      Optional<CrsTransformer> transformer =
+          crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
+      if (transformer.isPresent()) {
+        try {
+          return Optional.ofNullable(transformer.get().transformBoundingBox(boundingBox));
+        } catch (CrsTransformationException e) {
+          LOGGER.error(
+              "Error while transforming the spatial extent of a feature to CRS84: {}",
+              e.getMessage());
+        }
+      }
+      return Optional.empty();
+    }
+    return Optional.ofNullable(boundingBox);
   }
 
   private Optional<BoundingBox> computeBbox(OgcApiDataV2 apiData, String collectionId) {
@@ -240,9 +258,13 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
         providers.getFeatureProvider(apiData, collectionData);
 
     if (featureProvider.map(FeatureProvider2::supportsExtents).orElse(false)) {
+      String featureType =
+          collectionData
+              .getExtension(FeaturesCoreConfiguration.class)
+              .flatMap(FeaturesCoreConfiguration::getFeatureType)
+              .orElse(collectionId);
       Optional<BoundingBox> spatialExtent =
-          featureProvider.get().extents().getSpatialExtent(collectionId);
-
+          featureProvider.get().extents().getSpatialExtent(featureType);
       if (spatialExtent.isPresent()) {
 
         BoundingBox boundingBox = spatialExtent.get();

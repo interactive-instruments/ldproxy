@@ -57,7 +57,7 @@ public class CORSFilter implements ContainerResponseFilter {
 
     // add additional ldproxy headers here
     ImmutableList.Builder<String> headers = new ImmutableList.Builder<>();
-    headers.add("Link", "Content-Crs", "Prefer");
+    headers.add("Link", "Content-Crs", "Prefer", "ETag");
     if (POST.equalsIgnoreCase(requestContext.getMethod())) {
       headers.add("Location");
     }

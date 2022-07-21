@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
@@ -26,6 +27,7 @@ import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ogcapi.tiles.domain.Rule;
+import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
@@ -33,12 +35,14 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,6 +50,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteJDBCLoader;
 
 /**
@@ -119,6 +125,7 @@ import org.sqlite.SQLiteJDBCLoader;
 @AutoBind
 public class TilesBuildingBlock implements ApiBuildingBlock {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(TilesBuildingBlock.class);
   public static final int LIMIT_DEFAULT = 100000;
   public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;
   public static final String DATASET_TILES = "__all__";
@@ -128,6 +135,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
   private final FeaturesQuery queryParser;
   private final SchemaInfo schemaInfo;
   private final TileMatrixSetRepository tileMatrixSetRepository;
+  private final TileCache tileCache;
 
   @Inject
   public TilesBuildingBlock(
@@ -135,12 +143,14 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       FeaturesQuery queryParser,
       FeaturesCoreProviders providers,
       SchemaInfo schemaInfo,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      TileMatrixSetRepository tileMatrixSetRepository,
+      TileCache tileCache) {
     this.extensionRegistry = extensionRegistry;
     this.queryParser = queryParser;
     this.providers = providers;
     this.schemaInfo = schemaInfo;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
+    this.tileCache = tileCache;
   }
 
   @Override
@@ -239,6 +249,11 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
           .addStrictErrors(MessageFormat.format("Could not load SQLite: {}", e.getMessage()))
           .build();
     }
+
+    providers
+        .getFeatureProvider(apiData)
+        .ifPresent(
+            provider -> provider.getFeatureChangeHandler().addListener(onFeatureChange(api)));
 
     if (apiValidation == MODE.NONE) {
       return ValidationResult.of();
@@ -536,5 +551,51 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     }
 
     return builder.build();
+  }
+
+  private FeatureChangeListener onFeatureChange(OgcApi api) {
+    return change -> {
+      String collectionId =
+          getCollectionId(api.getData().getCollections().values(), change.getFeatureType());
+      switch (change.getAction()) {
+        case CREATE:
+        case UPDATE:
+          change
+              .getBoundingBox()
+              .ifPresent(
+                  bbox -> {
+                    try {
+                      tileCache.deleteTiles(
+                          api, Optional.of(collectionId), Optional.empty(), Optional.of(bbox));
+                    } catch (Exception e) {
+                      if (LOGGER.isErrorEnabled()) {
+                        LOGGER.error(
+                            "Error while deleting tiles from the tile cache after a feature change.",
+                            e);
+                      }
+                    }
+                  });
+          break;
+        case DELETE:
+          // TODO we would need the extent of the deleted feature to update the cache
+          break;
+      }
+    };
+  }
+
+  // TODO centralize
+  private String getCollectionId(
+      Collection<FeatureTypeConfigurationOgcApi> collections, String featureType) {
+    return collections.stream()
+        .map(
+            collection ->
+                collection
+                    .getExtension(FeaturesCoreConfiguration.class)
+                    .flatMap(FeaturesCoreConfiguration::getFeatureType))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(ft -> Objects.equals(ft, featureType))
+        .findFirst()
+        .orElse(featureType);
   }
 }

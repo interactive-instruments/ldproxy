@@ -5,22 +5,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.transactional.app;
+package de.ii.ogcapi.crud.app;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration.Builder;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = Builder.class)
-public interface TransactionalConfiguration extends ExtensionConfiguration {
+@JsonDeserialize(builder = ImmutableCrudConfiguration.Builder.class)
+public interface CrudConfiguration extends ExtensionConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override
   default Builder getBuilder() {
-    return new ImmutableTransactionalConfiguration.Builder();
+    return new ImmutableCrudConfiguration.Builder();
   }
 }
