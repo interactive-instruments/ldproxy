@@ -22,7 +22,11 @@ import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings({
+  "ConstantConditions",
+  "PMD.TooManyMethods"
+}) // reducing the number of methods results in complex methods and refactoring does not seem to
+// improve the maintainability
 @Singleton
 @AutoBind
 public class GmlWriterProperties implements GmlWriter {
@@ -124,69 +128,93 @@ public class GmlWriterProperties implements GmlWriter {
       boolean inMeasure = state.getInMeasure();
 
       if (inLink) {
-        context.encoding().write(" xlink:");
-        context.encoding().write(schema.getName());
-        context.encoding().write("=\"");
-        writeValue(context, value, schema.getType());
-        context.encoding().write("\"");
+        writeLinkAttribute(context, schema, value);
       } else if (inMeasure) {
-        state
-            .getFirstMeasureProperty()
-            .ifPresentOrElse(
-                consumerMayThrow(
-                    other -> {
-                      String uom = "uom".equals(schema.getName()) ? value : other;
-                      String val = "value".equals(schema.getName()) ? value : other;
-                      context.encoding().write(" uom=\"");
-                      context.encoding().write(uom);
-                      context.encoding().write("\"");
-                      context.encoding().write(">");
-                      writeValue(context, val, schema.getType());
-                    }),
-                () -> state.setFirstMeasureProperty(Optional.ofNullable(value)));
+        writeMeasure(context, schema, value);
       } else {
         if (context.encoding().getXmlAttributes().contains(schema.getFullPathAsString())) {
           // encode as XML attribute
           context.encoding().writeAsXmlAtt(schema.getName(), value);
         } else {
+          // opening tag of property element
           context.encoding().write("\n<");
           context.encoding().write(schema.getName());
-          if (schema.getType() == Type.FLOAT || schema.getType() == Type.INTEGER) {
-            // write as gml:MeasureType, if we have a numeric property with a 'unit'
-            // property in the provider schema
-            schema
-                .getUnit()
-                .ifPresent(
-                    consumerMayThrow(
-                        uom -> {
-                          context.encoding().write(" uom=\"");
-                          context.encoding().write(uom);
-                          context.encoding().write("\"");
-                        }));
-          }
+          writeUnitIfNecessary(context, schema);
           context.encoding().write(">");
+          // value
           writeValue(context, value, schema.getType());
+          // closing tag
           context.encoding().write("</");
           context.encoding().write(schema.getName());
           context.encoding().write(">");
         }
 
-        state
-            .getVariableNameProperty()
-            .ifPresent(
-                p -> {
-                  // check for variable object element name property
-                  if (p.equals(schema.getName())) {
-                    String mappedValue =
-                        Objects.requireNonNullElse(
-                            state.getVariableNameMapping().get(value), value);
-                    context.encoding().setCurrentObjectElement(mappedValue);
-                  }
-                });
+        setVariableObjectElementName(context, schema, value);
       }
     }
 
     next.accept(context);
+  }
+
+  private void setVariableObjectElementName(
+      EncodingAwareContextGml context, FeatureSchema schema, String value) {
+    ModifiableStateGml state = context.encoding().getState();
+    state
+        .getVariableNameProperty()
+        .ifPresent(
+            p -> {
+              // check for variable object element name property
+              if (p.equals(schema.getName())) {
+                String mappedValue =
+                    Objects.requireNonNullElse(state.getVariableNameMapping().get(value), value);
+                context.encoding().setCurrentObjectElement(mappedValue);
+              }
+            });
+  }
+
+  private void writeUnitIfNecessary(EncodingAwareContextGml context, FeatureSchema schema) {
+    if (schema.getType() == Type.FLOAT || schema.getType() == Type.INTEGER) {
+      // write as gml:MeasureType, if we have a numeric property with a 'unit'
+      // property in the provider schema
+      schema
+          .getUnit()
+          .ifPresent(
+              consumerMayThrow(
+                  uom -> {
+                    context.encoding().write(" uom=\"");
+                    context.encoding().write(uom);
+                    context.encoding().write("\"");
+                  }));
+    }
+  }
+
+  private void writeMeasure(EncodingAwareContextGml context, FeatureSchema schema, String value) {
+    ModifiableStateGml state = context.encoding().getState();
+    state
+        .getFirstMeasureProperty()
+        .ifPresentOrElse(
+            consumerMayThrow(
+                other -> {
+                  String uom = "uom".equals(schema.getName()) ? value : other;
+                  String val = "value".equals(schema.getName()) ? value : other;
+                  context.encoding().write(" uom=\"");
+                  context.encoding().write(uom);
+                  context.encoding().write("\"");
+                  context.encoding().write(">");
+                  writeValue(context, val, schema.getType());
+                }),
+            () -> state.setFirstMeasureProperty(Optional.ofNullable(value)));
+  }
+
+  private void writeLinkAttribute(
+      EncodingAwareContextGml context, FeatureSchema schema, String value) {
+    // we are already in the property element that has the link object as its value,
+    // just add the XLink attribute
+    context.encoding().write(" xlink:");
+    context.encoding().write(schema.getName());
+    context.encoding().write("=\"");
+    writeValue(context, value, schema.getType());
+    context.encoding().write("\"");
   }
 
   private boolean shouldSkipProperty(EncodingAwareContextGml context) {

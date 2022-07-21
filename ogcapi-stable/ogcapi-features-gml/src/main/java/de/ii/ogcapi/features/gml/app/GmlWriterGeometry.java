@@ -16,6 +16,7 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -99,100 +100,85 @@ public class GmlWriterGeometry implements GmlWriter {
       throws IOException {
 
     if (context.encoding().getState().getInGeometry()) {
-      ModifiableStateGml state = context.encoding().getState();
-      SimpleFeatureGeometry geometryType = state.getCurrentGeometryType().orElseThrow();
+      SimpleFeatureGeometry geometryType =
+          context
+              .encoding()
+              .getState()
+              .getCurrentGeometryType()
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "GML building block: In a geometry, but no geometry type has been set"));
       int level = context.encoding().openGeometryArray();
-      switch (geometryType) {
-        case POINT:
-          context.encoding().write("<");
-          context.encoding().write(POS);
-          context.encoding().write(">");
-          context.encoding().pushElement(POS);
-          break;
-
-        case MULTI_POINT:
-          if (level == 1) {
-            context.encoding().write("<");
-            context.encoding().write(POINT_MEMBER);
-            context.encoding().write("><");
-            context.encoding().write(POINT);
-            context.encoding().write("><");
-            context.encoding().write(POS);
-            context.encoding().write(">");
-            context.encoding().pushElement(POINT_MEMBER, POINT, POS);
-          }
-          break;
-
-        case LINE_STRING:
-          if (level == 0) {
-            context.encoding().write("<");
-            context.encoding().write(POS_LIST);
-            context.encoding().write(">");
-            context.encoding().pushElement(POS_LIST);
-          }
-          break;
-
-        case MULTI_LINE_STRING:
-          if (level == 1) {
-            context.encoding().write("<");
-            context.encoding().write(CURVE_MEMBER);
-            context.encoding().write("><");
-            context.encoding().write(LINE_STRING);
-            context.encoding().write("><");
-            context.encoding().write(POS_LIST);
-            context.encoding().write(">");
-            context.encoding().pushElement(CURVE_MEMBER, LINE_STRING, POS_LIST);
-          }
-          break;
-
-        case POLYGON:
-          if (level == 0) {
-            context.encoding().write("<");
-            boolean first = context.encoding().getGeometryItem(level) == 0;
-            context.encoding().write(first ? EXTERIOR : INTERIOR);
-            context.encoding().write("><");
-            context.encoding().write(LINEAR_RING);
-            context.encoding().write(">");
-            context.encoding().pushElement(first ? EXTERIOR : INTERIOR, LINEAR_RING);
-          } else if (level == 1) {
-            context.encoding().write("<");
-            context.encoding().write(POS_LIST);
-            context.encoding().write(">");
-            context.encoding().pushElement(POS_LIST);
-          }
-          break;
-
-        case MULTI_POLYGON:
-          if (level == 0) {
-            context.encoding().write("<");
-            context.encoding().write(SURFACE_MEMBER);
-            context.encoding().write("><");
-            context.encoding().write(POLYGON);
-            context.encoding().write(">");
-            context.encoding().pushElement(SURFACE_MEMBER, POLYGON);
-          } else if (level == 1) {
-            context.encoding().write("<");
-            boolean first = context.encoding().getGeometryItem(level) == 0;
-            context.encoding().write(first ? EXTERIOR : INTERIOR);
-            context.encoding().write("><");
-            context.encoding().write(LINEAR_RING);
-            context.encoding().write(">");
-            context.encoding().pushElement(first ? EXTERIOR : INTERIOR, LINEAR_RING);
-          } else if (level == 2) {
-            context.encoding().write("<");
-            context.encoding().write(POS_LIST);
-            context.encoding().write(">");
-            context.encoding().pushElement(POS_LIST);
-          }
-          break;
-
-        default:
-          throw new IllegalStateException(
-              "Unsupported geometry type in GML building block: " + geometryType);
-      }
+      writeOpeningTagsGeometry(context, geometryType, level);
     }
 
     next.accept(context);
+  }
+
+  // the code is straightforward for those that understand the structure of the GML geometries,
+  // it does not seem necessary to change the structure
+  @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+  private void writeOpeningTagsGeometry(
+      EncodingAwareContextGml context, SimpleFeatureGeometry geometryType, int level) {
+    switch (geometryType) {
+      case POINT:
+        writeOpeningTags(context, POS);
+        break;
+
+      case MULTI_POINT:
+        if (level == 1) {
+          writeOpeningTags(context, POINT_MEMBER, POINT, POS);
+        }
+        break;
+
+      case LINE_STRING:
+        if (level == 0) {
+          writeOpeningTags(context, POS_LIST);
+        }
+        break;
+
+      case MULTI_LINE_STRING:
+        if (level == 1) {
+          writeOpeningTags(context, CURVE_MEMBER, LINE_STRING, POS_LIST);
+        }
+        break;
+
+      case POLYGON:
+        if (level == 0) {
+          boolean first = context.encoding().getGeometryItem(level) == 0;
+          writeOpeningTags(context, first ? EXTERIOR : INTERIOR, LINEAR_RING);
+        } else if (level == 1) {
+          writeOpeningTags(context, POS_LIST);
+        }
+        break;
+
+      case MULTI_POLYGON:
+        if (level == 0) {
+          writeOpeningTags(context, SURFACE_MEMBER, POLYGON);
+        } else if (level == 1) {
+          boolean first = context.encoding().getGeometryItem(level) == 0;
+          writeOpeningTags(context, first ? EXTERIOR : INTERIOR, LINEAR_RING);
+        } else if (level == 2) {
+          writeOpeningTags(context, POS_LIST);
+        }
+        break;
+
+      default:
+        throw new IllegalStateException(
+            String.format("Unsupported geometry type in GML building block: %s", geometryType));
+    }
+  }
+
+  private void writeOpeningTags(EncodingAwareContextGml context, String... elementNames) {
+    Arrays.stream(elementNames)
+        .forEachOrdered(
+            elementName -> {
+              context.encoding().write("<");
+              context.encoding().write(elementName);
+              context.encoding().write(">");
+            });
+    context.encoding().pushElement(elementNames);
   }
 
   @Override
@@ -203,63 +189,83 @@ public class GmlWriterGeometry implements GmlWriter {
       ModifiableStateGml state = context.encoding().getState();
       SimpleFeatureGeometry geometryType = state.getCurrentGeometryType().orElseThrow();
       int level = context.encoding().closeGeometryArray();
-      switch (geometryType) {
-        case POINT:
-          close(context, false);
-          break;
-
-        case MULTI_POINT:
-          if (level == 0) {
-            close(context, false);
-            close(context, true);
-          }
-          break;
-
-        case LINE_STRING:
-          if (level == -1) {
-            close(context, false);
-          } else {
-            context.encoding().nextGeometryItem();
-          }
-          break;
-
-        case MULTI_LINE_STRING:
-          if (level == 0) {
-            close(context, true);
-            close(context, false);
-          } else if (level == 1) {
-            context.encoding().nextGeometryItem();
-          }
-          break;
-
-        case POLYGON:
-          if (level == -1) {
-            close(context, true);
-          } else if (level == 0) {
-            close(context, false);
-          } else {
-            context.encoding().nextGeometryItem();
-          }
-          break;
-
-        case MULTI_POLYGON:
-          if (level == -1) {
-            close(context, true);
-          } else if (level == 1) {
-            close(context, true);
-            close(context, false);
-          } else {
-            context.encoding().nextGeometryItem();
-          }
-          break;
-
-        default:
-          throw new IllegalStateException(
-              "Unsupported geometry type in GML building block: " + geometryType);
-      }
+      writeClosingTagsGeometry(context, geometryType, level);
     }
 
     next.accept(context);
+  }
+
+  // the code is straightforward for those that understand the structure of the GML geometries,
+  // it does not seem necessary to change the structure
+  @SuppressWarnings({"PMD.CognitiveComplexity", "PMD.CyclomaticComplexity"})
+  private void writeClosingTagsGeometry(
+      EncodingAwareContextGml context, SimpleFeatureGeometry geometryType, int level) {
+    switch (geometryType) {
+      case POINT:
+        writeClosingTags(context, false);
+        break;
+
+      case MULTI_POINT:
+        if (level == 0) {
+          writeClosingTags(context, false);
+          writeClosingTags(context, true);
+        }
+        break;
+
+      case LINE_STRING:
+        if (level == -1) {
+          writeClosingTags(context, false);
+        } else {
+          context.encoding().nextGeometryItem();
+        }
+        break;
+
+      case MULTI_LINE_STRING:
+        if (level == 0) {
+          writeClosingTags(context, true);
+          writeClosingTags(context, false);
+        } else if (level == 1) {
+          context.encoding().nextGeometryItem();
+        }
+        break;
+
+      case POLYGON:
+        if (level == -1) {
+          writeClosingTags(context, true);
+        } else if (level == 0) {
+          writeClosingTags(context, false);
+        } else {
+          context.encoding().nextGeometryItem();
+        }
+        break;
+
+      case MULTI_POLYGON:
+        if (level == -1) {
+          writeClosingTags(context, true);
+        } else if (level == 1) {
+          writeClosingTags(context, true);
+          writeClosingTags(context, false);
+        } else {
+          context.encoding().nextGeometryItem();
+        }
+        break;
+
+      default:
+        throw new IllegalStateException(
+            String.format("Unsupported geometry type in GML building block: %s", geometryType));
+    }
+  }
+
+  private void writeClosingTags(EncodingAwareContextGml context, boolean isObject) {
+    if (isObject) {
+      context.encoding().write("</");
+      context.encoding().write(context.encoding().popElement());
+      context.encoding().write(">");
+    }
+
+    context.encoding().write("</");
+    context.encoding().write(context.encoding().popElement());
+    context.encoding().write(">");
   }
 
   @Override
@@ -302,17 +308,5 @@ public class GmlWriterGeometry implements GmlWriter {
     }
 
     next.accept(context);
-  }
-
-  private void close(EncodingAwareContextGml context, boolean isObject) {
-    if (isObject) {
-      context.encoding().write("</");
-      context.encoding().write(context.encoding().popElement());
-      context.encoding().write(">");
-    }
-
-    context.encoding().write("</");
-    context.encoding().write(context.encoding().popElement());
-    context.encoding().write(">");
   }
 }

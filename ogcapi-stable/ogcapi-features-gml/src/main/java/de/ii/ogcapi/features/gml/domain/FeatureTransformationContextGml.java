@@ -20,7 +20,10 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 import org.immutables.value.Value;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings({
+  "ConstantConditions",
+  "PMD.TooManyMethods"
+}) // this class needs that many methods, a refactoring makes no sense
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGml implements FeatureTransformationContext {
@@ -34,6 +37,9 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
    * would belong to State, but we cannot move it, because Modifiable has no support for appending
    * to a StringBuilder
    */
+  @SuppressWarnings({
+    "PMD.AvoidStringBufferField"
+  }) // memory leak is not a risk and we need to incrementally build a string
   private final StringBuilder buffer = new StringBuilder();
 
   @Override
