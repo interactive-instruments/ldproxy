@@ -5,6 +5,6 @@
  * of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 @AutoModule(single = true, encapsulate = true)
-package de.ii.ogcapi.transactional.domain;
+package de.ii.ogcapi.crud.domain;
 
 import com.github.azahnen.dagger.annotations.AutoModule;

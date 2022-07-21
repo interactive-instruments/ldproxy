@@ -8,11 +8,12 @@
 package de.ii.ogcapi.features.custom.extensions.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import java.util.Map;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -24,12 +25,14 @@ public class JacksonSubTypeIdsFeaturesExtensions implements JacksonSubTypeIds {
   public JacksonSubTypeIdsFeaturesExtensions() {}
 
   @Override
-  public Map<Class<?>, String> getMapping() {
-    return new ImmutableMap.Builder<Class<?>, String>()
-        .put(
-            FeaturesExtensionsConfiguration.class,
-            ExtensionConfiguration.getBuildingBlockIdentifier(
-                FeaturesExtensionsConfiguration.class))
-        .build();
+  public List<JacksonSubType> getSubTypes() {
+    return ImmutableList.of(
+        ImmutableJacksonSubType.builder()
+            .superType(ExtensionConfiguration.class)
+            .subType(FeaturesExtensionsConfiguration.class)
+            .id(
+                ExtensionConfiguration.getBuildingBlockIdentifier(
+                    FeaturesExtensionsConfiguration.class))
+            .build());
   }
 }

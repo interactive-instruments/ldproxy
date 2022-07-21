@@ -36,17 +36,17 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.Result;
+import de.ii.xtraplatform.features.domain.FeatureStream.ResultBase;
+import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
+import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
-import de.ii.xtraplatform.web.domain.ETag;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -280,34 +281,32 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .isHitsOnlyIfMore(onlyHitsIfMore)
             .showsFeatureSelfLink(showsFeatureSelfLink);
 
-    StreamingOutput streamingOutput;
+    FeatureStream featureStream;
+    FeatureTokenEncoder<?> encoder;
+    Optional<PropertyTransformations> propertyTransformations = Optional.empty();
 
     if (outputFormat.canPassThroughFeatures()
         && featureProvider.supportsPassThrough()
         && outputFormat.getMediaType().matches(featureProvider.passThrough().getMediaType())) {
-      FeatureStream featureStream =
-          featureProvider.passThrough().getFeatureStreamPassThrough(query);
+      featureStream = featureProvider.passThrough().getFeatureStreamPassThrough(query);
       ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
           transformationContext.outputStream(new OutputStreamToByteConsumer()).build();
-      FeatureTokenEncoder<?> encoder =
+      encoder =
           outputFormat
               .getFeatureEncoderPassThrough(
                   transformationContextGeneric, requestContext.getLanguage())
               .get();
-
-      streamingOutput =
-          stream(featureStream, Objects.nonNull(featureId), encoder, Optional.empty());
     } else if (outputFormat.canEncodeFeatures()) {
-      FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
+      featureStream = featureProvider.queries().getFeatureStream(query);
 
       ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
           transformationContext.outputStream(new OutputStreamToByteConsumer()).build();
-      FeatureTokenEncoder<?> encoder =
+      encoder =
           outputFormat
               .getFeatureEncoder(transformationContextGeneric, requestContext.getLanguage())
               .get();
 
-      Optional<PropertyTransformations> propertyTransformations =
+      propertyTransformations =
           outputFormat
               .getPropertyTransformations(api.getData().getCollections().get(collectionId))
               .map(
@@ -315,9 +314,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                       pt.withSubstitutions(
                           ImmutableMap.of(
                               "serviceUrl", transformationContextGeneric.getServiceUrl())));
-
-      streamingOutput =
-          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
     } else {
       throw new NotAcceptableException(
           MessageFormat.format(
@@ -327,26 +323,26 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
     Date lastModified = null;
     EntityTag etag = null;
-    byte[] result = null;
-    if (Objects.nonNull(featureId)) {
-      // support etag from the content for a single feature
-      ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      try {
-        streamingOutput.write(baos);
-      } catch (IOException e) {
-        throw new IllegalStateException("Feature stream error.", e);
-      }
-      result = baos.toByteArray();
+    byte[] bytes = null;
+    StreamingOutput streamingOutput = null;
 
-      etag =
-          !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-                  || api.getData()
-                      .getExtension(HtmlConfiguration.class, collectionId)
-                      .map(HtmlConfiguration::getSendEtags)
-                      .orElse(false)
-              ? ETag.from(result)
-              : null;
+    if (Objects.nonNull(featureId)
+        && (!outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            || api.getData()
+                .getExtension(HtmlConfiguration.class, collectionId)
+                .map(HtmlConfiguration::getSendEtags)
+                .orElse(false))) {
+      ResultReduced<byte[]> result = reduce(featureStream, true, encoder, propertyTransformations);
+
+      bytes = result.reduced();
+
+      if (result.getETag().isPresent()) {
+        etag = result.getETag().get();
+        LOGGER.debug("ETAG {}", etag);
+      }
     } else {
+      streamingOutput =
+          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
       lastModified = getLastModified(queryInput);
     }
 
@@ -372,7 +368,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     "%s.%s",
                     Objects.isNull(featureId) ? collectionId : featureId,
                     outputFormat.getMediaType().fileExtension())))
-        .entity(Objects.nonNull(result) ? result : streamingOutput)
+        .entity(Objects.nonNull(bytes) ? bytes : streamingOutput)
         .build();
   }
 
@@ -381,32 +377,56 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       boolean failIfEmpty,
       final FeatureTokenEncoder<?> encoder,
       Optional<PropertyTransformations> propertyTransformations) {
-    // Timer.Context timer = metricRegistry.timer(name(FeaturesCoreQueriesHandlerImpl.class,
-    // "stream")).time();
 
     return outputStream -> {
       SinkTransformed<Object, byte[]> featureSink = encoder.to(Sink.outputStream(outputStream));
 
-      try {
-        Result result =
+      Supplier<Result> stream =
+          () ->
+              featureTransformStream
+                  .runWith(featureSink, propertyTransformations)
+                  .toCompletableFuture()
+                  .join();
+
+      run(stream, failIfEmpty);
+    };
+  }
+
+  private ResultReduced<byte[]> reduce(
+      FeatureStream featureTransformStream,
+      boolean failIfEmpty,
+      final FeatureTokenEncoder<?> encoder,
+      Optional<PropertyTransformations> propertyTransformations) {
+
+    SinkReduced<Object, byte[]> featureSink = encoder.to(Sink.reduceByteArray());
+
+    Supplier<ResultReduced<byte[]>> stream =
+        () ->
             featureTransformStream
                 .runWith(featureSink, propertyTransformations)
                 .toCompletableFuture()
                 .join();
-        // timer.stop();
 
-        result.getError().ifPresent(QueriesHandler::processStreamError);
+    return run(stream, failIfEmpty);
+  }
 
-        if (result.isEmpty() && failIfEmpty) {
-          throw new NotFoundException("The requested feature does not exist.");
-        }
+  private <U extends ResultBase> U run(Supplier<U> stream, boolean failIfEmpty) {
+    try {
+      U result = stream.get();
 
-      } catch (CompletionException e) {
-        if (e.getCause() instanceof WebApplicationException) {
-          throw (WebApplicationException) e.getCause();
-        }
-        throw new IllegalStateException("Feature stream error.", e.getCause());
+      result.getError().ifPresent(QueriesHandler::processStreamError);
+
+      if (result.isEmpty() && failIfEmpty) {
+        throw new NotFoundException("The requested feature does not exist.");
       }
-    };
+
+      return result;
+
+    } catch (CompletionException e) {
+      if (e.getCause() instanceof WebApplicationException) {
+        throw (WebApplicationException) e.getCause();
+      }
+      throw new IllegalStateException("Feature stream error.", e.getCause());
+    }
   }
 }

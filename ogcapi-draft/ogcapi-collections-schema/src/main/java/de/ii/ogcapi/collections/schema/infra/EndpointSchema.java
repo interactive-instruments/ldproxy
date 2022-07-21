@@ -9,11 +9,13 @@ package de.ii.ogcapi.collections.schema.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import dagger.Lazy;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ogcapi.collections.schema.app.ImmutableQueryInputSchema.Builder;
-import de.ii.ogcapi.collections.schema.app.QueriesHandlerSchemaImpl;
+import de.ii.ogcapi.collections.schema.domain.ImmutableQueryInputSchema.Builder;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema;
+import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema.Query;
+import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema.QueryInputSchema;
 import de.ii.ogcapi.collections.schema.domain.SchemaConfiguration;
 import de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
@@ -35,9 +37,11 @@ import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -63,12 +67,13 @@ public class EndpointSchema extends EndpointSubCollection {
 
   private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-  private final QueriesHandlerSchema queryHandler;
+  private final Lazy<Set<QueriesHandlerSchema>> queryHandlers;
 
   @Inject
-  public EndpointSchema(ExtensionRegistry extensionRegistry, QueriesHandlerSchema queryHandler) {
+  public EndpointSchema(
+      ExtensionRegistry extensionRegistry, Lazy<Set<QueriesHandlerSchema>> queryHandlers) {
     super(extensionRegistry);
-    this.queryHandler = queryHandler;
+    this.queryHandlers = queryHandlers;
   }
 
   @Override
@@ -175,7 +180,7 @@ public class EndpointSchema extends EndpointSubCollection {
 
     Optional<String> profile = Optional.ofNullable(requestContext.getParameters().get("profile"));
 
-    QueriesHandlerSchemaImpl.QueryInputSchema queryInput =
+    QueryInputSchema queryInput =
         new Builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
@@ -183,6 +188,15 @@ public class EndpointSchema extends EndpointSubCollection {
             .type(type)
             .build();
 
-    return queryHandler.handle(QueriesHandlerSchemaImpl.Query.SCHEMA, queryInput, requestContext);
+    QueriesHandlerSchema queriesHandler =
+        queryHandlers.get().stream()
+            .filter(handler -> handler.canHandle(Query.SCHEMA, queryInput))
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new NotFoundException(
+                        String.format("Schema type %s is not supported", queryInput.getType())));
+
+    return queriesHandler.handle(QueriesHandlerSchema.Query.SCHEMA, queryInput, requestContext);
   }
 }

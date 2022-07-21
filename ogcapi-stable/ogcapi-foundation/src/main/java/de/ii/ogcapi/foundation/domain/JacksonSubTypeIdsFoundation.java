@@ -8,9 +8,10 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
+import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import java.util.Map;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -22,11 +23,12 @@ public class JacksonSubTypeIdsFoundation implements JacksonSubTypeIds {
   public JacksonSubTypeIdsFoundation() {}
 
   @Override
-  public Map<Class<?>, String> getMapping() {
-    return new ImmutableMap.Builder<Class<?>, String>()
-        .put(
-            FoundationConfiguration.class,
-            ExtensionConfiguration.getBuildingBlockIdentifier(FoundationConfiguration.class))
-        .build();
+  public List<JacksonSubType> getSubTypes() {
+    return ImmutableList.of(
+        ImmutableJacksonSubType.builder()
+            .superType(ExtensionConfiguration.class)
+            .subType(FoundationConfiguration.class)
+            .id(ExtensionConfiguration.getBuildingBlockIdentifier(FoundationConfiguration.class))
+            .build());
   }
 }

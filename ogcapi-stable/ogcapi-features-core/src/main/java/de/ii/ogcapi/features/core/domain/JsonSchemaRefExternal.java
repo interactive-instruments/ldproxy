@@ -22,4 +22,6 @@ public abstract class JsonSchemaRefExternal extends JsonSchema {
 
   @JsonProperty("$ref")
   public abstract String getRef();
+
+  public abstract static class Builder extends JsonSchema.Builder {}
 }

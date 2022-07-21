@@ -41,6 +41,10 @@ public interface QueriesHandler<T extends QueryIdentifier> {
 
   Map<T, QueryHandler<? extends QueryInput>> getQueryHandlers();
 
+  default boolean canHandle(T queryIdentifier, QueryInput queryInput) {
+    return true;
+  }
+
   default Response handle(
       T queryIdentifier, QueryInput queryInput, ApiRequestContext requestContext) {
 

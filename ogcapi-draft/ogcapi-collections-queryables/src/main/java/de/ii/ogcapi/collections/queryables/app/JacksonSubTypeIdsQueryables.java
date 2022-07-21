@@ -8,11 +8,12 @@
 package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import java.util.Map;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -24,11 +25,12 @@ public class JacksonSubTypeIdsQueryables implements JacksonSubTypeIds {
   public JacksonSubTypeIdsQueryables() {}
 
   @Override
-  public Map<Class<?>, String> getMapping() {
-    return new ImmutableMap.Builder<Class<?>, String>()
-        .put(
-            QueryablesConfiguration.class,
-            ExtensionConfiguration.getBuildingBlockIdentifier(QueryablesConfiguration.class))
-        .build();
+  public List<JacksonSubType> getSubTypes() {
+    return ImmutableList.of(
+        ImmutableJacksonSubType.builder()
+            .superType(ExtensionConfiguration.class)
+            .subType(QueryablesConfiguration.class)
+            .id(ExtensionConfiguration.getBuildingBlockIdentifier(QueryablesConfiguration.class))
+            .build());
   }
 }

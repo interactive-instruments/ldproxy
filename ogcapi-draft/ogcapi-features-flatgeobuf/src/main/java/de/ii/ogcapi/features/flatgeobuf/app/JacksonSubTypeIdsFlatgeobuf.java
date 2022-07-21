@@ -8,11 +8,12 @@
 package de.ii.ogcapi.features.flatgeobuf.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.flatgeobuf.domain.FlatgeobufConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import java.util.Map;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -24,11 +25,12 @@ public class JacksonSubTypeIdsFlatgeobuf implements JacksonSubTypeIds {
   public JacksonSubTypeIdsFlatgeobuf() {}
 
   @Override
-  public Map<Class<?>, String> getMapping() {
-    return new ImmutableMap.Builder<Class<?>, String>()
-        .put(
-            FlatgeobufConfiguration.class,
-            ExtensionConfiguration.getBuildingBlockIdentifier(FlatgeobufConfiguration.class))
-        .build();
+  public List<JacksonSubType> getSubTypes() {
+    return ImmutableList.of(
+        ImmutableJacksonSubType.builder()
+            .superType(ExtensionConfiguration.class)
+            .subType(FlatgeobufConfiguration.class)
+            .id(ExtensionConfiguration.getBuildingBlockIdentifier(FlatgeobufConfiguration.class))
+            .build());
   }
 }

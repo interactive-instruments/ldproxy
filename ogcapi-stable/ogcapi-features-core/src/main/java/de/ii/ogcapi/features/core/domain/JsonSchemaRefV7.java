@@ -19,4 +19,6 @@ public abstract class JsonSchemaRefV7 extends JsonSchemaRef {
   public String getDefsName() {
     return "definitions";
   }
+
+  public abstract static class Builder extends JsonSchema.Builder {}
 }
