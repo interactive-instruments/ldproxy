@@ -52,6 +52,10 @@ public class FeatureEncoderGmlUpgrade
           .add("lowerCorner")
           .add("upperCorner")
           .build();
+  private static final String IO_ERROR_MESSAGE = "Error writing GML";
+  private static final String SCHEMA_LOCATION = "schemaLocation";
+  private static final String SRS_DIMENSION = "srsDimension";
+  private static final String SRS_NAME = "srsName";
 
   private final FeatureTransformationContextGmlUpgrade transformationContext;
   private final boolean isFeatureCollection;
@@ -66,10 +70,15 @@ public class FeatureEncoderGmlUpgrade
   private boolean inCurrentPropertyStart;
   private boolean inCurrentPropertyText;
   private boolean inCoordinates;
-  private Integer currentDimension = null;
+  private Integer currentDimension;
   private String locations;
 
+  @SuppressWarnings({
+    "PMD.TooManyMethods",
+    "PMD.GodClass"
+  }) // this class needs that many methods, a refactoring makes no sense
   public FeatureEncoderGmlUpgrade(FeatureTransformationContextGmlUpgrade transformationContext) {
+    super();
     this.transformationContext = transformationContext;
     this.isFeatureCollection = transformationContext.isFeatureCollection();
     this.writer =
@@ -111,7 +120,7 @@ public class FeatureEncoderGmlUpgrade
         context.additionalInfo().forEach(biConsumerMayThrow(this::onGmlAttribute));
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
@@ -129,7 +138,7 @@ public class FeatureEncoderGmlUpgrade
       writer.flush();
       writer.close();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
@@ -164,12 +173,10 @@ public class FeatureEncoderGmlUpgrade
                       writer.append(namespaces.generateNamespaceDeclaration(prefix));
                     }));
         if (!Strings.isNullOrEmpty(locations)) {
-          writer.append(" ");
-          writer.append(namespaces.getNamespacePrefix("http://www.w3.org/2001/XMLSchema-instance"));
-          writer.append(":schemaLocation");
-          writer.append("=\"");
-          writer.append(locations);
-          writer.append("\"");
+          writeXmlAttribute(
+              namespaces.getNamespacePrefix("http://www.w3.org/2001/XMLSchema-instance"),
+              SCHEMA_LOCATION,
+              locations);
         }
       }
 
@@ -177,7 +184,7 @@ public class FeatureEncoderGmlUpgrade
 
       context.additionalInfo().forEach(biConsumerMayThrow(this::onGmlAttribute));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
@@ -194,7 +201,7 @@ public class FeatureEncoderGmlUpgrade
       }
       writer.flush();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
@@ -229,7 +236,7 @@ public class FeatureEncoderGmlUpgrade
 
       context.additionalInfo().forEach(biConsumerMayThrow(this::onGmlAttribute));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
@@ -246,9 +253,8 @@ public class FeatureEncoderGmlUpgrade
       } else {
         if (!inCurrentPropertyText) {
           writer.append("\n");
-        } else {
-          inCurrentPropertyText = false;
         }
+        inCurrentPropertyText = false;
 
         writer.append("</");
         writer.append(getNamespaceUri(context.path()));
@@ -258,7 +264,7 @@ public class FeatureEncoderGmlUpgrade
       }
       inCoordinates = false;
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
@@ -272,54 +278,86 @@ public class FeatureEncoderGmlUpgrade
     onObjectEnd(context);
   }
 
-  private void onGmlAttribute(String name, String value) throws Exception {
-    onGmlAttribute(getNamespaceUri(name), getLocalName(name), ImmutableList.of(), value);
+  private void onGmlAttribute(String name, String value) throws IOException {
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("ATTR {} {}", name, value);
+    }
+    onGmlAttribute(getNamespaceUri(name), getLocalName(name), value);
   }
 
-  // @Override
-  public void onGmlAttribute(String namespace, String localName, List<String> path, String value)
-      throws Exception {
-    if (LOGGER.isTraceEnabled()) {
-      LOGGER.trace("ATTR {} {} {}", path, localName, value);
+  private void onGmlAttribute(String namespace, String localName, String value) throws IOException {
+    if (inCurrentStart && !SCHEMA_LOCATION.equals(localName)) {
+      return;
     }
 
-    String newValue = value;
-
-    if (!isFeatureCollection && localName.equals("schemaLocation")) {
-      locations = adjustSchemaLocation(value);
-    }
-
-    if (inCurrentStart) {
-      if (localName.equals("schemaLocation")) {
-        newValue = adjustSchemaLocation(value);
-      } else {
-        return;
-      }
-    }
-    if (inCurrentPropertyStart && localName.equals("srsName")) {
-      if (Objects.nonNull(crsTransformer)) {
-        newValue = crsTransformer.getTargetCrs().toUriString();
-      }
-    }
-    if (inCurrentPropertyStart && localName.equals("srsDimension")) {
-      try {
-        currentDimension = Integer.valueOf(value);
-      } catch (NumberFormatException e) {
-        currentDimension = null;
-      }
-    }
+    // potentially store information for use in later steps
+    processGmlAttribute(localName, value);
 
     if (isFeatureCollection || inCurrentFeatureStart || inCurrentPropertyStart) {
-      writer.append(" ");
-      if (!Strings.isNullOrEmpty(namespace)) {
-        writer.append(namespace);
-        writer.append(":");
-      }
-      writer.append(localName);
-      writer.append("=\"");
-      writer.append(escaper.escape(newValue));
-      writer.append("\"");
+      // update attribute value, if necessary
+      writeXmlAttribute(namespace, localName, processGmlAttributeValue(localName, value));
     }
+  }
+
+  private String processGmlAttributeValue(String localName, String value) {
+    String newValue = value;
+    switch (localName) {
+      case SCHEMA_LOCATION:
+        if (inCurrentStart) {
+          newValue = adjustSchemaLocation(value);
+        }
+        break;
+
+      case SRS_NAME:
+        if (inCurrentPropertyStart && Objects.nonNull(crsTransformer)) {
+          newValue = crsTransformer.getTargetCrs().toUriString();
+        }
+        break;
+
+      default:
+        // ignore
+    }
+    return newValue;
+  }
+
+  private void processGmlAttribute(String localName, String value) {
+    switch (localName) {
+      case SCHEMA_LOCATION:
+        if (!isFeatureCollection) {
+          locations = adjustSchemaLocation(value);
+        }
+        break;
+
+      case SRS_DIMENSION:
+        if (inCurrentPropertyStart) {
+          currentDimension = getIntOrNull(value);
+        }
+        break;
+
+      default:
+        // ignore
+    }
+  }
+
+  private Integer getIntOrNull(String value) {
+    try {
+      return Integer.valueOf(value);
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  private void writeXmlAttribute(String namespace, String localName, String newValue)
+      throws IOException {
+    writer.append(" ");
+    if (!Strings.isNullOrEmpty(namespace)) {
+      writer.append(namespace);
+      writer.append(":");
+    }
+    writer.append(localName);
+    writer.append("=\"");
+    writer.append(escaper.escape(newValue));
+    writer.append("\"");
   }
 
   @Override
@@ -353,16 +391,15 @@ public class FeatureEncoderGmlUpgrade
           coordinatesTransformerBuilder.maxAllowableOffset(maxAllowableOffset);
         }
 
-        Writer coordinatesWriter = coordinatesTransformerBuilder.build();
-        coordinatesWriter.write(Objects.requireNonNull(context.value()));
-        coordinatesWriter.close();
+        try (Writer coordinatesWriter = coordinatesTransformerBuilder.build()) {
+          coordinatesWriter.write(Objects.requireNonNull(context.value()));
+        }
       } else {
         writer.append(escaper.escape(Objects.requireNonNull(context.value())));
       }
-
       inCurrentPropertyText = true;
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
@@ -395,7 +432,7 @@ public class FeatureEncoderGmlUpgrade
   }
 
   private String getLocalName(String name) {
-    return name.substring(name.lastIndexOf(":") + 1);
+    return name.substring(name.lastIndexOf(':') + 1);
   }
 
   private String getNamespaceUri(List<String> path) {
@@ -403,7 +440,7 @@ public class FeatureEncoderGmlUpgrade
   }
 
   private String getNamespaceUri(String name) {
-    return name.substring(0, name.lastIndexOf(":"));
+    return name.substring(0, name.lastIndexOf(':'));
   }
 
   @Override

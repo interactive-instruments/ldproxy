@@ -20,8 +20,10 @@ import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+@SuppressWarnings({
+  "PMD.TooManyMethods"
+}) // this class needs that many methods, a refactoring makes no sense
 public class FeatureEncoderGml extends FeatureTokenEncoderDefault<EncodingAwareContextGml> {
-
   private final ImmutableCollection<GmlWriter> featureWriters;
   private final FeatureTransformationContextGml transformationContext;
 
