@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.Optional;
@@ -49,4 +50,16 @@ public interface CollectionExtent {
   Optional<Boolean> getSpatialComputed();
 
   Optional<Boolean> getTemporalComputed();
+
+  @JsonIgnore
+  @Value.Lazy
+  default boolean isSpatialComputed() {
+    return getSpatialComputed().orElse(false);
+  }
+
+  @JsonIgnore
+  @Value.Lazy
+  default boolean isTemporalComputed() {
+    return getTemporalComputed().orElse(false);
+  }
 }

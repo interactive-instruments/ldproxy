@@ -8,10 +8,11 @@
 package de.ii.ogcapi.common.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import java.util.Map;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -23,11 +24,12 @@ public class JacksonSubTypeIdsOgcApiCommon implements JacksonSubTypeIds {
   public JacksonSubTypeIdsOgcApiCommon() {}
 
   @Override
-  public Map<Class<?>, String> getMapping() {
-    return new ImmutableMap.Builder<Class<?>, String>()
-        .put(
-            CommonConfiguration.class,
-            ExtensionConfiguration.getBuildingBlockIdentifier(CommonConfiguration.class))
-        .build();
+  public List<JacksonSubType> getSubTypes() {
+    return ImmutableList.of(
+        ImmutableJacksonSubType.builder()
+            .superType(ExtensionConfiguration.class)
+            .subType(CommonConfiguration.class)
+            .id(ExtensionConfiguration.getBuildingBlockIdentifier(CommonConfiguration.class))
+            .build());
   }
 }

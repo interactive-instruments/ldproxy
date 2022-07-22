@@ -9,12 +9,16 @@ package de.ii.ogcapi.collections.schema.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import dagger.Lazy;
 import de.ii.ogcapi.common.domain.PathParameterType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -25,10 +29,17 @@ public class PathParameterTypeSchema extends PathParameterType {
   static final List<String> TYPES = ImmutableList.of("feature", "collection");
   static final String SCHEMA_TYPE_PATTERN = "[\\w\\-]+";
 
+  private final Lazy<Set<QueriesHandlerSchema>> queriesHandlers;
+  private final List<String> types;
+
   @Inject
   public PathParameterTypeSchema(
-      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+      ExtensionRegistry extensionRegistry,
+      SchemaValidator schemaValidator,
+      Lazy<Set<QueriesHandlerSchema>> queriesHandlers) {
     super(extensionRegistry, schemaValidator);
+    this.queriesHandlers = queriesHandlers;
+    this.types = new ArrayList<>();
   }
 
   @Override
@@ -43,7 +54,13 @@ public class PathParameterTypeSchema extends PathParameterType {
 
   @Override
   public List<String> getValues(OgcApiDataV2 apiData) {
-    return TYPES;
+    if (types.isEmpty()) {
+      types.addAll(
+          queriesHandlers.get().stream()
+              .flatMap(handler -> handler.getSupportedTypes().stream())
+              .collect(Collectors.toList()));
+    }
+    return types;
   }
 
   @Override

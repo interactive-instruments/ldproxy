@@ -32,6 +32,8 @@ public abstract class JsonSchemaObject extends JsonSchema {
 
   public abstract Optional<JsonSchema> getAdditionalProperties();
 
+  public abstract static class Builder extends JsonSchema.Builder {}
+
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaObject> FUNNEL =
       (from, into) -> {

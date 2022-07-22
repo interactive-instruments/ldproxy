@@ -14,6 +14,7 @@ import de.ii.ogcapi.collections.queryables.app.QueryablesBuildingBlock;
 import de.ii.ogcapi.collections.schema.app.SchemaBuildingBlock;
 import de.ii.ogcapi.common.domain.CommonBuildingBlock;
 import de.ii.ogcapi.crs.app.CrsBuildingBlock;
+import de.ii.ogcapi.crud.app.CrudBuildingBlock;
 import de.ii.ogcapi.features.core.app.FeaturesCoreBuildingBlock;
 import de.ii.ogcapi.features.custom.extensions.app.FeaturesExtensionsBuildingBlock;
 import de.ii.ogcapi.features.flatgeobuf.app.CapabilityFlatgeobuf;
@@ -36,7 +37,6 @@ import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
 import de.ii.ogcapi.sorting.app.SortingBuildingBlock;
 import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
-import de.ii.ogcapi.transactional.app.TransactionalBuildingBlock;
 import de.ii.ogcapi.xml.app.XmlBuildingBlock;
 import java.util.List;
 import java.util.Set;
@@ -64,9 +64,10 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
             .add(new StylesBuildingBlock(this)) // TODO: StyleFormatExtensions
             .add(
                 new TilesBuildingBlock(
-                    this, null, null, null, null)) // TODO: TileFormatWithQuerySupportExtension,
+                    this, null, null, null, null,
+                    null)) // TODO: TileFormatWithQuerySupportExtension,
             // TileSetFormatExtension
-            .add(new TransactionalBuildingBlock())
+            .add(new CrudBuildingBlock())
             .add(new CollectionsBuildingBlock())
             .add(new CommonBuildingBlock())
             .add(new CrsBuildingBlock(null, null))

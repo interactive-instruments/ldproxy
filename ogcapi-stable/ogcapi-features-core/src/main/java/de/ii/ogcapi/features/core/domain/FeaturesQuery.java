@@ -15,6 +15,7 @@ import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.web.domain.ETag;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +30,8 @@ public interface FeaturesQuery {
       Map<String, Integer> coordinatePrecision,
       Map<String, String> parameters,
       List<OgcApiQueryParameter> allowedParameters,
-      String featureId);
+      String featureId,
+      Optional<ETag.Type> withETag);
 
   FeatureQuery requestToFeatureQuery(
       OgcApi api,
