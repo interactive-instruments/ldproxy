@@ -61,7 +61,7 @@ public class GmlWriterProperties implements GmlWriter {
       context.encoding().write("\n<");
       context.encoding().write(elementNameProperty);
 
-      String objectType = schema.getObjectType().orElseThrow();
+      String objectType = schema.getObjectType().orElse("FIX:ME");
 
       if ("Link".equals(objectType)) {
         context.encoding().getState().setInLink(true);

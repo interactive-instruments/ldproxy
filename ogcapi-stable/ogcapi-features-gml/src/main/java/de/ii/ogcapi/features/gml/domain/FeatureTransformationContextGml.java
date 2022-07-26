@@ -339,7 +339,7 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
    * @param schema the OBJECT schema that is mapped to a GML object
    */
   public String startGmlObject(FeatureSchema schema) {
-    String objectType = schema.getObjectType().orElseThrow();
+    String objectType = schema.getObjectType().orElse("FIX:ME");
     VariableName variableName = getVariableObjectElementNames().get(objectType);
 
     int idx = getState().getLastObject() + 1;
