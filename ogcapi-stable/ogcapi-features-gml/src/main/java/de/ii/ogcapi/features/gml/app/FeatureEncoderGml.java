@@ -19,11 +19,15 @@ import de.ii.xtraplatform.features.domain.FeatureTokenEncoderDefault;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import java.util.Iterator;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({
   "PMD.TooManyMethods"
 }) // this class needs that many methods, a refactoring makes no sense
 public class FeatureEncoderGml extends FeatureTokenEncoderDefault<EncodingAwareContextGml> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderGml.class);
   private final ImmutableCollection<GmlWriter> featureWriters;
   private final FeatureTransformationContextGml transformationContext;
 
@@ -69,42 +73,63 @@ public class FeatureEncoderGml extends FeatureTokenEncoderDefault<EncodingAwareC
 
   @Override
   public void onFeatureStart(EncodingAwareContextGml context) {
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("GML - Feature Start: {}", context.schema().orElseThrow().getName());
+    }
     transformationContext.getState().setEvent(Event.FEATURE_START);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onFeatureEnd(EncodingAwareContextGml context) {
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("GML - Feature End: {}", context.schema().orElseThrow().getName());
+    }
     transformationContext.getState().setEvent(Event.FEATURE_END);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onObjectStart(EncodingAwareContextGml context) {
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("GML - Object Start: {}", context.schema().orElseThrow().getName());
+    }
     transformationContext.getState().setEvent(Event.OBJECT_START);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onObjectEnd(EncodingAwareContextGml context) {
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("GML - Object End: {}", context.schema().orElseThrow().getName());
+    }
     transformationContext.getState().setEvent(Event.OBJECT_END);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onArrayStart(EncodingAwareContextGml context) {
+    if (LOGGER.isTraceEnabled() && !context.inGeometry()) {
+      LOGGER.trace("GML - Array Start: {}", context.schema().orElseThrow().getName());
+    }
     transformationContext.getState().setEvent(Event.ARRAY_START);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onArrayEnd(EncodingAwareContextGml context) {
+    if (LOGGER.isTraceEnabled() && !context.inGeometry()) {
+      LOGGER.trace("GML - Array End: {}", context.schema().orElseThrow().getName());
+    }
     transformationContext.getState().setEvent(Event.ARRAY_END);
     executePipeline(featureWriters.iterator()).accept(context);
   }
 
   @Override
   public void onValue(EncodingAwareContextGml context) {
+    if (LOGGER.isTraceEnabled() && !context.inGeometry()) {
+      LOGGER.trace("GML - Value: {}", context.schema().orElseThrow().getName());
+    }
     transformationContext.getState().setEvent(Event.PROPERTY);
     executePipeline(featureWriters.iterator()).accept(context);
   }
