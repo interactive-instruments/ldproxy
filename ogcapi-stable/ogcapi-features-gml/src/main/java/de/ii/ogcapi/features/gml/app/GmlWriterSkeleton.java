@@ -27,7 +27,7 @@ import javax.inject.Singleton;
 @AutoBind
 public class GmlWriterSkeleton implements GmlWriter {
 
-  private static final String XML_PROLOG = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+  private static final String XML_PROLOG = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 
   @Inject
   public GmlWriterSkeleton() {}
@@ -50,7 +50,7 @@ public class GmlWriterSkeleton implements GmlWriter {
 
     if (context.encoding().isFeatureCollection()) {
       String rootElement = getFeatureCollectionTag(context);
-      context.encoding().write("\n<");
+      context.encoding().write("<");
       context.encoding().write(rootElement);
       writeNamespaceAttributes(context, rootElement);
     }
@@ -73,7 +73,7 @@ public class GmlWriterSkeleton implements GmlWriter {
 
     if (context.encoding().isFeatureCollection()) {
       String rootElement = getFeatureCollectionTag(context);
-      context.encoding().write("\n</");
+      context.encoding().write("</");
       context.encoding().write(rootElement);
       context.encoding().write(">");
     }
@@ -85,7 +85,6 @@ public class GmlWriterSkeleton implements GmlWriter {
   public void onFeatureStart(
       EncodingAwareContextGml context, Consumer<EncodingAwareContextGml> next) throws IOException {
 
-    context.encoding().write("\n");
     if (context.encoding().isFeatureCollection()) {
       context.encoding().write("<");
       context.encoding().write(getFeatureMemberTag(context));
@@ -122,7 +121,7 @@ public class GmlWriterSkeleton implements GmlWriter {
 
     String elementName = context.encoding().popElement();
 
-    context.encoding().write("\n</");
+    context.encoding().write("</");
     context.encoding().write(elementName);
     context.encoding().write(">");
 

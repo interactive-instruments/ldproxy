@@ -58,7 +58,7 @@ public class GmlWriterProperties implements GmlWriter {
       FeatureSchema schema = context.schema().orElseThrow();
 
       String elementNameProperty = schema.getName();
-      context.encoding().write("\n<");
+      context.encoding().write("<");
       context.encoding().write(elementNameProperty);
 
       String objectType = schema.getObjectType().orElse("FIX:ME");
@@ -72,8 +72,7 @@ public class GmlWriterProperties implements GmlWriter {
       } else {
         String elementNameObject = context.encoding().startGmlObject(schema);
 
-        context.encoding().write(">");
-        context.encoding().write("\n<");
+        context.encoding().write("><");
         context.encoding().write(elementNameObject);
         context.encoding().writeXmlAttPlaceholder();
         context.encoding().write(">");
@@ -101,11 +100,11 @@ public class GmlWriterProperties implements GmlWriter {
         context.encoding().write(">");
         context.encoding().getState().setInMeasure(false);
       } else {
-        context.encoding().write("\n</");
+        context.encoding().write("</");
         context.encoding().write(context.encoding().popElement());
         context.encoding().write(">");
 
-        context.encoding().write("\n</");
+        context.encoding().write("</");
         context.encoding().write(context.encoding().popElement());
         context.encoding().write(">");
 
@@ -137,7 +136,7 @@ public class GmlWriterProperties implements GmlWriter {
           context.encoding().writeAsXmlAtt(schema.getName(), value);
         } else {
           // opening tag of property element
-          context.encoding().write("\n<");
+          context.encoding().write("<");
           context.encoding().write(schema.getName());
           writeUnitIfNecessary(context, schema);
           context.encoding().write(">");
