@@ -74,7 +74,7 @@ public class GmlWriterGeometry implements GmlWriter {
       FeatureSchema schema = context.schema().orElseThrow();
 
       String elementNameProperty = schema.getName();
-      context.encoding().write("\n<");
+      context.encoding().write("<");
       context.encoding().write(elementNameProperty);
 
       SimpleFeatureGeometry geometryType = context.geometryType().get();
@@ -145,22 +145,18 @@ public class GmlWriterGeometry implements GmlWriter {
         break;
 
       case POLYGON:
-        if (level == 0) {
+        if (level == 1) {
           boolean first = context.encoding().getGeometryItem(level) == 0;
-          writeOpeningTags(context, first ? EXTERIOR : INTERIOR, LINEAR_RING);
-        } else if (level == 1) {
-          writeOpeningTags(context, POS_LIST);
+          writeOpeningTags(context, first ? EXTERIOR : INTERIOR, LINEAR_RING, POS_LIST);
         }
         break;
 
       case MULTI_POLYGON:
-        if (level == 0) {
+        if (level == 1) {
           writeOpeningTags(context, SURFACE_MEMBER, POLYGON);
-        } else if (level == 1) {
-          boolean first = context.encoding().getGeometryItem(level) == 0;
-          writeOpeningTags(context, first ? EXTERIOR : INTERIOR, LINEAR_RING);
         } else if (level == 2) {
-          writeOpeningTags(context, POS_LIST);
+          boolean first = context.encoding().getGeometryItem(level) == 0;
+          writeOpeningTags(context, first ? EXTERIOR : INTERIOR, LINEAR_RING, POS_LIST);
         }
         break;
 
@@ -209,43 +205,38 @@ public class GmlWriterGeometry implements GmlWriter {
         if (level == 0) {
           writeClosingTags(context, false);
           writeClosingTags(context, true);
+          context.encoding().nextGeometryItem();
         }
         break;
 
       case LINE_STRING:
         if (level == -1) {
           writeClosingTags(context, false);
-        } else {
+        } else if (level == 0) {
           context.encoding().nextGeometryItem();
         }
         break;
 
       case MULTI_LINE_STRING:
+      case POLYGON:
         if (level == 0) {
           writeClosingTags(context, true);
           writeClosingTags(context, false);
-        } else if (level == 1) {
           context.encoding().nextGeometryItem();
-        }
-        break;
-
-      case POLYGON:
-        if (level == -1) {
-          writeClosingTags(context, true);
-        } else if (level == 0) {
-          writeClosingTags(context, false);
-        } else {
+        } else if (level == 1) {
           context.encoding().nextGeometryItem();
         }
         break;
 
       case MULTI_POLYGON:
-        if (level == -1) {
+        if (level == 0) {
           writeClosingTags(context, true);
+          context.encoding().nextGeometryItem();
         } else if (level == 1) {
           writeClosingTags(context, true);
           writeClosingTags(context, false);
-        } else {
+          context.encoding().nextGeometryItem();
+        } else if (level == 2) {
           context.encoding().nextGeometryItem();
         }
         break;
