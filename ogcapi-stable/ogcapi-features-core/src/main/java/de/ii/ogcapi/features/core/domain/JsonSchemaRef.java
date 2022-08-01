@@ -42,4 +42,6 @@ public abstract class JsonSchemaRef extends JsonSchema {
   @Nullable
   @Value.Auxiliary
   public abstract JsonSchema getDef();
+
+  public abstract static class Builder extends JsonSchema.Builder {}
 }

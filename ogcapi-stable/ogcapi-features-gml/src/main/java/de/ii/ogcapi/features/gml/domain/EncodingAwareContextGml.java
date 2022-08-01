@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.gml.domain;
 
 import de.ii.ogcapi.features.core.domain.EncodingAwareContext;
-import de.ii.ogcapi.features.gml.app.FeatureTransformationContextGml;
 import org.immutables.value.Value.Modifiable;
 
 @Modifiable

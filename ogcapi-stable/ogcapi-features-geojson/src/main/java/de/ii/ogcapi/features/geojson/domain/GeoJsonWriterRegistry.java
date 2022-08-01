@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.features.geojson.domain;
 
-import java.util.List;
+import de.ii.ogcapi.features.core.domain.FeatureWriterRegistry;
 
-public interface GeoJsonWriterRegistry {
-  List<GeoJsonWriter> getGeoJsonWriters();
-}
+public interface GeoJsonWriterRegistry extends FeatureWriterRegistry<GeoJsonWriter> {}

@@ -19,6 +19,8 @@ public abstract class JsonSchemaBoolean extends JsonSchema {
     return "boolean";
   }
 
+  public abstract static class Builder extends JsonSchema.Builder {}
+
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaBoolean> FUNNEL =
       (from, into) -> {

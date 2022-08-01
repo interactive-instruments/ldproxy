@@ -8,11 +8,12 @@
 package de.ii.ogcapi.xml.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.xml.domain.XmlConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import java.util.Map;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -24,11 +25,12 @@ public class JacksonSubTypeIdsXml implements JacksonSubTypeIds {
   public JacksonSubTypeIdsXml() {}
 
   @Override
-  public Map<Class<?>, String> getMapping() {
-    return new ImmutableMap.Builder<Class<?>, String>()
-        .put(
-            XmlConfiguration.class,
-            ExtensionConfiguration.getBuildingBlockIdentifier(XmlConfiguration.class))
-        .build();
+  public List<JacksonSubType> getSubTypes() {
+    return ImmutableList.of(
+        ImmutableJacksonSubType.builder()
+            .superType(ExtensionConfiguration.class)
+            .subType(XmlConfiguration.class)
+            .id(ExtensionConfiguration.getBuildingBlockIdentifier(XmlConfiguration.class))
+            .build());
   }
 }

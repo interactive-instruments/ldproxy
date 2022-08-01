@@ -1,6 +1,12 @@
 
 maturity = 'EXPERIMENTAL'
 
+repositories {
+    maven {
+        url "https://maven.ecc.no/releases"
+    }
+}
+
 dependencies {
     embedded (group: 'no.ecc.vectortile', name: 'java-vector-tile', version: '1.3.16') {
         exclude module: 'jts-core'

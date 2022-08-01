@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -210,50 +211,46 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
 
   @Override
   protected JsonSchema withName(JsonSchema jsonSchema, String propertyName) {
-    if (jsonSchema instanceof JsonSchemaObject) {
-      return ImmutableJsonSchemaObject.builder().from(jsonSchema).name(propertyName).build();
-    } else if (jsonSchema instanceof JsonSchemaOneOf) {
-      return ImmutableJsonSchemaOneOf.builder().from(jsonSchema).name(propertyName).build();
-    } else if (jsonSchema instanceof JsonSchemaNull) {
-      return ImmutableJsonSchemaNull.builder().from(jsonSchema).name(propertyName).build();
-    } else if (jsonSchema instanceof JsonSchemaInteger) {
-      return ImmutableJsonSchemaInteger.builder().from(jsonSchema).name(propertyName).build();
-    } else if (jsonSchema instanceof JsonSchemaBoolean) {
-      return ImmutableJsonSchemaBoolean.builder().from(jsonSchema).name(propertyName).build();
-    } else if (jsonSchema instanceof JsonSchemaNumber) {
-      return ImmutableJsonSchemaNumber.builder().from(jsonSchema).name(propertyName).build();
-    } else if (jsonSchema instanceof JsonSchemaString) {
-      return ImmutableJsonSchemaString.builder().from(jsonSchema).name(propertyName).build();
-    } else if (jsonSchema instanceof JsonSchemaRefExternal) {
-      return ImmutableJsonSchemaRefExternal.builder().from(jsonSchema).name(propertyName).build();
-    }
-    return jsonSchema;
+    return modify(jsonSchema, builder -> builder.name(propertyName));
   }
 
-  // TODO: abstract builder, factor out case detection
   @Override
   protected JsonSchema withRequired(JsonSchema jsonSchema) {
+    return modify(jsonSchema, builder -> builder.isRequired(true));
+  }
+
+  protected JsonSchema modify(JsonSchema jsonSchema, Consumer<JsonSchema.Builder> modifier) {
+    JsonSchema.Builder builder = null;
+
     if (jsonSchema instanceof JsonSchemaObject) {
-      return ImmutableJsonSchemaObject.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaObject.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaOneOf) {
-      return ImmutableJsonSchemaOneOf.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaOneOf.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaArray) {
-      return ImmutableJsonSchemaArray.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaArray.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaRefV7) {
-      return ImmutableJsonSchemaRefV7.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaRefV7.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaRef) {
-      return ImmutableJsonSchemaRef.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaRef.builder().from(jsonSchema);
+    } else if (jsonSchema instanceof JsonSchemaRefExternal) {
+      builder = ImmutableJsonSchemaRefExternal.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaNull) {
-      return ImmutableJsonSchemaNull.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaNull.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaInteger) {
-      return ImmutableJsonSchemaInteger.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaInteger.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaBoolean) {
-      return ImmutableJsonSchemaBoolean.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaBoolean.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaNumber) {
-      return ImmutableJsonSchemaNumber.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaNumber.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaString) {
-      return ImmutableJsonSchemaString.builder().from(jsonSchema).isRequired(true).build();
+      builder = ImmutableJsonSchemaString.builder().from(jsonSchema);
     }
+
+    if (Objects.nonNull(builder)) {
+      modifier.accept(builder);
+      return builder.build();
+    }
+
     return jsonSchema;
   }
 

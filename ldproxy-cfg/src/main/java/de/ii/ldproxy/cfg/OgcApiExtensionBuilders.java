@@ -12,12 +12,13 @@ import de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfigurati
 import de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration;
 import de.ii.ogcapi.common.domain.ImmutableCommonConfiguration;
 import de.ii.ogcapi.crs.domain.ImmutableCrsConfiguration;
+import de.ii.ogcapi.crud.app.ImmutableCrudConfiguration;
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration;
 import de.ii.ogcapi.features.flatgeobuf.domain.ImmutableFlatgeobufConfiguration;
 import de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import de.ii.ogcapi.features.geojson.ld.domain.ImmutableGeoJsonLdConfiguration;
-import de.ii.ogcapi.features.gml.app.ImmutableGmlConfiguration;
+import de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration;
 import de.ii.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration;
 import de.ii.ogcapi.features.json.fg.domain.ImmutableJsonFgConfiguration;
 import de.ii.ogcapi.filter.domain.ImmutableFilterConfiguration;
@@ -32,7 +33,6 @@ import de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration;
 import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
 import de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
-import de.ii.ogcapi.transactional.app.ImmutableTransactionalConfiguration;
 import de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration;
 
 public interface OgcApiExtensionBuilders {
@@ -93,8 +93,8 @@ public interface OgcApiExtensionBuilders {
     return new ImmutableTilesConfiguration.Builder();
   }
 
-  default ImmutableTransactionalConfiguration.Builder transactional() {
-    return new ImmutableTransactionalConfiguration.Builder();
+  default ImmutableCrudConfiguration.Builder transactional() {
+    return new ImmutableCrudConfiguration.Builder();
   }
 
   default ImmutableCollectionsConfiguration.Builder collections() {

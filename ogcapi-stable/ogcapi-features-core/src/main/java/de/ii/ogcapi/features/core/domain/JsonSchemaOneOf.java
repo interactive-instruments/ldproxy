@@ -17,6 +17,8 @@ public abstract class JsonSchemaOneOf extends JsonSchema {
 
   public abstract List<JsonSchema> getOneOf();
 
+  public abstract static class Builder extends JsonSchema.Builder {}
+
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaOneOf> FUNNEL =
       (from, into) -> {
