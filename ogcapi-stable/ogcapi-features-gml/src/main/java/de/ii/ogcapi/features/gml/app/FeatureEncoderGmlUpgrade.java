@@ -15,9 +15,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.escape.Escaper;
 import com.google.common.xml.XmlEscapers;
-import de.ii.ogcapi.features.gml.domain.EncodingAwareContextGml;
-import de.ii.ogcapi.features.gml.domain.ModifiableEncodingAwareContextGml;
-import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.features.gml.domain.EncodingAwareContextGmlUpgrade;
+import de.ii.ogcapi.features.gml.domain.FeatureTransformationContextGmlUpgrade;
+import de.ii.ogcapi.features.gml.domain.ModifiableEncodingAwareContextGmlUpgrade;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoderDefault;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -25,7 +25,6 @@ import de.ii.xtraplatform.features.gml.domain.XMLNamespaceNormalizer;
 import de.ii.xtraplatform.geometries.domain.ImmutableCoordinatesTransformer;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +40,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @author zahnen
  */
-public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<EncodingAwareContextGml> {
+public class FeatureEncoderGmlUpgrade
+    extends FeatureTokenEncoderDefault<EncodingAwareContextGmlUpgrade> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderGmlUpgrade.class);
   private static final List<String> GEOMETRY_COORDINATES =
@@ -52,39 +52,41 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
           .add("lowerCorner")
           .add("upperCorner")
           .build();
-  ;
+  private static final String IO_ERROR_MESSAGE = "Error writing GML";
+  private static final String SCHEMA_LOCATION = "schemaLocation";
+  private static final String SRS_DIMENSION = "srsDimension";
+  private static final String SRS_NAME = "srsName";
 
-  private final FeatureTransformationContextGml transformationContext;
-  private final OutputStream outputStream;
+  private final FeatureTransformationContextGmlUpgrade transformationContext;
   private final boolean isFeatureCollection;
   private final OutputStreamWriter writer;
   private final XMLNamespaceNormalizer namespaces;
   private final CrsTransformer crsTransformer;
-  private final List<Link> links;
   private final Escaper escaper;
-  private final int pageSize;
-  private double maxAllowableOffset;
+  private final double maxAllowableOffset;
 
   private boolean inCurrentStart;
   private boolean inCurrentFeatureStart;
   private boolean inCurrentPropertyStart;
   private boolean inCurrentPropertyText;
   private boolean inCoordinates;
-  private ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder;
-  private Integer currentDimension = null;
-  private boolean isLastPage;
+  private Integer currentDimension;
   private String locations;
 
-  public FeatureEncoderGmlUpgrade(FeatureTransformationContextGml transformationContext) {
+  @SuppressWarnings({
+    "PMD.TooManyMethods",
+    "PMD.GodClass"
+  }) // this class needs that many methods, a refactoring makes no sense
+  public FeatureEncoderGmlUpgrade(FeatureTransformationContextGmlUpgrade transformationContext) {
+    super();
     this.transformationContext = transformationContext;
-    this.outputStream = transformationContext.getOutputStream();
     this.isFeatureCollection = transformationContext.isFeatureCollection();
-    this.writer = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
+    this.writer =
+        new OutputStreamWriter(transformationContext.getOutputStream(), StandardCharsets.UTF_8);
     this.namespaces = new XMLNamespaceNormalizer(transformationContext.getNamespaces());
     this.crsTransformer = transformationContext.getCrsTransformer().orElse(null);
-    this.links = transformationContext.getLinks();
+    //noinspection UnstableApiUsage
     this.escaper = XmlEscapers.xmlAttributeEscaper();
-    this.pageSize = transformationContext.getLimit();
     this.maxAllowableOffset = transformationContext.getMaxAllowableOffset();
     this.namespaces.addNamespace("sf", "http://www.opengis.net/ogcapi-features-1/1.0/sf", true);
     this.namespaces.addNamespace("ogcapi", "http://www.opengis.net/ogcapi-features-1/1.0", true);
@@ -92,8 +94,7 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
   }
 
   @Override
-  public void onStart(EncodingAwareContextGml context) {
-    // TODO: more elegant solution
+  public void onStart(EncodingAwareContextGmlUpgrade context) {
     if (transformationContext.getOutputStream() instanceof OutputStreamToByteConsumer) {
       ((OutputStreamToByteConsumer) transformationContext.getOutputStream())
           .setByteConsumer(this::push);
@@ -114,18 +115,17 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
                       }
                     }));
 
-        isLastPage = context.metadata().getNumberReturned().orElse(0) < pageSize;
         inCurrentStart = true;
 
         context.additionalInfo().forEach(biConsumerMayThrow(this::onGmlAttribute));
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
   @Override
-  public void onEnd(EncodingAwareContextGml context) {
+  public void onEnd(EncodingAwareContextGmlUpgrade context) {
     try {
       if (isFeatureCollection) {
         if (inCurrentStart) {
@@ -138,12 +138,12 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
       writer.flush();
       writer.close();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
   @Override
-  public void onFeatureStart(EncodingAwareContextGml context) {
+  public void onFeatureStart(EncodingAwareContextGmlUpgrade context) {
     if (LOGGER.isTraceEnabled()) {
       LOGGER.trace("{}", context.path());
     }
@@ -173,12 +173,10 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
                       writer.append(namespaces.generateNamespaceDeclaration(prefix));
                     }));
         if (!Strings.isNullOrEmpty(locations)) {
-          writer.append(" ");
-          writer.append(namespaces.getNamespacePrefix("http://www.w3.org/2001/XMLSchema-instance"));
-          writer.append(":schemaLocation");
-          writer.append("=\"");
-          writer.append(locations);
-          writer.append("\"");
+          writeXmlAttribute(
+              namespaces.getNamespacePrefix("http://www.w3.org/2001/XMLSchema-instance"),
+              SCHEMA_LOCATION,
+              locations);
         }
       }
 
@@ -186,12 +184,12 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
 
       context.additionalInfo().forEach(biConsumerMayThrow(this::onGmlAttribute));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
   @Override
-  public void onFeatureEnd(EncodingAwareContextGml context) {
+  public void onFeatureEnd(EncodingAwareContextGmlUpgrade context) {
     try {
       writer.append("\n</");
       writer.append(getNamespaceUri(context.path()));
@@ -203,12 +201,12 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
       }
       writer.flush();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
   @Override
-  public void onObjectStart(EncodingAwareContextGml context) {
+  public void onObjectStart(EncodingAwareContextGmlUpgrade context) {
     if (LOGGER.isTraceEnabled()) {
       LOGGER.trace(
           "START {} {} {} {}",
@@ -238,12 +236,12 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
 
       context.additionalInfo().forEach(biConsumerMayThrow(this::onGmlAttribute));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
   @Override
-  public void onObjectEnd(EncodingAwareContextGml context) {
+  public void onObjectEnd(EncodingAwareContextGmlUpgrade context) {
     if (LOGGER.isTraceEnabled()) {
       LOGGER.trace("END {} {}", context.path(), getLocalName(context.path()));
     }
@@ -255,9 +253,8 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
       } else {
         if (!inCurrentPropertyText) {
           writer.append("\n");
-        } else {
-          inCurrentPropertyText = false;
         }
+        inCurrentPropertyText = false;
 
         writer.append("</");
         writer.append(getNamespaceUri(context.path()));
@@ -267,78 +264,104 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
       }
       inCoordinates = false;
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
   @Override
-  public void onArrayStart(EncodingAwareContextGml context) {
+  public void onArrayStart(EncodingAwareContextGmlUpgrade context) {
     onObjectStart(context);
   }
 
   @Override
-  public void onArrayEnd(EncodingAwareContextGml context) {
+  public void onArrayEnd(EncodingAwareContextGmlUpgrade context) {
     onObjectEnd(context);
   }
 
-  private void onGmlAttribute(String name, String value) throws Exception {
-    onGmlAttribute(
-        getNamespaceUri(name), getLocalName(name), ImmutableList.of(), value, ImmutableList.of());
+  private void onGmlAttribute(String name, String value) throws IOException {
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("ATTR {} {}", name, value);
+    }
+    onGmlAttribute(getNamespaceUri(name), getLocalName(name), value);
   }
 
-  // @Override
-  public void onGmlAttribute(
-      String namespace,
-      String localName,
-      List<String> path,
-      String value,
-      List<Integer> multiplicities)
-      throws Exception {
-    if (LOGGER.isTraceEnabled()) {
-      LOGGER.trace("ATTR {} {} {}", path, localName, value);
+  private void onGmlAttribute(String namespace, String localName, String value) throws IOException {
+    if (inCurrentStart && !SCHEMA_LOCATION.equals(localName)) {
+      return;
     }
 
-    String newValue = value;
-
-    if (!isFeatureCollection && localName.equals("schemaLocation")) {
-      locations = adjustSchemaLocation(value);
-    }
-
-    if (inCurrentStart) {
-      if (localName.equals("schemaLocation")) {
-        newValue = adjustSchemaLocation(value);
-      } else {
-        return;
-      }
-    }
-    if (inCurrentPropertyStart && localName.equals("srsName")) {
-      if (Objects.nonNull(crsTransformer)) {
-        newValue = crsTransformer.getTargetCrs().toUriString();
-      }
-    }
-    if (inCurrentPropertyStart && localName.equals("srsDimension")) {
-      try {
-        currentDimension = Integer.valueOf(value);
-      } catch (NumberFormatException e) {
-        currentDimension = null;
-      }
-    }
+    // potentially store information for use in later steps
+    processGmlAttribute(localName, value);
 
     if (isFeatureCollection || inCurrentFeatureStart || inCurrentPropertyStart) {
-      writer.append(" ");
-      if (!Strings.isNullOrEmpty(namespace)) {
-        writer.append(namespace);
-        writer.append(":");
-      }
-      writer.append(localName);
-      writer.append("=\"");
-      writer.append(XmlEscapers.xmlAttributeEscaper().escape(newValue));
-      writer.append("\"");
+      // update attribute value, if necessary
+      writeXmlAttribute(namespace, localName, processGmlAttributeValue(localName, value));
     }
+  }
+
+  private String processGmlAttributeValue(String localName, String value) {
+    String newValue = value;
+    switch (localName) {
+      case SCHEMA_LOCATION:
+        if (inCurrentStart) {
+          newValue = adjustSchemaLocation(value);
+        }
+        break;
+
+      case SRS_NAME:
+        if (inCurrentPropertyStart && Objects.nonNull(crsTransformer)) {
+          newValue = crsTransformer.getTargetCrs().toUriString();
+        }
+        break;
+
+      default:
+        // ignore
+    }
+    return newValue;
+  }
+
+  private void processGmlAttribute(String localName, String value) {
+    switch (localName) {
+      case SCHEMA_LOCATION:
+        if (!isFeatureCollection) {
+          locations = adjustSchemaLocation(value);
+        }
+        break;
+
+      case SRS_DIMENSION:
+        if (inCurrentPropertyStart) {
+          currentDimension = getIntOrNull(value);
+        }
+        break;
+
+      default:
+        // ignore
+    }
+  }
+
+  private Integer getIntOrNull(String value) {
+    try {
+      return Integer.valueOf(value);
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  private void writeXmlAttribute(String namespace, String localName, String newValue)
+      throws IOException {
+    writer.append(" ");
+    if (!Strings.isNullOrEmpty(namespace)) {
+      writer.append(namespace);
+      writer.append(":");
+    }
+    writer.append(localName);
+    writer.append("=\"");
+    writer.append(escaper.escape(newValue));
+    writer.append("\"");
   }
 
   @Override
-  public void onValue(EncodingAwareContextGml context) {
+  public void onValue(EncodingAwareContextGmlUpgrade context) {
     try {
       if (inCurrentPropertyStart) {
         writer.append(">");
@@ -346,7 +369,8 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
       }
 
       if (inCoordinates) {
-        coordinatesTransformerBuilder = ImmutableCoordinatesTransformer.builder();
+        ImmutableCoordinatesTransformer.Builder coordinatesTransformerBuilder =
+            ImmutableCoordinatesTransformer.builder();
         coordinatesTransformerBuilder.coordinatesWriter(
             ImmutableCoordinatesWriterGml.of(
                 writer, Optional.ofNullable(currentDimension).orElse(2)));
@@ -367,17 +391,15 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
           coordinatesTransformerBuilder.maxAllowableOffset(maxAllowableOffset);
         }
 
-        Writer coordinatesWriter = coordinatesTransformerBuilder.build();
-        // TODO: coalesce
-        coordinatesWriter.write(context.value());
-        coordinatesWriter.close();
+        try (Writer coordinatesWriter = coordinatesTransformerBuilder.build()) {
+          coordinatesWriter.write(Objects.requireNonNull(context.value()));
+        }
       } else {
-        writer.append(XmlEscapers.xmlContentEscaper().escape(context.value()));
+        writer.append(escaper.escape(Objects.requireNonNull(context.value())));
       }
-
       inCurrentPropertyText = true;
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new IllegalStateException(IO_ERROR_MESSAGE, e);
     }
   }
 
@@ -410,7 +432,7 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
   }
 
   private String getLocalName(String name) {
-    return name.substring(name.lastIndexOf(":") + 1);
+    return name.substring(name.lastIndexOf(':') + 1);
   }
 
   private String getNamespaceUri(List<String> path) {
@@ -418,16 +440,16 @@ public class FeatureEncoderGmlUpgrade extends FeatureTokenEncoderDefault<Encodin
   }
 
   private String getNamespaceUri(String name) {
-    return name.substring(0, name.lastIndexOf(":"));
+    return name.substring(0, name.lastIndexOf(':'));
   }
 
   @Override
-  public Class<? extends EncodingAwareContextGml> getContextInterface() {
-    return EncodingAwareContextGml.class;
+  public Class<? extends EncodingAwareContextGmlUpgrade> getContextInterface() {
+    return EncodingAwareContextGmlUpgrade.class;
   }
 
   @Override
-  public EncodingAwareContextGml createContext() {
-    return ModifiableEncodingAwareContextGml.create().setEncoding(transformationContext);
+  public EncodingAwareContextGmlUpgrade createContext() {
+    return ModifiableEncodingAwareContextGmlUpgrade.create().setEncoding(transformationContext);
   }
 }
