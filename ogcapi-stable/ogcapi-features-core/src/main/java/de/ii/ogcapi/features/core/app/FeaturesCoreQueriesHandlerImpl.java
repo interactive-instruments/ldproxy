@@ -283,7 +283,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
     FeatureStream featureStream;
     FeatureTokenEncoder<?> encoder;
-    Optional<PropertyTransformations> propertyTransformations = Optional.empty();
+    Map<String, PropertyTransformations> propertyTransformations = ImmutableMap.of();
 
     if (outputFormat.canPassThroughFeatures()
         && featureProvider.supportsPassThrough()
@@ -311,9 +311,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
               .getPropertyTransformations(api.getData().getCollections().get(collectionId))
               .map(
                   pt ->
-                      pt.withSubstitutions(
-                          ImmutableMap.of(
-                              "serviceUrl", transformationContextGeneric.getServiceUrl())));
+                      ImmutableMap.of(
+                          featureTypeId,
+                          pt.withSubstitutions(
+                              ImmutableMap.of(
+                                  "serviceUrl", transformationContextGeneric.getServiceUrl()))))
+              .orElse(ImmutableMap.of());
     } else {
       throw new NotAcceptableException(
           MessageFormat.format(
@@ -376,7 +379,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       FeatureStream featureTransformStream,
       boolean failIfEmpty,
       final FeatureTokenEncoder<?> encoder,
-      Optional<PropertyTransformations> propertyTransformations) {
+      Map<String, PropertyTransformations> propertyTransformations) {
 
     return outputStream -> {
       SinkTransformed<Object, byte[]> featureSink = encoder.to(Sink.outputStream(outputStream));
@@ -396,7 +399,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       FeatureStream featureTransformStream,
       boolean failIfEmpty,
       final FeatureTokenEncoder<?> encoder,
-      Optional<PropertyTransformations> propertyTransformations) {
+      Map<String, PropertyTransformations> propertyTransformations) {
 
     SinkReduced<Object, byte[]> featureSink = encoder.to(Sink.reduceByteArray());
 
