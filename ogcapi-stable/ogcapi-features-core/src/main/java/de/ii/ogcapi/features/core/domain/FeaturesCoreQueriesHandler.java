@@ -43,7 +43,15 @@ public interface FeaturesCoreQueriesHandler
 
     boolean getShowsFeatureSelfLink();
 
-    boolean getIncludeLinkHeader();
+    @Value.Default
+    default boolean sendResponseAsStream() {
+      return true;
+    }
+
+    @Value.Default
+    default String getPath() {
+      return "/collections/" + getCollectionId() + "/items";
+    }
   }
 
   @Value.Immutable
@@ -58,6 +66,9 @@ public interface FeaturesCoreQueriesHandler
 
     EpsgCrs getDefaultCrs();
 
-    boolean getIncludeLinkHeader();
+    @Value.Default
+    default boolean sendResponseAsStream() {
+      return false;
+    }
   }
 }

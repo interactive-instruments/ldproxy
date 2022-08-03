@@ -25,4 +25,6 @@ public interface BufferView {
   Optional<Integer> getByteStride();
 
   Optional<Integer> getTarget();
+
+  Optional<String> getName();
 }

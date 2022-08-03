@@ -19,10 +19,20 @@ import org.immutables.value.Value;
 public interface GltfConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   @Nullable
-  Integer getLod();
+  Boolean getWithNormals();
+
+  @Value.Derived
+  default boolean isWithNormals() {
+    return Boolean.TRUE.equals(getWithNormals());
+  }
 
   @Nullable
-  Boolean getWithNormals();
+  Boolean getPolygonOrientationNotGuaranteed();
+
+  @Value.Derived
+  default boolean polygonOrientationIsNotGuaranteed() {
+    return Boolean.TRUE.equals(getPolygonOrientationNotGuaranteed());
+  }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 

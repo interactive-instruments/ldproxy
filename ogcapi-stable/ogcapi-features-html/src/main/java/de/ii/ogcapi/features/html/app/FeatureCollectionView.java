@@ -119,7 +119,7 @@ public class FeatureCollectionView extends DatasetView {
               .backgroundUrl(
                   Optional.ofNullable(htmlConfig.getLeafletUrl())
                       .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
-              .attribution(getAttribution())
+              .attribution(getAttribution().replace("'", "\\'"))
               .bounds(Optional.ofNullable(bbox))
               .data(
                   new ImmutableSource.Builder()
@@ -143,7 +143,7 @@ public class FeatureCollectionView extends DatasetView {
                               url.replace("{z}", "{TileMatrix}")
                                   .replace("{y}", "{TileRow}")
                                   .replace("{x}", "{TileCol}")))
-              .attribution(getAttribution())
+              .attribution(getAttribution().replace("'", "\\'"))
               .build();
       this.cesiumData =
           new CesiumData(
@@ -163,7 +163,7 @@ public class FeatureCollectionView extends DatasetView {
               .backgroundUrl(
                   Optional.ofNullable(htmlConfig.getLeafletUrl())
                       .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
-              .attribution(htmlConfig.getBasemapAttribution())
+              .attribution(htmlConfig.getBasemapAttribution().replace("'", "\\'"))
               .fields(queryables.entrySet())
               .build();
     } else {

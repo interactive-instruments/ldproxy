@@ -8,17 +8,31 @@
 package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableBuffer.Builder.class)
-public interface Buffer {
+@JsonDeserialize(builder = ImmutableTile3dTiles.Builder.class)
+public interface Tile3dTiles {
 
-  int getByteLength();
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<Tile3dTiles> FUNNEL =
+      (from, into) -> {
+        // TODO
+      };
 
-  Optional<String> getUri();
+  BoundingVolume3dTiles getBoundingVolume();
 
-  Optional<String> getName();
+  Optional<Float> getGeometricError();
+
+  @Value.Default
+  default String getRefine() {
+    return "REPLACE";
+  }
+
+  Content3dTiles getContent();
+
+  ImplicitTiling3dTiles getImplicitTiling();
 }

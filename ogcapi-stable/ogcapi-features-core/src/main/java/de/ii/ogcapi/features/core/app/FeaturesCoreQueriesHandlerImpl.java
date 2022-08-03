@@ -125,7 +125,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         api.getOutputFormat(
                 FeatureFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/items",
+                queryInput.getPath(),
                 Optional.of(collectionId))
             .orElseThrow(
                 () ->
@@ -148,7 +148,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         defaultPageSize,
         queryInput.getShowsFeatureSelfLink(),
         queryInput.getIncludeLinkHeader(),
-        queryInput.getDefaultCrs());
+        queryInput.getDefaultCrs(),
+        queryInput.sendResponseAsStream());
   }
 
   private Response getItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext) {
@@ -179,6 +180,13 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
     }
 
+    boolean sendResponseAsStream =
+        outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            && api.getData()
+                .getExtension(HtmlConfiguration.class, collectionId)
+                .map(HtmlConfiguration::getSendEtags)
+                .orElse(false);
+
     return getItemsResponse(
         api,
         requestContext,
@@ -193,7 +201,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         Optional.empty(),
         false,
         queryInput.getIncludeLinkHeader(),
-        queryInput.getDefaultCrs());
+        queryInput.getDefaultCrs(),
+        sendResponseAsStream);
   }
 
   private Response getItemsResponse(
@@ -210,7 +219,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       Optional<Integer> defaultPageSize,
       boolean showsFeatureSelfLink,
       boolean includeLinkHeader,
-      EpsgCrs defaultCrs) {
+      EpsgCrs defaultCrs,
+      boolean sendResponseAsStream) {
 
     ensureCollectionIdExists(api.getData(), collectionId);
     ensureFeatureProviderSupportsQueries(featureProvider);
@@ -326,12 +336,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     byte[] bytes = null;
     StreamingOutput streamingOutput = null;
 
-    if (Objects.nonNull(featureId)
-        && (!outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || api.getData()
-                .getExtension(HtmlConfiguration.class, collectionId)
-                .map(HtmlConfiguration::getSendEtags)
-                .orElse(false))) {
+    if (sendResponseAsStream) {
+      streamingOutput =
+          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
+      lastModified = getLastModified(queryInput);
+
+    } else {
       ResultReduced<byte[]> result = reduce(featureStream, true, encoder, propertyTransformations);
 
       bytes = result.reduced();
@@ -340,10 +350,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         etag = result.getETag().get();
         LOGGER.debug("ETAG {}", etag);
       }
-    } else {
-      streamingOutput =
-          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
-      lastModified = getLastModified(queryInput);
     }
 
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
@@ -362,7 +368,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     .collect(ImmutableList.toImmutableList())
                 : null,
             HeaderCaching.of(lastModified, etag, queryInput),
-            targetCrs,
+            outputFormat.getContentCrs(targetCrs),
             HeaderContentDisposition.of(
                 String.format(
                     "%s.%s",

@@ -13,12 +13,12 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableBuffer.Builder.class)
-public interface Buffer {
+@JsonDeserialize(builder = ImmutableAvailability.Builder.class)
+public interface Availability {
 
-  int getByteLength();
+  Optional<Integer> getBitstream();
 
-  Optional<String> getUri();
+  Optional<Integer> getAvailabilityCount();
 
-  Optional<String> getName();
+  Optional<Integer> getConstant();
 }

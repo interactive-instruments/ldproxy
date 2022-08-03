@@ -13,6 +13,7 @@ import de.ii.ogcapi.features.core.app.PathParameterFeatureIdFeatures;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
@@ -29,6 +30,10 @@ public interface FeatureFormatExtension extends FormatExtension {
   }
 
   ApiMediaType getCollectionMediaType();
+
+  default EpsgCrs getContentCrs(EpsgCrs targetCrs) {
+    return targetCrs;
+  }
 
   default boolean canPassThroughFeatures() {
     return false;

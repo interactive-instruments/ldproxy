@@ -8,17 +8,19 @@
 package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import java.util.Optional;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableBuffer.Builder.class)
-public interface Buffer {
+@JsonDeserialize(builder = ImmutableContent3dTiles.Builder.class)
+public interface Content3dTiles {
 
-  int getByteLength();
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<Content3dTiles> FUNNEL =
+      (from, into) -> {
+        // TODO
+      };
 
-  Optional<String> getUri();
-
-  Optional<String> getName();
+  String getUri();
 }

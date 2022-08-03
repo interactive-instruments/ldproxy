@@ -7,18 +7,18 @@
  */
 package de.ii.ogcapi.features.gltf.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import java.util.Optional;
+import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableBuffer.Builder.class)
-public interface Buffer {
+@JsonDeserialize(builder = ImmutableMetadataEntity.Builder.class)
+public interface MetadataEntity {
 
-  int getByteLength();
+  @JsonProperty("class")
+  String getClass_();
 
-  Optional<String> getUri();
-
-  Optional<String> getName();
+  Map<String, Object> getProperties();
 }

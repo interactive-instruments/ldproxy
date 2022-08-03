@@ -8,17 +8,28 @@
 package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import java.util.Optional;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableBuffer.Builder.class)
-public interface Buffer {
+@JsonDeserialize(builder = ImmutableImplicitTiling3dTiles.Builder.class)
+public interface ImplicitTiling3dTiles {
 
-  int getByteLength();
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<ImplicitTiling3dTiles> FUNNEL =
+      (from, into) -> {
+        // TODO
+      };
 
-  Optional<String> getUri();
+  @Value.Default
+  default String getSubdivisionScheme() {
+    return "QUADTREE";
+  }
 
-  Optional<String> getName();
+  int getAvailableLevels();
+
+  int getSubtreeLevels();
+
+  Content3dTiles getSubtrees();
 }

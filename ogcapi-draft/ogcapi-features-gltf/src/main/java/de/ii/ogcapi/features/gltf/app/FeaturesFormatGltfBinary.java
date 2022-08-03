@@ -16,6 +16,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
+import de.ii.ogcapi.features.gltf.domain.Format3dTilesContent;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -56,7 +57,7 @@ import javax.ws.rs.core.MediaType;
 
 @AutoBind
 @Singleton
-public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
+public class FeaturesFormatGltfBinary implements FeatureFormatExtension, Format3dTilesContent {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -109,6 +110,11 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   @Override
   public boolean canSupportTransactions() {
     return false;
+  }
+
+  @Override
+  public EpsgCrs getContentCrs(EpsgCrs targetCrs) {
+    return EpsgCrs.of(4978);
   }
 
   @Override
@@ -237,22 +243,9 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
               crs.toUriString()));
     }
 
-    Integer lod =
-        transformationContext
-            .getApiData()
-            .getExtension(GltfConfiguration.class, transformationContext.getCollectionId())
-            .map(GltfConfiguration::getLod)
-            .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        String.format(
-                            "The glTF-Binary Level Of Detail has not been configured for collection '%s'.",
-                            transformationContext.getCollectionId())));
-
     ImmutableFeatureTransformationContextGltf transformationContextGltf =
         ImmutableFeatureTransformationContextGltf.builder()
             .from(transformationContext)
-            .lod(lod)
             // TODO true for Cesium JS in HTML, but in other cases maybe not; or we want to clamp to
             // a terrain
             .clampToGround(true)

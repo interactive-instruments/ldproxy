@@ -15,8 +15,6 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGltf implements FeatureTransformationContext {
 
-  public abstract int getLod();
-
   public abstract boolean getClampToGround();
 
   public abstract CrsTransformer getCrsTransformerCrs84hToEcef();

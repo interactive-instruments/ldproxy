@@ -8,17 +8,30 @@
 package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.List;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableBuffer.Builder.class)
-public interface Buffer {
+@JsonDeserialize(builder = ImmutableSubtree.Builder.class)
+public interface Subtree {
 
-  int getByteLength();
+  List<Buffer> getBuffers();
 
-  Optional<String> getUri();
+  List<BufferView> getBufferViews();
 
-  Optional<String> getName();
+  List<PropertyTable> getPropertyTables();
+
+  Availability getTileAvailability();
+
+  List<Availability> getContentAvailability();
+
+  Availability getChildSubtreeAvailability();
+
+  Optional<Integer> getTileMetadata();
+
+  List<Integer> getContentMetadata();
+
+  MetadataEntity getSubtreeMetadata();
 }
