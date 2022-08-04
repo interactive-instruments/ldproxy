@@ -184,7 +184,7 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
 
     // TODO support language
     ImmutableSortedSet<GeoJsonWriter> geoJsonWriters =
-        geoJsonWriterRegistry.getGeoJsonWriters().stream()
+        geoJsonWriterRegistry.getWriters().stream()
             .map(GeoJsonWriter::create)
             .collect(
                 ImmutableSortedSet.toImmutableSortedSet(
