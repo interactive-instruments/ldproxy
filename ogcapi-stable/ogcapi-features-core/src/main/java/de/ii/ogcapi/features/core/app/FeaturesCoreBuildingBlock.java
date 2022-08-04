@@ -13,7 +13,6 @@ import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.MINIMU
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
@@ -48,14 +47,12 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.threeten.extra.Interval;
 
 /**
  * @title Features Core
@@ -300,32 +297,13 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
         providers.getFeatureProvider(apiData, collectionData);
 
     if (featureProvider.map(FeatureProvider2::supportsExtents).orElse(false)) {
-
-      List<String> temporalQueryables =
+      String featureType =
           collectionData
               .getExtension(FeaturesCoreConfiguration.class)
-              .flatMap(FeaturesCoreConfiguration::getQueryables)
-              .map(FeaturesCollectionQueryables::getTemporal)
-              .orElse(ImmutableList.of());
+              .flatMap(FeaturesCoreConfiguration::getFeatureType)
+              .orElse(collectionId);
 
-      if (!temporalQueryables.isEmpty()) {
-        Optional<Interval> interval;
-        if (temporalQueryables.size() >= 2) {
-          interval =
-              featureProvider
-                  .get()
-                  .extents()
-                  .getTemporalExtent(
-                      collectionId, temporalQueryables.get(0), temporalQueryables.get(1));
-        } else {
-          interval =
-              featureProvider
-                  .get()
-                  .extents()
-                  .getTemporalExtent(collectionId, temporalQueryables.get(0));
-        }
-        return interval.map(TemporalExtent::of);
-      }
+      return featureProvider.get().extents().getTemporalExtent(featureType).map(TemporalExtent::of);
     }
     return Optional.empty();
   }
