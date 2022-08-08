@@ -3,7 +3,7 @@ maturity = 'EXPERIMENTAL'
 
 repositories {
     maven {
-        url "https://maven.ecc.no/releases"
+        url "https://ecc-mvn.ams3.digitaloceanspaces.com/releases"
     }
 }
 
