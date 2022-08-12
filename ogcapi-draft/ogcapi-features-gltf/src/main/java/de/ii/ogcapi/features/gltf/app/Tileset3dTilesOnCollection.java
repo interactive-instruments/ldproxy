@@ -11,7 +11,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.CollectionExtension;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection.Builder;
-import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain._3dTilesConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -55,7 +54,8 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language) {
-    if (isExtensionEnabled(featureTypeConfiguration, GltfConfiguration.class) && !isNested) {
+    if (isExtensionEnabled(featureTypeConfiguration, getBuildingBlockConfigurationType())
+        && !isNested) {
       collection.addAllLinks(
           ImmutableList.<Link>builder()
               .add(

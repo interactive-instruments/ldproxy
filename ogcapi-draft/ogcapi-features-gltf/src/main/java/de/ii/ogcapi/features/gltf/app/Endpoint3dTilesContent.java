@@ -167,8 +167,15 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
       @PathParam("y") String y)
       throws URISyntaxException {
 
+    Integer availableLevels =
+        api.getData()
+            .getCollectionData(collectionId)
+            .flatMap(c -> c.getExtension(_3dTilesConfiguration.class))
+            .map(_3dTilesConfiguration::getAvailableLevels)
+            .orElseThrow();
+
     int cl = Integer.parseInt(level);
-    if (cl < 0 || cl >= Helper.AVAILABLE_LEVELS) {
+    if (cl < 0 || cl >= availableLevels) {
       throw new NotFoundException();
     }
     long cx = Long.parseLong(x);

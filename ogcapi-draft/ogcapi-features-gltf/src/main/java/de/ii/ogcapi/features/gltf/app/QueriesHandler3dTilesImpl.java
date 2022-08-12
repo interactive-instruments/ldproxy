@@ -21,6 +21,7 @@ import de.ii.ogcapi.features.gltf.domain.ImmutableTile3dTiles;
 import de.ii.ogcapi.features.gltf.domain.ImmutableTileset3dTiles;
 import de.ii.ogcapi.features.gltf.domain.QueriesHandler3dTiles;
 import de.ii.ogcapi.features.gltf.domain.Tileset3dTiles;
+import de.ii.ogcapi.features.gltf.domain._3dTilesConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
@@ -123,6 +124,12 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
 
     BoundingBox bbox = api.getSpatialExtent(collectionId).orElseThrow();
 
+    _3dTilesConfiguration cfg =
+        api.getData()
+            .getCollectionData(collectionId)
+            .flatMap(c -> c.getExtension(_3dTilesConfiguration.class))
+            .orElseThrow();
+
     Tileset3dTiles tileset =
         ImmutableTileset3dTiles.builder()
             .asset(ImmutableAssetMetadata.builder().version("1.1").build())
@@ -147,8 +154,8 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
                     .implicitTiling(
                         ImmutableImplicitTiling3dTiles.builder()
                             .subdivisionScheme("QUADTREE")
-                            .availableLevels(Helper.AVAILABLE_LEVELS)
-                            .subtreeLevels(Helper.SUBTREE_LEVELS)
+                            .availableLevels(Objects.requireNonNull(cfg.getAvailableLevels()))
+                            .subtreeLevels(Objects.requireNonNull(cfg.getSubtreeLevels()))
                             .subtrees(
                                 ImmutableContent3dTiles.builder()
                                     .uri("subtrees/{level}/{x}/{y}")

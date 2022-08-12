@@ -9,12 +9,19 @@ package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = Immutable_3dTilesConfiguration.Builder.class)
 public interface _3dTilesConfiguration extends ExtensionConfiguration {
+
+  @Nullable
+  Integer getAvailableLevels();
+
+  @Nullable
+  Integer getSubtreeLevels();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 

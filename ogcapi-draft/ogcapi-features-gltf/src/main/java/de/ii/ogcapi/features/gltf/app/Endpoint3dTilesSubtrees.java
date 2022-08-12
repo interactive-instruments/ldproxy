@@ -41,6 +41,7 @@ import io.dropwizard.auth.Auth;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -165,8 +166,16 @@ public class Endpoint3dTilesSubtrees extends EndpointSubCollection {
       @PathParam("x") String x,
       @PathParam("y") String y) {
 
+    _3dTilesConfiguration cfg =
+        api.getData()
+            .getCollectionData(collectionId)
+            .flatMap(c -> c.getExtension(_3dTilesConfiguration.class))
+            .orElseThrow();
+    int availableLevels = Objects.requireNonNull(cfg.getAvailableLevels());
+    int subtreeLevels = Objects.requireNonNull(cfg.getSubtreeLevels());
+
     int sl = Integer.parseInt(level);
-    if (sl < 0 || sl >= Helper.AVAILABLE_LEVELS || sl % Helper.SUBTREE_LEVELS != 0) {
+    if (sl < 0 || sl >= availableLevels || sl % subtreeLevels != 0) {
       throw new NotFoundException();
     }
     long sx = Long.parseLong(x);

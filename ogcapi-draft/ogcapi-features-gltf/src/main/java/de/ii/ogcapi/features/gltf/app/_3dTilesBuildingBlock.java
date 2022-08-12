@@ -29,6 +29,10 @@ public class _3dTilesBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new Immutable_3dTilesConfiguration.Builder().enabled(false).build();
+    return new Immutable_3dTilesConfiguration.Builder()
+        .enabled(false)
+        .availableLevels(9)
+        .subtreeLevels(3)
+        .build();
   }
 }
