@@ -37,6 +37,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -48,15 +49,12 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO cleanup, consolidate, harmonize code
+
 public class Helper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderHits.class);
-
-  // TODO make configurable
-  public static final int AVAILABLE_LEVELS = 9;
-  public static final int SUBTREE_LEVELS = 3;
-
-  public static final double EPSILON = 1.0e-7;
+  private static final double EPSILON = 1.0e-7;
 
   public static final byte[] MAGIC_GLTF = new byte[] {0x67, 0x6c, 0x54, 0x46};
   public static final byte[] MAGIC_SUBT = new byte[] {0x73, 0x75, 0x62, 0x74};
@@ -66,11 +64,14 @@ public class Helper {
   public static final byte[] BIN = new byte[] {0x42, 0x49, 0x4e, 0x00};
   public static final byte[] JSON_PADDING = new byte[] {0x20};
   public static final byte[] BIN_PADDING = new byte[] {0x00};
+  static final double MAX_SHORT = 32767.0;
+  static final double MAX_BYTE = 127.0;
 
   public static void writeGltfBinary(
       GltfAsset gltf,
       ByteArrayOutputStream bufferIndices,
       ByteArrayOutputStream bufferVertices,
+      ByteArrayOutputStream bufferNormals,
       OutputStream outputStream) {
 
     byte[] json;
@@ -81,7 +82,7 @@ public class Helper {
           String.format("Could not write glTF asset. Reason: %s", e.getMessage()));
     }
 
-    int bufferLength = bufferIndices.size() + bufferVertices.size();
+    int bufferLength = bufferIndices.size() + bufferVertices.size() + bufferNormals.size();
     int jsonPadding = (4 - json.length % 4) % 4;
     int bufferPadding = (4 - bufferLength % 4) % 4;
     int totalLength = 12 + 8 + json.length + jsonPadding + 8 + bufferLength + bufferPadding;
@@ -101,6 +102,7 @@ public class Helper {
       outputStream.write(BIN);
       outputStream.write(bufferIndices.toByteArray());
       outputStream.write(bufferVertices.toByteArray());
+      outputStream.write(bufferNormals.toByteArray());
       for (int i = 0; i < bufferPadding; i++) {
         outputStream.write(BIN_PADDING);
       }
@@ -246,6 +248,20 @@ public class Helper {
     return bb.array();
   }
 
+  public static byte[] doubleToLittleEndianShort(double v) {
+    ByteBuffer bb = ByteBuffer.allocate(2);
+    bb.order(ByteOrder.LITTLE_ENDIAN);
+    bb.putShort((short) Math.max(-32767L, Math.min(32767L, Math.round(v))));
+    return bb.array();
+  }
+
+  public static byte[] doubleToLittleEndianByte(double v) {
+    ByteBuffer bb = ByteBuffer.allocate(1);
+    bb.order(ByteOrder.LITTLE_ENDIAN);
+    bb.put((byte) Math.max(-127L, Math.min(127L, Math.round(v))));
+    return bb.array();
+  }
+
   public static byte[] doubleToLittleEndianFloat(double v) {
     ByteBuffer bb = ByteBuffer.allocate(4);
     bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -273,23 +289,42 @@ public class Helper {
         / 2.0d;
   }
 
-  public static Geometry.Coordinate computeNormal(List<Geometry.Coordinate> ring) {
-    if (ring.size() < 3) {
-      throw new IllegalStateException(String.format("Ring with less than 3 coordinates: %s", ring));
+  public static Geometry.Coordinate computeNormal(double[] ring) {
+    if (ring.length < 9) {
+      throw new IllegalStateException(
+          String.format("Ring with less than 3 coordinates: %s", Arrays.toString(ring)));
     }
 
     double x = 0.0;
     double y = 0.0;
     double z = 0.0;
-    for (int i = 0; i < ring.size() - 1; i++) {
-      Geometry.Coordinate p0 = ring.get(i);
-      Geometry.Coordinate p1 = ring.get(i + 1);
-
-      x += (p0.get(1) - p1.get(1)) * (p0.get(2) + p1.get(2));
-      y += (p0.get(2) - p1.get(2)) * (p0.get(0) + p1.get(0));
-      z += (p0.get(0) - p1.get(0)) * (p0.get(1) + p1.get(1));
+    if (ring.length == 9) {
+      // a triangle, use cross product
+      double ux = ring[3] - ring[0];
+      double uy = ring[4] - ring[1];
+      double uz = ring[5] - ring[2];
+      double vx = ring[6] - ring[0];
+      double vy = ring[7] - ring[1];
+      double vz = ring[8] - ring[2];
+      x = uy * vz - uz * vy;
+      y = uz * vx - ux * vz;
+      z = ux * vy - uy * vx;
+    } else {
+      // use Newell's method
+      int l = ring.length;
+      for (int i = 0; i < l / 3; i++) {
+        x += (ring[i * 3 + 1] - ring[(i * 3 + 4) % l]) * (ring[i * 3 + 2] + ring[(i * 3 + 5) % l]);
+        y += (ring[i * 3 + 2] - ring[(i * 3 + 5) % l]) * (ring[i * 3] + ring[(i * 3 + 3) % l]);
+        z += (ring[i * 3] - ring[(i * 3 + 3) % l]) * (ring[i * 3 + 1] + ring[(i * 3 + 4) % l]);
+      }
     }
     double length = Math.sqrt(x * x + y * y + z * z);
+    if (length == 0.0) {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Normal has length 0 for ring: {}", ring);
+      }
+      return null;
+    }
     return Geometry.Coordinate.of(x / length, y / length, z / length);
   }
 
@@ -333,7 +368,7 @@ public class Helper {
     return builder.build();
   }
 
-  public static Geometry.Coordinate getCoordinate(List<PropertyGltf> coordList) {
+  private static Geometry.Coordinate getCoordinate(List<PropertyGltf> coordList) {
     return Geometry.Coordinate.of(
         coordList.stream()
             .map(PropertyBase::getValue)
@@ -370,6 +405,51 @@ public class Helper {
 
   public static double degToRad(double degree) {
     return degree / 180.0 * Math.PI;
+  }
+
+  public static boolean isCoplanar(List<Geometry.Coordinate> coords) {
+    if (coords.size() < 4) {
+      return true;
+    }
+
+    // find three points on the ring that are not collinear
+    int[] n = find3rdPoint(coords);
+
+    if (n[1] == -1) {
+      return true;
+    }
+
+    // establish plane from points A, B, C
+    Coordinate AB =
+        Coordinate.of(
+            coords.get(n[0]).get(0) - coords.get(0).get(0),
+            coords.get(n[0]).get(1) - coords.get(0).get(1),
+            coords.get(n[0]).get(2) - coords.get(0).get(2));
+    Coordinate AC =
+        Coordinate.of(
+            coords.get(n[1]).get(0) - coords.get(0).get(0),
+            coords.get(n[1]).get(1) - coords.get(0).get(1),
+            coords.get(n[1]).get(2) - coords.get(0).get(2));
+
+    Coordinate X = crossProduct(AB, AC);
+
+    double d =
+        X.get(0) * coords.get(0).get(0)
+            + X.get(1) * coords.get(0).get(1)
+            + X.get(2) * coords.get(0).get(2);
+
+    // check for all other points that they are on the plane
+    for (int i = 3; i < coords.size(); i++) {
+      if (Math.abs(
+              X.get(0) * coords.get(i).get(0)
+                  + X.get(1) * coords.get(i).get(1)
+                  + X.get(2) * coords.get(i).get(2)
+                  - d)
+          > EPSILON) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public static int[] find3rdPoint(List<Geometry.Coordinate> coords) {

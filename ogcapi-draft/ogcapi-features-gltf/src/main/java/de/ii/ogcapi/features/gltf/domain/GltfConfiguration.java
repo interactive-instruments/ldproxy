@@ -19,10 +19,18 @@ import org.immutables.value.Value;
 public interface GltfConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   @Nullable
+  Boolean getMeshQuantization();
+
+  @Value.Derived
+  default boolean useMeshQuantization() {
+    return Boolean.TRUE.equals(getMeshQuantization());
+  }
+
+  @Nullable
   Boolean getWithNormals();
 
   @Value.Derived
-  default boolean isWithNormals() {
+  default boolean writeNormals() {
     return Boolean.TRUE.equals(getWithNormals());
   }
 

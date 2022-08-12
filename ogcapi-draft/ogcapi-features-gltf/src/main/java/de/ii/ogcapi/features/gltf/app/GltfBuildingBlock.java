@@ -29,6 +29,6 @@ public class GltfBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new ImmutableGltfConfiguration.Builder().enabled(false).build();
+    return new ImmutableGltfConfiguration.Builder().enabled(false).meshQuantization(false).build();
   }
 }

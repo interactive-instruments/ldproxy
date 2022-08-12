@@ -22,6 +22,11 @@ public interface Accessor {
 
   int getComponentType();
 
+  @Value.Default
+  default boolean getNormalized() {
+    return false;
+  }
+
   int getCount();
 
   List<Number> getMax();
