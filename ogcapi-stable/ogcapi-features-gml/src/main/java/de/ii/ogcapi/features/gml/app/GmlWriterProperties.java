@@ -229,7 +229,9 @@ public class GmlWriterProperties implements GmlWriter {
 
   private void writeValue(EncodingAwareContextGml context, String value, Type type) {
     if (type == Type.BOOLEAN) {
-      context.encoding().write(Boolean.parseBoolean(value));
+      context
+          .encoding()
+          .write(Boolean.parseBoolean(value) || value.equalsIgnoreCase("t") || value.equals("1"));
     } else {
       context.encoding().write(value);
     }
