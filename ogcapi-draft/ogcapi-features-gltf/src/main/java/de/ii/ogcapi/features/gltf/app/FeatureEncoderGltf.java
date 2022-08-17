@@ -943,7 +943,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                 .bufferView(2)
                 .byteOffset(bytesNormals)
                 .componentType(quantizeMesh ? BYTE : FLOAT)
-                .normalized(true)
+                .normalized(quantizeMesh ? true : false)
                 .max(
                     quantizeMesh
                         ? ImmutableList.of(
