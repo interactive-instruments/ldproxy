@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.html.app;
 
+import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 import static de.ii.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi.DEFAULT_FLATTENING_SEPARATOR;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -87,6 +88,13 @@ public class FeaturesFormatHtml
           .label("HTML")
           .parameter("html")
           .build();
+
+  // TODO temporarily change default pattern, need to update HTML output for SEARCH module
+  @Override
+  public String getPathPattern() {
+    return "^/?collections/" + COLLECTION_ID_PATTERN + "/items(?:/" + "[^/ ]+" + ")?$";
+  }
+
   private final Schema schema = new StringSchema().example("<html>...</html>");
   private static final String schemaRef = "#/components/schemas/htmlSchema";
   private static final WithTransformationsApplied SCHEMA_FLATTENER =
@@ -205,6 +213,9 @@ public class FeaturesFormatHtml
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+    if (!path.matches(getPathPattern())) {
+      return null; // TODO
+    }
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(schemaRef)

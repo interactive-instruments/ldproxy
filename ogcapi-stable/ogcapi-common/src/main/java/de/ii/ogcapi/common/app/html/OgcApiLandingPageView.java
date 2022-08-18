@@ -149,6 +149,10 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
         .collect(Collectors.toUnmodifiableList());
   }
 
+  public Optional<Link> getQueries() {
+    return links.stream().filter(link -> Objects.equals(link.getRel(), "search")).findFirst();
+  }
+
   public Optional<Link> getStyles() {
     return links.stream()
         .filter(

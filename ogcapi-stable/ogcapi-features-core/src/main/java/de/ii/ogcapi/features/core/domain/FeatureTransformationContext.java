@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -27,8 +28,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.Set;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
+import org.immutables.value.Value.Derived;
 
 /**
  * @author zahnen
@@ -52,9 +55,18 @@ public interface FeatureTransformationContext {
 
   OgcApiDataV2 getApiData();
 
-  String getCollectionId();
+  // TODO defaults for the FeatureQuery case
+  @Derived
+  default String getCollectionId() {
+    return getFeatureSchemas().keySet().stream().findFirst().orElse(null);
+  }
 
-  Optional<FeatureSchema> getFeatureSchema();
+  @Derived
+  default Optional<FeatureSchema> getFeatureSchema() {
+    return getFeatureSchemas().values().stream().findFirst().orElse(Optional.empty());
+  }
+
+  Map<String, Optional<FeatureSchema>> getFeatureSchemas();
 
   OutputStream getOutputStream();
 
@@ -69,7 +81,6 @@ public interface FeatureTransformationContext {
     if (getCrsTransformer().isPresent()) return getCrsTransformer().get().getTargetCrs();
     return getSourceCrs().orElse(getDefaultCrs());
   }
-  ;
 
   List<Link> getLinks();
 
@@ -98,8 +109,8 @@ public interface FeatureTransformationContext {
   }
 
   @Value.Default
-  default List<String> getFields() {
-    return ImmutableList.of("*");
+  default Map<String, List<String>> getFields() {
+    return ImmutableMap.of("*", ImmutableList.of("*"));
   }
 
   ApiRequestContext getOgcApiRequest();
@@ -134,7 +145,9 @@ public interface FeatureTransformationContext {
   @Value.Derived
   @Value.Auxiliary
   default Optional<FeatureTypeConfigurationOgcApi> getCollection() {
-    return Optional.ofNullable(getApiData().getCollections().get(getCollectionId()));
+    Set<String> collectionIds = getFeatureSchemas().keySet();
+    return Optional.ofNullable(
+        getApiData().getCollections().get(collectionIds.stream().findFirst().orElse(null)));
   }
 
   // TODO: to geometry simplification module
