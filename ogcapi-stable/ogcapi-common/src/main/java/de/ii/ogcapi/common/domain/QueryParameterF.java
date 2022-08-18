@@ -43,8 +43,7 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
   }
 
   @Override
-  public final boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
+  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
     return computeIfAbsent(
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
         () ->
