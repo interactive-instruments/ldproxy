@@ -61,6 +61,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private static final BigDecimal NUM_1_0 = new BigDecimal("1");
   private static final BigDecimal NUM_0_0 = new BigDecimal("0");
   private static final BigDecimal NUM_MINUS_1_0 = new BigDecimal("-1");
+  private static final int INITIAL_SIZE = 1_024;
 
   private enum AXES {
     XYZ,
@@ -433,10 +434,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     bytesIndices = 0;
     bytesVertices = 0;
     bytesNormals = 0;
-    bufferIndices = new ByteArrayOutputStream();
-    bufferVertices = new ByteArrayOutputStream();
-    bufferNormals = new ByteArrayOutputStream();
-    buildingNodes = new ArrayList<>();
+    bufferIndices = new ByteArrayOutputStream(getByteStrideIndices() * INITIAL_SIZE);
+    bufferVertices = new ByteArrayOutputStream(getByteStrideVertices() * INITIAL_SIZE);
+    bufferNormals = new ByteArrayOutputStream(getByteStrideNormals() * INITIAL_SIZE);
+    buildingNodes = new ArrayList<>(INITIAL_SIZE);
   }
 
   private void finalizeModel() {
@@ -518,7 +519,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             .buffer(0) // only one buffer
             .byteLength(bytesVertices)
             .byteOffset(bytesIndices)
-            .byteStride((quantizeMesh ? 2 : 3) * 4)
+            .byteStride(getByteStrideVertices())
             .target(ARRAY_BUFFER)
             .build());
     builder.addBufferViews(
@@ -526,7 +527,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             .buffer(0) // only one buffer
             .byteLength(bytesNormals)
             .byteOffset(bytesIndices + bytesVertices)
-            .byteStride((quantizeMesh ? 1 : 3) * 4)
+            .byteStride(getByteStrideNormals())
             .target(ARRAY_BUFFER)
             .build());
     int bufferLength = bufferIndices.size() + bufferVertices.size() + bufferNormals.size();
@@ -544,8 +545,20 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       builder.addExtensionsRequired(KHR_MESH_QUANTIZATION);
     }
 
-    Helper.writeGltfBinary(
+    GltfHelper.writeGltfBinary(
         builder.build(), bufferIndices, bufferVertices, bufferNormals, outputStream);
+  }
+
+  private int getByteStrideIndices() {
+    return 2;
+  }
+
+  private int getByteStrideVertices() {
+    return (quantizeMesh ? 2 : 3) * 4;
+  }
+
+  private int getByteStrideNormals() {
+    return (quantizeMesh ? 1 : 3) * 4;
   }
 
   // TODO support other geometric primitives
@@ -624,7 +637,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                 .collect(Collectors.toUnmodifiableList());
 
         // skip a degenerated or colinear polygon (no area)
-        if (coordList.size() < 4 || Helper.find3rdPoint(coordList)[1] == -1) {
+        if (coordList.size() < 4 || GltfHelper.find3rdPoint(coordList)[1] == -1) {
           if (numRing == 0) {
             // skip polygon, if exterior boundary
             if (LOGGER.isTraceEnabled()) {
@@ -659,7 +672,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         double[] coordsEcef = crs84hToEcef.transform(coords, coords.length / 3, 3);
 
         if (LOGGER.isTraceEnabled()) {
-          if (!Helper.isCoplanar(coordList)) {
+          if (!GltfHelper.isCoplanar(coordList)) {
             LOGGER.trace(
                 "Feature '{}' has a ring that is not coplanar. The glTF mesh may be invalid. Coordinates: {}",
                 name,
@@ -669,9 +682,9 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
         if (numRing == 0) {
 
-          final double area01 = Math.abs(Helper.computeArea(coordsEcef, 0, 1));
-          final double area12 = Math.abs(Helper.computeArea(coordsEcef, 1, 2));
-          final double area20 = Math.abs(Helper.computeArea(coordsEcef, 2, 0));
+          final double area01 = Math.abs(GltfHelper.computeArea(coordsEcef, 0, 1));
+          final double area12 = Math.abs(GltfHelper.computeArea(coordsEcef, 1, 2));
+          final double area20 = Math.abs(GltfHelper.computeArea(coordsEcef, 2, 0));
           if (area01 > area12 && area01 > area20) {
             axes = AXES.XYZ;
             ccw = area01 < 0;
@@ -699,7 +712,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         data.addAll(Arrays.stream(coordsEcef).boxed().collect(Collectors.toUnmodifiableList()));
 
         if (withNormals) {
-          Geometry.Coordinate normal = Helper.computeNormal(coordsEcef);
+          Geometry.Coordinate normal = GltfHelper.computeNormal(coordsEcef);
           if (Objects.isNull(normal)) {
             if (numRing == 0) {
               // skip polygon, if exterior boundary
@@ -792,10 +805,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                     data.get(p2 * 3), data.get(p2 * 3 + 1), data.get(p2 * 3 + 2)));
         boolean ccwTriangle =
             axes == AXES.XYZ
-                ? Helper.computeAreaTriangle(triangle, 0, 1) < 0
+                ? GltfHelper.computeAreaTriangle(triangle, 0, 1) < 0
                 : axes == AXES.YZX
-                    ? Helper.computeAreaTriangle(triangle, 1, 2) < 0
-                    : Helper.computeAreaTriangle(triangle, 2, 0) < 0;
+                    ? GltfHelper.computeAreaTriangle(triangle, 1, 2) < 0
+                    : GltfHelper.computeAreaTriangle(triangle, 2, 0) < 0;
         boolean exterior = holeIndices.isEmpty() || p0 >= holeIndices.get(0);
         if ((exterior && ccwTriangle != ccw) || (!exterior && ccwTriangle == ccw)) {
           // switch orientation, if the triangle has the wrong orientation
@@ -845,7 +858,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       }
 
       for (int v : indices) {
-        bufferIndices.write(Helper.intToLittleEndianShort(v));
+        bufferIndices.write(GltfHelper.intToLittleEndianShort(v));
       }
 
       int accessorIdIndices = accessorId;
@@ -859,13 +872,13 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               .count(indices.size())
               .type("SCALAR")
               .build());
-      bytesIndices += indices.size() * 2;
+      bytesIndices += indices.size() * getByteStrideIndices();
       accessorId++;
 
       if (indices.size() % 2 == 1) {
         // pad for alignment, all offsets must be divisible by 4
-        bufferIndices.write(Helper.BIN_PADDING);
-        bufferIndices.write(Helper.BIN_PADDING);
+        bufferIndices.write(GltfHelper.BIN_PADDING);
+        bufferIndices.write(GltfHelper.BIN_PADDING);
         bytesIndices += 2;
       }
 
@@ -888,7 +901,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           }
         }
         double[] finalMaxAbs = maxAbs;
-        scale = IntStream.range(0, 3).mapToDouble(n -> finalMaxAbs[n] / Helper.MAX_SHORT).toArray();
+        scale =
+            IntStream.range(0, 3).mapToDouble(n -> finalMaxAbs[n] / GltfHelper.MAX_SHORT).toArray();
         for (int n = 0; n < vertices.size() / 3; n++) {
           vertices.set(n * 3, vertices.get(n * 3) / scale[0]);
           vertices.set(n * 3 + 1, vertices.get(n * 3 + 1) / scale[1]);
@@ -897,17 +911,17 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
         // scale normals to BYTE
         for (int n = 0; n < normals.size() / 3; n++) {
-          normals.set(n * 3, normals.get(n * 3) * Helper.MAX_BYTE);
-          normals.set(n * 3 + 1, normals.get(n * 3 + 1) * Helper.MAX_BYTE);
-          normals.set(n * 3 + 2, normals.get(n * 3 + 2) * Helper.MAX_BYTE);
+          normals.set(n * 3, normals.get(n * 3) * GltfHelper.MAX_BYTE);
+          normals.set(n * 3 + 1, normals.get(n * 3 + 1) * GltfHelper.MAX_BYTE);
+          normals.set(n * 3 + 2, normals.get(n * 3 + 2) * GltfHelper.MAX_BYTE);
         }
 
       } else {
         scale = new double[] {1d, 1d, 1d};
       }
 
-      final List<Double> verticesMin = Helper.getMin(vertices);
-      final List<Double> verticesMax = Helper.getMax(vertices);
+      final List<Double> verticesMin = GltfHelper.getMin(vertices);
+      final List<Double> verticesMax = GltfHelper.getMax(vertices);
 
       builder.addAccessors(
           ImmutableAccessor.builder()
@@ -933,11 +947,11 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               .type("VEC3")
               .build());
       accessorId++;
-      bytesVertices += vertices.size() / 3 * (quantizeMesh ? 3 * 2 + 2 : 3 * 4);
+      bytesVertices += vertices.size() / 3 * getByteStrideVertices();
 
       if (withNormals) {
-        final List<Double> normalsMin = Helper.getMin(normals);
-        final List<Double> normalsMax = Helper.getMax(normals);
+        final List<Double> normalsMin = GltfHelper.getMin(normals);
+        final List<Double> normalsMax = GltfHelper.getMax(normals);
         builder.addAccessors(
             ImmutableAccessor.builder()
                 .bufferView(2)
@@ -962,7 +976,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                 .type("VEC3")
                 .build());
         accessorId++;
-        bytesNormals += normals.size() / 3 * (quantizeMesh ? (3 + 1) : (3 * 4));
+        bytesNormals += normals.size() / 3 * getByteStrideNormals();
       }
 
       builder.addMeshes(
@@ -1011,31 +1025,31 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
       if (quantizeMesh) {
         for (int n = 0; n < vertices.size() / 3; n++) {
-          bufferVertices.write(Helper.doubleToLittleEndianShort(vertices.get(n * 3)));
-          bufferVertices.write(Helper.doubleToLittleEndianShort(vertices.get(n * 3 + 1)));
-          bufferVertices.write(Helper.doubleToLittleEndianShort(vertices.get(n * 3 + 2)));
+          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3)));
+          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 1)));
+          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 2)));
           // 3 shorts are 6 bytes, add 2 bytes to be aligned with 4-byte boundaries
-          bufferVertices.write(Helper.BIN_PADDING);
-          bufferVertices.write(Helper.BIN_PADDING);
+          bufferVertices.write(GltfHelper.BIN_PADDING);
+          bufferVertices.write(GltfHelper.BIN_PADDING);
         }
       } else {
         for (Double v : vertices) {
-          bufferVertices.write(Helper.doubleToLittleEndianFloat(v));
+          bufferVertices.write(GltfHelper.doubleToLittleEndianFloat(v));
         }
       }
 
       if (withNormals) {
         if (quantizeMesh) {
           for (int n = 0; n < normals.size() / 3; n++) {
-            bufferNormals.write(Helper.doubleToLittleEndianByte(normals.get(n * 3)));
-            bufferNormals.write(Helper.doubleToLittleEndianByte(normals.get(n * 3 + 1)));
-            bufferNormals.write(Helper.doubleToLittleEndianByte(normals.get(n * 3 + 2)));
+            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3)));
+            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 1)));
+            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 2)));
             // 3 bytes, add 1 byte to be aligned with 4-byte boundaries
-            bufferNormals.write(Helper.BIN_PADDING);
+            bufferNormals.write(GltfHelper.BIN_PADDING);
           }
         } else {
           for (Double v : normals) {
-            bufferNormals.write(Helper.doubleToLittleEndianFloat(v));
+            bufferNormals.write(GltfHelper.doubleToLittleEndianFloat(v));
           }
         }
       }
@@ -1064,7 +1078,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                             .map(
                                 ring ->
                                     Geometry.LineString.of(
-                                        Helper.getCoordinates(ring.getNestedProperties())))
+                                        GltfHelper.getCoordinates(ring.getNestedProperties())))
                             .collect(Collectors.toUnmodifiableList())))
             .collect(Collectors.toUnmodifiableList()));
   }

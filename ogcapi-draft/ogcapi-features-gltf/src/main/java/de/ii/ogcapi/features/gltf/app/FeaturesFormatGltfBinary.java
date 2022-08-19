@@ -16,7 +16,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
-import de.ii.ogcapi.features.gltf.domain.Format3dTilesContent;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -57,7 +56,7 @@ import javax.ws.rs.core.MediaType;
 
 @AutoBind
 @Singleton
-public class FeaturesFormatGltfBinary implements FeatureFormatExtension, Format3dTilesContent {
+public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
