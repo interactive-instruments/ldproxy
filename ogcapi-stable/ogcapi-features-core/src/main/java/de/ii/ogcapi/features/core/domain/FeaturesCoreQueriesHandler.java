@@ -14,6 +14,7 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -48,6 +49,12 @@ public interface FeaturesCoreQueriesHandler
       return true;
     }
 
+    // TODO rename and generalize when all file handling is moved to xtraplatform-spatial
+    @Value.Default
+    default Optional<File> getSaveContentAsFile() {
+      return Optional.empty();
+    }
+
     @Value.Default
     default String getPath() {
       return "/collections/" + getCollectionId() + "/items";
@@ -69,6 +76,11 @@ public interface FeaturesCoreQueriesHandler
     @Value.Default
     default boolean sendResponseAsStream() {
       return false;
+    }
+
+    @Value.Default
+    default Optional<File> getSaveContentAsFile() {
+      return Optional.empty();
     }
   }
 }

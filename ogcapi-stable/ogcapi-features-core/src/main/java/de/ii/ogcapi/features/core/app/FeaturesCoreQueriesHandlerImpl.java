@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureLinksGenerator;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -47,6 +48,8 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -149,7 +152,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         queryInput.getShowsFeatureSelfLink(),
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs(),
-        queryInput.sendResponseAsStream());
+        queryInput.sendResponseAsStream(),
+        queryInput.getSaveContentAsFile());
   }
 
   private Response getItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext) {
@@ -202,7 +206,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         false,
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs(),
-        sendResponseAsStream);
+        sendResponseAsStream,
+        queryInput.getSaveContentAsFile());
   }
 
   private Response getItemsResponse(
@@ -220,7 +225,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       boolean showsFeatureSelfLink,
       boolean includeLinkHeader,
       EpsgCrs defaultCrs,
-      boolean sendResponseAsStream) {
+      boolean sendResponseAsStream,
+      Optional<File> saveResponseAsFile) {
 
     ensureCollectionIdExists(api.getData(), collectionId);
     ensureFeatureProviderSupportsQueries(featureProvider);
@@ -336,7 +342,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     byte[] bytes = null;
     StreamingOutput streamingOutput = null;
 
-    if (sendResponseAsStream) {
+    if (sendResponseAsStream && saveResponseAsFile.isEmpty()) {
       streamingOutput =
           stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
       lastModified = getLastModified(queryInput);
@@ -349,6 +355,17 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       if (result.getETag().isPresent()) {
         etag = result.getETag().get();
         LOGGER.debug("ETAG {}", etag);
+      }
+
+      if (saveResponseAsFile.isPresent() && Objects.nonNull(bytes)) {
+        try {
+          Files.write(bytes, saveResponseAsFile.get());
+        } catch (IOException e) {
+          if (LOGGER.isErrorEnabled()) {
+            LOGGER.error(
+                "Could not write feature response to file: {}", saveResponseAsFile.get(), e);
+          }
+        }
       }
     }
 
