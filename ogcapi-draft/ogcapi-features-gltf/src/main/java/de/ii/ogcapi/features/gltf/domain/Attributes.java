@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -16,6 +17,13 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableAttributes.Builder.class)
 public interface Attributes {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<Attributes> FUNNEL =
+      (from, into) -> {
+        from.getPosition().ifPresent(into::putInt);
+        from.getNormal().ifPresent(into::putInt);
+      };
 
   @JsonProperty("POSITION")
   Optional<Integer> getPosition();

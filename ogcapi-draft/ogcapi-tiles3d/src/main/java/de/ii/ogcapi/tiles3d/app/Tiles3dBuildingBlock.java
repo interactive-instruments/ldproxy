@@ -31,8 +31,10 @@ public class Tiles3dBuildingBlock implements ApiBuildingBlock {
   public ExtensionConfiguration getDefaultConfiguration() {
     return new ImmutableTiles3dConfiguration.Builder()
         .enabled(false)
-        .availableLevels(9)
+        .firstLevelWithContent(0)
+        .maxLevel(0)
         .subtreeLevels(3)
+        .geometricErrorRoot(0.0f)
         .build();
   }
 }

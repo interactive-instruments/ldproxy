@@ -20,7 +20,7 @@ import java.util.List;
 public interface Format3dTilesSubtree extends GenericFormatExtension {
 
   default String getPathPattern() {
-    return "^/?collections/" + COLLECTION_ID_PATTERN + "/3dtiles/subtree/[\\d+]/[\\d+]/[\\d+]/?$";
+    return "^/?collections/" + COLLECTION_ID_PATTERN + "/3dtiles/subtree_\\d+_\\d+_\\d+/?$";
   }
 
   Object getEntity(

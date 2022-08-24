@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles3d.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.ByteStreams;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAssetMetadata;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -31,13 +32,19 @@ import de.ii.ogcapi.tiles3d.domain.ImmutableBoundingVolume3dTiles;
 import de.ii.ogcapi.tiles3d.domain.ImmutableContent3dTiles;
 import de.ii.ogcapi.tiles3d.domain.ImmutableImplicitTiling3dTiles;
 import de.ii.ogcapi.tiles3d.domain.ImmutableTile3dTiles;
+import de.ii.ogcapi.tiles3d.domain.ImmutableTileResource;
 import de.ii.ogcapi.tiles3d.domain.ImmutableTileset3dTiles;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles;
+import de.ii.ogcapi.tiles3d.domain.TileResource;
+import de.ii.ogcapi.tiles3d.domain.TileResource.TYPE;
+import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.ogcapi.tiles3d.domain.Tileset3dTiles;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.web.domain.ETag;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -59,11 +66,16 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
   private final I18n i18n;
   private final FeaturesCoreQueriesHandler queriesHandlerFeatures;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+  private final TileResourceCache tileResourceCache;
 
   @Inject
-  public QueriesHandler3dTilesImpl(I18n i18n, FeaturesCoreQueriesHandler queriesHandlerFeatures) {
+  public QueriesHandler3dTilesImpl(
+      I18n i18n,
+      FeaturesCoreQueriesHandler queriesHandlerFeatures,
+      TileResourceCache tileResourceCache) {
     this.i18n = i18n;
     this.queriesHandlerFeatures = queriesHandlerFeatures;
+    this.tileResourceCache = tileResourceCache;
     this.queryHandlers =
         ImmutableMap.of(
             Query.TILESET,
@@ -133,7 +145,7 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
     Tileset3dTiles tileset =
         ImmutableTileset3dTiles.builder()
             .asset(ImmutableAssetMetadata.builder().version("1.1").build())
-            .geometricError(5000)
+            .geometricError(10000)
             .root(
                 ImmutableTile3dTiles.builder()
                     .boundingVolume(
@@ -147,24 +159,27 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
                                     Objects.requireNonNull(bbox.getZmin()),
                                     Objects.requireNonNull(bbox.getZmax())))
                             .build())
-                    .geometricError(1024)
-                    .refine("REPLACE")
+                    .geometricError(cfg.getGeometricErrorRoot())
+                    .refine("ADD")
                     .content(
-                        ImmutableContent3dTiles.builder().uri("content/{level}/{x}/{y}").build())
+                        ImmutableContent3dTiles.builder()
+                            .uri("3dtiles/content_{level}_{x}_{y}")
+                            .build())
                     .implicitTiling(
                         ImmutableImplicitTiling3dTiles.builder()
                             .subdivisionScheme("QUADTREE")
-                            .availableLevels(Objects.requireNonNull(cfg.getAvailableLevels()))
+                            .availableLevels(Objects.requireNonNull(cfg.getMaxLevel() + 1))
                             .subtreeLevels(Objects.requireNonNull(cfg.getSubtreeLevels()))
                             .subtrees(
                                 ImmutableContent3dTiles.builder()
-                                    .uri("subtrees/{level}/{x}/{y}")
+                                    .uri("3dtiles/subtree_{level}_{x}_{y}")
                                     .build())
                             .build())
                     .build())
             .build();
 
     Date lastModified = getLastModified(queryInput);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
         !outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
                 || apiData
@@ -205,7 +220,7 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
                 Format3dTilesSubtree.class,
                 requestContext.getMediaType(),
                 String.format(
-                    "/collections/%s/3dtiles/subtree/%d/%d/%d",
+                    "/collections/%s/3dtiles/subtree_%d_%d_%d",
                     collectionId, queryInput.getLevel(), queryInput.getX(), queryInput.getY()),
                 Optional.of(collectionId))
             .orElseThrow(
@@ -227,39 +242,44 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
                 i18n,
                 requestContext.getLanguage());
 
-    ByteArrayOutputStream bufferTilesAvailability = new ByteArrayOutputStream();
-    ByteArrayOutputStream bufferContentAvailability = new ByteArrayOutputStream();
-    ByteArrayOutputStream bufferChildSubtreeAvailability = new ByteArrayOutputStream();
-
     int level = queryInput.getLevel();
-    long x = queryInput.getX();
-    long y = queryInput.getY();
+    int x = queryInput.getX();
+    int y = queryInput.getY();
 
-    // subtree_level = 0
-    // sub:
-    //   computeBbox
-    //   query data
-    //   check, if there is at least one feature in the tile
-    //   tile available (or not)
-    //   content available = tile available and level >= MIN_CONTENT_LEVEL
-    // subtree_level++
-    // while subtree_level < SUBTREE_LEVELS && level+subtree_level < AVAILABLE_LEVELS
-    //   i = 0 .. MortonCode.size(level+subtree_level)-1
-    //     coord = MortonCode.decode(i)
-    //     for level+subtree_level, coord.x, coord.y:
-    //       sub
-    // level+subtree_level < AVAILABLE_LEVELS
-    //   i = 0 .. MortonCode.size(level+subtree_level)-1
-    //     coord = MortonCode.decode(i)
-    //     for level+subtree_level, coord.x, coord.y:
-    //       computeBbox
-    //       query data
-    //       check, if there is at least one feature in the tile
-    //       child subtree available (or not)
+    TileResource r =
+        new ImmutableTileResource.Builder()
+            .level(level)
+            .x(x)
+            .y(y)
+            .api(api)
+            .collectionId(collectionId)
+            .type(TYPE.SUBTREE)
+            .build();
 
-    BoundingBox bbox = Tiles3dHelper.computeBbox(api, collectionId, level, x, y);
-    boolean hasData = Tiles3dHelper.hasData(queriesHandlerFeatures, queryInput, bbox);
-    byte[] result = (hasData ? "1" : "0").getBytes(); // TODO
+    byte[] result = null;
+
+    try {
+      if (tileResourceCache.tileResourceExists(r)) {
+        Optional<InputStream> subtreeContent = tileResourceCache.getTileResource(r);
+        if (subtreeContent.isPresent()) {
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          ByteStreams.copy(subtreeContent.get(), baos);
+          result = baos.toByteArray();
+        }
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+
+    if (Objects.isNull(result)) {
+      result = Tiles3dHelper.getSubtree(queriesHandlerFeatures, queryInput, r);
+
+      try {
+        tileResourceCache.storeTileResource(r, result);
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =
@@ -280,7 +300,8 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
             null,
             HeaderContentDisposition.of(
                 String.format(
-                    "%s.tileset.%s", collectionId, outputFormat.getMediaType().fileExtension())))
+                    "%s.subtree_%d_%d_%d.%s",
+                    collectionId, level, x, y, outputFormat.getMediaType().fileExtension())))
         .entity(outputFormat.getEntity(result, links, collectionId, api, requestContext))
         .build();
   }

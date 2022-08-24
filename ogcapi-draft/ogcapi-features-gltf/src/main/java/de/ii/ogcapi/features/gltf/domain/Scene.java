@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import java.util.List;
 import org.immutables.value.Value;
 
@@ -15,6 +16,12 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableScene.Builder.class)
 public interface Scene {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<Scene> FUNNEL =
+      (from, into) -> {
+        from.getNodes().forEach(into::putInt);
+      };
 
   List<Integer> getNodes();
 }

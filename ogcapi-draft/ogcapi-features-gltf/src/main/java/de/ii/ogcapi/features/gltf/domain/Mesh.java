@@ -8,6 +8,8 @@
 package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -16,6 +18,13 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableMesh.Builder.class)
 public interface Mesh {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<Mesh> FUNNEL =
+      (from, into) -> {
+        from.getName().ifPresent(v -> into.putString(v, StandardCharsets.UTF_8));
+        from.getPrimitives().forEach(v -> Primitive.FUNNEL.funnel(v, into));
+      };
 
   Optional<String> getName();
 

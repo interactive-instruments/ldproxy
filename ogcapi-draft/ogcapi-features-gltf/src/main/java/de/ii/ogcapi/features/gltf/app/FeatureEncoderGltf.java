@@ -99,6 +99,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private final boolean polygonOrientationIsNotGuaranteed;
 
   private ImmutableGltfAsset.Builder builder;
+
   private int nodeId;
   private int meshId;
   private int accessorId;
@@ -113,6 +114,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private List<Integer> buildingNodes;
   private final long transformerStart = System.nanoTime();
   private long processingStart;
+  private long featureFetched;
   private long featureCount;
   private long featuresDuration;
 
@@ -145,6 +147,12 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   @Override
   public void onStart(ModifiableContext context) {
     this.processingStart = System.nanoTime();
+    if (transformationContext.isFeatureCollection()) {
+      featureFetched = context.metadata().getNumberReturned().orElseThrow();
+      if (featureFetched > 10000) {
+        LOGGER.warn("Fetching a large number of features for a tile: {}", featureFetched);
+      }
+    }
     if (transformationContext.isFeatureCollection() && LOGGER.isDebugEnabled()) {
       context.metadata().getNumberMatched().ifPresent(num -> LOGGER.debug("numberMatched {}", num));
       context
@@ -233,6 +241,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                       });
               if (!buildingPartNodes.isEmpty()) {
                 buildingNodes.add(nodeId);
+                this.featureCount++;
                 builder.addNodes(
                     ImmutableNode.builder()
                         .name(Optional.ofNullable(fid)) // TODO add proper name, if there is one
@@ -259,6 +268,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                         processSemanticSurfaces(fid, surfacesProperty, false);
                         if (nodeId > initialNodeId) {
                           buildingNodes.add(nodeId);
+                          this.featureCount++;
                           builder.addNodes(
                               ImmutableNode.builder()
                                   .name(
@@ -276,6 +286,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                                   solidProperty -> {
                                     if (processSolid(fid, solidProperty)) {
                                       buildingNodes.add(nodeId - 1);
+                                      this.featureCount++;
                                     }
                                   },
                                   () ->
@@ -285,11 +296,11 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                                               solidProperty -> {
                                                 if (processSolid(fid, solidProperty)) {
                                                   buildingNodes.add(nodeId - 1);
+                                                  this.featureCount++;
                                                 }
                                               })));
             });
     this.featuresDuration += System.nanoTime() - featureStart;
-    this.featureCount++;
   }
 
   @Override
@@ -303,7 +314,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       long writingDuration = toMilliseconds(System.nanoTime() - writingStart);
       String text =
           String.format(
-              "glTF features returned: %d, total duration: %dms, processing: %dms, feature processing: %dms, average feature processing: %dms, writing: %dms.",
+              "glTF features fetched: %d, returned: %d, total duration: %dms, processing: %dms, feature processing: %dms, average feature processing: %dms, writing: %dms.",
+              featureFetched,
               featureCount,
               transformerDuration,
               processingDuration,
@@ -324,7 +336,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
   private boolean processSolid(String fid, PropertyGltf solidProperty) {
     try {
-      addMultiPolygon(fid, solidProperty, getMaterialId("wall"), null, null);
+      return addMultiPolygon(fid, solidProperty, getMaterialId("wall"), null, null);
     } catch (Exception e) {
       LOGGER.error(
           "Error while processing property '{}' of feature '{}', the property is ignored: {}",
@@ -336,7 +348,6 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       }
       return false;
     }
-    return true;
   }
 
   private void processSemanticSurfaces(
@@ -507,38 +518,46 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             })
         .forEach(mat -> builder.addMaterials(mat));
 
-    builder.addBufferViews(
-        ImmutableBufferView.builder()
-            .buffer(0) // only one buffer
-            .byteLength(bytesIndices)
-            .byteOffset(0)
-            .target(ELEMENT_ARRAY_BUFFER)
-            .build());
-    builder.addBufferViews(
-        ImmutableBufferView.builder()
-            .buffer(0) // only one buffer
-            .byteLength(bytesVertices)
-            .byteOffset(bytesIndices)
-            .byteStride(getByteStrideVertices())
-            .target(ARRAY_BUFFER)
-            .build());
-    builder.addBufferViews(
-        ImmutableBufferView.builder()
-            .buffer(0) // only one buffer
-            .byteLength(bytesNormals)
-            .byteOffset(bytesIndices + bytesVertices)
-            .byteStride(getByteStrideNormals())
-            .target(ARRAY_BUFFER)
-            .build());
+    if (bytesIndices > 0) {
+      builder.addBufferViews(
+          ImmutableBufferView.builder()
+              .buffer(0) // only one buffer
+              .byteLength(bytesIndices)
+              .byteOffset(0)
+              .target(ELEMENT_ARRAY_BUFFER)
+              .build());
+    }
+    if (bytesVertices > 0) {
+      builder.addBufferViews(
+          ImmutableBufferView.builder()
+              .buffer(0) // only one buffer
+              .byteLength(bytesVertices)
+              .byteOffset(bytesIndices)
+              .byteStride(getByteStrideVertices())
+              .target(ARRAY_BUFFER)
+              .build());
+    }
+    if (bytesNormals > 0) {
+      builder.addBufferViews(
+          ImmutableBufferView.builder()
+              .buffer(0) // only one buffer
+              .byteLength(bytesNormals)
+              .byteOffset(bytesIndices + bytesVertices)
+              .byteStride(getByteStrideNormals())
+              .target(ARRAY_BUFFER)
+              .build());
+    }
     int bufferLength = bufferIndices.size() + bufferVertices.size() + bufferNormals.size();
-    builder.addBuffers(ImmutableBuffer.builder().byteLength(bufferLength).build());
-    builder.addNodes(
-        ImmutableNode.builder()
-            .children(buildingNodes)
-            // z-up (CRS) => y-up (glTF uses y-up)
-            .addMatrix(1d, 0d, 0d, 0d, 0d, 0d, -1d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 0d, 1d)
-            .build());
-    builder.addScenes(ImmutableScene.builder().nodes(ImmutableList.of(nodeId)).build());
+    if (bufferLength > 0) {
+      builder.addBuffers(ImmutableBuffer.builder().byteLength(bufferLength).build());
+      builder.addNodes(
+          ImmutableNode.builder()
+              .children(buildingNodes)
+              // z-up (CRS) => y-up (glTF uses y-up)
+              .addMatrix(1d, 0d, 0d, 0d, 0d, 0d, -1d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 0d, 1d)
+              .build());
+      builder.addScenes(ImmutableScene.builder().nodes(ImmutableList.of(nodeId)).build());
+    }
 
     if (quantizeMesh) {
       builder.addExtensionsUsed(KHR_MESH_QUANTIZATION);
@@ -563,7 +582,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
   // TODO support other geometric primitives
 
-  private void addMultiPolygon(
+  private boolean addMultiPolygon(
       String name,
       PropertyGltf geometryProperty,
       int materialId,
@@ -612,6 +631,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     boolean ccw = true;
     List<Double> data = new ArrayList<>();
     List<Integer> holeIndices = new ArrayList<>();
+    double area;
     for (Geometry.Polygon polygon : geometry.getCoordinates()) {
       numRing = 0;
       data.clear();
@@ -687,25 +707,51 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           final double area20 = Math.abs(GltfHelper.computeArea(coordsEcef, 2, 0));
           if (area01 > area12 && area01 > area20) {
             axes = AXES.XYZ;
-            ccw = area01 < 0;
+            area = area01;
           } else if (area12 > area20) {
             axes = AXES.YZX;
-            ccw = area12 < 0;
+            area = area12;
           } else if (Math.abs(area20) > 0.0) {
             axes = AXES.ZXY;
-            ccw = area20 < 0;
+            area = area20;
           } else {
-            if (LOGGER.isTraceEnabled()) {
-              LOGGER.trace(
-                  "The area of the exterior ring is too small, the polygon is ignored: {} {} {} - {}",
-                  area01,
-                  area12,
-                  area20,
-                  coordsEcef);
-            }
+            LOGGER.trace(
+                "The area of the exterior ring is too small, the polygon is ignored: {} {} {} - {}",
+                area01,
+                area12,
+                area20,
+                coordsEcef);
             break;
           }
+          ccw = area < 0;
+          /*
+          if (area < transformationContext.getMinArea()) {
+            if (LOGGER.isDebugEnabled()) {
+              LOGGER.debug(
+                  "The area of the exterior ring is smaller than {} square meters, the polygon is ignored: {} {} {}",
+                  transformationContext.getMinArea(),
+                  area01,
+                  area12,
+                  area20);
+              break;
+            }
+          }
+           */
         } else {
+          /*
+          area = axes==AXES.XYZ ? Math.abs(GltfHelper.computeArea(coordsEcef, 0, 1))
+              : axes==AXES.YZX ? Math.abs(GltfHelper.computeArea(coordsEcef, 1, 2))
+                  : Math.abs(GltfHelper.computeArea(coordsEcef, 2, 0));
+          if (area < transformationContext.getMinArea()) {
+            if (LOGGER.isDebugEnabled()) {
+              LOGGER.debug(
+                  "The area of an interior ring is smaller than {} square meters, the hole is ignored: {}",
+                  transformationContext.getMinArea(),
+                  area);
+              break;
+            }
+          }
+           */
           holeIndices.add((data.size() / 3) + 1);
         }
 
@@ -1062,6 +1108,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             indices.size());
       }
     }
+    return true;
   }
 
   private Geometry.MultiPolygon getMultiPolygon(PropertyGltf geometryProperty) {

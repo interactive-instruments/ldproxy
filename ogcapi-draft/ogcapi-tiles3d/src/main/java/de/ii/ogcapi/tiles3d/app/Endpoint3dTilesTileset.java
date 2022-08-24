@@ -149,10 +149,18 @@ public class Endpoint3dTilesTileset
       @Context UriInfo uriInfo,
       @PathParam("collectionId") String collectionId) {
 
+    Tiles3dConfiguration cfg =
+        api.getData()
+            .getCollectionData(collectionId)
+            .flatMap(c -> c.getExtension(Tiles3dConfiguration.class))
+            .orElseThrow();
+
     QueryInputTileset queryInput =
         ImmutableQueryInputTileset.builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
+            .maxLevel(cfg.getMaxLevel())
+            .geometricErrorRoot(cfg.getGeometricErrorRoot())
             .build();
 
     return queryHandler.handle(Query.TILESET, queryInput, requestContext);

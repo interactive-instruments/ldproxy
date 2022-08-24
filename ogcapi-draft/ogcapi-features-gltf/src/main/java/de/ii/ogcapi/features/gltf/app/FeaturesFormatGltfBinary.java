@@ -16,6 +16,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
+import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -242,7 +243,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
               crs.toUriString()));
     }
 
-    ImmutableFeatureTransformationContextGltf transformationContextGltf =
+    FeatureTransformationContextGltf transformationContextGltf =
         ImmutableFeatureTransformationContextGltf.builder()
             .from(transformationContext)
             // TODO true for Cesium JS in HTML, but in other cases maybe not; or we want to clamp to

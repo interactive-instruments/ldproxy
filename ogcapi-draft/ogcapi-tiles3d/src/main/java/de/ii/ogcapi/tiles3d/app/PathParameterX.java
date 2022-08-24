@@ -67,7 +67,9 @@ public class PathParameterX implements OgcApiPathParameter {
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return isEnabledForApi(apiData)
-        && (definitionPath.equals("/collections/{collectionId}/3dtiles/content/{level}/{x}/{y}"));
+        && (definitionPath.equals("/collections/{collectionId}/3dtiles/content_{level}_{x}_{y}")
+            || definitionPath.equals(
+                "/collections/{collectionId}/3dtiles/subtree_{level}_{x}_{y}"));
   }
 
   @Override

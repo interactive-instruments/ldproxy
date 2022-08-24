@@ -13,8 +13,6 @@ import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -35,6 +33,9 @@ import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.Query;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputSubtree;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.cql.domain.Cql.Format;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.dropwizard.auth.Auth;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -66,24 +68,21 @@ public class Endpoint3dTilesSubtrees extends EndpointSubCollection {
 
   private final FeaturesCoreProviders providers;
   private final QueriesHandler3dTiles queryHandler;
-  private final FeaturesCoreQueriesHandler queriesHandlerFeatures;
-  private final FeaturesQuery featuresQuery;
   private final URI serviceUri;
+  private final Cql cql;
 
   @Inject
   public Endpoint3dTilesSubtrees(
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
       QueriesHandler3dTiles queryHandler,
-      FeaturesCoreQueriesHandler queriesHandlerFeatures,
-      FeaturesQuery featuresQuery,
-      ServicesContext servicesContext) {
+      ServicesContext servicesContext,
+      Cql cql) {
     super(extensionRegistry);
     this.providers = providers;
     this.queryHandler = queryHandler;
-    this.queriesHandlerFeatures = queriesHandlerFeatures;
-    this.featuresQuery = featuresQuery;
     this.serviceUri = servicesContext.getUri();
+    this.cql = cql;
   }
 
   @Override
@@ -104,7 +103,7 @@ public class Endpoint3dTilesSubtrees extends EndpointSubCollection {
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("collections")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_3D_TILES_SUBTREE);
-    String subSubPath = "/3dtiles/subtrees/{level}/{x}/{y}";
+    String subSubPath = "/3dtiles/subtree_{level}_{x}_{y}";
     String path = "/collections/{collectionId}" + subSubPath;
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
     Optional<OgcApiPathParameter> optCollectionIdParam =
@@ -155,7 +154,7 @@ public class Endpoint3dTilesSubtrees extends EndpointSubCollection {
   }
 
   @GET
-  @Path("/{collectionId}/3dtiles/subtrees/{level}/{x}/{y}")
+  @Path("/{collectionId}/3dtiles/subtree_{level}_{x}_{y}")
   public Response getSubtree(
       @Auth Optional<User> optionalUser,
       @Context OgcApi api,
@@ -171,21 +170,32 @@ public class Endpoint3dTilesSubtrees extends EndpointSubCollection {
             .getCollectionData(collectionId)
             .flatMap(c -> c.getExtension(Tiles3dConfiguration.class))
             .orElseThrow();
-    int availableLevels = Objects.requireNonNull(cfg.getAvailableLevels());
+    int maxLevel = Objects.requireNonNull(cfg.getMaxLevel());
     int subtreeLevels = Objects.requireNonNull(cfg.getSubtreeLevels());
+    int firstLevelWithContent = Objects.requireNonNull(cfg.getFirstLevelWithContent());
 
     int sl = Integer.parseInt(level);
-    if (sl < 0 || sl >= availableLevels || sl % subtreeLevels != 0) {
+    if (sl < 0 || sl > maxLevel || sl % subtreeLevels != 0) {
       throw new NotFoundException();
     }
-    long sx = Long.parseLong(x);
+    int sx = Integer.parseInt(x);
     if (sx < 0 || sx >= Math.pow(2, sl)) {
       throw new NotFoundException();
     }
-    long sy = Long.parseLong(y);
+    int sy = Integer.parseInt(y);
     if (sy < 0 || sy >= Math.pow(2, sl)) {
       throw new NotFoundException();
     }
+
+    List<Cql2Expression> contentFilters =
+        cfg.getContentFilters().stream()
+            .map(filter -> cql.read(filter, Format.TEXT))
+            .collect(Collectors.toUnmodifiableList());
+
+    List<Cql2Expression> tileFilters =
+        cfg.getTileFilters().stream()
+            .map(filter -> cql.read(filter, Format.TEXT))
+            .collect(Collectors.toUnmodifiableList());
 
     QueryInputSubtree queryInput =
         ImmutableQueryInputSubtree.builder()
@@ -209,6 +219,11 @@ public class Endpoint3dTilesSubtrees extends EndpointSubCollection {
             .level(sl)
             .x(sx)
             .y(sy)
+            .maxLevel(maxLevel)
+            .firstLevelWithContent(firstLevelWithContent)
+            .subtreeLevels(subtreeLevels)
+            .contentFilters(contentFilters)
+            .tileFilters(tileFilters)
             .build();
 
     return queryHandler.handle(Query.SUBTREE, queryInput, requestContext);

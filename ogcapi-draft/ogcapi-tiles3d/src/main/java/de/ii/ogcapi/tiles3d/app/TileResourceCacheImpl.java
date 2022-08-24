@@ -32,7 +32,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.Comparator;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -128,6 +130,13 @@ public class TileResourceCacheImpl implements TileResourceCache {
   @Override
   public File getFile(TileResource r) throws IOException {
     return getPath(r).toFile();
+  }
+
+  @Override
+  public void deleteTiles(OgcApi api) throws IOException {
+    try (Stream<Path> stream = Files.walk(cacheStore.resolve(api.getId()))) {
+      stream.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+    }
   }
 
   @Override

@@ -9,39 +9,42 @@ package de.ii.ogcapi.tiles3d.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.io.ByteStreams;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.tiles3d.domain.ImmutableTileResource;
+import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles;
+import de.ii.ogcapi.tiles3d.domain.TileResource;
+import de.ii.ogcapi.tiles3d.domain.TileResource.TYPE;
+import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.cql.domain.Cql;
 import io.dropwizard.auth.Auth;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -68,17 +71,26 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
   private final FeaturesCoreProviders providers;
   private final FeaturesCoreQueriesHandler queriesHandlerFeatures;
   private final FeaturesQuery featuresQuery;
+  private final QueriesHandler3dTiles queryHandler;
+  private final Cql cql;
+  private final TileResourceCache tileResourceCache;
 
   @Inject
   public Endpoint3dTilesContent(
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
       FeaturesCoreQueriesHandler queriesHandlerFeatures,
-      FeaturesQuery featuresQuery) {
+      FeaturesQuery featuresQuery,
+      QueriesHandler3dTiles queryHandler,
+      Cql cql,
+      TileResourceCache tileResourceCache) {
     super(extensionRegistry);
     this.providers = providers;
     this.queriesHandlerFeatures = queriesHandlerFeatures;
     this.featuresQuery = featuresQuery;
+    this.queryHandler = queryHandler;
+    this.cql = cql;
+    this.tileResourceCache = tileResourceCache;
   }
 
   @Override
@@ -104,7 +116,7 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("collections")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_3D_TILES_CONTENT);
-    String subSubPath = "/3dtiles/content/{level}/{x}/{y}";
+    String subSubPath = "/3dtiles/content_{level}_{x}_{y}";
     String path = "/collections/{collectionId}" + subSubPath;
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
     Optional<OgcApiPathParameter> optCollectionIdParam =
@@ -155,7 +167,7 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
   }
 
   @GET
-  @Path("/{collectionId}/3dtiles/content/{level}/{x}/{y}")
+  @Path("/{collectionId}/3dtiles/content_{level}_{x}_{y}")
   public Response getContent(
       @Auth Optional<User> optionalUser,
       @Context OgcApi api,
@@ -167,80 +179,73 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
       @PathParam("y") String y)
       throws URISyntaxException {
 
-    Integer availableLevels =
+    Tiles3dConfiguration cfg =
         api.getData()
             .getCollectionData(collectionId)
             .flatMap(c -> c.getExtension(Tiles3dConfiguration.class))
-            .map(Tiles3dConfiguration::getAvailableLevels)
             .orElseThrow();
 
+    int maxLevel = cfg.getMaxLevel();
+
     int cl = Integer.parseInt(level);
-    if (cl < 0 || cl >= availableLevels) {
+    if (cl < 0 || cl > maxLevel) {
       throw new NotFoundException();
     }
-    long cx = Long.parseLong(x);
+    int cx = Integer.parseInt(x);
     if (cx < 0 || cx >= Math.pow(2, cl)) {
       throw new NotFoundException();
     }
-    long cy = Long.parseLong(y);
+    int cy = Integer.parseInt(y);
     if (cy < 0 || cy >= Math.pow(2, cl)) {
       throw new NotFoundException();
     }
 
-    FeatureTypeConfigurationOgcApi collectionData =
-        api.getData().getCollectionData(collectionId).orElseThrow();
+    int firstLevelWithContent = Objects.requireNonNull(cfg.getFirstLevelWithContent());
+    if (cl < firstLevelWithContent) {
+      throw new NotFoundException();
+    }
 
-    BoundingBox bboxTile = Tiles3dHelper.computeBbox(api, collectionId, cl, cx, cy);
-
-    String bboxString =
-        String.format(
-            Locale.US,
-            "%f,%f,%f,%f",
-            bboxTile.getXmin(),
-            bboxTile.getYmin(),
-            bboxTile.getXmax(),
-            bboxTile.getYmax());
-
-    FeatureQuery query =
-        featuresQuery.requestToFeatureQuery(
-            api,
-            collectionData,
-            OgcCrs.CRS84h,
-            ImmutableMap.of(),
-            1,
-            100000, // TODO
-            100000, // TODO
-            ImmutableMap.of("bbox", bboxString),
-            ImmutableList.of());
-    FeaturesCoreQueriesHandler.QueryInputFeatures queryInput =
-        new ImmutableQueryInputFeatures.Builder()
-            .from(getGenericQueryInput(api.getData()))
+    TileResource r =
+        new ImmutableTileResource.Builder()
+            .level(cl)
+            .x(cx)
+            .y(cy)
+            .api(api)
             .collectionId(collectionId)
-            .query(query)
-            .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
-            .defaultCrs(OgcCrs.CRS84h)
-            .defaultPageSize(Optional.of(100000))
-            .showsFeatureSelfLink(false)
+            .type(TYPE.CONTENT)
             .build();
 
-    ApiRequestContext requestContextGltf =
-        new Builder()
-            .from(requestContext)
-            .requestUri(
-                requestContext
-                    .getUriCustomizer()
-                    .removeLastPathSegments(5)
-                    .ensureLastPathSegment("items")
-                    .clearParameters()
-                    .addParameter("f", "glb")
-                    .addParameter("bbox", bboxString)
-                    .build())
-            // TODO better solution
-            .mediaType(getFormats().get(0).getMediaType())
-            .alternateMediaTypes(ImmutableList.of())
-            .build();
+    byte[] result = null;
 
-    return queriesHandlerFeatures.handle(
-        FeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContextGltf);
+    try {
+      if (tileResourceCache.tileResourceExists(r)) {
+        Optional<InputStream> content = tileResourceCache.getTileResource(r);
+        if (content.isPresent()) {
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          ByteStreams.copy(content.get(), baos);
+          result = baos.toByteArray();
+          // TODO other processing and headers
+        }
+      }
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
+    }
+
+    if (Objects.isNull(result)) {
+      return Tiles3dHelper.getContent(
+          featuresQuery,
+          providers,
+          queriesHandlerFeatures,
+          tileResourceCache,
+          requestContext.getUriCustomizer(),
+          cfg,
+          r,
+          cql,
+          Optional.of(getGenericQueryInput(api.getData())),
+          // TODO better solution
+          getFormats().get(0).getMediaType());
+    }
+
+    return Response.ok().entity(result).build();
   }
 }

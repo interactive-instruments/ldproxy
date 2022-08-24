@@ -10,14 +10,13 @@ package de.ii.ogcapi.tiles3d.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.features.gltf.domain.Buffer;
 import de.ii.ogcapi.features.gltf.domain.BufferView;
-import de.ii.ogcapi.tiles3d.domain.ImmutableSubtree.Builder;
 import java.util.List;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = Builder.class)
+@JsonDeserialize(builder = ImmutableSubtree.Builder.class)
 public interface Subtree {
 
   List<Buffer> getBuffers();
@@ -36,5 +35,5 @@ public interface Subtree {
 
   List<Integer> getContentMetadata();
 
-  MetadataEntity getSubtreeMetadata();
+  Optional<MetadataEntity> getSubtreeMetadata();
 }

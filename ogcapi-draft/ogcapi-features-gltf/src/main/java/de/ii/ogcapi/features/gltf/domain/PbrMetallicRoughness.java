@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import java.util.List;
 import org.immutables.value.Value;
 
@@ -15,6 +16,14 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutablePbrMetallicRoughness.Builder.class)
 public interface PbrMetallicRoughness {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<PbrMetallicRoughness> FUNNEL =
+      (from, into) -> {
+        from.getBaseColorFactor().forEach(into::putFloat);
+        into.putFloat(from.getMetallicFactor());
+        into.putFloat(from.getRoughnessFactor());
+      };
 
   List<Float> getBaseColorFactor();
 

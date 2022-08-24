@@ -11,8 +11,10 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.net.URI;
+import java.util.List;
 import org.immutables.value.Value;
 
 public interface QueriesHandler3dTiles extends QueriesHandler<QueriesHandler3dTiles.Query> {
@@ -25,6 +27,10 @@ public interface QueriesHandler3dTiles extends QueriesHandler<QueriesHandler3dTi
   @Value.Immutable
   interface QueryInputTileset extends QueryInput {
     String getCollectionId();
+
+    int getMaxLevel();
+
+    Float getGeometricErrorRoot();
   }
 
   @Value.Immutable
@@ -43,8 +49,18 @@ public interface QueriesHandler3dTiles extends QueriesHandler<QueriesHandler3dTi
 
     int getLevel();
 
-    long getX();
+    int getX();
 
-    long getY();
+    int getY();
+
+    int getSubtreeLevels();
+
+    int getFirstLevelWithContent();
+
+    int getMaxLevel();
+
+    List<Cql2Expression> getContentFilters();
+
+    List<Cql2Expression> getTileFilters();
   }
 }

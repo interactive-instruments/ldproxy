@@ -8,6 +8,8 @@
 package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.immutables.value.Value;
 
@@ -15,6 +17,19 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableAccessor.Builder.class)
 public interface Accessor {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<Accessor> FUNNEL =
+      (from, into) -> {
+        into.putInt(from.getBufferView());
+        into.putInt(from.getByteOffset());
+        into.putInt(from.getComponentType());
+        into.putBoolean(from.getNormalized());
+        into.putInt(from.getCount());
+        from.getMin().forEach(v -> into.putDouble(v.doubleValue()));
+        from.getMax().forEach(v -> into.putDouble(v.doubleValue()));
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+      };
 
   int getBufferView();
 
