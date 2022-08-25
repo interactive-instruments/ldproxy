@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.features.gltf.app;
 
-import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureBase;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -29,8 +28,6 @@ public interface FeatureGltf extends FeatureBase<PropertyGltf, FeatureSchema> {
     return false;
   }
 
-  FeatureGltf inCollection(boolean inCollection);
-
   @Override
   @Value.Default
   default String getName() {
@@ -47,22 +44,6 @@ public interface FeatureGltf extends FeatureBase<PropertyGltf, FeatureSchema> {
   }
 
   @Value.Lazy
-  default boolean hasObjects() {
-    return getProperties().stream()
-        .anyMatch(
-            property ->
-                !property.isValue()
-                    && property.getSchema().filter(SchemaBase::isSpatial).isEmpty());
-  }
-
-  @Value.Lazy
-  default boolean hasGeometry() {
-    return getProperties().stream()
-            .anyMatch(property -> property.getSchema().filter(SchemaBase::isSpatial).isPresent())
-        || getProperties().stream().anyMatch(PropertyGltf::hasGeometry);
-  }
-
-  @Value.Lazy
   default Optional<PropertyGltf> getGeometry() {
     return getProperties().stream()
         .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isPresent())
@@ -74,11 +55,6 @@ public interface FeatureGltf extends FeatureBase<PropertyGltf, FeatureSchema> {
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .findFirst());
-  }
-
-  @Value.Lazy
-  default Optional<Geometry<?>> parseGeometry() {
-    return getGeometry().map(PropertyGltf::parseGeometry);
   }
 
   default Optional<PropertyGltf> findPropertyByPath(String pathString) {
