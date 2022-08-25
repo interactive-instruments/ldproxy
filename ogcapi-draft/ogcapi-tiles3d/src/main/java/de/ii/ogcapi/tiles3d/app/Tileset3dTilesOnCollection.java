@@ -67,11 +67,32 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
                               .ensureLastPathSegment("3dtiles")
                               .removeParameters("f")
                               .toString())
-                      .rel("3dtiles") // TODO
+                      .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
                       .type(MediaType.APPLICATION_JSON)
-                      .title(i18n.get("3dtilesLink", language)) // TODO
+                      .title(i18n.get("3dtilesLink", language))
                       .build())
               .build());
+
+      collection.putExtensions("collectionType", "3d-container");
+      collection.putExtensions("children", ImmutableList.of());
+      // TODO It is unclear why there is content as a separate member, why not use links directly?
+      collection.putExtensions(
+          "content",
+          ImmutableList.of(
+              new ImmutableLink.Builder()
+                  .href(
+                      uriCustomizer
+                          .copy()
+                          .ensureNoTrailingSlash()
+                          .ensureLastPathSegment("3dtiles")
+                          .removeParameters("f")
+                          .toString())
+                  .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
+                  // TODO temporary, this is not the correct media type, but it is required by
+                  //      the current 3D GeoVolumes draft
+                  .type("application/json+3dtiles")
+                  .title(i18n.get("3dtilesLink", language))
+                  .build()));
     }
 
     return collection;
