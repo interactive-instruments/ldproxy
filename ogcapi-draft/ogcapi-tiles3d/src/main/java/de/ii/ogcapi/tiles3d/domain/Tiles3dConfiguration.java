@@ -38,6 +38,15 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
 
   Optional<SeedingOptions> getSeedingOptions();
 
+  @Nullable
+  Boolean getClampToGround();
+
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean shouldClampToGround() {
+    return Boolean.TRUE.equals(getClampToGround());
+  }
+
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override

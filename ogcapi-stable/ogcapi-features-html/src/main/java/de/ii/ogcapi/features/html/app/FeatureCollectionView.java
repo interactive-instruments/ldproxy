@@ -148,7 +148,12 @@ public class FeatureCollectionView extends DatasetView {
       this.cesiumData =
           new CesiumData(
               features, /*geometryProperties, spatialExtent.orElseThrow(),*/
-              uriBuilder.removeParameters("f").ensureParameter("f", "glb").toString());
+              uriBuilder
+                  .removeParameters("f")
+                  .ensureParameter("f", "glb")
+                  // must be true as long as no terrain is used in the Cesium viewer
+                  .ensureParameter("clampToGround", "true")
+                  .toString());
     } else {
       LOGGER.error(
           "Configuration error: {} is not a supported map client for the HTML representation of features.",

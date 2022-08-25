@@ -246,9 +246,13 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
     FeatureTransformationContextGltf transformationContextGltf =
         ImmutableFeatureTransformationContextGltf.builder()
             .from(transformationContext)
-            // TODO true for Cesium JS in HTML, but in other cases maybe not; or we want to clamp to
-            // a terrain
-            .clampToGround(true)
+            .clampToGround(
+                "true"
+                    .equals(
+                        transformationContext
+                            .getOgcApiRequest()
+                            .getParameters()
+                            .get("clampToGround")))
             .crsTransformerCrs84hToEcef(toEcef)
             .build();
 

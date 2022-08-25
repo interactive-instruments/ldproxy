@@ -65,13 +65,27 @@ public class CesiumData {
           getGeometries(
               features,
               ImmutableList.of(
-                  "lod1Solid",
                   "lod2Solid",
-                  "consistsOfBuildingPart.lod1Solid",
-                  "consistsOfBuildingPart.lod2Solid"));
+                  "lod1Solid",
+                  "consistsOfBuildingPart.lod2Solid",
+                  "consistsOfBuildingPart.lod1Solid"));
       List<Coordinate> coordinates =
           geometries.stream()
               .map(Geometry::getCoordinatesFlat)
+              .map(
+                  coords -> {
+                    if (!clampToGround) {
+                      return coords;
+                    }
+                    final Optional<Double> optionalMin = getMin(coords, 2);
+                    if (optionalMin.isEmpty()) {
+                      return coords;
+                    }
+                    final double min = optionalMin.get();
+                    return coords.stream()
+                        .map(coord -> Coordinate.of(coord.get(0), coord.get(1), coord.get(2) - min))
+                        .collect(Collectors.toUnmodifiableList());
+                  })
               .flatMap(List::stream)
               .collect(Collectors.toUnmodifiableList());
       minLon = getMin(coordinates, 0).orElse(-180.0);
