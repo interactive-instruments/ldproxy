@@ -29,10 +29,8 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.tiles3d.domain.ImmutableTileResource;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles;
 import de.ii.ogcapi.tiles3d.domain.TileResource;
-import de.ii.ogcapi.tiles3d.domain.TileResource.TYPE;
 import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
@@ -205,15 +203,7 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
       throw new NotFoundException();
     }
 
-    TileResource r =
-        new ImmutableTileResource.Builder()
-            .level(cl)
-            .x(cx)
-            .y(cy)
-            .api(api)
-            .collectionId(collectionId)
-            .type(TYPE.CONTENT)
-            .build();
+    TileResource r = TileResource.contentOf(api, collectionId, cl, cx, cy);
 
     byte[] result = null;
 

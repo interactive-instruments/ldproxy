@@ -50,7 +50,6 @@ import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -86,6 +85,7 @@ public class Tiles3dHelper {
   public static final byte[] JSON = new byte[] {0x4a, 0x53, 0x4f, 0x4e};
   public static final byte[] JSON_PADDING = new byte[] {0x20};
   public static final byte[] BIN_PADDING = new byte[] {0x00};
+  private static final int MAX_FEATURES_PER_TILE = 20_000;
 
   private static byte[] getJson(Object obj) throws JsonProcessingException {
     return MAPPER.writeValueAsBytes(obj);
@@ -360,19 +360,20 @@ public class Tiles3dHelper {
       byte[] contentAvailability,
       byte[] childSubtreeAvailability,
       int subtreeLevels) {
-    LOGGER.debug(
-        "Tile Availability: {}", getAvailabilityString(tileAvailability, 0, subtreeLevels - 1));
-    LOGGER.debug(
-        "Content Availability: {}",
-        getAvailabilityString(contentAvailability, 0, subtreeLevels - 1));
-    LOGGER.debug(
-        "Child Subtree Availability: {}",
-        getAvailabilityString(childSubtreeAvailability, subtreeLevels, subtreeLevels));
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace(
+          "Tile Availability: {}", getAvailabilityString(tileAvailability, 0, subtreeLevels - 1));
+      LOGGER.trace(
+          "Content Availability: {}",
+          getAvailabilityString(contentAvailability, 0, subtreeLevels - 1));
+      LOGGER.trace(
+          "Child Subtree Availability: {}",
+          getAvailabilityString(childSubtreeAvailability, subtreeLevels, subtreeLevels));
+    }
   }
 
   private static String getAvailabilityString(byte[] availability, int minLevel, int maxLevel) {
     StringBuilder s = new StringBuilder();
-    int i0 = 0;
     for (int level = minLevel; level <= maxLevel; level++) {
       for (int i = 0; i < MortonCode.size(level); i++) {
         s.append(getAvailability(availability, minLevel, level, i) ? "1" : "0");
@@ -380,7 +381,6 @@ public class Tiles3dHelper {
           s.append(" ");
         }
       }
-      i0 += MortonCode.size(level);
       s.append(" / ");
     }
     return s.toString();
@@ -430,7 +430,6 @@ public class Tiles3dHelper {
               : Optional.empty();
       boolean hasData = Tiles3dHelper.hasData(queriesHandler, queryInput, bbox, additionalFilter);
       if (hasData) {
-        // LOGGER.debug("Processing {}/{}/{}: TRUE", level, x1, y1);
         if (level - baseLevel < queryInput.getSubtreeLevels()) {
           setAvailability(tileAvailability, 0, level - baseLevel, i0 + i);
           if (relativeLevel >= 0) {
@@ -467,8 +466,6 @@ public class Tiles3dHelper {
               queryInput.getSubtreeLevels(),
               i0 + i);
         }
-      } else {
-        // LOGGER.debug("Processing {}/{}/{}: FALSE", level, x1, y1);
       }
     }
   }
@@ -483,21 +480,6 @@ public class Tiles3dHelper {
     int byteIndex = idx / 8;
     int bitIndex = idx % 8;
     availability[byteIndex] |= 1 << bitIndex;
-  }
-
-  private void clearAvailability(byte[] availability, int toLevel) {
-    int idx = 0;
-    for (int i = 0; i <= toLevel; i++) {
-      idx += MortonCode.size(i);
-    }
-    int byteIndex = idx / 8;
-    int bitIndex = idx % 8;
-    for (int i = 0; i < byteIndex; i++) {
-      availability[i] = 0;
-    }
-    for (int i = 0; i < bitIndex; i++) {
-      availability[byteIndex] &= ~(1 << i);
-    }
   }
 
   public static boolean getAvailability(
@@ -554,10 +536,6 @@ public class Tiles3dHelper {
     return MAPPER.readValue(content, Subtree.class);
   }
 
-  public static Subtree readSubtree(InputStream content) throws IOException {
-    return MAPPER.readValue(content, Subtree.class);
-  }
-
   public static double degToRad(double degree) {
     return degree / 180.0 * Math.PI;
   }
@@ -597,15 +575,16 @@ public class Tiles3dHelper {
             OgcCrs.CRS84h,
             ImmutableMap.of(),
             1,
-            100000, // TODO
-            100000, // TODO
+            MAX_FEATURES_PER_TILE,
+            MAX_FEATURES_PER_TILE,
             ImmutableMap.of("bbox", bboxString),
             ImmutableList.of());
 
     if (!cfg.getContentFilters().isEmpty()) {
       query =
           getFinalQuery(
-              cfg.getContentFilters().get(r.getLevel() - cfg.getFirstLevelWithContent()),
+              cfg.getContentFilters()
+                  .get(r.getLevel() - Objects.requireNonNull(cfg.getFirstLevelWithContent())),
               query,
               cql);
     }
@@ -620,7 +599,7 @@ public class Tiles3dHelper {
               .query(query)
               .featureProvider(providers.getFeatureProviderOrThrow(r.getApiData(), collectionData))
               .defaultCrs(OgcCrs.CRS84h)
-              .defaultPageSize(Optional.of(100000)) // TODO
+              .defaultPageSize(Optional.of(MAX_FEATURES_PER_TILE))
               .showsFeatureSelfLink(false)
               .saveContentAsFile(Optional.of(tileResourceCache.getFile(r)))
               .build();
@@ -639,6 +618,7 @@ public class Tiles3dHelper {
                     .clearParameters()
                     .addParameter("f", "glb")
                     .addParameter("bbox", bboxString)
+                    .addParameter("clampToGround", String.valueOf(cfg.shouldClampToGround()))
                     .build())
             .mediaType(mediaType)
             .alternateMediaTypes(ImmutableList.of())

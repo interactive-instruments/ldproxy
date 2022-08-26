@@ -20,7 +20,7 @@ public interface BoundingVolume3dTiles {
   @SuppressWarnings("UnstableApiUsage")
   Funnel<BoundingVolume3dTiles> FUNNEL =
       (from, into) -> {
-        // TODO
+        from.getRegion().forEach(into::putDouble);
       };
 
   List<Double> getRegion();

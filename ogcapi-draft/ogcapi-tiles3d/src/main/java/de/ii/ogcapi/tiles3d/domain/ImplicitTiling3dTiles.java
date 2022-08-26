@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles3d.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -19,7 +20,10 @@ public interface ImplicitTiling3dTiles {
   @SuppressWarnings("UnstableApiUsage")
   Funnel<ImplicitTiling3dTiles> FUNNEL =
       (from, into) -> {
-        // TODO
+        into.putString(from.getSubdivisionScheme(), StandardCharsets.UTF_8);
+        into.putInt(from.getAvailableLevels());
+        into.putInt(from.getSubtreeLevels());
+        Content3dTiles.FUNNEL.funnel(from.getSubtrees(), into);
       };
 
   @Value.Default

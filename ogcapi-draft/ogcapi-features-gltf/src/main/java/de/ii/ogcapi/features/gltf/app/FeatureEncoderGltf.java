@@ -7,11 +7,14 @@
  */
 package de.ii.ogcapi.features.gltf.app;
 
-import static de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry.MULTI_POLYGON;
+import static de.ii.ogcapi.features.gltf.domain.GltfConfiguration.GLTF_TYPE.UINT8;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
+import de.ii.ogcapi.features.gltf.domain.GltfConfiguration.GLTF_TYPE;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAccessor;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAssetMetadata;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAttributes;
@@ -23,29 +26,39 @@ import de.ii.ogcapi.features.gltf.domain.ImmutableMesh;
 import de.ii.ogcapi.features.gltf.domain.ImmutableNode;
 import de.ii.ogcapi.features.gltf.domain.ImmutablePbrMetallicRoughness;
 import de.ii.ogcapi.features.gltf.domain.ImmutablePrimitive;
+import de.ii.ogcapi.features.gltf.domain.ImmutableProperty;
+import de.ii.ogcapi.features.gltf.domain.ImmutablePropertyTable;
 import de.ii.ogcapi.features.gltf.domain.ImmutableScene;
+import de.ii.ogcapi.features.gltf.domain.ImmutableSchema;
+import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaClass;
+import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaEnum;
+import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaEnumValue;
+import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaProperty;
+import de.ii.ogcapi.features.gltf.domain.PropertyTable;
 import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.ogcapi.features.html.domain.Geometry.Coordinate;
 import de.ii.ogcapi.features.html.domain.Geometry.MultiPolygon;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.xtraplatform.base.domain.LogContext.MARKER;
+import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
-import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase.Type;
+import de.ii.xtraplatform.features.domain.SchemaConstraints;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import earcut4j.Earcut;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,10 +71,10 @@ import org.slf4j.LoggerFactory;
 public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, FeatureGltf> {
 
   private static final String KHR_MESH_QUANTIZATION = "KHR_mesh_quantization";
-  private static final BigDecimal NUM_1_0 = new BigDecimal("1");
-  private static final BigDecimal NUM_0_0 = new BigDecimal("0");
-  private static final BigDecimal NUM_MINUS_1_0 = new BigDecimal("-1");
   private static final int INITIAL_SIZE = 1_024;
+  private static final int WARNING_THRESHOLD_FEATURES_PER_FILE = 5_000;
+  private static final String WALL = "wall";
+  private static final int MATERIAL = 0;
 
   private enum AXES {
     XYZ,
@@ -72,13 +85,30 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderGltf.class);
 
   private static final String GML_ID = "gml_id";
-  public static final String ID = "id";
+  private static final String ID = "id";
   private static final String LOD_1_SOLID = "lod1Solid";
   private static final String LOD_2_SOLID = "lod2Solid";
   private static final String SURFACES = "surfaces";
   private static final String SURFACE_TYPE = "surfaceType";
   private static final String LOD_2_MULTI_SURFACE = "lod2MultiSurface";
   private static final String CONSISTS_OF_BUILDING_PART = "consistsOfBuildingPart";
+  private static final ImmutableList<String> PATH_BUILDING_PART_SURFACES_GEOMETRY =
+      ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES, LOD_2_MULTI_SURFACE);
+  private static final ImmutableList<String> PATH_BUILDING_PART_SURFACE_TYPE =
+      ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES, SURFACE_TYPE);
+  private static final ImmutableList<String> PATH_BUILDING_PART_SURFACES =
+      ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES);
+  private static final ImmutableList<String> PATH_BUILDING_PART_LOD1_SOLID =
+      ImmutableList.of(CONSISTS_OF_BUILDING_PART, LOD_1_SOLID);
+  private static final ImmutableList<String> PATH_BUILDING_PART_LOD2_SOLID =
+      ImmutableList.of(CONSISTS_OF_BUILDING_PART, LOD_2_SOLID);
+  private static final ImmutableList<String> PATH_SURFACES_GEOMETRY =
+      ImmutableList.of(SURFACES, LOD_2_MULTI_SURFACE);
+  private static final ImmutableList<String> PATH_SURFACE_TYPE =
+      ImmutableList.of(SURFACES, SURFACE_TYPE);
+  private static final String PATH_SURFACES = SURFACES;
+  private static final String PATH_LOD1_SOLID = LOD_1_SOLID;
+  private static final String PATH_LOD2_SOLID = LOD_2_SOLID;
 
   private static final int ARRAY_BUFFER = 34962;
   private static final int ELEMENT_ARRAY_BUFFER = 34963;
@@ -87,6 +117,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private static final int UNSIGNED_BYTE = 5121;
   private static final int SHORT = 5122;
   private static final int UNSIGNED_SHORT = 5123;
+  private static final int UNSIGNED_INT = 5125;
   private static final int FLOAT = 5126;
 
   private static final int TRIANGLES = 4;
@@ -95,20 +126,27 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private final CrsTransformer crs84hToEcef;
   private final boolean clampToGround;
   private final OutputStream outputStream;
-  private final Map<String, Integer> matIdMap;
+  private final Map<String, Byte> surfaceTypeEnums;
   private final boolean polygonOrientationIsNotGuaranteed;
+  private final GltfConfiguration configuration;
+  private final Optional<FeatureSchema> featureSchema;
+  private final EntityRegistry entityRegistry;
 
   private ImmutableGltfAsset.Builder builder;
 
-  private int nodeId;
-  private int meshId;
-  private int accessorId;
+  private int nextNodeId;
+  private int nextMeshId;
+  private int nextAccessorId;
   private int bytesIndices;
   private int bytesVertices;
   private int bytesNormals;
+  private int bytesFeatureId0;
+  private int bytesSurfaceTypes;
   private ByteArrayOutputStream bufferIndices;
   private ByteArrayOutputStream bufferVertices;
   private ByteArrayOutputStream bufferNormals;
+  private ByteArrayOutputStream bufferFeatureId0;
+  private ByteArrayOutputStream bufferSurfaceTypes;
   private final boolean withNormals;
   private final boolean quantizeMesh;
   private List<Integer> buildingNodes;
@@ -118,10 +156,13 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private long featureCount;
   private long featuresDuration;
 
-  public FeatureEncoderGltf(FeatureTransformationContextGltf transformationContext) {
+  public FeatureEncoderGltf(
+      FeatureTransformationContextGltf transformationContext, EntityRegistry entityRegistry) {
     this.transformationContext = transformationContext;
     this.crs84hToEcef = transformationContext.getCrsTransformerCrs84hToEcef();
     this.clampToGround = transformationContext.getClampToGround();
+    this.featureSchema = transformationContext.getFeatureSchema();
+    this.entityRegistry = entityRegistry;
     this.outputStream = new OutputStreamToByteConsumer(this::push);
     this.withNormals =
         transformationContext.getConfiguration(GltfConfiguration.class).writeNormals();
@@ -131,7 +172,12 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         transformationContext
             .getConfiguration(GltfConfiguration.class)
             .polygonOrientationIsNotGuaranteed();
-    this.matIdMap = new HashMap<>();
+    this.surfaceTypeEnums = new HashMap<>();
+    this.configuration =
+        transformationContext
+            .getApiData()
+            .getExtension(GltfConfiguration.class, transformationContext.getCollectionId())
+            .orElseThrow();
   }
 
   @Override
@@ -149,7 +195,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     this.processingStart = System.nanoTime();
     if (transformationContext.isFeatureCollection()) {
       featureFetched = context.metadata().getNumberReturned().orElseThrow();
-      if (featureFetched > 10000) {
+      if (featureFetched > WARNING_THRESHOLD_FEATURES_PER_FILE) {
         LOGGER.warn("Fetching a large number of features for a tile: {}", featureFetched);
       }
     }
@@ -167,145 +213,40 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   @Override
   public void onFeature(FeatureGltf feature) {
     long featureStart = System.nanoTime();
-    feature
-        .findPropertyByPath(CONSISTS_OF_BUILDING_PART)
-        .ifPresentOrElse(
-            buildingParts -> {
-              String fid =
-                  feature
-                      .findPropertyByPath(GML_ID)
-                      .map(PropertyGltf::getFirstValue)
-                      .orElse(
-                          feature
-                              .findPropertyByPath(ID)
-                              .map(PropertyGltf::getFirstValue)
-                              .orElse(null));
-              ArrayList<Integer> buildingPartNodes = new ArrayList<>();
-              buildingParts
-                  .getNestedProperties()
-                  .forEach(
-                      buildingPart -> {
-                        String pid =
-                            buildingPart
-                                .findPropertyByPath(
-                                    ImmutableList.of(CONSISTS_OF_BUILDING_PART, GML_ID))
-                                .map(PropertyGltf::getFirstValue)
-                                .orElse(
-                                    buildingPart
-                                        .findPropertyByPath(
-                                            ImmutableList.of(CONSISTS_OF_BUILDING_PART, ID))
-                                        .map(PropertyGltf::getFirstValue)
-                                        .orElse(null));
-                        buildingPart
-                            .findPropertyByPath(
-                                ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES))
-                            .ifPresentOrElse(
-                                surfacesProperty -> {
-                                  int initialNodeId = nodeId;
-                                  processSemanticSurfaces(pid, surfacesProperty, true);
-                                  if (nodeId > initialNodeId) {
-                                    buildingPartNodes.add(nodeId);
-                                    builder.addNodes(
-                                        ImmutableNode.builder()
-                                            .name(
-                                                Optional.ofNullable(
-                                                    pid)) // TODO add proper name, if there is one
-                                            .addChildren(
-                                                IntStream.range(initialNodeId, nodeId).toArray())
-                                            .build());
-                                    nodeId++;
-                                  }
-                                },
-                                () ->
-                                    buildingPart
-                                        .findPropertyByPath(
-                                            ImmutableList.of(
-                                                CONSISTS_OF_BUILDING_PART, LOD_2_SOLID))
-                                        .ifPresentOrElse(
-                                            solidProperty -> {
-                                              if (processSolid(pid, solidProperty)) {
-                                                buildingPartNodes.add(nodeId - 1);
-                                              }
-                                            },
-                                            () ->
-                                                buildingPart
-                                                    .findPropertyByPath(
-                                                        ImmutableList.of(
-                                                            CONSISTS_OF_BUILDING_PART, LOD_1_SOLID))
-                                                    .ifPresent(
-                                                        solidProperty -> {
-                                                          if (processSolid(pid, solidProperty)) {
-                                                            buildingPartNodes.add(nodeId - 1);
-                                                          }
-                                                        })));
-                      });
-              if (!buildingPartNodes.isEmpty()) {
-                buildingNodes.add(nodeId);
-                this.featureCount++;
-                builder.addNodes(
-                    ImmutableNode.builder()
-                        .name(Optional.ofNullable(fid)) // TODO add proper name, if there is one
-                        .children(buildingPartNodes)
-                        .build());
-                nodeId++;
-              }
-            },
-            () -> {
-              String fid =
-                  feature
-                      .findPropertyByPath(GML_ID)
-                      .map(PropertyGltf::getFirstValue)
-                      .orElse(
-                          feature
-                              .findPropertyByPath(ID)
-                              .map(PropertyGltf::getFirstValue)
-                              .orElse(null));
-              feature
-                  .findPropertyByPath(SURFACES)
-                  .ifPresentOrElse(
-                      surfacesProperty -> {
-                        int initialNodeId = nodeId;
-                        processSemanticSurfaces(fid, surfacesProperty, false);
-                        if (nodeId > initialNodeId) {
-                          buildingNodes.add(nodeId);
-                          this.featureCount++;
-                          builder.addNodes(
-                              ImmutableNode.builder()
-                                  .name(
-                                      Optional.ofNullable(
-                                          fid)) // TODO add proper name, if there is one
-                                  .addChildren(IntStream.range(initialNodeId, nodeId).toArray())
-                                  .build());
-                          nodeId++;
-                        }
-                      },
-                      () ->
-                          feature
-                              .findPropertyByPath(LOD_2_SOLID)
-                              .ifPresentOrElse(
-                                  solidProperty -> {
-                                    if (processSolid(fid, solidProperty)) {
-                                      buildingNodes.add(nodeId - 1);
-                                      this.featureCount++;
-                                    }
-                                  },
-                                  () ->
-                                      feature
-                                          .findPropertyByPath(LOD_1_SOLID)
-                                          .ifPresent(
-                                              solidProperty -> {
-                                                if (processSolid(fid, solidProperty)) {
-                                                  buildingNodes.add(nodeId - 1);
-                                                  this.featureCount++;
-                                                }
-                                              })));
-            });
+
+    String fid =
+        feature
+            .findPropertyByPath(GML_ID)
+            .map(PropertyGltf::getFirstValue)
+            .orElse(feature.findPropertyByPath(ID).map(PropertyGltf::getFirstValue).orElse(null));
+
+    List<MeshSurface> surfaces = MeshSurface.collectSolidSurfaces(feature);
+
+    try {
+      boolean added = addMultiPolygons(fid, surfaces);
+      if (added) {
+        buildingNodes.add(nextNodeId - 1);
+        this.featureCount++;
+      } else {
+        LOGGER.debug("TODO");
+      }
+    } catch (Exception e) {
+      LOGGER.error(
+          "Error while processing solid geometries of feature '{}', the feature is ignored: {}",
+          fid,
+          e.getMessage());
+      if (LOGGER.isDebugEnabled(MARKER.STACKTRACE)) {
+        LOGGER.debug("Stacktrace: ", e);
+      }
+    }
+
     this.featuresDuration += System.nanoTime() - featureStart;
   }
 
   @Override
   public void onEnd(ModifiableContext context) {
     long writingStart = System.nanoTime();
+
     finalizeModel();
 
     if (LOGGER.isDebugEnabled()) {
@@ -334,98 +275,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     return nanoseconds / 1_000_000;
   }
 
-  private boolean processSolid(String fid, PropertyGltf solidProperty) {
-    try {
-      return addMultiPolygon(fid, solidProperty, getMaterialId("wall"), null, null);
-    } catch (Exception e) {
-      LOGGER.error(
-          "Error while processing property '{}' of feature '{}', the property is ignored: {}",
-          solidProperty.getName(),
-          fid,
-          e.getMessage());
-      if (LOGGER.isDebugEnabled(MARKER.STACKTRACE)) {
-        LOGGER.debug("Stacktrace: ", e);
-      }
-      return false;
-    }
-  }
-
-  private void processSemanticSurfaces(
-      String fid, PropertyGltf surfacesProperty, boolean inBuildingPart) {
-    // if we clamp the geometry to the ground, we need to determine the height correction for the
-    // whole building or building part
-    double[] minBuilding = null;
-    double[] maxBuilding = null;
-    if (clampToGround) {
-      List<Coordinate> coords =
-          surfacesProperty.getNestedProperties().stream()
-              .map(
-                  surface ->
-                      surface.findPropertyByPath(
-                          inBuildingPart
-                              ? ImmutableList.of(
-                                  CONSISTS_OF_BUILDING_PART, SURFACES, LOD_2_MULTI_SURFACE)
-                              : ImmutableList.of(SURFACES, LOD_2_MULTI_SURFACE)))
-              .flatMap(Optional::stream)
-              .map(this::getMultiPolygon)
-              .map(MultiPolygon::getCoordinatesFlat)
-              .flatMap(Collection::stream)
-              .collect(Collectors.toUnmodifiableList());
-      minBuilding =
-          new double[] {
-            coords.stream().mapToDouble(c -> c.get(0)).min().orElseThrow(),
-            coords.stream().mapToDouble(c -> c.get(1)).min().orElseThrow(),
-            coords.stream().mapToDouble(c -> c.get(2)).min().orElseThrow()
-          };
-      maxBuilding =
-          new double[] {
-            coords.stream().mapToDouble(c -> c.get(0)).max().orElseThrow(),
-            coords.stream().mapToDouble(c -> c.get(1)).max().orElseThrow(),
-            coords.stream().mapToDouble(c -> c.get(2)).max().orElseThrow()
-          };
-    }
-
-    final double[] finalMinBuilding = minBuilding;
-    final double[] finalMaxBuilding = maxBuilding;
-    for (PropertyGltf surface : surfacesProperty.getNestedProperties()) {
-      Optional<PropertyGltf> surfaceType =
-          surface.findPropertyByPath(
-              inBuildingPart
-                  ? ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES, SURFACE_TYPE)
-                  : ImmutableList.of(SURFACES, SURFACE_TYPE));
-      String name =
-          surfaceType.map(PropertyGltf::getFirstValue).map(String::toLowerCase).orElse("wall");
-      // TODO: support other semantic surface types
-      int matId = getMaterialId(name);
-      surface
-          .findPropertyByPath(
-              inBuildingPart
-                  ? ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES, LOD_2_MULTI_SURFACE)
-                  : ImmutableList.of(SURFACES, LOD_2_MULTI_SURFACE))
-          .ifPresent(
-              s -> {
-                try {
-                  addMultiPolygon(
-                      name.substring(0, 1).toUpperCase() + name.substring(1),
-                      s,
-                      matId,
-                      finalMinBuilding,
-                      finalMaxBuilding);
-                } catch (IOException e) {
-                  LOGGER.error(
-                      "Error while processing property 'lod2MultiSurface' of feature '{}', the property is ignored: {}",
-                      fid,
-                      e.getMessage());
-                  if (LOGGER.isDebugEnabled(MARKER.STACKTRACE)) {
-                    LOGGER.debug("Stacktrace: ", e);
-                  }
-                }
-              });
-    }
-  }
-
-  private int getMaterialId(String name) {
-    return matIdMap.computeIfAbsent(name, val -> matIdMap.size());
+  private byte getSurfaceTypeCode(String name) {
+    return surfaceTypeEnums.computeIfAbsent(name, val -> (byte) surfaceTypeEnums.size());
   }
 
   private void initNewModel() {
@@ -438,90 +289,191 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                             .getApiData()
                             .getMetadata()
                             .flatMap(ApiMetadata::getAttribution))
-                    .build());
-    nodeId = 0;
-    meshId = 0;
-    accessorId = 0;
+                    .build())
+            .addExtensionsUsed("EXT_mesh_features", "EXT_structural_metadata");
+
+    nextNodeId = 0;
+    nextMeshId = 0;
+    nextAccessorId = 0;
     bytesIndices = 0;
     bytesVertices = 0;
     bytesNormals = 0;
+    bytesFeatureId0 = 0;
     bufferIndices = new ByteArrayOutputStream(getByteStrideIndices() * INITIAL_SIZE);
     bufferVertices = new ByteArrayOutputStream(getByteStrideVertices() * INITIAL_SIZE);
     bufferNormals = new ByteArrayOutputStream(getByteStrideNormals() * INITIAL_SIZE);
+    bufferFeatureId0 = new ByteArrayOutputStream(getByteStrideFeatureId() * INITIAL_SIZE);
+    bufferSurfaceTypes = new ByteArrayOutputStream(getByteStrideSurfaceTypes() * INITIAL_SIZE);
     buildingNodes = new ArrayList<>(INITIAL_SIZE);
   }
 
   private void finalizeModel() {
 
-    // TODO make materials configurable
-    matIdMap.entrySet().stream()
-        .sorted(Comparator.comparingInt(Entry::getValue))
-        .map(
-            entry -> {
-              switch (entry.getKey()) {
-                case "wall":
-                  return ImmutableMaterial.builder()
-                      .pbrMetallicRoughness(
-                          ImmutablePbrMetallicRoughness.builder()
-                              .baseColorFactor(ImmutableList.of(0.5f, 0.5f, 0.5f, 1.0f))
-                              .metallicFactor(0.2f)
-                              .roughnessFactor(1.0f)
-                              .build())
-                      .name("Wall")
-                      .doubleSided(polygonOrientationIsNotGuaranteed)
-                      .build();
-                case "roof":
-                  return ImmutableMaterial.builder()
-                      .pbrMetallicRoughness(
-                          ImmutablePbrMetallicRoughness.builder()
-                              .baseColorFactor(ImmutableList.of(1.0f, 0.0f, 0.0f, 1.0f))
-                              .metallicFactor(0.5f)
-                              .roughnessFactor(0.5f)
-                              .build())
-                      .name("Roof")
-                      .doubleSided(polygonOrientationIsNotGuaranteed)
-                      .build();
-                case "ground":
-                  return ImmutableMaterial.builder()
-                      .pbrMetallicRoughness(
-                          ImmutablePbrMetallicRoughness.builder()
-                              .baseColorFactor(ImmutableList.of(0.8f, 0.8f, 0.8f, 1.0f))
-                              .metallicFactor(0.2f)
-                              .roughnessFactor(1.0f)
-                              .build())
-                      .name("Ground")
-                      .doubleSided(polygonOrientationIsNotGuaranteed)
-                      .build();
-                case "closure":
-                  return ImmutableMaterial.builder()
-                      .pbrMetallicRoughness(
-                          ImmutablePbrMetallicRoughness.builder()
-                              .baseColorFactor(ImmutableList.of(0.9f, 0.9f, 0.9f, 0.6f))
-                              .metallicFactor(0.8f)
-                              .roughnessFactor(0.1f)
-                              .build())
-                      .name("Closure")
-                      .doubleSided(polygonOrientationIsNotGuaranteed)
-                      .build();
-                default:
-                  return ImmutableMaterial.builder()
-                      .pbrMetallicRoughness(
-                          ImmutablePbrMetallicRoughness.builder()
-                              .baseColorFactor(ImmutableList.of(0.5f, 0.5f, 0.5f, 1.0f))
-                              .metallicFactor(0.2f)
-                              .roughnessFactor(1.0f)
-                              .build())
-                      .name(entry.getKey())
-                      .doubleSided(polygonOrientationIsNotGuaranteed)
-                      .build();
+    builder.addMaterials(
+        ImmutableMaterial.builder()
+            .pbrMetallicRoughness(
+                ImmutablePbrMetallicRoughness.builder()
+                    .baseColorFactor(ImmutableList.of(0.5f, 0.5f, 0.5f, 1.0f))
+                    .metallicFactor(0.2f)
+                    .roughnessFactor(1.0f)
+                    .build())
+            .name("Wall")
+            .doubleSided(polygonOrientationIsNotGuaranteed)
+            .build());
+
+    // TODO move to an API resource and reference with schemaUri?
+    ImmutableSchema.Builder schemaBuilder = ImmutableSchema.builder().id("TODO");
+    Builder<PropertyTable> propertyTablesBuilder = ImmutableList.builder();
+    if (!configuration.getProperties().isEmpty()) {
+      featureSchema.ifPresent(
+          schema -> {
+            ImmutableSchemaClass.Builder classBuilder = ImmutableSchemaClass.builder();
+            for (FeatureSchema property : schema.getProperties()) {
+              if (!configuration.getProperties().containsKey(property.getName())) {
+                continue;
               }
-            })
-        .forEach(mat -> builder.addMaterials(mat));
+              GLTF_TYPE type = configuration.getProperties().get(property.getName());
+              ImmutableSchemaProperty.Builder propertyBuilder = ImmutableSchemaProperty.builder();
+
+              // three options
+              if (property.getConstraints().filter(c -> !c.getEnumValues().isEmpty()).isPresent()) {
+                // 1) enum based on enum values
+                property
+                    .getConstraints()
+                    .map(SchemaConstraints::getEnumValues)
+                    .ifPresent(
+                        values -> {
+                          schemaBuilder.putEnums(
+                              property.getName(),
+                              ImmutableSchemaEnum.builder()
+                                  .name(property.getLabel())
+                                  .description(property.getDescription())
+                                  .values(
+                                      IntStream.range(0, values.size())
+                                          .mapToObj(
+                                              i ->
+                                                  ImmutableSchemaEnumValue.builder()
+                                                      .value(i)
+                                                      .name(values.get(i))
+                                                      .build())
+                                          .collect(Collectors.toUnmodifiableList()))
+                                  .build());
+
+                          propertyBuilder.type("ENUM");
+                          propertyBuilder.componentType(type.name());
+                          propertyBuilder.enumType(property.getName());
+                        });
+              } else if (property.getType() == Type.INTEGER
+                  && property
+                      .getConstraints()
+                      .filter(c -> c.getCodelist().isPresent())
+                      .isPresent()) {
+                // 2) enum based on a codelist with numeric codes
+                property
+                    .getConstraints()
+                    .flatMap(SchemaConstraints::getCodelist)
+                    .flatMap(
+                        codelist ->
+                            entityRegistry.getEntitiesForType(Codelist.class).stream()
+                                .filter(codelist1 -> codelist1.getId().equals(codelist))
+                                .findFirst()
+                                .map(Codelist::getData)
+                                .map(CodelistData::getEntries))
+                    .ifPresent(
+                        valueMap -> {
+                          schemaBuilder.putEnums(
+                              property.getName(),
+                              ImmutableSchemaEnum.builder()
+                                  .name(property.getLabel())
+                                  .description(property.getDescription())
+                                  .values(
+                                      valueMap.entrySet().stream()
+                                          .map(
+                                              entry ->
+                                                  ImmutableSchemaEnumValue.builder()
+                                                      .value(Integer.valueOf(entry.getKey()))
+                                                      .name(entry.getValue())
+                                                      .build())
+                                          .collect(Collectors.toUnmodifiableList()))
+                                  .build());
+
+                          propertyBuilder.type("ENUM");
+                          propertyBuilder.componentType(type.name());
+                          propertyBuilder.enumType(property.getName());
+                        });
+              } else {
+                // 3) just based on the specified type for the property
+                switch (type) {
+                  case STRING:
+                  case BOOLEAN:
+                    propertyBuilder.type(type.name());
+                    break;
+                  default:
+                    propertyBuilder.type("SCALAR");
+                    propertyBuilder.componentType(type.name());
+                    break;
+                }
+              }
+
+              propertyBuilder.description(property.getLabel());
+              property
+                  .getConstraints()
+                  .flatMap(SchemaConstraints::getRequired)
+                  .ifPresent(b -> propertyBuilder.required(b));
+              classBuilder.putProperties(property.getName(), propertyBuilder.build());
+            }
+
+            schemaBuilder.putClasses("building", classBuilder.build());
+          });
+    }
+
+    if (!surfaceTypeEnums.isEmpty()) {
+      schemaBuilder.putEnums(
+          SURFACE_TYPE,
+          ImmutableSchemaEnum.builder()
+              .name("Semantic Surface Types")
+              .valueType(UINT8.name())
+              .values(
+                  surfaceTypeEnums.entrySet().stream()
+                      .map(
+                          entry ->
+                              ImmutableSchemaEnumValue.builder()
+                                  .value(entry.getValue())
+                                  .name(entry.getKey())
+                                  .build())
+                      .collect(Collectors.toUnmodifiableList()))
+              .build());
+      schemaBuilder.putClasses(
+          "SemanticSurface",
+          ImmutableSchemaClass.builder()
+              .name("Semantic Surfaces")
+              .putProperties(
+                  "surfaceType",
+                  ImmutableSchemaProperty.builder().type("ENUM").enumType(SURFACE_TYPE).build())
+              .build());
+
+      bytesSurfaceTypes = bufferSurfaceTypes.size();
+
+      int surfaceTypeBufferViewId = withNormals ? 4 : 3;
+      propertyTablesBuilder.add(
+          ImmutablePropertyTable.builder()
+              .class_("SemanticSurface")
+              .count(bufferSurfaceTypes.size())
+              .putProperties(
+                  "surfaceType",
+                  ImmutableProperty.builder().values(surfaceTypeBufferViewId).build())
+              .build());
+    }
+
+    builder.putExtensions(
+        "EXT_structural_metadata",
+        ImmutableMap.of(
+            "schema", schemaBuilder.build(), "propertyTables", propertyTablesBuilder.build()));
 
     if (bytesIndices > 0) {
       builder.addBufferViews(
           ImmutableBufferView.builder()
-              .buffer(0) // only one buffer
+              .buffer(0)
               .byteLength(bytesIndices)
               .byteOffset(0)
               .target(ELEMENT_ARRAY_BUFFER)
@@ -530,24 +482,48 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     if (bytesVertices > 0) {
       builder.addBufferViews(
           ImmutableBufferView.builder()
-              .buffer(0) // only one buffer
+              .buffer(0)
               .byteLength(bytesVertices)
               .byteOffset(bytesIndices)
               .byteStride(getByteStrideVertices())
               .target(ARRAY_BUFFER)
               .build());
     }
+    if (bytesFeatureId0 > 0) {
+      builder.addBufferViews(
+          ImmutableBufferView.builder()
+              .buffer(0)
+              .byteLength(bytesFeatureId0)
+              .byteOffset(bytesIndices + bytesVertices)
+              // each *element* must align to 4-byte boundaries; UNSIGNED_INT is not allowed
+              .byteStride(getByteStrideFeatureId())
+              .build());
+    }
     if (bytesNormals > 0) {
       builder.addBufferViews(
           ImmutableBufferView.builder()
-              .buffer(0) // only one buffer
+              .buffer(0)
               .byteLength(bytesNormals)
-              .byteOffset(bytesIndices + bytesVertices)
+              .byteOffset(bytesIndices + bytesVertices + bytesFeatureId0)
               .byteStride(getByteStrideNormals())
               .target(ARRAY_BUFFER)
               .build());
     }
-    int bufferLength = bufferIndices.size() + bufferVertices.size() + bufferNormals.size();
+    if (bytesSurfaceTypes > 0) {
+      builder.addBufferViews(
+          ImmutableBufferView.builder()
+              .buffer(0)
+              .byteLength(bytesSurfaceTypes)
+              .byteOffset(bytesIndices + bytesVertices + bytesFeatureId0 + bytesNormals)
+              .target(ELEMENT_ARRAY_BUFFER)
+              .build());
+    }
+    int bufferLength =
+        bufferIndices.size()
+            + bufferVertices.size()
+            + bufferFeatureId0.size()
+            + bufferNormals.size()
+            + bufferSurfaceTypes.size();
     if (bufferLength > 0) {
       builder.addBuffers(ImmutableBuffer.builder().byteLength(bufferLength).build());
       builder.addNodes(
@@ -556,7 +532,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               // z-up (CRS) => y-up (glTF uses y-up)
               .addMatrix(1d, 0d, 0d, 0d, 0d, 0d, -1d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 0d, 1d)
               .build());
-      builder.addScenes(ImmutableScene.builder().nodes(ImmutableList.of(nodeId)).build());
+      builder.addScenes(ImmutableScene.builder().nodes(ImmutableList.of(nextNodeId)).build());
     }
 
     if (quantizeMesh) {
@@ -565,7 +541,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     }
 
     GltfHelper.writeGltfBinary(
-        builder.build(), bufferIndices, bufferVertices, bufferNormals, outputStream);
+        builder.build(),
+        ImmutableList.of(
+            bufferIndices, bufferVertices, bufferFeatureId0, bufferNormals, bufferSurfaceTypes),
+        outputStream);
   }
 
   private int getByteStrideIndices() {
@@ -580,36 +559,38 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     return (quantizeMesh ? 1 : 3) * 4;
   }
 
+  private int getByteStrideFeatureId() {
+    return 4;
+  }
+
+  private int getByteStrideSurfaceTypes() {
+    return 1;
+  }
+
   // TODO support other geometric primitives
 
-  private boolean addMultiPolygon(
-      String name,
-      PropertyGltf geometryProperty,
-      int materialId,
-      double[] minBuilding,
-      double[] maxBuilding)
-      throws IOException {
+  private boolean addMultiPolygons(String name, List<MeshSurface> meshSurfaces) throws IOException {
 
     // determine the origin to use; eventually we will translate vertices to the center of the
     // feature to have smaller values (glTF uses float)
-    Geometry.MultiPolygon geometry = getMultiPolygon(geometryProperty);
-    List<Coordinate> coordList = geometry.getCoordinatesFlat();
+    List<Coordinate> coordList =
+        meshSurfaces.stream()
+            .map(MeshSurface::getGeometry)
+            .map(MultiPolygon::getCoordinatesFlat)
+            .flatMap(List::stream)
+            .collect(Collectors.toUnmodifiableList());
     double[] min =
-        Objects.requireNonNullElse(
-            minBuilding,
-            new double[] {
-              coordList.stream().mapToDouble(coord -> coord.get(0)).min().orElseThrow(),
-              coordList.stream().mapToDouble(coord -> coord.get(1)).min().orElseThrow(),
-              coordList.stream().mapToDouble(coord -> coord.get(2)).min().orElseThrow()
-            });
+        new double[] {
+          coordList.stream().mapToDouble(coord -> coord.get(0)).min().orElseThrow(),
+          coordList.stream().mapToDouble(coord -> coord.get(1)).min().orElseThrow(),
+          coordList.stream().mapToDouble(coord -> coord.get(2)).min().orElseThrow()
+        };
     double[] max =
-        Objects.requireNonNullElse(
-            maxBuilding,
-            new double[] {
-              coordList.stream().mapToDouble(coord -> coord.get(0)).max().orElseThrow(),
-              coordList.stream().mapToDouble(coord -> coord.get(1)).max().orElseThrow(),
-              coordList.stream().mapToDouble(coord -> coord.get(2)).max().orElseThrow()
-            });
+        new double[] {
+          coordList.stream().mapToDouble(coord -> coord.get(0)).max().orElseThrow(),
+          coordList.stream().mapToDouble(coord -> coord.get(1)).max().orElseThrow(),
+          coordList.stream().mapToDouble(coord -> coord.get(2)).max().orElseThrow()
+        };
     double[] originEcef =
         Arrays.stream(
                 crs84hToEcef.transform(
@@ -623,16 +604,316 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     List<Double> vertices = new ArrayList<>();
     List<Double> normals = new ArrayList<>();
     List<Integer> indices = new ArrayList<>();
+    List<Integer> featureIds = new ArrayList<>();
     int indexCount = 0;
+    int featureCount = 0;
 
+    // write feature ids and a property table only if we have surface type information
+    boolean hasSurfaceType = meshSurfaces.stream().anyMatch(s -> s.getSurfaceType().isPresent());
+
+    for (MeshSurface surface : meshSurfaces) {
+      int vertexCountSurface =
+          triangulate(surface.getGeometry(), name, min[2], indices, indexCount, vertices, normals);
+      indexCount += vertexCountSurface;
+
+      if (hasSurfaceType && vertexCountSurface >= 3) {
+        IntStream.range(0, vertexCountSurface)
+            .forEach(i -> featureIds.add(bufferSurfaceTypes.size()));
+        byte st = getSurfaceTypeCode(surface.getSurfaceType().orElse("Unknown"));
+        bufferSurfaceTypes.write((byte) st);
+        featureCount++;
+      }
+
+      if (featureIds.size() != vertices.size() / 3) {
+        LOGGER.error(
+            "System error: Size of feature id array for structural metadata differs from size of vertices: {} vs. {}",
+            featureIds.size(),
+            vertices.size() / 3);
+      }
+    }
+
+    // glTF output
+    if (indices.size() > 0) {
+      if (LOGGER.isTraceEnabled()) {
+        for (int i = 0; i < indices.size() / 3; i++) {
+          Integer p0 = indices.get(i * 3);
+          Integer p1 = indices.get(i * 3 + 1);
+          Integer p2 = indices.get(i * 3 + 2);
+
+          LOGGER.trace("Indices: {},{},{}", p0, p1, p2);
+          LOGGER.trace(
+              "Triangle: ({},{},{}) ({},{},{}) ({},{},{}) - ({},{},{})",
+              vertices.get(p0 * 3),
+              vertices.get(p0 * 3 + 1),
+              vertices.get(p0 * 3 + 2),
+              vertices.get(p1 * 3),
+              vertices.get(p1 * 3 + 1),
+              vertices.get(p1 * 3 + 2),
+              vertices.get(p2 * 3),
+              vertices.get(p2 * 3 + 1),
+              vertices.get(p2 * 3 + 2),
+              withNormals ? normals.get(p0 * 3) : "-",
+              withNormals ? normals.get(p0 * 3 + 1) : "-",
+              withNormals ? normals.get(p0 * 3 + 2) : "-");
+        }
+      }
+
+      // write indices and add accessor
+      for (int v : indices) {
+        bufferIndices.write(GltfHelper.intToLittleEndianShort(v));
+      }
+
+      ImmutableAttributes.Builder attributesBuilder = ImmutableAttributes.builder();
+      int bufferViewId = 0;
+      int accessorIdIndices = nextAccessorId;
+      builder.addAccessors(
+          ImmutableAccessor.builder()
+              .bufferView(bufferViewId++)
+              .byteOffset(bytesIndices)
+              .componentType(UNSIGNED_SHORT)
+              .addMax(indices.stream().max(Comparator.naturalOrder()).orElseThrow())
+              .addMin(indices.stream().min(Comparator.naturalOrder()).orElseThrow())
+              .count(indices.size())
+              .type("SCALAR")
+              .build());
+      nextAccessorId++;
+
+      bytesIndices += indices.size() * getByteStrideIndices();
+
+      if (indices.size() % 2 == 1) {
+        // pad for alignment, all offsets must be divisible by 4
+        bufferIndices.write(GltfHelper.BIN_PADDING);
+        bufferIndices.write(GltfHelper.BIN_PADDING);
+        bytesIndices += 2;
+      }
+
+      // prepare vertices and add accessor
+
+      // vertices are ECEF coordinates
+      // translate to the origin
+      for (int n = 0; n < vertices.size() / 3; n++) {
+        vertices.set(n * 3, vertices.get(n * 3) - originEcef[0]);
+        vertices.set(n * 3 + 1, vertices.get(n * 3 + 1) - originEcef[1]);
+        vertices.set(n * 3 + 2, vertices.get(n * 3 + 2) - originEcef[2]);
+      }
+
+      final double[] scale;
+      if (quantizeMesh) {
+        // scale vertices to SHORT
+        double[] maxAbs = new double[] {0d, 0d, 0d};
+        for (int n = 0; n < vertices.size(); n++) {
+          if (Math.abs(vertices.get(n)) > maxAbs[n % 3]) {
+            maxAbs[n % 3] = Math.abs(vertices.get(n));
+          }
+        }
+        scale = IntStream.range(0, 3).mapToDouble(n -> maxAbs[n] / GltfHelper.MAX_SHORT).toArray();
+        for (int n = 0; n < vertices.size() / 3; n++) {
+          vertices.set(n * 3, vertices.get(n * 3) / scale[0]);
+          vertices.set(n * 3 + 1, vertices.get(n * 3 + 1) / scale[1]);
+          vertices.set(n * 3 + 2, vertices.get(n * 3 + 2) / scale[2]);
+        }
+
+        for (int n = 0; n < vertices.size() / 3; n++) {
+          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3)));
+          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 1)));
+          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 2)));
+          // 3 shorts are 6 bytes, add 2 bytes to be aligned with 4-byte boundaries
+          bufferVertices.write(GltfHelper.BIN_PADDING);
+          bufferVertices.write(GltfHelper.BIN_PADDING);
+        }
+      } else {
+        scale = new double[] {1d, 1d, 1d};
+
+        for (Double v : vertices) {
+          bufferVertices.write(GltfHelper.doubleToLittleEndianFloat(v));
+        }
+      }
+
+      final List<Double> verticesMin = GltfHelper.getMin(vertices);
+      final List<Double> verticesMax = GltfHelper.getMax(vertices);
+      builder.addAccessors(
+          ImmutableAccessor.builder()
+              .bufferView(bufferViewId++)
+              .byteOffset(bytesVertices)
+              .componentType(quantizeMesh ? SHORT : FLOAT)
+              .normalized(false)
+              .max(
+                  quantizeMesh
+                      ? ImmutableList.of(
+                          Math.round(verticesMax.get(0)),
+                          Math.round(verticesMax.get(1)),
+                          Math.round(verticesMax.get(2)))
+                      : verticesMax)
+              .min(
+                  quantizeMesh
+                      ? ImmutableList.of(
+                          Math.round(verticesMin.get(0)),
+                          Math.round(verticesMin.get(1)),
+                          Math.round(verticesMin.get(2)))
+                      : verticesMin)
+              .count(vertices.size() / 3)
+              .type("VEC3")
+              .build());
+      attributesBuilder.position(nextAccessorId);
+      nextAccessorId++;
+
+      bytesVertices += vertices.size() / 3 * getByteStrideVertices();
+
+      if (hasSurfaceType) {
+        // write feature ids and create accessor
+        for (int v : featureIds) {
+          bufferFeatureId0.write(GltfHelper.intToLittleEndianShort(v));
+          bufferFeatureId0.write(GltfHelper.BIN_PADDING);
+          bufferFeatureId0.write(GltfHelper.BIN_PADDING);
+        }
+
+        builder.addAccessors(
+            ImmutableAccessor.builder()
+                .bufferView(bufferViewId++)
+                .byteOffset(bytesFeatureId0)
+                .componentType(UNSIGNED_SHORT)
+                .count(featureIds.size())
+                .type("SCALAR")
+                .build());
+        attributesBuilder.featureId0(nextAccessorId);
+        nextAccessorId++;
+
+        bytesFeatureId0 += featureIds.size() * getByteStrideFeatureId();
+      }
+
+      if (withNormals) {
+        // write normals and add accessor
+        if (quantizeMesh) {
+          // scale normals to BYTE
+          for (int n = 0; n < normals.size() / 3; n++) {
+            normals.set(n * 3, normals.get(n * 3) * GltfHelper.MAX_BYTE);
+            normals.set(n * 3 + 1, normals.get(n * 3 + 1) * GltfHelper.MAX_BYTE);
+            normals.set(n * 3 + 2, normals.get(n * 3 + 2) * GltfHelper.MAX_BYTE);
+          }
+
+          for (int n = 0; n < normals.size() / 3; n++) {
+            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3)));
+            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 1)));
+            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 2)));
+            // 3 bytes, add 1 byte to be aligned with 4-byte boundaries
+            bufferNormals.write(GltfHelper.BIN_PADDING);
+          }
+        } else {
+          for (Double v : normals) {
+            bufferNormals.write(GltfHelper.doubleToLittleEndianFloat(v));
+          }
+        }
+
+        final List<Double> normalsMin = GltfHelper.getMin(normals);
+        final List<Double> normalsMax = GltfHelper.getMax(normals);
+        builder.addAccessors(
+            ImmutableAccessor.builder()
+                .bufferView(bufferViewId++)
+                .byteOffset(bytesNormals)
+                .componentType(quantizeMesh ? BYTE : FLOAT)
+                .normalized(quantizeMesh)
+                .max(
+                    quantizeMesh
+                        ? ImmutableList.of(
+                            Math.round(normalsMax.get(0)),
+                            Math.round(normalsMax.get(1)),
+                            Math.round(normalsMax.get(2)))
+                        : normalsMax)
+                .min(
+                    quantizeMesh
+                        ? ImmutableList.of(
+                            Math.round(normalsMin.get(0)),
+                            Math.round(normalsMin.get(1)),
+                            Math.round(normalsMin.get(2)))
+                        : normalsMin)
+                .count(normals.size() / 3)
+                .type("VEC3")
+                .build());
+        attributesBuilder.normal(nextAccessorId);
+        nextAccessorId++;
+
+        bytesNormals += normals.size() / 3 * getByteStrideNormals();
+      }
+
+      // add mesh and node for the building
+      builder.addMeshes(
+          ImmutableMesh.builder()
+              .addPrimitives(
+                  ImmutablePrimitive.builder()
+                      .attributes(attributesBuilder.build())
+                      .mode(TRIANGLES)
+                      .indices(accessorIdIndices)
+                      .material(MATERIAL)
+                      .extensions(
+                          ImmutableMap.of(
+                              "EXT_mesh_features",
+                              ImmutableMap.of(
+                                  "featureIds",
+                                  ImmutableList.of(
+                                      ImmutableMap.of(
+                                          "featureCount",
+                                          featureCount,
+                                          "attribute",
+                                          0,
+                                          "propertyTable",
+                                          0)))))
+                      .build())
+              .build());
+
+      builder.addNodes(
+          ImmutableNode.builder()
+              .name(Optional.ofNullable(name))
+              .mesh(nextMeshId)
+              .matrix(
+                  ImmutableList.of(
+                      scale[0],
+                      0d,
+                      0d,
+                      0d,
+                      0d,
+                      scale[1],
+                      0d,
+                      0d,
+                      0d,
+                      0d,
+                      scale[2],
+                      0d,
+                      originEcef[0],
+                      originEcef[1],
+                      originEcef[2],
+                      1d))
+              .build());
+      nextMeshId++;
+      nextNodeId++;
+
+      if (LOGGER.isTraceEnabled()) {
+        LOGGER.trace(
+            "Geometry processing of feature '{}' is complete. Vertices: {}, Indices: {}",
+            name,
+            vertices.size(),
+            indices.size());
+      }
+    }
+    return true;
+  }
+
+  private int triangulate(
+      MultiPolygon multiPolygon,
+      String featureName,
+      double minZ,
+      List<Integer> indices,
+      int indexCount,
+      List<Double> vertices,
+      List<Double> normals) {
     // triangulate the polygons, translate relative to origin
+    int vertexCountSurface = 0;
     int numRing;
     AXES axes = AXES.XYZ;
     boolean ccw = true;
     List<Double> data = new ArrayList<>();
     List<Integer> holeIndices = new ArrayList<>();
     double area;
-    for (Geometry.Polygon polygon : geometry.getCoordinates()) {
+    for (Geometry.Polygon polygon : multiPolygon.getCoordinates()) {
       numRing = 0;
       data.clear();
       holeIndices.clear();
@@ -642,7 +923,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         List<Coordinate> coordsRing = ring.getCoordinates();
 
         // remove consecutive duplicate points
-        coordList =
+        List<Coordinate> coordList =
             IntStream.range(0, coordsRing.size())
                 .filter(
                     n ->
@@ -663,7 +944,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             if (LOGGER.isTraceEnabled()) {
               LOGGER.trace(
                   "Skipping polygon of feature '{}', exterior ring has no effective area: {}",
-                  name,
+                  featureName,
                   coordList);
             }
             break;
@@ -672,7 +953,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             if (LOGGER.isTraceEnabled()) {
               LOGGER.trace(
                   "Skipping hole of feature '{}', interior ring has no effective area: {}",
-                  name,
+                  featureName,
                   coordList);
             }
             continue;
@@ -685,7 +966,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           coords[n * 3] = coordList.get(n).get(0);
           coords[n * 3 + 1] = coordList.get(n).get(1);
           coords[n * 3 + 2] =
-              clampToGround ? coordList.get(n).get(2) - min[2] : coordList.get(n).get(2);
+              clampToGround ? coordList.get(n).get(2) - minZ : coordList.get(n).get(2);
         }
 
         // transform to ECEF coordinates
@@ -695,7 +976,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           if (!GltfHelper.isCoplanar(coordList)) {
             LOGGER.trace(
                 "Feature '{}' has a ring that is not coplanar. The glTF mesh may be invalid. Coordinates: {}",
-                name,
+                featureName,
                 coords);
           }
         }
@@ -715,12 +996,14 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             axes = AXES.ZXY;
             area = area20;
           } else {
-            LOGGER.trace(
-                "The area of the exterior ring is too small, the polygon is ignored: {} {} {} - {}",
-                area01,
-                area12,
-                area20,
-                coordsEcef);
+            if (LOGGER.isTraceEnabled()) {
+              LOGGER.trace(
+                  "The area of the exterior ring is too small, the polygon is ignored: {} {} {} - {}",
+                  area01,
+                  area12,
+                  area20,
+                  coordsEcef);
+            }
             break;
           }
           ccw = area < 0;
@@ -733,7 +1016,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                   area01,
                   area12,
                   area20);
-              break;
+             break;
             }
           }
            */
@@ -748,7 +1031,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                   "The area of an interior ring is smaller than {} square meters, the hole is ignored: {}",
                   transformationContext.getMinArea(),
                   area);
-              break;
+              continue;
             }
           }
            */
@@ -765,7 +1048,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     "Skipping polygon of feature '{}', could not compute normal for exterior ring: {}",
-                    name,
+                    featureName,
                     coordList);
               }
               break;
@@ -774,7 +1057,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     "Skipping hole of feature '{}', could not compute normal for exterior ring: {}",
-                    name,
+                    featureName,
                     coordList);
               }
               continue;
@@ -792,28 +1075,28 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         continue;
       }
 
-      double[] tmp = new double[data.size() / 3 * 2];
+      double[] coords2dForTriangulation = new double[data.size() / 3 * 2];
       if (axes == AXES.XYZ) {
         for (int n = 0; n < data.size() / 3; n++) {
-          tmp[n * 2] = data.get(n * 3);
-          tmp[n * 2 + 1] = data.get(n * 3 + 1);
+          coords2dForTriangulation[n * 2] = data.get(n * 3);
+          coords2dForTriangulation[n * 2 + 1] = data.get(n * 3 + 1);
         }
       } else if (axes == AXES.YZX) {
         for (int n = 0; n < data.size() / 3; n++) {
-          tmp[n * 2] = data.get(n * 3 + 1);
-          tmp[n * 2 + 1] = data.get(n * 3 + 2);
+          coords2dForTriangulation[n * 2] = data.get(n * 3 + 1);
+          coords2dForTriangulation[n * 2 + 1] = data.get(n * 3 + 2);
         }
       } else {
         for (int n = 0; n < data.size() / 3; n++) {
-          tmp[n * 2] = data.get(n * 3 + 2);
-          tmp[n * 2 + 1] = data.get(n * 3);
+          coords2dForTriangulation[n * 2] = data.get(n * 3 + 2);
+          coords2dForTriangulation[n * 2 + 1] = data.get(n * 3);
         }
       }
 
       List<Integer> triangles =
-          tmp.length > 6
+          coords2dForTriangulation.length > 6
               ? Earcut.earcut(
-                  tmp,
+                  coords2dForTriangulation,
                   holeIndices.isEmpty()
                       ? null
                       : holeIndices.stream().mapToInt(Integer::intValue).toArray(),
@@ -830,10 +1113,9 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
               "Cannot triangulate a polygon of feature '{}', the polygon is ignored: {}",
-              name,
+              featureName,
               data);
         }
-
         continue;
       }
 
@@ -874,259 +1156,9 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         indices.add(indexCount + ringIndex);
       }
 
-      indexCount += data.size() / 3;
+      vertexCountSurface += data.size() / 3;
     }
 
-    if (indices.size() > 0) {
-
-      if (LOGGER.isTraceEnabled()) {
-        for (int i = 0; i < indices.size() / 3; i++) {
-          Integer p0 = indices.get(i * 3);
-          Integer p1 = indices.get(i * 3 + 1);
-          Integer p2 = indices.get(i * 3 + 2);
-
-          LOGGER.trace("Indices: {},{},{}", p0, p1, p2);
-          LOGGER.trace(
-              "Triangle: ({},{},{}) ({},{},{}) ({},{},{}) - ({},{},{})",
-              vertices.get(p0 * 3),
-              vertices.get(p0 * 3 + 1),
-              vertices.get(p0 * 3 + 2),
-              vertices.get(p1 * 3),
-              vertices.get(p1 * 3 + 1),
-              vertices.get(p1 * 3 + 2),
-              vertices.get(p2 * 3),
-              vertices.get(p2 * 3 + 1),
-              vertices.get(p2 * 3 + 2),
-              withNormals ? normals.get(p0 * 3) : "-",
-              withNormals ? normals.get(p0 * 3 + 1) : "-",
-              withNormals ? normals.get(p0 * 3 + 2) : "-");
-        }
-      }
-
-      for (int v : indices) {
-        bufferIndices.write(GltfHelper.intToLittleEndianShort(v));
-      }
-
-      int accessorIdIndices = accessorId;
-      builder.addAccessors(
-          ImmutableAccessor.builder()
-              .bufferView(0)
-              .byteOffset(bytesIndices)
-              .componentType(UNSIGNED_SHORT)
-              .addMax(indices.stream().max(Comparator.naturalOrder()).orElseThrow())
-              .addMin(indices.stream().min(Comparator.naturalOrder()).orElseThrow())
-              .count(indices.size())
-              .type("SCALAR")
-              .build());
-      bytesIndices += indices.size() * getByteStrideIndices();
-      accessorId++;
-
-      if (indices.size() % 2 == 1) {
-        // pad for alignment, all offsets must be divisible by 4
-        bufferIndices.write(GltfHelper.BIN_PADDING);
-        bufferIndices.write(GltfHelper.BIN_PADDING);
-        bytesIndices += 2;
-      }
-
-      // vertices are ECEF coordinates
-
-      // translate to the origin
-      for (int n = 0; n < vertices.size() / 3; n++) {
-        vertices.set(n * 3, vertices.get(n * 3) - originEcef[0]);
-        vertices.set(n * 3 + 1, vertices.get(n * 3 + 1) - originEcef[1]);
-        vertices.set(n * 3 + 2, vertices.get(n * 3 + 2) - originEcef[2]);
-      }
-
-      final double[] scale;
-      if (quantizeMesh) {
-        // scale vertices to SHORT
-        double[] maxAbs = new double[] {0d, 0d, 0d};
-        for (int n = 0; n < vertices.size(); n++) {
-          if (Math.abs(vertices.get(n)) > maxAbs[n % 3]) {
-            maxAbs[n % 3] = Math.abs(vertices.get(n));
-          }
-        }
-        double[] finalMaxAbs = maxAbs;
-        scale =
-            IntStream.range(0, 3).mapToDouble(n -> finalMaxAbs[n] / GltfHelper.MAX_SHORT).toArray();
-        for (int n = 0; n < vertices.size() / 3; n++) {
-          vertices.set(n * 3, vertices.get(n * 3) / scale[0]);
-          vertices.set(n * 3 + 1, vertices.get(n * 3 + 1) / scale[1]);
-          vertices.set(n * 3 + 2, vertices.get(n * 3 + 2) / scale[2]);
-        }
-
-        // scale normals to BYTE
-        for (int n = 0; n < normals.size() / 3; n++) {
-          normals.set(n * 3, normals.get(n * 3) * GltfHelper.MAX_BYTE);
-          normals.set(n * 3 + 1, normals.get(n * 3 + 1) * GltfHelper.MAX_BYTE);
-          normals.set(n * 3 + 2, normals.get(n * 3 + 2) * GltfHelper.MAX_BYTE);
-        }
-
-      } else {
-        scale = new double[] {1d, 1d, 1d};
-      }
-
-      final List<Double> verticesMin = GltfHelper.getMin(vertices);
-      final List<Double> verticesMax = GltfHelper.getMax(vertices);
-
-      builder.addAccessors(
-          ImmutableAccessor.builder()
-              .bufferView(1)
-              .byteOffset(bytesVertices)
-              .componentType(quantizeMesh ? SHORT : FLOAT)
-              .normalized(false)
-              .max(
-                  quantizeMesh
-                      ? ImmutableList.of(
-                          Math.round(verticesMax.get(0)),
-                          Math.round(verticesMax.get(1)),
-                          Math.round(verticesMax.get(2)))
-                      : verticesMax)
-              .min(
-                  quantizeMesh
-                      ? ImmutableList.of(
-                          Math.round(verticesMin.get(0)),
-                          Math.round(verticesMin.get(1)),
-                          Math.round(verticesMin.get(2)))
-                      : verticesMin)
-              .count(vertices.size() / 3)
-              .type("VEC3")
-              .build());
-      accessorId++;
-      bytesVertices += vertices.size() / 3 * getByteStrideVertices();
-
-      if (withNormals) {
-        final List<Double> normalsMin = GltfHelper.getMin(normals);
-        final List<Double> normalsMax = GltfHelper.getMax(normals);
-        builder.addAccessors(
-            ImmutableAccessor.builder()
-                .bufferView(2)
-                .byteOffset(bytesNormals)
-                .componentType(quantizeMesh ? BYTE : FLOAT)
-                .normalized(quantizeMesh ? true : false)
-                .max(
-                    quantizeMesh
-                        ? ImmutableList.of(
-                            Math.round(normalsMax.get(0)),
-                            Math.round(normalsMax.get(1)),
-                            Math.round(normalsMax.get(2)))
-                        : normalsMax)
-                .min(
-                    quantizeMesh
-                        ? ImmutableList.of(
-                            Math.round(normalsMin.get(0)),
-                            Math.round(normalsMin.get(1)),
-                            Math.round(normalsMin.get(2)))
-                        : normalsMin)
-                .count(normals.size() / 3)
-                .type("VEC3")
-                .build());
-        accessorId++;
-        bytesNormals += normals.size() / 3 * getByteStrideNormals();
-      }
-
-      builder.addMeshes(
-          ImmutableMesh.builder()
-              .addPrimitives(
-                  ImmutablePrimitive.builder()
-                      .attributes(
-                          withNormals
-                              ? ImmutableAttributes.builder()
-                                  .position(accessorIdIndices + 1)
-                                  .normal(accessorIdIndices + 2)
-                                  .build()
-                              : ImmutableAttributes.builder()
-                                  .position(accessorIdIndices + 1)
-                                  .build())
-                      .mode(TRIANGLES)
-                      .indices(accessorIdIndices)
-                      .material(materialId)
-                      .build())
-              .build());
-      builder.addNodes(
-          ImmutableNode.builder()
-              .name(Optional.ofNullable(name))
-              .mesh(meshId)
-              .matrix(
-                  ImmutableList.of(
-                      scale[0],
-                      0d,
-                      0d,
-                      0d,
-                      0d,
-                      scale[1],
-                      0d,
-                      0d,
-                      0d,
-                      0d,
-                      scale[2],
-                      0d,
-                      originEcef[0],
-                      originEcef[1],
-                      originEcef[2],
-                      1d))
-              .build());
-      meshId++;
-      nodeId++;
-
-      if (quantizeMesh) {
-        for (int n = 0; n < vertices.size() / 3; n++) {
-          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3)));
-          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 1)));
-          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 2)));
-          // 3 shorts are 6 bytes, add 2 bytes to be aligned with 4-byte boundaries
-          bufferVertices.write(GltfHelper.BIN_PADDING);
-          bufferVertices.write(GltfHelper.BIN_PADDING);
-        }
-      } else {
-        for (Double v : vertices) {
-          bufferVertices.write(GltfHelper.doubleToLittleEndianFloat(v));
-        }
-      }
-
-      if (withNormals) {
-        if (quantizeMesh) {
-          for (int n = 0; n < normals.size() / 3; n++) {
-            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3)));
-            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 1)));
-            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 2)));
-            // 3 bytes, add 1 byte to be aligned with 4-byte boundaries
-            bufferNormals.write(GltfHelper.BIN_PADDING);
-          }
-        } else {
-          for (Double v : normals) {
-            bufferNormals.write(GltfHelper.doubleToLittleEndianFloat(v));
-          }
-        }
-      }
-
-      if (LOGGER.isTraceEnabled()) {
-        LOGGER.trace(
-            "Geometry processing of feature '{}' is complete. Vertices: {}, Indices: {}",
-            name,
-            vertices.size(),
-            indices.size());
-      }
-    }
-    return true;
-  }
-
-  private Geometry.MultiPolygon getMultiPolygon(PropertyGltf geometryProperty) {
-    if (geometryProperty.getGeometryType().orElse(SimpleFeatureGeometry.ANY) != MULTI_POLYGON) {
-      throw new IllegalStateException(
-          "Unexpected geometry type, MultiPolygon required: " + geometryProperty.getGeometryType());
-    }
-    return Geometry.MultiPolygon.of(
-        geometryProperty.getNestedProperties().get(0).getNestedProperties().stream()
-            .map(
-                polygon ->
-                    Geometry.Polygon.of(
-                        polygon.getNestedProperties().stream()
-                            .map(
-                                ring ->
-                                    Geometry.LineString.of(
-                                        GltfHelper.getCoordinates(ring.getNestedProperties())))
-                            .collect(Collectors.toUnmodifiableList())))
-            .collect(Collectors.toUnmodifiableList()));
+    return vertexCountSurface;
   }
 }

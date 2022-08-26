@@ -32,11 +32,9 @@ import de.ii.ogcapi.tiles3d.domain.ImmutableBoundingVolume3dTiles;
 import de.ii.ogcapi.tiles3d.domain.ImmutableContent3dTiles;
 import de.ii.ogcapi.tiles3d.domain.ImmutableImplicitTiling3dTiles;
 import de.ii.ogcapi.tiles3d.domain.ImmutableTile3dTiles;
-import de.ii.ogcapi.tiles3d.domain.ImmutableTileResource;
 import de.ii.ogcapi.tiles3d.domain.ImmutableTileset3dTiles;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles;
 import de.ii.ogcapi.tiles3d.domain.TileResource;
-import de.ii.ogcapi.tiles3d.domain.TileResource.TYPE;
 import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.ogcapi.tiles3d.domain.Tileset3dTiles;
@@ -246,15 +244,7 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
     int x = queryInput.getX();
     int y = queryInput.getY();
 
-    TileResource r =
-        new ImmutableTileResource.Builder()
-            .level(level)
-            .x(x)
-            .y(y)
-            .api(api)
-            .collectionId(collectionId)
-            .type(TYPE.SUBTREE)
-            .build();
+    TileResource r = TileResource.subtreeOf(api, collectionId, level, x, y);
 
     byte[] result = null;
 

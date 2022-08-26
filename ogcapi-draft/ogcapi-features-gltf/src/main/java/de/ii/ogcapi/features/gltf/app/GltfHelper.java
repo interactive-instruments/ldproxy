@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.gltf.app;
 
+import static de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry.MULTI_POLYGON;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +18,7 @@ import de.ii.ogcapi.features.gltf.domain.GltfAsset;
 import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.ogcapi.features.html.domain.Geometry.Coordinate;
 import de.ii.xtraplatform.features.domain.PropertyBase;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -53,11 +56,7 @@ public class GltfHelper {
   static final double MAX_BYTE = 127.0;
 
   public static void writeGltfBinary(
-      GltfAsset gltf,
-      ByteArrayOutputStream bufferIndices,
-      ByteArrayOutputStream bufferVertices,
-      ByteArrayOutputStream bufferNormals,
-      OutputStream outputStream) {
+      GltfAsset gltf, List<ByteArrayOutputStream> buffers, OutputStream outputStream) {
 
     byte[] json;
     try {
@@ -67,9 +66,10 @@ public class GltfHelper {
           String.format("Could not write glTF asset. Reason: %s", e.getMessage()));
     }
 
-    int bufferLength = bufferIndices.size() + bufferVertices.size() + bufferNormals.size();
-    int jsonPadding = (4 - json.length % 4) % 4;
-    int bufferPadding = (4 - bufferLength % 4) % 4;
+    // EXT_structural_metadata requires 8-byte padding
+    int bufferLength = buffers.stream().map(ByteArrayOutputStream::size).reduce(0, Integer::sum);
+    int jsonPadding = (8 - json.length % 8) % 8;
+    int bufferPadding = (8 - bufferLength % 8) % 8;
     int totalLength = 12 + 8 + json.length + jsonPadding + 8 + bufferLength + bufferPadding;
     try {
       outputStream.write(MAGIC_GLTF);
@@ -85,9 +85,9 @@ public class GltfHelper {
 
       outputStream.write(GltfHelper.intToLittleEndianInt(bufferLength + bufferPadding));
       outputStream.write(BIN);
-      outputStream.write(bufferIndices.toByteArray());
-      outputStream.write(bufferVertices.toByteArray());
-      outputStream.write(bufferNormals.toByteArray());
+      for (ByteArrayOutputStream b : buffers) {
+        outputStream.write(b.toByteArray());
+      }
       for (int i = 0; i < bufferPadding; i++) {
         outputStream.write(BIN_PADDING);
       }
@@ -135,6 +135,25 @@ public class GltfHelper {
     bb.order(ByteOrder.LITTLE_ENDIAN);
     bb.putFloat((float) v);
     return bb.array();
+  }
+
+  public static Geometry.MultiPolygon getMultiPolygon(PropertyGltf geometryProperty) {
+    if (geometryProperty.getGeometryType().orElse(SimpleFeatureGeometry.ANY) != MULTI_POLYGON) {
+      throw new IllegalStateException(
+          "Unexpected geometry type, MultiPolygon required: " + geometryProperty.getGeometryType());
+    }
+    return Geometry.MultiPolygon.of(
+        geometryProperty.getNestedProperties().get(0).getNestedProperties().stream()
+            .map(
+                polygon ->
+                    Geometry.Polygon.of(
+                        polygon.getNestedProperties().stream()
+                            .map(
+                                ring ->
+                                    Geometry.LineString.of(
+                                        GltfHelper.getCoordinates(ring.getNestedProperties())))
+                            .collect(Collectors.toUnmodifiableList())))
+            .collect(Collectors.toUnmodifiableList()));
   }
 
   public static double computeArea(double[] ring, int axis1, int axis2) {

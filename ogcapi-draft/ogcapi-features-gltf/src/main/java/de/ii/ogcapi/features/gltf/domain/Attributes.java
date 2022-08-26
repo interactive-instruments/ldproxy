@@ -23,10 +23,14 @@ public interface Attributes {
       (from, into) -> {
         from.getPosition().ifPresent(into::putInt);
         from.getNormal().ifPresent(into::putInt);
+        from.getFeatureId0().ifPresent(into::putInt);
       };
 
   @JsonProperty("POSITION")
   Optional<Integer> getPosition();
+
+  @JsonProperty("_FEATURE_ID_0")
+  Optional<Integer> getFeatureId0();
 
   @JsonProperty("NORMAL")
   Optional<Integer> getNormal();

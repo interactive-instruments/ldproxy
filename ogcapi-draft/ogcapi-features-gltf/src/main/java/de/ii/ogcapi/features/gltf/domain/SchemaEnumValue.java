@@ -9,31 +9,22 @@ package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import java.util.Map;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutablePrimitive.Builder.class)
-public interface Primitive {
+@JsonDeserialize(builder = ImmutableSchemaEnumValue.Builder.class)
+public interface SchemaEnumValue {
 
   @SuppressWarnings("UnstableApiUsage")
-  Funnel<Primitive> FUNNEL =
+  Funnel<SchemaEnumValue> FUNNEL =
       (from, into) -> {
-        into.putInt(from.getMode());
-        from.getIndices().ifPresent(into::putInt);
-        from.getMaterial().ifPresent(into::putInt);
-        Attributes.FUNNEL.funnel(from.getAttributes(), into);
+        into.putString(from.getName(), StandardCharsets.UTF_8);
+        into.putInt(from.getValue());
       };
 
-  int getMode();
+  String getName();
 
-  Optional<Integer> getIndices();
-
-  Optional<Integer> getMaterial();
-
-  Attributes getAttributes();
-
-  Map<String, Object> getExtensions();
+  int getValue();
 }

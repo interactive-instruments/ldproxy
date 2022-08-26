@@ -18,6 +18,32 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", deepImmutablesDetection = true)
 public abstract class TileResource {
 
+  public static TileResource subtreeOf(TileResource subtree, int level, int x, int y) {
+    return new ImmutableTileResource.Builder().from(subtree).level(level).x(x).y(y).build();
+  }
+
+  public static TileResource subtreeOf(OgcApi api, String collectionId, int level, int x, int y) {
+    return new ImmutableTileResource.Builder()
+        .type(TYPE.SUBTREE)
+        .api(api)
+        .collectionId(collectionId)
+        .level(level)
+        .x(x)
+        .y(y)
+        .build();
+  }
+
+  public static TileResource contentOf(OgcApi api, String collectionId, int level, int x, int y) {
+    return new ImmutableTileResource.Builder()
+        .type(TYPE.CONTENT)
+        .api(api)
+        .collectionId(collectionId)
+        .level(level)
+        .x(x)
+        .y(y)
+        .build();
+  }
+
   public enum TYPE {
     CONTENT,
     SUBTREE

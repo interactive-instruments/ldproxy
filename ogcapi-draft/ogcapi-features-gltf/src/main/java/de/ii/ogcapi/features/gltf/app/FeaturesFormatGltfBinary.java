@@ -14,8 +14,6 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
-import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
@@ -76,8 +74,6 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   protected final FeaturesCoreProviders providers;
   protected final EntityRegistry entityRegistry;
   protected final FeaturesCoreValidation featuresCoreValidator;
-  protected final SchemaGeneratorOpenApi schemaGeneratorFeature;
-  protected final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
   protected final CrsTransformer toEcef;
 
   @Inject
@@ -85,14 +81,10 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
       FeaturesCoreProviders providers,
       EntityRegistry entityRegistry,
       FeaturesCoreValidation featuresCoreValidator,
-      SchemaGeneratorOpenApi schemaGeneratorFeature,
-      SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
       CrsTransformerFactory crsTransformerFactory) {
     this.providers = providers;
     this.entityRegistry = entityRegistry;
     this.featuresCoreValidator = featuresCoreValidator;
-    this.schemaGeneratorFeature = schemaGeneratorFeature;
-    this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
     this.toEcef =
         crsTransformerFactory
             .getTransformer(OgcCrs.CRS84h, EpsgCrs.of(4978))
@@ -203,16 +195,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
             .isPresent()) {
       collectionId = apiData.getCollections().keySet().iterator().next();
     }
-    if (!collectionId.equals("{collectionId}")) {
-      // TODO generate OpenAPI schemas
-      if (path.matches("/collections/[^/]+/items/?")) {
-        schemaRef = schemaGeneratorFeatureCollection.getSchemaReference(collectionId);
-        schema = schemaGeneratorFeatureCollection.getSchema(apiData, collectionId);
-      } else if (path.matches("/collections/[^/]+/items/[^/]+/?")) {
-        schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
-        schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
-      }
-    }
+    // TODO generate OpenAPI schemas?
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(schemaRef)
@@ -243,6 +226,11 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
               crs.toUriString()));
     }
 
+    OgcApiDataV2 apiData = transformationContext.getApiData();
+    String collectionId = transformationContext.getCollectionId();
+    FeatureTypeConfigurationOgcApi collectionData =
+        apiData.getCollectionData(collectionId).orElseThrow();
+
     FeatureTransformationContextGltf transformationContextGltf =
         ImmutableFeatureTransformationContextGltf.builder()
             .from(transformationContext)
@@ -256,6 +244,6 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
             .crsTransformerCrs84hToEcef(toEcef)
             .build();
 
-    return Optional.of(new FeatureEncoderGltf(transformationContextGltf));
+    return Optional.of(new FeatureEncoderGltf(transformationContextGltf, entityRegistry));
   }
 }

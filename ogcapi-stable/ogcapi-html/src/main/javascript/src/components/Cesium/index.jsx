@@ -6,6 +6,7 @@ import {
   WebMapTileServiceImageryProvider,
   Rectangle,
   Cesium3DTileset,
+  Cesium3DTileStyle,
 } from "c137.js";
 
 import "./style.css";
@@ -16,6 +17,7 @@ const Cesium = ({
   attribution,
   getExtent,
   getTileset,
+  getStyle,
 }) => {
   Ion.defaultAccessToken = null;
   Camera.DEFAULT_VIEW_RECTANGLE = getExtent(Rectangle);
@@ -45,6 +47,9 @@ const Cesium = ({
 
   if (getTileset) {
     const tileset = getTileset(Cesium3DTileset);
+    if (getStyle) {
+      tileset.style = getStyle(Cesium3DTileStyle);
+    }
     viewer.scene.primitives.add(tileset);
     viewer.flyTo(tileset);
   }

@@ -17,7 +17,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.gltf.domain.BufferView;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -25,22 +24,16 @@ import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles3d.domain.Availability;
-import de.ii.ogcapi.tiles3d.domain.Format3dTilesSubtree;
 import de.ii.ogcapi.tiles3d.domain.ImmutableQueryInputSubtree;
-import de.ii.ogcapi.tiles3d.domain.ImmutableTileResource;
-import de.ii.ogcapi.tiles3d.domain.ImmutableTileResource.Builder;
-import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputSubtree;
 import de.ii.ogcapi.tiles3d.domain.SeedingOptions;
 import de.ii.ogcapi.tiles3d.domain.Subtree;
 import de.ii.ogcapi.tiles3d.domain.TileResource;
-import de.ii.ogcapi.tiles3d.domain.TileResource.TYPE;
 import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.services.domain.ServicesContext;
@@ -79,34 +72,25 @@ public class Seeding implements OgcApiBackgroundTask {
           .parameter("glb")
           .build();
 
-  private final CrsTransformerFactory crsTransformerFactory;
-  private final ExtensionRegistry extensionRegistry;
   private final TileResourceCache tileResourcesCache;
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
   private final FeaturesCoreQueriesHandler queryHandlerFeatures;
-  private final QueriesHandler3dTiles queryHandler;
   private final Cql cql;
   private final FeaturesQuery featuresQuery;
 
   @Inject
   public Seeding(
-      CrsTransformerFactory crsTransformerFactory,
-      ExtensionRegistry extensionRegistry,
       TileResourceCache tileResourcesCache,
       ServicesContext servicesContext,
       FeaturesCoreProviders providers,
       FeaturesCoreQueriesHandler queryHandlerFeatures,
-      QueriesHandler3dTiles queryHandler,
       Cql cql,
       FeaturesQuery featuresQuery) {
-    this.crsTransformerFactory = crsTransformerFactory;
-    this.extensionRegistry = extensionRegistry;
     this.tileResourcesCache = tileResourcesCache;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
     this.queryHandlerFeatures = queryHandlerFeatures;
-    this.queryHandler = queryHandler;
     this.cql = cql;
     this.featuresQuery = featuresQuery;
   }
@@ -116,26 +100,22 @@ public class Seeding implements OgcApiBackgroundTask {
     if (!apiData.getEnabled()) {
       return false;
     }
-    // no vector tiles support for WFS backends
-    if (!providers
-        .getFeatureProvider(apiData)
-        .map(FeatureProvider2::supportsHighLoad)
-        .orElse(false)) {
-      return false;
-    }
 
-    // no formats available
-    if (extensionRegistry.getExtensionsForType(Format3dTilesSubtree.class).isEmpty()) {
-      return false;
-    }
-
-    // TODO content format
-
-    return apiData
+    if (apiData
         .getExtension(Tiles3dConfiguration.class)
         .filter(Tiles3dConfiguration::isEnabled)
-        // TODO seeding only for features as tile providers
-        .isPresent();
+        .isEmpty()) {
+      return false;
+    }
+
+    // 3D Tiles has fixed formats for subtree and tile resources, so we do not check anything
+    // related to formats
+
+    // no vector tiles support for WFS backends
+    return providers
+        .getFeatureProvider(apiData)
+        .map(FeatureProvider2::supportsHighLoad)
+        .orElse(false);
   }
 
   @Override
@@ -194,18 +174,28 @@ public class Seeding implements OgcApiBackgroundTask {
   /**
    * Run the seeding
    *
-   * @param api
-   * @param taskContext
+   * @param api the API
+   * @param taskContext the context of the current thread
    */
   @Override
   public void run(OgcApi api, TaskContext taskContext) {
-    if (shouldPurge(api) && taskContext.isFirstPartial()) {
-      try {
-        taskContext.setStatusMessage("purging cache");
-        tileResourcesCache.deleteTiles(api);
-        taskContext.setStatusMessage("purged cache successfully");
-      } catch (IOException e) {
-        LOGGER.debug("{}: purging failed | {}", getLabel(), e.getMessage());
+    if (shouldPurge(api)) {
+      if (taskContext.isFirstPartial()) {
+        try {
+          taskContext.setStatusMessage("purging cache");
+          tileResourcesCache.deleteTiles(api);
+          taskContext.setStatusMessage("purged cache successfully");
+        } catch (IOException e) {
+          LOGGER.debug("{}: purging failed | {}", getLabel(), e.getMessage());
+        }
+      } else {
+        // TODO better solution
+        try {
+          // wait for purge to finish before continuing
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          // ignore
+        }
       }
     }
 
@@ -233,61 +223,52 @@ public class Seeding implements OgcApiBackgroundTask {
 
   private void seed(OgcApi api, TaskContext taskContext) throws IOException {
     OgcApiDataV2 apiData = api.getData();
-    // isEnabled checks that we have a feature provider
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
 
-    long numberOfTiles = getNumberOfSubtrees(api, taskContext);
+    long numberOfSubtrees = getNumberOfSubtrees(api, taskContext);
     final double[] currentSubtree = {0.0};
 
     walkCollectionsAndTiles(
         api,
-        taskContext,
         (subtree) -> {
           String collectionId = subtree.getCollectionId();
           int level = subtree.getLevel();
-          int x = subtree.getX();
-          int y = subtree.getY();
 
-          /* TODO support multiple threads
-          if (taskContext.isPartial() && !taskContext.matchesPartialModulo(col)) {
-                continue;
+          if (level > 0 || !taskContext.isPartial() || taskContext.isFirstPartial()) {
+            taskContext.setStatusMessage(
+                String.format(
+                    "currently processing subtree -> %s, %s/%s/%s",
+                    collectionId, level, subtree.getX(), subtree.getY()));
+          } else {
+            taskContext.setStatusMessage(
+                String.format(
+                    "currently waiting for subtree -> %s, %s/%s/%s",
+                    collectionId, level, subtree.getX(), subtree.getY()));
           }
-           */
 
-          taskContext.setStatusMessage(
-              String.format(
-                  "currently processing subtree -> %s, %s/%s/%s", collectionId, level, x, y));
+          byte[] subtreeBytes = getSubtreeFromCache(subtree);
 
-          byte[] subtreeBytes = null;
-          try {
-            if (tileResourcesCache.tileResourceExists(subtree)) {
-              // already there, nothing to create, but advance progress and process content
-              // availability
-              subtreeBytes =
-                  tileResourcesCache
-                      .getTileResource(subtree)
-                      .map(
-                          stream -> {
-                            try {
-                              ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                              ByteStreams.copy(stream, baos);
-                              return baos.toByteArray();
-                            } catch (IOException e) {
-                              throw new IllegalStateException(e.getMessage(), e);
-                            }
-                          })
-                      .orElse(null);
+          if (Objects.isNull(subtreeBytes)
+              && level == 0
+              && taskContext.isPartial()
+              && !taskContext.isFirstPartial()) {
+            // TODO better solution
+            int count = 0;
+            while (Objects.isNull(subtreeBytes) && count < 30) {
+              try {
+                count++;
+                //noinspection BusyWait
+                Thread.sleep(1000);
+              } catch (InterruptedException e) {
+                // ignore
+              }
+              subtreeBytes = getSubtreeFromCache(subtree);
             }
-          } catch (Exception e) {
-            LOGGER.warn(
-                "Failed to retrieve tile {}/{}/{} for collection {} from the cache. Reason: {}",
-                level,
-                x,
-                y,
-                collectionId,
-                e.getMessage());
-            if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-              LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
+            if (count >= 30) {
+              LOGGER.warn(
+                  "{}: waiting for the root subtree failed for collection {}",
+                  getLabel(),
+                  subtree.getCollectionId());
+              return ImmutableList.of();
             }
           }
 
@@ -296,157 +277,218 @@ public class Seeding implements OgcApiBackgroundTask {
           final int subtreeLevels = Objects.requireNonNull(cfg.getSubtreeLevels());
 
           if (Objects.isNull(subtreeBytes)) {
-            final QueryInputSubtree queryInput =
-                ImmutableQueryInputSubtree.builder()
-                    .api(api)
-                    .featureProvider(providers.getFeatureProviderOrThrow(api.getData()))
-                    .featureType(
-                        api.getData()
-                            .getExtension(FeaturesCoreConfiguration.class, collectionId)
-                            .flatMap(FeaturesCoreConfiguration::getFeatureType)
-                            .orElse(collectionId))
-                    .geometryProperty(
-                        providers
-                            .getFeatureSchema(
-                                api.getData(),
-                                api.getData().getCollectionData(collectionId).orElseThrow())
-                            .flatMap(SchemaBase::getPrimaryGeometry)
-                            .map(SchemaBase::getFullPathAsString)
-                            .orElseThrow())
-                    .servicesUri(servicesUri)
-                    .collectionId(collectionId)
-                    .level(level)
-                    .x(x)
-                    .y(y)
-                    .maxLevel(Objects.requireNonNull(cfg.getMaxLevel()))
-                    .firstLevelWithContent(Objects.requireNonNull(cfg.getFirstLevelWithContent()))
-                    .subtreeLevels(subtreeLevels)
-                    .contentFilters(
-                        cfg.getContentFilters().stream()
-                            .map(filter -> cql.read(filter, Format.TEXT))
-                            .collect(Collectors.toUnmodifiableList()))
-                    .tileFilters(
-                        cfg.getTileFilters().stream()
-                            .map(filter -> cql.read(filter, Format.TEXT))
-                            .collect(Collectors.toUnmodifiableList()))
-                    .build();
-
-            subtreeBytes = Tiles3dHelper.getSubtree(queryHandlerFeatures, queryInput, subtree);
-
-            try {
-              tileResourcesCache.storeTileResource(subtree, subtreeBytes);
-            } catch (IOException e) {
-              LOGGER.warn(
-                  "{}: writing subtree failed -> {}, {}/{}/{} | {}",
-                  getLabel(),
-                  collectionId,
-                  level,
-                  x,
-                  y,
-                  e.getMessage());
-              if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-                LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
-              }
-            }
+            subtreeBytes = generateSubtree(subtree, cfg);
+            storeSubtree(subtree, subtreeBytes);
           }
 
           final int jsonLength = Tiles3dHelper.littleEndianLongToInt(subtreeBytes, 8);
           final byte[] jsonContent = Arrays.copyOfRange(subtreeBytes, 24, 24 + jsonLength);
           final Subtree subtreeJson = Tiles3dHelper.readSubtree(jsonContent);
-          final Availability contentAvailability = subtreeJson.getContentAvailability().get(0);
 
-          byte[] buffer = null;
-          boolean constant = false;
-          if (contentAvailability.getBitstream().isPresent()) {
-            // generate partial content
-            final BufferView bv =
-                contentAvailability
-                    .getBitstream()
-                    .map(i -> subtreeJson.getBufferViews().get(i))
-                    .orElseThrow();
-            final int baseOffset = 24 + jsonLength + bv.getByteOffset();
-            buffer = Arrays.copyOfRange(subtreeBytes, baseOffset, baseOffset + bv.getByteLength());
-          } else if (contentAvailability.getConstant().filter(c -> c == 1).isPresent()) {
-            constant = true;
+          if (level > 0 || !taskContext.isPartial() || taskContext.isFirstPartial()) {
+            processContentAvailability(
+                taskContext, subtree, subtreeJson, jsonLength, subtreeBytes, subtreeLevels);
           }
 
-          // generate content
-          if (constant || Objects.nonNull(buffer)) {
-            int xl = x;
-            int yl = y;
-            for (int il = 0; il < subtreeLevels; il++) {
-              for (int idx = 0; idx < MortonCode.size(il); idx++) {
-                if (constant || Tiles3dHelper.getAvailability(buffer, 0, il, idx)) {
-                  Coordinate coord = MortonCode.decode(idx);
-                  processContent(
-                      api,
-                      taskContext,
-                      collectionId,
-                      level + il,
-                      xl + (int) coord.x,
-                      yl + (int) coord.y);
-                }
-              }
-              xl *= 2;
-              yl *= 2;
-            }
-          }
-
-          final Availability childSubtreeAvailability = subtreeJson.getChildSubtreeAvailability();
-          LinkedList<TileResource> next = new LinkedList<>();
-          buffer = null;
-          constant = false;
-          if (childSubtreeAvailability.getBitstream().isPresent()) {
-            // generate partial content
-            final BufferView bv =
-                childSubtreeAvailability
-                    .getBitstream()
-                    .map(i -> subtreeJson.getBufferViews().get(i))
-                    .orElseThrow();
-            final int baseOffset = 24 + jsonLength + bv.getByteOffset();
-            buffer = Arrays.copyOfRange(subtreeBytes, baseOffset, baseOffset + bv.getByteLength());
-          } else if (childSubtreeAvailability.getConstant().filter(c -> c == 1).isPresent()) {
-            constant = true;
-          }
-
-          if (constant || Objects.nonNull(buffer)) {
-            int xl = x * (int) Math.pow(2, subtreeLevels);
-            int yl = y * (int) Math.pow(2, subtreeLevels);
-            for (int idx = 0; idx < MortonCode.size(subtreeLevels); idx++) {
-              if (constant
-                  || Tiles3dHelper.getAvailability(buffer, subtreeLevels, subtreeLevels, idx)) {
-                Coordinate coord = MortonCode.decode(idx);
-                next.add(
-                    new ImmutableTileResource.Builder()
-                        .api(api)
-                        .collectionId(collectionId)
-                        .type(TYPE.SUBTREE)
-                        .level(level + subtreeLevels)
-                        .x(xl + (int) coord.x)
-                        .y(yl + (int) coord.y)
-                        .build());
-              }
-            }
-          }
+          LinkedList<TileResource> next =
+              processChildSubtreeAvailability(
+                  taskContext, subtree, subtreeJson, jsonLength, subtreeBytes, subtreeLevels);
 
           currentSubtree[0] += 1;
-          taskContext.setCompleteness(currentSubtree[0] / numberOfTiles);
+          taskContext.setCompleteness(currentSubtree[0] / numberOfSubtrees);
 
           return next;
         });
   }
 
+  private byte[] generateSubtree(TileResource subtree, Tiles3dConfiguration cfg) {
+    final QueryInputSubtree queryInput =
+        ImmutableQueryInputSubtree.builder()
+            .api(subtree.getApi())
+            .featureProvider(providers.getFeatureProviderOrThrow(subtree.getApiData()))
+            .featureType(
+                subtree
+                    .getApiData()
+                    .getExtension(FeaturesCoreConfiguration.class, subtree.getCollectionId())
+                    .flatMap(FeaturesCoreConfiguration::getFeatureType)
+                    .orElse(subtree.getCollectionId()))
+            .geometryProperty(
+                providers
+                    .getFeatureSchema(
+                        subtree.getApiData(),
+                        subtree
+                            .getApiData()
+                            .getCollectionData(subtree.getCollectionId())
+                            .orElseThrow())
+                    .flatMap(SchemaBase::getPrimaryGeometry)
+                    .map(SchemaBase::getFullPathAsString)
+                    .orElseThrow())
+            .servicesUri(servicesUri)
+            .collectionId(subtree.getCollectionId())
+            .level(subtree.getLevel())
+            .x(subtree.getX())
+            .y(subtree.getY())
+            .maxLevel(Objects.requireNonNull(cfg.getMaxLevel()))
+            .firstLevelWithContent(Objects.requireNonNull(cfg.getFirstLevelWithContent()))
+            .subtreeLevels(Objects.requireNonNull(cfg.getSubtreeLevels()))
+            .contentFilters(
+                cfg.getContentFilters().stream()
+                    .map(filter -> cql.read(filter, Format.TEXT))
+                    .collect(Collectors.toUnmodifiableList()))
+            .tileFilters(
+                cfg.getTileFilters().stream()
+                    .map(filter -> cql.read(filter, Format.TEXT))
+                    .collect(Collectors.toUnmodifiableList()))
+            .build();
+
+    return Tiles3dHelper.getSubtree(queryHandlerFeatures, queryInput, subtree);
+  }
+
+  private void storeSubtree(TileResource subtree, byte[] subtreeBytes) {
+    try {
+      tileResourcesCache.storeTileResource(subtree, subtreeBytes);
+    } catch (IOException e) {
+      LOGGER.warn(
+          "{}: writing subtree failed -> {}, {}/{}/{} | {}",
+          getLabel(),
+          subtree.getCollectionId(),
+          subtree.getLevel(),
+          subtree.getX(),
+          subtree.getY(),
+          e.getMessage());
+      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
+      }
+    }
+  }
+
+  private LinkedList<TileResource> processChildSubtreeAvailability(
+      TaskContext taskContext,
+      TileResource subtree,
+      Subtree subtreeJson,
+      int jsonLength,
+      byte[] subtreeBytes,
+      int subtreeLevels) {
+    final Availability childSubtreeAvailability = subtreeJson.getChildSubtreeAvailability();
+    LinkedList<TileResource> next = new LinkedList<>();
+    byte[] buffer = null;
+    boolean constant = false;
+    if (childSubtreeAvailability.getBitstream().isPresent()) {
+      // generate partial content
+      final BufferView bv =
+          childSubtreeAvailability
+              .getBitstream()
+              .map(i -> subtreeJson.getBufferViews().get(i))
+              .orElseThrow();
+      final int baseOffset = 24 + jsonLength + bv.getByteOffset();
+      buffer = Arrays.copyOfRange(subtreeBytes, baseOffset, baseOffset + bv.getByteLength());
+    } else if (childSubtreeAvailability.getConstant().filter(c -> c == 1).isPresent()) {
+      constant = true;
+    }
+
+    if (constant || Objects.nonNull(buffer)) {
+      int xl = subtree.getX() * (int) Math.pow(2, subtreeLevels);
+      int yl = subtree.getY() * (int) Math.pow(2, subtreeLevels);
+      for (int idx = 0; idx < MortonCode.size(subtreeLevels); idx++) {
+        if (constant || Tiles3dHelper.getAvailability(buffer, subtreeLevels, subtreeLevels, idx)) {
+          Coordinate coord = MortonCode.decode(idx);
+          TileResource subtree1 =
+              TileResource.subtreeOf(
+                  subtree,
+                  subtree.getLevel() + subtreeLevels,
+                  xl + (int) coord.x,
+                  yl + (int) coord.y);
+          if (subtreeInTask(taskContext, subtree1)) {
+            next.add(subtree1);
+          }
+        }
+      }
+    }
+    return next;
+  }
+
+  private void processContentAvailability(
+      TaskContext taskContext,
+      TileResource subtree,
+      Subtree subtreeJson,
+      int jsonLength,
+      byte[] subtreeBytes,
+      int subtreeLevels) {
+    final Availability contentAvailability = subtreeJson.getContentAvailability().get(0);
+
+    byte[] buffer = null;
+    boolean constant = false;
+    if (contentAvailability.getBitstream().isPresent()) {
+      // generate partial content
+      final BufferView bv =
+          contentAvailability
+              .getBitstream()
+              .map(i -> subtreeJson.getBufferViews().get(i))
+              .orElseThrow();
+      final int baseOffset = 24 + jsonLength + bv.getByteOffset();
+      buffer = Arrays.copyOfRange(subtreeBytes, baseOffset, baseOffset + bv.getByteLength());
+    } else if (contentAvailability.getConstant().filter(c -> c == 1).isPresent()) {
+      constant = true;
+    }
+
+    // generate content
+    if (constant || Objects.nonNull(buffer)) {
+      int xl = subtree.getX();
+      int yl = subtree.getY();
+      for (int il = 0; il < subtreeLevels; il++) {
+        for (int idx = 0; idx < MortonCode.size(il); idx++) {
+          if (constant || Tiles3dHelper.getAvailability(buffer, 0, il, idx)) {
+            Coordinate coord = MortonCode.decode(idx);
+            processContent(
+                subtree.getApi(),
+                taskContext,
+                subtree.getCollectionId(),
+                subtree.getLevel() + il,
+                xl + (int) coord.x,
+                yl + (int) coord.y);
+          }
+        }
+        xl *= 2;
+        yl *= 2;
+      }
+    }
+  }
+
+  private byte[] getSubtreeFromCache(TileResource subtree) {
+    try {
+      if (tileResourcesCache.tileResourceExists(subtree)) {
+        return tileResourcesCache
+            .getTileResource(subtree)
+            .map(
+                stream -> {
+                  try {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ByteStreams.copy(stream, baos);
+                    return baos.toByteArray();
+                  } catch (IOException e) {
+                    throw new IllegalStateException(e.getMessage(), e);
+                  }
+                })
+            .orElse(null);
+      }
+    } catch (Exception e) {
+      LOGGER.warn(
+          "Failed to retrieve subtree {}/{}/{} for collection {} from the cache. Reason: {}",
+          subtree.getLevel(),
+          subtree.getX(),
+          subtree.getY(),
+          subtree.getCollectionId(),
+          e.getMessage());
+      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
+      }
+    }
+    return null;
+  }
+
   private void processContent(
       OgcApi api, TaskContext taskContext, String collectionId, int il, int ix, int iy) {
-    final TileResource content =
-        new Builder()
-            .type(TYPE.CONTENT)
-            .api(api)
-            .collectionId(collectionId)
-            .level(il)
-            .x(ix)
-            .y(iy)
-            .build();
+    final TileResource content = TileResource.contentOf(api, collectionId, il, ix, iy);
     try {
       if (!tileResourcesCache.tileResourceExists(content)) {
         taskContext.setStatusMessage(
@@ -491,11 +533,34 @@ public class Seeding implements OgcApiBackgroundTask {
     try {
       walkCollectionsAndTiles(
           api,
-          taskContext,
           (subtree) -> {
             numberOfSubtrees[0]++;
-            // TODO
-            return ImmutableList.of();
+
+            final Tiles3dConfiguration cfg =
+                subtree
+                    .getApiData()
+                    .getExtension(Tiles3dConfiguration.class, subtree.getCollectionId())
+                    .orElseThrow();
+            final int subtreeLevels = Objects.requireNonNull(cfg.getSubtreeLevels());
+            final int xl = subtree.getX() * (int) Math.pow(2, subtreeLevels);
+            final int yl = subtree.getY() * (int) Math.pow(2, subtreeLevels);
+
+            LinkedList<TileResource> next = new LinkedList<>();
+            if (subtree.getLevel() + subtreeLevels < Objects.requireNonNull(cfg.getMaxLevel())) {
+              for (int idx = 0; idx < MortonCode.size(subtreeLevels); idx++) {
+                Coordinate coord = MortonCode.decode(idx);
+                TileResource subtree1 =
+                    TileResource.subtreeOf(
+                        subtree,
+                        subtree.getLevel() + subtreeLevels,
+                        xl + (int) coord.x,
+                        yl + (int) coord.y);
+                if (subtreeInTask(taskContext, subtree1)) {
+                  next.add(subtree1);
+                }
+              }
+            }
+            return next;
           });
     } catch (IOException e) {
       // ignore
@@ -504,12 +569,16 @@ public class Seeding implements OgcApiBackgroundTask {
     return numberOfSubtrees[0];
   }
 
+  private boolean subtreeInTask(TaskContext taskContext, TileResource subtree) {
+    return !taskContext.isPartial()
+        || taskContext.matchesPartialModulo(subtree.getLevel() + subtree.getX() + subtree.getY());
+  }
+
   interface TileWalker {
     List<TileResource> visit(TileResource subtree) throws IOException;
   }
 
-  private void walkCollectionsAndTiles(OgcApi api, TaskContext taskContext, TileWalker tileWalker)
-      throws IOException {
+  private void walkCollectionsAndTiles(OgcApi api, TileWalker tileWalker) throws IOException {
     for (Entry<String, FeatureTypeConfigurationOgcApi> entry :
         api.getData().getCollections().entrySet()) {
       if (api.getData()
@@ -517,24 +586,15 @@ public class Seeding implements OgcApiBackgroundTask {
           .map(ExtensionConfiguration::isEnabled)
           .isPresent()) {
         String collectionId = entry.getKey();
-        walkTiles(api, collectionId, taskContext, tileWalker);
+        walkTiles(api, collectionId, tileWalker);
       }
     }
   }
 
-  private void walkTiles(
-      OgcApi api, String collectionId, TaskContext taskContext, TileWalker tileWalker)
+  private void walkTiles(OgcApi api, String collectionId, TileWalker tileWalker)
       throws IOException {
     LinkedList<TileResource> queue = new LinkedList<>();
-    queue.add(
-        new ImmutableTileResource.Builder()
-            .api(api)
-            .collectionId(collectionId)
-            .type(TYPE.SUBTREE)
-            .level(0)
-            .x(0)
-            .y(0)
-            .build());
+    queue.add(TileResource.subtreeOf(api, collectionId, 0, 0, 0));
     while (!queue.isEmpty()) {
       TileResource subtree = queue.removeFirst();
       queue.addAll(tileWalker.visit(subtree));

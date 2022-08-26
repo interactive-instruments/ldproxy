@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles3d.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -20,7 +21,11 @@ public interface Tile3dTiles {
   @SuppressWarnings("UnstableApiUsage")
   Funnel<Tile3dTiles> FUNNEL =
       (from, into) -> {
-        // TODO
+        BoundingVolume3dTiles.FUNNEL.funnel(from.getBoundingVolume(), into);
+        from.getGeometricError().ifPresent(into::putFloat);
+        into.putString(from.getRefine(), StandardCharsets.UTF_8);
+        Content3dTiles.FUNNEL.funnel(from.getContent(), into);
+        ImplicitTiling3dTiles.FUNNEL.funnel(from.getImplicitTiling(), into);
       };
 
   BoundingVolume3dTiles getBoundingVolume();

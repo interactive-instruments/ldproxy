@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.gltf.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.Map;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -17,6 +18,22 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableGltfConfiguration.Builder.class)
 public interface GltfConfiguration extends ExtensionConfiguration, PropertyTransformations {
+
+  // TODO support value arrays
+  enum GLTF_TYPE {
+    INT8,
+    UINT8,
+    INT16,
+    UINT16,
+    INT32,
+    UINT32,
+    INT64,
+    UINT64,
+    FLOAT32,
+    FLOAT64,
+    STRING,
+    BOOLEAN
+  }
 
   @Nullable
   Boolean getMeshQuantization();
@@ -41,6 +58,8 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   default boolean polygonOrientationIsNotGuaranteed() {
     return Boolean.TRUE.equals(getPolygonOrientationNotGuaranteed());
   }
+
+  Map<String, GLTF_TYPE> getProperties();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 

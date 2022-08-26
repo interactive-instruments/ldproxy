@@ -108,6 +108,11 @@ public interface PropertyGltf extends PropertyBase<PropertyGltf, FeatureSchema> 
     return getTransformed().containsKey(FeaturePropertyTransformerFlatten.TYPE);
   }
 
+  @Value.Lazy
+  default String getLastPathSegment() {
+    return getPropertyPath().get(getPropertyPath().size() - 1);
+  }
+
   default Optional<PropertyGltf> findPropertyByPath(List<String> path) {
     return getNestedProperties().stream()
         .filter(property -> Objects.equals(property.getPropertyPath(), path))

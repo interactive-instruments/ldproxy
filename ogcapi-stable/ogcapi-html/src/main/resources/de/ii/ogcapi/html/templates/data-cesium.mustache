@@ -2,12 +2,23 @@
 {{#cesiumData}}
 
 <script type="text/javascript">
-  globalThis._cesium = {
-    getExtent: (Rectangle) => {{featureExtent}},
-    getTileset: (Cesium3DTileset) => new Cesium3DTileset({
-      url : 'data:application/json,%7B%22asset%22%3A%7B%22version%22%3A%221.0%22%7D%2C%22extensionsRequired%22%3A%5B%223DTILES_content_gltf%22%5D%2C%22extensionsUsed%22%3A%5B%223DTILES_content_gltf%22%5D%2C%22geometricError%22%3A5000%2C%22root%22%3A%7B%22boundingVolume%22%3A%7B%22region%22%3A%5B{{{encodedRegion}}}%5D%7D%2C%22refine%22%3A%22REPLACE%22%2C%22geometricError%22%3A0%2C%22content%22%3A%7B%22uri%22%3A%22{{{encodedUrl}}}%22%7D%2C%22extensions%22%3A%7B%223DTILES_content_gltf%22%3A%7B%7D%7D%7D%7D',
-    }),
-  }
+globalThis._cesium = {
+  getExtent: (Rectangle) => {{ featureExtent }},
+  getTileset: (Cesium3DTileset) => new Cesium3DTileset({
+    url: 'data:application/json,%7B%22asset%22%3A%7B%22version%22%3A%221.0%22%7D%2C%22extensionsRequired%22%3A%5B%223DTILES_content_gltf%22%5D%2C%22extensionsUsed%22%3A%5B%223DTILES_content_gltf%22%5D%2C%22geometricError%22%3A5000%2C%22root%22%3A%7B%22boundingVolume%22%3A%7B%22region%22%3A%5B{{{encodedRegion}}}%5D%7D%2C%22refine%22%3A%22REPLACE%22%2C%22geometricError%22%3A0%2C%22content%22%3A%7B%22uri%22%3A%22{{{encodedUrl}}}%22%7D%2C%22extensions%22%3A%7B%223DTILES_content_gltf%22%3A%7B%7D%7D%7D%7D',
+  }),
+  getStyle: (Cesium3DTileStyle) => new Cesium3DTileStyle({
+    color: {
+      conditions: [
+        ["${feature['surfaceType']} === 'roof'", "color('red')"],
+        ["${feature['surfaceType']} === 'wall'", "color('white')"],
+        ["${feature['surfaceType']} === 'ground'", "color('grey')"],
+        ["${feature['surfaceType']} === 'closure'", "color('white')"],
+        ["true", "color('white')"],
+      ],
+    },
+  }),
+}
 </script>
 
 {{/cesiumData}}

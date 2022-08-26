@@ -21,7 +21,9 @@ public interface Tileset3dTiles {
   @SuppressWarnings("UnstableApiUsage")
   Funnel<Tileset3dTiles> FUNNEL =
       (from, into) -> {
-        // TODO
+        AssetMetadata.FUNNEL.funnel(from.getAsset(), into);
+        from.getGeometricError().ifPresent(into::putFloat);
+        Tile3dTiles.FUNNEL.funnel(from.getRoot(), into);
       };
 
   AssetMetadata getAsset();

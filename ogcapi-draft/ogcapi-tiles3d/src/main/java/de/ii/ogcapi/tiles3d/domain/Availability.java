@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tiles3d.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -15,6 +16,14 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableAvailability.Builder.class)
 public interface Availability {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<Availability> FUNNEL =
+      (from, into) -> {
+        from.getBitstream().ifPresent(into::putInt);
+        from.getAvailabilityCount().ifPresent(into::putInt);
+        from.getConstant().ifPresent(into::putInt);
+      };
 
   Optional<Integer> getBitstream();
 

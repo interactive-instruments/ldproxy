@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles3d.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -19,7 +20,7 @@ public interface Content3dTiles {
   @SuppressWarnings("UnstableApiUsage")
   Funnel<Content3dTiles> FUNNEL =
       (from, into) -> {
-        // TODO
+        into.putString(from.getUri(), StandardCharsets.UTF_8);
       };
 
   String getUri();

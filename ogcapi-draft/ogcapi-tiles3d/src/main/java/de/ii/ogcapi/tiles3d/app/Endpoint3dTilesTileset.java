@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -49,8 +50,7 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class Endpoint3dTilesTileset
-    extends EndpointSubCollection /* implements ConformanceClass */ {
+public class Endpoint3dTilesTileset extends EndpointSubCollection implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Endpoint3dTilesTileset.class);
 
@@ -65,12 +65,10 @@ public class Endpoint3dTilesTileset
     this.queryHandler = queryHandler;
   }
 
-  /* TODO
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-geovolumes-1/0.0/conf/core");
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-geovolumes-1/0.0/conf/core");
   }
-  */
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

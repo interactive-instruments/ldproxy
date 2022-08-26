@@ -9,6 +9,8 @@ package de.ii.ogcapi.tiles3d.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import org.immutables.value.Value;
 
@@ -16,6 +18,13 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableMetadataEntity.Builder.class)
 public interface MetadataEntity {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<MetadataEntity> FUNNEL =
+      (from, into) -> {
+        into.putString(from.getClass_(), StandardCharsets.UTF_8);
+        from.getProperties().keySet().forEach(v -> into.putString(v, StandardCharsets.UTF_8));
+      };
 
   @JsonProperty("class")
   String getClass_();
