@@ -61,11 +61,15 @@ public class FeaturesFormatHits implements FeatureFormatExtension {
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new IntegerSchema())
-        .schemaRef("_for_internal_use_only_")
-        .ogcApiMediaType(getMediaType())
-        .build();
+    if (path.matches(getPathPattern())) {
+      return new ImmutableApiMediaTypeContent.Builder()
+          .schema(new IntegerSchema())
+          .schemaRef("_for_internal_use_only_")
+          .ogcApiMediaType(getMediaType())
+          .build();
+    }
+
+    return null;
   }
 
   @Override

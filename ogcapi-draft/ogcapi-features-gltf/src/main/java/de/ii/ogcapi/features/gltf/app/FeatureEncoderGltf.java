@@ -289,8 +289,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                             .getApiData()
                             .getMetadata()
                             .flatMap(ApiMetadata::getAttribution))
-                    .build())
-            .addExtensionsUsed("EXT_mesh_features", "EXT_structural_metadata");
+                    .build());
 
     nextNodeId = 0;
     nextMeshId = 0;
@@ -317,14 +316,15 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                     .metallicFactor(0.2f)
                     .roughnessFactor(1.0f)
                     .build())
-            .name("Wall")
             .doubleSided(polygonOrientationIsNotGuaranteed)
             .build());
 
     // TODO move to an API resource and reference with schemaUri?
     ImmutableSchema.Builder schemaBuilder = ImmutableSchema.builder().id("TODO");
     Builder<PropertyTable> propertyTablesBuilder = ImmutableList.builder();
+    boolean hasExtStructuralMetadata = false;
     if (!configuration.getProperties().isEmpty()) {
+      hasExtStructuralMetadata = true;
       featureSchema.ifPresent(
           schema -> {
             ImmutableSchemaClass.Builder classBuilder = ImmutableSchemaClass.builder();
@@ -428,6 +428,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     }
 
     if (!surfaceTypeEnums.isEmpty()) {
+      hasExtStructuralMetadata = true;
       schemaBuilder.putEnums(
           SURFACE_TYPE,
           ImmutableSchemaEnum.builder()
@@ -465,10 +466,14 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               .build());
     }
 
-    builder.putExtensions(
-        "EXT_structural_metadata",
-        ImmutableMap.of(
-            "schema", schemaBuilder.build(), "propertyTables", propertyTablesBuilder.build()));
+    if (hasExtStructuralMetadata) {
+      builder
+          .putExtensions(
+              "EXT_structural_metadata",
+              ImmutableMap.of(
+                  "schema", schemaBuilder.build(), "propertyTables", propertyTablesBuilder.build()))
+          .addExtensionsUsed("EXT_structural_metadata");
+    }
 
     if (bytesIndices > 0) {
       builder.addBufferViews(
@@ -620,11 +625,11 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         IntStream.range(0, vertexCountSurface)
             .forEach(i -> featureIds.add(bufferSurfaceTypes.size()));
         byte st = getSurfaceTypeCode(surface.getSurfaceType().orElse("Unknown"));
-        bufferSurfaceTypes.write((byte) st);
+        bufferSurfaceTypes.write(st);
         featureCount++;
       }
 
-      if (featureIds.size() != vertices.size() / 3) {
+      if (hasSurfaceType && featureIds.size() != vertices.size() / 3) {
         LOGGER.error(
             "System error: Size of feature id array for structural metadata differs from size of vertices: {} vs. {}",
             featureIds.size(),
@@ -836,6 +841,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       }
 
       // add mesh and node for the building
+
       builder.addMeshes(
           ImmutableMesh.builder()
               .addPrimitives(
@@ -845,20 +851,26 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                       .indices(accessorIdIndices)
                       .material(MATERIAL)
                       .extensions(
-                          ImmutableMap.of(
-                              "EXT_mesh_features",
-                              ImmutableMap.of(
-                                  "featureIds",
-                                  ImmutableList.of(
-                                      ImmutableMap.of(
-                                          "featureCount",
-                                          featureCount,
-                                          "attribute",
-                                          0,
-                                          "propertyTable",
-                                          0)))))
+                          hasSurfaceType
+                              ? ImmutableMap.of(
+                                  "EXT_mesh_features",
+                                  ImmutableMap.of(
+                                      "featureIds",
+                                      ImmutableList.of(
+                                          ImmutableMap.of(
+                                              "featureCount",
+                                              featureCount,
+                                              "attribute",
+                                              0,
+                                              "propertyTable",
+                                              0))))
+                              : ImmutableMap.of())
                       .build())
               .build());
+
+      if (hasSurfaceType) {
+        builder.addExtensionsUsed("EXT_mesh_features");
+      }
 
       builder.addNodes(
           ImmutableNode.builder()
@@ -902,7 +914,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       String featureName,
       double minZ,
       List<Integer> indices,
-      int indexCount,
+      int indexCountBase,
       List<Double> vertices,
       List<Double> normals) {
     // triangulate the polygons, translate relative to origin
@@ -1153,7 +1165,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       vertices.addAll(data);
 
       for (int ringIndex : triangles) {
-        indices.add(indexCount + ringIndex);
+        indices.add(indexCountBase + vertexCountSurface + ringIndex);
       }
 
       vertexCountSurface += data.size() / 3;
