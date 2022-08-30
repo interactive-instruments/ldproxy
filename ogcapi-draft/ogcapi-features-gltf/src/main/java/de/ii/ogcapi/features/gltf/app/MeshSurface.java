@@ -10,9 +10,11 @@ package de.ii.ogcapi.features.gltf.app;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.html.domain.Geometry;
+import de.ii.ogcapi.features.html.domain.Geometry.MultiPolygon;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -46,6 +48,7 @@ interface MeshSurface {
   static List<MeshSurface> collectSolidSurfaces(FeatureGltf building) {
     ImmutableList.Builder<MeshSurface> meshSurfaceBuilder = ImmutableList.builder();
 
+    // TODO: also combine building part walls, roofs, etc?
     building
         .findPropertyByPath(CONSISTS_OF_BUILDING_PART)
         .map(PropertyBase::getNestedProperties)
@@ -85,20 +88,36 @@ interface MeshSurface {
 
   private static void addSurfaces(
       ImmutableList.Builder<MeshSurface> meshSurfaceBuilder, PropertyGltf surfacesProperty) {
-    surfacesProperty
-        .getNestedProperties()
+    surfacesProperty.getNestedProperties().stream()
+        .collect(
+            Collectors.groupingBy(
+                surface ->
+                    surface.getNestedProperties().stream()
+                        .filter(p -> SURFACE_TYPE.equals(p.getLastPathSegment()))
+                        .findFirst()
+                        .map(PropertyGltf::getFirstValue)
+                        .map(String::toLowerCase)
+                        .orElse("unknown")))
         .forEach(
-            surface -> {
-              Optional<String> surfaceType =
-                  surface.getNestedProperties().stream()
-                      .filter(p -> SURFACE_TYPE.equals(p.getLastPathSegment()))
-                      .findFirst()
-                      .map(PropertyGltf::getFirstValue)
-                      .map(String::toLowerCase);
-              surface.getNestedProperties().stream()
-                  .filter(p -> LOD_2_MULTI_SURFACE.equals(p.getLastPathSegment()))
-                  .forEach(p -> addMultiPolygon(meshSurfaceBuilder, p, surfaceType));
-            });
+            (key, value) ->
+                meshSurfaceBuilder.add(
+                    MeshSurface.of(
+                        MultiPolygon.of(
+                            value.stream()
+                                .map(
+                                    surface ->
+                                        surface.getNestedProperties().stream()
+                                            .filter(
+                                                p ->
+                                                    LOD_2_MULTI_SURFACE.equals(
+                                                        p.getLastPathSegment()))
+                                            .collect(Collectors.toUnmodifiableList()))
+                                .flatMap(List::stream)
+                                .map(GltfHelper::getMultiPolygon)
+                                .map(MultiPolygon::getCoordinates)
+                                .flatMap(List::stream)
+                                .collect(Collectors.toUnmodifiableList())),
+                        Optional.ofNullable(key.equals("unknown") ? null : key))));
   }
 
   private static void addMultiPolygon(

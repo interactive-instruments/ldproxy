@@ -36,5 +36,7 @@ public interface SchemaProperty {
 
   Optional<String> getEnumType(); // TODO use enum, not string
 
+  Optional<String> getNoData();
+
   Optional<Boolean> getRequired();
 }

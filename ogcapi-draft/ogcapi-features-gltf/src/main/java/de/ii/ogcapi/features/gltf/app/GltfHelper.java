@@ -109,6 +109,13 @@ public class GltfHelper {
     return bb.array();
   }
 
+  public static byte[] longToLittleEndianLong(long v) {
+    ByteBuffer bb = ByteBuffer.allocate(8);
+    bb.order(ByteOrder.LITTLE_ENDIAN);
+    bb.putLong(v);
+    return bb.array();
+  }
+
   public static byte[] intToLittleEndianShort(int v) {
     ByteBuffer bb = ByteBuffer.allocate(2);
     bb.order(ByteOrder.LITTLE_ENDIAN);
@@ -134,6 +141,13 @@ public class GltfHelper {
     ByteBuffer bb = ByteBuffer.allocate(4);
     bb.order(ByteOrder.LITTLE_ENDIAN);
     bb.putFloat((float) v);
+    return bb.array();
+  }
+
+  public static byte[] doubleToLittleEndianDouble(double v) {
+    ByteBuffer bb = ByteBuffer.allocate(8);
+    bb.order(ByteOrder.LITTLE_ENDIAN);
+    bb.putDouble(v);
     return bb.array();
   }
 

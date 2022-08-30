@@ -19,22 +19,6 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableGltfConfiguration.Builder.class)
 public interface GltfConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
-  // TODO support value arrays
-  enum GLTF_TYPE {
-    INT8,
-    UINT8,
-    INT16,
-    UINT16,
-    INT32,
-    UINT32,
-    INT64,
-    UINT64,
-    FLOAT32,
-    FLOAT64,
-    STRING,
-    BOOLEAN
-  }
-
   @Nullable
   Boolean getMeshQuantization();
 
@@ -59,7 +43,7 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
     return Boolean.TRUE.equals(getPolygonOrientationNotGuaranteed());
   }
 
-  Map<String, GLTF_TYPE> getProperties();
+  Map<String, GltfProperty> getProperties();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 

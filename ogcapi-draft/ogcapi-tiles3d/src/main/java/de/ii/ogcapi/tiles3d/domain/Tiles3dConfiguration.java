@@ -58,12 +58,12 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
   default void check() {
     Preconditions.checkState(
         Objects.requireNonNull(getMaxLevel()) <= 16,
-        "The maximum level that is supported is 16. Found: {}.",
+        "The maximum level that is supported is 16. Found: %d.",
         getMaxLevel());
     Preconditions.checkState(
         getContentFilters().isEmpty()
             || getContentFilters().size() == getMaxLevel() - getFirstLevelWithContent() + 1,
-        "The length of 'additionalFilters' must be the same as the levels with content. Found: {} and {}.",
+        "The length of 'additionalFilters' must be the same as the levels with content. Found: %s and %d.",
         getContentFilters(),
         getMaxLevel() - getFirstLevelWithContent() + 1);
   }

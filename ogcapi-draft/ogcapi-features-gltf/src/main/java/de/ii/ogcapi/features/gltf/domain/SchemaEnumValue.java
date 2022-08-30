@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.gltf.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -21,10 +22,16 @@ public interface SchemaEnumValue {
   Funnel<SchemaEnumValue> FUNNEL =
       (from, into) -> {
         into.putString(from.getName(), StandardCharsets.UTF_8);
-        into.putInt(from.getValue());
+        if (Objects.nonNull(from.getValue())) {
+          if (from.getValue() instanceof Integer) {
+            into.putInt((int) from.getValue());
+          } else if (from.getValue() instanceof String) {
+            into.putString((String) from.getValue(), StandardCharsets.UTF_8);
+          }
+        }
       };
 
   String getName();
 
-  int getValue();
+  Object getValue();
 }

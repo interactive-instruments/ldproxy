@@ -7,14 +7,18 @@
  */
 package de.ii.ogcapi.features.gltf.app;
 
-import static de.ii.ogcapi.features.gltf.domain.GltfConfiguration.GLTF_TYPE.UINT8;
+import static de.ii.ogcapi.features.gltf.domain.GltfProperty.GLTF_TYPE.STRING;
+import static de.ii.ogcapi.features.gltf.domain.GltfProperty.GLTF_TYPE.UINT16;
+import static de.ii.ogcapi.features.gltf.domain.GltfProperty.GLTF_TYPE.UINT32;
+import static de.ii.ogcapi.features.gltf.domain.GltfProperty.GLTF_TYPE.UINT8;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
-import de.ii.ogcapi.features.gltf.domain.GltfConfiguration.GLTF_TYPE;
+import de.ii.ogcapi.features.gltf.domain.GltfProperty;
+import de.ii.ogcapi.features.gltf.domain.GltfProperty.GLTF_TYPE;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAccessor;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAssetMetadata;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAttributes;
@@ -34,7 +38,6 @@ import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaClass;
 import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaEnum;
 import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaEnumValue;
 import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaProperty;
-import de.ii.ogcapi.features.gltf.domain.PropertyTable;
 import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.ogcapi.features.html.domain.Geometry.Coordinate;
 import de.ii.ogcapi.features.html.domain.Geometry.MultiPolygon;
@@ -45,7 +48,6 @@ import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
@@ -53,12 +55,14 @@ import earcut4j.Earcut;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -71,10 +75,21 @@ import org.slf4j.LoggerFactory;
 public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, FeatureGltf> {
 
   private static final String KHR_MESH_QUANTIZATION = "KHR_mesh_quantization";
+  private static final String EXT_STRUCTURAL_METADATA = "EXT_structural_metadata";
+  private static final String EXT_MESH_FEATURES = "EXT_mesh_features";
   private static final int INITIAL_SIZE = 1_024;
   private static final int WARNING_THRESHOLD_FEATURES_PER_FILE = 5_000;
-  private static final String WALL = "wall";
   private static final int MATERIAL = 0;
+  private static final String FEATURE_ID = "_featureId";
+  private static final String INDICES = "_indices";
+  private static final String VERTICES = "_vertices";
+  private static final String NORMALS = "_normals";
+  private static final String PROPERTIES = "_properties";
+  private static final String PROPERTY_PREFIX = "_p_";
+  private static final int BUFFER_VIEW_NORMALS = 2;
+  private static final int BUFFER_VIEW_INDICES = 0;
+  private static final int BUFFER_VIEW_VERTICES = 1;
+  private static final String STRING_OFFSET = "_string_offset_";
 
   private enum AXES {
     XYZ,
@@ -86,29 +101,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
   private static final String GML_ID = "gml_id";
   private static final String ID = "id";
-  private static final String LOD_1_SOLID = "lod1Solid";
-  private static final String LOD_2_SOLID = "lod2Solid";
-  private static final String SURFACES = "surfaces";
   private static final String SURFACE_TYPE = "surfaceType";
-  private static final String LOD_2_MULTI_SURFACE = "lod2MultiSurface";
-  private static final String CONSISTS_OF_BUILDING_PART = "consistsOfBuildingPart";
-  private static final ImmutableList<String> PATH_BUILDING_PART_SURFACES_GEOMETRY =
-      ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES, LOD_2_MULTI_SURFACE);
-  private static final ImmutableList<String> PATH_BUILDING_PART_SURFACE_TYPE =
-      ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES, SURFACE_TYPE);
-  private static final ImmutableList<String> PATH_BUILDING_PART_SURFACES =
-      ImmutableList.of(CONSISTS_OF_BUILDING_PART, SURFACES);
-  private static final ImmutableList<String> PATH_BUILDING_PART_LOD1_SOLID =
-      ImmutableList.of(CONSISTS_OF_BUILDING_PART, LOD_1_SOLID);
-  private static final ImmutableList<String> PATH_BUILDING_PART_LOD2_SOLID =
-      ImmutableList.of(CONSISTS_OF_BUILDING_PART, LOD_2_SOLID);
-  private static final ImmutableList<String> PATH_SURFACES_GEOMETRY =
-      ImmutableList.of(SURFACES, LOD_2_MULTI_SURFACE);
-  private static final ImmutableList<String> PATH_SURFACE_TYPE =
-      ImmutableList.of(SURFACES, SURFACE_TYPE);
-  private static final String PATH_SURFACES = SURFACES;
-  private static final String PATH_LOD1_SOLID = LOD_1_SOLID;
-  private static final String PATH_LOD2_SOLID = LOD_2_SOLID;
 
   private static final int ARRAY_BUFFER = 34962;
   private static final int ELEMENT_ARRAY_BUFFER = 34963;
@@ -127,6 +120,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private final boolean clampToGround;
   private final OutputStream outputStream;
   private final Map<String, Byte> surfaceTypeEnums;
+  private final Map<String, ByteArrayOutputStream> buffers;
+  private final Map<String, Integer> bufferViews;
+  private final Map<String, Integer> currentBufferViewOffsets;
+  private final Map<String, Map<String, Integer>> enums;
   private final boolean polygonOrientationIsNotGuaranteed;
   private final GltfConfiguration configuration;
   private final Optional<FeatureSchema> featureSchema;
@@ -137,23 +134,14 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private int nextNodeId;
   private int nextMeshId;
   private int nextAccessorId;
-  private int bytesIndices;
-  private int bytesVertices;
-  private int bytesNormals;
-  private int bytesFeatureId0;
-  private int bytesSurfaceTypes;
-  private ByteArrayOutputStream bufferIndices;
-  private ByteArrayOutputStream bufferVertices;
-  private ByteArrayOutputStream bufferNormals;
-  private ByteArrayOutputStream bufferFeatureId0;
-  private ByteArrayOutputStream bufferSurfaceTypes;
   private final boolean withNormals;
+  private final boolean withProperties;
   private final boolean quantizeMesh;
   private List<Integer> buildingNodes;
   private final long transformerStart = System.nanoTime();
   private long processingStart;
   private long featureFetched;
-  private long featureCount;
+  private int buildingCount;
   private long featuresDuration;
 
   public FeatureEncoderGltf(
@@ -172,12 +160,17 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         transformationContext
             .getConfiguration(GltfConfiguration.class)
             .polygonOrientationIsNotGuaranteed();
-    this.surfaceTypeEnums = new HashMap<>();
     this.configuration =
         transformationContext
             .getApiData()
             .getExtension(GltfConfiguration.class, transformationContext.getCollectionId())
             .orElseThrow();
+    this.withProperties = !configuration.getProperties().isEmpty();
+    this.surfaceTypeEnums = new HashMap<>();
+    this.buffers = new HashMap<>();
+    this.bufferViews = new HashMap<>();
+    this.currentBufferViewOffsets = new HashMap<>();
+    this.enums = new HashMap<>();
   }
 
   @Override
@@ -223,12 +216,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     List<MeshSurface> surfaces = MeshSurface.collectSolidSurfaces(feature);
 
     try {
-      boolean added = addMultiPolygons(fid, surfaces);
+      boolean added = addMultiPolygons(feature, fid, surfaces);
       if (added) {
         buildingNodes.add(nextNodeId - 1);
-        this.featureCount++;
-      } else {
-        LOGGER.debug("TODO");
+        this.buildingCount++;
       }
     } catch (Exception e) {
       LOGGER.error(
@@ -241,6 +232,71 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     }
 
     this.featuresDuration += System.nanoTime() - featureStart;
+  }
+
+  private void writeProperty(
+      ByteArrayOutputStream buffer,
+      ByteArrayOutputStream offsetBuffer,
+      String propertyName,
+      GltfProperty property,
+      String value)
+      throws IOException {
+    String effectiveValue =
+        (Objects.nonNull(value) && !value.isBlank())
+            ? enums.containsKey(propertyName)
+                ? String.valueOf(
+                    Objects.requireNonNullElse(
+                        enums.get(propertyName).get(value), property.getNoData().orElse("0")))
+                : value
+            : property.getNoData().orElse("0");
+    try {
+      switch (property.getType()) {
+        case INT8:
+        case UINT8:
+          buffer.write(Byte.parseByte(effectiveValue));
+          break;
+        case INT16:
+        case UINT16:
+          buffer.write(GltfHelper.intToLittleEndianShort(Integer.parseInt(effectiveValue)));
+          break;
+        case INT32:
+        case UINT32:
+          buffer.write(GltfHelper.intToLittleEndianInt(Integer.parseInt(effectiveValue)));
+          break;
+        case FLOAT32:
+          buffer.write(GltfHelper.doubleToLittleEndianFloat(Double.parseDouble(effectiveValue)));
+          break;
+        case INT64:
+        case UINT64:
+          buffer.write(GltfHelper.longToLittleEndianLong(Long.parseLong(effectiveValue)));
+          break;
+        case FLOAT64:
+          buffer.write(GltfHelper.doubleToLittleEndianDouble(Double.parseDouble(effectiveValue)));
+          break;
+        case STRING:
+          if (!effectiveValue.isEmpty()) {
+            buffer.write(effectiveValue.getBytes(StandardCharsets.UTF_8));
+          }
+          if (property.getOffsetType() == UINT8) {
+            offsetBuffer.write((byte) buffer.size());
+          } else if (property.getOffsetType() == UINT16) {
+            offsetBuffer.write(GltfHelper.intToLittleEndianShort(buffer.size()));
+          } else if (property.getOffsetType() == UINT32) {
+            offsetBuffer.write(GltfHelper.intToLittleEndianInt(buffer.size()));
+          }
+          break;
+        case BOOLEAN:
+        default:
+          // TODO
+          throw new IllegalStateException(
+              String.format(
+                  "Type of feature property is not supported in glTF: %s",
+                  property.getType().toString()));
+      }
+    } catch (NumberFormatException e) {
+      LOGGER.warn("Could not parse attribute value '{}' as a number, using '0'.", effectiveValue);
+      writeProperty(buffer, offsetBuffer, propertyName, property, "0");
+    }
   }
 
   @Override
@@ -257,11 +313,11 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           String.format(
               "glTF features fetched: %d, returned: %d, total duration: %dms, processing: %dms, feature processing: %dms, average feature processing: %dms, writing: %dms.",
               featureFetched,
-              featureCount,
+              buildingCount,
               transformerDuration,
               processingDuration,
               toMilliseconds(featuresDuration),
-              featureCount == 0 ? 0 : toMilliseconds(featuresDuration / featureCount),
+              buildingCount == 0 ? 0 : toMilliseconds(featuresDuration / buildingCount),
               writingDuration);
       if (processingDuration > 200) {
         LOGGER.debug(text);
@@ -294,19 +350,213 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     nextNodeId = 0;
     nextMeshId = 0;
     nextAccessorId = 0;
-    bytesIndices = 0;
-    bytesVertices = 0;
-    bytesNormals = 0;
-    bytesFeatureId0 = 0;
-    bufferIndices = new ByteArrayOutputStream(getByteStrideIndices() * INITIAL_SIZE);
-    bufferVertices = new ByteArrayOutputStream(getByteStrideVertices() * INITIAL_SIZE);
-    bufferNormals = new ByteArrayOutputStream(getByteStrideNormals() * INITIAL_SIZE);
-    bufferFeatureId0 = new ByteArrayOutputStream(getByteStrideFeatureId() * INITIAL_SIZE);
-    bufferSurfaceTypes = new ByteArrayOutputStream(getByteStrideSurfaceTypes() * INITIAL_SIZE);
     buildingNodes = new ArrayList<>(INITIAL_SIZE);
+
+    buffers.put(INDICES, new ByteArrayOutputStream(getByteStrideIndices() * INITIAL_SIZE));
+    currentBufferViewOffsets.put(INDICES, 0);
+    buffers.put(VERTICES, new ByteArrayOutputStream(getByteStrideVertices() * INITIAL_SIZE));
+    currentBufferViewOffsets.put(VERTICES, 0);
+    if (withNormals) {
+      buffers.put(NORMALS, new ByteArrayOutputStream(getByteStrideNormals() * INITIAL_SIZE));
+      currentBufferViewOffsets.put(NORMALS, 0);
+    }
+    buffers.put(FEATURE_ID, new ByteArrayOutputStream(getByteStrideFeatureId() * INITIAL_SIZE));
+    currentBufferViewOffsets.put(FEATURE_ID, 0);
+    buffers.put(
+        PROPERTY_PREFIX + SURFACE_TYPE,
+        new ByteArrayOutputStream(getByteStrideSurfaceTypes() * INITIAL_SIZE));
+    currentBufferViewOffsets.put(PROPERTY_PREFIX + SURFACE_TYPE, 0);
+    if (withProperties) {
+      configuration
+          .getProperties()
+          .forEach(
+              (key, value) -> {
+                buffers.put(
+                    PROPERTY_PREFIX + key,
+                    new ByteArrayOutputStream(getInitialBufferSize(value.getType())));
+                currentBufferViewOffsets.put(PROPERTY_PREFIX + key, 0);
+                if (value.getType() == STRING) {
+                  ByteArrayOutputStream buffer =
+                      new ByteArrayOutputStream(getInitialBufferSize(UINT8));
+                  try {
+                    if (value.getOffsetType() == UINT8) {
+                      buffer.write((byte) 0);
+                    } else if (value.getOffsetType() == UINT16) {
+                      buffer.write(GltfHelper.intToLittleEndianShort(0));
+                    } else if (value.getOffsetType() == UINT32) {
+                      buffer.write(GltfHelper.intToLittleEndianInt(0));
+                    }
+                  } catch (IOException e) {
+                    throw new IllegalStateException("Cannot write to string offset buffer.", e);
+                  }
+                  buffers.put(PROPERTY_PREFIX + key + STRING_OFFSET, buffer);
+                  currentBufferViewOffsets.put(
+                      PROPERTY_PREFIX + key + STRING_OFFSET, buffer.size());
+                }
+              });
+    }
+
+    if (withProperties) {
+      featureSchema.ifPresent(
+          schema -> {
+            for (FeatureSchema property : schema.getProperties()) {
+              if (!configuration.getProperties().containsKey(property.getName())) {
+                continue;
+              }
+
+              // two options
+              List<String> values = ImmutableList.of();
+              if (property.getConstraints().filter(c -> !c.getEnumValues().isEmpty()).isPresent()) {
+                // 1) enum based on enum values
+                values =
+                    property
+                        .getConstraints()
+                        .map(SchemaConstraints::getEnumValues)
+                        .orElse(ImmutableList.of());
+              } else if (property
+                  .getConstraints()
+                  .filter(c -> c.getCodelist().isPresent())
+                  .isPresent()) {
+                // 2) enum based on a codelist, map codes to an integer enum
+                values =
+                    property
+                        .getConstraints()
+                        .flatMap(SchemaConstraints::getCodelist)
+                        .flatMap(
+                            codelist ->
+                                entityRegistry.getEntitiesForType(Codelist.class).stream()
+                                    .filter(codelist1 -> codelist1.getId().equals(codelist))
+                                    .findFirst()
+                                    .map(Codelist::getData)
+                                    .map(CodelistData::getEntries)
+                                    .map(Map::keySet)
+                                    .map(
+                                        set ->
+                                            set.stream()
+                                                .sorted()
+                                                .collect(Collectors.toUnmodifiableList())))
+                        .orElse(ImmutableList.of());
+              }
+
+              if (!values.isEmpty()) {
+                ImmutableMap.Builder<String, Integer> enumBuilder = ImmutableMap.builder();
+                for (int i = 0; i < values.size(); i++) {
+                  enumBuilder.put(values.get(i), i);
+                }
+                enums.put(property.getName(), enumBuilder.build());
+              }
+            }
+          });
+    }
+  }
+
+  private int getInitialBufferSize(GLTF_TYPE value) {
+    switch (value) {
+      case INT8:
+      case UINT8:
+      case BOOLEAN:
+        return INITIAL_SIZE;
+      case INT16:
+      case UINT16:
+        return 2 * INITIAL_SIZE;
+      case INT32:
+      case UINT32:
+      case FLOAT32:
+        return 4 * INITIAL_SIZE;
+      case INT64:
+      case UINT64:
+      case FLOAT64:
+      case STRING:
+      default:
+        return 8 * INITIAL_SIZE;
+    }
   }
 
   private void finalizeModel() {
+
+    int offset = 0;
+    int size = buffers.get(INDICES).size();
+    builder.addBufferViews(
+        ImmutableBufferView.builder()
+            .buffer(0)
+            .byteLength(size)
+            .byteOffset(offset)
+            .target(ELEMENT_ARRAY_BUFFER)
+            .build());
+    offset += size;
+
+    size = buffers.get(VERTICES).size();
+    builder.addBufferViews(
+        ImmutableBufferView.builder()
+            .buffer(0)
+            .byteLength(size)
+            .byteOffset(offset)
+            .byteStride(getByteStrideVertices())
+            .target(ARRAY_BUFFER)
+            .build());
+    offset += size;
+
+    int nextBufferViewId = 2;
+    if (withNormals) {
+      size = buffers.get(NORMALS).size();
+      builder.addBufferViews(
+          ImmutableBufferView.builder()
+              .buffer(0)
+              .byteLength(size)
+              .byteOffset(offset)
+              .byteStride(getByteStrideNormals())
+              .target(ARRAY_BUFFER)
+              .build());
+      offset += size;
+      nextBufferViewId++;
+    }
+
+    if (withProperties || !surfaceTypeEnums.isEmpty()) {
+      size = buffers.get(FEATURE_ID).size();
+      builder.addBufferViews(
+          ImmutableBufferView.builder()
+              .buffer(0)
+              .byteLength(size)
+              .byteOffset(offset)
+              // each *element* must align to 4-byte boundaries; UNSIGNED_INT is not allowed
+              .byteStride(getByteStrideFeatureId())
+              .build());
+      offset += size;
+      nextBufferViewId++;
+    }
+
+    for (Map.Entry<String, ByteArrayOutputStream> entry : buffers.entrySet()) {
+      String bufferName = entry.getKey();
+      if (bufferName.startsWith(PROPERTY_PREFIX)) {
+        ByteArrayOutputStream buffer = entry.getValue();
+        size = buffer.size();
+        builder.addBufferViews(
+            ImmutableBufferView.builder()
+                .buffer(0)
+                .byteLength(size)
+                .byteOffset(offset)
+                .target(ELEMENT_ARRAY_BUFFER)
+                .build());
+        offset += size;
+        bufferViews.put(bufferName, nextBufferViewId++);
+      }
+    }
+
+    if (offset > 0) {
+      builder.addBuffers(ImmutableBuffer.builder().byteLength(offset).build());
+      builder.addNodes(
+          ImmutableNode.builder()
+              .children(buildingNodes)
+              // z-up (CRS) => y-up (glTF uses y-up)
+              .addMatrix(1d, 0d, 0d, 0d, 0d, 0d, -1d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 0d, 1d)
+              .build());
+      builder.addScenes(ImmutableScene.builder().nodes(ImmutableList.of(nextNodeId)).build());
+    }
+
+    if (quantizeMesh) {
+      builder.addExtensionsUsed(KHR_MESH_QUANTIZATION);
+      builder.addExtensionsRequired(KHR_MESH_QUANTIZATION);
+    }
 
     builder.addMaterials(
         ImmutableMaterial.builder()
@@ -320,97 +570,95 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             .build());
 
     // TODO move to an API resource and reference with schemaUri?
-    ImmutableSchema.Builder schemaBuilder = ImmutableSchema.builder().id("TODO");
-    Builder<PropertyTable> propertyTablesBuilder = ImmutableList.builder();
+    ImmutableSchema.Builder schemaBuilder =
+        ImmutableSchema.builder()
+            .id(
+                transformationContext.getApiData().getId()
+                    + "_"
+                    + transformationContext.getCollectionId());
+    ImmutablePropertyTable.Builder propertyTableBuilder =
+        ImmutablePropertyTable.builder()
+            .class_("building")
+            .count(buffers.get(PROPERTY_PREFIX + SURFACE_TYPE).size());
+    ImmutableSchemaClass.Builder classBuilder = ImmutableSchemaClass.builder();
     boolean hasExtStructuralMetadata = false;
-    if (!configuration.getProperties().isEmpty()) {
+    if (withProperties) {
       hasExtStructuralMetadata = true;
       featureSchema.ifPresent(
           schema -> {
-            ImmutableSchemaClass.Builder classBuilder = ImmutableSchemaClass.builder();
             for (FeatureSchema property : schema.getProperties()) {
               if (!configuration.getProperties().containsKey(property.getName())) {
                 continue;
               }
-              GLTF_TYPE type = configuration.getProperties().get(property.getName());
+              GLTF_TYPE type = configuration.getProperties().get(property.getName()).getType();
+              String noData =
+                  configuration.getProperties().get(property.getName()).getNoData().orElse("0");
               ImmutableSchemaProperty.Builder propertyBuilder = ImmutableSchemaProperty.builder();
 
-              // three options
-              if (property.getConstraints().filter(c -> !c.getEnumValues().isEmpty()).isPresent()) {
-                // 1) enum based on enum values
-                property
-                    .getConstraints()
-                    .map(SchemaConstraints::getEnumValues)
-                    .ifPresent(
-                        values -> {
-                          schemaBuilder.putEnums(
-                              property.getName(),
-                              ImmutableSchemaEnum.builder()
-                                  .name(property.getLabel())
-                                  .description(property.getDescription())
-                                  .values(
-                                      IntStream.range(0, values.size())
-                                          .mapToObj(
-                                              i ->
-                                                  ImmutableSchemaEnumValue.builder()
-                                                      .value(i)
-                                                      .name(values.get(i))
-                                                      .build())
-                                          .collect(Collectors.toUnmodifiableList()))
-                                  .build());
+              if (enums.containsKey(property.getName())) {
+                Map<String, Integer> enumValues = enums.get(property.getName());
+                ImmutableSchemaEnum.Builder schemaEnumBuilder =
+                    ImmutableSchemaEnum.builder()
+                        .name(property.getLabel())
+                        .description(property.getDescription())
+                        .valueType(type.name())
+                        .addValues(
+                            ImmutableSchemaEnumValue.builder()
+                                .value(Integer.parseInt(noData))
+                                .name("No data")
+                                .build());
 
-                          propertyBuilder.type("ENUM");
-                          propertyBuilder.componentType(type.name());
-                          propertyBuilder.enumType(property.getName());
-                        });
-              } else if (property.getType() == Type.INTEGER
-                  && property
-                      .getConstraints()
-                      .filter(c -> c.getCodelist().isPresent())
-                      .isPresent()) {
-                // 2) enum based on a codelist with numeric codes
-                property
+                if (property
                     .getConstraints()
-                    .flatMap(SchemaConstraints::getCodelist)
-                    .flatMap(
-                        codelist ->
-                            entityRegistry.getEntitiesForType(Codelist.class).stream()
-                                .filter(codelist1 -> codelist1.getId().equals(codelist))
-                                .findFirst()
-                                .map(Codelist::getData)
-                                .map(CodelistData::getEntries))
-                    .ifPresent(
-                        valueMap -> {
-                          schemaBuilder.putEnums(
-                              property.getName(),
-                              ImmutableSchemaEnum.builder()
-                                  .name(property.getLabel())
-                                  .description(property.getDescription())
-                                  .values(
-                                      valueMap.entrySet().stream()
-                                          .map(
-                                              entry ->
-                                                  ImmutableSchemaEnumValue.builder()
-                                                      .value(Integer.valueOf(entry.getKey()))
-                                                      .name(entry.getValue())
-                                                      .build())
-                                          .collect(Collectors.toUnmodifiableList()))
-                                  .build());
+                    .filter(c -> !c.getEnumValues().isEmpty())
+                    .isPresent()) {
+                  // 1) enum based on enum values
+                  enumValues.forEach(
+                      (key, value) ->
+                          schemaEnumBuilder.addValues(
+                              ImmutableSchemaEnumValue.builder().value(value).name(key).build()));
+                } else {
+                  // 2) enum based on a codelist
+                  Map<String, String> codelistValues =
+                      property
+                          .getConstraints()
+                          .flatMap(SchemaConstraints::getCodelist)
+                          .flatMap(
+                              codelist ->
+                                  entityRegistry.getEntitiesForType(Codelist.class).stream()
+                                      .filter(codelist1 -> codelist1.getId().equals(codelist))
+                                      .findFirst()
+                                      .map(Codelist::getData)
+                                      .map(CodelistData::getEntries))
+                          .orElse(ImmutableMap.of());
 
-                          propertyBuilder.type("ENUM");
-                          propertyBuilder.componentType(type.name());
-                          propertyBuilder.enumType(property.getName());
-                        });
+                  enumValues.forEach(
+                      (key, value) ->
+                          schemaEnumBuilder.addValues(
+                              ImmutableSchemaEnumValue.builder()
+                                  .value(value)
+                                  .name(Objects.requireNonNull(codelistValues.get(key)))
+                                  .build()));
+                }
+
+                schemaBuilder.putEnums(property.getName(), schemaEnumBuilder.build());
+
+                propertyBuilder.type("ENUM");
+                propertyBuilder.enumType(property.getName());
               } else {
                 // 3) just based on the specified type for the property
                 switch (type) {
                   case STRING:
+                    propertyBuilder.type(type.name());
+                    propertyBuilder.noData(noData);
+                    break;
                   case BOOLEAN:
                     propertyBuilder.type(type.name());
                     break;
                   default:
                     propertyBuilder.type("SCALAR");
                     propertyBuilder.componentType(type.name());
+                    propertyBuilder.noData(noData);
                     break;
                 }
               }
@@ -419,16 +667,32 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               property
                   .getConstraints()
                   .flatMap(SchemaConstraints::getRequired)
-                  .ifPresent(b -> propertyBuilder.required(b));
+                  .ifPresent(propertyBuilder::required);
               classBuilder.putProperties(property.getName(), propertyBuilder.build());
             }
-
-            schemaBuilder.putClasses("building", classBuilder.build());
           });
+
+      for (Map.Entry<String, GltfProperty> entry : configuration.getProperties().entrySet()) {
+        String propertyName = entry.getKey();
+        Optional<Integer> stringOffset =
+            Optional.ofNullable(bufferViews.get(PROPERTY_PREFIX + propertyName + STRING_OFFSET));
+        Optional<String> stringOffsetType =
+            stringOffset.isPresent()
+                ? Optional.of(entry.getValue().getOffsetType().name())
+                : Optional.empty();
+        propertyTableBuilder.putProperties(
+            propertyName,
+            ImmutableProperty.builder()
+                .values(bufferViews.get(PROPERTY_PREFIX + propertyName))
+                .stringOffsets(stringOffset)
+                .stringOffsetType(stringOffsetType)
+                .build());
+      }
     }
 
     if (!surfaceTypeEnums.isEmpty()) {
       hasExtStructuralMetadata = true;
+
       schemaBuilder.putEnums(
           SURFACE_TYPE,
           ImmutableSchemaEnum.builder()
@@ -444,112 +708,48 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                                   .build())
                       .collect(Collectors.toUnmodifiableList()))
               .build());
-      schemaBuilder.putClasses(
-          "SemanticSurface",
-          ImmutableSchemaClass.builder()
-              .name("Semantic Surfaces")
-              .putProperties(
-                  "surfaceType",
-                  ImmutableSchemaProperty.builder().type("ENUM").enumType(SURFACE_TYPE).build())
-              .build());
 
-      bytesSurfaceTypes = bufferSurfaceTypes.size();
+      classBuilder.putProperties(
+          "surfaceType",
+          ImmutableSchemaProperty.builder().type("ENUM").enumType(SURFACE_TYPE).build());
 
-      int surfaceTypeBufferViewId = withNormals ? 4 : 3;
-      propertyTablesBuilder.add(
-          ImmutablePropertyTable.builder()
-              .class_("SemanticSurface")
-              .count(bufferSurfaceTypes.size())
-              .putProperties(
-                  "surfaceType",
-                  ImmutableProperty.builder().values(surfaceTypeBufferViewId).build())
+      propertyTableBuilder.putProperties(
+          "surfaceType",
+          ImmutableProperty.builder()
+              .values(bufferViews.get(PROPERTY_PREFIX + SURFACE_TYPE))
               .build());
     }
 
     if (hasExtStructuralMetadata) {
+      schemaBuilder.putClasses("building", classBuilder.build());
+
       builder
           .putExtensions(
-              "EXT_structural_metadata",
+              EXT_STRUCTURAL_METADATA,
               ImmutableMap.of(
-                  "schema", schemaBuilder.build(), "propertyTables", propertyTablesBuilder.build()))
-          .addExtensionsUsed("EXT_structural_metadata");
+                  "schema",
+                  schemaBuilder.build(),
+                  "propertyTables",
+                  ImmutableList.of(propertyTableBuilder.build())))
+          .addExtensionsUsed(EXT_STRUCTURAL_METADATA, EXT_MESH_FEATURES);
     }
 
-    if (bytesIndices > 0) {
-      builder.addBufferViews(
-          ImmutableBufferView.builder()
-              .buffer(0)
-              .byteLength(bytesIndices)
-              .byteOffset(0)
-              .target(ELEMENT_ARRAY_BUFFER)
-              .build());
+    Builder<ByteArrayOutputStream> bufferList =
+        ImmutableList.<ByteArrayOutputStream>builder()
+            .add(buffers.get(INDICES))
+            .add(buffers.get(VERTICES));
+    if (withNormals) {
+      bufferList.add(buffers.get(NORMALS));
     }
-    if (bytesVertices > 0) {
-      builder.addBufferViews(
-          ImmutableBufferView.builder()
-              .buffer(0)
-              .byteLength(bytesVertices)
-              .byteOffset(bytesIndices)
-              .byteStride(getByteStrideVertices())
-              .target(ARRAY_BUFFER)
-              .build());
+    if (withProperties || !surfaceTypeEnums.isEmpty()) {
+      bufferList.add(buffers.get(FEATURE_ID));
     }
-    if (bytesFeatureId0 > 0) {
-      builder.addBufferViews(
-          ImmutableBufferView.builder()
-              .buffer(0)
-              .byteLength(bytesFeatureId0)
-              .byteOffset(bytesIndices + bytesVertices)
-              // each *element* must align to 4-byte boundaries; UNSIGNED_INT is not allowed
-              .byteStride(getByteStrideFeatureId())
-              .build());
-    }
-    if (bytesNormals > 0) {
-      builder.addBufferViews(
-          ImmutableBufferView.builder()
-              .buffer(0)
-              .byteLength(bytesNormals)
-              .byteOffset(bytesIndices + bytesVertices + bytesFeatureId0)
-              .byteStride(getByteStrideNormals())
-              .target(ARRAY_BUFFER)
-              .build());
-    }
-    if (bytesSurfaceTypes > 0) {
-      builder.addBufferViews(
-          ImmutableBufferView.builder()
-              .buffer(0)
-              .byteLength(bytesSurfaceTypes)
-              .byteOffset(bytesIndices + bytesVertices + bytesFeatureId0 + bytesNormals)
-              .target(ELEMENT_ARRAY_BUFFER)
-              .build());
-    }
-    int bufferLength =
-        bufferIndices.size()
-            + bufferVertices.size()
-            + bufferFeatureId0.size()
-            + bufferNormals.size()
-            + bufferSurfaceTypes.size();
-    if (bufferLength > 0) {
-      builder.addBuffers(ImmutableBuffer.builder().byteLength(bufferLength).build());
-      builder.addNodes(
-          ImmutableNode.builder()
-              .children(buildingNodes)
-              // z-up (CRS) => y-up (glTF uses y-up)
-              .addMatrix(1d, 0d, 0d, 0d, 0d, 0d, -1d, 0d, 0d, 1d, 0d, 0d, 0d, 0d, 0d, 1d)
-              .build());
-      builder.addScenes(ImmutableScene.builder().nodes(ImmutableList.of(nextNodeId)).build());
-    }
-
-    if (quantizeMesh) {
-      builder.addExtensionsUsed(KHR_MESH_QUANTIZATION);
-      builder.addExtensionsRequired(KHR_MESH_QUANTIZATION);
-    }
-
-    GltfHelper.writeGltfBinary(
-        builder.build(),
-        ImmutableList.of(
-            bufferIndices, bufferVertices, bufferFeatureId0, bufferNormals, bufferSurfaceTypes),
-        outputStream);
+    bufferList.addAll(
+        bufferViews.entrySet().stream()
+            .sorted(Comparator.comparingInt(Entry::getValue))
+            .map(entry -> buffers.get(entry.getKey()))
+            .collect(Collectors.toUnmodifiableList()));
+    GltfHelper.writeGltfBinary(builder.build(), bufferList.build(), outputStream);
   }
 
   private int getByteStrideIndices() {
@@ -574,7 +774,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
   // TODO support other geometric primitives
 
-  private boolean addMultiPolygons(String name, List<MeshSurface> meshSurfaces) throws IOException {
+  private boolean addMultiPolygons(FeatureGltf feature, String name, List<MeshSurface> meshSurfaces)
+      throws IOException {
 
     // determine the origin to use; eventually we will translate vertices to the center of the
     // feature to have smaller values (glTF uses float)
@@ -611,7 +812,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     List<Integer> indices = new ArrayList<>();
     List<Integer> featureIds = new ArrayList<>();
     int indexCount = 0;
-    int featureCount = 0;
+    int surfaceCount = 0;
 
     // write feature ids and a property table only if we have surface type information
     boolean hasSurfaceType = meshSurfaces.stream().anyMatch(s -> s.getSurfaceType().isPresent());
@@ -621,15 +822,35 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           triangulate(surface.getGeometry(), name, min[2], indices, indexCount, vertices, normals);
       indexCount += vertexCountSurface;
 
-      if (hasSurfaceType && vertexCountSurface >= 3) {
-        IntStream.range(0, vertexCountSurface)
-            .forEach(i -> featureIds.add(bufferSurfaceTypes.size()));
-        byte st = getSurfaceTypeCode(surface.getSurfaceType().orElse("Unknown"));
-        bufferSurfaceTypes.write(st);
-        featureCount++;
+      if ((hasSurfaceType || withProperties) && vertexCountSurface >= 3) {
+        ByteArrayOutputStream buffer = buffers.get(PROPERTY_PREFIX + SURFACE_TYPE);
+
+        IntStream.range(0, vertexCountSurface).forEach(i -> featureIds.add(buffer.size()));
+        buffer.write((byte) getSurfaceTypeCode(surface.getSurfaceType().orElse("unknown")));
+
+        configuration
+            .getProperties()
+            .forEach(
+                (key, value) -> {
+                  try {
+                    writeProperty(
+                        buffers.get(PROPERTY_PREFIX + key),
+                        buffers.get(PROPERTY_PREFIX + key + STRING_OFFSET),
+                        key,
+                        value,
+                        feature
+                            .findPropertyByPath(key)
+                            .map(PropertyGltf::getFirstValue)
+                            .orElse(null));
+                  } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                  }
+                });
+
+        surfaceCount++;
       }
 
-      if (hasSurfaceType && featureIds.size() != vertices.size() / 3) {
+      if ((hasSurfaceType || withProperties) && featureIds.size() != vertices.size() / 3) {
         LOGGER.error(
             "System error: Size of feature id array for structural metadata differs from size of vertices: {} vs. {}",
             featureIds.size(),
@@ -664,33 +885,31 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       }
 
       // write indices and add accessor
+      ByteArrayOutputStream buffer = buffers.get(INDICES);
       for (int v : indices) {
-        bufferIndices.write(GltfHelper.intToLittleEndianShort(v));
+        buffer.write(GltfHelper.intToLittleEndianShort(v));
       }
 
       ImmutableAttributes.Builder attributesBuilder = ImmutableAttributes.builder();
-      int bufferViewId = 0;
       int accessorIdIndices = nextAccessorId;
       builder.addAccessors(
           ImmutableAccessor.builder()
-              .bufferView(bufferViewId++)
-              .byteOffset(bytesIndices)
+              .bufferView(BUFFER_VIEW_INDICES)
+              .byteOffset(currentBufferViewOffsets.get(INDICES))
               .componentType(UNSIGNED_SHORT)
               .addMax(indices.stream().max(Comparator.naturalOrder()).orElseThrow())
               .addMin(indices.stream().min(Comparator.naturalOrder()).orElseThrow())
               .count(indices.size())
               .type("SCALAR")
               .build());
-      nextAccessorId++;
 
-      bytesIndices += indices.size() * getByteStrideIndices();
-
-      if (indices.size() % 2 == 1) {
-        // pad for alignment, all offsets must be divisible by 4
-        bufferIndices.write(GltfHelper.BIN_PADDING);
-        bufferIndices.write(GltfHelper.BIN_PADDING);
-        bytesIndices += 2;
+      // pad for alignment, all offsets must be divisible by 4
+      while (buffers.get(INDICES).size() % 4 > 0) {
+        buffers.get(INDICES).write(GltfHelper.BIN_PADDING);
       }
+
+      nextAccessorId++;
+      currentBufferViewOffsets.put(INDICES, buffer.size());
 
       // prepare vertices and add accessor
 
@@ -718,19 +937,20 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           vertices.set(n * 3 + 2, vertices.get(n * 3 + 2) / scale[2]);
         }
 
+        buffer = buffers.get(VERTICES);
         for (int n = 0; n < vertices.size() / 3; n++) {
-          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3)));
-          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 1)));
-          bufferVertices.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 2)));
+          buffer.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3)));
+          buffer.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 1)));
+          buffer.write(GltfHelper.doubleToLittleEndianShort(vertices.get(n * 3 + 2)));
           // 3 shorts are 6 bytes, add 2 bytes to be aligned with 4-byte boundaries
-          bufferVertices.write(GltfHelper.BIN_PADDING);
-          bufferVertices.write(GltfHelper.BIN_PADDING);
+          buffer.write(GltfHelper.BIN_PADDING);
+          buffer.write(GltfHelper.BIN_PADDING);
         }
       } else {
         scale = new double[] {1d, 1d, 1d};
 
         for (Double v : vertices) {
-          bufferVertices.write(GltfHelper.doubleToLittleEndianFloat(v));
+          buffers.get(VERTICES).write(GltfHelper.doubleToLittleEndianFloat(v));
         }
       }
 
@@ -738,8 +958,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       final List<Double> verticesMax = GltfHelper.getMax(vertices);
       builder.addAccessors(
           ImmutableAccessor.builder()
-              .bufferView(bufferViewId++)
-              .byteOffset(bytesVertices)
+              .bufferView(BUFFER_VIEW_VERTICES)
+              .byteOffset(currentBufferViewOffsets.get(VERTICES))
               .componentType(quantizeMesh ? SHORT : FLOAT)
               .normalized(false)
               .max(
@@ -761,33 +981,11 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               .build());
       attributesBuilder.position(nextAccessorId);
       nextAccessorId++;
-
-      bytesVertices += vertices.size() / 3 * getByteStrideVertices();
-
-      if (hasSurfaceType) {
-        // write feature ids and create accessor
-        for (int v : featureIds) {
-          bufferFeatureId0.write(GltfHelper.intToLittleEndianShort(v));
-          bufferFeatureId0.write(GltfHelper.BIN_PADDING);
-          bufferFeatureId0.write(GltfHelper.BIN_PADDING);
-        }
-
-        builder.addAccessors(
-            ImmutableAccessor.builder()
-                .bufferView(bufferViewId++)
-                .byteOffset(bytesFeatureId0)
-                .componentType(UNSIGNED_SHORT)
-                .count(featureIds.size())
-                .type("SCALAR")
-                .build());
-        attributesBuilder.featureId0(nextAccessorId);
-        nextAccessorId++;
-
-        bytesFeatureId0 += featureIds.size() * getByteStrideFeatureId();
-      }
+      currentBufferViewOffsets.put(VERTICES, buffers.get(VERTICES).size());
 
       if (withNormals) {
         // write normals and add accessor
+        buffer = buffers.get(NORMALS);
         if (quantizeMesh) {
           // scale normals to BYTE
           for (int n = 0; n < normals.size() / 3; n++) {
@@ -797,15 +995,15 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           }
 
           for (int n = 0; n < normals.size() / 3; n++) {
-            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3)));
-            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 1)));
-            bufferNormals.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 2)));
+            buffer.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3)));
+            buffer.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 1)));
+            buffer.write(GltfHelper.doubleToLittleEndianByte(normals.get(n * 3 + 2)));
             // 3 bytes, add 1 byte to be aligned with 4-byte boundaries
-            bufferNormals.write(GltfHelper.BIN_PADDING);
+            buffer.write(GltfHelper.BIN_PADDING);
           }
         } else {
           for (Double v : normals) {
-            bufferNormals.write(GltfHelper.doubleToLittleEndianFloat(v));
+            buffer.write(GltfHelper.doubleToLittleEndianFloat(v));
           }
         }
 
@@ -813,8 +1011,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         final List<Double> normalsMax = GltfHelper.getMax(normals);
         builder.addAccessors(
             ImmutableAccessor.builder()
-                .bufferView(bufferViewId++)
-                .byteOffset(bytesNormals)
+                .bufferView(BUFFER_VIEW_NORMALS)
+                .byteOffset(currentBufferViewOffsets.get(NORMALS))
                 .componentType(quantizeMesh ? BYTE : FLOAT)
                 .normalized(quantizeMesh)
                 .max(
@@ -836,12 +1034,39 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                 .build());
         attributesBuilder.normal(nextAccessorId);
         nextAccessorId++;
+        currentBufferViewOffsets.put(NORMALS, buffers.get(NORMALS).size());
+      }
 
-        bytesNormals += normals.size() / 3 * getByteStrideNormals();
+      if (withProperties || hasSurfaceType) {
+        buffer = buffers.get(FEATURE_ID);
+
+        // write feature id and create accessor
+        for (int i = 0; i < vertices.size() / 3; i++) {
+          buffer.write(GltfHelper.intToLittleEndianShort(featureIds.get(i)));
+          buffer.write(GltfHelper.BIN_PADDING);
+          buffer.write(GltfHelper.BIN_PADDING);
+        }
+
+        builder.addAccessors(
+            ImmutableAccessor.builder()
+                .bufferView(withNormals ? 3 : 2)
+                .byteOffset(currentBufferViewOffsets.get(FEATURE_ID))
+                .componentType(UNSIGNED_SHORT)
+                .count(featureIds.size())
+                .type("SCALAR")
+                .build());
+        attributesBuilder.featureId0(nextAccessorId);
+        nextAccessorId++;
+        currentBufferViewOffsets.put(FEATURE_ID, buffer.size());
       }
 
       // add mesh and node for the building
-
+      ImmutableList.Builder<Map<String, Object>> featureIdsBuilder = ImmutableList.builder();
+      if (withProperties || hasSurfaceType) {
+        featureIdsBuilder.add(
+            ImmutableMap.of("featureCount", surfaceCount, "attribute", 0, "propertyTable", 0));
+      }
+      List<Map<String, Object>> meshFeatures = featureIdsBuilder.build();
       builder.addMeshes(
           ImmutableMesh.builder()
               .addPrimitives(
@@ -851,26 +1076,12 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                       .indices(accessorIdIndices)
                       .material(MATERIAL)
                       .extensions(
-                          hasSurfaceType
+                          !meshFeatures.isEmpty()
                               ? ImmutableMap.of(
-                                  "EXT_mesh_features",
-                                  ImmutableMap.of(
-                                      "featureIds",
-                                      ImmutableList.of(
-                                          ImmutableMap.of(
-                                              "featureCount",
-                                              featureCount,
-                                              "attribute",
-                                              0,
-                                              "propertyTable",
-                                              0))))
+                                  EXT_MESH_FEATURES, ImmutableMap.of("featureIds", meshFeatures))
                               : ImmutableMap.of())
                       .build())
               .build());
-
-      if (hasSurfaceType) {
-        builder.addExtensionsUsed("EXT_mesh_features");
-      }
 
       builder.addNodes(
           ImmutableNode.builder()
@@ -905,7 +1116,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             vertices.size(),
             indices.size());
       }
+    } else {
+      return false;
     }
+
     return true;
   }
 

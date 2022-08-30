@@ -11,9 +11,7 @@ globalThis._cesium = {
     color: {
       conditions: [
         ["${feature['surfaceType']} === 'roof'", "color('red')"],
-        ["${feature['surfaceType']} === 'wall'", "color('white')"],
         ["${feature['surfaceType']} === 'ground'", "color('grey')"],
-        ["${feature['surfaceType']} === 'closure'", "color('white')"],
         ["true", "color('white')"],
       ],
     },
