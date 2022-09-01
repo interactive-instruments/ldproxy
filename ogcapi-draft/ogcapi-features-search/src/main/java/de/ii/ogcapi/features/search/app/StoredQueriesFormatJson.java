@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.search.domain.QueryExpression;
 import de.ii.ogcapi.features.search.domain.StoredQueries;
 import de.ii.ogcapi.features.search.domain.StoredQueriesFormat;
+import de.ii.ogcapi.features.search.domain.StoredQuery;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -46,8 +47,8 @@ public class StoredQueriesFormatJson implements StoredQueriesFormat {
 
   @Inject
   public StoredQueriesFormatJson(ClassSchemaCache classSchemaCache) {
-    this.schema = classSchemaCache.getSchema(QueryExpression.class);
-    referencedSchemas = classSchemaCache.getReferencedSchemas(QueryExpression.class);
+    this.schema = classSchemaCache.getSchema(StoredQueries.class);
+    referencedSchemas = classSchemaCache.getReferencedSchemas(StoredQueries.class);
   }
 
   @Override
@@ -59,18 +60,7 @@ public class StoredQueriesFormatJson implements StoredQueriesFormat {
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
-        .schemaRef(QueryExpression.SCHEMA_REF)
-        .referencedSchemas(referencedSchemas)
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schema)
-        .schemaRef(QueryExpression.SCHEMA_REF)
+        .schemaRef(StoredQueries.SCHEMA_REF)
         .referencedSchemas(referencedSchemas)
         .ogcApiMediaType(MEDIA_TYPE)
         .build();

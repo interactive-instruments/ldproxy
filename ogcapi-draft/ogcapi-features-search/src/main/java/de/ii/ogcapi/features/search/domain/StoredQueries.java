@@ -27,7 +27,7 @@ public abstract class StoredQueries extends PageRepresentation {
         // TODO
       };
 
-  @JsonIgnore public String SCHEMA_REF = "#/components/schemas/StoredQueries";
+  @JsonIgnore public static String SCHEMA_REF = "#/components/schemas/StoredQueries";
 
   @JsonInclude(Include.NON_NULL)
   public abstract List<StoredQuery> getQueries();
