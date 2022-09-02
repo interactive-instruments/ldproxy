@@ -1329,12 +1329,6 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                   2)
               : new ArrayList<>(ImmutableList.of(0, 1, 2));
 
-      /* TODO remove
-      if (LOGGER.isTraceEnabled()) {
-        LOGGER.trace("Triangles: {}", triangles);
-        LOGGER.trace("Data: {}, {}", data, holeIndices);
-      }
-       */
       if (triangles.isEmpty()) {
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
@@ -1368,11 +1362,6 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           // switch orientation, if the triangle has the wrong orientation
           triangles.set(i * 3, p2);
           triangles.set(i * 3 + 2, p0);
-          /* TODO remove
-          if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("Switching triangle orientation: {}", triangle);
-          }
-           */
         }
       }
 

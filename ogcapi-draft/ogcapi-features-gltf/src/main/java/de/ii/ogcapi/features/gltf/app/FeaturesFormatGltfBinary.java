@@ -9,7 +9,6 @@ package de.ii.ogcapi.features.gltf.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -70,6 +69,8 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
           .label("JSON")
           .parameter("json")
           .build();
+
+  public static final Schema<?> SCHEMA = new StringSchema().format("binary");
 
   protected final FeaturesCoreProviders providers;
   protected final EntityRegistry entityRegistry;
@@ -185,20 +186,9 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    String schemaRef = "#/components/schemas/binary";
-    Schema<?> schema = new StringSchema().format("binary");
-    String collectionId = path.split("/", 4)[2];
-    if (collectionId.equals("{collectionId}")
-        && apiData
-            .getExtension(CollectionsConfiguration.class)
-            .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
-            .isPresent()) {
-      collectionId = apiData.getCollections().keySet().iterator().next();
-    }
-    // TODO generate OpenAPI schemas?
     return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schema)
-        .schemaRef(schemaRef)
+        .schema(SCHEMA)
+        .schemaRef("#/components/schemas/binary")
         .ogcApiMediaType(getMediaType())
         .build();
   }
