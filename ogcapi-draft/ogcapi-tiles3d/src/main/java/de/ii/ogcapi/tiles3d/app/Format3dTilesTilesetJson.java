@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -20,8 +21,9 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles3d.domain.Format3dTilesTileset;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.ogcapi.tiles3d.domain.Tileset3dTiles;
-import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -37,8 +39,14 @@ public class Format3dTilesTilesetJson implements Format3dTilesTileset {
           .parameter("json")
           .build();
 
+  private final Schema<?> schema;
+  private final Map<String, Schema<?>> referencedSchemas;
+
   @Inject
-  public Format3dTilesTilesetJson() {}
+  public Format3dTilesTilesetJson(ClassSchemaCache classSchemaCache) {
+    schema = classSchemaCache.getSchema(Tileset3dTiles.class);
+    referencedSchemas = classSchemaCache.getReferencedSchemas(Tileset3dTiles.class);
+  }
 
   @Override
   public ApiMediaType getMediaType() {
@@ -71,10 +79,9 @@ public class Format3dTilesTilesetJson implements Format3dTilesTileset {
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
     return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
-        // TODO with OpenAPI 3.1 change to a link to a property schema
-        // .schemaRef("https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema")
+        .schema(schema)
+        .referencedSchemas(referencedSchemas)
+        .schemaRef(Tileset3dTiles.SCHEMA_REF)
         .ogcApiMediaType(MEDIA_TYPE)
         .build();
   }

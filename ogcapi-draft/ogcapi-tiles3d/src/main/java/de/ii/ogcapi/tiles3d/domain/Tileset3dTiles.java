@@ -18,6 +18,8 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTileset3dTiles.Builder.class)
 public interface Tileset3dTiles {
 
+  String SCHEMA_REF = "#/components/schemas/Tileset3dTiles";
+
   @SuppressWarnings("UnstableApiUsage")
   Funnel<Tileset3dTiles> FUNNEL =
       (from, into) -> {

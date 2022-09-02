@@ -37,8 +37,8 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -185,8 +185,8 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    String schemaRef = "#/components/schemas/anyObject";
-    Schema<?> schema = new ObjectSchema();
+    String schemaRef = "#/components/schemas/binary";
+    Schema<?> schema = new StringSchema().format("binary");
     String collectionId = path.split("/", 4)[2];
     if (collectionId.equals("{collectionId}")
         && apiData

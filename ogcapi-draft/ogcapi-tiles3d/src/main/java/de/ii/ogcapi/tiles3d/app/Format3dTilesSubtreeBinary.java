@@ -22,8 +22,8 @@ import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -77,8 +77,8 @@ public class Format3dTilesSubtreeBinary implements Format3dTilesSubtree {
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    String schemaRef = "#/components/schemas/anyObject";
-    Schema<?> schema = new ObjectSchema();
+    String schemaRef = "#/components/schemas/binary";
+    Schema<?> schema = new StringSchema().format("binary");
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(schemaRef)
