@@ -504,7 +504,7 @@ public class Seeding implements OgcApiBackgroundTask {
             tileResourcesCache,
             new URICustomizer(
                 String.format(
-                    "%s/collections/%s/3dtiles/content/%d/%d/%d",
+                    "%s/collections/%s/3dtiles/content_%d_%d_%d",
                     servicesUri.toString(), collectionId, il, ix, iy)),
             cfg,
             content,

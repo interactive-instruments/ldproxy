@@ -79,6 +79,8 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
         ImmutableMap.of(
             Query.TILESET,
             QueryHandler.with(QueryInputTileset.class, this::getTilesetResponse),
+            Query.CONTENT,
+            QueryHandler.with(QueryInputContent.class, this::getContentResponse),
             Query.SUBTREE,
             QueryHandler.with(QueryInputSubtree.class, this::getSubtreeResponse));
   }
@@ -215,6 +217,40 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
                 String.format(
                     "%s.tileset.%s", collectionId, outputFormat.getMediaType().fileExtension())))
         .entity(outputFormat.getEntity(tileset, links, collectionId, api, requestContext))
+        .build();
+  }
+
+  private Response getContentResponse(
+      QueryInputContent queryInput, ApiRequestContext requestContext) {
+
+    Date lastModified = getLastModified(queryInput);
+    EntityTag etag = ETag.from(queryInput.getContent());
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
+
+    List<Link> links =
+        new DefaultLinksGenerator()
+            .generateLinks(
+                requestContext.getUriCustomizer(),
+                requestContext.getMediaType(),
+                requestContext.getAlternateMediaTypes(),
+                i18n,
+                requestContext.getLanguage());
+
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? links : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format(
+                    "%s.content_%d_%d_%d.%s",
+                    queryInput.getCollectionId(),
+                    queryInput.getLevel(),
+                    queryInput.getX(),
+                    queryInput.getY(),
+                    requestContext.getMediaType().fileExtension())))
+        .entity(queryInput.getContent())
         .build();
   }
 

@@ -21,6 +21,7 @@ public interface QueriesHandler3dTiles extends QueriesHandler<QueriesHandler3dTi
 
   enum Query implements QueryIdentifier {
     TILESET,
+    CONTENT,
     SUBTREE
   }
 
@@ -31,6 +32,19 @@ public interface QueriesHandler3dTiles extends QueriesHandler<QueriesHandler3dTi
     int getMaxLevel();
 
     Float getGeometricErrorRoot();
+  }
+
+  @Value.Immutable
+  interface QueryInputContent extends QueryInput {
+    String getCollectionId();
+
+    int getLevel();
+
+    int getX();
+
+    int getY();
+
+    byte[] getContent();
   }
 
   @Value.Immutable

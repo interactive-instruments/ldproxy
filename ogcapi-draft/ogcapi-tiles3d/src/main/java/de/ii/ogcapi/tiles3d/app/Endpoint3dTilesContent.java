@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
@@ -29,7 +28,11 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.tiles3d.domain.Format3dTilesContent;
+import de.ii.ogcapi.tiles3d.domain.ImmutableQueryInputContent;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles;
+import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.Query;
+import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputContent;
 import de.ii.ogcapi.tiles3d.domain.TileResource;
 import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
@@ -44,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -99,11 +101,7 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
   @Override
   public List<? extends FormatExtension> getFormats() {
     if (formats == null) {
-      formats =
-          extensionRegistry.getExtensionsForType(FeatureFormatExtension.class).stream()
-              // TODO better solution
-              .filter(f -> f.getClass().getSimpleName().equals("FeaturesFormatGltfBinary"))
-              .collect(Collectors.toUnmodifiableList());
+      formats = extensionRegistry.getExtensionsForType(Format3dTilesContent.class);
     }
     return formats;
   }
@@ -119,7 +117,7 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
     Optional<OgcApiPathParameter> optCollectionIdParam =
         pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-    if (!optCollectionIdParam.isPresent()) {
+    if (optCollectionIdParam.isEmpty()) {
       LOGGER.error(
           "Path parameter 'collectionId' missing for resource at path '"
               + path
@@ -205,23 +203,22 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
 
     TileResource r = TileResource.contentOf(api, collectionId, cl, cx, cy);
 
-    byte[] result = null;
+    byte[] content = null;
 
     try {
       if (tileResourceCache.tileResourceExists(r)) {
-        Optional<InputStream> content = tileResourceCache.getTileResource(r);
-        if (content.isPresent()) {
+        Optional<InputStream> contentStream = tileResourceCache.getTileResource(r);
+        if (contentStream.isPresent()) {
           ByteArrayOutputStream baos = new ByteArrayOutputStream();
-          ByteStreams.copy(content.get(), baos);
-          result = baos.toByteArray();
-          // TODO other processing and headers
+          ByteStreams.copy(contentStream.get(), baos);
+          content = baos.toByteArray();
         }
       }
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
 
-    if (Objects.isNull(result)) {
+    if (Objects.isNull(content)) {
       return Tiles3dHelper.getContent(
           featuresQuery,
           providers,
@@ -232,10 +229,19 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
           r,
           cql,
           Optional.of(getGenericQueryInput(api.getData())),
-          // TODO better solution
-          getFormats().get(0).getMediaType());
+          requestContext.getMediaType());
     }
 
-    return Response.ok().entity(result).build();
+    QueryInputContent queryInput =
+        ImmutableQueryInputContent.builder()
+            .from(getGenericQueryInput(api.getData()))
+            .collectionId(collectionId)
+            .level(cl)
+            .x(cx)
+            .y(cy)
+            .content(content)
+            .build();
+
+    return queryHandler.handle(Query.CONTENT, queryInput, requestContext);
   }
 }

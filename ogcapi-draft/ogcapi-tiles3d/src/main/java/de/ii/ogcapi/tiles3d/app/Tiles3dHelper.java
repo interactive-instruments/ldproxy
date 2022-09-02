@@ -580,13 +580,12 @@ public class Tiles3dHelper {
             ImmutableMap.of("bbox", bboxString),
             ImmutableList.of());
 
+    String contentFilterString = "true";
     if (!cfg.getContentFilters().isEmpty()) {
-      query =
-          getFinalQuery(
-              cfg.getContentFilters()
-                  .get(r.getLevel() - Objects.requireNonNull(cfg.getFirstLevelWithContent())),
-              query,
-              cql);
+      contentFilterString =
+          cfg.getContentFilters()
+              .get(r.getLevel() - Objects.requireNonNull(cfg.getFirstLevelWithContent()));
+      query = getFinalQuery(contentFilterString, query, cql);
     }
 
     FeaturesCoreQueriesHandler.QueryInputFeatures queryInput;
@@ -613,11 +612,12 @@ public class Tiles3dHelper {
             .requestUri(
                 uriCustomizer
                     .copy()
-                    .removeLastPathSegments(5)
+                    .removeLastPathSegments(2)
                     .ensureLastPathSegment("items")
                     .clearParameters()
                     .addParameter("f", "glb")
                     .addParameter("bbox", bboxString)
+                    .addParameter("filter", contentFilterString)
                     .addParameter("clampToGround", String.valueOf(cfg.shouldClampToGround()))
                     .build())
             .mediaType(mediaType)
