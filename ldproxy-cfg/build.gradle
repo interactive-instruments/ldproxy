@@ -34,6 +34,7 @@ ext {
           'com/google/common',
           'dagger',
           'io/dropwizard',
+          'io/swagger',
           'javax/servlet',
           'javax/ws/rs',
           'org/apache/commons',
