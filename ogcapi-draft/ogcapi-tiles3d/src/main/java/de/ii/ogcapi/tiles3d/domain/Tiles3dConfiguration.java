@@ -47,6 +47,12 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
     return Boolean.TRUE.equals(getClampToGround());
   }
 
+  Optional<String> getIonAccessToken();
+
+  Optional<String> getMaptilerApiKey();
+
+  Optional<String> getCustomTerrainProviderUri();
+
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override

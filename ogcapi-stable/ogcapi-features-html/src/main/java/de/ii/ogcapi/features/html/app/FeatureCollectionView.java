@@ -66,7 +66,7 @@ public class FeatureCollectionView extends DatasetView {
   public POSITION mapPosition;
   public final MapClient mapClient;
   public final FilterEditor filterEditor;
-  public final CesiumData cesiumData;
+  public final CesiumDataFeatures cesiumData;
 
   public FeatureCollectionView(
       OgcApiDataV2 apiData,
@@ -146,7 +146,7 @@ public class FeatureCollectionView extends DatasetView {
               .attribution(getAttribution().replace("'", "\\'"))
               .build();
       this.cesiumData =
-          new CesiumData(
+          new CesiumDataFeatures(
               features, /*geometryProperties, spatialExtent.orElseThrow(),*/
               uriBuilder
                   .removeParameters("f")

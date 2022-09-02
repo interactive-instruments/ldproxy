@@ -161,7 +161,13 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
                     .refine("ADD")
                     .content(
                         ImmutableContent3dTiles.builder()
-                            .uri("3dtiles/content_{level}_{x}_{y}")
+                            .uri(
+                                requestContext
+                                    .getUriCustomizer()
+                                    .copy()
+                                    .clearParameters()
+                                    .ensureLastPathSegment("content_{level}_{x}_{y}")
+                                    .toString())
                             .build())
                     .implicitTiling(
                         ImmutableImplicitTiling3dTiles.builder()
@@ -170,7 +176,13 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
                             .subtreeLevels(Objects.requireNonNull(cfg.getSubtreeLevels()))
                             .subtrees(
                                 ImmutableContent3dTiles.builder()
-                                    .uri("3dtiles/subtree_{level}_{x}_{y}")
+                                    .uri(
+                                        requestContext
+                                            .getUriCustomizer()
+                                            .copy()
+                                            .clearParameters()
+                                            .ensureLastPathSegment("subtree_{level}_{x}_{y}")
+                                            .toString())
                                     .build())
                             .build())
                     .build())

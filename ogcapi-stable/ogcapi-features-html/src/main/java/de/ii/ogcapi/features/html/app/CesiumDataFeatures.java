@@ -19,10 +19,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class CesiumData {
+public class CesiumDataFeatures {
 
   public final List<FeatureHtml> features;
-  private final boolean clampToGround;
+  public final boolean clampToGround;
   public final String encodedUrl;
   private Double minLon = null;
   private Double maxLon = null;
@@ -31,10 +31,14 @@ public class CesiumData {
   private Double minHeight = null;
   private Double maxHeight = null;
 
-  public CesiumData(List<FeatureHtml> features, String url) {
+  public CesiumDataFeatures(List<FeatureHtml> features, String url) {
     this.features = features;
     this.clampToGround = true; // TODO make configurable
     this.encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8);
+  }
+
+  public boolean fromFeatures() {
+    return true;
   }
 
   public String getFeatureExtent() {

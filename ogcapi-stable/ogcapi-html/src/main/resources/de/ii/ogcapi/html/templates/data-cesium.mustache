@@ -3,10 +3,42 @@
 
 <script type="text/javascript">
 globalThis._cesium = {
-  getExtent: (Rectangle) => {{ featureExtent }},
+  {{#featureExtent}}
+  getExtent: (Rectangle) => {{.}},
+  {{/featureExtent}}
   getTileset: (Cesium3DTileset) => new Cesium3DTileset({
+    {{#fromFeatures}}
     url: 'data:application/json,%7B%22asset%22%3A%7B%22version%22%3A%221.1%22%7D%2C%22geometricError%22%3A5000%2C%22root%22%3A%7B%22boundingVolume%22%3A%7B%22region%22%3A%5B{{{encodedRegion}}}%5D%7D%2C%22refine%22%3A%22REPLACE%22%2C%22geometricError%22%3A0%2C%22content%22%3A%7B%22uri%22%3A%22{{{encodedUrl}}}%22%7D%7D%7D',
+    {{/fromFeatures}}
+    {{#fromTiles}}
+    url: 'data:application/json,{{encodedTileset}}',
+    {{/fromTiles}}
   }),
+  {{#ionAccessToken}}
+  accessToken: '{{.}}',
+  {{/ionAccessToken}}
+  {{^ionAccessToken}}
+  accessToken: null,
+  {{/ionAccessToken}}
+  {{^clampToGround}}
+  getTerrainProvider: (CesiumTerrainProvider, IonResource, Credit) => new CesiumTerrainProvider({
+    {{#customTerrainProviderUri}}
+      url: '{{.}}',
+      requestVertexNormals: true,
+    {{/customTerrainProviderUri}}
+    {{^customTerrainProviderUri}}
+      {{#maptilerApiKey}}
+        url: 'https://api.maptiler.com/tiles/terrain-quantized-mesh-v2/?key={{.}}',
+        credit: new Credit("\u003ca href=\"https://www.maptiler.com/copyright/\" target=\"_blank\"\u003e\u0026copy;MapTiler\u003c/a\u003e \u003ca href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e", true),
+        requestVertexNormals: true,
+      {{/maptilerApiKey}}
+        {{^maptilerApiKey}}
+        url: IonResource.fromAssetId(1),
+        requestVertexNormals: true,
+      {{/maptilerApiKey}}
+    {{/customTerrainProviderUri}}
+  }),
+  {{/clampToGround}}
   getStyle: (Cesium3DTileStyle) => new Cesium3DTileStyle({
     color: {
       conditions: [

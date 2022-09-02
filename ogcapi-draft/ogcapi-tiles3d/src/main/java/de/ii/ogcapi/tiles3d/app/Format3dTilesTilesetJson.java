@@ -33,7 +33,7 @@ public class Format3dTilesTilesetJson implements Format3dTilesTileset {
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
           .type(new MediaType("application", "json"))
-          .label("JSON")
+          .label("3D Tiles JSON")
           .parameter("json")
           .build();
 

@@ -1,0 +1,56 @@
+/*
+ * Copyright 2022 interactive instruments GmbH
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+package de.ii.ogcapi.tiles3d.app;
+
+import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.common.domain.QueryParameterF;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.tiles3d.domain.Format3dTilesTileset;
+import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+/**
+ * @langEn Todo
+ * @langDe Todo
+ * @name 3D Tiles Tileset
+ * @endpoints 3D Tiles Tileset
+ */
+@Singleton
+@AutoBind
+public class QueryParameterFTileset extends QueryParameterF {
+
+  @Inject
+  public QueryParameterFTileset(
+      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super(extensionRegistry, schemaValidator);
+  }
+
+  @Override
+  public String getId() {
+    return "f3dTiles";
+  }
+
+  @Override
+  protected boolean matchesPath(String definitionPath) {
+    return definitionPath.endsWith("/3dtiles");
+  }
+
+  @Override
+  protected Class<? extends FormatExtension> getFormatClass() {
+    return Format3dTilesTileset.class;
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return Tiles3dConfiguration.class;
+  }
+}

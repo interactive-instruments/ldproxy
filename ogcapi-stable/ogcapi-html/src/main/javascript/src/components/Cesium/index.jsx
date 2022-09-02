@@ -5,6 +5,8 @@ import {
   Credit,
   WebMapTileServiceImageryProvider,
   Rectangle,
+  CesiumTerrainProvider,
+  IonResource,
   Cesium3DTileset,
   Cesium3DTileStyle,
 } from "c137.js";
@@ -16,29 +18,56 @@ const Cesium = ({
   backgroundUrl,
   attribution,
   getExtent,
+  accessToken,
   getTileset,
+  getTerrainProvider,
   getStyle,
 }) => {
-  Ion.defaultAccessToken = null;
-  Camera.DEFAULT_VIEW_RECTANGLE = getExtent(Rectangle);
-  Camera.DEFAULT_VIEW_FACTOR = 0;
+  let viewer;
 
-  const viewer = new Viewer(container, {
-    imageryProvider: new WebMapTileServiceImageryProvider({
-      url: backgroundUrl,
-      layer: "Base",
-      style: "default",
-      tileMatrixSetID: "WebMercatorQuad",
-    }),
-    animation: false,
-    baseLayerPicker: false,
-    homeButton: true,
-    geocoder: false,
-    timeline: false,
-    scene3DOnly: true,
-    fullscreenButton: false,
-    navigationInstructionsInitiallyVisible: false,
-  });
+  Ion.defaultAccessToken = accessToken;
+
+  if (getExtent) {
+    Camera.DEFAULT_VIEW_RECTANGLE = getExtent(Rectangle);
+    Camera.DEFAULT_VIEW_FACTOR = 0;
+  }
+
+  if (getTerrainProvider) {
+    viewer = new Viewer(container, {
+      imageryProvider: new WebMapTileServiceImageryProvider({
+        url: backgroundUrl,
+        layer: "Base",
+        style: "default",
+        tileMatrixSetID: "WebMercatorQuad",
+      }),
+      terrainProvider: getTerrainProvider(CesiumTerrainProvider, IonResource, Credit),
+      animation: false,
+      baseLayerPicker: false,
+      homeButton: false,
+      geocoder: false,
+      timeline: false,
+      scene3DOnly: true,
+      fullscreenButton: false,
+      navigationInstructionsInitiallyVisible: false,
+    });
+  } else {
+    viewer = new Viewer(container, {
+      imageryProvider: new WebMapTileServiceImageryProvider({
+        url: backgroundUrl,
+        layer: "Base",
+        style: "default",
+        tileMatrixSetID: "WebMercatorQuad",
+      }),
+      animation: false,
+      baseLayerPicker: false,
+      homeButton: true,
+      geocoder: false,
+      timeline: false,
+      scene3DOnly: true,
+      fullscreenButton: false,
+      navigationInstructionsInitiallyVisible: false,
+    });
+  }
 
   if (attribution) {
     const credit = new Credit(attribution);
