@@ -14,6 +14,7 @@ import com.google.common.io.ByteStreams;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAssetMetadata;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -142,7 +143,11 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
 
     Tileset3dTiles tileset =
         ImmutableTileset3dTiles.builder()
-            .asset(ImmutableAssetMetadata.builder().version("1.1").build())
+            .asset(
+                ImmutableAssetMetadata.builder()
+                    .version("1.1")
+                    .copyright(apiData.getMetadata().flatMap(ApiMetadata::getAttribution))
+                    .build())
             .geometricError(10000)
             .root(
                 ImmutableTile3dTiles.builder()

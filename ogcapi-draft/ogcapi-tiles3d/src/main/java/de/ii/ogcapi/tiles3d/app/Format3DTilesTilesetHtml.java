@@ -17,7 +17,6 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles3d.domain.Format3dTilesTileset;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.ogcapi.tiles3d.domain.Tileset3dTiles;
@@ -94,17 +93,8 @@ public class Format3DTilesTilesetHtml implements Format3dTilesTileset {
       String collectionId,
       OgcApi api,
       ApiRequestContext requestContext) {
-    OgcApiDataV2 apiData = api.getData();
-    URICustomizer uriCustomizer =
-        new URICustomizer(servicesUri)
-            .ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
-    String serviceUrl = uriCustomizer.toString();
 
-    uriCustomizer
-        .ensureLastPathSegments("collections", collectionId, "3dtiles")
-        .addParameter("f", "json");
-    String styleUrl = uriCustomizer.toString();
-
-    return new Tileset3dTilesView(tileset, apiData, collectionId, "");
+    return new Tileset3dTilesView(
+        tileset, api.getData(), collectionId, requestContext.getStaticUrlPrefix());
   }
 }

@@ -25,9 +25,14 @@ public class Tileset3dTilesView extends GenericView {
   public final String title;
   public final MapClient mapClient;
   public final CesiumData3dTiles cesiumData;
+  public final String urlPrefix;
 
   public Tileset3dTilesView(
-      Tileset3dTiles tileset, OgcApiDataV2 apiData, String collectionId, String attribution) {
+      Tileset3dTiles tileset,
+      OgcApiDataV2 apiData,
+      String collectionId,
+      // String attribution,
+      String urlPrefix) {
     super("/templates/globe", null);
     this.title = "3D Tiles";
 
@@ -46,7 +51,7 @@ public class Tileset3dTilesView extends GenericView {
                             url.replace("{z}", "{TileMatrix}")
                                 .replace("{y}", "{TileRow}")
                                 .replace("{x}", "{TileCol}")))
-            .attribution(attribution.replace("'", "\\'"))
+            .attribution(tileset.getAsset().getCopyright().map(att -> att.replace("'", "\\'")))
             .build();
 
     String tilesetJson = null;
@@ -66,5 +71,6 @@ public class Tileset3dTilesView extends GenericView {
             tiles3dConfig.getIonAccessToken(),
             tiles3dConfig.getMaptilerApiKey(),
             tiles3dConfig.getCustomTerrainProviderUri());
+    this.urlPrefix = urlPrefix;
   }
 }
