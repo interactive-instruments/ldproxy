@@ -491,7 +491,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
       try {
         FeatureStream.Result result =
             featureTransformStream
-                .runWith(featureSink, Optional.empty())
+                .runWith(featureSink, ImmutableMap.of())
                 .toCompletableFuture()
                 .join();
 

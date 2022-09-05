@@ -14,8 +14,6 @@ import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiCollection.Builder;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -23,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -59,11 +58,9 @@ public class CrsOnCollection implements CollectionExtension {
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language) {
     boolean hasGeometry =
-        featureTypeConfiguration
-            .getExtension(FeaturesCoreConfiguration.class)
-            .flatMap(FeaturesCoreConfiguration::getQueryables)
-            .map(FeaturesCollectionQueryables::getSpatial)
-            .filter(spatial -> !spatial.isEmpty())
+        providers
+            .getFeatureSchema(api.getData(), featureTypeConfiguration)
+            .flatMap(SchemaBase::getPrimaryGeometry)
             .isPresent();
     if (isExtensionEnabled(featureTypeConfiguration, CrsConfiguration.class) && hasGeometry) {
       List<String> crsList;
