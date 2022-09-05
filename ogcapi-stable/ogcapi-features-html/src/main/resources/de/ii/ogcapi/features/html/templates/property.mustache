@@ -5,7 +5,7 @@
 <ul class="list-unstyled">
 {{#values}}
 {{^isNull}}
-<li>{{#isImageUrl}}<img src="{{value}}" class="img-fluid"/>{{/isImageUrl}}{{^isImageUrl}}{{#isUrl}}<div class="text-truncate"><a target="_blank" href="{{value}}">{{value}}</a></div>{{/isUrl}}{{^isUrl}}{{#isHtml}}{{{value}}}{{/isHtml}}{{^isHtml}}{{value}}{{/isHtml}}{{/isUrl}}{{/isImageUrl}}</li>
+<li>{{#isImageUrl}}<img src="{{value}}" class="img-fluid"/>{{/isImageUrl}}{{^isImageUrl}}{{#isUrl}}<div class="text-truncate"><a target="_blank" href="{{value}}">{{value}}</a></div>{{/isUrl}}{{^isUrl}}{{{value}}}{{/isUrl}}{{/isImageUrl}}</li>
 {{/isNull}}
 {{/values}}
 </ul>
