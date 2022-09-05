@@ -162,6 +162,8 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
             provider -> provider.getFeatureChangeHandler().addListener(onFeatureChange(api)));
 
     // register schemas that cannot be derived automatically
+    // TODO Setting a schema here has no effect since onStartup is executed *after* the
+    //      API definitions have been compiled.
     Schema<?> stringSchema = classSchemaCache.getSchema(JsonSchemaString.class);
     Schema<?> numberSchema = classSchemaCache.getSchema(JsonSchemaNumber.class);
     Schema<?> integerSchema = classSchemaCache.getSchema(JsonSchemaInteger.class);

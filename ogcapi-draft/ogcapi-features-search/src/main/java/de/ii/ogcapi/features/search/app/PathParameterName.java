@@ -11,7 +11,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.search.domain.ParameterFormat;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
-import de.ii.ogcapi.features.search.domain.StoredQueryFormat;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
@@ -26,23 +25,20 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class PathParameterQueryId implements OgcApiPathParameter {
+public class PathParameterName implements OgcApiPathParameter {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterQueryId.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterName.class);
 
   protected final SchemaValidator schemaValidator;
 
   @Inject
-  PathParameterQueryId(SchemaValidator schemaValidator) {
+  PathParameterName(SchemaValidator schemaValidator) {
     this.schemaValidator = schemaValidator;
   }
 
   @Override
   public String getPattern() {
-    return StoredQueryFormat.QUERY_ID_PATTERN
-        + "(/definition|/parameters[/"
-        + ParameterFormat.PARAMETER_NAME_PATTERN
-        + "]?)?/?";
+    return ParameterFormat.PARAMETER_NAME_PATTERN;
   }
 
   @Override
@@ -62,21 +58,17 @@ public class PathParameterQueryId implements OgcApiPathParameter {
 
   @Override
   public String getName() {
-    return "queryId";
+    return "name";
   }
 
   @Override
   public String getDescription() {
-    return "The local identifier of a stored query, unique within the API.";
+    return "The name of a parameter of a stored query.";
   }
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-    return isEnabledForApi(apiData)
-        && (definitionPath.equals("/search/{queryId}")
-            || definitionPath.equals("/search/{queryId}/definition")
-            || definitionPath.equals("/search/{queryId}/parameters")
-            || definitionPath.equals("/search/{queryId}/parameters/{name}"));
+    return isEnabledForApi(apiData) && definitionPath.equals("/search/{queryId}/parameters/{name}");
   }
 
   @Override

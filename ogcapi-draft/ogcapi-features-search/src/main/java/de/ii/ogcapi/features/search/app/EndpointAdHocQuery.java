@@ -79,7 +79,7 @@ import org.slf4j.LoggerFactory;
 public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointAdHocQuery.class);
-  private static final List<String> TAGS = ImmutableList.of("Discover and executed queries");
+  private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
   private static final ApiMediaType REQUEST_MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
           .type(MediaType.APPLICATION_JSON_TYPE)

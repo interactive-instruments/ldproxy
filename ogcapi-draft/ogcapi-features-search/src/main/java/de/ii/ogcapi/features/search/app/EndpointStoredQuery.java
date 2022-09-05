@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -33,8 +34,8 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -68,11 +69,12 @@ public class EndpointStoredQuery extends Endpoint {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStoredQuery.class);
 
-  private static final List<String> TAGS = ImmutableList.of("Discover and executed queries");
+  private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
 
   private final FeaturesCoreProviders providers;
   private final StoredQueryRepository repository;
   private final SearchQueriesHandler queryHandler;
+  private final SchemaValidator schemaValidator;
   private final I18n i18n;
 
   @Inject
@@ -81,12 +83,14 @@ public class EndpointStoredQuery extends Endpoint {
       FeaturesCoreProviders providers,
       StoredQueryRepository repository,
       I18n i18n,
-      SearchQueriesHandler queryHandler) {
+      SearchQueriesHandler queryHandler,
+      SchemaValidator schemaValidator) {
     super(extensionRegistry);
     this.providers = providers;
     this.repository = repository;
     this.i18n = i18n;
     this.queryHandler = queryHandler;
+    this.schemaValidator = schemaValidator;
   }
 
   private Stream<StoredQueryFormat> getStoredQueryFormatStream(OgcApiDataV2 apiData) {
@@ -137,37 +141,64 @@ public class EndpointStoredQuery extends Endpoint {
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("search")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_SEARCH_STORED_QUERY);
-    String path = "/search/{queryId}";
-    List<OgcApiQueryParameter> queryParameters =
-        getQueryParameters(extensionRegistry, apiData, path);
-    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-    if (!pathParameters.stream().anyMatch(param -> param.getName().equals("queryId"))) {
-      LOGGER.error(
-          "Path parameter 'queryId' missing for resource at path '"
-              + path
-              + "'. The GET method will not be available.");
-    } else {
-      String operationSummary = "execute a stored query";
-      Optional<String> operationDescription =
-          Optional.of(
-              "Executes the stored query with identifier `queryId`. "
-                  + "The set of available queries can be retrieved at `/search`");
-      ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
-          new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
-      ApiOperation.getResource(
-              apiData,
-              path,
-              false,
-              queryParameters,
-              ImmutableList.of(),
-              getContent(apiData, path),
-              operationSummary,
-              operationDescription,
-              Optional.empty(),
-              TAGS)
-          .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
-      definitionBuilder.putResources(path, resourceBuilder.build());
-    }
+
+    repository
+        .getAll(apiData)
+        .forEach(
+            query -> {
+              String queryId =
+                  query
+                      .getId()
+                      .orElseThrow(
+                          () -> new IllegalStateException("Found stored query without an id."));
+              String path = "/search/" + queryId;
+              String definitionPath = "/search/{queryId}";
+              Builder<OgcApiQueryParameter> paramsBuilder = ImmutableList.builder();
+              paramsBuilder.addAll(getQueryParameters(extensionRegistry, apiData, definitionPath));
+
+              query
+                  .getParameters()
+                  .forEach(
+                      (name, schema) -> {
+                        String description = name;
+                        if (Objects.nonNull(schema.getTitle()) && !schema.getTitle().isEmpty()) {
+                          description = schema.getTitle();
+                          if (Objects.nonNull(schema.getDescription())
+                              && !schema.getDescription().isEmpty()) {
+                            description += ": " + schema.getDescription();
+                          } else {
+                            description += ".";
+                          }
+                        }
+                        paramsBuilder.add(
+                            ImmutableQueryParameterTemplateParameter.builder()
+                                .apiId(apiData.getId())
+                                .queryId(queryId)
+                                .name(name)
+                                .description(description)
+                                .schema(schema)
+                                .schemaValidator(schemaValidator)
+                                .build());
+                      });
+
+              String operationSummary = "execute stored query " + query.getTitle().orElse(queryId);
+              Optional<String> operationDescription = query.getDescription();
+              ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
+                  new ImmutableOgcApiResourceAuxiliary.Builder().path(path);
+              ApiOperation.getResource(
+                      apiData,
+                      path,
+                      false,
+                      paramsBuilder.build(),
+                      ImmutableList.of(),
+                      getContent(apiData, path),
+                      operationSummary,
+                      operationDescription,
+                      Optional.empty(),
+                      TAGS)
+                  .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
+              definitionBuilder.putResources(path, resourceBuilder.build());
+            });
 
     // TODO add POST
 

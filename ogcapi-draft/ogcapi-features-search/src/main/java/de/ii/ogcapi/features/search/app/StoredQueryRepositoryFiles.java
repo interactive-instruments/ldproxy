@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult.Builder;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,6 +30,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -106,15 +108,30 @@ public class StoredQueryRepositoryFiles implements StoredQueryRepository, AppLif
                 try {
                   return QueryExpression.of(Files.readAllBytes(path));
                 } catch (IOException e) {
-                  throw new IllegalStateException(
-                      MessageFormat.format("Could not parse stored query '{}'.", path.toString()),
-                      e);
+                  if (LOGGER.isErrorEnabled()) {
+                    LOGGER.error(
+                        MessageFormat.format(
+                            "Could not parse stored query ''{0}''. Reason: {1}.",
+                            path.toString(), e.getMessage()));
+                    if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                      LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
+                    }
+                  }
                 }
+                return null;
               })
+          .filter(Objects::nonNull)
           .collect(Collectors.toUnmodifiableList());
     } catch (IOException e) {
-      throw new IllegalStateException("Could not parse stored queries.", e);
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error(
+            MessageFormat.format("Could not parse stored queries. Reason: {0}.", e.getMessage()));
+        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
+        }
+      }
     }
+    return ImmutableList.of();
   }
 
   @Override

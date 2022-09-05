@@ -10,29 +10,16 @@ package de.ii.ogcapi.features.search.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.foundation.domain.Link;
-import java.util.List;
-import java.util.Optional;
+import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableStoredQuery.Builder.class)
-public interface StoredQuery {
+public abstract class StoredQuery extends PageRepresentationWithId {
 
   @SuppressWarnings("UnstableApiUsage")
-  Funnel<StoredQuery> FUNNEL =
-      (from, into) -> {
-        // TODO
-      };
+  public static Funnel<StoredQuery> FUNNEL = PageRepresentationWithId.FUNNEL::funnel;
 
   @JsonIgnore String SCHEMA_REF = "#/components/schemas/StoredQuery";
-
-  String getId();
-
-  Optional<String> getTitle();
-
-  Optional<String> getDescription();
-
-  List<Link> getLinks();
 }

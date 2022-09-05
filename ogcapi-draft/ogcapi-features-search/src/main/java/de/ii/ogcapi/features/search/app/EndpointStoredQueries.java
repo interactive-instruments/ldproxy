@@ -50,7 +50,7 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStoredQueries.class);
 
-  private static final List<String> TAGS = ImmutableList.of("Discover and executed queries");
+  private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
 
   private final SearchQueriesHandler queryHandler;
 

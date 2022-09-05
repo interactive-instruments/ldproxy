@@ -26,8 +26,10 @@ public abstract class ApiEndpointDefinition {
 
   // draft 1000 - 9999
   public static final int SORT_PRIORITY_SEARCH_STORED_QUERIES = 1000;
-  public static final int SORT_PRIORITY_SEARCH_STORED_QUERY = 1010;
-  public static final int SORT_PRIORITY_SEARCH_AD_HOC = 1020;
+  public static final int SORT_PRIORITY_SEARCH_AD_HOC = 1010;
+  public static final int SORT_PRIORITY_SEARCH_STORED_QUERY = 1020;
+  public static final int SORT_PRIORITY_SEARCH_PARAMETERS = 1030;
+  public static final int SORT_PRIORITY_SEARCH_PARAMETER = 1040;
   public static final int SORT_PRIORITY_SEARCH_MANAGER = 1050;
   public static final int SORT_PRIORITY_FEATURES_TRANSACTION = 1100;
   public static final int SORT_PRIORITY_QUERYABLES = 1200;

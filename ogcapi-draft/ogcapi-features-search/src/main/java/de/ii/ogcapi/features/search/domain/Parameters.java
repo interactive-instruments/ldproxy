@@ -8,38 +8,32 @@
 package de.ii.ogcapi.features.search.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
-@JsonDeserialize(builder = ImmutableSingleQuery.Builder.class)
-public interface SingleQuery {
+@JsonDeserialize(builder = ImmutableParameters.Builder.class)
+public abstract class Parameters extends PageRepresentation {
 
   @SuppressWarnings("UnstableApiUsage")
-  Funnel<SingleQuery> FUNNEL =
+  public static Funnel<Parameters> FUNNEL =
       (from, into) -> {
-        from.getCollections().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getFilter()
+        PageRepresentation.FUNNEL.funnel(from, into);
+        from.getParameters()
             .forEach(
-                (name, filter) -> {
+                (name, schema) -> {
                   into.putString(name, StandardCharsets.UTF_8);
+                  into.putString(schema.toString(), StandardCharsets.UTF_8);
                 });
-        from.getSortby().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getProperties().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
       };
 
-  @JsonIgnore String SCHEMA_REF = "#/components/schemas/Query";
+  @JsonIgnore public static String SCHEMA_REF = "#/components/schemas/Parameters";
 
-  List<String> getCollections();
-
-  Map<String, Object> getFilter();
-
-  List<String> getSortby();
-
-  List<String> getProperties();
+  public abstract Map<String, JsonNode> getParameters();
 }

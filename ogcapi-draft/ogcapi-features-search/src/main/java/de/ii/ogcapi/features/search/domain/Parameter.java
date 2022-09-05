@@ -8,28 +8,28 @@
 package de.ii.ogcapi.features.search.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
-@JsonDeserialize(builder = ImmutableStoredQueries.Builder.class)
-public abstract class StoredQueries extends PageRepresentation {
+@JsonDeserialize(builder = ImmutableParameter.Builder.class)
+public abstract class Parameter extends PageRepresentation {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static Funnel<StoredQueries> FUNNEL =
+  public static Funnel<Parameter> FUNNEL =
       (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
-        from.getQueries().forEach(q -> StoredQuery.FUNNEL.funnel(q, into));
+        into.putString(from.getSchema().toString(), StandardCharsets.UTF_8);
       };
 
-  @JsonIgnore public static String SCHEMA_REF = "#/components/schemas/StoredQueries";
+  @JsonIgnore public static String SCHEMA_REF = "#/components/schemas/Parameter";
 
-  @JsonInclude(Include.NON_NULL)
-  public abstract List<StoredQuery> getQueries();
+  @JsonProperty("$parameter")
+  public abstract JsonNode getSchema();
 }

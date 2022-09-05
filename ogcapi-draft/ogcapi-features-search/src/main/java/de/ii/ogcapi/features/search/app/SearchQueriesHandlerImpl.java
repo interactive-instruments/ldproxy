@@ -15,8 +15,14 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
+import de.ii.ogcapi.features.search.domain.ImmutableParameter;
+import de.ii.ogcapi.features.search.domain.ImmutableParameters;
 import de.ii.ogcapi.features.search.domain.ImmutableStoredQueries;
 import de.ii.ogcapi.features.search.domain.ImmutableStoredQuery;
+import de.ii.ogcapi.features.search.domain.Parameter;
+import de.ii.ogcapi.features.search.domain.ParameterFormat;
+import de.ii.ogcapi.features.search.domain.Parameters;
+import de.ii.ogcapi.features.search.domain.ParametersFormat;
 import de.ii.ogcapi.features.search.domain.QueryExpression;
 import de.ii.ogcapi.features.search.domain.QueryExpression.FilterOperator;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
@@ -25,6 +31,7 @@ import de.ii.ogcapi.features.search.domain.StoredQueriesFormat;
 import de.ii.ogcapi.features.search.domain.StoredQueryFormat;
 import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -34,6 +41,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.And;
@@ -77,6 +85,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -107,26 +116,32 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
   private final I18n i18n;
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+  private final ExtensionRegistry extensionRegistry;
   private final EntityRegistry entityRegistry;
   private final CrsInfo crsInfo;
   private final Cql cql;
   private final StoredQueryRepository repository;
   private final StoredQueriesLinkGenerator linkGenerator;
+  private final SchemaValidator schemaValidator;
 
   @Inject
   public SearchQueriesHandlerImpl(
       I18n i18n,
       CrsTransformerFactory crsTransformerFactory,
+      ExtensionRegistry extensionRegistry,
       EntityRegistry entityRegistry,
       CrsInfo crsInfo,
       Cql cql,
-      StoredQueryRepository repository) {
+      StoredQueryRepository repository,
+      SchemaValidator schemaValidator) {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
+    this.extensionRegistry = extensionRegistry;
     this.entityRegistry = entityRegistry;
     this.crsInfo = crsInfo;
     this.cql = cql;
     this.repository = repository;
+    this.schemaValidator = schemaValidator;
     this.linkGenerator = new StoredQueriesLinkGenerator();
 
     this.queryHandlers =
@@ -136,6 +151,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             Query.QUERY, QueryHandler.with(QueryInputQuery.class, this::executeQuery),
             Query.DEFINITION,
                 QueryHandler.with(QueryInputQueryDefinition.class, this::getQueryDefinition),
+            Query.PARAMETERS, QueryHandler.with(QueryInputParameters.class, this::getParameters),
+            Query.PARAMETER, QueryHandler.with(QueryInputParameter.class, this::getParameter),
             Query.CREATE_REPLACE,
                 QueryHandler.with(QueryInputStoredQueryCreateReplace.class, this::writeStoredQuery),
             Query.DELETE,
@@ -163,7 +180,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
   private Response writeStoredQuery(
       QueryInputStoredQueryCreateReplace queryInput, ApiRequestContext requestContext) {
     if (queryInput.getStrict()) {
-      // TODO which additional checks?
+      // TODO which additional checks? parsing all filters?
     }
 
     if (!queryInput.getDryRun()) {
@@ -191,6 +208,133 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     return Response.noContent().build();
   }
 
+  private Response getParameters(
+      QueryInputParameters queryInput, ApiRequestContext requestContext) {
+    ImmutableParameters.Builder builder = new ImmutableParameters.Builder();
+
+    OgcApiDataV2 apiData = requestContext.getApi().getData();
+
+    queryInput
+        .getQuery()
+        .getParametersAsNodes()
+        .forEach(
+            (name, schema) -> {
+              builder.putParameters(name, schema);
+            });
+
+    builder.links(
+        linkGenerator.generateLinks(
+            requestContext.getUriCustomizer(),
+            requestContext.getMediaType(),
+            requestContext.getAlternateMediaTypes(),
+            i18n,
+            requestContext.getLanguage()));
+
+    builder.lastModified(Optional.ofNullable(repository.getLastModified(apiData)));
+
+    Parameters parameters = builder.build();
+
+    ParametersFormat format =
+        extensionRegistry.getExtensionsForType(ParametersFormat.class).stream()
+            .filter(f -> requestContext.getMediaType().matches(f.getMediaType().type()))
+            .findAny()
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported, the following media types are available: {1}",
+                            requestContext.getMediaType(),
+                            extensionRegistry.getExtensionsForType(ParametersFormat.class).stream()
+                                .map(f -> f.getMediaType().type().toString())
+                                .collect(Collectors.joining(", ")))));
+
+    Date lastModified = getLastModified(queryInput, parameters);
+    EntityTag etag =
+        !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || apiData
+                    .getExtension(HtmlConfiguration.class)
+                    .map(HtmlConfiguration::getSendEtags)
+                    .orElse(false)
+            ? ETag.from(parameters, Parameters.FUNNEL, format.getMediaType().label())
+            : null;
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
+
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? parameters.getLinks() : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format("parameters.%s", format.getMediaType().fileExtension())))
+        .entity(format.getEntity(parameters, apiData, requestContext))
+        .build();
+  }
+
+  private Response getParameter(QueryInputParameter queryInput, ApiRequestContext requestContext) {
+    ImmutableParameter.Builder builder = new ImmutableParameter.Builder();
+
+    OgcApiDataV2 apiData = requestContext.getApi().getData();
+
+    queryInput.getQuery().getParametersAsNodes().entrySet().stream()
+        .filter(e -> e.getKey().equals(queryInput.getParameterName()))
+        .map(Entry::getValue)
+        .findFirst()
+        .ifPresentOrElse(
+            builder::schema,
+            () -> {
+              throw new NotFoundException();
+            });
+
+    builder.links(
+        linkGenerator.generateLinks(
+            requestContext.getUriCustomizer(),
+            requestContext.getMediaType(),
+            requestContext.getAlternateMediaTypes(),
+            i18n,
+            requestContext.getLanguage()));
+
+    builder.lastModified(Optional.ofNullable(repository.getLastModified(apiData)));
+
+    Parameter parameter = builder.build();
+
+    ParameterFormat format =
+        extensionRegistry.getExtensionsForType(ParameterFormat.class).stream()
+            .filter(f -> requestContext.getMediaType().matches(f.getMediaType().type()))
+            .findAny()
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported, the following media types are available: {1}",
+                            requestContext.getMediaType(),
+                            extensionRegistry.getExtensionsForType(ParametersFormat.class).stream()
+                                .map(f -> f.getMediaType().type().toString())
+                                .collect(Collectors.joining(", ")))));
+
+    Date lastModified = getLastModified(queryInput, parameter);
+    EntityTag etag =
+        !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+                || apiData
+                    .getExtension(HtmlConfiguration.class)
+                    .map(HtmlConfiguration::getSendEtags)
+                    .orElse(false)
+            ? ETag.from(parameter, Parameter.FUNNEL, format.getMediaType().label())
+            : null;
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
+
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader() ? parameter.getLinks() : null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format("parameters.%s", format.getMediaType().fileExtension())))
+        .entity(format.getEntity(parameter, apiData, requestContext))
+        .build();
+  }
+
   private Response getStoredQueries(
       QueryInputStoredQueries queryInput, ApiRequestContext requestContext) {
     ImmutableStoredQueries.Builder builder = new ImmutableStoredQueries.Builder();
@@ -211,9 +355,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                               requestContext.getUriCustomizer(),
                               q.getTitle().orElse(queryId),
                               queryId,
+                              q.getParameterNames(),
                               i18n,
                               requestContext.getLanguage()))
-                      // TODO add definition link
                       .build());
             });
 
@@ -323,7 +467,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
     OgcApi api = requestContext.getApi();
 
-    QueryExpression query = queryInput.getQuery();
+    QueryExpression query =
+        queryInput.getQuery().resolveParameters(requestContext.getParameters(), schemaValidator);
 
     FeatureFormatExtension outputFormat =
         api.getOutputFormat(
@@ -346,17 +491,18 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             : query.getQueries().stream()
                 .map(q -> q.getCollections().get(0))
                 .collect(Collectors.toUnmodifiableList());
+    QueryExpression finalQuery = query;
     List<SubQuery> queries =
         query.getCollections().size() == 1
             ? ImmutableList.of(
                 getSubQuery(
                     api.getData(),
-                    query.getCollections().get(0),
-                    query.getFilter(),
+                    finalQuery.getCollections().get(0),
+                    finalQuery.getFilter(),
                     ImmutableMap.of(),
                     FilterOperator.AND,
-                    query.getSortby(),
-                    query.getProperties(),
+                    finalQuery.getSortby(),
+                    finalQuery.getProperties(),
                     ImmutableList.of()))
             : query.getQueries().stream()
                 .map(
@@ -365,11 +511,11 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                             api.getData(),
                             q.getCollections().get(0),
                             q.getFilter(),
-                            query.getFilter(),
-                            query.getFilterOperator(),
+                            finalQuery.getFilter(),
+                            finalQuery.getFilterOperator(),
                             q.getSortby(),
                             q.getProperties(),
-                            query.getProperties()))
+                            finalQuery.getProperties()))
                 .collect(Collectors.toUnmodifiableList());
 
     Builder finalQueryBuilder =

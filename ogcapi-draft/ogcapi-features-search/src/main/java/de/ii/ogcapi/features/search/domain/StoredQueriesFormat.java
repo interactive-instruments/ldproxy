@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.search.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
 @AutoMultiBind
@@ -18,6 +19,11 @@ public interface StoredQueriesFormat extends GenericFormatExtension {
   @Override
   default String getPathPattern() {
     return "^(?:/search/?$";
+  }
+
+  @Override
+  default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return SearchConfiguration.class;
   }
 
   Object getEntity(StoredQueries queries, OgcApiDataV2 apiData, ApiRequestContext requestContext);

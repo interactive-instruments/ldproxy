@@ -14,13 +14,17 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
 @AutoMultiBind
-public interface StoredQueryFormat extends GenericFormatExtension {
+public interface ParameterFormat extends GenericFormatExtension {
 
-  String QUERY_ID_PATTERN = "[\\w\\-]+";
+  String PARAMETER_NAME_PATTERN = "[\\w\\-]+";
 
   @Override
   default String getPathPattern() {
-    return "^(?:/search/" + QUERY_ID_PATTERN + "/?$";
+    return "^(?:/search/"
+        + StoredQueryFormat.QUERY_ID_PATTERN
+        + "/parameters/"
+        + PARAMETER_NAME_PATTERN
+        + "/?$";
   }
 
   @Override
@@ -28,10 +32,5 @@ public interface StoredQueryFormat extends GenericFormatExtension {
     return SearchConfiguration.class;
   }
 
-  /**
-   * @return the file extension used for the queries in the store
-   */
-  String getFileExtension();
-
-  Object getEntity(QueryExpression query, OgcApiDataV2 apiData, ApiRequestContext requestContext);
+  Object getEntity(Parameter parameter, OgcApiDataV2 apiData, ApiRequestContext requestContext);
 }

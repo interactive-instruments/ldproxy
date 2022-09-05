@@ -26,6 +26,8 @@ public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandle
     STORED_QUERIES,
     QUERY,
     DEFINITION,
+    PARAMETERS,
+    PARAMETER,
     CREATE_REPLACE,
     DELETE
   }
@@ -56,6 +58,22 @@ public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandle
     String getQueryId();
 
     QueryExpression getQuery();
+  }
+
+  @Value.Immutable
+  interface QueryInputParameters extends QueryInput {
+    String getQueryId();
+
+    QueryExpression getQuery();
+  }
+
+  @Value.Immutable
+  interface QueryInputParameter extends QueryInput {
+    String getQueryId();
+
+    QueryExpression getQuery();
+
+    String getParameterName();
   }
 
   @Value.Immutable

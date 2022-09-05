@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 
 public class StoredQueriesLinkGenerator extends DefaultLinksGenerator {
 
@@ -51,10 +52,16 @@ public class StoredQueriesLinkGenerator extends DefaultLinksGenerator {
    *
    * @param uriBuilder the URI, split in host, path and query
    * @param queryId the ids of the queries
+   * @param parameterNames
    * @return a list with links
    */
   public List<Link> generateStoredQueryLinks(
-      URICustomizer uriBuilder, String name, String queryId, I18n i18n, Optional<Locale> language) {
+      URICustomizer uriBuilder,
+      String name,
+      String queryId,
+      Set<String> parameterNames,
+      I18n i18n,
+      Optional<Locale> language) {
 
     final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>();
 
@@ -83,6 +90,41 @@ public class StoredQueriesLinkGenerator extends DefaultLinksGenerator {
                 .rel("describedby")
                 .title(i18n.get("queryDefinitionLink", language).replace("{{name}}", name))
                 .build());
+
+    if (!parameterNames.isEmpty()) {
+      builder.add(
+          new ImmutableLink.Builder()
+              .href(
+                  uriBuilder
+                      .copy()
+                      .ensureNoTrailingSlash()
+                      .ensureLastPathSegments(queryId, "parameters")
+                      .removeParameters("f")
+                      .toString())
+              .rel("describedby")
+              .title(i18n.get("queryParametersLink", language).replace("{{name}}", name))
+              .build());
+
+      parameterNames.stream()
+          .sorted()
+          .forEach(
+              parameterName ->
+                  builder.add(
+                      new ImmutableLink.Builder()
+                          .href(
+                              uriBuilder
+                                  .copy()
+                                  .ensureNoTrailingSlash()
+                                  .ensureLastPathSegments(queryId, "parameters", parameterName)
+                                  .removeParameters("f")
+                                  .toString())
+                          .rel("describedby")
+                          .title(
+                              i18n.get("queryParameterLink", language)
+                                  .replace("{{name}}", name)
+                                  .replace("{{parameter}}", parameterName))
+                          .build()));
+    }
 
     return builder.build();
   }
