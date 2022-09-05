@@ -463,7 +463,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
 
       ResultReduced<byte[]> result =
-          generateTile(featureStream, encoder.get(), transformationContext, outputFormat);
+          generateTile(
+              featureStream, encoder.get(), transformationContext, outputFormat, featureTypeId);
 
       // internal processing, no need to process headers
       return prepareSuccessResponse(requestContext).entity(result.reduced()).build();
@@ -583,7 +584,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
 
         ResultReduced<byte[]> result =
-            generateTile(featureStream, encoder.get(), transformationContext, outputFormat);
+            generateTile(
+                featureStream, encoder.get(), transformationContext, outputFormat, featureTypeId);
 
         if (result.isSuccess()) {
           byte[] bytes = result.reduced();
@@ -865,9 +867,10 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       FeatureStream featureStream,
       FeatureTokenEncoder<?> encoder,
       FeatureTransformationContextTiles transformationContext,
-      TileFormatWithQuerySupportExtension outputFormat) {
+      TileFormatWithQuerySupportExtension outputFormat,
+      String featureTypeId) {
 
-    Optional<PropertyTransformations> propertyTransformations =
+    Map<String, PropertyTransformations> propertyTransformations =
         transformationContext
             .getCollection()
             .flatMap(
@@ -875,7 +878,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     outputFormat.getPropertyTransformations(
                         collection,
                         ImmutableMap.of("serviceUrl", transformationContext.getServiceUrl()),
-                        outputFormat.getBuildingBlockConfigurationType()));
+                        outputFormat.getBuildingBlockConfigurationType()))
+            .map(
+                propertyTransformations1 ->
+                    ImmutableMap.of(featureTypeId, propertyTransformations1))
+            .orElse(ImmutableMap.of());
 
     SinkReduced<Object, byte[]> featureSink = encoder.to(Sink.reduceByteArray());
 

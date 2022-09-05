@@ -11,5 +11,5 @@ import de.ii.ogcapi.features.core.domain.EncodingAwareContext;
 import org.immutables.value.Value.Modifiable;
 
 @Modifiable
-public interface EncodingAwareContextGml
-    extends EncodingAwareContext<FeatureTransformationContextGml> {}
+public interface EncodingAwareContextGmlUpgrade
+    extends EncodingAwareContext<FeatureTransformationContextGmlUpgrade> {}
