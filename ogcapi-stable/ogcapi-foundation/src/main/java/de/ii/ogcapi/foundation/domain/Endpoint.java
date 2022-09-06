@@ -34,7 +34,8 @@ public abstract class Endpoint implements EndpointExtension {
   private static final Logger LOGGER = LoggerFactory.getLogger(Endpoint.class);
 
   protected final ExtensionRegistry extensionRegistry;
-  private final Map<Integer, ApiEndpointDefinition> apiDefinitions;
+  // temporarily changed to protected
+  protected final Map<Integer, ApiEndpointDefinition> apiDefinitions;
   protected List<? extends FormatExtension> formats;
 
   public Endpoint(ExtensionRegistry extensionRegistry) {
@@ -75,8 +76,9 @@ public abstract class Endpoint implements EndpointExtension {
     return builder.build();
   }
 
+  // temporarily removed "final" until a better solution has been implemented
   @Override
-  public final ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
+  public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
     if (!isEnabledForApi(apiData)) {
       return EndpointExtension.super.getDefinition(apiData);
     }

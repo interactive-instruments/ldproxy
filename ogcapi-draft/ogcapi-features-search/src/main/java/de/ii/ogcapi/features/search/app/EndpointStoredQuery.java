@@ -135,6 +135,32 @@ public class EndpointStoredQuery extends Endpoint {
     return builder.build();
   }
 
+  // TODO temporary fix
+  @Override
+  public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
+    if (!isEnabledForApi(apiData)) {
+      return super.getDefinition(apiData);
+    }
+
+    return apiDefinitions.computeIfAbsent(
+        // TODO temporary override to trigger update when stored queries have changed
+        repository.getAll(apiData).hashCode(),
+        ignore -> {
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Generating API definition for {}", this.getClass().getSimpleName());
+          }
+
+          ApiEndpointDefinition apiEndpointDefinition = computeDefinition(apiData);
+
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "Finished generating API definition for {}", this.getClass().getSimpleName());
+          }
+
+          return apiEndpointDefinition;
+        });
+  }
+
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
