@@ -7,12 +7,16 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@JsonDeserialize(builder = ImmutableApiSecurity.Builder.class)
 public interface ApiSecurity {
 
   enum ScopeElements {
@@ -33,4 +37,14 @@ public interface ApiSecurity {
   Set<ScopeElements> getScopeElements();
 
   List<String> getPublicScopes();
+
+  @JsonIgnore
+  @Value.Derived
+  default boolean isEnabled() {
+    return !Objects.equals(getEnabled(), false);
+  }
+
+  default boolean isSecured(String scope) {
+    return isEnabled() && !getPublicScopes().contains(scope);
+  }
 }
