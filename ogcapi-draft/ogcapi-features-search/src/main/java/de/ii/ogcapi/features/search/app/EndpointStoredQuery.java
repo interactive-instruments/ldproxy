@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.search.domain.ImmutableQueryExpression;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputQuery;
 import de.ii.ogcapi.features.search.domain.QueryExpression;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
@@ -248,6 +249,15 @@ public class EndpointStoredQuery extends Endpoint {
     checkPathParameter(extensionRegistry, apiData, "/search/{queryId}", "queryId", queryId);
 
     QueryExpression query = repository.get(apiData, queryId);
+
+    final String offset = requestContext.getParameters().get("offset");
+    if (Objects.nonNull(offset)) {
+      query =
+          new ImmutableQueryExpression.Builder()
+              .from(query)
+              .offset(Integer.parseInt(offset))
+              .build();
+    }
 
     // TODO centralize in superclass or helper
     FeaturesCoreConfiguration coreConfiguration =

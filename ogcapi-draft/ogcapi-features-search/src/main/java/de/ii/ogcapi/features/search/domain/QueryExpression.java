@@ -111,10 +111,7 @@ public interface QueryExpression {
 
   Optional<Integer> getLimit();
 
-  @Value.Default
-  default int getOffset() {
-    return 0;
-  }
+  Optional<Integer> getOffset();
 
   @Value.Check
   default void check() {

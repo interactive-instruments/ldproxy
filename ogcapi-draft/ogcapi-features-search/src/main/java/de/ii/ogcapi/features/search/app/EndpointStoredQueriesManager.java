@@ -215,6 +215,7 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
           new ImmutableQueryExpression.Builder()
               .from(QueryExpression.of(requestBody))
               .id(queryId)
+              .offset(Optional.empty())
               .build();
     } catch (IOException e) {
       throw new IllegalArgumentException(

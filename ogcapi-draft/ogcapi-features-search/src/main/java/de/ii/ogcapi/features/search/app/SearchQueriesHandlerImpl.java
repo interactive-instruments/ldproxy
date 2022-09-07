@@ -30,6 +30,7 @@ import de.ii.ogcapi.features.search.domain.StoredQueries;
 import de.ii.ogcapi.features.search.domain.StoredQueriesFormat;
 import de.ii.ogcapi.features.search.domain.StoredQueryFormat;
 import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
@@ -531,7 +532,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                             .getExtension(FeaturesCoreConfiguration.class)
                             .map(FeaturesCoreConfiguration::getDefaultPageSize)
                             .orElseThrow()))
-            .offset(query.getOffset());
+            .offset(query.getOffset().orElse(0));
 
     api.getData()
         .getExtension(FeaturesCoreConfiguration.class)
@@ -562,9 +563,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
               }
             });
 
-    // TODO remove
-    LOGGER.debug("Query: {}", finalQueryBuilder.build());
-
     return getResponse(
         api,
         requestContext,
@@ -573,7 +571,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         collectionIds,
         queryInput.getFeatureProvider(),
         outputFormat,
-        queryInput.getDefaultPageSize(),
         queryInput.getShowsFeatureSelfLink(),
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs());
@@ -656,7 +653,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       List<String> collectionIds,
       FeatureProvider2 featureProvider,
       FeatureFormatExtension outputFormat,
-      Optional<Integer> defaultPageSize,
       boolean showsFeatureSelfLink,
       boolean includeLinkHeader,
       EpsgCrs defaultCrs) {
@@ -672,21 +668,18 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
 
-    List<Link> links = ImmutableList.of();
-    /* TODO
     List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
-    List<Link> links = new FeaturesLinksGenerator()
-                .generateLinks(
-                    requestContext.getUriCustomizer(),
-                    query.getOffset(),
-                    query.getLimit(),
-                    defaultPageSize.orElse(0),
-                    requestContext.getMediaType(),
-                    alternateMediaTypes,
-                    i18n,
-                    requestContext.getLanguage());
-     */
+    List<Link> links =
+        new StoredQueriesLinkGenerator()
+            .generateFeaturesLinks(
+                requestContext.getUriCustomizer(),
+                query.getOffset(),
+                query.getLimit(),
+                requestContext.getMediaType(),
+                alternateMediaTypes,
+                i18n,
+                requestContext.getLanguage());
 
     Map<String, Optional<FeatureSchema>> schemas =
         query.getQueries().stream()
