@@ -501,7 +501,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                     finalQuery.getCollections().get(0),
                     finalQuery.getFilter(),
                     ImmutableMap.of(),
-                    FilterOperator.AND,
+                    Optional.empty(),
                     finalQuery.getSortby(),
                     finalQuery.getProperties(),
                     ImmutableList.of()))
@@ -581,7 +581,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       String collectionId,
       Map<String, Object> filter,
       Map<String, Object> globalFilter,
-      FilterOperator filterOperator,
+      Optional<FilterOperator> filterOperator,
       List<String> sortby,
       List<String> properties,
       List<String> globalProperties) {
@@ -602,12 +602,13 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         try {
           String jsonFilter = new ObjectMapper().writeValueAsString(globalFilter);
           if (cqlFilter.isPresent()) {
+            // AND is the default
             cqlFilter =
                 cqlFilter.map(
                     f ->
-                        FilterOperator.AND.equals(filterOperator)
-                            ? And.of(f, cql.read(jsonFilter, Format.JSON))
-                            : Or.of(f, cql.read(jsonFilter, Format.JSON)));
+                        FilterOperator.OR.equals(filterOperator)
+                            ? Or.of(f, cql.read(jsonFilter, Format.JSON))
+                            : And.of(f, cql.read(jsonFilter, Format.JSON)));
           } else {
             cqlFilter = Optional.ofNullable(cql.read(jsonFilter, Format.JSON));
           }

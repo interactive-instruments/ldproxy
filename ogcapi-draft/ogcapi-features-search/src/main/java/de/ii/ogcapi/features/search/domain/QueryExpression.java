@@ -33,6 +33,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +61,23 @@ public interface QueryExpression {
   @SuppressWarnings("UnstableApiUsage")
   Funnel<QueryExpression> FUNNEL =
       (from, into) -> {
-        // TODO
+        from.getId().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getQueries().forEach(q -> SingleQuery.FUNNEL.funnel(q, into));
+        from.getCollections().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getFilter()
+            .forEach(
+                (key, value) -> {
+                  into.putString(key, StandardCharsets.UTF_8);
+                });
+        from.getFilterOperator().ifPresent(v -> into.putString(v.name(), StandardCharsets.UTF_8));
+        from.getSortby().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getProperties().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getCrs().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getMaxAllowableOffset().ifPresent(into::putDouble);
+        from.getLimit().ifPresent(into::putInt);
+        from.getOffset().ifPresent(into::putInt);
       };
 
   ObjectMapper MAPPER =
@@ -92,24 +109,21 @@ public interface QueryExpression {
 
   List<SingleQuery> getQueries();
 
-  List<String> getCollections();
+  List<String> getCollections(); // String or Parameter
 
   Map<String, Object> getFilter();
 
-  @Value.Default
-  default FilterOperator getFilterOperator() {
-    return FilterOperator.AND;
-  }
+  Optional<FilterOperator> getFilterOperator();
 
-  List<String> getSortby();
+  List<String> getSortby(); // String or Parameter
 
-  List<String> getProperties();
+  List<String> getProperties(); // String or Parameter
 
-  Optional<String> getCrs();
+  Optional<String> getCrs(); // String or Parameter
 
-  Optional<Double> getMaxAllowableOffset();
+  Optional<Double> getMaxAllowableOffset(); // Double or Parameter
 
-  Optional<Integer> getLimit();
+  Optional<Integer> getLimit(); // Integer or Parameter
 
   Optional<Integer> getOffset();
 
@@ -299,7 +313,13 @@ public interface QueryExpression {
 
   private Schema<?> deriveSchema(@NotNull JsonNode schemaNode) {
     Schema<?> schema = null;
-    if (schemaNode.isObject() && "object".equals(schemaNode.get("type").asText())) {
+
+    if (schemaNode.isObject() && Objects.nonNull(schemaNode.get("$ref"))) {
+      schema = new ObjectSchema();
+      schema.$ref(schemaNode.get("$ref").asText());
+    } else if (schemaNode.isObject() && Objects.isNull(schemaNode.get("type"))) {
+      // skip
+    } else if (schemaNode.isObject() && "object".equals(schemaNode.get("type").asText())) {
       schema = new ObjectSchema();
       ObjectNode properties = (ObjectNode) schemaNode.get("properties");
       if (Objects.nonNull(properties)) {

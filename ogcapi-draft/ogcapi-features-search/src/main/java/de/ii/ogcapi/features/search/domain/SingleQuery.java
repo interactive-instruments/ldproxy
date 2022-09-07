@@ -35,11 +35,11 @@ public interface SingleQuery {
 
   @JsonIgnore String SCHEMA_REF = "#/components/schemas/Query";
 
-  List<String> getCollections();
+  List<String> getCollections(); // String or Parameter
 
   Map<String, Object> getFilter();
 
-  List<String> getSortby();
+  List<String> getSortby(); // String or Parameter
 
-  List<String> getProperties();
+  List<String> getProperties(); // String or Parameter
 }
