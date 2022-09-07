@@ -200,7 +200,7 @@ public interface QueryExpression {
         } else {
           String value = requestParameters.get(entry.getKey());
           Schema<?> schema = deriveSchema(entry.getValue());
-          if (schema instanceof ArraySchema) {
+          if (schema instanceof ArraySchema && !value.trim().startsWith("[")) {
             Schema<?> itemsSchema = ((ArraySchema) schema).getItems();
             if (itemsSchema instanceof StringSchema) {
               valueAsString =
@@ -223,7 +223,7 @@ public interface QueryExpression {
                               .map(s -> s.replace("\"", "\\\""))
                               .collect(Collectors.joining(","))));
             }
-          } else if (schema instanceof ObjectSchema) {
+          } else if (schema instanceof ObjectSchema && !value.trim().startsWith("{")) {
             Map<String, Schema> properties = schema.getProperties();
             valueAsString = new StringBuilder("{");
             String key = null;
@@ -247,7 +247,7 @@ public interface QueryExpression {
               valueAsString =
                   new StringBuilder(String.format("\"%s\"", value.replace("\"", "\\\"")));
             } else {
-              valueAsString = new StringBuilder(String.format("%s", value.replace("\"", "\\\"")));
+              valueAsString = new StringBuilder(value);
             }
           }
           try {
