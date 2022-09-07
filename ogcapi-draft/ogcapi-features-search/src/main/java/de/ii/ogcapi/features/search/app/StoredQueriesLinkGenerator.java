@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
+import de.ii.ogcapi.foundation.domain.ImmutableLink.Builder;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
@@ -66,19 +67,48 @@ public class StoredQueriesLinkGenerator extends DefaultLinksGenerator {
 
     final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>();
 
+    Builder selfBuilder =
+        new Builder()
+            .href(
+                uriBuilder
+                    .copy()
+                    .ensureNoTrailingSlash()
+                    .ensureLastPathSegment(queryId)
+                    .removeParameters("f")
+                    .toString())
+            .rel("self")
+            .title(i18n.get("storedQueryLink", language).replace("{{name}}", name));
+
+    if (parameterNames.isEmpty()) {
+      selfBuilder.href(
+          uriBuilder
+              .copy()
+              .ensureNoTrailingSlash()
+              .ensureLastPathSegment(queryId)
+              .removeParameters("f")
+              .toString());
+    } else {
+      selfBuilder
+          .href(
+              uriBuilder
+                  .copy()
+                  .clearParameters()
+                  .ensureNoTrailingSlash()
+                  .ensureLastPathSegment(
+                      String.format("%s{?%s}", queryId, String.join(",", parameterNames)))
+                  .toString())
+          .templated(true)
+          .varBase(
+              uriBuilder
+                  .copy()
+                  .clearParameters()
+                  .ensureLastPathSegments(queryId, "parameters")
+                  .ensureTrailingSlash()
+                  .toString());
+    }
+
     builder
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .ensureNoTrailingSlash()
-                        .ensureLastPathSegment(queryId)
-                        .removeParameters("f")
-                        .toString())
-                .rel("self")
-                .title(i18n.get("storedQueryLink", language).replace("{{name}}", name))
-                .build())
+        .add(selfBuilder.build())
         .add(
             new ImmutableLink.Builder()
                 .href(
