@@ -31,6 +31,8 @@ import javax.inject.Singleton;
 @AutoBind
 public class GmlWriterProperties implements GmlWriter {
 
+  private static final String XML_NAME_ATTRIBUTE_SEPARATOR = "___";
+
   @Inject
   public GmlWriterProperties() {}
 
@@ -123,31 +125,42 @@ public class GmlWriterProperties implements GmlWriter {
       String value = context.value();
 
       ModifiableStateGml state = context.encoding().getState();
-      boolean inLink = state.getInLink();
-      boolean inMeasure = state.getInMeasure();
 
-      if (inLink) {
-        writeLinkAttribute(context, schema, value);
-      } else if (inMeasure) {
-        writeMeasure(context, schema, value);
-      } else {
-        if (context.encoding().getXmlAttributes().contains(schema.getFullPathAsString())) {
-          // encode as XML attribute
-          context.encoding().writeAsXmlAtt(schema.getName(), value);
+      if (state.getVariableNameProperty().filter(p -> p.equals(schema.getName())).isEmpty()) {
+        boolean inLink = state.getInLink();
+        boolean inMeasure = state.getInMeasure();
+
+        if (inLink) {
+          writeLinkAttribute(context, schema, value);
+        } else if (inMeasure) {
+          writeMeasure(context, schema, value);
         } else {
-          // opening tag of property element
-          context.encoding().write("<");
-          context.encoding().write(schema.getName());
-          writeUnitIfNecessary(context, schema);
-          context.encoding().write(">");
-          // value
-          writeValue(context, value, schema.getType());
-          // closing tag
-          context.encoding().write("</");
-          context.encoding().write(schema.getName());
-          context.encoding().write(">");
-        }
+          if (context.encoding().getXmlAttributes().contains(schema.getFullPathAsString())) {
+            // encode as XML attribute
+            context.encoding().writeAsXmlAtt(schema.getName(), value);
+          } else {
+            // opening tag of property element
+            context.encoding().write("<");
+            String[] name = schema.getName().split(XML_NAME_ATTRIBUTE_SEPARATOR, 2);
+            context.encoding().write(name[0]);
+            if (name.length == 2) {
+              context.encoding().write(" name=\"");
+              context.encoding().write(name[1]);
+              context.encoding().write("\"");
+            }
+            writeUnitIfNecessary(context, schema);
+            context.encoding().write(">");
 
+            // value
+            writeValue(context, value, schema.getType());
+
+            // closing tag
+            context.encoding().write("</");
+            context.encoding().write(name[0]);
+            context.encoding().write(">");
+          }
+        }
+      } else {
         setVariableObjectElementName(context, schema, value);
       }
     }

@@ -7,19 +7,26 @@
  */
 package de.ii.ogcapi.features.gml.app;
 
+import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML21;
+import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML31;
+import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML32;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.gml.domain.EncodingAwareContextGml;
+import de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion;
 import de.ii.ogcapi.features.gml.domain.GmlWriter;
 import de.ii.ogcapi.features.gml.domain.ModifiableStateGml;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -32,9 +39,14 @@ public class GmlWriterGeometry implements GmlWriter {
   private static final String MULTI_POINT = "gml:MultiPoint";
   private static final String LINE_STRING = "gml:LineString";
   private static final String MULTI_CURVE = "gml:MultiCurve";
+  private static final String MULTI_LINE_STRING = "gml21:MultiLineString";
   private static final String POLYGON = "gml:Polygon";
   private static final String MULTI_SURFACE = "gml:MultiSurface";
-  private static final String MULTI_GEOMETRY = "MultiGeometry";
+  private static final String MULTI_POLYGON = "gml21:MultiPolygon";
+  private static final String MULTI_GEOMETRY = "gml:MultiGeometry";
+  private static final String SOLID = "gml:Solid";
+  private static final String COMPOSITE_SURFACE = "gml:CompositeSurface";
+  private static final String COMPOSITE_CURVE = "gml:CompositeCurve";
   private static final String POS = "gml:pos";
   private static final String POS_LIST = "gml:posList";
   private static final String POINT_MEMBER = "gml:pointMember";
@@ -43,15 +55,40 @@ public class GmlWriterGeometry implements GmlWriter {
   private static final String EXTERIOR = "gml:exterior";
   private static final String INTERIOR = "gml:interior";
   private static final String SURFACE_MEMBER = "gml:surfaceMember";
-  private static final Map<SimpleFeatureGeometry, String> GEOMETRY_ELEMENT =
+  private static final Map<GmlVersion, Map<SimpleFeatureGeometry, String>> GEOMETRY_ELEMENT =
       ImmutableMap.of(
-          SimpleFeatureGeometry.POINT, POINT,
-          SimpleFeatureGeometry.MULTI_POINT, MULTI_POINT,
-          SimpleFeatureGeometry.LINE_STRING, LINE_STRING,
-          SimpleFeatureGeometry.MULTI_LINE_STRING, MULTI_CURVE,
-          SimpleFeatureGeometry.POLYGON, POLYGON,
-          SimpleFeatureGeometry.MULTI_POLYGON, MULTI_SURFACE,
-          SimpleFeatureGeometry.GEOMETRY_COLLECTION, MULTI_GEOMETRY);
+          GML32,
+          ImmutableMap.of(
+              SimpleFeatureGeometry.POINT, POINT,
+              SimpleFeatureGeometry.MULTI_POINT, MULTI_POINT,
+              SimpleFeatureGeometry.LINE_STRING, LINE_STRING,
+              SimpleFeatureGeometry.MULTI_LINE_STRING, MULTI_CURVE,
+              SimpleFeatureGeometry.POLYGON, POLYGON,
+              SimpleFeatureGeometry.MULTI_POLYGON, MULTI_SURFACE,
+              SimpleFeatureGeometry.GEOMETRY_COLLECTION, MULTI_GEOMETRY),
+          GML31,
+          ImmutableMap.of(
+              SimpleFeatureGeometry.POINT, "gml31" + POINT.substring(3),
+              SimpleFeatureGeometry.MULTI_POINT, "gml31" + MULTI_POINT.substring(3),
+              SimpleFeatureGeometry.LINE_STRING, "gml31" + LINE_STRING.substring(3),
+              SimpleFeatureGeometry.MULTI_LINE_STRING, "gml31" + MULTI_CURVE.substring(3),
+              SimpleFeatureGeometry.POLYGON, "gml31" + POLYGON.substring(3),
+              SimpleFeatureGeometry.MULTI_POLYGON, "gml31" + MULTI_SURFACE.substring(3),
+              SimpleFeatureGeometry.GEOMETRY_COLLECTION, "gml31" + MULTI_GEOMETRY.substring(3)),
+          GML21,
+          ImmutableMap.of(
+              SimpleFeatureGeometry.POINT, "gml21" + POINT.substring(3),
+              SimpleFeatureGeometry.MULTI_POINT, "gml21" + MULTI_POINT.substring(3),
+              SimpleFeatureGeometry.LINE_STRING, "gml21" + LINE_STRING.substring(3),
+              SimpleFeatureGeometry.MULTI_LINE_STRING, MULTI_LINE_STRING.substring(3),
+              SimpleFeatureGeometry.POLYGON, "gml21" + POLYGON.substring(3),
+              SimpleFeatureGeometry.MULTI_POLYGON, MULTI_POLYGON.substring(3),
+              SimpleFeatureGeometry.GEOMETRY_COLLECTION, "gml21" + MULTI_GEOMETRY.substring(3)));
+  private static final String OUTER_BOUNDARY_IS = "gml21:outerBoundaryIs";
+  private static final String INNER_BOUNDARY_IS = "gml21:innerBoundaryIs";
+  private static final String LINE_STRING_MEMBER = "gml21:lineStringMember";
+  private static final String COORDINATES = "gml21:coordinates";
+  private static final String POLYGON_MEMBER = "gml21:polygonMember";
 
   @Inject
   public GmlWriterGeometry() {}
@@ -67,32 +104,127 @@ public class GmlWriterGeometry implements GmlWriter {
   }
 
   @Override
+  public void onFeatureEnd(EncodingAwareContextGml context, Consumer<EncodingAwareContextGml> next)
+      throws IOException {
+    context.encoding().getState().setDeferredSolidGeometry(false);
+    context.encoding().getState().setDeferredPolygonId(0);
+
+    next.accept(context);
+  }
+
+  @Override
   public void onObjectStart(EncodingAwareContextGml context, Consumer<EncodingAwareContextGml> next)
       throws IOException {
     if (context.schema().filter(SchemaBase::isSpatial).isPresent()
         && context.geometryType().isPresent()) {
       FeatureSchema schema = context.schema().orElseThrow();
 
-      String elementNameProperty = schema.getName();
-      context.encoding().write("<");
-      context.encoding().write(elementNameProperty);
+      // TODO hack, remove after #719 is fixed
+      if (!schema.getName().equals("bbox")) {
+        String elementNameProperty = schema.getName();
+        context.encoding().write("<");
+        context.encoding().write(elementNameProperty);
 
-      SimpleFeatureGeometry geometryType = context.geometryType().get();
-      context.encoding().getState().setCurrentGeometryType(geometryType);
-      String elementNameObject = Objects.requireNonNull(GEOMETRY_ELEMENT.get(geometryType));
+        SimpleFeatureGeometry geometryType = context.geometryType().get();
+        context.encoding().getState().setCurrentGeometryType(geometryType);
 
-      context.encoding().write("><");
-      context.encoding().write(elementNameObject);
-      context.encoding().write(" srsName=\"");
-      context.encoding().write(context.encoding().getTargetCrs().toUriString());
-      context.encoding().write("\">");
+        if (geometryType.equals(SimpleFeatureGeometry.MULTI_POLYGON)
+            && schema.getConstraints().flatMap(SchemaConstraints::getComposite).orElse(false)
+            && !context.encoding().getGmlVersion().equals(GML21)) {
+          if (schema.getConstraints().flatMap(SchemaConstraints::getClosed).orElse(false)) {
+            // a solid with an outer shell
+            context.encoding().write("><");
+            context.encoding().write(getGmlElementName(context, SOLID));
+            context.encoding().write(" srsName=\"");
+            context.encoding().write(context.encoding().getTargetCrs().toUriString());
+            context.encoding().write("\"><");
+            context.encoding().write(getGmlElementName(context, EXTERIOR));
+            context.encoding().write("><");
+            context.encoding().write(getGmlElementName(context, COMPOSITE_SURFACE));
+            context.encoding().write(">");
 
-      context.encoding().pushElement(elementNameProperty, elementNameObject);
+            context
+                .encoding()
+                .pushElement(
+                    elementNameProperty,
+                    getGmlElementName(context, SOLID),
+                    getGmlElementName(context, EXTERIOR),
+                    getGmlElementName(context, COMPOSITE_SURFACE));
+            context.encoding().getState().setCompositeGeometry(true);
+            context.encoding().getState().setClosedGeometry(true);
+          } else {
+            // a composite surface
+            context.encoding().write("><");
+            context.encoding().write(getGmlElementName(context, COMPOSITE_SURFACE));
+            context.encoding().write(" srsName=\"");
+            context.encoding().write(context.encoding().getTargetCrs().toUriString());
+            context.encoding().write("\">");
 
-      context.encoding().getState().setInGeometry(true);
+            context
+                .encoding()
+                .pushElement(elementNameProperty, getGmlElementName(context, COMPOSITE_SURFACE));
+            context.encoding().getState().setCompositeGeometry(true);
+          }
+        } else if (geometryType.equals(SimpleFeatureGeometry.MULTI_LINE_STRING)
+            && schema.getConstraints().flatMap(SchemaConstraints::getComposite).orElse(false)
+            && !context.encoding().getGmlVersion().equals(GML21)) {
+          // a composite curve
+          context.encoding().write("><");
+          context.encoding().write(getGmlElementName(context, COMPOSITE_CURVE));
+          context.encoding().write(" srsName=\"");
+          context.encoding().write(context.encoding().getTargetCrs().toUriString());
+          context.encoding().write("\">");
+
+          context
+              .encoding()
+              .pushElement(elementNameProperty, getGmlElementName(context, COMPOSITE_CURVE));
+          context.encoding().getState().setCompositeGeometry(true);
+        } else {
+          // a regular multi-surface
+          String elementNameObject =
+              Objects.requireNonNull(
+                  GEOMETRY_ELEMENT.get(context.encoding().getGmlVersion()).get(geometryType));
+
+          context.encoding().write("><");
+          context.encoding().write(elementNameObject);
+          context.encoding().write(" srsName=\"");
+          context.encoding().write(context.encoding().getTargetCrs().toUriString());
+          context.encoding().write("\">");
+
+          context.encoding().pushElement(elementNameProperty, elementNameObject);
+        }
+
+        context.encoding().getState().setInGeometry(true);
+      }
     }
 
     next.accept(context);
+  }
+
+  private String getGmlElementName(EncodingAwareContextGml context, String elementName) {
+    if (context.encoding().getGmlVersion().equals(GML32)) {
+      return elementName;
+    } else if (context.encoding().getGmlVersion().equals(GML31)) {
+      return context.encoding().getGmlPrefix() + elementName.substring(3);
+    } else if (elementName.equals(EXTERIOR)) {
+      return OUTER_BOUNDARY_IS;
+    } else if (elementName.equals(INTERIOR)) {
+      return INNER_BOUNDARY_IS;
+    } else if (elementName.equals(MULTI_CURVE)) {
+      return MULTI_LINE_STRING;
+    } else if (elementName.equals(MULTI_SURFACE)) {
+      return MULTI_POLYGON;
+    } else if (elementName.equals(CURVE_MEMBER)) {
+      return LINE_STRING_MEMBER;
+    } else if (elementName.equals(SURFACE_MEMBER)) {
+      return POLYGON_MEMBER;
+    } else if (elementName.equals(POS_LIST)) {
+      return COORDINATES;
+    } else if (elementName.equals(POS)) {
+      return COORDINATES;
+    }
+
+    return context.encoding().getGmlPrefix() + elementName.substring(3);
   }
 
   @Override
@@ -123,40 +255,90 @@ public class GmlWriterGeometry implements GmlWriter {
       EncodingAwareContextGml context, SimpleFeatureGeometry geometryType, int level) {
     switch (geometryType) {
       case POINT:
-        writeOpeningTags(context, POS);
+        writeOpeningTags(context, Optional.empty(), getGmlElementName(context, POS));
         break;
 
       case MULTI_POINT:
         if (level == 1) {
-          writeOpeningTags(context, POINT_MEMBER, POINT, POS);
+          writeOpeningTags(
+              context,
+              Optional.empty(),
+              getGmlElementName(context, POINT_MEMBER),
+              getGmlElementName(context, POINT),
+              getGmlElementName(context, POS));
         }
         break;
 
       case LINE_STRING:
         if (level == 0) {
-          writeOpeningTags(context, POS_LIST);
+          writeOpeningTags(context, Optional.empty(), getGmlElementName(context, POS_LIST));
         }
         break;
 
       case MULTI_LINE_STRING:
         if (level == 1) {
-          writeOpeningTags(context, CURVE_MEMBER, LINE_STRING, POS_LIST);
+          writeOpeningTags(
+              context,
+              Optional.empty(),
+              getGmlElementName(context, CURVE_MEMBER),
+              getGmlElementName(context, LINE_STRING),
+              getGmlElementName(context, POS_LIST));
         }
         break;
 
       case POLYGON:
         if (level == 1) {
-          boolean first = context.encoding().getGeometryItem(level) == 0;
-          writeOpeningTags(context, first ? EXTERIOR : INTERIOR, LINEAR_RING, POS_LIST);
+          boolean first = context.encoding().getGeometryItem(level - 1) == 0;
+          writeOpeningTags(
+              context,
+              Optional.empty(),
+              first ? getGmlElementName(context, EXTERIOR) : getGmlElementName(context, INTERIOR),
+              getGmlElementName(context, LINEAR_RING),
+              getGmlElementName(context, POS_LIST));
         }
         break;
 
       case MULTI_POLYGON:
-        if (level == 1) {
-          writeOpeningTags(context, SURFACE_MEMBER, POLYGON);
+        if (level == 0) {
+          // TODO hack
+          if (context.schema().orElseThrow().getName().equals("lod2Solid")) {
+            context.encoding().writeSurfaceMemberPlaceholder();
+            context.encoding().getState().setDeferredSolidGeometry(true);
+            context.encoding().getState().setDeferredPolygonId(1);
+          }
+        } else if (level == 1) {
+          // TODO hack
+          int nextLocalPolygonId = context.encoding().getState().getDeferredPolygonId();
+          if (context.schema().orElseThrow().getName().equals("lod2MultiSurface")
+              && nextLocalPolygonId > 0) {
+            context.encoding().getState().setDeferredPolygonId(nextLocalPolygonId + 1);
+            String polygonId =
+                String.format("%s.%d", context.encoding().getCurrentGmlId(), nextLocalPolygonId);
+            context
+                .encoding()
+                .writeAsSurfaceMemberLink(getGmlElementName(context, SURFACE_MEMBER), polygonId);
+            writeOpeningTags(
+                context,
+                Optional.of(polygonId),
+                getGmlElementName(context, SURFACE_MEMBER),
+                getGmlElementName(context, POLYGON));
+          } else if (!context.encoding().getState().getDeferredSolidGeometry()) {
+            writeOpeningTags(
+                context,
+                Optional.empty(),
+                getGmlElementName(context, SURFACE_MEMBER),
+                getGmlElementName(context, POLYGON));
+          }
         } else if (level == 2) {
-          boolean first = context.encoding().getGeometryItem(level) == 0;
-          writeOpeningTags(context, first ? EXTERIOR : INTERIOR, LINEAR_RING, POS_LIST);
+          if (!context.encoding().getState().getDeferredSolidGeometry()) {
+            boolean first = context.encoding().getGeometryItem(level - 1) == 0;
+            writeOpeningTags(
+                context,
+                Optional.empty(),
+                first ? getGmlElementName(context, EXTERIOR) : getGmlElementName(context, INTERIOR),
+                getGmlElementName(context, LINEAR_RING),
+                getGmlElementName(context, POS_LIST));
+          }
         }
         break;
 
@@ -166,12 +348,21 @@ public class GmlWriterGeometry implements GmlWriter {
     }
   }
 
-  private void writeOpeningTags(EncodingAwareContextGml context, String... elementNames) {
-    Arrays.stream(elementNames)
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+  private void writeOpeningTags(
+      EncodingAwareContextGml context, Optional<String> gmlId, String... elementNames) {
+    IntStream.range(0, elementNames.length)
         .forEachOrdered(
-            elementName -> {
+            i -> {
               context.encoding().write("<");
-              context.encoding().write(elementName);
+              context.encoding().write(elementNames[i]);
+              if (i == elementNames.length - 1 && gmlId.isPresent()) {
+                context.encoding().write(" ");
+                context.encoding().write(context.encoding().getGmlPrefix());
+                context.encoding().write(":id=\"");
+                context.encoding().write(gmlId.get());
+                context.encoding().write("\"");
+              }
               context.encoding().write(">");
             });
     context.encoding().pushElement(elementNames);
@@ -229,12 +420,18 @@ public class GmlWriterGeometry implements GmlWriter {
         break;
 
       case MULTI_POLYGON:
-        if (level == 0) {
-          writeClosingTags(context, true);
+        if (level == -1) {
+          context.encoding().getState().setDeferredSolidGeometry(false);
+        } else if (level == 0) {
+          if (!context.encoding().getState().getDeferredSolidGeometry()) {
+            writeClosingTags(context, true);
+          }
           context.encoding().nextGeometryItem();
         } else if (level == 1) {
-          writeClosingTags(context, true);
-          writeClosingTags(context, false);
+          if (!context.encoding().getState().getDeferredSolidGeometry()) {
+            writeClosingTags(context, true);
+            writeClosingTags(context, false);
+          }
           context.encoding().nextGeometryItem();
         } else if (level == 2) {
           context.encoding().nextGeometryItem();
@@ -272,6 +469,22 @@ public class GmlWriterGeometry implements GmlWriter {
       context.encoding().write(context.encoding().popElement());
       context.encoding().write(">");
 
+      if (context.encoding().getState().getClosedGeometry()) {
+        context.encoding().write("</");
+        context.encoding().write(context.encoding().popElement());
+        context.encoding().write(">");
+
+        context.encoding().getState().setClosedGeometry(false);
+      }
+
+      if (context.encoding().getState().getCompositeGeometry()) {
+        context.encoding().write("</");
+        context.encoding().write(context.encoding().popElement());
+        context.encoding().write(">");
+
+        context.encoding().getState().setCompositeGeometry(false);
+      }
+
       context.encoding().getState().setInGeometry(false);
     }
 
@@ -282,10 +495,11 @@ public class GmlWriterGeometry implements GmlWriter {
   public void onValue(EncodingAwareContextGml context, Consumer<EncodingAwareContextGml> next)
       throws IOException {
 
-    if (context.encoding().getState().getInGeometry()) {
+    if (context.encoding().getState().getInGeometry()
+        && !context.encoding().getState().getDeferredSolidGeometry()) {
       int idx = context.encoding().nextGeometryItem() - 1;
       if (idx > 0) {
-        context.encoding().write(" ");
+        context.encoding().write(context.encoding().getGmlVersion().equals(GML21) ? "," : " ");
       } else {
         int level = context.encoding().getGeometryArrayLevel();
         if (level > 0) {
