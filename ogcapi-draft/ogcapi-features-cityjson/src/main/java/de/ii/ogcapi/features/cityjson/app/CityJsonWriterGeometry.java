@@ -12,6 +12,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.cityjson.domain.CityJsonWriter;
 import de.ii.ogcapi.features.cityjson.domain.EncodingAwareContextCityJson;
 import de.ii.ogcapi.features.cityjson.domain.FeatureTransformationContextCityJson;
+import de.ii.ogcapi.features.cityjson.domain.FeatureTransformationContextCityJson.StateCityJson.Section;
 import de.ii.ogcapi.features.cityjson.domain.Vertices;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -158,7 +159,17 @@ public class CityJsonWriterGeometry implements CityJsonWriter {
       EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
       throws IOException {
 
-    context.encoding().stopAndFlushGeometry();
+    try {
+      if (context.getState().inSection() == Section.WAITING_FOR_SURFACES) {
+        // No surfaces found, close geometry object
+        TokenBuffer buffer = context.getState().getGeometryBuffer().get();
+        buffer.writeEndObject();
+      }
+
+      context.encoding().stopAndFlushGeometry();
+    } catch (com.fasterxml.jackson.core.JsonGenerationException e) {
+      LOGGER.error("{} {}", context.getState().getCurrentId(), context.encoding().getJson());
+    }
 
     next.accept(context);
   }
