@@ -9,16 +9,10 @@ package de.ii.ogcapi.tiles
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
-import de.ii.ogcapi.foundation.domain.MergeBase
-import de.ii.ogcapi.foundation.domain.MergeCollection
-import de.ii.ogcapi.foundation.domain.MergeMap
-import de.ii.ogcapi.foundation.domain.MergeMinimal
-import de.ii.ogcapi.foundation.domain.MergeNested
-import de.ii.ogcapi.foundation.domain.MergeSimple
-import de.ii.ogcapi.tiles.domain.ImmutableRule
-import de.ii.ogcapi.tiles.domain.ImmutableMinMax
+import de.ii.ogcapi.foundation.domain.*
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax
 import de.ii.ogcapi.tiles.domain.ImmutablePredefinedFilter
+import de.ii.ogcapi.tiles.domain.ImmutableRule
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration
 import de.ii.ogcapi.tiles.domain.TilesConfiguration
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation

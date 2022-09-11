@@ -16,9 +16,9 @@ import de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.ImmutableMinMax.Builder;
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
-import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import java.util.AbstractMap;
@@ -146,7 +146,7 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
         Map<String, MinMax> zoomLevels =
             ImmutableMap.of(
                 "WebMercatorQuad",
-                new Builder()
+                new ImmutableMinMax.Builder()
                     .min(minzoom.orElse(0))
                     .max(maxzoom.orElse(24))
                     .getDefault(defzoom)

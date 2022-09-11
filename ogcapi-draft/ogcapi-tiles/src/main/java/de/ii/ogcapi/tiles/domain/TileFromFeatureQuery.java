@@ -12,7 +12,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
