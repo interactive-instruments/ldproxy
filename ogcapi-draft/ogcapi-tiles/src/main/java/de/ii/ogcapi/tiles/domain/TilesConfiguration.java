@@ -18,6 +18,8 @@ import com.google.common.collect.Maps;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.app.TileProviderFeatures;
 import de.ii.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.app.TileProviderTileServer;

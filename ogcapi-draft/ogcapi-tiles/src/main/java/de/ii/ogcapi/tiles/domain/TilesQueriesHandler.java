@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.app.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.app.TileProviderTileServer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
