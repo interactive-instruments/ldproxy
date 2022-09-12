@@ -98,6 +98,7 @@ public interface FeaturesCoreConfiguration
   int MINIMUM_PAGE_SIZE = 1;
   int DEFAULT_PAGE_SIZE = 10;
   int MAX_PAGE_SIZE = 10000;
+  // Todo delete
   String PARAMETER_Q = "q";
   String PARAMETER_BBOX = "bbox";
   String PARAMETER_DATETIME = "datetime";
@@ -317,6 +318,7 @@ public interface FeaturesCoreConfiguration
     return ImmutableList.of();
   }
 
+  // Todo maybe delete?
   @JsonIgnore
   @Value.Derived
   @Value.Auxiliary

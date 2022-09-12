@@ -10,7 +10,6 @@ package de.ii.ogcapi.features.core.app;
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
 import static de.ii.xtraplatform.cql.domain.In.ID_PLACEHOLDER;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -456,9 +455,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       } else if (filterableFields.containsKey(filterKey)) {
         String filterValue = query.get(filterKey);
         filters.put(filterKey, filterValue);
-      } else if (filterKey.equals(PARAMETER_Q)) {
-        String filterValue = query.get(filterKey);
-        filters.put(filterKey, filterValue);
       }
     }
 
@@ -509,9 +505,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                         .equals(FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE)) return null;
                     return timeToCql(filterableFields.get(filter.getKey()), filter.getValue())
                         .orElse(null);
-                  }
-                  if (filter.getKey().equals(PARAMETER_Q)) {
-                    return qToCql(qFields, filter.getValue()).orElse(null);
                   }
                   if (filterParameters.contains(filter.getKey())) {
                     Cql2Expression cqlPredicate;
