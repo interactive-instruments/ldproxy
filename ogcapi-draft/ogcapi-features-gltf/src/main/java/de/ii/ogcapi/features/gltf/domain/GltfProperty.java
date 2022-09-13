@@ -52,6 +52,14 @@ public interface GltfProperty {
 
   Optional<String> getNoData();
 
+  Optional<Boolean> getUseCode();
+
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean shouldUseCode() {
+    return Boolean.TRUE.equals(getUseCode().orElse(false));
+  }
+
   @Value.Check
   default void check() {
     Preconditions.checkState(

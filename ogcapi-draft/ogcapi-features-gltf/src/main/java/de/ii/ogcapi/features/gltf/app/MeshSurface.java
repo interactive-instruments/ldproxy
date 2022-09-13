@@ -48,7 +48,6 @@ interface MeshSurface {
   static List<MeshSurface> collectSolidSurfaces(FeatureGltf building) {
     ImmutableList.Builder<MeshSurface> meshSurfaceBuilder = ImmutableList.builder();
 
-    // TODO: also combine building part walls, roofs, etc?
     building
         .findPropertyByPath(CONSISTS_OF_BUILDING_PART)
         .map(PropertyBase::getNestedProperties)

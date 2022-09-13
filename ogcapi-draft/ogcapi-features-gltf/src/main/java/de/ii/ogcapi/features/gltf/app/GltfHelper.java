@@ -14,10 +14,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.gltf.domain.GltfAsset;
+import de.ii.ogcapi.features.gltf.domain.GltfProperty;
 import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.ogcapi.features.html.domain.Geometry.Coordinate;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
+import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -25,7 +29,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -401,5 +407,57 @@ public class GltfHelper {
     return v.size() == 2
         ? new Geometry.Coordinate(v.get(0) / length, v.get(1) / length)
         : new Geometry.Coordinate(v.get(0) / length, v.get(1) / length, v.get(2) / length);
+  }
+
+  public static Map<String, Map<String, Integer>> getEnums(
+      FeatureSchema schema, Map<String, GltfProperty> properties) {
+    Map<String, Map<String, Integer>> propertyEnums = new HashMap<>();
+    for (FeatureSchema property : schema.getProperties()) {
+      if (properties.containsKey(property.getName())
+          && property.getConstraints().filter(c -> !c.getEnumValues().isEmpty()).isPresent()) {
+        List<String> values =
+            property
+                .getConstraints()
+                .map(SchemaConstraints::getEnumValues)
+                .orElse(ImmutableList.of());
+
+        if (!values.isEmpty()) {
+          ImmutableMap.Builder<String, Integer> enumBuilder = ImmutableMap.builder();
+          for (int i = 0; i < values.size(); i++) {
+            enumBuilder.put(values.get(i), i);
+          }
+          propertyEnums.put(property.getName(), enumBuilder.build());
+        }
+      }
+    }
+    return propertyEnums;
+  }
+
+  public static boolean withSurfaceTypes(FeatureSchema featureSchema) {
+    return featureSchema.getProperties().stream()
+        .filter(property -> "surfaces".equals(property.getName()))
+        .findFirst()
+        .map(
+            surfaces ->
+                surfaces.getProperties().stream()
+                    .anyMatch(property -> "surfaceType".equals(property.getName())))
+        .isPresent();
+  }
+
+  public static Map<String, Byte> getSurfaceTypeEnums() {
+    return ImmutableMap.<String, Byte>builder()
+        .put("roof", (byte) 0)
+        .put("ground", (byte) 1)
+        .put("wall", (byte) 2)
+        .put("closure", (byte) 3)
+        .put("outer ceiling", (byte) 4)
+        .put("outer floor", (byte) 5)
+        .put("window", (byte) 6)
+        .put("door", (byte) 7)
+        .put("interior wall", (byte) 8)
+        .put("ceiling", (byte) 9)
+        .put("floor", (byte) 10)
+        .put("unknown", (byte) 255)
+        .build();
   }
 }

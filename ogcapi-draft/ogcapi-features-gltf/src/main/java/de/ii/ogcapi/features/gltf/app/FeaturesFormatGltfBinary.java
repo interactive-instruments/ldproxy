@@ -32,12 +32,14 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -76,13 +78,15 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   protected final EntityRegistry entityRegistry;
   protected final FeaturesCoreValidation featuresCoreValidator;
   protected final CrsTransformer toEcef;
+  protected final URI serviceUri;
 
   @Inject
   public FeaturesFormatGltfBinary(
       FeaturesCoreProviders providers,
       EntityRegistry entityRegistry,
       FeaturesCoreValidation featuresCoreValidator,
-      CrsTransformerFactory crsTransformerFactory) {
+      CrsTransformerFactory crsTransformerFactory,
+      ServicesContext servicesContext) {
     this.providers = providers;
     this.entityRegistry = entityRegistry;
     this.featuresCoreValidator = featuresCoreValidator;
@@ -93,6 +97,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
                 () ->
                     new IllegalStateException(
                         "Could not create a CRS transformer from CRS84h to EPSG:4978."));
+    this.serviceUri = servicesContext.getUri();
   }
 
   @Override
@@ -221,19 +226,26 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
     FeatureTypeConfigurationOgcApi collectionData =
         apiData.getCollectionData(collectionId).orElseThrow();
 
+    URI schemaUri =
+        serviceUri.resolve(
+            String.format(
+                "%s/%s/collections/%s/gltf/schema?f=json",
+                serviceUri.getPath(), apiData.getId(), collectionId));
+
     FeatureTransformationContextGltf transformationContextGltf =
         ImmutableFeatureTransformationContextGltf.builder()
             .from(transformationContext)
-            .clampToGround(
+            .clampToEllipsoid(
                 "true"
                     .equals(
                         transformationContext
                             .getOgcApiRequest()
                             .getParameters()
-                            .get("clampToGround")))
+                            .get("clampToEllipsoid")))
             .crsTransformerCrs84hToEcef(toEcef)
+            .schemaUri(schemaUri)
             .build();
 
-    return Optional.of(new FeatureEncoderGltf(transformationContextGltf, entityRegistry));
+    return Optional.of(new FeatureEncoderGltf(transformationContextGltf));
   }
 }

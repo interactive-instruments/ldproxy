@@ -33,23 +33,15 @@ import de.ii.ogcapi.features.gltf.domain.ImmutablePrimitive;
 import de.ii.ogcapi.features.gltf.domain.ImmutableProperty;
 import de.ii.ogcapi.features.gltf.domain.ImmutablePropertyTable;
 import de.ii.ogcapi.features.gltf.domain.ImmutableScene;
-import de.ii.ogcapi.features.gltf.domain.ImmutableSchema;
-import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaClass;
-import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaEnum;
-import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaEnumValue;
-import de.ii.ogcapi.features.gltf.domain.ImmutableSchemaProperty;
+import de.ii.ogcapi.features.gltf.domain.PropertyTable;
 import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.ogcapi.features.html.domain.Geometry.Coordinate;
 import de.ii.ogcapi.features.html.domain.Geometry.MultiPolygon;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.xtraplatform.base.domain.LogContext.MARKER;
-import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.SchemaConstraints;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import earcut4j.Earcut;
 import java.io.ByteArrayOutputStream;
@@ -84,7 +76,6 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private static final String INDICES = "_indices";
   private static final String VERTICES = "_vertices";
   private static final String NORMALS = "_normals";
-  private static final String PROPERTIES = "_properties";
   private static final String PROPERTY_PREFIX = "_p_";
   private static final int BUFFER_VIEW_NORMALS = 2;
   private static final int BUFFER_VIEW_INDICES = 0;
@@ -101,7 +92,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
   private static final String GML_ID = "gml_id";
   private static final String ID = "id";
-  private static final String SURFACE_TYPE = "surfaceType";
+  static final String SURFACE_TYPE = "surfaceType";
 
   private static final int ARRAY_BUFFER = 34962;
   private static final int ELEMENT_ARRAY_BUFFER = 34963;
@@ -117,20 +108,20 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
   private final FeatureTransformationContextGltf transformationContext;
   private final CrsTransformer crs84hToEcef;
-  private final boolean clampToGround;
+  private final boolean clampToEllipsoid;
   private final OutputStream outputStream;
   private final Map<String, Byte> surfaceTypeEnums;
+  private final boolean withSurfaceTypes;
   private final Map<String, ByteArrayOutputStream> buffers;
   private final Map<String, Integer> bufferViews;
   private final Map<String, Integer> currentBufferViewOffsets;
-  private final Map<String, Map<String, Integer>> enums;
   private final boolean polygonOrientationIsNotGuaranteed;
   private final GltfConfiguration configuration;
   private final Optional<FeatureSchema> featureSchema;
-  private final EntityRegistry entityRegistry;
 
   private ImmutableGltfAsset.Builder builder;
 
+  private Map<String, Map<String, Integer>> enums;
   private int nextNodeId;
   private int nextMeshId;
   private int nextAccessorId;
@@ -144,13 +135,11 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private int buildingCount;
   private long featuresDuration;
 
-  public FeatureEncoderGltf(
-      FeatureTransformationContextGltf transformationContext, EntityRegistry entityRegistry) {
+  public FeatureEncoderGltf(FeatureTransformationContextGltf transformationContext) {
     this.transformationContext = transformationContext;
     this.crs84hToEcef = transformationContext.getCrsTransformerCrs84hToEcef();
-    this.clampToGround = transformationContext.getClampToGround();
+    this.clampToEllipsoid = transformationContext.getClampToEllipsoid();
     this.featureSchema = transformationContext.getFeatureSchema();
-    this.entityRegistry = entityRegistry;
     this.outputStream = new OutputStreamToByteConsumer(this::push);
     this.withNormals =
         transformationContext.getConfiguration(GltfConfiguration.class).writeNormals();
@@ -166,11 +155,15 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             .getExtension(GltfConfiguration.class, transformationContext.getCollectionId())
             .orElseThrow();
     this.withProperties = !configuration.getProperties().isEmpty();
-    this.surfaceTypeEnums = new HashMap<>();
     this.buffers = new HashMap<>();
     this.bufferViews = new HashMap<>();
     this.currentBufferViewOffsets = new HashMap<>();
-    this.enums = new HashMap<>();
+    this.withSurfaceTypes = featureSchema.map(GltfHelper::withSurfaceTypes).orElse(false);
+    if (withSurfaceTypes) {
+      this.surfaceTypeEnums = GltfHelper.getSurfaceTypeEnums();
+    } else {
+      this.surfaceTypeEnums = ImmutableMap.of();
+    }
   }
 
   @Override
@@ -287,10 +280,9 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           break;
         case BOOLEAN:
         default:
-          // TODO
           throw new IllegalStateException(
               String.format(
-                  "Type of feature property is not supported in glTF: %s",
+                  "The glTF type of the feature property is currently not supported: %s",
                   property.getType().toString()));
       }
     } catch (NumberFormatException e) {
@@ -329,10 +321,6 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
   private long toMilliseconds(long nanoseconds) {
     return nanoseconds / 1_000_000;
-  }
-
-  private byte getSurfaceTypeCode(String name) {
-    return surfaceTypeEnums.computeIfAbsent(name, val -> (byte) surfaceTypeEnums.size());
   }
 
   private void initNewModel() {
@@ -394,59 +382,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                       PROPERTY_PREFIX + key + STRING_OFFSET, buffer.size());
                 }
               });
-    }
 
-    if (withProperties) {
-      featureSchema.ifPresent(
-          schema -> {
-            for (FeatureSchema property : schema.getProperties()) {
-              if (!configuration.getProperties().containsKey(property.getName())) {
-                continue;
-              }
-
-              // two options
-              List<String> values = ImmutableList.of();
-              if (property.getConstraints().filter(c -> !c.getEnumValues().isEmpty()).isPresent()) {
-                // 1) enum based on enum values
-                values =
-                    property
-                        .getConstraints()
-                        .map(SchemaConstraints::getEnumValues)
-                        .orElse(ImmutableList.of());
-              } else if (property
-                  .getConstraints()
-                  .filter(c -> c.getCodelist().isPresent())
-                  .isPresent()) {
-                // 2) enum based on a codelist, map codes to an integer enum
-                values =
-                    property
-                        .getConstraints()
-                        .flatMap(SchemaConstraints::getCodelist)
-                        .flatMap(
-                            codelist ->
-                                entityRegistry.getEntitiesForType(Codelist.class).stream()
-                                    .filter(codelist1 -> codelist1.getId().equals(codelist))
-                                    .findFirst()
-                                    .map(Codelist::getData)
-                                    .map(CodelistData::getEntries)
-                                    .map(Map::keySet)
-                                    .map(
-                                        set ->
-                                            set.stream()
-                                                .sorted()
-                                                .collect(Collectors.toUnmodifiableList())))
-                        .orElse(ImmutableList.of());
-              }
-
-              if (!values.isEmpty()) {
-                ImmutableMap.Builder<String, Integer> enumBuilder = ImmutableMap.builder();
-                for (int i = 0; i < values.size(); i++) {
-                  enumBuilder.put(values.get(i), i);
-                }
-                enums.put(property.getName(), enumBuilder.build());
-              }
-            }
-          });
+      enums = GltfHelper.getEnums(featureSchema.orElseThrow(), configuration.getProperties());
     }
   }
 
@@ -511,7 +448,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       nextBufferViewId++;
     }
 
-    if (withProperties || !surfaceTypeEnums.isEmpty()) {
+    if (withProperties || withSurfaceTypes) {
       size = buffers.get(FEATURE_ID).size();
       builder.addBufferViews(
           ImmutableBufferView.builder()
@@ -569,150 +506,29 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             .doubleSided(polygonOrientationIsNotGuaranteed)
             .build());
 
-    // TODO move to an API resource and reference with schemaUri?
-    ImmutableSchema.Builder schemaBuilder =
-        ImmutableSchema.builder()
-            .id(
-                transformationContext.getApiData().getId()
-                    + "_"
-                    + transformationContext.getCollectionId());
     ImmutablePropertyTable.Builder propertyTableBuilder =
         ImmutablePropertyTable.builder()
             .class_("building")
             .count(buffers.get(PROPERTY_PREFIX + SURFACE_TYPE).size());
-    ImmutableSchemaClass.Builder classBuilder = ImmutableSchemaClass.builder();
-    boolean hasExtStructuralMetadata = false;
-    if (withProperties) {
-      hasExtStructuralMetadata = true;
-      featureSchema.ifPresent(
-          schema -> {
-            for (FeatureSchema property : schema.getProperties()) {
-              if (!configuration.getProperties().containsKey(property.getName())) {
-                continue;
-              }
-              GLTF_TYPE type = configuration.getProperties().get(property.getName()).getType();
-              String noData =
-                  configuration.getProperties().get(property.getName()).getNoData().orElse("0");
-              ImmutableSchemaProperty.Builder propertyBuilder = ImmutableSchemaProperty.builder();
 
-              if (enums.containsKey(property.getName())) {
-                Map<String, Integer> enumValues = enums.get(property.getName());
-                ImmutableSchemaEnum.Builder schemaEnumBuilder =
-                    ImmutableSchemaEnum.builder()
-                        .name(property.getLabel())
-                        .description(property.getDescription())
-                        .valueType(type.name())
-                        .addValues(
-                            ImmutableSchemaEnumValue.builder()
-                                .value(Integer.parseInt(noData))
-                                .name("No data")
-                                .build());
-
-                if (property
-                    .getConstraints()
-                    .filter(c -> !c.getEnumValues().isEmpty())
-                    .isPresent()) {
-                  // 1) enum based on enum values
-                  enumValues.forEach(
-                      (key, value) ->
-                          schemaEnumBuilder.addValues(
-                              ImmutableSchemaEnumValue.builder().value(value).name(key).build()));
-                } else {
-                  // 2) enum based on a codelist
-                  Map<String, String> codelistValues =
-                      property
-                          .getConstraints()
-                          .flatMap(SchemaConstraints::getCodelist)
-                          .flatMap(
-                              codelist ->
-                                  entityRegistry.getEntitiesForType(Codelist.class).stream()
-                                      .filter(codelist1 -> codelist1.getId().equals(codelist))
-                                      .findFirst()
-                                      .map(Codelist::getData)
-                                      .map(CodelistData::getEntries))
-                          .orElse(ImmutableMap.of());
-
-                  enumValues.forEach(
-                      (key, value) ->
-                          schemaEnumBuilder.addValues(
-                              ImmutableSchemaEnumValue.builder()
-                                  .value(value)
-                                  .name(Objects.requireNonNull(codelistValues.get(key)))
-                                  .build()));
-                }
-
-                schemaBuilder.putEnums(property.getName(), schemaEnumBuilder.build());
-
-                propertyBuilder.type("ENUM");
-                propertyBuilder.enumType(property.getName());
-              } else {
-                // 3) just based on the specified type for the property
-                switch (type) {
-                  case STRING:
-                    propertyBuilder.type(type.name());
-                    propertyBuilder.noData(noData);
-                    break;
-                  case BOOLEAN:
-                    propertyBuilder.type(type.name());
-                    break;
-                  default:
-                    propertyBuilder.type("SCALAR");
-                    propertyBuilder.componentType(type.name());
-                    propertyBuilder.noData(noData);
-                    break;
-                }
-              }
-
-              propertyBuilder.description(property.getLabel());
-              property
-                  .getConstraints()
-                  .flatMap(SchemaConstraints::getRequired)
-                  .ifPresent(propertyBuilder::required);
-              classBuilder.putProperties(property.getName(), propertyBuilder.build());
-            }
-          });
-
-      for (Map.Entry<String, GltfProperty> entry : configuration.getProperties().entrySet()) {
-        String propertyName = entry.getKey();
-        Optional<Integer> stringOffset =
-            Optional.ofNullable(bufferViews.get(PROPERTY_PREFIX + propertyName + STRING_OFFSET));
-        Optional<String> stringOffsetType =
-            stringOffset.isPresent()
-                ? Optional.of(entry.getValue().getOffsetType().name())
-                : Optional.empty();
-        propertyTableBuilder.putProperties(
-            propertyName,
-            ImmutableProperty.builder()
-                .values(bufferViews.get(PROPERTY_PREFIX + propertyName))
-                .stringOffsets(stringOffset)
-                .stringOffsetType(stringOffsetType)
-                .build());
-      }
+    for (Map.Entry<String, GltfProperty> entry : configuration.getProperties().entrySet()) {
+      String propertyName = entry.getKey();
+      Optional<Integer> stringOffset =
+          Optional.ofNullable(bufferViews.get(PROPERTY_PREFIX + propertyName + STRING_OFFSET));
+      Optional<String> stringOffsetType =
+          stringOffset.isPresent()
+              ? Optional.of(entry.getValue().getOffsetType().name())
+              : Optional.empty();
+      propertyTableBuilder.putProperties(
+          propertyName,
+          ImmutableProperty.builder()
+              .values(bufferViews.get(PROPERTY_PREFIX + propertyName))
+              .stringOffsets(stringOffset)
+              .stringOffsetType(stringOffsetType)
+              .build());
     }
 
-    if (!surfaceTypeEnums.isEmpty()) {
-      hasExtStructuralMetadata = true;
-
-      schemaBuilder.putEnums(
-          SURFACE_TYPE,
-          ImmutableSchemaEnum.builder()
-              .name("Semantic Surface Types")
-              .valueType(UINT8.name())
-              .values(
-                  surfaceTypeEnums.entrySet().stream()
-                      .map(
-                          entry ->
-                              ImmutableSchemaEnumValue.builder()
-                                  .value(entry.getValue())
-                                  .name(entry.getKey())
-                                  .build())
-                      .collect(Collectors.toUnmodifiableList()))
-              .build());
-
-      classBuilder.putProperties(
-          "surfaceType",
-          ImmutableSchemaProperty.builder().type("ENUM").enumType(SURFACE_TYPE).build());
-
+    if (withSurfaceTypes) {
       propertyTableBuilder.putProperties(
           "surfaceType",
           ImmutableProperty.builder()
@@ -720,17 +536,17 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               .build());
     }
 
-    if (hasExtStructuralMetadata) {
-      schemaBuilder.putClasses("building", classBuilder.build());
+    PropertyTable propertyTable = propertyTableBuilder.build();
 
+    if (transformationContext.getSchemaUri().isPresent() && propertyTable.getCount() > 0) {
       builder
           .putExtensions(
               EXT_STRUCTURAL_METADATA,
               ImmutableMap.of(
-                  "schema",
-                  schemaBuilder.build(),
+                  "schemaUri",
+                  transformationContext.getSchemaUri().get().toString(),
                   "propertyTables",
-                  ImmutableList.of(propertyTableBuilder.build())))
+                  ImmutableList.of(propertyTable)))
           .addExtensionsUsed(EXT_STRUCTURAL_METADATA, EXT_MESH_FEATURES);
     }
 
@@ -741,7 +557,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     if (withNormals) {
       bufferList.add(buffers.get(NORMALS));
     }
-    if (withProperties || !surfaceTypeEnums.isEmpty()) {
+    if (withProperties || withSurfaceTypes) {
       bufferList.add(buffers.get(FEATURE_ID));
     }
     bufferList.addAll(
@@ -826,7 +642,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         ByteArrayOutputStream buffer = buffers.get(PROPERTY_PREFIX + SURFACE_TYPE);
 
         IntStream.range(0, vertexCountSurface).forEach(i -> featureIds.add(buffer.size()));
-        buffer.write((byte) getSurfaceTypeCode(surface.getSurfaceType().orElse("unknown")));
+        buffer.write(surfaceTypeEnums.get(surface.getSurfaceType().orElse("unknown")));
 
         configuration
             .getProperties()
@@ -1192,7 +1008,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
           coords[n * 3] = coordList.get(n).get(0);
           coords[n * 3 + 1] = coordList.get(n).get(1);
           coords[n * 3 + 2] =
-              clampToGround ? coordList.get(n).get(2) - minZ : coordList.get(n).get(2);
+              clampToEllipsoid ? coordList.get(n).get(2) - minZ : coordList.get(n).get(2);
         }
 
         // transform to ECEF coordinates

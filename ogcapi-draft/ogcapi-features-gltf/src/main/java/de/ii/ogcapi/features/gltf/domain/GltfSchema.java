@@ -16,11 +16,13 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableSchema.Builder.class)
-public interface Schema {
+@JsonDeserialize(builder = ImmutableGltfSchema.Builder.class)
+public interface GltfSchema {
+
+  String SCHEMA_REF = "#/components/schemas/Metadata3dSchema";
 
   @SuppressWarnings("UnstableApiUsage")
-  Funnel<Schema> FUNNEL =
+  Funnel<GltfSchema> FUNNEL =
       (from, into) -> {
         into.putString(from.getId(), StandardCharsets.UTF_8);
         from.getName().ifPresent(v -> into.putString(v, StandardCharsets.UTF_8));

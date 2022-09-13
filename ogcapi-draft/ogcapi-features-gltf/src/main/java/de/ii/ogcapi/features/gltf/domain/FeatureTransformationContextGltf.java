@@ -9,13 +9,17 @@ package de.ii.ogcapi.features.gltf.domain;
 
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import java.net.URI;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGltf implements FeatureTransformationContext {
 
-  public abstract boolean getClampToGround();
+  public abstract boolean getClampToEllipsoid();
 
   public abstract CrsTransformer getCrsTransformerCrs84hToEcef();
+
+  public abstract Optional<URI> getSchemaUri();
 }

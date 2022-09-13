@@ -24,18 +24,19 @@ import javax.inject.Singleton;
 /**
  * @langEn TODO
  * @langDe TODO
- * @name clampToGround
+ * @name clampToEllipsoid
  * @endpoints Features
  */
 @Singleton
 @AutoBind
-public class QueryParameterClampToGround extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterClampToEllipsoid extends ApiExtensionCache
+    implements OgcApiQueryParameter {
 
   private final FeaturesCoreProviders providers;
   private final SchemaValidator schemaValidator;
 
   @Inject
-  public QueryParameterClampToGround(
+  public QueryParameterClampToEllipsoid(
       FeaturesCoreProviders providers, SchemaValidator schemaValidator) {
     this.providers = providers;
     this.schemaValidator = schemaValidator;
@@ -43,7 +44,7 @@ public class QueryParameterClampToGround extends ApiExtensionCache implements Og
 
   @Override
   public String getId() {
-    return "clampToGround";
+    return "clampToEllipsoid";
   }
 
   @Override
@@ -59,7 +60,7 @@ public class QueryParameterClampToGround extends ApiExtensionCache implements Og
 
   @Override
   public String getName() {
-    return "clampToGround";
+    return "clampToEllipsoid";
   }
 
   @Override
