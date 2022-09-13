@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class CesiumDataFeatures {
 
   public final List<FeatureHtml> features;
-  public final boolean clampToGround;
+  public final boolean clampToEllipsoid;
   public final String encodedUrl;
   private Double minLon = null;
   private Double maxLon = null;
@@ -33,7 +33,7 @@ public class CesiumDataFeatures {
 
   public CesiumDataFeatures(List<FeatureHtml> features, String url) {
     this.features = features;
-    this.clampToGround = true; // TODO make configurable
+    this.clampToEllipsoid = true; // TODO make configurable
     this.encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8);
   }
 
@@ -78,7 +78,7 @@ public class CesiumDataFeatures {
               .map(Geometry::getCoordinatesFlat)
               .map(
                   coords -> {
-                    if (!clampToGround) {
+                    if (!clampToEllipsoid) {
                       return coords;
                     }
                     final Optional<Double> optionalMin = getMin(coords, 2);

@@ -618,7 +618,7 @@ public class Tiles3dHelper {
                     .addParameter("f", "glb")
                     .addParameter("bbox", bboxString)
                     .addParameter("filter", contentFilterString)
-                    .addParameter("clampToGround", String.valueOf(cfg.shouldClampToGround()))
+                    .addParameter("clampToEllipsoid", String.valueOf(cfg.shouldClampToEllipsoid()))
                     .build())
             .mediaType(mediaType)
             .alternateMediaTypes(ImmutableList.of())

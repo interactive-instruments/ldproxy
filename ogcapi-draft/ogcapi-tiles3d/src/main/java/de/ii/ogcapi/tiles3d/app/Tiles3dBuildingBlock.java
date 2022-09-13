@@ -35,7 +35,7 @@ public class Tiles3dBuildingBlock implements ApiBuildingBlock {
         .maxLevel(0)
         .subtreeLevels(3)
         .geometricErrorRoot(0.0f)
-        .clampToGround(false)
+        .clampToEllipsoid(false)
         .build();
   }
 }

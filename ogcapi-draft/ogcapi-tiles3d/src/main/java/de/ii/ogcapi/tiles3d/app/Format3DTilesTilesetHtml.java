@@ -61,7 +61,7 @@ public class Format3DTilesTilesetHtml implements Format3dTilesTileset {
         .filter(
             config ->
                 config.isEnabled()
-                    && (!config.shouldClampToGround()
+                    && (!config.shouldClampToEllipsoid()
                         || config.getIonAccessToken().isPresent()
                         || config.getMaptilerApiKey().isPresent()))
         .isPresent();
@@ -94,7 +94,6 @@ public class Format3DTilesTilesetHtml implements Format3dTilesTileset {
       OgcApi api,
       ApiRequestContext requestContext) {
 
-    return new Tileset3dTilesView(
-        tileset, api.getData(), collectionId, requestContext.getStaticUrlPrefix());
+    return new Tileset3dTilesView(tileset, api, collectionId, requestContext.getStaticUrlPrefix());
   }
 }

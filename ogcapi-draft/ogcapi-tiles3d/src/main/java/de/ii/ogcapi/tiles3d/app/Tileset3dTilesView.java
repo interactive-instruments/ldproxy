@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.MapClient;
@@ -29,7 +29,7 @@ public class Tileset3dTilesView extends GenericView {
 
   public Tileset3dTilesView(
       Tileset3dTiles tileset,
-      OgcApiDataV2 apiData,
+      OgcApi api,
       String collectionId,
       // String attribution,
       String urlPrefix) {
@@ -37,9 +37,9 @@ public class Tileset3dTilesView extends GenericView {
     this.title = "3D Tiles";
 
     Tiles3dConfiguration tiles3dConfig =
-        apiData.getExtension(Tiles3dConfiguration.class, collectionId).orElseThrow();
+        api.getData().getExtension(Tiles3dConfiguration.class, collectionId).orElseThrow();
     HtmlConfiguration htmlConfig =
-        apiData.getExtension(HtmlConfiguration.class, collectionId).orElseThrow();
+        api.getData().getExtension(HtmlConfiguration.class, collectionId).orElseThrow();
     this.mapClient =
         new ImmutableMapClient.Builder()
             .type(Type.CESIUM)
@@ -54,7 +54,7 @@ public class Tileset3dTilesView extends GenericView {
             .attribution(tileset.getAsset().getCopyright().map(att -> att.replace("'", "\\'")))
             .build();
 
-    String tilesetJson = null;
+    String tilesetJson;
     try {
       tilesetJson =
           new ObjectMapper()
@@ -67,10 +67,12 @@ public class Tileset3dTilesView extends GenericView {
     this.cesiumData =
         new CesiumData3dTiles(
             tilesetJson,
-            tiles3dConfig.shouldClampToGround(),
+            api.getSpatialExtent(collectionId),
+            tiles3dConfig.shouldClampToEllipsoid(),
             tiles3dConfig.getIonAccessToken(),
             tiles3dConfig.getMaptilerApiKey(),
-            tiles3dConfig.getCustomTerrainProviderUri());
+            tiles3dConfig.getCustomTerrainProviderUri(),
+            tiles3dConfig.getTerrainHeightDifference());
     this.urlPrefix = urlPrefix;
   }
 }

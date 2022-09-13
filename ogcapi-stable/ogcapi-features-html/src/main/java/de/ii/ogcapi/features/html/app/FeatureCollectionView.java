@@ -152,7 +152,7 @@ public class FeatureCollectionView extends DatasetView {
                   .removeParameters("f")
                   .ensureParameter("f", "glb")
                   // must be true as long as no terrain is used in the Cesium viewer
-                  .ensureParameter("clampToGround", "true")
+                  .ensureParameter("clampToEllipsoid", "true")
                   .toString());
     } else {
       LOGGER.error(

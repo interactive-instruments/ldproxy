@@ -39,12 +39,12 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
   Optional<SeedingOptions> getSeedingOptions();
 
   @Nullable
-  Boolean getClampToGround();
+  Boolean getClampToEllipsoid();
 
   @Value.Derived
   @Value.Auxiliary
-  default boolean shouldClampToGround() {
-    return Boolean.TRUE.equals(getClampToGround());
+  default boolean shouldClampToEllipsoid() {
+    return Boolean.TRUE.equals(getClampToEllipsoid());
   }
 
   Optional<String> getIonAccessToken();
@@ -52,6 +52,8 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
   Optional<String> getMaptilerApiKey();
 
   Optional<String> getCustomTerrainProviderUri();
+
+  Optional<Double> getTerrainHeightDifference();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 

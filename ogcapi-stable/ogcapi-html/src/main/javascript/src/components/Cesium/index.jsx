@@ -9,6 +9,8 @@ import {
   IonResource,
   Cesium3DTileset,
   Cesium3DTileStyle,
+  Matrix4,
+  Cartesian3,
 } from "c137.js";
 
 import "./style.css";
@@ -75,10 +77,11 @@ const Cesium = ({
   }
 
   if (getTileset) {
-    const tileset = getTileset(Cesium3DTileset);
+    const tileset = getTileset(Cesium3DTileset, Matrix4, Cartesian3);
     if (getStyle) {
       tileset.style = getStyle(Cesium3DTileStyle);
     }
+    console.log(tileset.modelMatrix);
     viewer.scene.primitives.add(tileset);
     viewer.flyTo(tileset);
   }
