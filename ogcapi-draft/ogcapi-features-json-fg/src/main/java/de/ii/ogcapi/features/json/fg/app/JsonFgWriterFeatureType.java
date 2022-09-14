@@ -80,8 +80,7 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
       throws IOException {
     if (isEnabled) {
       if (templated) writeAtEnd = types;
-      else if (!context.encoding().isFeatureCollection()
-          || true /* TODO temporary override to support T17 clients, remove */) {
+      else if (!context.encoding().isFeatureCollection()) {
         writeTypes(context.encoding(), types);
       }
     }

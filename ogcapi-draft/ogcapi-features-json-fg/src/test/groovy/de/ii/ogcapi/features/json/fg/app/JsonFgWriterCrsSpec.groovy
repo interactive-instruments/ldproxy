@@ -29,8 +29,7 @@ class JsonFgWriterCrsSpec extends Specification {
         boolean isCollection = true
         EpsgCrs crs = DEFAULT_CRS
         String expected = "{" + System.lineSeparator() +
-                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"," + System.lineSeparator() +
-                "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
+                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
         when:
@@ -47,8 +46,7 @@ class JsonFgWriterCrsSpec extends Specification {
         boolean isCollection = true
         EpsgCrs crs = OTHER_CRS
         String expected = "{" + System.lineSeparator() +
-                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"," + System.lineSeparator() +
-                "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
+                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
         when:
@@ -66,8 +64,7 @@ class JsonFgWriterCrsSpec extends Specification {
         boolean isCollection = false
         EpsgCrs crs = DEFAULT_CRS
         String expected = "{" + System.lineSeparator() +
-                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"," + System.lineSeparator() +
-                "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
+                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
         when:
@@ -84,8 +81,7 @@ class JsonFgWriterCrsSpec extends Specification {
         boolean isCollection = false
         EpsgCrs crs = OTHER_CRS
         String expected = "{" + System.lineSeparator() +
-                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"," + System.lineSeparator() +
-                "  \"coord-ref-sys\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
+                "  \""+JsonFgWriterCrs.JSON_KEY+"\" : \""+crs.toUriString()+"\"" + System.lineSeparator() +
                 "}"
 
         when:

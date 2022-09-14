@@ -20,7 +20,8 @@ import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.json.fg.domain.JsonFgConfiguration;
-import de.ii.ogcapi.features.json.fg.domain.WhereConfiguration;
+import de.ii.ogcapi.features.json.fg.domain.JsonFgGeometryType;
+import de.ii.ogcapi.features.json.fg.domain.PlaceConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -30,16 +31,22 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.SchemaConstraints;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -214,15 +221,19 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
                     .isPresent());
 
     // the GeoJSON "geometry" member is included, if and only if
-    // - the value of "where" and "geometry" are identical in which case "geometry" is used or
+    // - the value of "place" and "geometry" are identical in which case "geometry" is used or
     // - the collection is configured to always include the GeoJSON "geometry" member
     boolean includePrimaryGeometry =
-        transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs())
+        (transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs())
+                && transformationContext
+                    .getFeatureSchema()
+                    .map(FeaturesFormatJsonFg::hasSimpleFeatureGeometryType)
+                    .orElse(true))
             || transformationContext
                 .getApiData()
                 .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
-                .map(JsonFgConfiguration::getWhere)
-                .map(WhereConfiguration::getAlwaysIncludeGeoJsonGeometry)
+                .map(JsonFgConfiguration::getPlace)
+                .map(PlaceConfiguration::getAlwaysIncludeGeoJsonGeometry)
                 .orElse(false);
     transformationContextJsonFgBuilder
         .suppressPrimaryGeometry(!includePrimaryGeometry)
@@ -230,5 +241,35 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
 
     return Optional.of(
         new FeatureEncoderGeoJson(transformationContextJsonFgBuilder.build(), geoJsonWriters));
+  }
+
+  public static boolean hasSimpleFeatureGeometryType(FeatureSchema schema) {
+    return schema.getProperties().stream()
+        .noneMatch(
+            p ->
+                p.isPrimaryGeometry()
+                    && SimpleFeatureGeometry.MULTI_POLYGON.equals(
+                        p.getGeometryType().orElse(SimpleFeatureGeometry.NONE))
+                    && p.getConstraints().map(SchemaConstraints::isComposite).orElse(false)
+                    && p.getConstraints().map(SchemaConstraints::isClosed).orElse(false));
+  }
+
+  public static Optional<Integer> getGeometryDimension(FeatureSchema schema) {
+    List<Integer> dimensions =
+        schema.getProperties().stream()
+            .filter(SchemaBase::isPrimaryGeometry)
+            .map(
+                p ->
+                    JsonFgGeometryType.getGeometryDimension(
+                        p.getGeometryType().orElse(SimpleFeatureGeometry.NONE),
+                        p.getConstraints().map(SchemaConstraints::isComposite).orElse(false),
+                        p.getConstraints().map(SchemaConstraints::isComposite).orElse(false)))
+            .flatMap(Optional::stream)
+            .distinct()
+            .collect(Collectors.toUnmodifiableList());
+    if (dimensions.size() != 1) {
+      return Optional.empty();
+    }
+    return Optional.of(dimensions.get(0));
   }
 }

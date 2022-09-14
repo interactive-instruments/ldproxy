@@ -13,8 +13,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.json.fg.domain.JsonFgConfiguration;
+import de.ii.ogcapi.features.json.fg.domain.JsonFgGeometryType;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.json.domain.GeoJsonGeometryType;
+import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -23,22 +24,23 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class JsonFgWriterWhere implements GeoJsonWriter {
+public class JsonFgWriterPlace implements GeoJsonWriter {
 
-  public static String JSON_KEY = "where";
+  public static String JSON_KEY = "place";
 
   @Inject
-  JsonFgWriterWhere() {}
+  JsonFgWriterPlace() {}
 
   @Override
-  public JsonFgWriterWhere create() {
-    return new JsonFgWriterWhere();
+  public JsonFgWriterPlace create() {
+    return new JsonFgWriterPlace();
   }
 
   boolean isEnabled;
   private boolean geometryOpen;
+  private boolean additionalArray;
   private boolean hasPrimaryGeometry;
-  private boolean suppressWhere;
+  private boolean suppressPlace;
   private TokenBuffer json;
 
   @Override
@@ -49,6 +51,7 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
   private void reset(EncodingAwareContextGeoJson context) {
     this.geometryOpen = false;
     this.hasPrimaryGeometry = false;
+    this.additionalArray = false;
     this.json = new TokenBuffer(new ObjectMapper(), false);
     if (context.encoding().getPrettify()) {
       json.useDefaultPrettyPrinter();
@@ -61,8 +64,15 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
       throws IOException {
     isEnabled = isEnabled(context);
 
-    // set where to null, if the geometry is in WGS84 (in this case it is in "geometry")
-    suppressWhere = context.encoding().getTargetCrs().equals(context.encoding().getDefaultCrs());
+    // set 'place' to null, if the geometry is in WGS84 (in this case it is in "geometry")
+    // and a simple feature geometry type
+    suppressPlace =
+        context.encoding().getTargetCrs().equals(context.encoding().getDefaultCrs())
+            && context
+                .encoding()
+                .getFeatureSchema()
+                .map(FeaturesFormatJsonFg::hasSimpleFeatureGeometryType)
+                .orElse(true);
 
     next.accept(context);
   }
@@ -81,17 +91,33 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
     if (isEnabled
-        && !suppressWhere
+        && !suppressPlace
         && context.schema().filter(SchemaBase::isSpatial).isPresent()
         && context.geometryType().isPresent()
         && context.schema().get().isPrimaryGeometry()) {
 
+      String type =
+          JsonFgGeometryType.forSimpleFeatureType(
+                  context.geometryType().get(),
+                  context
+                      .schema()
+                      .flatMap(s -> s.getConstraints().flatMap(SchemaConstraints::getComposite))
+                      .orElse(false),
+                  context
+                      .schema()
+                      .flatMap(s -> s.getConstraints().flatMap(SchemaConstraints::getClosed))
+                      .orElse(false))
+              .toString();
+
       json.writeFieldName(JSON_KEY);
       json.writeStartObject();
-      json.writeStringField(
-          "type",
-          GeoJsonGeometryType.forSimpleFeatureType(context.geometryType().get()).toString());
+      json.writeStringField("type", type);
       json.writeFieldName("coordinates");
+
+      if (type.equals("Polyhedron")) {
+        json.writeStartArray();
+        additionalArray = true;
+      }
 
       geometryOpen = true;
       hasPrimaryGeometry = true;
@@ -131,6 +157,11 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
     if (context.schema().filter(SchemaBase::isSpatial).isPresent() && geometryOpen) {
 
       this.geometryOpen = false;
+
+      if (additionalArray) {
+        additionalArray = false;
+        json.writeEndArray();
+      }
 
       // close geometry object
       json.writeEndObject();
@@ -180,13 +211,13 @@ public class JsonFgWriterWhere implements GeoJsonWriter {
         .filter(
             cfg ->
                 Objects.requireNonNullElse(
-                    Objects.nonNull(cfg.getWhere())
-                        ? Objects.requireNonNullElse(cfg.getWhere().getEnabled(), true)
+                    Objects.nonNull(cfg.getPlace())
+                        ? Objects.requireNonNullElse(cfg.getPlace().getEnabled(), true)
                         : true,
                     true))
         .filter(
             cfg ->
-                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.where)
+                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.place)
                     || context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
         .isPresent();
   }

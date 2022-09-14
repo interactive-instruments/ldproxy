@@ -69,30 +69,31 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
   enum OPTION {
     describedby,
     featureType,
-    when,
-    where,
+    time,
+    place,
     coordRefSys,
-    links
+    links,
+    geometryDimension
   }
 
   /**
-   * @langEn Enables the output of "when" for features with a primary temporal property.
-   * @langDe Aktiviert die Ausgabe von "when" bei Features mit einer primären zeitlichen
+   * @langEn Enables the output of "time" for features with a primary temporal property.
+   * @langDe Aktiviert die Ausgabe von "time" bei Features mit einer primären zeitlichen
    *     Eigenschaft.
    * @default `true`
    */
   @Nullable
-  Boolean getWhen();
+  Boolean getTime();
 
   /**
-   * @langEn Enables the output of "where" for features with geometries in a coordinate reference
+   * @langEn Enables the output of "place" for features with geometries in a coordinate reference
    *     system other than `CRS84` or `CRS84h`.
-   * @langDe Aktiviert die Ausgabe von "where" bei Features mit Geometrien in einem anderen
+   * @langDe Aktiviert die Ausgabe von "place" bei Features mit Geometrien in einem anderen
    *     Koordinatenreferenzsystem als `CRS84` oder `CRS84h`
    * @default `{ "enabled": true, "alwaysIncludeGeoJsonGeometry": false }`
    */
   @Nullable
-  WhereConfiguration getWhere();
+  PlaceConfiguration getPlace();
 
   /**
    * @langEn Enables the output of links to JSON Schema documents to the JSON instant, e.g. for
@@ -134,10 +135,10 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as
-   *     well. Allowed values are: `describedby`, `featureType`, `when`, `where`, `coordRefSys`,
-   *     `left`.
+   *     well. Allowed values are: `describedby`, `featureType`, `time`, `place`, `coordRefSys`,
+   *     `links`.
    * @langDe Die Option ermöglicht, dass ausgewählte JSON-FG-Erweiterungen auch im GeoJSON-Encoding
-   *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `when`, `where`,
+   *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `time`, `place`,
    *     `coordRefSys`, `links``
    * @default `[]`
    */
@@ -155,8 +156,8 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
 
     ImmutableJsonFgConfiguration src = (ImmutableJsonFgConfiguration) source;
 
-    if (Objects.nonNull(getWhere()) && Objects.nonNull(src.getWhere()))
-      builder.where(getWhere().mergeInto(src.getWhere()));
+    if (Objects.nonNull(getPlace()) && Objects.nonNull(src.getPlace()))
+      builder.place(getPlace().mergeInto(src.getPlace()));
 
     if (Objects.nonNull(getFeatureType())) builder.featureType(getFeatureType());
     else if (Objects.nonNull(src.getFeatureType())) builder.featureType(src.getFeatureType());

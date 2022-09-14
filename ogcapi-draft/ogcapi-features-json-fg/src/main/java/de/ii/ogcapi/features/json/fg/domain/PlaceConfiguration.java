@@ -14,8 +14,8 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = ImmutableWhereConfiguration.Builder.class)
-public interface WhereConfiguration {
+@JsonDeserialize(builder = ImmutablePlaceConfiguration.Builder.class)
+public interface PlaceConfiguration {
 
   @Nullable
   Boolean getEnabled();
@@ -23,11 +23,11 @@ public interface WhereConfiguration {
   @Nullable
   Boolean getAlwaysIncludeGeoJsonGeometry();
 
-  default WhereConfiguration mergeInto(WhereConfiguration src) {
+  default PlaceConfiguration mergeInto(PlaceConfiguration src) {
     if (Objects.isNull(src)) return this;
 
-    ImmutableWhereConfiguration.Builder builder =
-        new ImmutableWhereConfiguration.Builder().from(src).from(this);
+    ImmutablePlaceConfiguration.Builder builder =
+        new ImmutablePlaceConfiguration.Builder().from(src).from(this);
 
     return builder.build();
   }

@@ -108,7 +108,7 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
                       context.encoding().getServiceUrl()
                           + "/collections/"
                           + context.encoding().getCollectionId()
-                          + "/schemas/feature")
+                          + "/schemas/item")
                   .type("application/schema+json")
                   .title(
                       i18n.get("schemaLinkFeature", context.encoding().getLanguage())

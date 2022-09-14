@@ -21,9 +21,9 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class JsonFgWriterWhen implements GeoJsonWriter {
+public class JsonFgWriterTime implements GeoJsonWriter {
 
-  public static String JSON_KEY = "when";
+  public static String JSON_KEY = "time";
 
   boolean isEnabled;
   String currentIntervalStart;
@@ -31,11 +31,11 @@ public class JsonFgWriterWhen implements GeoJsonWriter {
   String currentInstant;
 
   @Inject
-  JsonFgWriterWhen() {}
+  JsonFgWriterTime() {}
 
   @Override
-  public JsonFgWriterWhen create() {
-    return new JsonFgWriterWhen();
+  public JsonFgWriterTime create() {
+    return new JsonFgWriterTime();
   }
 
   @Override
@@ -118,10 +118,10 @@ public class JsonFgWriterWhen implements GeoJsonWriter {
         .get(context.encoding().getCollectionId())
         .getExtension(JsonFgConfiguration.class)
         .filter(JsonFgConfiguration::isEnabled)
-        .filter(cfg -> Objects.requireNonNullElse(cfg.getWhen(), false))
+        .filter(cfg -> Objects.requireNonNullElse(cfg.getTime(), false))
         .filter(
             cfg ->
-                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.when)
+                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.time)
                     || context.encoding().getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE))
         .isPresent();
   }
