@@ -14,6 +14,7 @@ import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.json.domain.GeoJsonGeometryType;
 import java.io.IOException;
@@ -93,32 +94,38 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
       throws IOException {
     if (context.schema().filter(SchemaBase::isSpatial).isPresent()
         && context.geometryType().isPresent()) {
-      if (suppressPrimaryGeometry && context.schema().get().isPrimaryGeometry()) {
-        inPrimaryGeometry = true;
-      } else {
-        if (context.schema().get().isPrimaryGeometry()) {
-          hasPrimaryGeometry = true;
+
+      // TODO hack, remove after #719 is fixed
+      if (!"bbox".equals(context.schema().map(FeatureSchema::getName).orElse(""))) {
+
+        if (suppressPrimaryGeometry && context.schema().get().isPrimaryGeometry()) {
           inPrimaryGeometry = true;
-          context.encoding().stopBuffering();
-
-          context.encoding().getJson().writeFieldName("geometry");
         } else {
-          context.encoding().getJson().writeFieldName(context.schema().get().getName());
+          if (context.schema().get().isPrimaryGeometry()) {
+            hasPrimaryGeometry = true;
+            inPrimaryGeometry = true;
+            context.encoding().stopBuffering();
+
+            context.encoding().getJson().writeFieldName("geometry");
+          } else {
+            context.encoding().getJson().writeFieldName(context.schema().get().getName());
+          }
+
+          context.encoding().getJson().writeStartObject();
+          context
+              .encoding()
+              .getJson()
+              .writeStringField(
+                  "type",
+                  GeoJsonGeometryType.forSimpleFeatureType(context.geometryType().get())
+                      .toString());
+          context.encoding().getJson().writeFieldName("coordinates");
+
+          this.geometryOpen = true;
         }
-
-        context.encoding().getJson().writeStartObject();
-        context
-            .encoding()
-            .getJson()
-            .writeStringField(
-                "type",
-                GeoJsonGeometryType.forSimpleFeatureType(context.geometryType().get()).toString());
-        context.encoding().getJson().writeFieldName("coordinates");
-
-        this.geometryOpen = true;
+      } else {
+        startBufferingIfNecessary(context);
       }
-    } else {
-      startBufferingIfNecessary(context);
     }
 
     next.accept(context);
