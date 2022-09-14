@@ -70,6 +70,19 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
                       .type(MediaType.APPLICATION_JSON)
                       .title(i18n.get("3dtilesLink", language))
                       .build())
+              .add(
+                  new ImmutableLink.Builder()
+                      .href(
+                          uriCustomizer
+                              .copy()
+                              .ensureNoTrailingSlash()
+                              .ensureLastPathSegment("3dtiles")
+                              .removeParameters("f")
+                              .toString())
+                      .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
+                      .type("application/json+3dtiles")
+                      .title(i18n.get("3dtilesLink", language))
+                      .build())
               .build());
 
       collection.putExtensions("collectionType", "3d-container");
