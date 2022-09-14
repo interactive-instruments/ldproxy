@@ -21,7 +21,6 @@ import de.ii.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.json.fg.domain.JsonFgConfiguration;
 import de.ii.ogcapi.features.json.fg.domain.JsonFgGeometryType;
-import de.ii.ogcapi.features.json.fg.domain.PlaceConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -232,8 +231,7 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
             || transformationContext
                 .getApiData()
                 .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
-                .map(JsonFgConfiguration::getPlace)
-                .map(PlaceConfiguration::getAlwaysIncludeGeoJsonGeometry)
+                .map(JsonFgConfiguration::getAlwaysIncludeGeoJsonGeometry)
                 .orElse(false);
     transformationContextJsonFgBuilder
         .suppressPrimaryGeometry(!includePrimaryGeometry)

@@ -73,14 +73,13 @@ public class JsonFgWriterTime implements GeoJsonWriter {
     next.accept(context);
 
     if (isEnabled) {
+      JsonGenerator json = context.encoding().getJson();
       if (Objects.nonNull(currentInstant)) {
-        JsonGenerator json = context.encoding().getJson();
         json.writeFieldName(JSON_KEY);
         json.writeStartObject();
         json.writeStringField("instant", currentInstant);
         json.writeEndObject();
       } else if (Objects.nonNull(currentIntervalStart) || Objects.nonNull(currentIntervalEnd)) {
-        JsonGenerator json = context.encoding().getJson();
         json.writeFieldName(JSON_KEY);
         json.writeStartObject();
         json.writeArrayFieldStart("interval");
@@ -90,6 +89,9 @@ public class JsonFgWriterTime implements GeoJsonWriter {
         else json.writeNull();
         json.writeEndArray();
         json.writeEndObject();
+      } else {
+        json.writeFieldName(JSON_KEY);
+        json.writeNull();
       }
     }
   }
@@ -118,7 +120,6 @@ public class JsonFgWriterTime implements GeoJsonWriter {
         .get(context.encoding().getCollectionId())
         .getExtension(JsonFgConfiguration.class)
         .filter(JsonFgConfiguration::isEnabled)
-        .filter(cfg -> Objects.requireNonNullElse(cfg.getTime(), false))
         .filter(
             cfg ->
                 cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.time)

@@ -77,23 +77,12 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
   }
 
   /**
-   * @langEn Enables the output of "time" for features with a primary temporal property.
-   * @langDe Aktiviert die Ausgabe von "time" bei Features mit einer primären zeitlichen
-   *     Eigenschaft.
-   * @default `true`
+   * @langEn TODO.
+   * @langDe TODO.
+   * @default `false`
    */
   @Nullable
-  Boolean getTime();
-
-  /**
-   * @langEn Enables the output of "place" for features with geometries in a coordinate reference
-   *     system other than `CRS84` or `CRS84h`.
-   * @langDe Aktiviert die Ausgabe von "place" bei Features mit Geometrien in einem anderen
-   *     Koordinatenreferenzsystem als `CRS84` oder `CRS84h`
-   * @default `{ "enabled": true, "alwaysIncludeGeoJsonGeometry": false }`
-   */
-  @Nullable
-  PlaceConfiguration getPlace();
+  Boolean getAlwaysIncludeGeoJsonGeometry();
 
   /**
    * @langEn Enables the output of links to JSON Schema documents to the JSON instant, e.g. for
@@ -155,9 +144,6 @@ public interface JsonFgConfiguration extends ExtensionConfiguration {
         new ImmutableJsonFgConfiguration.Builder().from(source).from(this);
 
     ImmutableJsonFgConfiguration src = (ImmutableJsonFgConfiguration) source;
-
-    if (Objects.nonNull(getPlace()) && Objects.nonNull(src.getPlace()))
-      builder.place(getPlace().mergeInto(src.getPlace()));
 
     if (Objects.nonNull(getFeatureType())) builder.featureType(getFeatureType());
     else if (Objects.nonNull(src.getFeatureType())) builder.featureType(src.getFeatureType());

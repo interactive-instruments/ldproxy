@@ -24,12 +24,8 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .enabled(true)
                 .addFeatureType("foo")
                 .describedby(true)
-                .time(true)
                 .coordRefSys(true)
-                .place(new ImmutablePlaceConfiguration.Builder()
-                        .enabled(true)
-                        .alwaysIncludeGeoJsonGeometry(true)
-                        .build())
+                .alwaysIncludeGeoJsonGeometry(true)
                 .build()
     }
 
@@ -58,11 +54,7 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .enabled(true)
                 .addFeatureType("bar")
                 .describedby(true)
-                .time(true)
-                .place(new ImmutablePlaceConfiguration.Builder()
-                        .enabled(true)
-                        .alwaysIncludeGeoJsonGeometry(true)
-                        .build())
+                .alwaysIncludeGeoJsonGeometry(true)
                 .coordRefSys(true)
                 .build()
     }
@@ -81,10 +73,7 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
     @Override
     JsonFgConfiguration getNested() {
         return new ImmutableJsonFgConfiguration.Builder()
-                .place(new ImmutablePlaceConfiguration.Builder()
-                        .enabled(false)
-                        .alwaysIncludeGeoJsonGeometry(false)
-                        .build())
+                .alwaysIncludeGeoJsonGeometry(false)
                 .build()
     }
 
@@ -94,12 +83,8 @@ class JsonFgConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .enabled(true)
                 .addFeatureType("foo")
                 .describedby(true)
-                .time(true)
                 .coordRefSys(true)
-                .place(new ImmutablePlaceConfiguration.Builder()
-                        .enabled(false)
-                        .alwaysIncludeGeoJsonGeometry(false)
-                        .build())
+                .alwaysIncludeGeoJsonGeometry(false)
                 .build()
     }
 }

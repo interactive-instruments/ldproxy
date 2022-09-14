@@ -9,7 +9,6 @@ package de.ii.ogcapi.features.json.fg.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.json.fg.domain.ImmutableJsonFgConfiguration.Builder;
-import de.ii.ogcapi.features.json.fg.domain.ImmutablePlaceConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import javax.inject.Inject;
@@ -44,13 +43,8 @@ public class JsonFgBuildingBlock implements ApiBuildingBlock {
     return new Builder()
         .enabled(false)
         .describedby(true)
-        .time(true)
         .coordRefSys(true)
-        .place(
-            new ImmutablePlaceConfiguration.Builder()
-                .enabled(true)
-                .alwaysIncludeGeoJsonGeometry(false)
-                .build())
+        .alwaysIncludeGeoJsonGeometry(false)
         .build();
   }
 }

@@ -17,7 +17,6 @@ import de.ii.ogcapi.features.json.fg.domain.JsonFgGeometryType;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import java.io.IOException;
-import java.util.Objects;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -208,13 +207,6 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
         .get(context.encoding().getCollectionId())
         .getExtension(JsonFgConfiguration.class)
         .filter(JsonFgConfiguration::isEnabled)
-        .filter(
-            cfg ->
-                Objects.requireNonNullElse(
-                    Objects.nonNull(cfg.getPlace())
-                        ? Objects.requireNonNullElse(cfg.getPlace().getEnabled(), true)
-                        : true,
-                    true))
         .filter(
             cfg ->
                 cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.place)
