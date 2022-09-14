@@ -54,8 +54,7 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language) {
-    if (isExtensionEnabled(featureTypeConfiguration, getBuildingBlockConfigurationType())
-        && !isNested) {
+    if (isExtensionEnabled(featureTypeConfiguration, getBuildingBlockConfigurationType())) {
       collection.addAllLinks(
           ImmutableList.<Link>builder()
               .add(
