@@ -8,13 +8,9 @@
 package de.ii.ogcapi.text.search.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration.Builder;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -24,18 +20,9 @@ public interface TextSearchConfiguration extends ExtensionConfiguration {
 
   List<String> getProperties();
 
-  Optional<FeaturesCollectionQueryables> getQueryables();
+  abstract class Builder extends ExtensionConfiguration.Builder {}
 
-  default List<String> getQ() {
-    if (getQueryables().isPresent()) {
-      return Stream.concat(
-              getQueryables().get().getQ().stream(), getQueryables().get().getOther().stream())
-          .collect(Collectors.toList());
-    }
-
-    return ImmutableList.of();
+  default Builder getBuilder() {
+    return new ImmutableTextSearchConfiguration.Builder();
   }
-
-  // Todo add derived method that first checks for getQueryables().getQ() in
-  // FeaturesCoreConfiguration to support existing configurations
 }

@@ -525,7 +525,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                               filter.getKey(), String.join(", ", invalidProperties)));
                     }
 
-                    // will throw an error
+                    /* // will throw an error
                     cql.checkTypes(cqlPredicate, queryableTypes);
 
                     if (queryValidationInput.getEnabled()) {
@@ -539,7 +539,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                                       crsInfo,
                                       filterCrs,
                                       queryValidationInput.getNativeCrs().orElse(null)));
-                    }
+                    }*/
 
                     return cqlPredicate;
                   }

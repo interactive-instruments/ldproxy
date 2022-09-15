@@ -294,7 +294,6 @@ public interface FeaturesCoreConfiguration
 
       queryables.getSpatial().forEach(property -> parameters.put(property, property));
       queryables.getTemporal().forEach(property -> parameters.put(property, property));
-      queryables.getQ().forEach(property -> parameters.put(property, property));
       queryables.getOther().forEach(property -> parameters.put(property, property));
 
       return parameters;
@@ -305,6 +304,19 @@ public interface FeaturesCoreConfiguration
         PARAMETER_DATETIME, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
   }
 
+  @Deprecated(since = "3.3.0")
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default List<String> getQProperties() {
+    if (getQueryables().isPresent()) {
+      return getQueryables().get().getQ();
+    }
+
+    return ImmutableList.of();
+  }
+
+  @Deprecated(since = "3.3.0")
   @JsonIgnore
   @Value.Derived
   @Value.Auxiliary
@@ -313,18 +325,6 @@ public interface FeaturesCoreConfiguration
       return Stream.concat(
               getQueryables().get().getQ().stream(), getQueryables().get().getOther().stream())
           .collect(Collectors.toList());
-    }
-
-    return ImmutableList.of();
-  }
-
-  // Todo maybe delete?
-  @JsonIgnore
-  @Value.Derived
-  @Value.Auxiliary
-  default List<String> getQProperties() {
-    if (getQueryables().isPresent()) {
-      return getQueryables().get().getQ();
     }
 
     return ImmutableList.of();
