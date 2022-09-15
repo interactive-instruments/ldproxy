@@ -25,7 +25,6 @@ import java.util.Locale;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 /** add a link to the 3D Tiles tileset to the collection */
 @Singleton
@@ -55,32 +54,28 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language) {
     if (isExtensionEnabled(featureTypeConfiguration, getBuildingBlockConfigurationType())) {
+      URICustomizer uriCustomizerTileset =
+          uriCustomizer.copy().ensureNoTrailingSlash().removeParameters("f");
+      if (isNested) {
+        uriCustomizerTileset =
+            uriCustomizerTileset.ensureLastPathSegments(
+                featureTypeConfiguration.getId(), "3dtiles");
+      } else {
+        uriCustomizerTileset = uriCustomizerTileset.ensureLastPathSegment("3dtiles");
+      }
       collection.addAllLinks(
           ImmutableList.<Link>builder()
               .add(
                   new ImmutableLink.Builder()
-                      .href(
-                          uriCustomizer
-                              .copy()
-                              .ensureNoTrailingSlash()
-                              .ensureLastPathSegment("3dtiles")
-                              .removeParameters("f")
-                              .toString())
+                      .href(uriCustomizerTileset.toString())
                       .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
-                      .type(MediaType.APPLICATION_JSON)
                       .title(i18n.get("3dtilesLink", language))
                       .build())
               .add(
                   new ImmutableLink.Builder()
-                      .href(
-                          uriCustomizer
-                              .copy()
-                              .ensureNoTrailingSlash()
-                              .ensureLastPathSegment("3dtiles")
-                              .removeParameters("f")
-                              .toString())
+                      .href(uriCustomizerTileset.toString())
                       .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
-                      .type("application/json+3dtiles")
+                      .type("application/json+3dtiles") // TODO invalid media type
                       .title(i18n.get("3dtilesLink", language))
                       .build())
               .build());
