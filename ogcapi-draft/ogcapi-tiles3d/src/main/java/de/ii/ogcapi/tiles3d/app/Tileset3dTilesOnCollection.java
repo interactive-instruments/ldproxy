@@ -54,8 +54,7 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language) {
     if (isExtensionEnabled(featureTypeConfiguration, getBuildingBlockConfigurationType())) {
-      URICustomizer uriCustomizerTileset =
-          uriCustomizer.copy().ensureNoTrailingSlash().removeParameters("f");
+      URICustomizer uriCustomizerTileset = uriCustomizer.copy().ensureNoTrailingSlash();
       if (isNested) {
         uriCustomizerTileset =
             uriCustomizerTileset.ensureLastPathSegments(
@@ -67,13 +66,13 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
           ImmutableList.<Link>builder()
               .add(
                   new ImmutableLink.Builder()
-                      .href(uriCustomizerTileset.toString())
+                      .href(uriCustomizerTileset.removeParameters("f").toString())
                       .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
                       .title(i18n.get("3dtilesLink", language))
                       .build())
               .add(
                   new ImmutableLink.Builder()
-                      .href(uriCustomizerTileset.toString())
+                      .href(uriCustomizerTileset.setParameter("f", "json").toString())
                       .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
                       .type("application/json+3dtiles") // TODO invalid media type
                       .title(i18n.get("3dtilesLink", language))
