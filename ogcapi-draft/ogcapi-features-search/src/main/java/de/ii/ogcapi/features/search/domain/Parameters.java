@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
 
@@ -25,7 +26,7 @@ public abstract class Parameters extends PageRepresentation {
   public static Funnel<Parameters> FUNNEL =
       (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
-        from.getParameters()
+        from.getProperties()
             .forEach(
                 (name, schema) -> {
                   into.putString(name, StandardCharsets.UTF_8);
@@ -35,5 +36,11 @@ public abstract class Parameters extends PageRepresentation {
 
   @JsonIgnore public static String SCHEMA_REF = "#/components/schemas/Parameters";
 
-  public abstract Map<String, JsonNode> getParameters();
+  public final String getType() {
+    return "object";
+  }
+
+  public abstract List<String> getRequired();
+
+  public abstract Map<String, JsonNode> getProperties();
 }

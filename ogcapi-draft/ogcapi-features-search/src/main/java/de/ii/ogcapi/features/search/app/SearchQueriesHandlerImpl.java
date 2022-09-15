@@ -220,16 +220,19 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         .getParametersAsNodes()
         .forEach(
             (name, schema) -> {
-              builder.putParameters(name, schema);
+              builder.putProperties(name, schema);
+              if (schema.isObject() && !schema.has("default")) {
+                builder.addRequired(name);
+              }
             });
 
-    builder.links(
+    List<Link> links =
         linkGenerator.generateLinks(
             requestContext.getUriCustomizer(),
             requestContext.getMediaType(),
             requestContext.getAlternateMediaTypes(),
             i18n,
-            requestContext.getLanguage()));
+            requestContext.getLanguage());
 
     builder.lastModified(Optional.ofNullable(repository.getLastModified(apiData)));
 
@@ -263,7 +266,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? parameters.getLinks() : null,
+            queryInput.getIncludeLinkHeader() ? links : null,
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
@@ -351,7 +354,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                       .id(queryId)
                       .title(q.getTitle())
                       .description(q.getDescription())
-                      .addAllLinks(
+                      .links(
                           linkGenerator.generateStoredQueryLinks(
                               requestContext.getUriCustomizer(),
                               q.getTitle().orElse(queryId),
@@ -359,6 +362,10 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                               q.getParameterNames(),
                               i18n,
                               requestContext.getLanguage()))
+                      .parameters(
+                          q.getParametersAsNodes().entrySet().stream()
+                              .collect(
+                                  Collectors.toUnmodifiableMap(Entry::getKey, Entry::getValue)))
                       .build());
             });
 

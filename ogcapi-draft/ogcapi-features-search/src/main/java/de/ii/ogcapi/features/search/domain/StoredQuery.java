@@ -8,9 +8,12 @@
 package de.ii.ogcapi.features.search.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -19,7 +22,18 @@ import org.immutables.value.Value;
 public abstract class StoredQuery extends PageRepresentationWithId {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static Funnel<StoredQuery> FUNNEL = PageRepresentationWithId.FUNNEL::funnel;
+  public static Funnel<StoredQuery> FUNNEL =
+      (from, into) -> {
+        PageRepresentationWithId.FUNNEL.funnel(from, into);
+        from.getParameters()
+            .forEach(
+                (name, schema) -> {
+                  into.putString(name, StandardCharsets.UTF_8);
+                  into.putString(schema.toString(), StandardCharsets.UTF_8);
+                });
+      };
 
   @JsonIgnore String SCHEMA_REF = "#/components/schemas/StoredQuery";
+
+  public abstract Map<String, JsonNode> getParameters();
 }
