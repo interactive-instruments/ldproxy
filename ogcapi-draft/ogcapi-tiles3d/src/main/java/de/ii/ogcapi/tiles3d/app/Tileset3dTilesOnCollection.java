@@ -57,8 +57,9 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
       URICustomizer uriCustomizerTileset = uriCustomizer.copy().ensureNoTrailingSlash();
       if (isNested) {
         uriCustomizerTileset =
-            uriCustomizerTileset.ensureLastPathSegments(
-                featureTypeConfiguration.getId(), "3dtiles");
+            uriCustomizerTileset
+                .ensureLastPathSegments(featureTypeConfiguration.getId(), "3dtiles")
+                .removeParameters("f");
       } else {
         uriCustomizerTileset = uriCustomizerTileset.ensureLastPathSegment("3dtiles");
       }
@@ -66,13 +67,13 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
           ImmutableList.<Link>builder()
               .add(
                   new ImmutableLink.Builder()
-                      .href(uriCustomizerTileset.removeParameters("f").toString())
+                      .href(uriCustomizerTileset.toString())
                       .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
                       .title(i18n.get("3dtilesLink", language))
                       .build())
               .add(
                   new ImmutableLink.Builder()
-                      .href(uriCustomizerTileset.setParameter("f", "json").toString())
+                      .href(uriCustomizerTileset.copy().setParameter("f", "json").toString())
                       .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
                       .type("application/json+3dtiles") // TODO invalid media type
                       .title(i18n.get("3dtilesLink", language))
@@ -86,13 +87,7 @@ public class Tileset3dTilesOnCollection implements CollectionExtension {
           "content",
           ImmutableList.of(
               new ImmutableLink.Builder()
-                  .href(
-                      uriCustomizer
-                          .copy()
-                          .ensureNoTrailingSlash()
-                          .ensureLastPathSegment("3dtiles")
-                          .removeParameters("f")
-                          .toString())
+                  .href(uriCustomizerTileset.copy().setParameter("f", "json").toString())
                   .rel("http://www.opengis.net/def/rel/ogc/0.0/tileset-3dtiles") // TODO
                   // TODO temporary, this is not the correct media type, but it is required by
                   //      the current 3D GeoVolumes draft
