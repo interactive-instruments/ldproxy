@@ -253,13 +253,24 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
           ImmutableList.of(bbox, dataBbox.get()).stream()
               .map(BoundingBox::toArray)
               .reduce(
-                  (doubles, doubles2) ->
-                      new double[] {
+                  (doubles, doubles2) -> {
+                    if (doubles2.length == 4) {
+                      return new double[] {
                         Math.max(doubles[0], doubles2[0]),
                         Math.max(doubles[1], doubles2[1]),
                         Math.min(doubles[2], doubles2[2]),
                         Math.min(doubles[3], doubles2[3])
-                      })
+                      };
+                    } else if (doubles2.length == 6) {
+                      return new double[] {
+                        Math.max(doubles[0], doubles2[0]),
+                        Math.max(doubles[1], doubles2[1]),
+                        Math.min(doubles[2], doubles2[3]),
+                        Math.min(doubles[3], doubles2[4])
+                      };
+                    }
+                    return new double[] {doubles[0], doubles[1], doubles[2], doubles[3]};
+                  })
               .map(doubles -> BoundingBox.of(doubles[0], doubles[1], doubles[2], doubles[3], crs))
               .orElse(bbox);
     }
