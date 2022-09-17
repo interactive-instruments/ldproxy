@@ -131,7 +131,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
         && sourceCrs.getForceAxisOrder() == targetCrs.getForceAxisOrder()) return Optional.of(bbox);
 
     Optional<CrsTransformer> transformer =
-        crsTransformerFactory.getTransformer(sourceCrs, targetCrs, true);
+        crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     if (transformer.isPresent()) {
       try {
         return Optional.ofNullable(transformer.get().transformBoundingBox(bbox));
