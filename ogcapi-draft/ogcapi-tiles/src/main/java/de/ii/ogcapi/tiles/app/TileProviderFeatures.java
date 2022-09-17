@@ -111,6 +111,17 @@ public abstract class TileProviderFeatures extends TileProvider {
   public abstract Map<String, MinMax> getSeeding();
 
   /**
+   * @langEn Name of the property to use for the geometry. Multiple properties can be provided, the
+   *     first property that has a value is used. The default value is the primary geometry
+   *     property.
+   * @langDe Name der Eigenschaft, die für die Geometrie verwendet werden soll. Es können mehrere
+   *     Eigenschaften angegeben werden; die erste Eigenschaft, die einen Wert hat, wird verwendet.
+   *     Der Standardwert ist die primäre Geometrieeigenschaft.
+   * @default `{}`
+   */
+  public abstract List<String> getGeometryProperty();
+
+  /**
    * @langEn Filters to select a subset of feature for certain zoom levels using a CQL filter
    *     expression, see example below.
    * @langDe Über Filter kann gesteuert werden, welche Features auf welchen Zoomstufen selektiert
@@ -395,6 +406,9 @@ public abstract class TileProviderFeatures extends TileProvider {
         ImmutableTileProviderFeatures.builder().from((TileProviderFeatures) source).from(this);
 
     TileProviderFeatures src = (TileProviderFeatures) source;
+
+    builder.geometryProperty(
+        !getGeometryProperty().isEmpty() ? getGeometryProperty() : src.getGeometryProperty());
 
     List<String> tileEncodings =
         Objects.nonNull(src.getTileEncodings())

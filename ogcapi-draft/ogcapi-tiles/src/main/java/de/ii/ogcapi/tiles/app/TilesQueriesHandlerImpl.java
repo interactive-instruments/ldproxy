@@ -43,6 +43,7 @@ import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
@@ -421,11 +422,17 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     String featureTypeId =
         apiData
-            .getCollections()
-            .get(collectionId)
-            .getExtension(FeaturesCoreConfiguration.class)
+            .getExtension(FeaturesCoreConfiguration.class, collectionId)
             .map(cfg -> cfg.getFeatureType().orElse(collectionId))
             .orElse(collectionId);
+
+    List<String> geometryProperty =
+        apiData
+            .getExtension(TilesConfiguration.class, collectionId)
+            .map(TilesConfiguration::getTileProvider)
+            .filter(provider -> provider instanceof TileProviderFeatures)
+            .map(provider -> ((TileProviderFeatures) provider).getGeometryProperty())
+            .orElse(ImmutableList.of());
 
     FeatureTransformationContextTiles transformationContext;
     try {
@@ -437,6 +444,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
               .tile(tile)
               .tileCache(tileCache)
               .collectionId(collectionId)
+              .geometryProperty(geometryProperty)
               .ogcApiRequest(requestContext)
               .crsTransformer(crsTransformer)
               .codelists(
@@ -547,6 +555,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
               .map(cfg -> cfg.getFeatureType().orElse(collectionId))
               .orElse(collectionId);
 
+      List<String> geometryProperty =
+          apiData
+              .getExtension(TilesConfiguration.class, collectionId)
+              .map(TilesConfiguration::getTileProvider)
+              .filter(provider -> provider instanceof TileProviderFeatures)
+              .map(provider -> ((TileProviderFeatures) provider).getGeometryProperty())
+              .orElse(ImmutableList.of());
+
       FeatureQuery query = queryMap.get(collectionId);
       ImmutableFeatureTransformationContextTiles transformationContext;
       try {
@@ -558,6 +574,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .tile(tile)
                 .tileCache(tileCache)
                 .collectionId(collectionId)
+                .geometryProperty(geometryProperty)
                 .ogcApiRequest(requestContext)
                 .crsTransformer(crsTransformer)
                 .codelists(

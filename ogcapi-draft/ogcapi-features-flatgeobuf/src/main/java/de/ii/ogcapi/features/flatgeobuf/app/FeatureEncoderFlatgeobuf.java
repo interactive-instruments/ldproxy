@@ -66,6 +66,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
   private final FeatureSchema featureSchema;
   private final OutputStream outputStream;
   private final FlatBufferBuilder builder;
+  private final List<String> geometryProperty;
   private HeaderMeta headerMeta;
 
   private final long transformerStart;
@@ -90,6 +91,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     this.geometryFactory = new GeometryFactory();
     this.builder = new FlatBufferBuilder(16 * 1024); // 16kB
     this.transformerStart = System.nanoTime();
+    this.geometryProperty = encodingContext.getGeometryProperty();
   }
 
   @Override
@@ -132,7 +134,8 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     long startFeature = System.nanoTime();
 
     try {
-      Geometry currentGeometry = feature.getJtsGeometry(geometryFactory).orElse(null);
+      Geometry currentGeometry =
+          feature.getJtsGeometry(geometryProperty, geometryFactory).orElse(null);
 
       final int propertiesOffset = addProperties(feature.getPropertiesAsMap());
 

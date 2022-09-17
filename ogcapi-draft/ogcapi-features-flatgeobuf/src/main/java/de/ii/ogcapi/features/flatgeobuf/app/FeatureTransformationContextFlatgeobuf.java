@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.flatgeobuf.app;
 
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import java.util.List;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -19,4 +20,6 @@ public abstract class FeatureTransformationContextFlatgeobuf
   public abstract FeatureSchema getSchema();
 
   public abstract boolean getIs3d();
+
+  public abstract List<String> getGeometryProperty();
 }

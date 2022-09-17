@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tiles.domain;
 
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
 
@@ -20,6 +21,8 @@ public interface FeatureTransformationContextTiles extends FeatureTransformation
   Tile tile();
 
   TileCache getTileCache();
+
+  List<String> getGeometryProperty();
 
   @Value.Lazy
   default TilesConfiguration tilesConfiguration() {

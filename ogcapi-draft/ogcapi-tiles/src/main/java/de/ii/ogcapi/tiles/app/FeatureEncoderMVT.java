@@ -57,6 +57,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
   private final Polygon clipGeometry;
   private final List<String> groupBy;
   private final Set<MvtFeature> mergeFeatures;
+  private final List<String> geometryProperty;
 
   private long mergeCount = 0;
   private final long transformerStart = System.nanoTime();
@@ -92,6 +93,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
     coords[3] = new CoordinateXY(-buffer, -buffer);
     coords[4] = coords[0];
     this.clipGeometry = geometryFactoryTile.createPolygon(coords);
+    this.geometryProperty = encodingContext.getGeometryProperty();
 
     final Map<String, List<Rule>> rules = tilesConfiguration.getRulesDerived();
     this.groupBy =
@@ -138,7 +140,8 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
     if (Objects.isNull(featureStart)) featureStart = System.nanoTime();
     featureCount++;
 
-    Optional<Geometry> featureGeometry = feature.getJtsGeometry(geometryFactoryWorld);
+    Optional<Geometry> featureGeometry =
+        feature.getJtsGeometry(geometryProperty, geometryFactoryWorld);
 
     if (featureGeometry.isEmpty()) {
       return;

@@ -142,6 +142,11 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
                 .from(transformationContext)
                 .schema(schema)
                 .is3d(crsInfo.is3d(crs))
+                .geometryProperty(
+                    apiData
+                        .getExtension(FlatgeobufConfiguration.class, collectionId)
+                        .map(FlatgeobufConfiguration::getGeometryProperty)
+                        .orElse(ImmutableList.of()))
                 .build()));
   }
 }
