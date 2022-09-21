@@ -40,43 +40,46 @@ public class TileGeometryUtil {
 
     // The following changes are applied:
     // 1. The coordinates are converted to the tile coordinate system (0/0 is top left, 256/256 is
-    // bottom right)
+    //    bottom right)
     // 2. Small rings or line strings are dropped (small in the context of the tile, one pixel or
-    // less). The idea
-    //    is to simply drop them as early as possible and before the next processing steps which may
-    // depend on
-    //    having valid geometries and removing everything that will eventually be removed anyway
-    // helps.
+    //    less). The idea is to simply drop them as early as possible and before the next processing
+    //    steps which may depend on having valid geometries and removing everything that will
+    //    eventually be removed anyway helps.
     // 3. Remove unnecessary vertices and snap coordinates to the grid.
     // 4. If the resulting geometry is invalid polygonal geometry, try to make it valid.
     // 5. Hopefully we have a valid geometry now, so try to clip it to the tile.
     //
     // After each step, check, if we still have a geometry or the resulting tile geometry was too
-    // small for
-    // the tile. In that case the feature is ignored.
+    // small for the tile. In that case the feature is ignored.
 
     // 1 convert to the tile coordinate system
     geom.apply(affineTransformation);
 
-    // 2 remove small rings or line strings (small in the context of the tile)
-    geom = removeSmallPieces(geom, minimumSizeInPixel);
-    if (Objects.isNull(geom) || geom.isEmpty()) return null;
-
-    // 3 simplify the geometry
-    geom = TopologyPreservingSimplifier.simplify(geom, 1.0 / precisionModel.getScale());
-    if (Objects.isNull(geom) || geom.isEmpty()) return null;
-
-    // 4 reduce the geometry to the tile grid
-    geom = GeometryPrecisionReducer.reducePointwise(geom, precisionModel);
-    if (Objects.isNull(geom) || geom.isEmpty()) return null;
-
-    // 5 if the resulting geometry is invalid, try to make it valid
+    // 2 fix invalid source geometries
     if (!geom.isValid()) {
       geom = new GeometryFixer(geom).getResult();
       if (Objects.isNull(geom) || geom.isEmpty()) return null;
     }
 
-    // 6 limit the coordinates to the tile with a buffer
+    // 3 remove small rings or line strings (small in the context of the tile)
+    geom = removeSmallPieces(geom, minimumSizeInPixel);
+    if (Objects.isNull(geom) || geom.isEmpty()) return null;
+
+    // 4 simplify the geometry
+    geom = TopologyPreservingSimplifier.simplify(geom, 1.0 / precisionModel.getScale());
+    if (Objects.isNull(geom) || geom.isEmpty()) return null;
+
+    // 5 reduce the geometry to the tile grid
+    geom = GeometryPrecisionReducer.reducePointwise(geom, precisionModel);
+    if (Objects.isNull(geom) || geom.isEmpty()) return null;
+
+    // 6 if the resulting geometry is invalid, try to make it valid
+    if (!geom.isValid()) {
+      geom = new GeometryFixer(geom).getResult();
+      if (Objects.isNull(geom) || geom.isEmpty()) return null;
+    }
+
+    // 7 limit the coordinates to the tile with a buffer
     geom = clipGeometry(geom, clipGeometry);
     if (Objects.isNull(geom) || geom.isEmpty()) return null;
 
