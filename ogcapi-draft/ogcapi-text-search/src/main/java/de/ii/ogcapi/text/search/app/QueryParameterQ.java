@@ -9,7 +9,6 @@ package de.ii.ogcapi.text.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
@@ -21,11 +20,11 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.text.search.domain.TextSearchConfiguration;
 import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -53,15 +52,12 @@ public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryPar
   private final Schema<?> baseSchema;
   private final SchemaValidator schemaValidator;
 
-  private final Cql cql;
-
   String PARAMETER_Q = "q";
 
   @Inject
   public QueryParameterQ(SchemaValidator schemaValidator, Cql cql) {
     this.schemaValidator = schemaValidator;
     this.baseSchema = new ArraySchema().items(new StringSchema());
-    this.cql = cql;
   }
 
   @Override
@@ -100,12 +96,6 @@ public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryPar
             isEnabledForApi(apiData, collectionId)
                 && method == HttpMethods.GET
                 && definitionPath.equals("/collections/{collectionId}/items"));
-  }
-
-  @Override
-  public Set<String> getFilterParameters(
-      Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
-    return new ImmutableSet.Builder<String>().addAll(filterParameters).add("filter-q").build();
   }
 
   @Override
@@ -151,8 +141,9 @@ public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryPar
   }
 
   @Override
-  public Map<String, String> transformParameters(
+  public Builder transformQuery(
       FeatureTypeConfigurationOgcApi featureType,
+      Builder queryBuilder,
       Map<String, String> parameters,
       OgcApiDataV2 apiData) {
 
@@ -163,7 +154,6 @@ public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryPar
       Optional<TextSearchConfiguration> textSearchConfiguration =
           apiData.getExtension(TextSearchConfiguration.class, featureType.getId());
       Set<String> qProperties = new HashSet<>();
-      // TODO
       qProperties.addAll(textSearchConfiguration.get().getProperties());
       qProperties.addAll(featuresCoreConfiguration.get().getQProperties());
       List<String> finalQProperties = new ArrayList<>();
@@ -171,13 +161,12 @@ public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryPar
       Optional<Cql2Expression> cql = qToCql(finalQProperties, filterValue);
       if (cql.isPresent()) {
         Cql2Expression cql2 = cql.get();
-        String s = this.cql.write(cql2, Format.TEXT);
-        // TODO filter-q
-        parameters.put("filter", s);
+        queryBuilder.addFilters(cql2);
       }
     }
 
-    return parameters;
+    return OgcApiQueryParameter.super.transformQuery(
+        featureType, queryBuilder, parameters, apiData);
   }
 
   private Optional<Cql2Expression> qToCql(List<String> qFields, String qValue) {
