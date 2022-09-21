@@ -42,6 +42,7 @@ import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.util.GeometryFixer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wololo.flatgeobuf.ColumnMeta;
@@ -136,6 +137,11 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     try {
       Geometry currentGeometry =
           feature.getJtsGeometry(geometryProperty, geometryFactory).orElse(null);
+
+      // fix invalid source geometries
+      if (Objects.nonNull(currentGeometry) && !currentGeometry.isValid()) {
+        currentGeometry = new GeometryFixer(currentGeometry).getResult();
+      }
 
       final int propertiesOffset = addProperties(feature.getPropertiesAsMap());
 
