@@ -40,6 +40,7 @@ public abstract class Link {
           .put("application/json", "JSON")
           .put("application/ld+json", "JSON-LD")
           .put("text/html", "HTML")
+          .put("text/csv", "CSV")
           .put("application/flatgeobuf", "FlatGeobuf")
           .put("application/gml+xml", "GML")
           .put("application/xml", "XML")
