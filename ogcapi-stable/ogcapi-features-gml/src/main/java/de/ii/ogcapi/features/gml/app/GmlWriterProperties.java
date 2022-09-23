@@ -247,7 +247,15 @@ public class GmlWriterProperties implements GmlWriter {
           .encoding()
           .write(Boolean.parseBoolean(value) || value.equalsIgnoreCase("t") || value.equals("1"));
     } else {
-      context.encoding().write(value);
+      context.encoding().write(escapeText(value));
     }
+  }
+
+  private String escapeText(String text) {
+    return text.replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&apos;");
   }
 }
