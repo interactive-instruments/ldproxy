@@ -314,7 +314,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .addQueries(
                     ImmutableSubQuery.builder()
                         .type(collectionId)
-                        .filter(query.getFilter())
+                        .filters(query.getFilters())
                         .sortKeys(query.getSortKeys())
                         .fields(query.getFields())
                         .skipGeometry(query.skipGeometry())

@@ -114,6 +114,45 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SearchQueriesHandlerImpl.class);
 
+  class IdTransform implements PropertyTransformations {
+
+    private final Map<String, List<PropertyTransformation>> transformations;
+
+    IdTransform(FeatureProvider2 featureProvider, String featureTypeId, String collectionId) {
+      FeatureSchema schema =
+          Objects.requireNonNull(featureProvider.getData().getTypes().get(featureTypeId));
+      String idProperty = Objects.requireNonNull(findIdProperty(schema));
+      transformations =
+          ImmutableMap.of(
+              idProperty,
+              ImmutableList.of(
+                  new ImmutablePropertyTransformation.Builder()
+                      .stringFormat(String.format("%s.{{value}}", collectionId))
+                      .build()));
+    }
+
+    private String findIdProperty(FeatureSchema schema) {
+      return schema.getProperties().stream()
+          .flatMap(
+              property -> {
+                Collection<FeatureSchema> nestedProperties = property.getAllNestedProperties();
+                if (!nestedProperties.isEmpty()) {
+                  return nestedProperties.stream();
+                }
+                return Stream.of(property);
+              })
+          .filter(property -> property.getRole().isPresent() && property.getRole().get() == Role.ID)
+          .findFirst()
+          .map(FeatureSchema::getFullPathAsString)
+          .orElse(null);
+    }
+
+    @Override
+    public Map<String, List<PropertyTransformation>> getTransformations() {
+      return transformations;
+    }
+  }
+
   private final I18n i18n;
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
@@ -478,6 +517,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     QueryExpression query =
         queryInput.getQuery().resolveParameters(requestContext.getParameters(), schemaValidator);
 
+    String queryId = queryInput.getQuery().getId().orElse("search");
+
     FeatureFormatExtension outputFormat =
         api.getOutputFormat(
                 FeatureFormatExtension.class,
@@ -574,7 +615,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         api,
         requestContext,
         queryInput,
+        queryId,
         finalQueryBuilder.build(),
+        queryInput.getAllLinksAreLocal(),
         collectionIds,
         queryInput.getFeatureProvider(),
         outputFormat,
@@ -638,7 +681,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                               ? SortKey.of(s.substring(1), Direction.DESCENDING)
                               : SortKey.of(s.replace("+", "")))
                   .collect(Collectors.toUnmodifiableList()))
-          .filter(cqlFilter)
+          .filters(cqlFilter.stream().collect(Collectors.toUnmodifiableList()))
           .fields(
               globalProperties.isEmpty() && properties.isEmpty()
                   ? ImmutableList.of("*")
@@ -657,7 +700,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       OgcApi api,
       ApiRequestContext requestContext,
       QueryInput queryInput,
+      String queryId,
       MultiFeatureQuery query,
+      boolean allLinksAreLocal,
       List<String> collectionIds,
       FeatureProvider2 featureProvider,
       FeatureFormatExtension outputFormat,
@@ -722,7 +767,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             .geometryPrecision(query.getGeometryPrecision())
             .isHitsOnlyIfMore(false)
             .showsFeatureSelfLink(showsFeatureSelfLink)
-            .fields(fields);
+            .fields(fields)
+            .allLinksAreLocal(allLinksAreLocal)
+            .idsIncludeCollectionId(collectionIds.size() > 1);
 
     FeatureStream featureStream;
     FeatureTokenEncoder<?> encoder;
@@ -753,10 +800,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                                         api.getData().getCollections().get(collectionId)))
                                 .orElseThrow();
                         if (collectionIds.size() > 1) {
-                          PropertyTransformation idTransform =
-                              new ImmutablePropertyTransformation.Builder()
-                                  .stringFormat(String.format("%s.{{value}}", collectionId))
-                                  .build();
                           pt =
                               new IdTransform(
                                       featureProvider, getFeatureTypeId(query, n), collectionId)
@@ -773,10 +816,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
               requestContext.getMediaType().type()));
     }
 
-    Date lastModified = null;
+    Date lastModified;
     EntityTag etag = null;
-    byte[] bytes = null;
-    StreamingOutput streamingOutput = null;
+    StreamingOutput streamingOutput;
 
     streamingOutput = stream(featureStream, false, encoder, propertyTransformations);
     lastModified = getLastModified(queryInput);
@@ -799,52 +841,13 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             HeaderCaching.of(lastModified, etag, queryInput),
             targetCrs,
             HeaderContentDisposition.of(
-                String.format("search.%s", outputFormat.getMediaType().fileExtension())))
+                String.format("%s.%s", queryId, outputFormat.getMediaType().fileExtension())))
         .entity(streamingOutput)
         .build();
   }
 
   private String getFeatureTypeId(MultiFeatureQuery query, int queryIndex) {
     return query.getQueries().get(queryIndex).getType();
-  }
-
-  private class IdTransform implements PropertyTransformations {
-    private final Map<String, List<PropertyTransformation>> transformations;
-
-    private IdTransform(
-        FeatureProvider2 featureProvider, String featureTypeId, String collectionId) {
-      FeatureSchema schema =
-          Objects.requireNonNull(featureProvider.getData().getTypes().get(featureTypeId));
-      String idProperty = Objects.requireNonNull(findIdProperty(schema));
-      transformations =
-          ImmutableMap.of(
-              idProperty,
-              ImmutableList.of(
-                  new ImmutablePropertyTransformation.Builder()
-                      .stringFormat(String.format("%s.{{value}}", collectionId))
-                      .build()));
-    }
-
-    @Override
-    public Map<String, List<PropertyTransformation>> getTransformations() {
-      return transformations;
-    }
-  }
-
-  protected String findIdProperty(FeatureSchema schema) {
-    return schema.getProperties().stream()
-        .flatMap(
-            property -> {
-              Collection<FeatureSchema> nestedProperties = property.getAllNestedProperties();
-              if (!nestedProperties.isEmpty()) {
-                return nestedProperties.stream();
-              }
-              return Stream.of(property);
-            })
-        .filter(property -> property.getRole().isPresent() && property.getRole().get() == Role.ID)
-        .findFirst()
-        .map(FeatureSchema::getFullPathAsString)
-        .orElse(null);
   }
 
   private StreamingOutput stream(

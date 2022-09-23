@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.search.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.base.Preconditions;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -42,4 +43,14 @@ public interface SingleQuery {
   List<String> getSortby(); // String or Parameter
 
   List<String> getProperties(); // String or Parameter
+
+  @Value.Check
+  default void check() {
+    Preconditions.checkState(
+        getCollections().size() > 0, "Each query must have a collection. Found no collection.");
+    Preconditions.checkState(
+        getCollections().size() < 2,
+        "Each query must be for a single collection. Join queries are currently not supported. Found collections: %s.",
+        getCollections());
+  }
 }

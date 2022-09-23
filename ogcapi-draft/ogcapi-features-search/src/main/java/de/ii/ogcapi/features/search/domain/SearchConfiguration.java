@@ -62,6 +62,21 @@ public interface SearchConfiguration extends ExtensionConfiguration, CachingConf
     return Objects.equals(getValidationEnabled(), true);
   }
 
+  /**
+   * @langEn Signals feature encoders whether all link targets are within the same document.
+   * @langDe Signalisiert Feature-Encoders, ob alle Links auf Objekte im selben Dokuments zeigen.
+   * @default `false`
+   */
+  @Nullable
+  Boolean getAllLinksAreLocal();
+
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean linksAreLocal() {
+    return Objects.equals(getAllLinksAreLocal(), true);
+  }
+
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override

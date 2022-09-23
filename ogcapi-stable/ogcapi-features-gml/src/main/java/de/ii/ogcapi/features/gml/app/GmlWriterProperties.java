@@ -212,7 +212,21 @@ public class GmlWriterProperties implements GmlWriter {
     context.encoding().write(" xlink:");
     context.encoding().write(schema.getName());
     context.encoding().write("=\"");
-    writeValue(context, value, schema.getType());
+    if (schema.getName().equals("href") && context.encoding().getAllLinksAreLocal()) {
+      String localHref =
+          context.encoding().getIdsIncludeCollectionId()
+              ? String.format(
+                  "#%s%s",
+                  context.encoding().getGmlIdPrefix().orElse(""),
+                  value.substring(value.indexOf("/collections/") + 13).replace("/items/", "."))
+              : String.format(
+                  "#%s%s",
+                  context.encoding().getGmlIdPrefix().orElse(""),
+                  value.substring(value.indexOf("/items/") + 7));
+      writeValue(context, localHref, schema.getType());
+    } else {
+      writeValue(context, value, schema.getType());
+    }
     context.encoding().write("\"");
   }
 

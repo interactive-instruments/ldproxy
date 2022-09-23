@@ -39,6 +39,7 @@ public class SearchBuildingBlock implements ApiBuildingBlock {
         .enabled(false)
         .managerEnabled(false)
         .validationEnabled(false)
+        .allLinksAreLocal(false)
         .build();
   }
 }

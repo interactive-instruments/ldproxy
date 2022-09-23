@@ -128,6 +128,16 @@ public interface FeatureTransformationContext {
 
   Optional<I18n> getI18n();
 
+  @Value.Default
+  default boolean getIdsIncludeCollectionId() {
+    return false;
+  }
+
+  @Value.Default
+  default boolean getAllLinksAreLocal() {
+    return false;
+  }
+
   @Nullable
   State getState();
 

@@ -231,6 +231,11 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
             .maximumPageSize(Optional.ofNullable(coreConfiguration.getMaximumPageSize()))
             .showsFeatureSelfLink(
                 Objects.equals(coreConfiguration.getValidateCoordinatesInQueries(), Boolean.TRUE))
+            .allLinksAreLocal(
+                api.getData()
+                    .getExtension(SearchConfiguration.class)
+                    .map(SearchConfiguration::getAllLinksAreLocal)
+                    .orElse(false))
             .build();
 
     return queryHandler.handle(Query.QUERY, queryInput, requestContext);
