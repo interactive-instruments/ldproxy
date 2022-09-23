@@ -184,7 +184,7 @@ public class EndpointStoredQuery extends Endpoint {
               paramsBuilder.addAll(getQueryParameters(extensionRegistry, apiData, definitionPath));
 
               query
-                  .getParameters()
+                  .getParametersWithOpenApiSchema()
                   .forEach(
                       (name, schema) -> {
                         String description = name;
