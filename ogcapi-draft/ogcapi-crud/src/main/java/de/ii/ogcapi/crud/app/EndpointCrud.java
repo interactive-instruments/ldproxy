@@ -298,8 +298,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     checkTransactional(featureProvider);
 
-    checkAuthorization(api.getData(), optionalUser);
-
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
             .getExtension(FeaturesCoreConfiguration.class)
@@ -349,8 +347,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
 
     checkTransactional(featureProvider);
-
-    checkAuthorization(api.getData(), optionalUser);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -413,8 +409,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             api.getData(), api.getData().getCollections().get(collectionId));
 
     checkTransactional(featureProvider);
-
-    checkAuthorization(api.getData(), optionalUser);
 
     QueryInputFeatureDelete queryInput =
         ImmutableQueryInputFeatureDelete.builder()

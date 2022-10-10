@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
@@ -25,8 +26,10 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
+import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
+import io.dropwizard.auth.Auth;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.List;
@@ -35,12 +38,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotAllowedException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -52,7 +55,7 @@ import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 
 @Singleton
 @AutoBind
-@PermitAll
+// @PermitAll
 public class ApiRequestDispatcher implements ServiceEndpoint {
 
   private static final Set<String> NOCONTENT_METHODS =
@@ -94,8 +97,9 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       @PathParam("entrypoint") String entrypoint,
       @Context OgcApi service,
       @Context ContainerRequestContext requestContext,
-      @Context Request request) {
-    return dispatch("", service, requestContext, request);
+      @Context Request request,
+      @Auth Optional<User> optionalUser) {
+    return dispatch("", service, requestContext, request, optionalUser);
   }
 
   @Path("/{entrypoint: [^/]*}")
@@ -103,13 +107,15 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       @PathParam("entrypoint") String entrypoint,
       @Context OgcApi service,
       @Context ContainerRequestContext requestContext,
-      @Context Request request) {
+      @Context Request request,
+      @Auth Optional<User> optionalUser) {
 
     String subPath = ((UriRoutingContext) requestContext.getUriInfo()).getFinalMatchingGroup();
     String method = requestContext.getMethod();
 
     EndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method);
 
+    checkAuthorization(service.getData(), method, optionalUser);
     // Check request
     checkParameterNames(
         requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
@@ -136,6 +142,18 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     ogcApiInjectableContext.inject(requestContext, apiRequestContext);
 
     return ogcApiEndpoint;
+  }
+
+  private void checkAuthorization(OgcApiDataV2 data, String method, Optional<User> optionalUser) {
+    String requiredScope =
+        List.of("POST", "PUT", "PATCH", "DELETE").contains(method)
+            ? ApiSecurity.SCOPE_WRITE
+            : ApiSecurity.SCOPE_READ;
+
+    if (data.getSecurity().filter(s -> s.isSecured(requiredScope)).isPresent()
+        && optionalUser.filter(u -> u.getScopes().contains(requiredScope)).isEmpty()) {
+      throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
+    }
   }
 
   private void checkParameterNames(

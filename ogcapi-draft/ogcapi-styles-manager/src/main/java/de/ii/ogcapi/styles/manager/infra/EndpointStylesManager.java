@@ -235,7 +235,6 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
 
     QueriesHandlerStylesManager.QueryInputStyleCreateReplace queryInput =
         new ImmutableQueryInputStyleCreateReplace.Builder()
@@ -267,7 +266,6 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(extensionRegistry, apiData, "/styles/{styleId}", "styleId", styleId);
 
     QueriesHandlerStylesManager.QueryInputStyleCreateReplace queryInput =
@@ -298,7 +296,6 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(extensionRegistry, apiData, "/styles/{styleId}", "styleId", styleId);
 
     QueriesHandlerStylesManager.QueryInputStyleDelete queryInput =

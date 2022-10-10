@@ -305,7 +305,6 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(
         extensionRegistry,
         apiData,
@@ -353,7 +352,6 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(
         extensionRegistry,
         apiData,
