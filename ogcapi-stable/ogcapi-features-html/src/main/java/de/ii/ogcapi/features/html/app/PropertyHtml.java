@@ -105,14 +105,6 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
   }
 
   @Value.Lazy
-  default boolean isHtml() {
-    return Objects.nonNull(getValue())
-        && getValue().startsWith("<")
-        && (getValue().endsWith(">") || getValue().endsWith(">\n"))
-        && getValue().contains("</");
-  }
-
-  @Value.Lazy
   default boolean isUrl() {
     return Objects.nonNull(getValue())
         && (getValue().startsWith("http://") || getValue().startsWith("https://"));
