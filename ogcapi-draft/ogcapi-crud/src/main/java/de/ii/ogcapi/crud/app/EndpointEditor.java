@@ -145,8 +145,6 @@ public class EndpointEditor extends EndpointSubCollection {
       @Context ApiRequestContext requestContext,
       @Context HttpServletRequest request) {
 
-    checkAuthorization(api.getData(), optionalUser);
-
     Optional<HtmlConfiguration> htmlConfig =
         api.getData().getExtension(HtmlConfiguration.class, collectionId);
 
