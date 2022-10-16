@@ -115,7 +115,6 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
     EndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method);
 
-    checkAuthorization(service.getData(), method, optionalUser);
     // Check request
     checkParameterNames(
         requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
@@ -127,6 +126,8 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     ApiMediaType selectedMediaType = selectMediaType(requestContext, supportedMediaTypes, method);
     Locale selectedLanguage =
         contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
+
+    checkAuthorization(service.getData(), subPath, method, selectedMediaType, optionalUser);
 
     ApiRequestContext apiRequestContext =
         new Builder()
@@ -144,7 +145,16 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     return ogcApiEndpoint;
   }
 
-  private void checkAuthorization(OgcApiDataV2 data, String method, Optional<User> optionalUser) {
+  private void checkAuthorization(
+      OgcApiDataV2 data,
+      String path,
+      String method,
+      ApiMediaType mediaType,
+      Optional<User> optionalUser) {
+    if (mediaType.matches(MediaType.TEXT_HTML_TYPE)
+        && (path.endsWith("/crud") || path.endsWith("/login") || path.endsWith("/callback"))) {
+      return;
+    }
     String requiredScope =
         List.of("POST", "PUT", "PATCH", "DELETE").contains(method)
             ? ApiSecurity.SCOPE_WRITE

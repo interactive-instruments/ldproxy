@@ -29,7 +29,7 @@
 
 <script src="https://openlayers.org/en/v6.14.1/build/ol.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.8.0/proj4.min.js"></script>
-<script src="{{urlPrefix}}/ogcapi-crud/assets/ol-ogc-api-crud.97b2a2be.umd.js"></script>
+<script src="{{urlPrefix}}/ogcapi-crud/assets/ol-ogc-api-crud.eb4708df.umd.js"></script>
 
 <script type="text/javascript">
 
@@ -41,6 +41,44 @@ ol.proj.proj4.register(proj4);
 ol.proj.get("EPSG:25832").setExtent([
   -46133.17, 5048875.268576, 1206211.101424, 6301219.54,
 ]);
+
+const query = new URLSearchParams(window.location.search);
+
+class LogoutControl extends ol.control.Control {
+  constructor(opt_options) {
+    const options = opt_options || {};
+
+    const button = document.createElement('button');
+    button.innerHTML = 'Logout';
+    button.style = 'width: 4em;';
+
+    const element = document.createElement('div');
+    element.className = 'ol-unselectable ol-control';
+    element.style = 'top: .5em; right: .5em; width: 4.4em;';
+    element.appendChild(button);
+
+    super({
+      element: element,
+      target: options.target,
+    });
+
+    button.addEventListener('click', this.handleLogout.bind(this), false);
+  }
+
+  handleLogout() {
+    fetch('https://wso2.ldproxy.net/oidc/logout', {
+      method: 'POST',
+      headers: {
+         'Content-Type': 'application/x-www-form-url-encoded',
+      },
+      body: 'consent=approve&id_token_hint=' + query.get('code')
+    })
+    //fetch('https://wso2.ldproxy.net/authenticationendpoint/oauth2_logout.do?tenantDomain=carbon.super')
+    .then(() => {
+      window.location.search = '';
+    });
+  }
+}
 
 const collectionId = Object.keys(globalThis._map.dataLayers)[0];
 
@@ -64,6 +102,7 @@ var map = new ol.Map({
     projection: "EPSG:25832",
   }),
 });
+map.addControl(new LogoutControl());
 
 const ogcApiEditor = new OgcApiEditor({
   api: {
@@ -73,6 +112,7 @@ const ogcApiEditor = new OgcApiEditor({
     schemas: {
       custom: "schemas/replace",
     },
+    token: query.get('access_token')
   },
   tools: {
     create: true,

@@ -11,14 +11,12 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
@@ -26,16 +24,9 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.MapClient;
-import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -46,34 +37,20 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.RedirectionException;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * @langEn TODO
- * @langDe TODO
- * @name CRUD Editor
- * @path {apiId}/collection/{collectionId}/crud
- */
 @Singleton
 @AutoBind
-public class EndpointEditor extends EndpointSubCollection {
+public class EndpointLogin extends EndpointSubCollection {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointEditor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLogin.class);
   private static final List<String> TAGS = ImmutableList.of("Mutate data");
 
-  private final URI servicesUri;
-  private final CrsSupport crsSupport;
-
   @Inject
-  public EndpointEditor(
-      ExtensionRegistry extensionRegistry, ServicesContext servicesContext, CrsSupport crsSupport) {
+  public EndpointLogin(ExtensionRegistry extensionRegistry) {
     super(extensionRegistry);
-    this.servicesUri = servicesContext.getUri();
-    this.crsSupport = crsSupport;
   }
 
   @Override
@@ -92,32 +69,20 @@ public class EndpointEditor extends EndpointSubCollection {
   }
 
   @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    // TODO the editor client currently requires support for EPSG:25832
-    Optional<FeatureTypeConfigurationOgcApi> optCollectionData =
-        apiData.getCollectionData(collectionId);
-    if (optCollectionData.isEmpty()
-        || !crsSupport.isSupported(apiData, optCollectionData.get(), EpsgCrs.of(25832))) {
-      return false;
-    }
-    return super.isEnabledForApi(apiData, collectionId);
-  }
-
-  @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     Optional<CrudConfiguration> config = apiData.getExtension(CrudConfiguration.class);
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("collections")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_CRUD);
-    String path = "/collections/{collectionId}/crud";
+    String path = "/collections/{collectionId}/login";
     HttpMethods method = HttpMethods.GET;
     List<OgcApiPathParameter> pathParameters =
         getPathParameters(extensionRegistry, apiData, "/collections/{collectionId}");
     List<OgcApiQueryParameter> queryParameters =
         getQueryParameters(extensionRegistry, apiData, path, method);
     List<ApiHeader> headers = List.of();
-    String operationSummary = "map client with feature editor";
+    String operationSummary = "login";
     Optional<String> operationDescription = Optional.empty();
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
@@ -135,58 +100,69 @@ public class EndpointEditor extends EndpointSubCollection {
         .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 
+    path = "/collections/{collectionId}/callback";
+    queryParameters = getQueryParameters(extensionRegistry, apiData, path, method);
+    ImmutableOgcApiResourceData.Builder resourceBuilder2 =
+        new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
+    ApiOperation.getResource(
+            apiData,
+            path,
+            false,
+            queryParameters,
+            headers,
+            getContent(apiData, path),
+            operationSummary,
+            operationDescription,
+            Optional.empty(),
+            TAGS)
+        .ifPresent(operation -> resourceBuilder2.putOperations(method.name(), operation));
+    definitionBuilder.putResources(path, resourceBuilder2.build());
+
     return definitionBuilder.build();
   }
 
-  @Path("/{collectionId}/crud")
+  private static final String IS_URI = "https://wso2.ldproxy.net";
+  private static final String OIDC_URI = IS_URI + "/oauth2/oidcdiscovery";
+  private static final String AUTH_URI = IS_URI + "/oauth2/token";
+
+  @Path("/{collectionId}/login")
   @GET
   @Produces("text/html")
-  public View getEditor(
+  public View getLogin(
       @Auth Optional<User> optionalUser,
       @PathParam("collectionId") String collectionId,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
       @Context HttpServletRequest request) {
 
-    if (optionalUser.isEmpty()) {
-      throw new RedirectionException(
-          Status.FOUND,
-          URI.create(
-              requestContext
-                  .getUriCustomizer()
-                  .clearParameters()
-                  .replaceInPath("/crud", "/login")
-                  .toString()));
-    }
-
-    Optional<HtmlConfiguration> htmlConfig =
-        api.getData().getExtension(HtmlConfiguration.class, collectionId);
-
-    MapClient.Type mapClientType = Type.OPEN_LAYERS;
-
-    String serviceUrl =
-        new URICustomizer(servicesUri)
-            .ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new))
+    String callbackUri =
+        requestContext
+            .getUriCustomizer()
+            .replaceInPath("/login", "/callback")
+            .clearParameters()
             .toString();
 
-    String styleUrl =
-        htmlConfig
-            .map(cfg -> cfg.getStyle(Optional.empty(), Optional.of(collectionId), serviceUrl))
-            .orElse(null);
-    boolean removeZoomLevelConstraints = false;
+    return new LoginView(OIDC_URI, AUTH_URI, callbackUri, "", false);
+  }
 
-    String attribution = "";
+  @Path("/{collectionId}/callback")
+  @GET
+  @Produces("text/html")
+  public View getCallback(
+      @Auth Optional<User> optionalUser,
+      @PathParam("collectionId") String collectionId,
+      @Context OgcApi api,
+      @Context ApiRequestContext requestContext,
+      @Context HttpServletRequest request) {
 
-    return new EditorView(
-        api.getData(),
-        collectionId,
-        api.getSpatialExtent(collectionId),
-        URI.create(requestContext.getUriCustomizer().toString()),
-        attribution,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig.orElseThrow(),
-        mapClientType,
-        styleUrl,
-        removeZoomLevelConstraints);
+    String callbackUri = requestContext.getUriCustomizer().clearParameters().toString();
+    String redirectUri =
+        requestContext
+            .getUriCustomizer()
+            .replaceInPath("/callback", "/crud")
+            .clearParameters()
+            .toString();
+
+    return new LoginView(OIDC_URI, AUTH_URI, callbackUri, redirectUri, true);
   }
 }
