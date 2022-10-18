@@ -98,8 +98,6 @@ public interface FeaturesCoreConfiguration
   int MINIMUM_PAGE_SIZE = 1;
   int DEFAULT_PAGE_SIZE = 10;
   int MAX_PAGE_SIZE = 10000;
-  // Todo delete
-  String PARAMETER_Q = "q";
   String PARAMETER_BBOX = "bbox";
   String PARAMETER_DATETIME = "datetime";
   String DATETIME_INTERVAL_SEPARATOR = "/";
@@ -304,23 +302,10 @@ public interface FeaturesCoreConfiguration
         PARAMETER_DATETIME, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
   }
 
-  @Deprecated(since = "3.3.0")
   @JsonIgnore
   @Value.Derived
   @Value.Auxiliary
-  default List<String> getQProperties() {
-    if (getQueryables().isPresent()) {
-      return getQueryables().get().getQ();
-    }
-
-    return ImmutableList.of();
-  }
-
-  @Deprecated(since = "3.3.0")
-  @JsonIgnore
-  @Value.Derived
-  @Value.Auxiliary
-  default List<String> getQOrOtherFilterParameters() {
+  default List<String> getFilterParameters() {
     if (getQueryables().isPresent()) {
       return Stream.concat(
               getQueryables().get().getQ().stream(), getQueryables().get().getOther().stream())

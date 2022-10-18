@@ -163,12 +163,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     final Map<String, String> filterableFields = getFilterableFields(apiData, collectionData);
     final Map<String, String> queryableTypes = getQueryableTypes(apiData, collectionData);
 
-    final List<String> qFields =
-        collectionData
-            .getExtension(FeaturesCoreConfiguration.class)
-            .map(FeaturesCoreConfiguration::getQProperties)
-            .orElse(ImmutableList.of());
-
     Set<String> filterParameters = ImmutableSet.of();
     for (OgcApiQueryParameter parameter : allowedParameters) {
       filterParameters =
@@ -285,7 +279,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
               filters,
               filterableFields,
               filterParameters,
-              qFields,
               queryableTypes,
               cqlFormat,
               crs,
@@ -430,7 +423,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
           filtersFromQuery,
           filterableFields,
           filterParameters,
-          ImmutableList.of(),
           queryableTypes,
           cqlFormat,
           OgcCrs.CRS84,
@@ -465,7 +457,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       Map<String, String> filters,
       Map<String, String> filterableFields,
       Set<String> filterParameters,
-      List<String> qFields,
       Map<String, String> queryableTypes,
       Cql.Format cqlFormat,
       EpsgCrs crs,
