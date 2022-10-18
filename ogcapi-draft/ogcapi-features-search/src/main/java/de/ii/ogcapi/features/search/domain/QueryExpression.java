@@ -495,47 +495,64 @@ public interface QueryExpression {
     return Objects.nonNull(node) && node.isObject() && Objects.nonNull(node.get("$parameter"));
   }
 
-  private String getParameterName(JsonNode node) {
-    JsonNode valueNode = node.get("$parameter");
+  private String getParameterName(JsonNode valueNode) {
     if (Objects.nonNull(valueNode)) {
       if (valueNode.isObject()) {
-        return valueNode.fields().next().getKey();
-      } else if (valueNode.isTextual()) {
-        return valueNode.textValue();
+        if (valueNode.fields().hasNext()) {
+          Entry<String, JsonNode> firstMember = valueNode.fields().next();
+          String firstKey = firstMember.getKey();
+          if ("$ref".equals(firstMember.getKey())) {
+            if (firstMember.getValue().isTextual()
+                && firstMember.getValue().textValue().startsWith("#/parameters/")) {
+              return firstMember.getValue().textValue().substring(13);
+            } else {
+              throw new IllegalArgumentException(
+                  String.format(
+                      "Found '$ref' object where the value is not a JSON Reference to a member in '#/parameters'. Found: %s",
+                      firstMember.getValue()));
+            }
+          } else {
+            return firstMember.getKey();
+          }
+        } else {
+          throw new IllegalArgumentException(
+              "Found empty '$parameter' object. Either the JSON Schema of the parameter must be provided or a JSON Reference to the top-level 'parameters' member.");
+        }
       }
     }
     throw new IllegalArgumentException(
         String.format(
-            "Illegal value of a '$parameter' key. The value must be either the name of the parameter defined in the 'parameters' member or a JSON Schema object. Found: %s",
-            valueNode.toString()));
+            "Illegal value of a '$parameter' key. The value must be either a local JSON Reference to a parameter defined in the 'parameters' member or a JSON Schema object. Found: %s",
+            valueNode));
   }
 
   private void replaceParameters(JsonNode node, Map<String, JsonNode> params) {
-    if (Objects.isNull(node)) {
-      return;
-    } else if (node.isArray()) {
-      ArrayNode arrayNode = (ArrayNode) node;
-      for (int i = 0; i < arrayNode.size(); i++) {
-        if (isParameterNode(arrayNode.get(i))) {
-          arrayNode.set(i, params.get(getParameterName(arrayNode.get(i))));
-        } else {
-          replaceParameters(arrayNode.get(i), params);
+    if (Objects.nonNull(node)) {
+      if (node.isArray()) {
+        ArrayNode arrayNode = (ArrayNode) node;
+        for (int i = 0; i < arrayNode.size(); i++) {
+          if (isParameterNode(arrayNode.get(i))) {
+            arrayNode.set(i, params.get(getParameterName(arrayNode.get(i).get("$parameter"))));
+          } else {
+            replaceParameters(arrayNode.get(i), params);
+          }
         }
-      }
-    } else if (node.isObject()) {
-      ObjectNode objectNode = (ObjectNode) node;
-      Iterator<Entry<String, JsonNode>> iter = objectNode.fields();
-      while (iter.hasNext()) {
-        Map.Entry<String, JsonNode> entry = iter.next();
-        if (isParameterNode(entry.getValue())) {
-          objectNode.set(entry.getKey(), params.get(getParameterName(entry.getValue())));
-        } else {
-          replaceParameters(entry.getValue(), params);
+      } else if (node.isObject()) {
+        ObjectNode objectNode = (ObjectNode) node;
+        Iterator<Entry<String, JsonNode>> iter = objectNode.fields();
+        while (iter.hasNext()) {
+          Map.Entry<String, JsonNode> entry = iter.next();
+          if (isParameterNode(entry.getValue())) {
+            objectNode.set(
+                entry.getKey(), params.get(getParameterName(entry.getValue().get("$parameter"))));
+          } else {
+            replaceParameters(entry.getValue(), params);
+          }
         }
+      } else if (!node.isNull() && !node.isValueNode()) {
+        throw new IllegalStateException(
+            String.format("Support for schema type %s not implemented.", node.getNodeType()));
       }
-    } else if (!node.isNull() && !node.isValueNode()) {
-      throw new IllegalStateException(
-          String.format("Support for schema type %s not implemented.", node.getNodeType()));
     }
   }
 
@@ -562,23 +579,20 @@ public interface QueryExpression {
               mergeMaps(params, getParametersFromFilter(entry.getValue(), predefinedParameters));
         }
       } else if (param.isObject()) {
-        Map.Entry<String, JsonNode> entry = param.fields().next();
-        if (!params.containsKey(entry.getKey())) {
-          // ignore multiple definitions of the same parameter
-          params = mergeMaps(params, ImmutableMap.of(entry.getKey(), entry.getValue()));
-        }
-      } else if (param.isTextual()) {
-        if (!params.containsKey(param.textValue())) {
-          // ignore multiple definitions of the same parameter
-          if (predefinedParameters.containsKey(param.textValue())) {
-            params =
-                mergeMaps(
-                    params,
-                    ImmutableMap.of(
-                        param.textValue(), predefinedParameters.get(param.textValue())));
+        String name = getParameterName(param);
+        // ignore multiple definitions of the same parameter
+        if (!params.containsKey(name)) {
+          Map.Entry<String, JsonNode> entry = param.fields().next();
+          if ("$ref".equals(entry.getKey())) {
+            if (predefinedParameters.containsKey(name)) {
+              params = mergeMaps(params, ImmutableMap.of(name, predefinedParameters.get(name)));
+            } else {
+              throw new IllegalArgumentException(
+                  String.format(
+                      "Undefined parameter '%s' referenced in query.", param.textValue()));
+            }
           } else {
-            throw new IllegalArgumentException(
-                String.format("Undefined parameter '%s' referenced in query.", param.textValue()));
+            params = mergeMaps(params, ImmutableMap.of(entry.getKey(), entry.getValue()));
           }
         }
       }
@@ -614,10 +628,7 @@ public interface QueryExpression {
           builder.addAll(getParameterNamesFromFilter(entry.getValue()));
         }
       } else if (param.isObject()) {
-        Map.Entry<String, JsonNode> entry = param.fields().next();
-        builder.add(entry.getKey());
-      } else if (param.isTextual()) {
-        builder.add(param.textValue());
+        builder.add(getParameterName(param));
       }
     }
     return builder.build();
