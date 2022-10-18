@@ -39,7 +39,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
+ * @langEn General text search in multiple text properties of the data. Separate search terms by
+ *     comma. If at least one of the search terms is included in an item, it is included in the
+ *     result set. Known limitation: The search should be case-insensitive, but currently is
+ *     case-sensitive.
  * @langDe TODO
  * @name q
  * @endpoints Features

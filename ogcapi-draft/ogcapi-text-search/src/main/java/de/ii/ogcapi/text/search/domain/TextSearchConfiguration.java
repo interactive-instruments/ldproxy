@@ -18,6 +18,11 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTextSearchConfiguration.Builder.class)
 public interface TextSearchConfiguration extends ExtensionConfiguration {
 
+  /**
+   * @langEn Controls which of the attributes in queries can be used for text search.
+   * @langDe Steuert, welche der Attribute in Queries für die Textsuche verwendet werden können.
+   * @default []
+   */
   List<String> getProperties();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
