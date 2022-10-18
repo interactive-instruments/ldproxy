@@ -280,7 +280,7 @@ public class FeaturesFormatHtml
 
       List<String> queryables =
           featuresCoreConfiguration
-              .map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
+              .map(FeaturesCoreConfiguration::getFilterParameters)
               .orElse(ImmutableList.of());
       Map<String, String> filterableFields =
           transformationContext

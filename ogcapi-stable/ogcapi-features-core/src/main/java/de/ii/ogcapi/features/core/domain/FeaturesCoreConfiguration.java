@@ -98,7 +98,6 @@ public interface FeaturesCoreConfiguration
   int MINIMUM_PAGE_SIZE = 1;
   int DEFAULT_PAGE_SIZE = 10;
   int MAX_PAGE_SIZE = 10000;
-  String PARAMETER_Q = "q";
   String PARAMETER_BBOX = "bbox";
   String PARAMETER_DATETIME = "datetime";
   String DATETIME_INTERVAL_SEPARATOR = "/";
@@ -293,8 +292,8 @@ public interface FeaturesCoreConfiguration
 
       queryables.getSpatial().forEach(property -> parameters.put(property, property));
       queryables.getTemporal().forEach(property -> parameters.put(property, property));
-      queryables.getQ().forEach(property -> parameters.put(property, property));
-      queryables.getOther().forEach(property -> parameters.put(property, property));
+
+      getFilterParameters().forEach(property -> parameters.put(property, property));
 
       return parameters;
     }
@@ -307,22 +306,11 @@ public interface FeaturesCoreConfiguration
   @JsonIgnore
   @Value.Derived
   @Value.Auxiliary
-  default List<String> getQOrOtherFilterParameters() {
+  default List<String> getFilterParameters() {
     if (getQueryables().isPresent()) {
       return Stream.concat(
               getQueryables().get().getQ().stream(), getQueryables().get().getOther().stream())
           .collect(Collectors.toList());
-    }
-
-    return ImmutableList.of();
-  }
-
-  @JsonIgnore
-  @Value.Derived
-  @Value.Auxiliary
-  default List<String> getQProperties() {
-    if (getQueryables().isPresent()) {
-      return getQueryables().get().getQ();
     }
 
     return ImmutableList.of();
