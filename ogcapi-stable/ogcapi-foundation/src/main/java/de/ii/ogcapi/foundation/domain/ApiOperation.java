@@ -329,7 +329,16 @@ public interface ApiOperation {
 
     addErrorResponses(op, errorCodes);
 
-    if (apiData.getSecured() && isMutation) {
+    if (isMutation
+        && apiData
+            .getSecurity()
+            .filter(s -> s.isEnabled() && !s.getPublicScopes().contains(ApiSecurity.SCOPE_WRITE))
+            .isPresent()) {
+      op.addSecurityItem(new SecurityRequirement().addList("JWT"));
+    } else if (apiData
+        .getSecurity()
+        .filter(s -> s.isEnabled() && !s.getPublicScopes().contains(ApiSecurity.SCOPE_READ))
+        .isPresent()) {
       op.addSecurityItem(new SecurityRequirement().addList("JWT"));
     }
   }
@@ -360,7 +369,6 @@ public interface ApiOperation {
           if (mediaTypes.size() == 1
               && mediaTypes.iterator().next().equals(MediaType.APPLICATION_FORM_URLENCODED_TYPE)) {
             // URL-encoded form
-            isMutation = false;
             errorCodes.add(406);
           } else if (getSuccess().stream()
               .anyMatch(
@@ -368,7 +376,6 @@ public interface ApiOperation {
                       ImmutableSet.of(STATUS_200, STATUS_201, STATUS_204)
                           .contains(response.getStatusCode()))) {
             // Processing request
-            isMutation = false;
             errorCodes.add(406);
           }
         }
