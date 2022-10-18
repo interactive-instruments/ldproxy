@@ -127,7 +127,8 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     Locale selectedLanguage =
         contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
 
-    checkAuthorization(service.getData(), subPath, method, selectedMediaType, optionalUser);
+    checkAuthorization(
+        service.getData(), entrypoint, subPath, method, selectedMediaType, optionalUser);
 
     ApiRequestContext apiRequestContext =
         new Builder()
@@ -145,12 +146,17 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     return ogcApiEndpoint;
   }
 
+  @SuppressWarnings("PMD.CyclomaticComplexity")
   private void checkAuthorization(
       OgcApiDataV2 data,
+      String entrypoint,
       String path,
       String method,
       ApiMediaType mediaType,
       Optional<User> optionalUser) {
+    if (Objects.equals(entrypoint, "api")) {
+      return;
+    }
     if (mediaType.matches(MediaType.TEXT_HTML_TYPE)
         && (path.endsWith("/crud") || path.endsWith("/login") || path.endsWith("/callback"))) {
       return;
