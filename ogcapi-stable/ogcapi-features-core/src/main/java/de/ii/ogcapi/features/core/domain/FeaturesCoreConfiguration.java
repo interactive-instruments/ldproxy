@@ -292,7 +292,8 @@ public interface FeaturesCoreConfiguration
 
       queryables.getSpatial().forEach(property -> parameters.put(property, property));
       queryables.getTemporal().forEach(property -> parameters.put(property, property));
-      queryables.getOther().forEach(property -> parameters.put(property, property));
+
+      getFilterParameters().forEach(property -> parameters.put(property, property));
 
       return parameters;
     }
