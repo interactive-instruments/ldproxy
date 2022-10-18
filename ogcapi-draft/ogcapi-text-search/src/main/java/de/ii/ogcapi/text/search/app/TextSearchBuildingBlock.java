@@ -18,6 +18,6 @@ public class TextSearchBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new ImmutableCollectionsConfiguration.Builder().enabled(true).build();
+    return new ImmutableCollectionsConfiguration.Builder().enabled(false).build();
   }
 }
