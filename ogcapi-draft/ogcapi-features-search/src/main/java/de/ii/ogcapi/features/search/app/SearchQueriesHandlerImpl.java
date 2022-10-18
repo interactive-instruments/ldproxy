@@ -25,6 +25,7 @@ import de.ii.ogcapi.features.search.domain.Parameters;
 import de.ii.ogcapi.features.search.domain.ParametersFormat;
 import de.ii.ogcapi.features.search.domain.QueryExpression;
 import de.ii.ogcapi.features.search.domain.QueryExpression.FilterOperator;
+import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
 import de.ii.ogcapi.features.search.domain.StoredQueries;
 import de.ii.ogcapi.features.search.domain.StoredQueriesFormat;
@@ -399,6 +400,10 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                               q.getTitle().orElse(queryId),
                               queryId,
                               q.getParameterNames(),
+                              apiData
+                                  .getExtension(SearchConfiguration.class)
+                                  .map(SearchConfiguration::isManagerEnabled)
+                                  .orElse(false),
                               i18n,
                               requestContext.getLanguage()))
                       .parameters(

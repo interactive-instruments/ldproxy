@@ -62,6 +62,7 @@ public class StoredQueriesLinkGenerator extends DefaultLinksGenerator {
       String name,
       String queryId,
       Set<String> parameterNames,
+      boolean managerEnabled,
       I18n i18n,
       Optional<Locale> language) {
 
@@ -107,20 +108,22 @@ public class StoredQueriesLinkGenerator extends DefaultLinksGenerator {
                   .toString());
     }
 
-    builder
-        .add(selfBuilder.build())
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .ensureNoTrailingSlash()
-                        .ensureLastPathSegments(queryId, "definition")
-                        .removeParameters("f")
-                        .toString())
-                .rel("describedby")
-                .title(i18n.get("queryDefinitionLink", language).replace("{{name}}", name))
-                .build());
+    if (managerEnabled) {
+      builder
+          .add(selfBuilder.build())
+          .add(
+              new ImmutableLink.Builder()
+                  .href(
+                      uriBuilder
+                          .copy()
+                          .ensureNoTrailingSlash()
+                          .ensureLastPathSegments(queryId, "definition")
+                          .removeParameters("f")
+                          .toString())
+                  .rel("describedby")
+                  .title(i18n.get("queryDefinitionLink", language).replace("{{name}}", name))
+                  .build());
+    }
 
     if (!parameterNames.isEmpty()) {
       builder.add(
