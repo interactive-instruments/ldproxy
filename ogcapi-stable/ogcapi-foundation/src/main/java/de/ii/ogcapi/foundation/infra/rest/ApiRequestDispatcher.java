@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.dropwizard.auth.Auth;
@@ -115,7 +116,6 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
     EndpointExtension ogcApiEndpoint = findEndpoint(service.getData(), entrypoint, subPath, method);
 
-    checkAuthorization(service.getData(), method, optionalUser);
     // Check request
     checkParameterNames(
         requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
@@ -127,6 +127,9 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     ApiMediaType selectedMediaType = selectMediaType(requestContext, supportedMediaTypes, method);
     Locale selectedLanguage =
         contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
+
+    checkAuthorization(
+        service.getData(), entrypoint, subPath, method, selectedMediaType, optionalUser);
 
     ApiRequestContext apiRequestContext =
         new Builder()
@@ -144,14 +147,35 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     return ogcApiEndpoint;
   }
 
-  private void checkAuthorization(OgcApiDataV2 data, String method, Optional<User> optionalUser) {
+  @SuppressWarnings("PMD.CyclomaticComplexity")
+  private void checkAuthorization(
+      OgcApiDataV2 data,
+      String entrypoint,
+      String path,
+      String method,
+      ApiMediaType mediaType,
+      Optional<User> optionalUser) {
+    if (Objects.equals(entrypoint, "api")) {
+      return;
+    }
+    if (mediaType.matches(MediaType.TEXT_HTML_TYPE)
+        && (path.endsWith("/crud") || path.endsWith("/login") || path.endsWith("/callback"))) {
+      return;
+    }
+
     String requiredScope =
         List.of("POST", "PUT", "PATCH", "DELETE").contains(method)
             ? ApiSecurity.SCOPE_WRITE
             : ApiSecurity.SCOPE_READ;
 
-    if (data.getSecurity().filter(s -> s.isSecured(requiredScope)).isPresent()
-        && optionalUser.filter(u -> u.getScopes().contains(requiredScope)).isEmpty()) {
+    boolean isScopeRestricted =
+        data.getSecurity().filter(s -> s.isSecured(requiredScope)).isPresent();
+    boolean userHasScope =
+        optionalUser.filter(u -> u.getScopes().contains(requiredScope)).isPresent();
+    boolean isPolicyDenial =
+        optionalUser.filter(u -> u.getPolicyDecision() == PolicyDecision.DENY).isPresent();
+
+    if (isScopeRestricted && (!userHasScope || isPolicyDenial)) {
       throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
     }
   }
