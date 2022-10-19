@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -148,7 +149,8 @@ public class EndpointEditor extends EndpointSubCollection {
       @Context ApiRequestContext requestContext,
       @Context HttpServletRequest request) {
 
-    if (optionalUser.isEmpty()) {
+    if (api.getData().getSecurity().filter(ApiSecurity::isEnabled).isPresent()
+        && optionalUser.isEmpty()) {
       throw new RedirectionException(
           Status.FOUND,
           URI.create(
