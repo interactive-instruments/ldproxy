@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.dropwizard.auth.Auth;
@@ -161,13 +162,20 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
         && (path.endsWith("/crud") || path.endsWith("/login") || path.endsWith("/callback"))) {
       return;
     }
+
     String requiredScope =
         List.of("POST", "PUT", "PATCH", "DELETE").contains(method)
             ? ApiSecurity.SCOPE_WRITE
             : ApiSecurity.SCOPE_READ;
 
-    if (data.getSecurity().filter(s -> s.isSecured(requiredScope)).isPresent()
-        && optionalUser.filter(u -> u.getScopes().contains(requiredScope)).isEmpty()) {
+    boolean isScopeRestricted =
+        data.getSecurity().filter(s -> s.isSecured(requiredScope)).isPresent();
+    boolean userHasScope =
+        optionalUser.filter(u -> u.getScopes().contains(requiredScope)).isPresent();
+    boolean isPolicyDenial =
+        optionalUser.filter(u -> u.getPolicyDecision() == PolicyDecision.DENY).isPresent();
+
+    if (isScopeRestricted && (!userHasScope || isPolicyDenial)) {
       throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
     }
   }
