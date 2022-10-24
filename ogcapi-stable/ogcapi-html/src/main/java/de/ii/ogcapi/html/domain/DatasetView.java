@@ -11,12 +11,12 @@ import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
 import de.ii.xtraplatform.services.domain.GenericView;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.http.Consts;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 
@@ -115,11 +115,13 @@ public class DatasetView extends GenericView {
       List<String> ignore = Splitter.on(',').trimResults().omitEmptyStrings().splitToList(without);
 
       List<NameValuePair> query =
-          URLEncodedUtils.parse(getRawQuery().substring(1), Consts.ISO_8859_1).stream()
+          URLEncodedUtils.parse(getRawQuery().substring(1), StandardCharsets.UTF_8).stream()
               .filter(kvp -> !ignore.contains(kvp.getName().toLowerCase()))
               .collect(Collectors.toList());
 
-      return '?' + URLEncodedUtils.format(query, '&', Consts.UTF_8) + (!query.isEmpty() ? '&' : "");
+      return '?'
+          + URLEncodedUtils.format(query, '&', StandardCharsets.UTF_8)
+          + (!query.isEmpty() ? '&' : "");
     };
   }
 
@@ -141,18 +143,24 @@ public class DatasetView extends GenericView {
               + ", \"name\": \""
               + item.label
               + "\"";
-      if (Objects.nonNull(item.url)) result += ", \"item\": \"" + item.url + "\"";
+      if (Objects.nonNull(item.url)) {
+        result += ", \"item\": \"" + item.url + "\"";
+      }
       result += " }";
-      if (i < breadCrumbs.size() - 1) result += ",\n    ";
+      if (i < breadCrumbs.size() - 1) {
+        result += ",\n    ";
+      }
     }
     return result;
   }
 
   public String getAttribution() {
-    if (Objects.nonNull(htmlConfig.getLeafletAttribution()))
+    if (Objects.nonNull(htmlConfig.getLeafletAttribution())) {
       return htmlConfig.getLeafletAttribution();
-    if (Objects.nonNull(htmlConfig.getOpenLayersAttribution()))
+    }
+    if (Objects.nonNull(htmlConfig.getOpenLayersAttribution())) {
       return htmlConfig.getOpenLayersAttribution();
+    }
     return htmlConfig.getBasemapAttribution();
   }
 }
