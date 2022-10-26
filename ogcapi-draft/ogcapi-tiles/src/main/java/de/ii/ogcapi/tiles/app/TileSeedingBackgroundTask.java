@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.infra;
+package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -68,9 +68,9 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class VectorTileSeeding implements OgcApiBackgroundTask {
+public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(VectorTileSeeding.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TileSeedingBackgroundTask.class);
 
   private final CrsTransformerFactory crsTransformerFactory;
   private final ExtensionRegistry extensionRegistry;
@@ -82,7 +82,7 @@ public class VectorTileSeeding implements OgcApiBackgroundTask {
   private final TileMatrixSetRepository tileMatrixSetRepository;
 
   @Inject
-  public VectorTileSeeding(
+  public TileSeedingBackgroundTask(
       CrsTransformerFactory crsTransformerFactory,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,

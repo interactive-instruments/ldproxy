@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.app;
+package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -31,12 +31,11 @@ import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileFromFeatureQuery;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData.Builder;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,8 +54,8 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableTileProviderFeatures.Builder.class)
-public abstract class TileProviderFeatures extends TileProvider {
+@JsonDeserialize(builder = Builder.class)
+public abstract class TileProviderFeaturesData extends TileProviderData {
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
@@ -289,13 +288,6 @@ public abstract class TileProviderFeatures extends TileProvider {
               "Unexpected tile format without query support. Found: %s",
               outputFormat.getClass().getSimpleName()));
 
-    // first execute the information that is passed as processing parameters (e.g., "properties")
-    Map<String, Object> processingParameters = new HashMap<>();
-    for (OgcApiQueryParameter parameter : allowedParameters) {
-      processingParameters =
-          parameter.transformContext(null, processingParameters, queryParameters, apiData);
-    }
-
     if (tile.isDatasetTile()) {
       if (!outputFormat.canMultiLayer() && collections.size() > 1)
         throw new NotAcceptableException(
@@ -352,7 +344,6 @@ public abstract class TileProviderFeatures extends TileProvider {
           .tile(tile)
           .singleLayerTileMap(singleLayerTileMap)
           .queryMap(queryMap)
-          .processingParameters(processingParameters)
           .defaultCrs(
               apiData
                   .getExtension(FeaturesCoreConfiguration.class)
@@ -377,7 +368,6 @@ public abstract class TileProviderFeatures extends TileProvider {
           .from(genericInput)
           .tile(tile)
           .query(query)
-          .processingParameters(processingParameters)
           .defaultCrs(
               featureType
                   .getExtension(FeaturesCoreConfiguration.class)
@@ -388,13 +378,15 @@ public abstract class TileProviderFeatures extends TileProvider {
   }
 
   @Override
-  public TileProvider mergeInto(TileProvider source) {
-    if (Objects.isNull(source) || !(source instanceof TileProviderFeatures)) return this;
+  public TileProviderData mergeInto(TileProviderData source) {
+    if (Objects.isNull(source) || !(source instanceof TileProviderFeaturesData)) return this;
 
-    ImmutableTileProviderFeatures.Builder builder =
-        ImmutableTileProviderFeatures.builder().from((TileProviderFeatures) source).from(this);
+    Builder builder =
+        ImmutableTileProviderFeaturesData.builder()
+            .from((TileProviderFeaturesData) source)
+            .from(this);
 
-    TileProviderFeatures src = (TileProviderFeatures) source;
+    TileProviderFeaturesData src = (TileProviderFeaturesData) source;
 
     List<String> tileEncodings =
         Objects.nonNull(src.getTileEncodings())

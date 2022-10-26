@@ -24,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.tiles.app.provider.FeatureEncoderMVT;
 import de.ii.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ogcapi.tiles.domain.Rule;

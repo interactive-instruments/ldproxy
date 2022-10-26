@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.app;
+package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -16,7 +16,7 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileTileServerTile;
 import de.ii.ogcapi.tiles.domain.Tile;
-import de.ii.ogcapi.tiles.domain.TileProvider;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderTileServerData.Builder;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,8 +44,8 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableTileProviderTileServer.Builder.class)
-public abstract class TileProviderTileServer extends TileProvider {
+@JsonDeserialize(builder = Builder.class)
+public abstract class TileProviderTileServerData extends TileProviderData {
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
@@ -120,13 +120,12 @@ public abstract class TileProviderTileServer extends TileProvider {
   }
 
   @Override
-  public TileProvider mergeInto(TileProvider source) {
-    if (Objects.isNull(source) || !(source instanceof TileProviderTileServer)) return this;
+  public TileProviderData mergeInto(TileProviderData source) {
+    if (Objects.isNull(source) || !(source instanceof TileProviderTileServerData)) return this;
 
-    TileProviderTileServer src = (TileProviderTileServer) source;
+    TileProviderTileServerData src = (TileProviderTileServerData) source;
 
-    ImmutableTileProviderTileServer.Builder builder =
-        ImmutableTileProviderTileServer.builder().from(src).from(this);
+    Builder builder = ImmutableTileProviderTileServerData.builder().from(src).from(this);
 
     List<String> tileEncodings =
         Objects.nonNull(src.getTileEncodings())

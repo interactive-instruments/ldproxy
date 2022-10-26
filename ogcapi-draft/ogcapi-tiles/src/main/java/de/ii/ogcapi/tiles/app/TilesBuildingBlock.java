@@ -32,6 +32,8 @@ import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -159,7 +161,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     return new Builder()
         .enabled(false)
         .tileProvider(
-            ImmutableTileProviderFeatures.builder()
+            ImmutableTileProviderFeaturesData.builder()
                 .tileEncodings(
                     extensionRegistry
                         .getExtensionsForType(TileFormatWithQuerySupportExtension.class)
@@ -375,7 +377,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         }
       }
 
-      if (config.getTileProvider() instanceof TileProviderFeatures) {
+      if (config.getTileProvider() instanceof TileProviderFeaturesData) {
 
         Map<String, MinMax> zoomLevelsCache = config.getZoomLevelsCacheDerived();
         if (Objects.nonNull(zoomLevelsCache)) {

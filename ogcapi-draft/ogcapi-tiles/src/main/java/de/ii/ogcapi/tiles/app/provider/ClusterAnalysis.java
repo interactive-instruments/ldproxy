@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.app;
+package de.ii.ogcapi.tiles.app.provider;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;

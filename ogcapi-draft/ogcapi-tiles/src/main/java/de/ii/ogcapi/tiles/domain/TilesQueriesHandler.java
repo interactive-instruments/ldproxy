@@ -7,17 +7,15 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.tiles.app.TileProviderMbtiles;
-import de.ii.ogcapi.tiles.app.TileProviderTileServer;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderTileServerData;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,7 +56,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
     Tile getTile();
 
-    TileProviderMbtiles getProvider();
+    TileProviderMbtilesData getProvider();
   }
 
   @Value.Immutable
@@ -66,7 +64,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
     Tile getTile();
 
-    TileProviderTileServer getProvider();
+    TileProviderTileServerData getProvider();
   }
 
   @Value.Immutable
@@ -79,13 +77,6 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     Map<String, FeatureQuery> getQueryMap();
 
     EpsgCrs getDefaultCrs();
-
-    // the processing
-    Optional<OutputStream> getOutputStream();
-
-    Optional<FeatureProcessChain> getProcesses();
-
-    Map<String, Object> getProcessingParameters();
   }
 
   @Value.Immutable
@@ -96,13 +87,6 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     FeatureQuery getQuery();
 
     EpsgCrs getDefaultCrs();
-
-    // the processing
-    Optional<OutputStream> getOutputStream();
-
-    Optional<FeatureProcessChain> getProcesses();
-
-    Map<String, Object> getProcessingParameters();
   }
 
   @Value.Immutable

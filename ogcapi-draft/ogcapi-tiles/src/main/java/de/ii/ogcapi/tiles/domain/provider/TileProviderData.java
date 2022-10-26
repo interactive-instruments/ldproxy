@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain;
+package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -14,9 +14,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.app.TileProviderFeatures;
-import de.ii.ogcapi.tiles.app.TileProviderMbtiles;
-import de.ii.ogcapi.tiles.app.TileProviderTileServer;
+import de.ii.ogcapi.tiles.domain.Tile;
 import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
@@ -38,11 +36,11 @@ import org.immutables.value.Value;
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "type")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = TileProviderFeatures.class, name = "FEATURES"),
-  @JsonSubTypes.Type(value = TileProviderMbtiles.class, name = "MBTILES"),
-  @JsonSubTypes.Type(value = TileProviderTileServer.class, name = "TILESERVER")
+  @JsonSubTypes.Type(value = TileProviderFeaturesData.class, name = "FEATURES"),
+  @JsonSubTypes.Type(value = TileProviderMbtilesData.class, name = "MBTILES"),
+  @JsonSubTypes.Type(value = TileProviderTileServerData.class, name = "TILESERVER")
 })
-public abstract class TileProvider {
+public abstract class TileProviderData {
 
   @JsonIgnore
   @Value.Default
@@ -68,7 +66,7 @@ public abstract class TileProvider {
 
   public abstract List<String> getTileEncodings();
 
-  public abstract TileProvider mergeInto(TileProvider tileProvider);
+  public abstract TileProviderData mergeInto(TileProviderData tileProvider);
 
   public abstract QueryInput getQueryInput(
       OgcApiDataV2 apiData,

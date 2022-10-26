@@ -32,9 +32,9 @@ import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
@@ -186,7 +186,7 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
       String tileMatrix,
       String tileRow,
       String tileCol,
-      TileProvider tileProvider)
+      TileProviderData tileProvider)
       throws CrsTransformationException, IOException, NotFoundException {
     OgcApiDataV2 apiData = api.getData();
     Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());

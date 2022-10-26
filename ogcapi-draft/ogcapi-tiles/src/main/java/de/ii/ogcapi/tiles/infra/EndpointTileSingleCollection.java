@@ -22,9 +22,9 @@ import de.ii.ogcapi.tiles.api.AbstractEndpointTileSingleCollection;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -127,7 +127,7 @@ public class EndpointTileSingleCollection extends AbstractEndpointTileSingleColl
       @Context ApiRequestContext requestContext)
       throws CrsTransformationException, IOException, NotFoundException {
 
-    TileProvider tileProvider =
+    TileProviderData tileProvider =
         api.getData()
             .getExtension(TilesConfiguration.class)
             .map(TilesConfiguration::getTileProvider)

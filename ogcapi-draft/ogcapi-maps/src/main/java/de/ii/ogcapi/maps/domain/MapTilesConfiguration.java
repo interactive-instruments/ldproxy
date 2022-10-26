@@ -11,8 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -39,7 +39,7 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
    * @default `null`
    */
   @Nullable
-  TileProvider getMapProvider(); // TODO: must be TileServer, generalize and extend to MBTiles
+  TileProviderData getMapProvider(); // TODO: must be TileServer, generalize and extend to MBTiles
 
   @Nullable
   TilesConfiguration.TileCacheType getCache(); // TODO: add caching support

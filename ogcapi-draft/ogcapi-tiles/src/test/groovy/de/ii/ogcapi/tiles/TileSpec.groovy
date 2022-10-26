@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableMap
 import de.ii.ogcapi.foundation.app.I18nDefault
 import de.ii.ogcapi.foundation.domain.ApiRequestContext
 import de.ii.ogcapi.foundation.domain.OgcApi
-import de.ii.ogcapi.tiles.app.TileCacheImpl
+import de.ii.ogcapi.tiles.app.provider.TileCacheImpl
 import de.ii.ogcapi.tiles.domain.ImmutableMinMax
 import de.ii.ogcapi.tiles.domain.MinMax
 import de.ii.ogcapi.tiles.domain.Tile

@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.app;
+package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -17,7 +17,6 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile.Builder;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.Tile;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,8 +37,8 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableTileProviderMbtiles.Builder.class)
-public abstract class TileProviderMbtiles extends TileProvider {
+@JsonDeserialize(builder = ImmutableTileProviderMbtilesData.Builder.class)
+public abstract class TileProviderMbtilesData extends TileProviderData {
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
@@ -101,13 +100,13 @@ public abstract class TileProviderMbtiles extends TileProvider {
   }
 
   @Override
-  public TileProvider mergeInto(TileProvider source) {
-    if (Objects.isNull(source) || !(source instanceof TileProviderMbtiles)) return this;
+  public TileProviderData mergeInto(TileProviderData source) {
+    if (Objects.isNull(source) || !(source instanceof TileProviderMbtilesData)) return this;
 
-    TileProviderMbtiles src = (TileProviderMbtiles) source;
+    TileProviderMbtilesData src = (TileProviderMbtilesData) source;
 
-    ImmutableTileProviderMbtiles.Builder builder =
-        ImmutableTileProviderMbtiles.builder().from(src).from(this);
+    ImmutableTileProviderMbtilesData.Builder builder =
+        ImmutableTileProviderMbtilesData.builder().from(src).from(this);
 
     if (!getCenter().isEmpty()) builder.center(getCenter());
     else if (!src.getCenter().isEmpty()) builder.center(src.getCenter());

@@ -21,6 +21,8 @@ import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderMbtilesData;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -136,9 +138,9 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
 
   private TilesConfiguration process(OgcApiDataV2 apiData, TilesConfiguration config) {
     if (Objects.nonNull(config.getTileProvider())
-        && config.getTileProvider() instanceof TileProviderMbtiles) {
+        && config.getTileProvider() instanceof TileProviderMbtilesData) {
       try {
-        TileProviderMbtiles tileProvider = (TileProviderMbtiles) config.getTileProvider();
+        TileProviderMbtilesData tileProvider = (TileProviderMbtilesData) config.getTileProvider();
         String filename = tileProvider.getFilename();
         Optional<Integer> minzoom = staticTileProviderStore.getMinzoom(apiData, filename);
         Optional<Integer> maxzoom = staticTileProviderStore.getMaxzoom(apiData, filename);
@@ -157,7 +159,7 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
             new ImmutableTilesConfiguration.Builder()
                 .from(config)
                 .tileProvider(
-                    ImmutableTileProviderMbtiles.builder()
+                    ImmutableTileProviderMbtilesData.builder()
                         .from(tileProvider)
                         .zoomLevels(zoomLevels)
                         .tileEncoding(format)

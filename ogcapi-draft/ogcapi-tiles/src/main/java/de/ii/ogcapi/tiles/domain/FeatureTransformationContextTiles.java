@@ -8,18 +8,13 @@
 package de.ii.ogcapi.tiles.domain;
 
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
-import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 public interface FeatureTransformationContextTiles extends FeatureTransformationContext {
 
-  Map<String, Object> processingParameters();
-
   Tile tile();
-
-  TileCache getTileCache();
 
   @Value.Lazy
   default TilesConfiguration tilesConfiguration() {

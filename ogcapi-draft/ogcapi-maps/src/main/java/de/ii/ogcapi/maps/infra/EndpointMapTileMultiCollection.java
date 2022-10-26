@@ -22,8 +22,8 @@ import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileMultiCollection;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.TileCache;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.auth.domain.User;
@@ -130,7 +130,7 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
       @Context ApiRequestContext requestContext)
       throws CrsTransformationException, IOException, NotFoundException {
 
-    TileProvider tileProvider =
+    TileProviderData tileProvider =
         api.getData()
             .getExtension(MapTilesConfiguration.class)
             .map(MapTilesConfiguration::getMapProvider)
