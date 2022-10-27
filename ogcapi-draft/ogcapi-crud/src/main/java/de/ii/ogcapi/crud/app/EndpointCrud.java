@@ -442,8 +442,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     checkTransactional(featureProvider);
 
-    checkAuthorization(api.getData(), optionalUser);
-
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
             .getExtension(FeaturesCoreConfiguration.class)

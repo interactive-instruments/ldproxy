@@ -67,7 +67,7 @@ public class QueryParameterToken extends ApiExtensionCache implements OgcApiQuer
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData.getSecurity().filter(ApiSecurity::isEnabled).isPresent();
+    return apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent();
   }
 
   @Override

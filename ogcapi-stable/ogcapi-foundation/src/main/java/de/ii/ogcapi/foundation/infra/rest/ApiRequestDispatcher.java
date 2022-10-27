@@ -169,7 +169,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
             : ApiSecurity.SCOPE_READ;
 
     boolean isScopeRestricted =
-        data.getSecurity().filter(s -> s.isSecured(requiredScope)).isPresent();
+        data.getAccessControl().filter(s -> s.isSecured(requiredScope)).isPresent();
     boolean userHasScope =
         optionalUser.filter(u -> u.getScopes().contains(requiredScope)).isPresent();
     boolean isPolicyDenial =

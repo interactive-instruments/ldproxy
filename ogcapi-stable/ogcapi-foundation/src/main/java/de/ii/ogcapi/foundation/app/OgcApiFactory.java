@@ -96,7 +96,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
                 .spatialComputed(true)
                 .temporalComputed(true)
                 .build())
-        .security(getSecurity())
+        .accessControl(getSecurity())
         .extensions(getBuildingBlocks());
   }
 
