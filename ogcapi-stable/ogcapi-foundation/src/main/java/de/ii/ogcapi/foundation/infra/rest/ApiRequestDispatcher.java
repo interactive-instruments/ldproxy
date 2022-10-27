@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
@@ -25,8 +26,11 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
+import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
+import io.dropwizard.auth.Auth;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.List;
@@ -35,12 +39,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotAllowedException;
+import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -52,7 +56,7 @@ import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 
 @Singleton
 @AutoBind
-@PermitAll
+// @PermitAll
 public class ApiRequestDispatcher implements ServiceEndpoint {
 
   private static final Set<String> NOCONTENT_METHODS =
@@ -94,8 +98,9 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       @PathParam("entrypoint") String entrypoint,
       @Context OgcApi service,
       @Context ContainerRequestContext requestContext,
-      @Context Request request) {
-    return dispatch("", service, requestContext, request);
+      @Context Request request,
+      @Auth Optional<User> optionalUser) {
+    return dispatch("", service, requestContext, request, optionalUser);
   }
 
   @Path("/{entrypoint: [^/]*}")
@@ -103,7 +108,8 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       @PathParam("entrypoint") String entrypoint,
       @Context OgcApi service,
       @Context ContainerRequestContext requestContext,
-      @Context Request request) {
+      @Context Request request,
+      @Auth Optional<User> optionalUser) {
 
     String subPath = ((UriRoutingContext) requestContext.getUriInfo()).getFinalMatchingGroup();
     String method = requestContext.getMethod();
@@ -122,6 +128,9 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     Locale selectedLanguage =
         contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
 
+    checkAuthorization(
+        service.getData(), entrypoint, subPath, method, selectedMediaType, optionalUser);
+
     ApiRequestContext apiRequestContext =
         new Builder()
             .requestUri(requestContext.getUriInfo().getRequestUri())
@@ -136,6 +145,39 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     ogcApiInjectableContext.inject(requestContext, apiRequestContext);
 
     return ogcApiEndpoint;
+  }
+
+  @SuppressWarnings("PMD.CyclomaticComplexity")
+  private void checkAuthorization(
+      OgcApiDataV2 data,
+      String entrypoint,
+      String path,
+      String method,
+      ApiMediaType mediaType,
+      Optional<User> optionalUser) {
+    if (Objects.equals(entrypoint, "api")) {
+      return;
+    }
+    if (mediaType.matches(MediaType.TEXT_HTML_TYPE)
+        && (path.endsWith("/crud") || path.endsWith("/login") || path.endsWith("/callback"))) {
+      return;
+    }
+
+    String requiredScope =
+        List.of("POST", "PUT", "PATCH", "DELETE").contains(method)
+            ? ApiSecurity.SCOPE_WRITE
+            : ApiSecurity.SCOPE_READ;
+
+    boolean isScopeRestricted =
+        data.getAccessControl().filter(s -> s.isSecured(requiredScope)).isPresent();
+    boolean userHasScope =
+        optionalUser.filter(u -> u.getScopes().contains(requiredScope)).isPresent();
+    boolean isPolicyDenial =
+        optionalUser.filter(u -> u.getPolicyDecision() == PolicyDecision.DENY).isPresent();
+
+    if (isScopeRestricted && (!userHasScope || isPolicyDenial)) {
+      throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
+    }
   }
 
   private void checkParameterNames(

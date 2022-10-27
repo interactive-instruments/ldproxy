@@ -12,12 +12,10 @@ import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.xtraplatform.auth.domain.User;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 
@@ -113,12 +111,6 @@ public interface EndpointExtension extends ApiExtension {
         .filter(param -> param.isApplicable(apiData, definitionPath, method))
         .sorted(Comparator.comparing(ApiHeader::getId))
         .collect(ImmutableList.toImmutableList());
-  }
-
-  default void checkAuthorization(OgcApiDataV2 apiData, Optional<User> optionalUser) {
-    if (apiData.getSecured() && optionalUser.isEmpty()) {
-      throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
-    }
   }
 
   default void checkPathParameter(

@@ -71,7 +71,7 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
                               ExtendableOpenApiDefinitionImpl.class, "/openapi.json"))
                       .openBufferedStream());
 
-      if (apiData.getSecured() && authConfig.isJwt()) {
+      if (apiData.getSecured() && authConfig.isActive()) {
         openAPI
             .getComponents()
             .addSecuritySchemes(

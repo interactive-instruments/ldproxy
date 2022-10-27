@@ -7,15 +7,20 @@
  */
 package de.ii.ogcapi.foundation.app;
 
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.SCOPE_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import dagger.assisted.AssistedFactory;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
+import de.ii.ogcapi.foundation.domain.ApiSecurity;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeElements;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMetadata;
+import de.ii.ogcapi.foundation.domain.ImmutableApiSecurity;
 import de.ii.ogcapi.foundation.domain.ImmutableCollectionExtent;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
@@ -37,6 +42,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -90,6 +96,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
                 .spatialComputed(true)
                 .temporalComputed(true)
                 .build())
+        .accessControl(getSecurity())
         .extensions(getBuildingBlocks());
   }
 
@@ -142,6 +149,14 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
 
   private ApiMetadata getMetadata() {
     return new ImmutableApiMetadata.Builder().build();
+  }
+
+  private ApiSecurity getSecurity() {
+    return new ImmutableApiSecurity.Builder()
+        .enabled(true)
+        .scopeElements(Set.of(ScopeElements.READ_WRITE, ScopeElements.TAG))
+        .publicScopes(List.of(SCOPE_READ))
+        .build();
   }
 
   private List<ExtensionConfiguration> getBuildingBlocks() {
