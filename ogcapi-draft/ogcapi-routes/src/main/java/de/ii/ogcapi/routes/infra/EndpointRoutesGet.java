@@ -152,7 +152,6 @@ public class EndpointRoutesGet extends Endpoint {
       @Context HttpServletRequest request) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
 
     FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
     ensureFeatureProviderSupportsRouting(featureProvider);

@@ -322,7 +322,6 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
 
     FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
     ensureFeatureProviderSupportsRouting(featureProvider);
