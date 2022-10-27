@@ -5,10 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain.provider;
+package de.ii.ogcapi.tiles.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.util.List;
+import org.immutables.value.Value;
 
 /**
  * # Tile-Provider-Objects
@@ -27,11 +30,35 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "type")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = TileProviderFeaturesData.class, name = "FEATURES"),
-  @JsonSubTypes.Type(value = TileProviderMbtilesData.class, name = "MBTILES"),
-  @JsonSubTypes.Type(value = TileProviderTileServerData.class, name = "TILESERVER")
+  @JsonSubTypes.Type(value = TileProviderFeatures.class, name = "FEATURES"),
+  @JsonSubTypes.Type(value = TileProviderMbtiles.class, name = "MBTILES"),
+  @JsonSubTypes.Type(value = TileProviderTileServer.class, name = "TILESERVER")
 })
-public interface TileProviderData {
+public abstract class TileProvider {
 
-  TileProviderData mergeInto(TileProviderData tileProvider);
+  @JsonIgnore
+  @Value.Default
+  public boolean tilesMayBeCached() {
+    return false;
+  }
+
+  @JsonIgnore
+  @Value.Default
+  public boolean requiresQuerySupport() {
+    return true;
+  }
+
+  @JsonIgnore
+  @Value.Default
+  public boolean supportsTilesHints() {
+    return false;
+  }
+
+  public abstract boolean isMultiCollectionEnabled();
+
+  public abstract boolean isSingleCollectionEnabled();
+
+  public abstract List<String> getTileEncodings();
+
+  public abstract TileProvider mergeInto(TileProvider tileProvider);
 }

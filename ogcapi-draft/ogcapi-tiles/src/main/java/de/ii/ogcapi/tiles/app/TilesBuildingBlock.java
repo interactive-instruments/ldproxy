@@ -23,17 +23,17 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.ImmutableMinMax;
+import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.PredefinedFilter;
-import de.ii.ogcapi.tiles.domain.Rule;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
+import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
+import de.ii.ogcapi.tiles.domain.provider.Rule;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -161,7 +161,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     return new Builder()
         .enabled(false)
         .tileProvider(
-            ImmutableTileProviderFeaturesData.builder()
+            ImmutableTileProviderFeatures.builder()
                 .tileEncodings(
                     extensionRegistry
                         .getExtensionsForType(TileFormatWithQuerySupportExtension.class)
@@ -377,7 +377,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         }
       }
 
-      if (config.getTileProvider() instanceof TileProviderFeaturesData) {
+      if (config.getTileProvider() instanceof TileProviderFeatures) {
 
         Map<String, MinMax> zoomLevelsCache = config.getZoomLevelsCacheDerived();
         if (Objects.nonNull(zoomLevelsCache)) {

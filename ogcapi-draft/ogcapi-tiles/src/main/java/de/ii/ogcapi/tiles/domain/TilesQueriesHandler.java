@@ -11,8 +11,7 @@ import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderTileServerData;
+import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import java.io.InputStream;
@@ -56,7 +55,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
     Tile getTile();
 
-    TileProviderMbtilesData getProvider();
+    TileProviderMbtiles getProvider();
   }
 
   @Value.Immutable
@@ -64,7 +63,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
     Tile getTile();
 
-    TileProviderTileServerData getProvider();
+    TileProviderTileServer getProvider();
   }
 
   @Value.Immutable
@@ -80,13 +79,20 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
   }
 
   @Value.Immutable
-  interface QueryInputTileSingleLayer extends QueryInput {
+  interface QueryInputTileSingleLayer extends QueryInput, TileCoordinates {
 
-    Tile getTile();
+    // TODO
+    Optional<Tile> getTile();
 
-    FeatureQuery getQuery();
+    String getCollectionId();
 
-    EpsgCrs getDefaultCrs();
+    TileFormatExtension getOutputFormat();
+
+    // TODO
+    Optional<FeatureQuery> getQuery();
+
+    // TODO
+    Optional<EpsgCrs> getDefaultCrs();
   }
 
   @Value.Immutable

@@ -19,8 +19,8 @@ import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata.MbtilesFormat;
 import de.ii.ogcapi.tiles.app.mbtiles.MbtilesTileset;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.Tile;
+import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -76,8 +76,8 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
     if (config.isPresent()
         && config.get().isEnabled()
         && config.get().isMultiCollectionEnabled()
-        && config.get().getTileProvider() instanceof TileProviderMbtilesData) {
-      TileProviderMbtilesData provider = (TileProviderMbtilesData) config.get().getTileProvider();
+        && config.get().getTileProvider() instanceof TileProviderMbtiles) {
+      TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
       Path path = getTileProvider(api.getData(), provider.getFilename());
       String key = String.join("/", api.getId(), TilesBuildingBlock.DATASET_TILES);
       try {
@@ -95,8 +95,8 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
       if (config.isPresent()
           && config.get().isEnabled()
           && config.get().isSingleCollectionEnabled()
-          && config.get().getTileProvider() instanceof TileProviderMbtilesData) {
-        TileProviderMbtilesData provider = (TileProviderMbtilesData) config.get().getTileProvider();
+          && config.get().getTileProvider() instanceof TileProviderMbtiles) {
+        TileProviderMbtiles provider = (TileProviderMbtiles) config.get().getTileProvider();
         Path path = getTileProvider(api.getData(), provider.getFilename());
         String key = String.join("/", api.getId(), collectionId);
         try {

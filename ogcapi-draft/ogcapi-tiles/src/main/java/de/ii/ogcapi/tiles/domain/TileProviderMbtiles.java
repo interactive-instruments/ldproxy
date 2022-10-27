@@ -5,9 +5,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain.provider;
+package de.ii.ogcapi.tiles.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderMbtilesData;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -27,14 +32,14 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileProviderMbtilesData.Builder.class)
-public interface TileProviderMbtilesData extends TileProviderData {
+public abstract class TileProviderMbtiles extends TileProvider {
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
    * @default `MBTILES`
    */
-  default String getType() {
+  public final String getType() {
     return "MBTILES";
   }
 
@@ -46,17 +51,59 @@ public interface TileProviderMbtilesData extends TileProviderData {
   @Nullable
   public abstract String getFilename();
 
+  @JsonIgnore
+  public abstract Map<String, MinMax> getZoomLevels();
+
+  @Nullable
+  @JsonIgnore
+  public abstract String getTileEncoding();
+
+  @JsonIgnore
+  @Value.Auxiliary
+  @Value.Derived
+  public List<String> getTileEncodings() {
+    return Objects.nonNull(getTileEncoding())
+        ? ImmutableList.of(getTileEncoding())
+        : ImmutableList.of();
+  }
+
+  @JsonIgnore
+  public abstract List<Double> getCenter();
+
   @Override
-  default TileProviderData mergeInto(TileProviderData source) {
-    if (Objects.isNull(source) || !(source instanceof TileProviderMbtilesData)) return this;
+  @JsonIgnore
+  @Value.Default
+  public boolean requiresQuerySupport() {
+    return false;
+  }
 
-    TileProviderMbtilesData src = (TileProviderMbtilesData) source;
+  @Override
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  public boolean isMultiCollectionEnabled() {
+    return true;
+  }
 
-    ImmutableTileProviderMbtilesData.Builder builder =
-        ImmutableTileProviderMbtilesData.builder().from(src).from(this);
+  @Override
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  public boolean isSingleCollectionEnabled() {
+    return false;
+  }
 
-    // if (!getCenter().isEmpty()) builder.center(getCenter());
-    // else if (!src.getCenter().isEmpty()) builder.center(src.getCenter());
+  @Override
+  public TileProvider mergeInto(TileProvider source) {
+    if (Objects.isNull(source) || !(source instanceof TileProviderMbtiles)) return this;
+
+    TileProviderMbtiles src = (TileProviderMbtiles) source;
+
+    ImmutableTileProviderMbtiles.Builder builder =
+        ImmutableTileProviderMbtiles.builder().from(src).from(this);
+
+    if (!getCenter().isEmpty()) builder.center(getCenter());
+    else if (!src.getCenter().isEmpty()) builder.center(src.getCenter());
 
     return builder.build();
   }

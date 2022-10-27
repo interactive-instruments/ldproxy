@@ -18,10 +18,7 @@ import com.google.common.collect.Maps;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderTileServerData;
+import de.ii.ogcapi.tiles.domain.provider.Rule;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -233,7 +230,7 @@ public interface TilesConfiguration
    * @default `{ "type": "FEATURES", ... }`
    */
   @Nullable
-  TileProviderData getTileProvider(); // TODO add TileServer support
+  TileProvider getTileProvider(); // TODO add TileServer support
 
   /**
    * @langEn Controls which formats are supported for the tileset resources. Available are [OGC
@@ -329,15 +326,14 @@ public interface TilesConfiguration
   default List<String> getTileEncodingsDerived() {
     return !getTileEncodings().isEmpty()
         ? getTileEncodings()
-        : getTileProvider() instanceof TileProviderFeaturesData
+        : getTileProvider() instanceof TileProviderFeatures
             ? getTileProvider().getTileEncodings()
-            : getTileProvider() instanceof TileProviderMbtilesData
-                    && Objects.nonNull(
-                        ((TileProviderMbtilesData) getTileProvider()).getTileEncoding())
-                ? ImmutableList.of(((TileProviderMbtilesData) getTileProvider()).getTileEncoding())
-                : getTileProvider() instanceof TileProviderTileServerData
+            : getTileProvider() instanceof TileProviderMbtiles
+                    && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding())
+                ? ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding())
+                : getTileProvider() instanceof TileProviderTileServer
                         && Objects.nonNull(
-                            ((TileProviderTileServerData) getTileProvider()).getTileEncodings())
+                            ((TileProviderTileServer) getTileProvider()).getTileEncodings())
                     ? getTileProvider().getTileEncodings()
                     : ImmutableList.of();
   }
@@ -356,10 +352,10 @@ public interface TilesConfiguration
   default List<Double> getCenterDerived() {
     return !getCenter().isEmpty()
         ? getCenter()
-        : getTileProvider() instanceof TileProviderFeaturesData
-            ? ((TileProviderFeaturesData) getTileProvider()).getCenter()
-            : getTileProvider() instanceof TileProviderMbtilesData
-                ? ((TileProviderMbtilesData) getTileProvider()).getCenter()
+        : getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getCenter()
+            : getTileProvider() instanceof TileProviderMbtiles
+                ? ((TileProviderMbtiles) getTileProvider()).getCenter()
                 : ImmutableList.of();
   }
 
@@ -377,10 +373,10 @@ public interface TilesConfiguration
   default Map<String, MinMax> getZoomLevelsDerived() {
     return !getZoomLevels().isEmpty()
         ? getZoomLevels()
-        : getTileProvider() instanceof TileProviderFeaturesData
-            ? ((TileProviderFeaturesData) getTileProvider()).getZoomLevels()
-            : getTileProvider() instanceof TileProviderMbtilesData
-                ? ((TileProviderMbtilesData) getTileProvider()).getZoomLevels()
+        : getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getZoomLevels()
+            : getTileProvider() instanceof TileProviderMbtiles
+                ? ((TileProviderMbtiles) getTileProvider()).getZoomLevels()
                 : ImmutableMap.of();
   }
 
@@ -441,8 +437,8 @@ public interface TilesConfiguration
   default Map<String, MinMax> getZoomLevelsCacheDerived() {
     return !getZoomLevelsCache().isEmpty()
         ? getZoomLevelsCache()
-        : getTileProvider() instanceof TileProviderFeaturesData
-            ? ((TileProviderFeaturesData) getTileProvider()).getZoomLevelsCache()
+        : getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getZoomLevelsCache()
             : ImmutableMap.of();
   }
 
@@ -460,8 +456,8 @@ public interface TilesConfiguration
   default Map<String, MinMax> getSeedingDerived() {
     return !getSeeding().isEmpty()
         ? getSeeding()
-        : getTileProvider() instanceof TileProviderFeaturesData
-            ? ((TileProviderFeaturesData) getTileProvider()).getSeeding()
+        : getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getSeeding()
             : ImmutableMap.of();
   }
 
@@ -469,8 +465,8 @@ public interface TilesConfiguration
   @Value.Derived
   @JsonIgnore
   default Optional<SeedingOptions> getSeedingOptions() {
-    return getTileProvider() instanceof TileProviderFeaturesData
-        ? ((TileProviderFeaturesData) getTileProvider()).getSeedingOptions()
+    return getTileProvider() instanceof TileProviderFeatures
+        ? ((TileProviderFeatures) getTileProvider()).getSeedingOptions()
         : Optional.empty();
   }
 
@@ -490,8 +486,8 @@ public interface TilesConfiguration
   default Integer getLimitDerived() {
     return Objects.nonNull(getLimit())
         ? getLimit()
-        : getTileProvider() instanceof TileProviderFeaturesData
-            ? ((TileProviderFeaturesData) getTileProvider()).getLimit()
+        : getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getLimit()
             : null;
   }
 
@@ -509,8 +505,8 @@ public interface TilesConfiguration
   @JsonIgnore
   default boolean isIgnoreInvalidGeometriesDerived() {
     return Objects.equals(getIgnoreInvalidGeometries(), true)
-        || (getTileProvider() instanceof TileProviderFeaturesData
-            && ((TileProviderFeaturesData) getTileProvider()).isIgnoreInvalidGeometries())
+        || (getTileProvider() instanceof TileProviderFeatures
+            && ((TileProviderFeatures) getTileProvider()).isIgnoreInvalidGeometries())
         || isEnabled();
   }
 
@@ -528,8 +524,8 @@ public interface TilesConfiguration
   default Map<String, List<PredefinedFilter>> getFiltersDerived() {
     return !getFilters().isEmpty()
         ? getFilters()
-        : getTileProvider() instanceof TileProviderFeaturesData
-            ? ((TileProviderFeaturesData) getTileProvider()).getFilters()
+        : getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getFilters()
             : ImmutableMap.of();
   }
 
@@ -547,8 +543,8 @@ public interface TilesConfiguration
   default Map<String, List<Rule>> getRulesDerived() {
     return !getRules().isEmpty()
         ? getRules()
-        : getTileProvider() instanceof TileProviderFeaturesData
-            ? ((TileProviderFeaturesData) getTileProvider()).getRules()
+        : getTileProvider() instanceof TileProviderFeatures
+            ? ((TileProviderFeatures) getTileProvider()).getRules()
             : ImmutableMap.of();
   }
 
@@ -584,8 +580,8 @@ public interface TilesConfiguration
     return Objects.requireNonNullElse(
         getMinimumSizeInPixel(),
         Objects.requireNonNullElse(
-            getTileProvider() instanceof TileProviderFeaturesData
-                ? ((TileProviderFeaturesData) getTileProvider()).getMinimumSizeInPixel()
+            getTileProvider() instanceof TileProviderFeatures
+                ? ((TileProviderFeatures) getTileProvider()).getMinimumSizeInPixel()
                 : null,
             MINIMUM_SIZE_IN_PIXEL));
   }

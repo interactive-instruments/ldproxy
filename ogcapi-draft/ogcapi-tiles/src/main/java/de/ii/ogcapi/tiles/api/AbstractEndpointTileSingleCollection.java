@@ -8,8 +8,10 @@
 package de.ii.ogcapi.tiles.api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -25,16 +27,26 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileStream.Builder;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileEmpty;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileMbtilesTile;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileMultiLayer;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileTileServerTile;
 import de.ii.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
+import de.ii.ogcapi.tiles.domain.TileFromFeatureQuery;
+import de.ii.ogcapi.tiles.domain.TileProvider;
+import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
+import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
+import de.ii.ogcapi.tiles.domain.TileProviderTileServer;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
@@ -42,12 +54,12 @@ import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
@@ -186,7 +198,7 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
       String tileMatrix,
       String tileRow,
       String tileCol,
-      TileProviderData tileProvider)
+      TileProvider tileProvider)
       throws CrsTransformationException, IOException, NotFoundException {
     OgcApiDataV2 apiData = api.getData();
     Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
@@ -266,96 +278,245 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
                         MessageFormat.format(
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
+    /*
+        Optional<FeatureProvider2> featureProvider = providers.getFeatureProvider(apiData);
 
-    Optional<FeatureProvider2> featureProvider = providers.getFeatureProvider(apiData);
+        // check, if the cache can be used (no query parameters except f)
+        boolean useCache =
+            tileProvider.tilesMayBeCached()
+                && tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE
+                && (queryParams.isEmpty() || (queryParams.size() == 1 && queryParams.containsKey("f")));
 
-    // check, if the cache can be used (no query parameters except f)
-    boolean useCache =
-        tileProvider.tilesMayBeCached()
-            && tilesConfiguration.getCache() != TilesConfiguration.TileCacheType.NONE
-            && (queryParams.isEmpty() || (queryParams.size() == 1 && queryParams.containsKey("f")));
+        // don't store the tile in the cache if it is outside the range
+        MinMax cacheMinMax = tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId);
+        useCache =
+            useCache
+                && (Objects.isNull(cacheMinMax)
+                    || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()));
 
-    // don't store the tile in the cache if it is outside the range
-    MinMax cacheMinMax = tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId);
-    useCache =
-        useCache
-            && (Objects.isNull(cacheMinMax)
-                || (level <= cacheMinMax.getMax() && level >= cacheMinMax.getMin()));
+        Tile tile =
+            new ImmutableTile.Builder()
+                .tileMatrixSet(tileMatrixSet)
+                .tileLevel(level)
+                .tileRow(row)
+                .tileCol(col)
+                .api(api)
+                .apiData(apiData)
+                .outputFormat(outputFormat)
+                .featureProvider(featureProvider)
+                .collectionIds(ImmutableList.of(collectionId))
+                .temporary(!useCache)
+                .isDatasetTile(false)
+                .build();
 
-    Tile tile =
-        new ImmutableTile.Builder()
+        QueryInput queryInput = null;
+
+        // if cache can be used and the tile is cached for the requested format, return the cache
+        if (useCache) {
+          // get the tile from the cache and return it
+          Optional<InputStream> tileStream = Optional.empty();
+          try {
+            tileStream = cache.getTile(tile);
+          } catch (Exception e) {
+            LOGGER.warn(
+                "Failed to retrieve tile {}/{}/{}/{} for collection '{}' from the cache. Reason: {}",
+                tile.getTileMatrixSet().getId(),
+                tile.getTileLevel(),
+                tile.getTileRow(),
+                tile.getTileCol(),
+                collectionId,
+                e.getMessage());
+          }
+          if (tileStream.isPresent()) {
+            queryInput =
+                new Builder()
+                    .from(getGenericQueryInput(apiData))
+                    .tile(tile)
+                    .tileContent(tileStream.get())
+                    .build();
+          }
+        }
+
+        // not cached or cache access failed
+        if (Objects.isNull(queryInput))
+          queryInput =
+              getQueryInput(
+                  tileProvider,
+                  apiData,
+                  requestContext.getUriCustomizer(),
+                  queryParams,
+                  allowedParameters,
+                  getGenericQueryInput(apiData),
+                  tile);
+
+        TilesQueriesHandler.Query query = null;
+        if (queryInput instanceof TilesQueriesHandler.QueryInputTileMbtilesTile)
+          query = TilesQueriesHandler.Query.MBTILES_TILE;
+        else if (queryInput instanceof TilesQueriesHandler.QueryInputTileTileServerTile)
+          query = TilesQueriesHandler.Query.TILESERVER_TILE;
+        else if (queryInput instanceof TilesQueriesHandler.QueryInputTileEmpty)
+          query = TilesQueriesHandler.Query.EMPTY_TILE;
+        else if (queryInput instanceof TilesQueriesHandler.QueryInputTileStream)
+          query = TilesQueriesHandler.Query.TILE_STREAM;
+        else if (queryInput instanceof TilesQueriesHandler.QueryInputTileMultiLayer)
+          query = TilesQueriesHandler.Query.MULTI_LAYER_TILE;
+        else if (queryInput instanceof TilesQueriesHandler.QueryInputTileSingleLayer)
+          query = TilesQueriesHandler.Query.SINGLE_LAYER_TILE;
+
+        return queryHandler.handle(query, queryInput, requestContext);
+    */
+
+    // TODO: .temporary(!useCache)
+    QueryInput queryInput =
+        new ImmutableQueryInputTileSingleLayer.Builder()
+            .from(getGenericQueryInput(apiData))
+            .collectionId(collectionId)
+            .outputFormat(outputFormat)
             .tileMatrixSet(tileMatrixSet)
             .tileLevel(level)
             .tileRow(row)
             .tileCol(col)
-            .api(api)
-            .apiData(apiData)
-            .outputFormat(outputFormat)
-            .featureProvider(featureProvider)
-            .collectionIds(ImmutableList.of(collectionId))
-            .temporary(!useCache)
-            .isDatasetTile(false)
             .build();
 
-    QueryInput queryInput = null;
-
-    // if cache can be used and the tile is cached for the requested format, return the cache
-    if (useCache) {
-      // get the tile from the cache and return it
-      Optional<InputStream> tileStream = Optional.empty();
-      try {
-        tileStream = cache.getTile(tile);
-      } catch (Exception e) {
-        LOGGER.warn(
-            "Failed to retrieve tile {}/{}/{}/{} for collection '{}' from the cache. Reason: {}",
-            tile.getTileMatrixSet().getId(),
-            tile.getTileLevel(),
-            tile.getTileRow(),
-            tile.getTileCol(),
-            collectionId,
-            e.getMessage());
-      }
-      if (tileStream.isPresent()) {
-        queryInput =
-            new Builder()
-                .from(getGenericQueryInput(apiData))
-                .tile(tile)
-                .tileContent(tileStream.get())
-                .build();
-      }
-    }
-
-    // not cached or cache access failed
-    if (Objects.isNull(queryInput))
-      queryInput =
-          tileProvider.getQueryInput(
-              apiData,
-              requestContext.getUriCustomizer(),
-              queryParams,
-              allowedParameters,
-              getGenericQueryInput(apiData),
-              tile);
-
-    TilesQueriesHandler.Query query = null;
-    if (queryInput instanceof TilesQueriesHandler.QueryInputTileMbtilesTile)
-      query = TilesQueriesHandler.Query.MBTILES_TILE;
-    else if (queryInput instanceof TilesQueriesHandler.QueryInputTileTileServerTile)
-      query = TilesQueriesHandler.Query.TILESERVER_TILE;
-    else if (queryInput instanceof TilesQueriesHandler.QueryInputTileEmpty)
-      query = TilesQueriesHandler.Query.EMPTY_TILE;
-    else if (queryInput instanceof TilesQueriesHandler.QueryInputTileStream)
-      query = TilesQueriesHandler.Query.TILE_STREAM;
-    else if (queryInput instanceof TilesQueriesHandler.QueryInputTileMultiLayer)
-      query = TilesQueriesHandler.Query.MULTI_LAYER_TILE;
-    else if (queryInput instanceof TilesQueriesHandler.QueryInputTileSingleLayer)
-      query = TilesQueriesHandler.Query.SINGLE_LAYER_TILE;
-
-    return queryHandler.handle(query, queryInput, requestContext);
+    return queryHandler.handle(
+        TilesQueriesHandler.Query.SINGLE_LAYER_TILE, queryInput, requestContext);
   }
 
   private void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
     if (!featureProvider.supportsQueries()) {
       throw new IllegalStateException("Feature provider does not support queries.");
     }
+  }
+
+  public static QueryInput getQueryInput(
+      TileProvider tileProviderData,
+      OgcApiDataV2 apiData,
+      URICustomizer uriCustomizer,
+      Map<String, String> queryParameters,
+      List<OgcApiQueryParameter> allowedParameters,
+      QueryInput genericInput,
+      Tile tile) {
+
+    if (tileProviderData instanceof TileProviderMbtiles) {
+      return new ImmutableQueryInputTileMbtilesTile.Builder()
+          .from(genericInput)
+          .tile(tile)
+          .provider((TileProviderMbtiles) tileProviderData)
+          .build();
+    } else if (tileProviderData instanceof TileProviderTileServer) {
+      return new ImmutableQueryInputTileTileServerTile.Builder()
+          .from(genericInput)
+          .tile(tile)
+          .provider((TileProviderTileServer) tileProviderData)
+          .build();
+    } else if (tileProviderData instanceof TileProviderFeatures) {
+      if (!tile.getFeatureProvider().map(FeatureProvider2::supportsQueries).orElse(false)) {
+        throw new IllegalStateException(
+            "Tile cannot be generated. The feature provider does not support feature queries.");
+      }
+
+      TileFormatExtension outputFormat = tile.getOutputFormat();
+      List<String> collections = tile.getCollectionIds();
+
+      if (collections.isEmpty()) {
+        return new ImmutableQueryInputTileEmpty.Builder().from(genericInput).tile(tile).build();
+      }
+
+      if (!(outputFormat instanceof TileFormatWithQuerySupportExtension))
+        throw new RuntimeException(
+            String.format(
+                "Unexpected tile format without query support. Found: %s",
+                outputFormat.getClass().getSimpleName()));
+
+      if (tile.isDatasetTile()) {
+        if (!outputFormat.canMultiLayer() && collections.size() > 1)
+          throw new NotAcceptableException(
+              "The requested tile format supports only a single layer. Please select only a single collection.");
+
+        Map<String, Tile> singleLayerTileMap =
+            collections.stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        collectionId -> collectionId,
+                        collectionId ->
+                            new ImmutableTile.Builder()
+                                .from(tile)
+                                .collectionIds(ImmutableList.of(collectionId))
+                                .isDatasetTile(false)
+                                .build()));
+
+        Map<String, FeatureQuery> queryMap =
+            collections.stream()
+                .collect(
+                    ImmutableMap.toImmutableMap(
+                        collectionId -> collectionId,
+                        collectionId -> {
+                          String featureTypeId =
+                              apiData
+                                  .getCollections()
+                                  .get(collectionId)
+                                  .getExtension(FeaturesCoreConfiguration.class)
+                                  .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+                                  .orElse(collectionId);
+                          TilesConfiguration layerConfiguration =
+                              apiData
+                                  .getExtension(TilesConfiguration.class, collectionId)
+                                  .orElseThrow();
+                          FeatureQuery query =
+                              ((TileFormatWithQuerySupportExtension) outputFormat)
+                                  .getQuery(
+                                      singleLayerTileMap.get(collectionId),
+                                      allowedParameters,
+                                      queryParameters,
+                                      layerConfiguration,
+                                      uriCustomizer);
+                          return ImmutableFeatureQuery.builder()
+                              .from(query)
+                              .type(featureTypeId)
+                              .build();
+                        }));
+
+        FeaturesCoreConfiguration coreConfiguration =
+            apiData.getExtension(FeaturesCoreConfiguration.class).orElseThrow();
+
+        return new ImmutableQueryInputTileMultiLayer.Builder()
+            .from(genericInput)
+            .tile(tile)
+            .singleLayerTileMap(singleLayerTileMap)
+            .queryMap(queryMap)
+            .defaultCrs(
+                apiData
+                    .getExtension(FeaturesCoreConfiguration.class)
+                    .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                    .orElseThrow())
+            .build();
+      } else {
+        String collectionId = tile.getCollectionId();
+        FeatureTypeConfigurationOgcApi featureType =
+            apiData.getCollectionData(collectionId).orElseThrow();
+        TilesConfiguration layerConfiguration =
+            apiData.getExtension(TilesConfiguration.class, collectionId).orElseThrow();
+        FeatureQuery query =
+            ((TileFromFeatureQuery) outputFormat)
+                .getQuery(
+                    tile, allowedParameters, queryParameters, layerConfiguration, uriCustomizer);
+
+        FeaturesCoreConfiguration coreConfiguration =
+            featureType.getExtension(FeaturesCoreConfiguration.class).orElseThrow();
+
+        return new ImmutableQueryInputTileSingleLayer.Builder()
+            .from(genericInput)
+            .tile(tile)
+            .query(query)
+            .defaultCrs(
+                featureType
+                    .getExtension(FeaturesCoreConfiguration.class)
+                    .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                    .orElseThrow())
+            .build();
+      }
+    }
+
+    return null;
   }
 }

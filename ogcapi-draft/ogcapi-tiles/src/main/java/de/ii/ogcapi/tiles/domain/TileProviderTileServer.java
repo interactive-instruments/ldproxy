@@ -5,10 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain.provider;
+package de.ii.ogcapi.tiles.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Lists;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderTileServerData.Builder;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -35,14 +38,14 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = Builder.class)
-public interface TileProviderTileServerData extends TileProviderData {
+public abstract class TileProviderTileServer extends TileProvider {
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
    * @default `TILESERVER`
    */
-  default String getType() {
+  public final String getType() {
     return "TILESERVER";
   }
 
@@ -66,15 +69,40 @@ public interface TileProviderTileServerData extends TileProviderData {
   @Nullable
   public abstract String getUrlTemplateSingleCollection();
 
+  /**
+   * @langEn List of tile formats to be supported, allowed are `PNG`, `WebP` and `JPEG`.
+   * @langDe Liste der zu unterstützenden Kachelformate, erlaubt sind `PNG`, `WebP` und `JPEG`.
+   * @default `[]`
+   */
   @Override
-  default TileProviderData mergeInto(TileProviderData source) {
-    if (Objects.isNull(source) || !(source instanceof TileProviderTileServerData)) return this;
+  public abstract List<String> getTileEncodings();
 
-    TileProviderTileServerData src = (TileProviderTileServerData) source;
+  @Override
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  public boolean isMultiCollectionEnabled() {
+    return Objects.nonNull(getUrlTemplate());
+  }
 
-    Builder builder = ImmutableTileProviderTileServerData.builder().from(src).from(this);
+  @Override
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  public boolean isSingleCollectionEnabled() {
+    return Objects.nonNull(getUrlTemplateSingleCollection());
+  }
 
-    /*List<String> tileEncodings =
+  @Override
+  public TileProvider mergeInto(TileProvider source) {
+    if (Objects.isNull(source) || !(source instanceof TileProviderTileServer)) return this;
+
+    TileProviderTileServer src = (TileProviderTileServer) source;
+
+    ImmutableTileProviderTileServer.Builder builder =
+        ImmutableTileProviderTileServer.builder().from(src).from(this);
+
+    List<String> tileEncodings =
         Objects.nonNull(src.getTileEncodings())
             ? Lists.newArrayList(src.getTileEncodings())
             : Lists.newArrayList();
@@ -85,7 +113,7 @@ public interface TileProviderTileServerData extends TileProviderData {
                 tileEncodings.add(tileEncoding);
               }
             });
-    builder.tileEncodings(tileEncodings);*/
+    builder.tileEncodings(tileEncodings);
 
     return builder.build();
   }

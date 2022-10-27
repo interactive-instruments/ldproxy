@@ -28,7 +28,6 @@ import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
@@ -132,7 +131,8 @@ public class TileCacheImpl implements TileCache {
     if (config.isPresent()
         && config.get().isEnabled()
         && config.get().isMultiCollectionEnabled()
-        && config.get().getTileProvider() instanceof TileProviderFeaturesData) {
+        && config.get().getTileProvider()
+            instanceof de.ii.ogcapi.tiles.domain.TileProviderFeatures) {
       TilesConfiguration.TileCacheType cacheType = config.get().getCache();
       Set<String> tileMatrixSetIds = config.get().getZoomLevelsDerived().keySet();
       for (String tileMatrixSetId : tileMatrixSetIds) {
@@ -145,7 +145,8 @@ public class TileCacheImpl implements TileCache {
       config = apiData.getExtension(TilesConfiguration.class, collectionId);
       if (config.isPresent()
           && config.get().isEnabled()
-          && config.get().getTileProvider() instanceof TileProviderFeaturesData) {
+          && config.get().getTileProvider()
+              instanceof de.ii.ogcapi.tiles.domain.TileProviderFeatures) {
         TilesConfiguration.TileCacheType cacheType = config.get().getCache();
         Set<String> tileMatrixSetIds = config.get().getZoomLevelsDerived().keySet();
         for (String tileMatrixSetId : tileMatrixSetIds) {

@@ -32,9 +32,9 @@ import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
+import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
@@ -67,10 +67,8 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
 
   private final FeaturesCoreProviders providers;
   private final TilesQueriesHandler queryHandler;
-  private final CrsTransformerFactory crsTransformerFactory;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
   private final TileCache cache;
-  private final StaticTileProviderStore staticTileProviderStore;
   private final TileMatrixSetRepository tileMatrixSetRepository;
 
   public AbstractEndpointTileMultiCollection(
@@ -85,10 +83,8 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
     super(extensionRegistry);
     this.providers = providers;
     this.queryHandler = queryHandler;
-    this.crsTransformerFactory = crsTransformerFactory;
     this.limitsGenerator = limitsGenerator;
     this.cache = cache;
-    this.staticTileProviderStore = staticTileProviderStore;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
   }
 
@@ -169,7 +165,7 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
       String tileMatrix,
       String tileRow,
       String tileCol,
-      TileProviderData tileProvider)
+      TileProvider tileProvider)
       throws CrsTransformationException, IOException, NotFoundException {
     OgcApiDataV2 apiData = api.getData();
     Map<String, String> queryParams = toFlatMap(uriInfo.getQueryParameters());
@@ -329,7 +325,8 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
     // not cached or cache access failed
     if (Objects.isNull(queryInput))
       queryInput =
-          tileProvider.getQueryInput(
+          AbstractEndpointTileSingleCollection.getQueryInput(
+              tileProvider,
               apiData,
               requestContext.getUriCustomizer(),
               queryParams,

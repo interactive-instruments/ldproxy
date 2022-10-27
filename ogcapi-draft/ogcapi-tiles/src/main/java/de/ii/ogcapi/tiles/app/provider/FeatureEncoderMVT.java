@@ -11,14 +11,14 @@ import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
 import de.ii.ogcapi.features.core.domain.ModifiableFeatureSfFlat;
 import de.ii.ogcapi.features.core.domain.ModifiablePropertySfFlat;
 import de.ii.ogcapi.features.core.domain.PropertySfFlat;
-import de.ii.ogcapi.tiles.domain.FeatureTransformationContextTiles;
 import de.ii.ogcapi.tiles.domain.ImmutableMvtFeature;
 import de.ii.ogcapi.tiles.domain.MvtFeature;
-import de.ii.ogcapi.tiles.domain.Rule;
-import de.ii.ogcapi.tiles.domain.Tile;
-import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ogcapi.tiles.domain.provider.Rule;
+import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.ws.rs.core.MediaType;
 import no.ecc.vectortile.VectorTileEncoder;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.Geometry;
@@ -39,15 +40,13 @@ import org.slf4j.LoggerFactory;
 public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, FeatureSfFlat> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderMVT.class);
+  public static final MediaType FORMAT = new MediaType("application", "vnd.mapbox-vector-tile");
 
-  private final FeatureTransformationContextTiles encodingContext;
-  private final TilesConfiguration tilesConfiguration;
+  private final TileGenerationParameters parameters;
   private final String collectionId;
-  private final Tile tile;
-  private final TileMatrixSet tileMatrixSet;
+  private final TileCoordinates tile;
   private final VectorTileEncoder tileEncoder;
   private final AffineTransformation affineTransformation;
-  private final double minimumSizeInPixel;
   private final String layerName;
   private final List<String> properties;
   private final boolean allProperties;
@@ -65,25 +64,24 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
   private long featureCount = 0;
   private long written = 0;
 
-  public FeatureEncoderMVT(FeatureTransformationContextTiles encodingContext) {
-    this.encodingContext = encodingContext;
-    this.tilesConfiguration = encodingContext.tilesConfiguration();
-    this.collectionId = encodingContext.getCollectionId();
-    this.tile = encodingContext.tile();
-    this.tileMatrixSet = tile.getTileMatrixSet();
-    this.tileEncoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
-    this.affineTransformation = tile.createTransformNativeToTile();
-    this.minimumSizeInPixel = tilesConfiguration.getMinimumSizeInPixelDerived();
+  // TODO: TilesConfiguration not available in xtraplatform, but new TileProviderData
+  public FeatureEncoderMVT(TileGenerationContext transformationContext) {
+    this.parameters = transformationContext.getParameters();
+    this.collectionId = transformationContext.getCollectionId();
+    this.tile = transformationContext.getCoordinates();
+    this.tileEncoder = new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent());
+    this.affineTransformation = createTransformNativeToTile();
     this.layerName = Objects.requireNonNullElse(collectionId, "layer");
-    this.properties = encodingContext.getFields();
+    this.properties = transformationContext.getFields();
     this.allProperties = properties.contains("*");
     this.tilePrecisionModel =
         new PrecisionModel(
-            (double) tileMatrixSet.getTileExtent() / (double) tileMatrixSet.getTileSize());
+            (double) tile.getTileMatrixSet().getTileExtent()
+                / (double) tile.getTileMatrixSet().getTileSize());
     this.geometryFactoryTile = new GeometryFactory(tilePrecisionModel);
     this.geometryFactoryWorld = new GeometryFactory();
 
-    final int size = tileMatrixSet.getTileSize();
+    final int size = tile.getTileMatrixSet().getTileSize();
     final int buffer = 8;
     CoordinateXY[] coords = new CoordinateXY[5];
     coords[0] = new CoordinateXY(-buffer, size + buffer);
@@ -93,10 +91,10 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
     coords[4] = coords[0];
     this.clipGeometry = geometryFactoryTile.createPolygon(coords);
 
-    final Map<String, List<Rule>> rules = tilesConfiguration.getRulesDerived();
+    final Map<String, List<Rule>> rules = parameters.getRules();
     this.groupBy =
-        (Objects.nonNull(rules) && rules.containsKey(tileMatrixSet.getId()))
-            ? rules.get(tileMatrixSet.getId()).stream()
+        (Objects.nonNull(rules) && rules.containsKey(tile.getTileMatrixSet().getId()))
+            ? rules.get(tile.getTileMatrixSet().getId()).stream()
                 .filter(
                     rule ->
                         rule.getMax() >= tile.getTileLevel()
@@ -125,7 +123,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
       LOGGER.trace(
           "Start generating tile for collection {}, tile {}/{}/{}/{}.",
           collectionId,
-          tileMatrixSet.getId(),
+          tile.getTileMatrixSet().getId(),
           tile.getTileLevel(),
           tile.getTileRow(),
           tile.getTileCol());
@@ -151,7 +149,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
               affineTransformation,
               clipGeometry,
               tilePrecisionModel,
-              minimumSizeInPixel);
+              parameters.getMinimumSizeInPixel());
       if (Objects.isNull(tileGeometry)) {
         return;
       }
@@ -173,12 +171,12 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
             "Feature {} in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Size in pixels: {}.",
             feature.getIdValue(),
             collectionId,
-            tileMatrixSet.getId(),
+            tile.getTileMatrixSet().getId(),
             tile.getTileLevel(),
             tile.getTileRow(),
             tile.getTileCol(),
             featureGeometry.get().getArea());
-        if (encodingContext.tilesConfiguration().isIgnoreInvalidGeometriesDerived()) {
+        if (parameters.getIgnoreInvalidGeometries()) {
           return;
         }
       }
@@ -205,7 +203,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
       LOGGER.error(
           "Error while processing feature {} in tile {}/{}/{}/{} in collection {}. The feature is skipped.",
           feature.getIdValue(),
-          tileMatrixSet.getId(),
+          tile.getTileMatrixSet().getId(),
           tile.getTileLevel(),
           tile.getTileRow(),
           tile.getTileCol(),
@@ -230,7 +228,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
               String.format(
                   "Collection %s, tile %s/%d/%d/%d",
                   collectionId,
-                  tileMatrixSet.getId(),
+                  tile.getTileMatrixSet().getId(),
                   tile.getTileLevel(),
                   tile.getTileRow(),
                   tile.getTileCol()));
@@ -244,12 +242,12 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
                   LOGGER.warn(
                       "A merged feature in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Properties: {}",
                       collectionId,
-                      tileMatrixSet.getId(),
+                      tile.getTileMatrixSet().getId(),
                       tile.getTileLevel(),
                       tile.getTileRow(),
                       tile.getTileCol(),
                       mergedFeature.getProperties());
-                  if (tilesConfiguration.isIgnoreInvalidGeometriesDerived()) return;
+                  if (parameters.getIgnoreInvalidGeometries()) return;
                 }
                 tileEncoder.addFeature(layerName, mergedFeature.getProperties(), geom);
                 written++;
@@ -274,7 +272,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
             String.format(
                 "Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
                 collectionId,
-                tileMatrixSet.getId(),
+                tile.getTileMatrixSet().getId(),
                 tile.getTileLevel(),
                 tile.getTileRow(),
                 tile.getTileCol(),
@@ -292,7 +290,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
             String.format(
                 "Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, encoding: %dms, size: %dkB.",
                 collectionId,
-                tileMatrixSet.getId(),
+                tile.getTileMatrixSet().getId(),
                 tile.getTileLevel(),
                 tile.getTileRow(),
                 tile.getTileCol(),
@@ -306,5 +304,25 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
       if (processingDuration > 200 || kiloBytes > 50) LOGGER.debug(text);
       else LOGGER.trace(text);
     }
+  }
+
+  private AffineTransformation createTransformNativeToTile() {
+
+    BoundingBox bbox = tile.getBoundingBox();
+
+    double xMin = bbox.getXmin();
+    double xMax = bbox.getXmax();
+    double yMin = bbox.getYmin();
+    double yMax = bbox.getYmax();
+
+    double tileSize = tile.getTileMatrixSet().getTileSize();
+
+    double xScale = tileSize / (xMax - xMin);
+    double yScale = tileSize / (yMax - yMin);
+
+    double xOffset = -xMin * xScale;
+    double yOffset = yMin * yScale + tileSize;
+
+    return new AffineTransformation(xScale, 0.0d, xOffset, 0.0d, -yScale, yOffset);
   }
 }

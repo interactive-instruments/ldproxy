@@ -89,6 +89,8 @@ public abstract class Tile {
    */
   public abstract boolean isDatasetTile();
 
+  public abstract int getLimit();
+
   @Nullable
   @Value.Derived
   @Value.Auxiliary

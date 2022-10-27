@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -45,7 +46,7 @@ public interface TileFromFeatureQuery {
   double getMaxAllowableOffset(Tile tile);
 
   default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
-      FeatureTransformationContextTiles transformationContext) {
+      TileGenerationContext transformationContext) {
     return Optional.empty();
   }
 

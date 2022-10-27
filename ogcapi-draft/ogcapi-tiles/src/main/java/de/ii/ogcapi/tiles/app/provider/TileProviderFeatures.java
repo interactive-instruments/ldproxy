@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.app;
+package de.ii.ogcapi.tiles.app.provider;
 
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
 
@@ -16,25 +16,28 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.app.provider.FeatureEncoderMVT;
+import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
-import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
-import de.ii.ogcapi.tiles.domain.TileSet;
-import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptions;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationContext;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.Rule;
+import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
+import de.ii.ogcapi.tiles.domain.provider.TileProvider;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
+import de.ii.ogcapi.tiles.domain.provider.TileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileResult;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
@@ -44,117 +47,168 @@ import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureStream;
+import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.sql.SQLException;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.streams.domain.Reactive.Sink;
+import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.concurrent.CompletionException;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.measure.Unit;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import no.ecc.vectortile.VectorTileDecoder;
-import no.ecc.vectortile.VectorTileEncoder;
 import org.apache.http.NameValuePair;
 import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO: who creates this? entity factory?
 @Singleton
 @AutoBind
-public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
+public class TileProviderFeatures implements TileProvider, TileGenerator {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TileProviderFeatures.class);
+  private static final Map<
+          MediaType, Function<TileGenerationContext, ? extends FeatureTokenEncoder<?>>>
+      ENCODERS = ImmutableMap.of(FeatureEncoderMVT.FORMAT, FeatureEncoderMVT::new);
 
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "vnd.mapbox-vector-tile"))
-          .label("MVT")
-          .parameter("mvt")
-          .build();
-
-  private final CrsTransformerFactory crsTransformerFactory;
-  private final FeaturesQuery queryParser;
-  private final TileCache tileCache;
   private final CrsSupport crsSupport;
   private final CrsInfo crsInfo;
-
-  @Inject
-  public TileFormatMVT(
-      CrsTransformerFactory crsTransformerFactory,
-      FeaturesQuery queryParser,
-      TileCache tileCache,
-      CrsSupport crsSupport,
-      CrsInfo crsInfo) {
-    this.crsTransformerFactory = crsTransformerFactory;
-    this.queryParser = queryParser;
-    this.tileCache = tileCache;
-    this.crsSupport = crsSupport;
-    this.crsInfo = crsInfo;
-  }
-
-  @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
-  }
-
-  @Override
-  public boolean canMultiLayer() {
-    return true;
-  }
-
-  @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-        || path.equals(
-            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(SCHEMA_TILE)
-          .schemaRef(SCHEMA_REF_TILE)
-          .ogcApiMediaType(MEDIA_TYPE)
+  private final TileCache tileCache;
+  // TODO
+  private final FeaturesQuery queryParser;
+  private final EntityRegistry entityRegistry;
+  // TODO
+  private final TileProviderFeaturesData data =
+      ImmutableTileProviderFeaturesData.builder()
+          .layerDefaults(new ImmutableLayerOptions.Builder().featureProvider("bergbau").build())
           .build();
 
-    return null;
+  @Inject
+  public TileProviderFeatures(
+      CrsSupport crsSupport,
+      CrsInfo crsInfo,
+      TileCache tileCache,
+      FeaturesQuery queryParser,
+      EntityRegistry entityRegistry) {
+    this.crsSupport = crsSupport;
+    this.crsInfo = crsInfo;
+    this.tileCache = tileCache;
+    this.queryParser = queryParser;
+    this.entityRegistry = entityRegistry;
   }
 
   @Override
-  public String getExtension() {
-    return "pbf";
+  public TileResult getTile(TileQuery tileQuery) {
+    // TODO: check cache(s) (or delegate)
+
+    TileResult cacheResult = TileResult.notFound();
+
+    return cacheResult;
   }
 
   @Override
-  public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
-      TileGenerationContext transformationContext) {
-    return Optional.of(new FeatureEncoderMVT(transformationContext));
+  public boolean supports(MediaType mediaType) {
+    return ENCODERS.containsKey(mediaType);
+  }
+
+  // TODO: streaming?
+  @Override
+  public byte[] generateTile(TileQuery tileQuery, MediaType mediaType) {
+    if (!ENCODERS.containsKey(mediaType)) {
+      throw new IllegalArgumentException(String.format("Encoding not supported: %s", mediaType));
+    }
+
+    FeatureStream tileSource = getTileSource(tileQuery);
+
+    TileGenerationContext tileGenerationContext =
+        new ImmutableTileGenerationContext.Builder()
+            .parameters(data.getLayerDefaults())
+            .coordinates(tileQuery)
+            .collectionId(tileQuery.getLayer())
+            // .fields
+            // .limit(query.getLimit())
+            .build();
+
+    FeatureTokenEncoder<?> encoder = ENCODERS.get(mediaType).apply(tileGenerationContext);
+
+    ResultReduced<byte[]> resultReduced = generateTile(tileSource, encoder, tileQuery, Map.of());
+
+    return resultReduced.reduced();
   }
 
   @Override
-  public boolean getGzippedInMbtiles() {
-    return true;
+  public FeatureStream getTileSource(TileQuery tileQuery) {
+    FeatureProvider2 featureProvider =
+        entityRegistry
+            .getEntity(FeatureProvider2.class, data.getLayerDefaults().getFeatureProvider().get())
+            .get();
+
+    // TODO:
+    FeatureQuery featureQuery = getQuery(null, null, null, null, null);
+
+    return featureProvider.queries().getFeatureStream(featureQuery);
   }
 
-  @Override
-  public boolean getSupportsEmptyTile() {
-    return true;
+  private ResultReduced<byte[]> generateTile(
+      FeatureStream featureStream,
+      FeatureTokenEncoder<?> encoder,
+      TileCoordinates tile,
+      Map<String, PropertyTransformations> propertyTransformations) {
+
+    SinkReduced<Object, byte[]> featureSink = encoder.to(Sink.reduceByteArray());
+
+    try {
+      ResultReduced<byte[]> result =
+          featureStream.runWith(featureSink, propertyTransformations).toCompletableFuture().join();
+
+      if (result.isSuccess()) {
+        try {
+          // write/update tile in cache
+          // tileCache.storeTile(tile, result.reduced());
+        } catch (Throwable e) {
+          String msg =
+              "Failure to write the multi-layer file of tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache";
+          LogContext.errorAsInfo(
+              LOGGER,
+              e,
+              msg,
+              tile.getTileMatrixSet().getId(),
+              tile.getTileLevel(),
+              tile.getTileRow(),
+              tile.getTileCol(),
+              "TODO",
+              "TODO");
+        }
+      } else {
+        result.getError().ifPresent(QueriesHandler::processStreamError);
+      }
+
+      return result;
+
+    } catch (CompletionException e) {
+      if (e.getCause() instanceof WebApplicationException) {
+        throw (WebApplicationException) e.getCause();
+      }
+      throw new IllegalStateException("Feature stream error.", e.getCause());
+    }
   }
 
-  @Override
-  public DataType getDataType() {
-    return TileSet.DataType.vector;
-  }
-
-  @Override
   public FeatureQuery getQuery(
       Tile tile,
       List<OgcApiQueryParameter> allowedParameters,
@@ -318,101 +372,6 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     return queryBuilder.build();
   }
 
-  @Override
-  public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(
-      TileMatrixSet tileMatrixSet,
-      Map<String, Tile> singleLayerTileMap,
-      Map<String, ByteArrayOutputStream> singleLayerByteArrayMap)
-      throws IOException {
-    VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
-    VectorTileDecoder decoder = new VectorTileDecoder();
-    Set<String> processedCollections = new TreeSet<>();
-    int count = 0;
-    while (count++ <= 3) {
-      for (String collectionId : singleLayerTileMap.keySet()) {
-        if (!processedCollections.contains(collectionId)) {
-          Tile singleLayerTile = singleLayerTileMap.get(collectionId);
-          ByteArrayOutputStream tileBytes = singleLayerByteArrayMap.get(collectionId);
-          if (Objects.nonNull(tileBytes) && tileBytes.size() > 0) {
-            try {
-              List<VectorTileDecoder.Feature> features =
-                  decoder.decode(tileBytes.toByteArray()).asList();
-              features.forEach(
-                  feature ->
-                      encoder.addFeature(
-                          feature.getLayerName(),
-                          feature.getAttributes(),
-                          feature.getGeometry(),
-                          feature.getId()));
-              processedCollections.add(collectionId);
-            } catch (IOException e) {
-              // maybe the file is still generated, try to wait once before giving up
-              String msg =
-                  "Failure to access the single-layer tile {}/{}/{}/{} in dataset '{}', layer '{}', format '{}'. Trying again ...";
-              LOGGER.warn(
-                  msg,
-                  tileMatrixSet.getId(),
-                  singleLayerTile.getTileLevel(),
-                  singleLayerTile.getTileRow(),
-                  singleLayerTile.getTileCol(),
-                  singleLayerTile.getApiData().getId(),
-                  collectionId,
-                  getExtension());
-            } catch (IllegalArgumentException e) {
-              // another problem generating the tile, remove the problematic tile file from the
-              // cache
-              try {
-                tileCache.deleteTile(singleLayerTile);
-              } catch (SQLException throwables) {
-                // ignore
-              }
-              throw new RuntimeException(
-                  String.format(
-                      "Failure to process the single-layer tile %s/%d/%d/%d in dataset '%s', layer '%s', format '%s'.",
-                      tileMatrixSet.getId(),
-                      singleLayerTile.getTileLevel(),
-                      singleLayerTile.getTileRow(),
-                      singleLayerTile.getTileCol(),
-                      singleLayerTile.getApiData().getId(),
-                      collectionId,
-                      getExtension()),
-                  e);
-            }
-          } else {
-            try {
-              if (tileCache.tileIsEmpty(singleLayerTile).orElse(false)) {
-                // an empty tile, so we are done for this collection
-                processedCollections.add(collectionId);
-              }
-            } catch (Exception e) {
-              LOGGER.warn(
-                  "Failed to retrieve tile {}/{}/{}/{} for collection {} from the cache. Reason: {}",
-                  singleLayerTile.getTileMatrixSet().getId(),
-                  singleLayerTile.getTileLevel(),
-                  singleLayerTile.getTileRow(),
-                  singleLayerTile.getTileCol(),
-                  collectionId,
-                  e.getMessage());
-            }
-          }
-        }
-      }
-      if (processedCollections.size() == singleLayerTileMap.size()) break;
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException ex) {
-        // ignore and just continue
-      }
-    }
-
-    MultiLayerTileContent result = new MultiLayerTileContent();
-    result.byteArray = encoder.encode();
-    result.isComplete = processedCollections.size() == singleLayerTileMap.size();
-
-    return result;
-  }
-
-  @Override
   public double getMaxAllowableOffset(Tile tile) {
     double maxAllowableOffsetTileMatrixSet =
         tile.getTileMatrixSet()
@@ -426,20 +385,10 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     else if (tmsCrsUnit.equals(Units.METRE) && nativeCrsUnit.equals(Units.DEGREE))
       return maxAllowableOffsetTileMatrixSet / 111333.0;
 
-    LOGGER.error(
-        "TileFormatMVT.getMaxAllowableOffset: Cannot convert between axis units '{}' and '{}'.",
+    LOGGER.warn(
+        "Tile generation: cannot convert between axis units '{}' and '{}'.",
         tmsCrsUnit.getName(),
         nativeCrsUnit.getName());
     return 0;
-  }
-
-  /**
-   * If the zoom Level is not valid generate empty JSON Tile or empty MVT.
-   *
-   * @param tile the tile
-   * @return
-   */
-  public byte[] getEmptyTile(Tile tile) {
-    return new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent()).encode();
   }
 }
