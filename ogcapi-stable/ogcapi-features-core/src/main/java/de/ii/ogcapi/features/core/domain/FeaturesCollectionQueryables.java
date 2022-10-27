@@ -39,6 +39,7 @@ public interface FeaturesCollectionQueryables
 
   List<String> getTemporal();
 
+  @Deprecated(since = "3.3.0")
   List<String> getQ();
 
   List<String> getOther();
