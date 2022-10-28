@@ -206,7 +206,6 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(extensionRegistry, apiData, "/search/{queryId}", "queryId", queryId);
 
     QueryExpression query;
@@ -251,7 +250,6 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(extensionRegistry, apiData, "/search/{queryId}", "queryId", queryId);
 
     // TODO recompute API definition of EndpointStoredQuery
