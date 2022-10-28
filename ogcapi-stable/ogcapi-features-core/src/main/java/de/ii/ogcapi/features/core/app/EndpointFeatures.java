@@ -462,7 +462,7 @@ public class EndpointFeatures extends EndpointSubCollection {
         apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
     final List<String> filterableFields =
         coreConfiguration
-            .map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
+            .map(FeaturesCoreConfiguration::getFilterParameters)
             .orElse(ImmutableList.of());
 
     Map<String, List<PropertyTransformation>> transformations;

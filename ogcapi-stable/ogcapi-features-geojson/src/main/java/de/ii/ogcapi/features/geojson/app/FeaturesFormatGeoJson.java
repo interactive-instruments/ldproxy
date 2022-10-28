@@ -262,7 +262,8 @@ public class FeaturesFormatGeoJson
     String collectionId =
         path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
     if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PUT)
-        || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)) {
+        || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)
+        || (path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PATCH)) {
 
       if (collectionId.equals("{collectionId}")
           && apiData
