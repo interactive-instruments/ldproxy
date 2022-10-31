@@ -8,6 +8,7 @@
 package de.ii.ogcapi.html.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiCatalog;
 import de.ii.ogcapi.foundation.domain.ApiCatalogProvider;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -18,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration;
+import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.services.domain.ServicesContext;
@@ -102,6 +104,12 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
                 .uri(uri)
                 .i18n(i18n)
                 .language(language.get())
+                .links(apiCatalog.getLinks())
+                .breadCrumbs( new ImmutableList.Builder<NavigationDTO>()
+                    .add(new NavigationDTO(i18n.get("root", language), true))
+                    .build())
+                .description(apiCatalog.getDescription().orElse(i18n.get("rootDescription", language)))
+                .title(apiCatalog.getTitle().orElse(i18n.get("rootTitle", language)))
                 .isApiCatalog(false))
         .build();
   }

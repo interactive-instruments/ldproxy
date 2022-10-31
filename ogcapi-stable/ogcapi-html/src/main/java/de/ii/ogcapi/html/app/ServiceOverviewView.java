@@ -63,18 +63,6 @@ public abstract class ServiceOverviewView extends OgcApiView {
 
   public ServiceOverviewView() {
     super("services.mustache");
-    /*Charsets.UTF_8,
-    null,
-    new ImmutableList.Builder<NavigationDTO>()
-        .add(new NavigationDTO(i18n.get("root", language), true))
-        .build(),
-    htmlConfig,
-    htmlConfig.getNoIndexEnabled(),
-    apiCatalog.getUrlPrefix(),
-    apiCatalog.getLinks(),
-    apiCatalog.getTitle().orElse(i18n.get("rootTitle", language)),
-    apiCatalog.getDescription().orElse(i18n.get("rootDescription", language)));*/
-
   }
 
   public String getDatasetsAsString() {
